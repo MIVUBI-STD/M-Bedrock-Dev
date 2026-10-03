@@ -273,7 +273,8 @@
           "expected",
           "actual",
           "proofCeiling",
-          "issueType"
+          "issueType",
+          "contributingDomains"
         ],
         "properties": {
           "id": {
@@ -395,6 +396,29 @@
               "minLength": 1
             },
             "uniqueItems": true
+          },
+          "contributingDomains": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "arena-multi-arena",
+                "inventory-economy",
+                "progression-wave-objective",
+                "chunk-simulation",
+                "player-lifecycle",
+                "entity-ai-combat",
+                "world-structure-mutation",
+                "ui-feedback-information",
+                "state-ownership",
+                "temporal-async",
+                "boundary-capacity",
+                "persistence-recovery",
+                "platform-performance"
+              ]
+            },
+            "description": "All material gameplay domains participating in the same root-cause issue. failureDomain remains the primary reader-facing domain."
           }
         },
         "allOf": [
@@ -661,7 +685,8 @@
           "expected",
           "actual",
           "proofCeiling",
-          "issueType"
+          "issueType",
+          "contributingDomains"
         ],
         "properties": {
           "id": {
@@ -795,6 +820,29 @@
               "minLength": 1
             },
             "uniqueItems": true
+          },
+          "contributingDomains": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "arena-multi-arena",
+                "inventory-economy",
+                "progression-wave-objective",
+                "chunk-simulation",
+                "player-lifecycle",
+                "entity-ai-combat",
+                "world-structure-mutation",
+                "ui-feedback-information",
+                "state-ownership",
+                "temporal-async",
+                "boundary-capacity",
+                "persistence-recovery",
+                "platform-performance"
+              ]
+            },
+            "description": "All material gameplay domains participating in the same root-cause issue. failureDomain remains the primary reader-facing domain."
           }
         },
         "allOf": [
