@@ -165,7 +165,6 @@ export function assessProjectApprovalReadiness(input: {
   readonly blockingReasons?:
     readonly string[];
   readonly requireBugReport?: boolean;
-  readonly requireAuditComplete?: boolean;
 }): ProjectApprovalReadiness {
   const missing: string[] = [];
   const project = input.project;
@@ -187,14 +186,6 @@ export function assessProjectApprovalReadiness(input: {
     project.work.workSessionRevision < 1
   ) {
     missing.push("work session revision");
-  }
-  if (
-    input.requireAuditComplete &&
-    project.work.currentStage !== "COMPLETE"
-  ) {
-    missing.push(
-      "completed selected-map audit",
-    );
   }
   if (
     input.requireBugReport &&
@@ -297,6 +288,7 @@ function approvalPayload(input: {
   readonly project: ProjectRecord;
   readonly deliverables:
     readonly ProjectDeliverableRef[];
+  readonly auditRevision?: string;
 }): Omit<
   ProjectApprovalSnapshot,
   "snapshotFingerprint"
@@ -309,12 +301,10 @@ function approvalPayload(input: {
     artifactFingerprint:
       input.project.artifact
         .artifactFingerprint,
-    ...(input.project.work.auditRevision
-      ?.trim()
+    ...(input.auditRevision?.trim()
       ? {
           auditRevision:
-            input.project.work
-              .auditRevision.trim(),
+            input.auditRevision.trim(),
         }
       : {}),
     ...(input.project.knowledge
@@ -340,7 +330,7 @@ export function createProjectApprovalSnapshot(
     readonly blockingReasons?:
       readonly string[];
     readonly requireBugReport?: boolean;
-    readonly requireAuditComplete?: boolean;
+    readonly auditRevision?: string;
   },
 ): ProjectApprovalSnapshot {
   const readiness =
@@ -355,7 +345,13 @@ export function createProjectApprovalSnapshot(
   }
 
   const payload =
-    approvalPayload(input);
+    approvalPayload({
+      project: input.project,
+      deliverables:
+        input.deliverables,
+      auditRevision:
+        input.auditRevision,
+    });
   return {
     ...payload,
     snapshotFingerprint:
