@@ -33,6 +33,36 @@
     },
     {
       "schemaVersion": 1,
+      "projectId": "build-and-decode",
+      "projectName": "Build & Decode",
+      "taskClass": "DIAGNOSE",
+      "revision": 1,
+      "artifact": {
+        "artifactId": "drive:1aBAM5Hwu58klnGV1dtZZLffgJATPRmtd",
+        "artifactFingerprint": "sha256:d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
+        "version": "1.1.0"
+      },
+      "work": {},
+      "knowledge": {},
+      "publication": {
+        "drive": {
+          "schemaVersion": 1,
+          "projectId": "build-and-decode",
+          "mapFolder": {
+            "folderId": "1nLQ-kW7tkSSUL9T_KJ7gvBzY9Rhq1GFW",
+            "label": "Build - Build & Decode"
+          },
+          "currentWorld": {
+            "fileId": "1aBAM5Hwu58klnGV1dtZZLffgJATPRmtd",
+            "fileName": "Build & Decode v1.1.0.mcworld",
+            "artifactFingerprint": "sha256:d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
+            "version": "1.1.0"
+          }
+        }
+      }
+    },
+    {
+      "schemaVersion": 1,
       "projectId": "composite-challenge",
       "projectName": "Composite Challenge",
       "taskClass": "DIAGNOSE",
