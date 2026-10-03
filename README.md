@@ -60,6 +60,45 @@ Operator work order: `docs/03-analysis/master-selected-map-audit-workflow.md`.
 
 Executable checkpoint authority: `docs/03-analysis/mandatory-audit-procedure.md`.
 
+## Project continuity and publication
+
+Project work has one persistent path and one compact tracked registry:
+
+```text
+workspace/projects/<project-id>/   working continuity
+workspace/project-registry.json    tracked current project summary
+workspace/reports/                 canonical current Bug Report V2
+```
+
+Project publication lifecycle:
+
+```text
+working
+→ ready-for-approval
+→ approved
+→ drive-published
+```
+
+For audit projects:
+
+```text
+SelectedMapAuditRun
+→ Work Session + project registry sync
+→ canonical Bug Report V2 when applicable
+→ completeness gate
+→ ready-for-approval
+→ historical issue projection into reliability regressions
+→ immutable approval snapshot
+→ approved
+→ Drive publish plan
+→ verified COMPLETE receipt
+→ drive-published
+```
+
+Historical regression/failure-pattern knowledge may prioritize later audits but never proves a current defect.
+
+Canonical details: `docs/06-system/project-lifecycle.md`.
+
 ## Repository map
 
 ```text
