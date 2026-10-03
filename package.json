@@ -37,7 +37,6 @@
     "score:agent-eval": "node tooling/repository/score-agent-eval.mjs",
     "generate:proof-backlog": "node tooling/repository/generate-capability-proof-backlog.mjs",
     "bug-report-html": "tsx tooling/bug-report-documents/render.ts",
-    "bug-report-doc": "tsx tooling/bug-report-documents/render.ts",
     "verify:audit-entrypoint": "node tooling/repository/verify-selected-map-audit-entrypoint.mjs"
   },
   "dependencies": {
