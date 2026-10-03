@@ -48,6 +48,36 @@ function status(
   return bug.fixed ? "fixed" : "open";
 }
 
+function workChecklist(
+  bug: BugReportV2Bug,
+): readonly string[] {
+  const items: string[] = [];
+
+  if (bug.suggestedFix?.trim()) {
+    items.push(
+      "Implement the approved resolution: " +
+        bug.suggestedFix.trim(),
+    );
+  } else {
+    items.push(
+      "Implement the smallest fix that removes the observed defect while preserving the expected gameplay contract.",
+    );
+  }
+
+  items.push(
+    "Retest using every Tester Checklist step and confirm the observed wrong result no longer occurs.",
+    "Confirm the Expected result is reached on the same trigger path.",
+  );
+
+  for (const preserve of bug.mustPreserve ?? []) {
+    items.push(
+      "Verify preserved behavior: " + preserve,
+    );
+  }
+
+  return items;
+}
+
 function projectIssue(
   bug: BugReportV2Bug,
   number: number,
@@ -60,18 +90,8 @@ function projectIssue(
     category: bug.category,
     foundBy: bug.foundBy,
     title: bug.title,
-    issue: [
-      bug.problem,
-      ...(bug.reproduction?.length
-        ? [
-            "How it happens: " +
-              bug.reproduction.join(" → "),
-          ]
-        : []),
-    ].join(" "),
-    reproduction: [
-      bug.id + " — " + bug.title,
-    ],
+    issue: bug.problem,
+    reproduction: [...(bug.reproduction ?? [])],
     observed: bug.observed,
     expected: bug.expected,
     ...(bug.suggestedFix === undefined
@@ -98,7 +118,7 @@ function projectIssue(
           mustPreserve:
             bug.mustPreserve,
         }),
-    workChecklist: [],
+    workChecklist: workChecklist(bug),
   };
 }
 
