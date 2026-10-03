@@ -57,6 +57,18 @@ function normalizeFolder(
   value: DriveFolderRef,
   label: string,
 ): DriveFolderRef {
+  if (
+    value === null ||
+    typeof value !== "object" ||
+    !hasOnlyKeys(
+      value as unknown as Record<string, unknown>,
+      ["folderId", "label"],
+    )
+  ) {
+    throw new Error(
+      label + " folder contains unsupported fields.",
+    );
+  }
   return {
     folderId:
       nonEmpty(
