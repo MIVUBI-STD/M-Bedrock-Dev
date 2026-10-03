@@ -61,6 +61,7 @@ export interface AuditUserIntentEnvelope {
   readonly priorityDomains: readonly GameplayIssueFailureDomain[];
   readonly priorityPlayerFlows: readonly GameplayIssueFlowStage[];
   readonly ambiguities: readonly string[];
+  readonly blockingAmbiguities: readonly string[];
 }
 
 export interface AuditUserIntentSearchPressure {
@@ -121,6 +122,8 @@ export function normalizeAuditUserIntent(
     priorityPlayerFlows:
       [...new Set(input.priorityPlayerFlows)].sort(),
     ambiguities: unique(input.ambiguities),
+    blockingAmbiguities:
+      unique(input.blockingAmbiguities),
   };
 }
 
@@ -198,6 +201,15 @@ export function validateAuditUserIntent(
       "User audit intent ambiguities must contain only non-empty text.",
     );
   }
+  if (
+    input.blockingAmbiguities.some(
+      (item) => !clean(item),
+    )
+  ) {
+    issues.push(
+      "User audit intent blockingAmbiguities must contain only non-empty text.",
+    );
+  }
 
   const hasSymptom = input.items.some(
     (item) => item.kind === "SYMPTOM_REPORT",
@@ -206,7 +218,8 @@ export function validateAuditUserIntent(
     hasSymptom &&
     input.priorityDomains.length === 0 &&
     input.priorityPlayerFlows.length === 0 &&
-    input.ambiguities.length === 0
+    input.ambiguities.length === 0 &&
+    input.blockingAmbiguities.length === 0
   ) {
     issues.push(
       "User-reported symptoms require at least one bounded priority domain/player-flow interpretation or an explicit ambiguity record.",
