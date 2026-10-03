@@ -10,12 +10,6 @@ import {
 import type {
   ProjectRecord,
 } from "../../../project-model/src/index.js";
-import {
-  updateProjectRecord,
-} from "./project-lifecycle.js";
-import {
-  upsertProjectRecord,
-} from "./project-registry-store.js";
 
 const DOMAIN_BY_CATEGORY:
   Readonly<Record<BugFinderCategory, string>> = {
@@ -33,19 +27,51 @@ const DOMAIN_BY_CATEGORY:
 
 const CAPABILITIES_BY_CATEGORY:
   Readonly<Record<BugFinderCategory, readonly string[]>> = {
-    "game-flow": ["gameplay-state", "progression"],
-    "player-state": ["state", "persistence"],
-    "multiplayer-session": ["multiplayer", "arena-lifecycle"],
-    "world-interaction": ["world-mutation", "spatial"],
-    "entity-behavior": ["entity-ai", "navigation"],
-    "combat": ["combat", "entity-ai"],
-    "score-reward": ["economy", "reward"],
-    "ui-feedback": ["ui-state", "gameplay-state"],
-    "performance-stability": ["runtime-stability", "chunks"],
-    "compatibility": ["compatibility", "platform"],
+    "game-flow": [
+      "gameplay-state",
+      "progression",
+    ],
+    "player-state": [
+      "state",
+      "persistence",
+    ],
+    "multiplayer-session": [
+      "multiplayer",
+      "arena-lifecycle",
+    ],
+    "world-interaction": [
+      "world-mutation",
+      "spatial",
+    ],
+    "entity-behavior": [
+      "entity-ai",
+      "navigation",
+    ],
+    combat: [
+      "combat",
+      "entity-ai",
+    ],
+    "score-reward": [
+      "economy",
+      "reward",
+    ],
+    "ui-feedback": [
+      "ui-state",
+      "gameplay-state",
+    ],
+    "performance-stability": [
+      "runtime-stability",
+      "chunks",
+    ],
+    compatibility: [
+      "compatibility",
+      "platform",
+    ],
   };
 
-function unique(values: readonly string[]): string[] {
+function unique(
+  values: readonly string[],
+): string[] {
   return [...new Set(
     values
       .map((value) => value.trim())
@@ -55,77 +81,93 @@ function unique(values: readonly string[]): string[] {
 
 export function projectApprovedBugReportToHistoricalRegressions(
   input: {
+    readonly projectId: string;
     readonly report: BugReportV2;
     readonly reportPath: string;
     readonly artifactFingerprint: string;
   },
 ): readonly HistoricalRegressionRecord[] {
-  return input.report.bugs.map((bug) => ({
-    id: historicalRegressionId({
-      mapName: input.report.map.name,
-      mapVersion: input.report.map.mapVersion,
-      bugId: bug.id,
-    }),
-    title: bug.title,
-    domain:
-      DOMAIN_BY_CATEGORY[bug.category],
-    discoveredBy:
-      bug.foundBy === "tester"
-        ? "approved-tester"
-        : "approved-ai",
-    provenance: {
-      source: "Canonical Bug Report V2",
-      reportPath: input.reportPath,
-      map: input.report.map.name,
-      mapVersion:
-        input.report.map.mapVersion,
-      bugId: bug.id,
-      artifactFingerprint:
-        input.artifactFingerprint,
-    },
-    triggerTags: unique([
-      "gameplay",
-      bug.category,
-      bug.severity,
-    ]),
-    capabilityTags: [
-      ...CAPABILITIES_BY_CATEGORY[
-        bug.category
+  return input.report.bugs.map(
+    (bug) => ({
+      id: historicalRegressionId({
+        mapName: input.report.map.name,
+        mapVersion:
+          input.report.map.mapVersion,
+        bugId: bug.id,
+      }),
+      title: bug.title,
+      domain:
+        DOMAIN_BY_CATEGORY[
+          bug.category
+        ],
+      discoveredBy:
+        bug.foundBy === "tester"
+          ? "approved-tester"
+          : "approved-ai",
+      provenance: {
+        source:
+          "Canonical Bug Report V2",
+        projectId: input.projectId,
+        reportPath: input.reportPath,
+        map: input.report.map.name,
+        mapVersion:
+          input.report.map.mapVersion,
+        bugId: bug.id,
+        artifactFingerprint:
+          input.artifactFingerprint,
+      },
+      triggerTags: unique([
+        "gameplay",
+        bug.category,
+        bug.severity,
+      ]),
+      capabilityTags: [
+        ...CAPABILITIES_BY_CATEGORY[
+          bug.category
+        ],
       ],
-    ],
-    ...(bug.reproduction?.length
-      ? {
-          reproduction: [
-            ...bug.reproduction,
-          ],
-        }
-      : {}),
-    expected: bug.expected,
-    observed: bug.observed,
-  }));
+      ...(bug.reproduction?.length
+        ? {
+            reproduction: [
+              ...bug.reproduction,
+            ],
+          }
+        : {}),
+      expected: bug.expected,
+      observed: bug.observed,
+    }),
+  );
 }
 
-export async function syncApprovedProjectIssueHistory(input: {
-  readonly repositoryRoot: string;
-  readonly project: ProjectRecord;
-  readonly report: BugReportV2;
-  readonly reportPath: string;
-}): Promise<{
-  readonly project: ProjectRecord;
-  readonly historicalRegressionIds: readonly string[];
+/**
+ * Historical issue knowledge is committed only after explicit project
+ * approval. It never mutates ProjectRecord; the reliability catalog itself is
+ * the sole owner of historical incident linkage.
+ */
+export async function syncApprovedProjectIssueHistory(
+  input: {
+    readonly repositoryRoot: string;
+    readonly project: ProjectRecord;
+    readonly report: BugReportV2;
+    readonly reportPath: string;
+  },
+): Promise<{
+  readonly historicalRegressionIds:
+    readonly string[];
 }> {
   if (
-    input.project.status !== "ready-for-approval" &&
     input.project.status !== "approved" &&
-    input.project.status !== "drive-published"
+    input.project.status !==
+      "drive-published"
   ) {
     throw new Error(
-      "Historical issue sync requires a project that has passed approval readiness.",
+      "Historical issue sync requires an approved project.",
     );
   }
   if (
-    input.project.knowledge.bugReportPath !==
-      input.reportPath
+    input.project.knowledge
+      .bugReportPath !==
+    input.reportPath
   ) {
     throw new Error(
       "Project Bug Report reference does not match the canonical report being projected.",
@@ -134,10 +176,13 @@ export async function syncApprovedProjectIssueHistory(input: {
 
   const records =
     projectApprovedBugReportToHistoricalRegressions({
+      projectId:
+        input.project.projectId,
       report: input.report,
       reportPath: input.reportPath,
       artifactFingerprint:
-        input.project.artifact.artifactFingerprint,
+        input.project.artifact
+          .artifactFingerprint,
     });
 
   await mergeAndSaveHistoricalRegressions(
@@ -145,26 +190,10 @@ export async function syncApprovedProjectIssueHistory(input: {
     records,
   );
 
-  const nextProject =
-    updateProjectRecord(
-      input.project,
-      {
-        historicalRegressionIds: [
-          ...input.project.knowledge
-            .historicalRegressionIds,
-          ...records.map((item) => item.id),
-        ],
-      },
-    );
-
-  await upsertProjectRecord(
-    input.repositoryRoot,
-    nextProject,
-  );
-
   return {
-    project: nextProject,
     historicalRegressionIds:
-      records.map((item) => item.id).sort(),
+      records
+        .map((item) => item.id)
+        .sort(),
   };
 }
