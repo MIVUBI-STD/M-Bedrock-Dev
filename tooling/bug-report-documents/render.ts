@@ -9,7 +9,6 @@ import {
 } from "node:path";
 import {
   parseBugReportV2Json,
-  buildBugReportClientLayoutPlan,
   projectBugReportClientDocument,
   reviewBugReportClientDocument,
 } from "../../engine/packages/bug-report/src/index.js";
@@ -540,8 +539,6 @@ body{margin:0;background:#eef1f5;color:#172033;font:15px/1.45 Arial,Helvetica,sa
 function renderHtml(
   document: BugReportClientDocument,
 ): string {
-  const layout =
-    buildBugReportClientLayoutPlan(document);
   const severitySummary = [
     document.summary.blocker > 0
       ? document.summary.blocker + " Blocker"
@@ -560,7 +557,7 @@ function renderHtml(
       : document.issues.map(issueCard).join("\n\n");
 
   const severityLegend =
-    layout.showSeverityLegend
+    document.issues.length > 0
       ? [
           '<section class="legend compact-legend">',
           '<details>',
