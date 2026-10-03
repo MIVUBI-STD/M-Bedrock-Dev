@@ -298,7 +298,7 @@ Gameplay Discovery Closure is a production control gate and does not create a se
 
 Before Map Audit Output V2 is treated as comprehensive:
 
-- Discovery Closure must not be `OPEN`;
-- Gameplay Model Closure must not be `OPEN`.
+- Gameplay Discovery Closure must be `COMPLETE`; both `OPEN` and `PARTIAL` block publication.
+- Gameplay Model Closure must be `CLOSED`; both `OPEN` and `PARTIAL` block publication.
 
-If Discovery Closure is OPEN, report the source/index gap instead of serializing a comprehensive audit claim.
+If either closure is not fully closed, the human-facing report may still expose the honest partial finding set and exact unresolved obligations, but it must not claim comprehensive audit completion.
