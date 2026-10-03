@@ -56,16 +56,19 @@ NOT → skip discovered material gameplay
 
 ## Mandatory chat confirmation
 
-After translating the user's prompt and before calling `runSelectedMapAudit()`, present a concise interpretation summary in chat and obtain explicit confirmation.
+After translating the user's prompt and before calling `runSelectedMapAudit()`, present one concise **Pre-Audit Plan** in chat and obtain explicit confirmation.
+
+For the normal pre-testing workflow, do not require the user to know symptoms or suspected bugs.
 
 Show:
 - exact target/map hint if present;
-- reported symptoms;
-- suspected causes as suspicions, not facts;
-- expectation/design claims separately;
-- priority gameplay/domain focus;
-- test/proof constraints;
-- ambiguities and unmapped input.
+- audit objective;
+- the gameplay/system coverage that will be checked;
+- proof/testing strategy;
+- requested focus/exclusions/constraints;
+- expected output;
+- symptoms/suspicions only when the user actually supplied them;
+- ambiguities and unmapped input only when relevant.
 
 Then state that the canonical audit will still inspect other material gameplay surfaces discovered in the selected artifact and that none of the user's suspicions will be treated as a bug without evidence.
 
