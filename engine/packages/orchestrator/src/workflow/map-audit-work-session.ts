@@ -1,4 +1,5 @@
 import type {
+  DriveProjectBinding,
   ProjectRecord,
   ProjectWorkspaceLayout,
   WorkSessionAuditBinding,
@@ -207,7 +208,7 @@ export async function saveSelectedMapAuditProjectContinuity(input: {
   readonly goal: string;
   readonly previousSession?: WorkSessionCheckpoint;
   readonly previousProject?: ProjectRecord;
-  readonly driveFolderId?: string;
+  readonly drive?: DriveProjectBinding;
 }): Promise<{
   readonly session: WorkSessionCheckpoint;
   readonly project: ProjectRecord;
@@ -291,12 +292,11 @@ export async function saveSelectedMapAuditProjectContinuity(input: {
           taskClass: "DIAGNOSE",
           artifact,
           work,
-          ...(input.driveFolderId ===
-          undefined
+          ...(input.drive === undefined
             ? {}
             : {
-                driveFolderId:
-                  input.driveFolderId,
+                drive:
+                  input.drive,
               }),
         })
       : updateProjectRecord(
@@ -304,12 +304,11 @@ export async function saveSelectedMapAuditProjectContinuity(input: {
           {
             artifact,
             work,
-            ...(input.driveFolderId ===
-            undefined
+            ...(input.drive === undefined
               ? {}
               : {
-                  driveFolderId:
-                    input.driveFolderId,
+                  drive:
+                    input.drive,
                 }),
           },
         );
