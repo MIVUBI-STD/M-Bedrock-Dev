@@ -2,14 +2,14 @@
 
 This tooling renders one self-contained HTML file from either:
 
-- **Map Audit Output V2** → Complete Bug Report, showing every material `PROVEN` and `NEED_VALIDATION` finding across BUG and DESIGN_MISMATCH;
+- **Map Audit Output V2** → Map Audit Report, showing every material `PROVEN` and `NEED_VALIDATION` finding across BUG and DESIGN_MISMATCH;
 - **Approved Bug Report V2** → approved PROVEN BUG ledger view.
 
 ## Flow
 
 ```text
 Map Audit Output V2
-→ Complete Bug Report
+→ Map Audit Report
 → PROVEN + NEED_VALIDATION remain visible
 
 or
@@ -78,7 +78,11 @@ Technical causes stay out of the client-facing Issue field.
 ## Output naming
 
 ```text
-<Map Name> v<Map Version> - Bug Report.html
+Map Audit Output V2
+→ <Map Name> v<Map Version> - Map Audit Report.html
+
+Approved Bug Report V2
+→ <Map Name> v<Map Version> - Bug Report.html
 ```
 
 ## Ownership
