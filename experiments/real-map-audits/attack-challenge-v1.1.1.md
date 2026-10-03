@@ -13,117 +13,127 @@ Runtime execution: not performed
 - Artifact SHA-256: `95bf318070b3948f0a0d1d093bae2f7b1a3a37e4d94e94d2adfc4d80a501ccba`
 - Behavior Pack manifest version: `1.1.1`
 - Behavior Pack min engine version: `1.21.130`
-- Internal `levelname.txt`: `Attack Challenge v1.1.0` (metadata mismatch only)
 
-## Proven finding
+## Proven finding 1
 
-### BUG — Reconnect during combat respawn countdown bypasses the death delay
+### BUG — Disconnect during preload can bypass the fresh-session full inventory wipe
 
 Severity: Major  
 Proof: source-proven  
-Domain: player-state / multiplayer-session / respawn
+Domain: player-state / inventory / reconnect lifecycle
 
 #### Issue
 
-Attack keeps combat-death respawn ownership in `CombatTracker.pendingRespawns`. A reconnecting player is initially put back into spectator/countdown state by CombatTracker, but GameManager independently restores the same locked-party player to active gameplay five ticks later without checking that pending respawn.
+Attack performs the fresh-session full inventory wipe only for players who are online when the timed preload callback runs. A party member who disconnects before that callback and reconnects after it has executed is not cleared. The reconnect handler for `preloading` restores gameplay state and teleports the player, but does not replay the missed full inventory wipe.
+
+The first buy-phase loadout then uses `clearAllSlots: false`, and the non-full-clear loadout path only removes kit-managed items (items whose `lockMode` is `inventory`). Ordinary stale items are deliberately preserved/moved rather than globally cleared.
 
 #### Expected
 
-A reconnecting player with an active pending respawn must remain in spectator/death state until the existing respawn timer finishes.
+Every player entering a fresh Attack session must pass the same full-inventory reset boundary regardless of disconnect/reconnect timing.
 
 #### Observed source behavior
 
-CombatTracker handles a reconnecting player with a pending respawn:
+1. Initial preload performs the full wipe only inside a timed callback:
 
 ```text
-chunk-Y6V6JTGX.js:4936-4950
-_findPendingRespawn(player.id)
-→ _sendPlayerToSpectator(...)
-→ show remaining countdown
+behavior_packs/BP/scripts/chunks/chunk-Y6V6JTGX.js:6485+
+runPreload()
+→ timed callback
+→ teleportArenaPlayers(...)
+→ clearArenaPlayerItems(arenaId)
 ```
 
-Death creates and retains the pending timer:
+2. `clearArenaPlayerItems()` only clears currently online arena players:
 
 ```text
-chunk-Y6V6JTGX.js:4998-5060
-pendingRespawns.set(playerId, ...)
+chunk-Y6V6JTGX.js:6630+
+clearArenaPlayerItems()
+→ getArenaOnlinePlayers(arenaId)
+→ player.runCommandAsync("clear @s")
 ```
 
-GameManager separately handles initial-spawn reconnects:
+3. Reconnect during `preloading` does not replay the missed wipe:
 
 ```text
-chunk-Y6V6JTGX.js:5666-5669
-initialSpawn
-→ handlePlayerReconnection(...)
+chunk-Y6V6JTGX.js:5742+
+session.status === "preloading"
+→ configure gameplay state
+→ teleport
+→ no clear @s
+→ no full-clear loadout
 ```
 
-For an active session, five ticks later it restores gameplay unconditionally:
+4. The first buy phase explicitly applies loadouts with `clearAllSlots: false`:
 
 ```text
-chunk-Y6V6JTGX.js:5692-5753
-locked party member
-→ active session
-→ runTimeout(..., 5)
-→ survival mode
-→ applyPlayerLoadout(...)
-→ teleport to gameplay spawn
+chunk-Y6V6JTGX.js:7325+
+KitManager.applyArenaLoadouts(... {
+  clearAllSlots: false
+})
 ```
 
-CombatTracker is initialized before GameManager:
+5. With `clearAllSlots: false`, `applyPlayerLoadout()` calls `clearKitManagedItems()`, not `clearAllInventoryForLoadout()`:
 
 ```text
-chunk-Y6V6JTGX.js:9285-9289
-CombatTracker.init()
-...
-GameManager.init()
+chunk-Y6V6JTGX.js:4148+
+if clearAllSlots
+  clearAllInventoryForLoadout()
+else
+  clearKitManagedItems()
 ```
 
-So CombatTracker's correct spectator recovery is subsequently overwritten by GameManager.
+6. `clearKitManagedItems()` scans inventory/equipment but removes only items marked as kit-managed (`lockMode === "inventory"`). Ordinary stale items remain. `applySnapshotToPlayer()` even moves a non-kit item out of a managed destination slot into another free slot rather than deleting it:
+
+```text
+chunk-Y6V6JTGX.js:4250+
+existing && !isKitManagedItem(existing)
+→ moveInventoryItemOutOfSlot(...)
+```
+
+```text
+chunk-Y6V6JTGX.js:4276+
+clearKitManagedItems()
+→ only remove isKitManagedItem(item)
+```
 
 #### Reproduction path
 
-1. Start an Attack match.
-2. Die and enter respawn countdown.
-3. Disconnect before countdown expiry.
-4. Reconnect while `pendingRespawns` still contains the player.
-5. CombatTracker restores spectator/countdown state.
-6. Roughly five ticks later GameManager restores survival/loadout and gameplay spawn.
-7. Player returns early.
+1. Join a valid Attack party and carry an ordinary recognizable item from outside the new session.
+2. Start the match.
+3. Disconnect before the preload callback reaches `clearArenaPlayerItems()`.
+4. Reconnect after that callback has executed while the session is still `preloading`.
+5. Reconnect handler teleports the player without a full wipe.
+6. Let the initial buy phase begin.
+7. `clearAllSlots:false` removes only kit-managed items.
+8. Observe the stale ordinary item surviving into the new match.
 
 #### Player-visible consequence
 
-The intended death/respawn penalty can be bypassed by reconnecting.
+Players can carry stale/unintended items across the fresh-session boundary, potentially affecting combat, progression, economy, or reproducibility.
 
 #### Root cause
 
-Two owners act on reconnect state. CombatTracker owns pending respawn, but GameManager reconnect recovery does not defer to it.
+The fresh-session inventory reset is an online-player batch action rather than a per-player session invariant. Reconnect does not reconcile whether that player completed the reset boundary.
 
 #### Repair direction
 
-If CombatTracker reports a pending respawn for the player, GameManager must not perform active-session survival/loadout/teleport recovery. Let CombatTracker remain the single owner until the pending respawn resolves.
+Keep one inventory lifecycle owner. Track/reconcile the fresh-session reset per player and enforce it on reconnect before preload/buy-phase continuation. Do not add a second inventory manager.
 
 ## Checked but not admitted as bugs
 
-### Arena / ticking lifecycle
+### Arena ticking areas
 
-Attack has dynamic per-arena ticking leases and `MAX_CONCURRENT_ARENAS = 2`. The selected source also implements queue/lease messaging, so the cap is not a bug without a current-artifact contract requiring more simultaneous sessions.
+Attack does create and verify its arena-specific ticking areas through `TickingAreaManager.createAndVerifyAreas()`. The Composite missing-ticking-area defect is not present in this selected artifact.
 
-The Defense async-reset stale-release race is not reproduced in Attack's inspected end/reset path; Attack returns the session to idle and releases the lease synchronously.
+### Reset lifecycle
 
-### Flag carrier death / disconnect
+Level structure loading awaits `ResetMapService.resetMap()` before placing structures. The Composite async-reset/reuse root cause was not reproduced in this source pass.
 
-FlagService explicitly handles carrier death/respawn/disconnect and re-spawns dropped flag state. No source-proven carrier-disconnect progression defect was admitted.
+### Two concurrent arena leases
 
-### Level advance setup timing
+Attack has an explicit lease queue/messenger and `MAX_CONCURRENT_ARENAS` resource policy. Without a current player-facing contract requiring more concurrent active arenas, this is not admitted as a bug.
 
-Level advance setup remains a narrow validation obligation rather than a proven bug. Structure setup is asynchronous while transition timing is fixed; source does not prove the setup exceeds the transition window in the target runtime.
+## Next action
 
-## Result
-
-Attack Challenge v1.1.1 currently has:
-
-- **1 source-proven gameplay bug**
-- **1 narrow runtime validation obligation**
-- metadata version mismatch recorded but not admitted as gameplay defect
-
-Do not ingest historical regression data until approval.
+Attack v1.1.1 source pass is closed for this batch with one independently source-proven finding. Keep it as non-canonical audit evidence until explicit approval.
