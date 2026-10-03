@@ -533,21 +533,16 @@ export function buildAuditProofNavigation(
   const provenClaims = [
     ...(finding.evidenceIds.length > 0
       ? [
-          "Selected-artifact/analysis evidence already grounds this finding scope: " +
+          "Evidence is already bound to this finding scope: " +
             finding.evidenceIds.join(", ") +
             ".",
         ]
       : []),
-    ...(finding.expectedOutcome.trim()
+    ...(finding.playerFacingEvidenceIds.length > 0
       ? [
-          "Required gameplay dependency is identified: " +
-            finding.expectedOutcome,
-        ]
-      : []),
-    ...(finding.actualOutcome.trim()
-      ? [
-          "Current unresolved/contradictory observation is scoped: " +
-            finding.actualOutcome,
+          "Player-facing evidence is already bound: " +
+            finding.playerFacingEvidenceIds.join(", ") +
+            ".",
         ]
       : []),
   ];
