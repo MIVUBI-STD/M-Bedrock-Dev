@@ -72,6 +72,9 @@ import {
   type AuditValidationTestGroup,
 } from "./map-audit-validation-plan.js";
 import {
+  buildAuditProofNavigation,
+} from "./map-audit-proof-navigation.js";
+import {
   deriveSelectedMapAuditRevision,
 } from "./map-audit-revision.js";
 import {
@@ -213,17 +216,22 @@ function deriveSelectedMapAuditControl(input: {
     projectClosureNeedValidationAuditIssues(
       input.gameplayClosure,
     );
+  const navigatedNeedValidationIssues = [
+    ...needValidationIssues,
+    ...signalValidationIssues,
+    ...closureValidationIssues,
+  ].map((item) => ({
+    ...item,
+    proofNavigation:
+      buildAuditProofNavigation(item),
+  }));
   const allVisibleIssues: readonly AuditIssueProjection[] = [
     ...provenIssues,
-    ...needValidationIssues,
-    ...signalValidationIssues,
-    ...closureValidationIssues,
+    ...navigatedNeedValidationIssues,
   ];
-  const validationTests = groupNeedValidationTests([
-    ...needValidationIssues,
-    ...signalValidationIssues,
-    ...closureValidationIssues,
-  ]);
+  const validationTests = groupNeedValidationTests(
+    navigatedNeedValidationIssues,
+  );
   const honesty = assessAuditHonesty({
     graph: input.scenario.graph,
     gate: input.scenario.defectResolution,
