@@ -104,7 +104,7 @@ import {
   createFallbackAuditUserIntent,
   deriveAuditUserIntentKnowledgeDemand,
   validateAuditUserIntentConfirmation,
-  type AuditUserIntentConfirmation,
+  type AuditUserIntentConfirmationReceipt,
   normalizeAuditUserIntent,
   validateAuditUserIntent,
   type AuditUserIntentEnvelope,
@@ -154,7 +154,8 @@ export interface SelectedMapAuditInput {
    * Explicit chat confirmation bound to the normalized user intent.
    * Required whenever rawUserPrompt or userIntent is supplied.
    */
-  readonly userIntentConfirmation?: AuditUserIntentConfirmation;
+  readonly userIntentConfirmation?:
+    AuditUserIntentConfirmationReceipt;
 }
 
 export interface SelectedMapAuditRun {
