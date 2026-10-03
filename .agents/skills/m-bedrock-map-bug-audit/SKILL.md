@@ -125,6 +125,24 @@ If expected behavior cannot be grounded from the selected artifact, keep it unkn
 
 Bug discovery starts only after Gameplay Model Closure is CLOSED. Gameplay Model Closure PARTIAL is not a runtime exception: it means material boundaries, blocked surfaces, or unknown gameplay semantics still exist and therefore blocks production continuation. Gameplay Scenario Closure is the only closure allowed to remain PARTIAL, and only because that state is reserved for irreducible Minecraft runtime proof.
 
+## Issue taxonomy
+
+Every confirmed causal issue projected by the engine must carry:
+
+```text
+reportIssueType
+gameplayFlow
+failureDomain
+contributingDomains[]
+informationMismatch
+```
+
+Use one primary failure domain and zero or more contributing domains. Do not duplicate one root cause merely because multiple systems participate.
+
+Primary domains are owned by `gameplay-issue-taxonomy.ts`. Do not invent map-specific category names.
+
+Severity remains downstream review state and requires grounded player impact. Do not infer severity from scenario name, domain, or diagnostic code alone.
+
 ## Report issue types
 
 Every confirmed reportable issue must be assigned exactly one report issue type:
