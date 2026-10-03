@@ -111,7 +111,7 @@ function parseArgs(argv: readonly string[]): Args {
 
   if (!input) {
     throw new Error(
-      "Missing --input <canonical Bug Report V2 JSON>.",
+      "Missing --input <Map Audit Output V2 or Approved Bug Report V2 JSON>.",
     );
   }
   if (!outDir) {
