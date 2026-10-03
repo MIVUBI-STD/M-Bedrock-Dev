@@ -132,6 +132,7 @@ describe("inspection source index coverage", () => {
         indexedFiles: 2,
         parseFailures: [],
         unsupportedRelevantFiles: [],
+        semanticUnderstandingGaps: [],
         complete: true,
       });
       expect(
@@ -273,6 +274,9 @@ describe("inspection source index coverage", () => {
       expect(
         result.coverage.unsupportedRelevantFiles,
       ).toEqual([]);
+      expect(
+        result.coverage.semanticUnderstandingGaps,
+      ).toEqual(files.map((item) => item.relativePath).sort());
     } finally {
       await rm(root, {
         recursive: true,
