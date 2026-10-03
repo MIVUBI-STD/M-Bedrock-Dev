@@ -7,6 +7,7 @@ describe("project historical issue projection", () => {
   it("projects canonical approved bugs into searchable historical incidents", () => {
     const records =
       projectApprovedBugReportToHistoricalRegressions({
+        projectId: "defense-v2",
         report: {
           schema: "m-bedrock-bug-report/v2",
           map: {
@@ -54,5 +55,8 @@ describe("project historical issue projection", () => {
       records[0]?.provenance
         ?.artifactFingerprint,
     ).toBe("sha256:defense");
+    expect(
+      records[0]?.provenance?.projectId,
+    ).toBe("defense-v2");
   });
 });
