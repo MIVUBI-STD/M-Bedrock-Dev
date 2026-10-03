@@ -269,14 +269,16 @@ Canonical full-map naming:
 
 - `replicaBaseline`
 - `replicaResults[]`
+- `replicaId`
 - `replicaStatus`
 - `materialDeltaIds[]`
+- `baselineReusableForAllReplicas`
 
 Replica result:
 
 ~~~
-equivalent / expected variant
-→ reuse baseline proof
+EQUIVALENT
+→ baseline may be reused for that replica
 
 material divergence
 → keep delta
