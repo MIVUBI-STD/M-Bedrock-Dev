@@ -4,8 +4,13 @@ import type {
 import type {
   GameplayDefectResolutionGate,
 } from "./inspection/gameplay-defect-resolution.js";
+import type {
+  GameplayCapabilityDeliveryAssessment,
+  GameplayReportIssueType,
+} from "../../diagnostic-reasoning/src/index.js";
 
-export interface ReadyAuditDefectProjection {
+export interface ReadyAuditIssueProjection {
+  readonly reportIssueType: GameplayReportIssueType;
   readonly causalLinkId: string;
   readonly scenarioId: string;
   readonly gameplayStage: string;
@@ -21,14 +26,48 @@ export interface ReadyAuditDefectProjection {
   readonly knowledgeRequirementId?: string;
 }
 
+function reportIssueTypeFor(
+  scenarioLabel: string,
+  subjectIds: readonly string[],
+  componentIds: readonly string[],
+  capabilityDelivery:
+    readonly GameplayCapabilityDeliveryAssessment[],
+): GameplayReportIssueType {
+  const related = capabilityDelivery.filter(
+    (item) =>
+      item.status === "DEGRADED" ||
+      item.status === "MISSING",
+  ).filter(
+    (item) =>
+      subjectIds.includes(item.subjectId) ||
+      componentIds.includes(item.subjectId) ||
+      (
+        item.subjectId ===
+          "runtime:arena-capacity" &&
+        scenarioLabel ===
+          "arena-capacity-plus-one"
+      ),
+  );
+
+  return related.some(
+    (item) =>
+      item.reportIssueType ===
+      "DESIGN_MISMATCH",
+  )
+    ? "DESIGN_MISMATCH"
+    : "BUG";
+}
+
 function nonEmpty(value: string | undefined): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-export function projectReadyAuditDefects(
+export function projectReadyAuditIssues(
   graph: GameplayScenarioGraph,
   gate: GameplayDefectResolutionGate,
-): readonly ReadyAuditDefectProjection[] {
+  capabilityDelivery:
+    readonly GameplayCapabilityDeliveryAssessment[] = [],
+): readonly ReadyAuditIssueProjection[] {
   const ready = new Set(gate.confirmedDefectReadyIds);
 
   return gate.resolutions
@@ -55,7 +94,21 @@ export function projectReadyAuditDefects(
             ".",
         );
       }
+      const subjectIds = [...new Set([
+        ...link.subjectIds,
+        ...(resolution.subjectIds ?? []),
+      ])].sort();
+      const componentIds = [...new Set([
+        ...link.componentIds,
+        ...(resolution.componentIds ?? []),
+      ])].sort();
       return {
+        reportIssueType: reportIssueTypeFor(
+          scenario.label,
+          subjectIds,
+          componentIds,
+          capabilityDelivery,
+        ),
         causalLinkId: resolution.causalLinkId,
         scenarioId: scenario.id,
         gameplayStage: scenario.gameplayStage,
@@ -65,14 +118,8 @@ export function projectReadyAuditDefects(
         expectedOutcome: resolution.expectedOutcome!,
         actualOutcome: resolution.actualOutcome!,
         affectedScope: resolution.affectedScope!,
-        subjectIds: [...new Set([
-          ...link.subjectIds,
-          ...(resolution.subjectIds ?? []),
-        ])].sort(),
-        componentIds: [...new Set([
-          ...link.componentIds,
-          ...(resolution.componentIds ?? []),
-        ])].sort(),
+        subjectIds,
+        componentIds,
         evidenceIds: [...new Set([
           ...link.evidenceIds,
           ...(resolution.evidenceIds ?? []),
