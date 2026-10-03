@@ -10,10 +10,10 @@ This file owns canonical Bug Report V2 semantics. Rendering details belong in `t
 
 ## Reporting hierarchy
 
-The complete human-facing audit report is the **Complete Map Audit** projection. It must preserve every material finding from the same audit revision:
+The complete human-facing audit report is the **Map Audit Report** projection. It must preserve every material finding from the same audit revision:
 
 ```text
-Complete Map Audit
+Map Audit Report
 ├─ PROVEN BUG
 ├─ PROVEN DESIGN_MISMATCH
 ├─ NEED_VALIDATION BUG
@@ -25,7 +25,7 @@ The engine must attempt bounded proof promotion before leaving a finding unresol
 Bug Report V2 is narrower:
 
 ```text
-Complete Map Audit
+Map Audit Report
 → approved PROVEN BUG items only
 → Bug Report V2
 ```
