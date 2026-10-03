@@ -251,7 +251,6 @@ function issueCard(issue: BugReportClientIssue): string {
       '<br><strong>Expected:</strong> ' +
       escapeHtml(issue.expected) +
       "</div></div>",
-    '<div class="row retest-row"><div class="label">Tester Checklist</div><div class="value"><label class="retest-check"><input type="checkbox"> <span>Verified Fixed</span></label></div></div>',
   ];
 
   if (issue.recommendedResolution) {
@@ -557,23 +556,25 @@ function renderHtml(
     layout.showIssueIndex
       ? [
           '<section class="dashboard">',
-          '<h2>Issue Dashboard</h2>',
+          '<h2>Tester Checklist</h2>',
           '<div class="table-wrap"><table>',
-          '<thead><tr><th>#</th><th>ID</th><th>Severity</th><th>Category</th><th>Issue</th></tr></thead>',
+          '<thead><tr><th>Fixed</th><th>#</th><th>Severity</th><th>Category</th><th>Bug</th></tr></thead>',
           '<tbody>',
           ...document.issueIndex.map(
             (item) =>
-              '<tr><td>' +
+              '<tr><td class="fixed-cell"><input type="checkbox" aria-label="Verified fixed: ' +
+              escapeHtml(item.title) +
+              '"></td><td>' +
               String(item.number).padStart(2, "0") +
-              '</td><td><code>' +
-              escapeHtml(item.id) +
-              '</code></td><td>' +
+              '</td><td>' +
               severityLabel(item.severity) +
               '</td><td>' +
               escapeHtml(item.category) +
-              '</td><td>' +
+              '</td><td><strong>' +
               escapeHtml(item.title) +
-              '</td></tr>',
+              '</strong><div class="table-id">' +
+              escapeHtml(item.id) +
+              '</div></td></tr>',
           ),
           '</tbody></table></div>',
           '</section>',
@@ -742,7 +743,7 @@ body {
 .value {
   padding:13px 16px;
 }
-.checklist{list-style:none;margin:0;padding:0}.checklist li+li{margin-top:7px}.checklist label{display:flex;gap:8px;align-items:flex-start}.checklist input{margin-top:3px}.steps{margin:0;padding-left:20px}.steps li+li{margin-top:5px}.retest-row .value{background:#f7fbf7}.retest-check{display:flex;align-items:center;gap:9px;font-weight:800}.retest-check input{width:16px;height:16px}
+.checklist{list-style:none;margin:0;padding:0}.checklist li+li{margin-top:7px}.checklist label{display:flex;gap:8px;align-items:flex-start}.checklist input{margin-top:3px}.steps{margin:0;padding-left:20px}.steps li+li{margin-top:5px}.fixed-cell{text-align:center;width:54px}.fixed-cell input{width:16px;height:16px}.table-id{margin-top:2px;color:var(--muted);font-size:10px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
 .technical-row {
   padding:14px 16px;
   border-top:1px solid var(--line);
