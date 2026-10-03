@@ -58,7 +58,9 @@ import {
   projectAllNeedValidationAuditIssues,
   projectReadyAuditIssues,
   projectSignalNeedValidationAuditIssues,
+  groupNeedValidationTests,
   type AuditIssueProjection,
+  type AuditValidationTestGroup,
   type ReadyAuditIssueProjection,
 } from "./map-audit-issue-projection.js";
 import {
@@ -139,6 +141,7 @@ export interface SelectedMapAuditRun {
       readonly AuditIssueProjection[];
   };
   readonly candidateGroups: readonly ReadyAuditCandidateGroup[];
+  readonly validationTests: readonly AuditValidationTestGroup[];
   readonly blockingCheckpointIds: readonly string[];
   readonly reasons: readonly string[];
 }
@@ -163,6 +166,7 @@ function deriveSelectedMapAuditControl(input: {
   | "continuation"
   | "issueLanes"
   | "candidateGroups"
+  | "validationTests"
   | "status"
   | "blockingCheckpointIds"
   | "reasons"
@@ -194,6 +198,10 @@ function deriveSelectedMapAuditControl(input: {
     ...needValidationIssues,
     ...signalValidationIssues,
   ];
+  const validationTests = groupNeedValidationTests([
+    ...needValidationIssues,
+    ...signalValidationIssues,
+  ]);
   const issueLanes = {
     BUG: allVisibleIssues.filter(
       (item) => item.issueType === "BUG",
@@ -256,6 +264,7 @@ function deriveSelectedMapAuditControl(input: {
     continuation,
     issueLanes,
     candidateGroups,
+    validationTests,
     status:
       input.admission.status === "READY"
         ? "READY_FOR_REVIEW"
