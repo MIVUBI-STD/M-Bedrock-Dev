@@ -90,6 +90,7 @@ export async function approveAuditProjectAndPersist(input: {
   readonly deliverables: readonly ProjectDeliverableRef[];
   readonly report: BugReportV2;
   readonly reportPath: string;
+  readonly blockingReasons?: readonly string[];
 }): Promise<{
   readonly project: ProjectRecord;
   readonly snapshot:
@@ -97,35 +98,47 @@ export async function approveAuditProjectAndPersist(input: {
   readonly historicalRegressionIds:
     readonly string[];
 }> {
-  if (input.project.status !== "ready-for-approval") {
+  if (
+    input.project.knowledge.bugReportPath !==
+      input.reportPath
+  ) {
     throw new Error(
-      "Audit project must be ready-for-approval before historical sync and approval.",
+      "Audit approval reportPath must match the project canonical Bug Report reference.",
     );
   }
 
-  const history =
-    await syncApprovedProjectIssueHistory({
-      repositoryRoot: input.repositoryRoot,
-      project: input.project,
-      report: input.report,
-      reportPath: input.reportPath,
-    });
-
   const snapshot =
     createProjectApprovalSnapshot({
-      project: history.project,
+      project: input.project,
       deliverables: input.deliverables,
+      blockingReasons:
+        input.blockingReasons,
+      requireBugReport: true,
+      requireAuditComplete: true,
     });
   const approved =
     approveProject(
-      history.project,
+      input.project,
       snapshot,
     );
 
+  // Immutable approved payload first. No tracked status has changed yet.
   await saveProjectApprovalSnapshot(
     input.workspace,
     snapshot,
   );
+
+  // Historical incidents are derived only after the explicit approval
+  // decision represented by the in-memory approved project.
+  const history =
+    await syncApprovedProjectIssueHistory({
+      repositoryRoot: input.repositoryRoot,
+      project: approved,
+      report: input.report,
+      reportPath: input.reportPath,
+    });
+
+  // Project Registry is the final durable commit marker.
   await upsertProjectRecord(
     input.repositoryRoot,
     approved,
