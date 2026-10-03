@@ -20,6 +20,10 @@ import type {
 import type {
   SharedResourceOwnershipSignal,
 } from "./inspection/shared-resource-ownership.js";
+import type {
+  AccumulationGrowthSignal,
+  CompoundBoundarySignal,
+} from "./inspection/gameplay-compound-growth-analysis.js";
 
 export interface AuditHonestyAssessment {
   readonly policy: "no-hidden-material-finding";
@@ -180,6 +184,10 @@ export function assessAuditHonesty(input: {
     readonly GameplayDiscoveryChallengeSignal[];
   readonly sharedResourceSignals:
     readonly SharedResourceOwnershipSignal[];
+  readonly compoundBoundaries:
+    readonly CompoundBoundarySignal[];
+  readonly accumulationGrowth:
+    readonly AccumulationGrowthSignal[];
   readonly visibleIssues: readonly AuditIssueProjection[];
 }): AuditHonestyAssessment {
   const expectedVisibleResidueIds = [
@@ -203,6 +211,12 @@ export function assessAuditHonesty(input: {
         (signal) => signal.id,
       ),
       ...input.sharedResourceSignals.map(
+        (signal) => signal.id,
+      ),
+      ...input.compoundBoundaries.map(
+        (signal) => signal.id,
+      ),
+      ...input.accumulationGrowth.map(
         (signal) => signal.id,
       ),
     ]),
