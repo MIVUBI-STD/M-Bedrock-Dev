@@ -114,12 +114,26 @@ export function assessValidationTrace(
     );
 
     const scenario = scenariosById.get(run.snapshot.scenarioId);
+    const proofEvidencePresent =
+      run.proofLevel === "UNKNOWN" ||
+      run.evidenceIds.length > 0;
+    const runtimeProfileBound =
+      run.proofLevel !== "LOCAL GAME VERIFIED" &&
+      run.proofLevel !== "LIVE GAME VERIFIED"
+        ? true
+        : (
+            run.snapshot.targetProfileFingerprint !==
+              undefined &&
+            run.snapshot.targetProfileFingerprint.trim().length > 0
+          );
     const proofSufficient =
       scenario !== undefined &&
       proofSatisfies(
         run.proofLevel,
         scenario.requiredProofLevel,
-      );
+      ) &&
+      proofEvidencePresent &&
+      runtimeProfileBound;
 
     return {
       runId: run.id,
