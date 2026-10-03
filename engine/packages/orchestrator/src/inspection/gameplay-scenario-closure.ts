@@ -43,10 +43,32 @@ export function assessGameplayScenarioClosure(
       };
     });
 
-  const detectionGapCausalLinkIds = graph.causalLinks
+  const detectionGapCausalLinks = graph.causalLinks
     .filter((edge) => edge.status === "DETECTION_GAP")
-    .map((edge) => edge.id)
-    .sort();
+    .slice()
+    .sort((a, b) => a.id.localeCompare(b.id));
+  const detectionGapCausalLinkIds =
+    detectionGapCausalLinks.map((edge) => edge.id);
+  const detectionGapTestRequests =
+    detectionGapCausalLinks.map((edge) => {
+      const scenario = graph.scenarios.find(
+        (item) => item.id === edge.scenarioId,
+      );
+      const scenarioLabel =
+        scenario?.label ?? edge.scenarioId;
+      return {
+        causalLinkId: edge.id,
+        scenarioId: edge.scenarioId,
+        gapReason: edge.reason,
+        narrowTestQuestion:
+          "In scenario '" +
+          scenarioLabel +
+          "', directly exercise and observe this unresolved dependency: " +
+          edge.purpose +
+          ". Does actual gameplay satisfy it without relying on inferred or unsupported semantics?",
+        evidenceIds: [...edge.evidenceIds],
+      };
+    });
 
   const unresolvedCausalLinkIds = graph.causalLinks
     .filter(
@@ -214,6 +236,7 @@ export function assessGameplayScenarioClosure(
     runtimeBlockedCausalLinkIds,
     runtimeProofRequests,
     detectionGapCausalLinkIds,
+    detectionGapTestRequests,
     missingRequiredKnowledgeIds,
     capabilityGapKnowledgeIds,
     prerequisiteBlockedKnowledgeIds,
