@@ -26,6 +26,9 @@ describe("gameplay capability delivery", () => {
     expect(result.failureClass).toBe(
       "DESIGN_FAILURE",
     );
+    expect(result.reportIssueType).toBe(
+      "DESIGN_MISMATCH",
+    );
     expect(result.expectedCapacity).toBe(6);
     expect(result.playableCapacity).toBe(2);
     expect(result.reason).toMatch(
@@ -47,6 +50,9 @@ describe("gameplay capability delivery", () => {
     expect(result.failureClass).toBe(
       "DESIGN_IMPLEMENTATION_MISMATCH",
     );
+    expect(result.reportIssueType).toBe(
+      "DESIGN_MISMATCH",
+    );
   });
 
   it("classifies incomplete implemented behavior as implementation failure", () => {
@@ -64,6 +70,7 @@ describe("gameplay capability delivery", () => {
     expect(result.failureClass).toBe(
       "IMPLEMENTATION_FAILURE",
     );
+    expect(result.reportIssueType).toBe("BUG");
   });
 
   it("does not manufacture a design issue when capability evidence is ungrounded", () => {
