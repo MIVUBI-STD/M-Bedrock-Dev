@@ -1475,14 +1475,6 @@ export function prepareBugReportReviewFromAuditCandidates(
   const admission = assessSelectedMapAuditAdmission({
     mandatoryAuditProcedure:
       input.mandatoryAuditProcedure,
-    gameplayDiscoveryClosure:
-      input.gameplayDiscoveryClosure,
-    gameplayClosure:
-      input.gameplayClosure,
-    gameplayScenarioClosure:
-      input.gameplayScenarioClosure,
-    gameplayDefectResolution:
-      input.gameplayDefectResolution,
   });
   const closureIssues = [
     ...admission.issues.map((issue) => ({
@@ -1599,14 +1591,6 @@ export function buildBugReportFromAuditCandidates(
   const admission = assessSelectedMapAuditAdmission({
     mandatoryAuditProcedure:
       input.mandatoryAuditProcedure,
-    gameplayDiscoveryClosure:
-      input.gameplayDiscoveryClosure,
-    gameplayClosure:
-      input.gameplayClosure,
-    gameplayScenarioClosure:
-      input.gameplayScenarioClosure,
-    gameplayDefectResolution:
-      input.gameplayDefectResolution,
   });
   const closureIssues = [
     ...admission.issues.map((issue) => ({
