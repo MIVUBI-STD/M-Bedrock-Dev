@@ -12,6 +12,7 @@ import {
   normalizeAuditUserIntent,
   validateAuditUserIntent,
   validateAuditUserIntentConfirmation,
+  validateAuditUserIntentConfirmation,
   type AuditUserIntentEnvelope,
 } from "../src/map-audit-user-intent.js";
 
@@ -500,6 +501,110 @@ describe("map audit user intent", () => {
       ),
     ).toContain(
       "User intent confirmation is stale or belongs to a different prompt interpretation.",
+    );
+  });
+
+  it("creates a confirmation preview bound to the exact normalized interpretation", () => {
+    const normalized =
+      normalizeAuditUserIntent(envelope());
+    const request =
+      createAuditUserIntentConfirmationRequest(
+        normalized,
+      );
+
+    expect(request.policy)
+      .toBe("confirm-user-intent-before-audit");
+    expect(request.intentFingerprint)
+      .toBe(
+        fingerprintAuditUserIntent(normalized),
+      );
+    expect(request.summary.symptoms)
+      .toContain(
+        "possible progression stall during wave completion",
+      );
+    expect(request.summary.suspicions)
+      .toContain(
+        "suspected chunk/residency mechanism",
+      );
+    expect(request.summary.testConstraints)
+      .toContain(
+        "prefer bounded static-first proof over broad trial-and-error",
+      );
+  });
+
+  it("requires explicit confirmation before production audit intent is accepted", () => {
+    const normalized =
+      normalizeAuditUserIntent(envelope());
+
+    expect(
+      validateAuditUserIntentConfirmation(
+        normalized,
+        undefined,
+      ),
+    ).toContain(
+      "User audit intent must be confirmed in chat before production audit.",
+    );
+
+    const receipt =
+      confirmAuditUserIntent(
+        normalized,
+        true,
+      );
+
+    expect(
+      validateAuditUserIntentConfirmation(
+        normalized,
+        receipt,
+      ),
+    ).toEqual([]);
+  });
+
+  it("invalidates confirmation when the interpreted intent changes", () => {
+    const normalized =
+      normalizeAuditUserIntent(envelope());
+    const receipt =
+      confirmAuditUserIntent(
+        normalized,
+        true,
+      );
+
+    const changed =
+      normalizeAuditUserIntent({
+        ...normalized,
+        priorityDomains: [
+          ...normalized.priorityDomains,
+          "inventory-economy",
+        ],
+      });
+
+    expect(
+      validateAuditUserIntentConfirmation(
+        changed,
+        receipt,
+      ),
+    ).toContain(
+      "User audit intent changed after confirmation; show the updated interpretation in chat and confirm again.",
+    );
+  });
+
+  it("keeps confirmation fingerprint stable across equivalent normalized wording", () => {
+    const first =
+      normalizeAuditUserIntent(envelope());
+    const second =
+      normalizeAuditUserIntent({
+        ...envelope(),
+        items: envelope().items.map(
+          (item) => ({
+            ...item,
+            raw: "  " + item.raw + "  ",
+          }),
+        ),
+      });
+
+    expect(
+      fingerprintAuditUserIntent(first),
+    ).toBe(
+      fingerprintAuditUserIntent(second),
     );
   });
 
