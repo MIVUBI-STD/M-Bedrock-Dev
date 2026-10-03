@@ -610,6 +610,18 @@ honesty = VIOLATION
 
 # 9. REPORT — one clean final projection
 
+## Single-output rule
+
+Production audit has exactly one operator-facing output:
+
+```text
+audit <selected.mcworld>
+→ SelectedMapAuditRun (internal authority)
+→ Map Audit Output V2 (operator output)
+```
+
+Do not expose raw `SelectedMapAuditRun`, Work Session state, analyzer receipts, model task packets, or specialist projections as parallel production outputs. They remain internal evidence/control-plane data.
+
 ## Review-readiness rule
 
 `READY_FOR_REVIEW` means the finding set is complete and honest, not that every finding is PROVEN. NEED_VALIDATION may remain when its exact missing proof and validation action are preserved. Additional proof-navigation tasks after review readiness are optional promotion work, not a second audit lane.
