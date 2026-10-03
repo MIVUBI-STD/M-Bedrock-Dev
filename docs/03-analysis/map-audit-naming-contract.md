@@ -22,8 +22,11 @@ One concept must have one public name across source, schema, docs, report, and t
 | Consolidated runtime/manual tests | `validationTests` | testerTasks |
 | Historical search influence | `historyPressure` | historicalRiskScore |
 | Family-specific proof guidance | `familyProofCriteria` | proofChecklist |
+| Unresolved audit/model/proof work that is not yet a gameplay finding | `Audit Obligation` / `auditObligations[]` | bug, issue, third issue type |
 
-Internal resolver states such as RUNTIME_PROOF_REQUIRED, DETECTION_GAP, COUNTERPROOF_SEARCH_REQUIRED, and GAMEPLAY_TRANSLATION_REQUIRED may exist internally, but they must project to NEED_VALIDATION rather than becoming additional public statuses.
+Internal resolver states such as RUNTIME_PROOF_REQUIRED, DETECTION_GAP, COUNTERPROOF_SEARCH_REQUIRED, and GAMEPLAY_TRANSLATION_REQUIRED are not gameplay findings by themselves. They project to `Audit Obligation` until causal/player-visible defect proof is sufficient. A `NEED_VALIDATION` finding is reserved for a confirmation-ready defect whose gameplay translation and counter-proof are already established but whose minimum proof saturation is still incomplete.
+
+`Audit Obligation` is not a third issue type and has no severity. It exists outside `BUG | DESIGN_MISMATCH` until causal classification is justified.
 
 ## Report naming
 
