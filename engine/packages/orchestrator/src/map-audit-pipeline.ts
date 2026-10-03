@@ -57,7 +57,7 @@ import {
 import {
   projectReadyAuditIssues,
   type ReadyAuditIssueProjection,
-} from "./map-audit-defect-projection.js";
+} from "./map-audit-issue-projection.js";
 import {
   deriveSelectedMapAuditRevision,
 } from "./map-audit-revision.js";
