@@ -280,9 +280,9 @@ Replica result:
 EQUIVALENT
 → baseline may be reused for that replica
 
-material divergence
-→ keep delta
-→ send only delta to STRESS / PROVE
+DIVERGENCE_REQUIRES_CLASSIFICATION
+→ classify semantic/gameplay relevance
+→ send only grounded material consequence to STRESS / PROVE
 
 incomplete / no proof
 → MODEL remains PARTIAL
@@ -545,7 +545,7 @@ grounded scenario
 + NO_BLOCKING_PROOF
 ~~~
 
-Then apply the failure-family saturation checklist.
+Use `familyProofCriteria[]` as domain-specific proof guidance before stopping. The deterministic PROVEN projection gate currently evaluates universal saturation; family criteria guide the bounded proof route and must not be treated as independently machine-verified facts.
 
 When saturated:
 
