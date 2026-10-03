@@ -61,7 +61,6 @@ describe("Map Audit Output V2 naming contract", () => {
 
     expect(statuses).toEqual([
       "EQUIVALENT",
-      "EXPECTED_VARIANT",
       "MATERIAL_DIVERGENCE",
       "INCOMPLETE_PROOF",
     ]);
