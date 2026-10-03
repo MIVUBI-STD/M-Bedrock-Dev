@@ -1,5 +1,7 @@
 # Multi Arena Audit Contract
 
+> Start from `master-selected-map-audit-workflow.md`. This document is the specialist contract for replica, capacity, isolation, cleanup, and reuse inside the canonical MODEL/STRESS stages.
+
 Multi Arena is a core gameplay system. Audit both **isolation** and **capacity**.
 
 ## Full-map baseline and delta rule
