@@ -124,6 +124,27 @@ These controls reduce silent false negatives but do not constitute a measured fa
 - legacy Map Audit Output V1 schema is explicitly deprecated/non-production;
 - repository verifier checks single entry, issue lanes, semantic-gap fail-closed behavior, report lanes, and legacy deprecation.
 
+### Blind-spot hardening ownership
+
+The highest-risk remaining false-negative classes now have explicit canonical owners:
+
+- raw Semantic IR evidence without semantic/scenario ownership → `gameplay-discovery-challenger.ts`;
+- multiple/deferred writers and higher-order shared-resource convergence → `shared-resource-ownership.ts`;
+- compound multi-dimensional limits and repeated-run growth/producer-cleanup imbalance → `gameplay-compound-growth-analysis.ts`;
+- all of those signals project through `map-audit-validation-blindspots.ts` as NEED_VALIDATION and are independently required by the honesty gate;
+- blocking counter-proof now requires exact contradicted commit target/dependency relevance, not loose same-scenario/component overlap.
+
+These controls reduce the chance that an issue never enters the finding set at all. They remain proof-pressure signals, not automatic bug confirmation.
+
+Still irreducible or only partially statically solvable:
+- native Bedrock/Education runtime semantics;
+- actual geometry/collision/pathfinding behavior;
+- multi-client presentation/order divergence;
+- load/performance-only failures;
+- completely absent intended features with no selected-artifact evidence of the expectation.
+
+Those cases must remain explicit runtime/design-contract residue rather than being guessed.
+
 ### Proof saturation / sufficient-proof stop rule
 
 PROVEN projection now requires a minimum-sufficient-proof saturation assessment. Universal saturation checks:
