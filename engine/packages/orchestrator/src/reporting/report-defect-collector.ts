@@ -1058,13 +1058,21 @@ export interface BuildBugReportFromAuditResult {
 
 export interface BuildBugReportFromClosedAuditInput
   extends BuildBugReportFromAuditInput {
-  readonly gameplayDiscoveryClosure:
+  /**
+   * @deprecated Compatibility evidence only. Canonical production admission
+   * is owned by mandatoryAuditProcedure.
+   */
+  readonly gameplayDiscoveryClosure?:
     GameplayDiscoveryClosure;
-  readonly gameplayClosure:
+  /**
+   * @deprecated Compatibility evidence only. Canonical production admission
+   * is owned by mandatoryAuditProcedure.
+   */
+  readonly gameplayClosure?:
     GameplayModelClosureResult;
   /**
-   * Optional for source compatibility, mandatory for production admission.
-   * Missing values block publication rather than silently bypassing the gate.
+   * @deprecated Compatibility evidence only. Canonical production admission
+   * is owned by mandatoryAuditProcedure.
    */
   readonly gameplayScenarioClosure?:
     GameplayScenarioClosure;
@@ -1119,7 +1127,7 @@ export function gameplayDiscoveryPublicationIssues(
   return [{
     code: "invalid-confirmed-defect",
     message:
-      "Gameplay Discovery Closure is OPEN. Comprehensive Bug Report publication is blocked until relevant selected-artifact sources are indexed and the gameplay surface inventory is stable.",
+      "Gameplay Discovery Closure is OPEN. Map Audit Report publication is blocked until relevant selected-artifact sources are indexed and the gameplay surface inventory is stable.",
   }];
 }
 
@@ -1134,7 +1142,7 @@ export function gameplayClosurePublicationIssues(
   return [{
     code: "invalid-confirmed-defect",
     message:
-      "Gameplay Model Closure is OPEN. Comprehensive Bug Report publication is blocked until discovered gameplay surfaces and the major state model are accounted for.",
+      "Gameplay Model Closure is OPEN. Map Audit Report publication is blocked until discovered gameplay surfaces and the major state model are accounted for.",
   }];
 }
 
@@ -1148,7 +1156,7 @@ export function gameplayScenarioPublicationIssues(
     return [{
       code: "invalid-confirmed-defect",
       message:
-        "Gameplay Scenario Closure is missing. Production Bug Report publication cannot bypass scenario/causal analysis.",
+        "Gameplay Scenario Closure is missing. Production report publication cannot bypass scenario/causal analysis.",
     }];
   }
   if (closure.status !== "OPEN") return [];
@@ -1170,7 +1178,7 @@ export function gameplayDefectResolutionPublicationIssues(
     return [{
       code: "invalid-confirmed-defect",
       message:
-        "Gameplay Defect Resolution is missing. Production Bug Report publication cannot bypass contradiction resolution.",
+        "Gameplay Defect Resolution is missing. Production report publication cannot bypass contradiction resolution.",
     }];
   }
   if (gate.status !== "BLOCKED") return [];
