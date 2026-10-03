@@ -198,8 +198,8 @@ route[]
 evidenceSubstitutions[]
 historicalSearchHints[]
 historyPressure
-saturationCriteria[]
-saturationStopRule
+familyProofCriteria[]
+proofStopRule
 runtimeLastResort
 ```
 
