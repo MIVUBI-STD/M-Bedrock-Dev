@@ -265,14 +265,14 @@
         "required": [
           "id",
           "status",
-          "category",
           "gameplayFlow",
           "failureDomain",
           "issue",
           "reproduceSteps",
           "expected",
           "actual",
-          "proofCeiling"
+          "proofCeiling",
+          "issueType"
         ],
         "properties": {
           "id": {
@@ -289,11 +289,21 @@
           },
           "category": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "deprecated": true,
+            "description": "Legacy compatibility metadata. failureDomain is the canonical audit taxonomy."
           },
           "gameplayFlow": {
-            "type": "string",
-            "minLength": 1
+            "enum": [
+              "ENTRY_JOIN",
+              "READY_START",
+              "SETUP",
+              "ACTIVE_GAMEPLAY",
+              "PROGRESSION",
+              "TERMINAL",
+              "CLEANUP_REPLAY",
+              "RECOVERY"
+            ]
           },
           "severity": {
             "enum": [
@@ -370,6 +380,9 @@
               "persistence-recovery",
               "platform-performance"
             ]
+          },
+          "issueType": {
+            "const": "BUG"
           }
         },
         "allOf": [
@@ -611,14 +624,14 @@
         "required": [
           "id",
           "status",
-          "category",
           "gameplayFlow",
           "failureDomain",
           "issue",
           "reproduceSteps",
           "expected",
           "actual",
-          "proofCeiling"
+          "proofCeiling",
+          "issueType"
         ],
         "properties": {
           "id": {
@@ -635,11 +648,21 @@
           },
           "category": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "deprecated": true,
+            "description": "Legacy compatibility metadata. failureDomain is the canonical audit taxonomy."
           },
           "gameplayFlow": {
-            "type": "string",
-            "minLength": 1
+            "enum": [
+              "ENTRY_JOIN",
+              "READY_START",
+              "SETUP",
+              "ACTIVE_GAMEPLAY",
+              "PROGRESSION",
+              "TERMINAL",
+              "CLEANUP_REPLAY",
+              "RECOVERY"
+            ]
           },
           "severity": {
             "enum": [
@@ -728,6 +751,9 @@
               "persistence-recovery",
               "platform-performance"
             ]
+          },
+          "issueType": {
+            "const": "DESIGN_MISMATCH"
           }
         },
         "allOf": [
