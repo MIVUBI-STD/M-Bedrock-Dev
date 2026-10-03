@@ -121,7 +121,7 @@ irreducible Minecraft behavior
 Selected .mcworld
 → runSelectedMapAudit()
 → resolve blocking stages / defect resolution
-→ readyBugs + readyDesignMismatches
+→ issueLanes.BUG + issueLanes.DESIGN_MISMATCH
 → STOP
 ```
 
