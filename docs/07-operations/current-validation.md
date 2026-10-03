@@ -13,6 +13,20 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — pre-testing confirmation semantics
+
+Source-verified on `Local`:
+
+- The chat confirmation checkpoint is now plan-first rather than symptom-first.
+- The default workflow assumes the user may know no bug symptoms yet because the audit runs before manual testing.
+- `createAuditUserIntentConfirmationRequest()` now produces a Pre-Audit Plan with audit objective, planned checks, proof strategy, expected output, target hints, user focus, optional symptoms/suspicions, ambiguities, and unmapped input.
+- Default planned checks cover the full player journey, gameplay-surface discovery, progression/terminal state, state ownership/reset/cleanup/recovery, applicable multiplayer/multi-arena, inventory/economy, entity/combat/navigation, chunk simulation, persistence/reconnect, world/spatial mutation, boundaries/capacity, UI/capability mismatch, and counter-proof.
+- User symptoms and suspected causes are optional context only and are not required for confirmation.
+- Regression coverage verifies that a generic `cek map ini sebelum testing` request produces a complete pre-test audit plan with no fabricated symptoms.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. Local typecheck/full verifier and conversational prompt benchmark execution remain outstanding.
+
+
 ## 2026-10-03 — user prompt confirmation checkpoint
 
 Source-verified on `Local`:
