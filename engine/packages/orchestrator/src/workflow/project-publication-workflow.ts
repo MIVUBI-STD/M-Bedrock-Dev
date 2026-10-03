@@ -19,7 +19,6 @@ import {
   approveProject,
   createDrivePublishReceipt,
   createProjectApprovalSnapshot,
-  prepareProjectForApproval,
 } from "./project-lifecycle.js";
 import {
   syncApprovedProjectIssueHistory,
@@ -29,33 +28,6 @@ import {
   saveProjectDrivePublishReceipt,
   upsertProjectRecord,
 } from "./project-registry-store.js";
-
-export async function prepareAndPersistProjectApproval(input: {
-  readonly repositoryRoot: string;
-  readonly project: ProjectRecord;
-  readonly deliverables: readonly ProjectDeliverableRef[];
-  readonly blockingReasons?: readonly string[];
-  readonly requireBugReport?: boolean;
-  readonly requireAuditComplete?: boolean;
-}): Promise<ProjectRecord> {
-  const prepared =
-    prepareProjectForApproval({
-      project: input.project,
-      deliverables: input.deliverables,
-      blockingReasons:
-        input.blockingReasons,
-      requireBugReport:
-        input.requireBugReport,
-      requireAuditComplete:
-        input.requireAuditComplete,
-    }).project;
-
-  await upsertProjectRecord(
-    input.repositoryRoot,
-    prepared,
-  );
-  return prepared;
-}
 
 export async function approveAndPersistProject(input: {
   readonly repositoryRoot: string;
