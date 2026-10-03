@@ -445,6 +445,15 @@ function capabilityDeliveryFromModel(
           world.arenas.count,
         playableCapacity:
           world.arenas.safeConcurrentArenas,
+        technicalConstraintReasons:
+          world.platformKnowledge.claims
+            .filter(
+              (claim) =>
+                claim.domain === "chunks" ||
+                claim.domain === "multiplayer" ||
+                claim.domain === "world-state",
+            )
+            .map((claim) => claim.message),
         evidenceIds: [
           "world:arena-count",
           "capacity:safe-concurrency",
@@ -481,7 +490,21 @@ function capabilityDeliveryFromModel(
             item.origin === "tag"
           ),
       );
+    const playerVisibleEvidence =
+      evidence.some(
+        (item) =>
+          item.scope === "selected-artifact" &&
+          (
+            item.origin === "dialogue" ||
+            item.origin === "translation" ||
+            item.origin === "structure" ||
+            item.origin === "world-db" ||
+            item.origin === "scoreboard" ||
+            item.origin === "command"
+          ),
+      );
     const playerVisible =
+      playerVisibleEvidence ||
       !completeness.missingStages.includes(
         "player-visible",
       );
