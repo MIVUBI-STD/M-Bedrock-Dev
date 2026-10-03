@@ -6,9 +6,12 @@ Canonical report semantics are owned by:
 - `../../../../docs/03-analysis/map-audit-report-v2-schema.md`
 - `../../../schemas/map-audit-output-v2.schema.json`
 
-Canonical HTML rendering layout is:
+HTML presentation has two scopes:
 
-- `../../../../docs/03-analysis/templates/bug-report-v2-html-layout.md`
+- Map Audit Report (all PROVEN + NEED_VALIDATION findings) → `../../../../tooling/bug-report-documents/render.ts`
+- Approved Bug Report V2 ledger → `../../../../docs/03-analysis/templates/bug-report-v2-html-layout.md`
+
+The Map Audit renderer must preserve unresolved findings; the Bug Report V2 layout must not be used as a substitute for the complete audit surface.
 
 ## Skill rule
 
