@@ -63,7 +63,7 @@ Map Audit Output V2 now includes the current unresolved-proof and honesty contra
 - `validationTests`;
 - `honesty`;
 - `historyPressure`;
-- `saturationCriteria`.
+- `familyProofCriteria`.
 
 Full-map replica comparison also has one consolidation projection, `FullMapReplicaReceipt`, using:
 
