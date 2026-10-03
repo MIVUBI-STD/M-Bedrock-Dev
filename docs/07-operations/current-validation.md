@@ -124,6 +124,14 @@ These controls reduce silent false negatives but do not constitute a measured fa
 - legacy Map Audit Output V1 schema is explicitly deprecated/non-production;
 - repository verifier checks single entry, issue lanes, semantic-gap fail-closed behavior, report lanes, and legacy deprecation.
 
+### Honesty / non-suppression gate
+
+The selected-map audit now computes an explicit `no-hidden-material-finding` assessment. It independently derives the material unresolved residue set from the scenario graph, RIG knowledge receipts, Gameplay Model Closure, negative-space signals, temporal risks, and defect-resolution state, then compares that set against visible NEED_VALIDATION findings.
+
+It also verifies that every `CONFIRMED_DEFECT_READY` causal link is visible as PROVEN.
+
+Any mismatch is an honesty violation and forces the audit to remain `BLOCKED`; it cannot become `READY_FOR_REVIEW` merely because other closure gates passed.
+
 ### Final report handoff integrity
 
 The canonical report handoff now preserves unresolved material work explicitly:
