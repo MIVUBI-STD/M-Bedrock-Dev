@@ -51,10 +51,35 @@ export interface MapAuditOutputV2Finding {
     NeedValidationAuditIssueProjection["proofNavigation"];
 }
 
+export interface MapAuditOutputControl {
+  readonly status: "READY_FOR_REVIEW" | "BLOCKED";
+  readonly currentStage:
+    | "TARGET"
+    | "DISCOVERY"
+    | "UNDERSTAND"
+    | "MODEL"
+    | "STRESS"
+    | "PROVE"
+    | "REPORT"
+    | "COMPLETE";
+  readonly allowedNextAction:
+    | "RESOLVE_BLOCKING_STAGE"
+    | "RESOLVE_DEFECTS"
+    | "PREPARE_REVIEW";
+  readonly continuationOwner:
+    | "ENGINE_OR_EVIDENCE"
+    | "DEFECT_RESOLUTION"
+    | "REVIEW";
+  readonly requiresNewAuditRun: boolean;
+  readonly blockingCheckpointIds: readonly string[];
+  readonly reasons: readonly string[];
+}
+
 export interface MapAuditOutputV2 {
   readonly schemaVersion: 2;
   readonly artifactId: string;
   readonly mapVersion: string;
+  readonly control: MapAuditOutputControl;
   readonly evidenceScope: {
     readonly mode: "selected-map-version-only";
     readonly selectedArtifact: string;
@@ -263,6 +288,7 @@ export function projectMapAuditOutputV2(input: {
   readonly validationTests:
     readonly AuditValidationTestGroup[];
   readonly honesty: AuditHonestyAssessment;
+  readonly control: MapAuditOutputControl;
   readonly fullMapReplica?: FullMapReplicaReceipt;
 }): MapAuditOutputV2 {
   const model =
@@ -359,6 +385,7 @@ export function projectMapAuditOutputV2(input: {
   return {
     schemaVersion: 2,
     artifactId: input.identity.artifactId,
+    control: input.control,
     mapVersion:
       input.identity.releaseVersion ??
       "UNRESOLVED",
