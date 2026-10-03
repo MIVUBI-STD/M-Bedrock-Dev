@@ -149,8 +149,29 @@ describe("map audit issue projection", () => {
     expect(
       result.find(
         (item) =>
+          item.causalLinkId === "link:capacity",
+      ),
+    ).toMatchObject({
+      failureDomain: "arena-multi-arena",
+      gameplayFlow: "READY_START",
+    });
+
+    expect(
+      result.find(
+        (item) =>
           item.causalLinkId === "link:progression",
       )?.reportIssueType,
     ).toBe("BUG");
+
+    expect(
+      result.find(
+        (item) =>
+          item.causalLinkId === "link:progression",
+      ),
+    ).toMatchObject({
+      failureDomain:
+        "progression-wave-objective",
+      gameplayFlow: "PROGRESSION",
+    });
   });
 });
