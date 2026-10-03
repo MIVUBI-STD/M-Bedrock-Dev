@@ -7,7 +7,7 @@ import {
   createDrivePublishReceipt,
   createProjectApprovalSnapshot,
   createProjectRecord,
-  markProjectReadyForApproval,
+  prepareProjectForApproval,
   updateProjectRecord,
 } from "../src/workflow/index.js";
 
@@ -65,13 +65,16 @@ describe("project publication lifecycle", () => {
 
   it("invalidates approval when material project work changes", () => {
     const prepared =
-      markProjectReadyForApproval(
-        updateProjectRecord(baseProject(), {
-          bugReportPath:
-            "workspace/reports/Defense-v2.0.0-BugReport.json",
-        }),
-        { ready: true, missing: [] },
-      );
+      prepareProjectForApproval({
+        project:
+          updateProjectRecord(baseProject(), {
+            bugReportPath:
+              "workspace/reports/Defense-v2.0.0-BugReport.json",
+          }),
+        deliverables,
+        requireAuditComplete: true,
+        requireBugReport: true,
+      }).project;
     const snapshot =
       createProjectApprovalSnapshot({
         project: prepared,
@@ -94,6 +97,38 @@ describe("project publication lifecycle", () => {
       changed.publication
         .approvalSnapshotFingerprint,
     ).toBeUndefined();
+  });
+
+  it("rejects a forged approval snapshot fingerprint", () => {
+    const prepared =
+      prepareProjectForApproval({
+        project:
+          updateProjectRecord(baseProject(), {
+            bugReportPath:
+              "workspace/reports/Defense-v2.0.0-BugReport.json",
+          }),
+        deliverables,
+        requireAuditComplete: true,
+        requireBugReport: true,
+      }).project;
+    const snapshot =
+      createProjectApprovalSnapshot({
+        project: prepared,
+        deliverables,
+      });
+
+    expect(() =>
+      approveProject(
+        prepared,
+        {
+          ...snapshot,
+          snapshotFingerprint:
+            "sha256:forged",
+        },
+      )
+    ).toThrow(
+      "Project approval snapshot fingerprint is invalid.",
+    );
   });
 
   it("requires approved snapshot before Drive publication", () => {
@@ -129,13 +164,16 @@ describe("project publication lifecycle", () => {
 
   it("does not mark a partial Drive upload as published", () => {
     const prepared =
-      markProjectReadyForApproval(
-        updateProjectRecord(baseProject(), {
-          bugReportPath:
-            "workspace/reports/Defense-v2.0.0-BugReport.json",
-        }),
-        { ready: true, missing: [] },
-      );
+      prepareProjectForApproval({
+        project:
+          updateProjectRecord(baseProject(), {
+            bugReportPath:
+              "workspace/reports/Defense-v2.0.0-BugReport.json",
+          }),
+        deliverables,
+        requireAuditComplete: true,
+        requireBugReport: true,
+      }).project;
     const snapshot =
       createProjectApprovalSnapshot({
         project: prepared,
@@ -169,13 +207,16 @@ describe("project publication lifecycle", () => {
 
   it("marks complete approved deliverables as drive-published", () => {
     const prepared =
-      markProjectReadyForApproval(
-        updateProjectRecord(baseProject(), {
-          bugReportPath:
-            "workspace/reports/Defense-v2.0.0-BugReport.json",
-        }),
-        { ready: true, missing: [] },
-      );
+      prepareProjectForApproval({
+        project:
+          updateProjectRecord(baseProject(), {
+            bugReportPath:
+              "workspace/reports/Defense-v2.0.0-BugReport.json",
+          }),
+        deliverables,
+        requireAuditComplete: true,
+        requireBugReport: true,
+      }).project;
     const snapshot =
       createProjectApprovalSnapshot({
         project: prepared,
