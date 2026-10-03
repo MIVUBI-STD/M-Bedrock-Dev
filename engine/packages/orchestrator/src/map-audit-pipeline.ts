@@ -101,6 +101,7 @@ import {
   type FullMapReplicaReceipt,
 } from "./arena/full-map-replica-receipt.js";
 import {
+  createFallbackAuditUserIntent,
   deriveAuditUserIntentKnowledgeDemand,
   normalizeAuditUserIntent,
   validateAuditUserIntent,
@@ -137,6 +138,11 @@ export interface SelectedMapAuditInput {
   readonly knowledgeCatalog?: KnowledgeCatalog;
   readonly telemetry?: readonly TelemetryEvent[] | TelemetryBatch;
   readonly runtimeProbeTranscript?: RuntimeProbeTranscript;
+  /**
+   * Optional raw prompt fallback. Used only when structured userIntent is not
+   * supplied. The raw prompt is preserved as an unmapped Audit Obligation.
+   */
+  readonly rawUserPrompt?: string;
   /**
    * Structured interpretation of the user's wording.
    * Search guidance only; never gameplay authority or report proof.
@@ -692,15 +698,24 @@ export async function runSelectedMapAudit(
 
     userIntent =
       normalizeAuditUserIntent(input.userIntent);
-
-    if (
-      userIntent.blockingAmbiguities.length > 0
-    ) {
-      throw new Error(
-        "Blocking user-input ambiguity must be resolved before production audit: " +
-          userIntent.blockingAmbiguities.join(" | "),
+  } else if (
+    typeof input.rawUserPrompt === "string" &&
+    input.rawUserPrompt.trim().length > 0
+  ) {
+    userIntent =
+      createFallbackAuditUserIntent(
+        input.rawUserPrompt,
       );
-    }
+  }
+
+  if (
+    userIntent !== undefined &&
+    userIntent.blockingAmbiguities.length > 0
+  ) {
+    throw new Error(
+      "Blocking user-input ambiguity must be resolved before production audit: " +
+        userIntent.blockingAmbiguities.join(" | "),
+    );
   }
 
   const inspectionInput =
