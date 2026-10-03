@@ -23,6 +23,10 @@ describe("gameplay surface discovery", () => {
       structureEvidence: true,
       entityEvidence: true,
       boundaryEvidence: true,
+      teleportEvidence: true,
+      uiFormEvidence: true,
+      environmentEvidence: true,
+      asyncCommandTransactionEvidence: true,
     });
 
     expect(result.surfaceIds).toEqual(
@@ -41,6 +45,10 @@ describe("gameplay surface discovery", () => {
         "runtime:structures",
         "runtime:entities",
         "runtime:boundaries",
+        "runtime:teleport",
+        "runtime:ui-form",
+        "runtime:environment",
+        "runtime:async-command-transaction",
       ]),
     );
   });
