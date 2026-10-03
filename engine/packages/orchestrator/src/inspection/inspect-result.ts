@@ -402,6 +402,9 @@ export function buildInspectionResult(
       unsupportedRelevantSourcePaths:
         input.sourceIndex.coverage
           .unsupportedRelevantFiles,
+      semanticUnderstandingGapPaths:
+        input.sourceIndex.coverage
+          .semanticUnderstandingGaps,
       unresolvedReferences:
         discoveryUnresolvedReferences,
     });
