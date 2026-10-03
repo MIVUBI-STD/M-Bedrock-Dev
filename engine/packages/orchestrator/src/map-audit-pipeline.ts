@@ -55,15 +55,17 @@ import {
   type SelectedMapAuditIdentity,
 } from "./map-audit-identity.js";
 import {
-  projectAllNeedValidationAuditIssues,
   projectReadyAuditIssues,
+  type AuditIssueProjection,
+  type ReadyAuditIssueProjection,
+} from "./map-audit-issue-projection.js";
+import {
+  projectAllNeedValidationAuditIssues,
   projectSignalNeedValidationAuditIssues,
   projectClosureNeedValidationAuditIssues,
   groupNeedValidationTests,
-  type AuditIssueProjection,
   type AuditValidationTestGroup,
-  type ReadyAuditIssueProjection,
-} from "./map-audit-issue-projection.js";
+} from "./map-audit-validation-projection.js";
 import {
   deriveSelectedMapAuditRevision,
 } from "./map-audit-revision.js";
