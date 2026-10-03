@@ -13,6 +13,22 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — canonical Pre-Audit Plan workflow
+
+Source-verified on `Local`:
+
+- The official workflow now starts with communication preflight: raw user request → normalized intent → Pre-Audit Plan → explicit confirmation → confirmation receipt → production audit.
+- The Pre-Audit Plan is plan-first and designed for pre-testing; the user is not expected to know existing bugs or symptoms.
+- The plan confirms what will be checked, proof/testing strategy, user focus/constraints, and expected output.
+- Symptoms/suspected causes appear only when supplied by the user.
+- `AuditUserIntentConfirmationReceipt` is fingerprint-bound; material plan/intent changes invalidate the previous receipt.
+- The confirmation preflight is explicitly outside the `TARGET → DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE → REPORT` state machine, so there is still one production audit flow.
+- `runSelectedMapAudit()` remains the only production audit entry and rejects missing/stale prompt confirmation when user prompt context is supplied.
+- The canonical master workflow, mandatory procedure, README, AGENTS, skill routing, and implementation map now agree on this boundary.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. Local typecheck/full verifier and conversational benchmark execution remain outstanding.
+
+
 ## 2026-10-03 — pre-audit confirmation workflow integration
 
 Source-verified on `Local`:
@@ -48,8 +64,8 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. Local typecheck/full verifier an
 Source-verified on `Local`:
 
 - Production selected-map audit initiated from user wording now requires one explicit chat confirmation after prompt interpretation and before `runSelectedMapAudit()`.
-- `summarizeAuditUserIntentForConfirmation()` provides a compact human-facing view of target hints, symptoms, suspicions, expectation/design claims, scope guidance, constraints, historical hints, ambiguity, and unmapped input.
-- `AuditUserIntentConfirmation` is bound to a deterministic fingerprint of the normalized intent.
+- `createAuditUserIntentConfirmationRequest()` produces the compact human-facing Pre-Audit Plan used for chat confirmation.
+- `AuditUserIntentConfirmationReceipt` is bound to a deterministic fingerprint of the normalized intent.
 - Missing confirmation blocks production audit.
 - Any material change to normalized intent makes the old confirmation stale and blocks audit until the revised interpretation is confirmed again.
 - Confirmation validates communication accuracy only; it does not establish gameplay truth or proof.
