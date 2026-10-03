@@ -1,6 +1,5 @@
 export type FullMapReplicaStatus =
   | "EQUIVALENT"
-  | "EXPECTED_VARIANT"
   | "MATERIAL_DIVERGENCE"
   | "INCOMPLETE_PROOF";
 
@@ -39,7 +38,6 @@ export function buildFullMapReplicaReceipt(input: {
       | "no-proof";
     readonly mismatchCount: number;
     readonly evidenceIds?: readonly string[];
-    readonly expectedVariant?: boolean;
   }[];
 }): FullMapReplicaReceipt {
   const replicaResults: FullMapReplicaResult[] =
@@ -54,11 +52,9 @@ export function buildFullMapReplicaReceipt(input: {
       const replicaStatus: FullMapReplicaStatus =
         incomplete
           ? "INCOMPLETE_PROOF"
-          : replica.expectedVariant
-            ? "EXPECTED_VARIANT"
-            : diverged
-              ? "MATERIAL_DIVERGENCE"
-              : "EQUIVALENT";
+          : diverged
+            ? "MATERIAL_DIVERGENCE"
+            : "EQUIVALENT";
 
       return {
         replicaId: replica.replicaId,
@@ -76,11 +72,9 @@ export function buildFullMapReplicaReceipt(input: {
         reason:
           replicaStatus === "EQUIVALENT"
             ? "Replica proof is sufficient and no material divergence is present."
-            : replicaStatus === "EXPECTED_VARIANT"
-              ? "Replica differs only through an explicitly expected variant."
-              : replicaStatus === "MATERIAL_DIVERGENCE"
-                ? "Replica contains one or more material world/topology differences that must continue to causal analysis."
-                : "Replica proof is incomplete and baseline safety cannot be inherited.",
+            : replicaStatus === "MATERIAL_DIVERGENCE"
+              ? "Replica contains one or more material world/topology differences that must continue to causal analysis. Expected/non-material variation requires a separate grounded semantic classification before it can be suppressed."
+              : "Replica proof is incomplete and baseline safety cannot be inherited.",
       };
     });
 
