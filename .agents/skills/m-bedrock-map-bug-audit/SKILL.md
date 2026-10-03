@@ -439,7 +439,7 @@ Gameplay Causal Links
 
 `RUNTIME_PROOF_REQUIRED` and `DETECTION_GAP` remain explicit audit residue and do not enter the canonical bug report as confirmed bugs. `BLOCKING_COUNTERPROOF` is retained as rejection evidence. Temporary resolver states block review.
 
-Do not publish normal/designed behavior, unresolved AI work, or runtime residue as bugs.
+Do not publish normal/designed behavior or disproved work as bugs. Material unresolved work must remain visible as `NEED_VALIDATION` with an exact missing-proof obligation and targeted test; only `PROVEN` findings may enter approved Bug Report V2.
 
 Production AI report candidates must reference one or more `CONFIRMED_DEFECT_READY` Gameplay Causal Links. Multiple causal links may consolidate into one report candidate when they share one semantic root cause. Every ready link must be covered exactly once across the candidate set; unbound static/runtime candidates are rejected. Tester-originated candidates may remain independent because their proof authority is direct tester reproduction.
 
