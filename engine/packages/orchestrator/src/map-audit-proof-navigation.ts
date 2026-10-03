@@ -45,8 +45,8 @@ export interface AuditProofNavigation {
   readonly evidenceSubstitutions: readonly AuditEvidenceSubstitution[];
   readonly historicalSearchHints: readonly AuditHistoricalSearchHint[];
   readonly historyPressure: number;
-  readonly saturationCriteria: readonly string[];
-  readonly saturationStopRule: string;
+  readonly familyProofCriteria: readonly string[];
+  readonly proofStopRule: string;
   readonly runtimeLastResort: boolean;
 }
 
@@ -834,11 +834,11 @@ export function buildAuditProofNavigation(
       historicalSearchPressure(
         historicalSearchHints,
       ),
-    saturationCriteria:
+    familyProofCriteria:
       proofSaturationFamilyCriteria(
         finding.failureDomain,
       ),
-    saturationStopRule:
+    proofStopRule:
       "Once every applicable family criterion is grounded and universal contradiction/translation/scope/evidence/counter-proof criteria are saturated, stop searching and do not request runtime manifestation merely for reassurance.",
     runtimeLastResort: true,
   };
