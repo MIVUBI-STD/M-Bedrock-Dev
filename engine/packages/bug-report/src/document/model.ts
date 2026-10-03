@@ -34,15 +34,6 @@ export interface BugReportClientSeverityLegendItem {
   readonly meaning: string;
 }
 
-export interface BugReportClientIssueIndexItem {
-  readonly number: number;
-  readonly id: string;
-  readonly severity: BugSeverity;
-  readonly status: BugReportClientIssueStatus;
-  readonly category: string;
-  readonly title: string;
-}
-
 export interface BugReportClientIssue {
   readonly number: number;
   readonly id: string;
@@ -75,8 +66,6 @@ export interface BugReportClientDocument {
   readonly summary: BugReportClientDocumentSummary;
   readonly severityLegend:
     readonly BugReportClientSeverityLegendItem[];
-  readonly issueIndex:
-    readonly BugReportClientIssueIndexItem[];
   readonly issues: readonly BugReportClientIssue[];
   readonly source: {
     readonly schema: BugReportV2["schema"];
