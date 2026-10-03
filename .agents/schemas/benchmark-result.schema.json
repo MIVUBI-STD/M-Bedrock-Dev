@@ -158,11 +158,11 @@
               "type": "integer",
               "minimum": 0
             },
-            "materialDivergence": {
+            "incompleteProof": {
               "type": "integer",
               "minimum": 0
             },
-            "incompleteProof": {
+            "divergenceRequiresClassification": {
               "type": "integer",
               "minimum": 0
             }
