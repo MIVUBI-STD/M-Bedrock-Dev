@@ -259,12 +259,6 @@ export async function saveSelectedMapAuditProjectContinuity(input: {
     sessionId: session.sessionId,
     workSessionRevision:
       session.revision,
-    auditRevision:
-      input.audit.auditRevision,
-    currentStage:
-      input.audit.currentStage,
-    nextAction:
-      input.audit.allowedNextAction,
   };
 
   const artifact = {
