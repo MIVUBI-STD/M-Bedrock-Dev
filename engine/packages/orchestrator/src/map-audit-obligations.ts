@@ -9,6 +9,9 @@ import type {
   GameplayScenarioGraph,
 } from "./inspection/gameplay-scenario-model.js";
 import type {
+  GameplayDefectResolutionGate,
+} from "./inspection/gameplay-defect-resolution.js";
+import type {
   GameplayDiscoveryChallengeSignal,
 } from "./inspection/gameplay-discovery-challenger.js";
 import type {
@@ -32,7 +35,9 @@ export type AuditObligationSource =
   | "accumulation-growth"
   | "replica-divergence"
   | "runtime-proof"
-  | "detection-gap";
+  | "detection-gap"
+  | "gameplay-translation"
+  | "counterproof-search";
 
 export interface AuditObligation {
   readonly id: string;
@@ -289,6 +294,153 @@ function graphObligations(
   return items;
 }
 
+function resolutionObligations(
+  graph: GameplayScenarioGraph,
+  gate: GameplayDefectResolutionGate,
+): AuditObligation[] {
+  const items: AuditObligation[] = [];
+
+  for (const resolution of gate.resolutions) {
+    if (
+      resolution.disposition !== "GAMEPLAY_TRANSLATION_REQUIRED" &&
+      resolution.disposition !== "COUNTERPROOF_SEARCH_REQUIRED" &&
+      resolution.disposition !== "RUNTIME_PROOF_REQUIRED" &&
+      resolution.disposition !== "DETECTION_GAP"
+    ) {
+      continue;
+    }
+
+    const link = graph.causalLinks.find(
+      (item) => item.id === resolution.causalLinkId,
+    );
+    if (!link) continue;
+    const scenario = graph.scenarios.find(
+      (item) => item.id === link.scenarioId,
+    );
+    const label =
+      scenario?.label ?? link.scenarioId;
+
+    if (
+      resolution.disposition ===
+      "GAMEPLAY_TRANSLATION_REQUIRED"
+    ) {
+      items.push(normalize({
+        id: resolution.causalLinkId,
+        source: "gameplay-translation",
+        stage: "PROVE",
+        title:
+          "Translate technical contradiction into gameplay impact",
+        reason:
+          "A source contradiction exists, but its player-visible defect contract is incomplete.",
+        missingProof:
+          "Concrete trigger, expected outcome, actual outcome, player-visible consequence, and affected scope.",
+        validationTest:
+          "Translate the contradicted dependency for scenario '" +
+          label +
+          "' using selected-artifact evidence. This is analysis work, not a tester bug claim.",
+        validationGroupKey:
+          label + ":gameplay-translation",
+        subjectIds: link.subjectIds,
+        componentIds: link.componentIds,
+        evidenceIds: [
+          ...link.evidenceIds,
+          ...(resolution.evidenceIds ?? []),
+        ],
+      }));
+      continue;
+    }
+
+    if (
+      resolution.disposition ===
+      "COUNTERPROOF_SEARCH_REQUIRED"
+    ) {
+      items.push(normalize({
+        id: resolution.causalLinkId,
+        source: "counterproof-search",
+        stage: "PROVE",
+        title: "Complete blocking counter-proof search",
+        reason:
+          "A translated contradiction exists, but a reachable guard/owner/scope/generation/cleanup/exclusion may still prevent the wrong state.",
+        missingProof:
+          "Bounded exhaustive counter-proof receipt for the exact contradicted commit/dependency.",
+        validationTest:
+          "Search only the exact contradicted dependency for blocking guard, scope, exclusion, owner, generation, and cleanup proof. Promote only after the search is exhaustive and returns NO_BLOCKING_PROOF.",
+        validationGroupKey:
+          label + ":counterproof",
+        subjectIds: link.subjectIds,
+        componentIds: link.componentIds,
+        evidenceIds: [
+          ...link.evidenceIds,
+          ...(resolution.evidenceIds ?? []),
+        ],
+      }));
+      continue;
+    }
+
+    if (
+      resolution.disposition ===
+      "RUNTIME_PROOF_REQUIRED"
+    ) {
+      items.push(normalize({
+        id: resolution.causalLinkId,
+        source: "runtime-proof",
+        stage: "PROVE",
+        title: "Resolve irreducible runtime behavior",
+        reason:
+          resolution.runtimeReason ??
+          "The dependency cannot be decided safely from static/package evidence.",
+        missingProof:
+          "One narrow deciding runtime observation bound to the selected artifact/runtime profile.",
+        validationTest:
+          resolution.narrowRuntimeQuestion ??
+          (
+            "Observe only the unresolved runtime dependency for scenario '" +
+            label +
+            "'. Promote only if the observation proves a wrong player-visible outcome."
+          ),
+        validationGroupKey:
+          label + ":runtime-proof",
+        subjectIds: link.subjectIds,
+        componentIds: link.componentIds,
+        evidenceIds: [
+          ...link.evidenceIds,
+          ...(resolution.evidenceIds ?? []),
+        ],
+      }));
+      continue;
+    }
+
+    items.push(normalize({
+      id: resolution.causalLinkId,
+      source: "detection-gap",
+      stage: "PROVE",
+      title: "Resolve detection capability gap",
+      reason:
+        resolution.detectionGapReason ??
+        "The selected artifact exposes a semantic/detection gap that prevents reliable causal classification.",
+      missingProof:
+        resolution.missingCapability
+          ? "Analysis capability: " +
+            resolution.missingCapability
+          : "Selected-artifact semantic evidence sufficient to causally classify the dependency.",
+      validationTest:
+        "Resolve the missing semantic/capability evidence for scenario '" +
+        label +
+        "', then rerun causal analysis. Do not promote from absence of analysis alone.",
+      validationGroupKey:
+        label + ":detection-gap",
+      subjectIds: link.subjectIds,
+      componentIds: link.componentIds,
+      evidenceIds: [
+        ...link.evidenceIds,
+        ...(resolution.evidenceIds ?? []),
+      ],
+    }));
+  }
+
+  return items;
+}
+
 function closureObligations(
   closure: GameplayModelClosureResult,
 ): AuditObligation[] {
@@ -394,6 +546,7 @@ function closureObligations(
 
 export function deriveAuditObligations(input: {
   readonly graph: GameplayScenarioGraph;
+  readonly defectResolution: GameplayDefectResolutionGate;
   readonly gameplayClosure: GameplayModelClosureResult;
   readonly negativeSpace: readonly NegativeSpaceSignal[];
   readonly temporalRisks: readonly TemporalInteractionRisk[];
@@ -410,6 +563,10 @@ export function deriveAuditObligations(input: {
   const items: AuditObligation[] = [
     ...graphObligations(input.graph),
     ...closureObligations(input.gameplayClosure),
+    ...resolutionObligations(
+      input.graph,
+      input.defectResolution,
+    ),
   ];
 
   for (const signal of input.negativeSpace) {
@@ -577,7 +734,7 @@ export function deriveAuditObligations(input: {
 
   const byId = new Map<string, AuditObligation>();
   for (const item of items) {
-    if (!byId.has(item.id)) byId.set(item.id, item);
+    byId.set(item.id, item);
   }
 
   return [...byId.values()].sort((a, b) =>
