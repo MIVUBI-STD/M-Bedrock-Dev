@@ -115,6 +115,71 @@ describe("gameplay defect resolution crosscheck depth", () => {
     );
   });
 
+  it("does not treat an overlapping exclusion on a different commit target as blocking counter-proof", () => {
+    const withUnrelatedGuard: GameplayScenarioGraph = {
+      ...graph,
+      causalLinks: [
+        ...graph.causalLinks,
+        {
+          id: "link:unrelated-guard",
+          scenarioId: "preset:arena-capacity",
+          fromComponentId: "runtime:arena",
+          toComponentId: "policy:other",
+          purpose: "Guard unrelated policy state.",
+          evidenceIds: ["source:other-guard"],
+          subjectIds: ["policy:arena-capacity"],
+          componentIds: ["runtime:arena"],
+          intentEdgeKind: "excludes",
+          status: "PROVEN",
+          reason: "An unrelated guard exists.",
+        },
+      ],
+    };
+
+    const result =
+      assessGameplayDefectResolutionGate(
+        withUnrelatedGuard,
+      );
+
+    expect(result.blockingCounterProofIds).toEqual([]);
+    expect(result.confirmedDefectReadyIds).toEqual([
+      "link:arena-capacity",
+    ]);
+  });
+
+  it("accepts blocking counter-proof only when exclusion applies at the contradicted commit target", () => {
+    const withExactGuard: GameplayScenarioGraph = {
+      ...graph,
+      causalLinks: [
+        ...graph.causalLinks,
+        {
+          id: "link:exact-guard",
+          scenarioId: "preset:arena-capacity",
+          fromComponentId: "runtime:arena",
+          toComponentId: "policy:arena-capacity",
+          purpose: "Exclude unavailable arena admission.",
+          evidenceIds: ["source:exact-guard"],
+          subjectIds: ["policy:arena-capacity"],
+          componentIds: ["runtime:arena"],
+          intentEdgeKind: "excludes",
+          status: "PROVEN",
+          reason:
+            "Exact admission guard blocks the contradicted target.",
+        },
+      ],
+    };
+
+    const result =
+      assessGameplayDefectResolutionGate(
+        withExactGuard,
+      );
+
+    expect(result.blockingCounterProofIds).toEqual([
+      "link:arena-capacity",
+    ]);
+    expect(result.confirmedDefectReadyIds).toEqual([]);
+  });
+
   it("accepts confirmation only after all context-relevant dimensions were searched", () => {
     const result = assessGameplayDefectResolutionGate(
       graph,
