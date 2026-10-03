@@ -2,7 +2,7 @@
 
 This tooling renders one self-contained HTML file from either:
 
-- **Map Audit Output V2** → Map Audit Report, showing every material `PROVEN` and `NEED_VALIDATION` finding across BUG and DESIGN_MISMATCH;
+- **SelectedMapAuditRun / Map Audit Output V2** → Map Audit Report, using the canonical `mapAuditReport` projection and showing every material `PROVEN` and `NEED_VALIDATION` finding across BUG and DESIGN_MISMATCH;
 - **Approved Bug Report V2** → approved PROVEN BUG ledger view.
 
 ## Flow
