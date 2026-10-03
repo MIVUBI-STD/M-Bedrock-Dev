@@ -44,7 +44,8 @@ export type AuditObligationSource =
   | "detection-gap"
   | "gameplay-translation"
   | "counterproof-search"
-  | "user-reported-symptom";
+  | "user-reported-symptom"
+  | "user-input-unmapped";
 
 export interface AuditObligation {
   readonly id: string;
@@ -448,6 +449,45 @@ function resolutionObligations(
   return items;
 }
 
+function unmappedUserInputObligations(
+  userIntent: AuditUserIntentEnvelope | undefined,
+): AuditObligation[] {
+  if (userIntent === undefined) return [];
+
+  const fragments = new Map(
+    userIntent.fragments.map(
+      (fragment) => [fragment.id, fragment],
+    ),
+  );
+
+  return userIntent.unmappedFragmentIds.flatMap(
+    (id) => {
+      const fragment = fragments.get(id);
+      if (!fragment) return [];
+
+      return [normalize({
+        id: "user-input-unmapped:" + id,
+        source: "user-input-unmapped",
+        stage: "DISCOVERY",
+        title:
+          "Resolve unmapped user input",
+        reason:
+          "A material part of the user's prompt was preserved but could not yet be translated safely into a bounded symptom, suspicion, claim, scope, constraint, or historical hint: " +
+          fragment.raw,
+        missingProof:
+          "A bounded interpretation grounded enough to route this prompt fragment into search guidance, or an explicit evidence-backed not-applicable disposition.",
+        validationTest:
+          "Interpret this prompt fragment conservatively, preserve alternative meanings when needed, and route it only as non-authoritative search guidance. Do not create a gameplay issue from the wording alone.",
+        validationGroupKey:
+          "user-input-unmapped:" + id,
+        subjectIds: [],
+        componentIds: [],
+        evidenceIds: [],
+      })];
+    },
+  );
+}
+
 function userIntentCoverageObligations(
   userIntent: AuditUserIntentEnvelope | undefined,
   world: GameplayWorldModel,
@@ -738,6 +778,9 @@ export function deriveAuditObligations(input: {
     ...resolutionObligations(
       input.graph,
       input.defectResolution,
+    ),
+    ...unmappedUserInputObligations(
+      input.userIntent,
     ),
     ...userIntentCoverageObligations(
       input.userIntent,
