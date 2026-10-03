@@ -61,11 +61,15 @@ import {
 } from "./map-audit-issue-projection.js";
 import {
   projectAllNeedValidationAuditIssues,
+} from "./map-audit-validation-projection.js";
+import {
   projectSignalNeedValidationAuditIssues,
   projectClosureNeedValidationAuditIssues,
+} from "./map-audit-validation-signals.js";
+import {
   groupNeedValidationTests,
   type AuditValidationTestGroup,
-} from "./map-audit-validation-projection.js";
+} from "./map-audit-validation-plan.js";
 import {
   deriveSelectedMapAuditRevision,
 } from "./map-audit-revision.js";
