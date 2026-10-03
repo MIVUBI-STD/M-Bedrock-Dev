@@ -19,6 +19,7 @@ import {
   approveProject,
   createDrivePublishReceipt,
   createProjectApprovalSnapshot,
+  drivePublicationIsComplete,
 } from "./project-lifecycle.js";
 import {
   syncApprovedProjectIssueHistory,
