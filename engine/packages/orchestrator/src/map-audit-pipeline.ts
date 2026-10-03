@@ -678,31 +678,43 @@ function assembleSelectedMapAuditRun(
 export async function runSelectedMapAudit(
   input: SelectedMapAuditInput,
 ): Promise<SelectedMapAuditRun> {
-  const userIntent =
-    input.userIntent === undefined
-      ? undefined
-      : normalizeAuditUserIntent(input.userIntent);
-  if (userIntent !== undefined) {
-    const issues =
-      validateAuditUserIntent(userIntent);
+  let userIntent: AuditUserIntentEnvelope | undefined;
+
+  if (input.userIntent !== undefined) {
+    const rawIssues =
+      validateAuditUserIntent(input.userIntent);
+    if (rawIssues.length > 0) {
+      throw new Error(
+        "Invalid non-authoritative user audit intent: " +
+          rawIssues.join("; "),
+      );
+    }
+
+    userIntent =
+      normalizeAuditUserIntent(input.userIntent);
+
     if (
       userIntent.blockingAmbiguities.length > 0
     ) {
-      issues.push(
+      throw new Error(
         "Blocking user-input ambiguity must be resolved before production audit: " +
           userIntent.blockingAmbiguities.join(" | "),
       );
     }
-    if (issues.length > 0) {
-      throw new Error(
-        "Invalid non-authoritative user audit intent: " +
-          issues.join("; "),
-      );
-    }
   }
 
+  const inspectionInput =
+    userIntent === undefined
+      ? input
+      : {
+          ...input,
+          userIntent,
+        };
+
   const { inspection, reconciliation } =
-    await inspectSelectedMapToDemandFixedPoint(input);
+    await inspectSelectedMapToDemandFixedPoint(
+      inspectionInput,
+    );
 
   return assembleSelectedMapAuditRun(
     inspection,
