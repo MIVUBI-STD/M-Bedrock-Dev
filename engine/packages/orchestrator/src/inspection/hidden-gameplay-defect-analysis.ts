@@ -49,6 +49,12 @@ import {
   type SharedResourceOwnershipRecord,
   type SharedResourceOwnershipSignal,
 } from "./shared-resource-ownership.js";
+import {
+  analyzeAccumulationGrowth,
+  analyzeCompoundBoundaries,
+  type AccumulationGrowthSignal,
+  type CompoundBoundarySignal,
+} from "./gameplay-compound-growth-analysis.js";
 
 export interface HiddenGameplayDefectAnalysis {
   readonly schemaVersion: 1;
@@ -74,6 +80,10 @@ export interface HiddenGameplayDefectAnalysis {
     readonly signals:
       readonly SharedResourceOwnershipSignal[];
   };
+  readonly compoundBoundaries:
+    readonly CompoundBoundarySignal[];
+  readonly accumulationGrowth:
+    readonly AccumulationGrowthSignal[];
   readonly designConsistency:
     readonly DesignConsistencyAnomaly[];
   readonly degradations:
@@ -94,6 +104,8 @@ export interface HiddenGameplayDefectAnalysis {
     readonly discoveryChallengeSignals: number;
     readonly sharedResourceSignals: number;
     readonly higherOrderSharedResources: number;
+    readonly compoundBoundarySignals: number;
+    readonly accumulationGrowthSignals: number;
     readonly designAnomalies: number;
     readonly silentDegradations: number;
     readonly designFailures: number;
@@ -676,6 +688,14 @@ export function analyzeHiddenGameplayDefects(
     analyzeSharedResourceOwnership(
       input.semanticIr,
     );
+  const compoundBoundaries =
+    analyzeCompoundBoundaries(
+      input.world,
+    );
+  const accumulationGrowth =
+    analyzeAccumulationGrowth(
+      input.world,
+    );
   const scenarioClosure =
     assessGameplayScenarioClosure(
       scenarioGraph,
@@ -694,6 +714,8 @@ export function analyzeHiddenGameplayDefects(
     temporalRisks,
     discoveryChallenges,
     sharedResourceOwnership,
+    compoundBoundaries,
+    accumulationGrowth,
     designConsistency,
     degradations,
     capabilityDelivery,
@@ -729,6 +751,10 @@ export function analyzeHiddenGameplayDefects(
         sharedResourceOwnership.records.filter(
           (item) => item.highOrderInteraction,
         ).length,
+      compoundBoundarySignals:
+        compoundBoundaries.length,
+      accumulationGrowthSignals:
+        accumulationGrowth.length,
       designAnomalies:
         designConsistency.length,
       silentDegradations:
