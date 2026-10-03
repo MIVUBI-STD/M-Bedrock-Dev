@@ -40,10 +40,10 @@ Use this before broad repository search.
 | Proposed Bug Set chat-review / approval boundary | engine/packages/bug-report/src/review.ts |
 | Canonical persisted bug-report current state | workspace/reports/*.json |
 | Bug-report ownership/storage boundary | docs/06-system/bug-report-ownership.md |
-| Client-facing bug-report document projection/design/checklists | engine/packages/bug-report/src/document/ + engine/packages/bug-report/DOCUMENT.md |
+| Approved Bug Report V2 client projection + quality gate | engine/packages/bug-report/src/document/ + engine/packages/bug-report/DOCUMENT.md |
 | Compact ChatGPT/Markdown bug-report preview | engine/packages/bug-report/src/preview.ts + engine/packages/bug-report/PREVIEW.md |
-| Self-contained Map Audit Report + approved Bug Report V2 HTML rendering | tooling/bug-report-documents/render.ts |
-| Approved Bug Report V2 client projection/design | engine/packages/bug-report/src/document/ + apps/bug-report-ui/ |
+| Self-contained Map Audit Report + Approved Bug Report V2 HTML rendering | tooling/bug-report-documents/render.ts |
+| Optional Bug Report UI viewer | apps/bug-report-ui/ (projection only; not report authority) |
 | Repair preservation contracts, baselines, and verification receipts | engine/packages/preservation/ |
 | Reliability invariants/fingerprint/update delta/retest/runtime evidence | engine/packages/reliability/ |
 | Capability-specific proof binding registry | engine/reliability/catalogs/capability-proof-bindings.json |
