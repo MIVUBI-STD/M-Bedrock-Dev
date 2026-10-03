@@ -599,6 +599,19 @@ function assembleSelectedMapAuditRun(
       validationTests:
         control.validationTests,
       honesty: control.honesty,
+      control: {
+        status: control.status,
+        currentStage: control.currentStage,
+        allowedNextAction:
+          control.allowedNextAction,
+        continuationOwner:
+          control.continuation.owner,
+        requiresNewAuditRun:
+          control.continuation.requiresNewAuditRun,
+        blockingCheckpointIds:
+          [...control.blockingCheckpointIds],
+        reasons: [...control.reasons],
+      },
       ...(control.fullMapReplica === undefined
         ? {}
         : {
