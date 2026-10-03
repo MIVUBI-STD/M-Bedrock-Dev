@@ -5,7 +5,7 @@ export type FullMapReplicaStatus =
   | "INCOMPLETE_PROOF";
 
 export interface FullMapReplicaResult {
-  readonly arenaId: string;
+  readonly replicaId: string;
   readonly replicaStatus: FullMapReplicaStatus;
   readonly materialDeltaIds: readonly string[];
   readonly evidenceIds: readonly string[];
@@ -18,7 +18,7 @@ export interface FullMapReplicaReceipt {
   readonly replicaResults: readonly FullMapReplicaResult[];
   readonly materialDeltaIds: readonly string[];
   readonly incompleteReplicaIds: readonly string[];
-  readonly canReuseBaselineProof: boolean;
+  readonly baselineReusableForAllReplicas: boolean;
 }
 
 /**
@@ -29,7 +29,7 @@ export interface FullMapReplicaReceipt {
 export function buildFullMapReplicaReceipt(input: {
   readonly replicaBaseline: string;
   readonly replicas: readonly {
-    readonly arenaId: string;
+    readonly replicaId: string;
     readonly proofStatus:
       | "complete-proof"
       | "bounded-proof"
@@ -61,13 +61,13 @@ export function buildFullMapReplicaReceipt(input: {
               : "EQUIVALENT";
 
       return {
-        arenaId: replica.arenaId,
+        replicaId: replica.replicaId,
         replicaStatus,
         materialDeltaIds:
           replicaStatus === "MATERIAL_DIVERGENCE"
             ? [
                 "replica-delta:" +
-                  replica.arenaId,
+                  replica.replicaId,
               ]
             : [],
         evidenceIds: [
@@ -98,7 +98,7 @@ export function buildFullMapReplicaReceipt(input: {
           item.replicaStatus ===
           "INCOMPLETE_PROOF",
       )
-      .map((item) => item.arenaId)
+      .map((item) => item.replicaId)
       .sort();
 
   return {
@@ -106,11 +106,12 @@ export function buildFullMapReplicaReceipt(input: {
     replicaBaseline: input.replicaBaseline,
     replicaResults: replicaResults.sort(
       (a, b) =>
-        a.arenaId.localeCompare(b.arenaId),
+        a.replicaId.localeCompare(b.replicaId),
     ),
     materialDeltaIds,
     incompleteReplicaIds,
-    canReuseBaselineProof:
-      incompleteReplicaIds.length === 0,
+    baselineReusableForAllReplicas:
+      incompleteReplicaIds.length === 0 &&
+      materialDeltaIds.length === 0,
   };
 }
