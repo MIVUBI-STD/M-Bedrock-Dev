@@ -98,7 +98,7 @@ const ids=new Set();
 for(const item of data.taskCapabilities??[]){
   if(ids.has(item.id)) errors.push("duplicate task capability id: "+item.id);
   ids.add(item.id);
-  if(!["declared-only","implementation-present","owner-tested"].includes(item.status)) errors.push("invalid capability status: "+item.id);
+  if(!["declared-only","implementation-present","owner-has-tests"].includes(item.status)) errors.push("invalid capability status: "+item.id);
   if(typeof item.owner!=="string"||!item.owner.trim()) errors.push("missing owner: "+item.id);
   if(!item.proofBinding || !["bound","unbound"].includes(item.proofBinding.state)) errors.push("invalid proofBinding state: "+item.id);
   if(item.proofBinding?.state!=="bound") errors.push("production task capability lacks capability-specific proof binding: "+item.id);
