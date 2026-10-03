@@ -1,12 +1,12 @@
 export type FullMapReplicaStatus =
   | "EQUIVALENT"
-  | "MATERIAL_DIVERGENCE"
+  | "DIVERGENCE_REQUIRES_CLASSIFICATION"
   | "INCOMPLETE_PROOF";
 
 export interface FullMapReplicaResult {
   readonly replicaId: string;
   readonly replicaStatus: FullMapReplicaStatus;
-  readonly materialDeltaIds: readonly string[];
+  readonly replicaDivergenceIds: readonly string[];
   readonly evidenceIds: readonly string[];
   readonly reason: string;
 }
@@ -15,7 +15,7 @@ export interface FullMapReplicaReceipt {
   readonly policy: "full-map-baseline-delta";
   readonly replicaBaseline: string;
   readonly replicaResults: readonly FullMapReplicaResult[];
-  readonly materialDeltaIds: readonly string[];
+  readonly replicaDivergenceIds: readonly string[];
   readonly incompleteReplicaIds: readonly string[];
   readonly baselineReusableForAllReplicas: boolean;
 }
@@ -53,14 +53,14 @@ export function buildFullMapReplicaReceipt(input: {
         incomplete
           ? "INCOMPLETE_PROOF"
           : diverged
-            ? "MATERIAL_DIVERGENCE"
+            ? "DIVERGENCE_REQUIRES_CLASSIFICATION"
             : "EQUIVALENT";
 
       return {
         replicaId: replica.replicaId,
         replicaStatus,
-        materialDeltaIds:
-          replicaStatus === "MATERIAL_DIVERGENCE"
+        replicaDivergenceIds:
+          replicaStatus === "DIVERGENCE_REQUIRES_CLASSIFICATION"
             ? [
                 "replica-delta:" +
                   replica.replicaId,
@@ -72,16 +72,16 @@ export function buildFullMapReplicaReceipt(input: {
         reason:
           replicaStatus === "EQUIVALENT"
             ? "Replica proof is sufficient and no material divergence is present."
-            : replicaStatus === "MATERIAL_DIVERGENCE"
-              ? "Replica contains one or more material world/topology differences that must continue to causal analysis. Expected/non-material variation requires a separate grounded semantic classification before it can be suppressed."
+            : replicaStatus === "DIVERGENCE_REQUIRES_CLASSIFICATION"
+              ? "Replica contains one or more world/topology differences. These differences must continue to semantic/causal classification before they may be called gameplay-material or safely ignored."
               : "Replica proof is incomplete and baseline safety cannot be inherited.",
       };
     });
 
-  const materialDeltaIds = [
+  const replicaDivergenceIds = [
     ...new Set(
       replicaResults.flatMap(
-        (item) => item.materialDeltaIds,
+        (item) => item.replicaDivergenceIds,
       ),
     ),
   ].sort();
@@ -102,10 +102,10 @@ export function buildFullMapReplicaReceipt(input: {
       (a, b) =>
         a.replicaId.localeCompare(b.replicaId),
     ),
-    materialDeltaIds,
+    replicaDivergenceIds,
     incompleteReplicaIds,
     baselineReusableForAllReplicas:
       incompleteReplicaIds.length === 0 &&
-      materialDeltaIds.length === 0,
+      replicaDivergenceIds.length === 0,
   };
 }
