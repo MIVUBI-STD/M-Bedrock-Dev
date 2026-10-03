@@ -7,6 +7,8 @@ import type {
 } from "./map-audit-defect-projection.js";
 
 export interface ReadyAuditCandidateGroup {
+  readonly reportIssueType:
+    ReadyAuditIssueProjection["reportIssueType"];
   readonly candidateGroupKey: string;
   readonly knowledgeDomain?: string;
   readonly technicalOwnerId: string;
@@ -70,6 +72,7 @@ export function groupReadyAuditIssuesForCandidateCoverage(
       link.intentEdgeKind ?? "runtime-domain",
     ]);
     const key = [
+      defect.reportIssueType,
       requirement?.domain ?? "intent",
       technicalOwnerId,
       technicalCauseSignature,
@@ -92,6 +95,8 @@ export function groupReadyAuditIssuesForCandidateCoverage(
                 item.id === firstLink.knowledgeRequirementId,
             );
       return {
+        reportIssueType:
+          items[0]!.reportIssueType,
         candidateGroupKey: "candidate-group:" + key,
         ...(requirement === undefined
           ? {}
