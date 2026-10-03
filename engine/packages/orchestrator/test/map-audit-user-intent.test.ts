@@ -50,6 +50,7 @@ function envelope(): AuditUserIntentEnvelope {
       "Root cause is not yet known.",
       " Root cause is not yet known. ",
     ],
+    blockingAmbiguities: [],
   };
 }
 
@@ -68,6 +69,8 @@ describe("map audit user intent", () => {
     expect(normalized.ambiguities).toEqual([
       "Root cause is not yet known.",
     ]);
+    expect(normalized.blockingAmbiguities)
+      .toEqual([]);
   });
 
   it("maps user priority into additive existing knowledge demand", () => {
@@ -131,6 +134,26 @@ describe("map audit user intent", () => {
     )).toBe(true);
   });
 
+  it("preserves blocking ambiguity separately from ordinary uncertainty", () => {
+    const input = envelope();
+    const normalized =
+      normalizeAuditUserIntent({
+        ...input,
+        blockingAmbiguities: [
+          "Exact target map is ambiguous.",
+        ],
+      });
+
+    expect(normalized.blockingAmbiguities)
+      .toEqual([
+        "Exact target map is ambiguous.",
+      ]);
+    expect(normalized.ambiguities)
+      .toEqual([
+        "Root cause is not yet known.",
+      ]);
+  });
+
   it("rejects a symptom intake that silently drops interpretation", () => {
     const incomplete: AuditUserIntentEnvelope = {
       schemaVersion: 1,
@@ -145,6 +168,7 @@ describe("map audit user intent", () => {
       priorityDomains: [],
       priorityPlayerFlows: [],
       ambiguities: [],
+      blockingAmbiguities: [],
     };
 
     expect(
@@ -172,6 +196,7 @@ describe("map audit user intent", () => {
         "ACTIVE_GAMEPLAY",
       ],
       ambiguities: [],
+      blockingAmbiguities: [],
     };
 
     const obligations =
