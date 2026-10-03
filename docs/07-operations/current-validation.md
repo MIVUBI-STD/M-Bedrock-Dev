@@ -13,6 +13,19 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — report timing integration
+
+Source-verified on `Local`:
+
+- Map Audit Output V2 now carries canonical control state: audit status, current stage, next action, continuation owner, rerun requirement, blockers, and reasons.
+- Map Audit HTML surfaces that control state before findings so operators do not need to inspect the raw audit object to know what to do next.
+- NEED_VALIDATION findings now expose collapsible Proof Guidance with proof goal, missing claims, ordered proof route, family criteria, historical search hints, evidence substitution, and runtime-last-resort guidance.
+- Existing Game Design, Multi-Arena, Gameplay Closure, Honesty, and Full-Map Replica information now surfaces in one collapsed Audit Context block before findings.
+- `modelTaskPackets`, raw `executionTrace`, and Work Session bindings remain intentionally internal and are not duplicated into human-facing HTML.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. Local typecheck/full verification is still required before package-level readiness can be claimed.
+
+
 ## 2026-10-03 — workflow efficiency cleanup
 
 Source-verified on `Local`:
