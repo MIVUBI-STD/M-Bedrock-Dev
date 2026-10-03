@@ -11,6 +11,7 @@ export interface GameplayDiscoveryClosureInput {
   readonly sourceCoverageComplete: boolean;
   readonly sourceParseFailures: number;
   readonly unsupportedRelevantSourcePaths: readonly string[];
+  readonly semanticUnderstandingGapPaths: readonly string[];
   readonly unresolvedReferences: number;
 }
 
@@ -29,6 +30,8 @@ export interface GameplayDiscoveryClosure {
   readonly sourceParseFailures: number;
   readonly unsupportedRelevantSources: number;
   readonly unsupportedRelevantSourcePaths: readonly string[];
+  readonly semanticUnderstandingGaps: number;
+  readonly semanticUnderstandingGapPaths: readonly string[];
   readonly sourceAccountedFiles: number;
   readonly sourceInventoryBalanced: boolean;
   readonly sourceCoverageComplete: boolean;
@@ -48,6 +51,11 @@ export function assessGameplayDiscoveryClosure(
   ].sort();
   const unsupportedRelevantSources =
     unsupportedRelevantSourcePaths.length;
+  const semanticUnderstandingGapPaths = [
+    ...new Set(input.semanticUnderstandingGapPaths),
+  ].sort();
+  const semanticUnderstandingGaps =
+    semanticUnderstandingGapPaths.length;
   const sourceAccountedFiles =
     input.sourceIndexedFiles +
     input.sourceParseFailures +
@@ -91,6 +99,13 @@ export function assessGameplayDiscoveryClosure(
         " gameplay-sensitive selected-artifact source file(s) have no semantic owner/parser and must remain a Detection Gap.",
     );
   }
+  if (semanticUnderstandingGaps > 0) {
+    reasons.push(
+      String(semanticUnderstandingGaps) +
+        " gameplay-sensitive source file(s) are structurally indexed but still lack domain semantics. Source-accounted is not semantically understood; these remain Detection Gaps.",
+    );
+  }
+
   if (input.unresolvedReferences > 0) {
     reasons.push(
       String(input.unresolvedReferences) +
@@ -104,7 +119,8 @@ export function assessGameplayDiscoveryClosure(
       !sourceInventoryBalanced ||
       !input.sourceCoverageComplete ||
       input.sourceParseFailures > 0 ||
-      unsupportedRelevantSources > 0
+      unsupportedRelevantSources > 0 ||
+      semanticUnderstandingGaps > 0
         ? "OPEN"
         : input.unresolvedReferences > 0
           ? "PARTIAL"
@@ -112,7 +128,7 @@ export function assessGameplayDiscoveryClosure(
 
   if (status === "COMPLETE") {
     reasons.push(
-      "Relevant selected-artifact source inventory is balanced, all relevant sources are indexed, and at least one gameplay surface is discovered.",
+      "Relevant selected-artifact source inventory is balanced, all relevant sources are indexed, gameplay-sensitive indexed sources have semantic owners, and at least one gameplay surface is discovered.",
     );
   }
 
@@ -127,6 +143,8 @@ export function assessGameplayDiscoveryClosure(
       input.sourceParseFailures,
     unsupportedRelevantSources,
     unsupportedRelevantSourcePaths,
+    semanticUnderstandingGaps,
+    semanticUnderstandingGapPaths,
     sourceAccountedFiles,
     sourceInventoryBalanced,
     sourceCoverageComplete:
