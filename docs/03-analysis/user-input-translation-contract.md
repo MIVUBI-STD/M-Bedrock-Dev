@@ -171,6 +171,7 @@ testConstraints[]
 outputPreferences[]
 historicalHints[]
 ambiguities[]
+blockingAmbiguities[]
 ```
 
 Every symptom/suspicion/claim should retain the user's original meaning and a normalized interpretation.
