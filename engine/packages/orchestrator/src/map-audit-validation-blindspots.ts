@@ -4,6 +4,10 @@ import type {
 import type {
   SharedResourceOwnershipSignal,
 } from "./inspection/shared-resource-ownership.js";
+import type {
+  AccumulationGrowthSignal,
+  CompoundBoundarySignal,
+} from "./inspection/gameplay-compound-growth-analysis.js";
 import {
   sortIssues,
   type NeedValidationAuditIssueProjection,
@@ -14,6 +18,10 @@ export function projectBlindSpotNeedValidationIssues(input: {
     readonly GameplayDiscoveryChallengeSignal[];
   readonly sharedResourceSignals:
     readonly SharedResourceOwnershipSignal[];
+  readonly compoundBoundaries?:
+    readonly CompoundBoundarySignal[];
+  readonly accumulationGrowth?:
+    readonly AccumulationGrowthSignal[];
 }): readonly NeedValidationAuditIssueProjection[] {
   const discovery = input.discoveryChallenges.map((signal) => ({
     status: "NEED_VALIDATION" as const,
@@ -124,8 +132,81 @@ export function projectBlindSpotNeedValidationIssues(input: {
     };
   });
 
+  const compound = (input.compoundBoundaries ?? []).map((signal) => ({
+    status: "NEED_VALIDATION" as const,
+    issueType: "BUG" as const,
+    failureDomain: "boundary-capacity" as const,
+    contributingDomains: ["boundary-capacity" as const],
+    gameplayFlow: "READY_START" as const,
+    informationMismatch: false,
+    playerFacingEvidenceIds: [],
+    causalLinkId: signal.id,
+    scenarioId: "compound-boundary",
+    gameplayStage: "READY_START",
+    scenarioLabel: "compound-boundary",
+    gameplayTrigger:
+      "Exercise the combined boundary dimensions together: " +
+      signal.dimensions.join(", ") +
+      ".",
+    gameplayConsequence:
+      "Single-axis tests may pass while the combined resource/capacity boundary fails.",
+    expectedOutcome:
+      "Combined gameplay capacity remains consistent with the grounded visible/design contract.",
+    actualOutcome: signal.reason,
+    affectedScope: signal.dimensions.join(", "),
+    subjectIds: [...signal.dimensions],
+    componentIds: [],
+    evidenceIds: [...signal.evidenceIds],
+    validationReason:
+      "Compound-boundary analysis found a multi-dimensional capacity interaction that is not closed by single-boundary proof.",
+    missingProof:
+      "Behavior at the combined boundary and whether the effective limit contradicts the player-visible/design contract.",
+    validationTest:
+      "Test the combined boundary at the grounded safe point and the next combined step; fail if gameplay capacity or progression breaks while each individual axis remains within its apparent limit.",
+    validationGroupKey: signal.id,
+  }));
+
+  const accumulation = (input.accumulationGrowth ?? []).map((signal) => ({
+    status: "NEED_VALIDATION" as const,
+    issueType: "BUG" as const,
+    failureDomain: "persistence-recovery" as const,
+    contributingDomains: [
+      "persistence-recovery" as const,
+      "state-ownership" as const,
+    ],
+    gameplayFlow: "CLEANUP_REPLAY" as const,
+    informationMismatch: false,
+    playerFacingEvidenceIds: [],
+    causalLinkId: signal.id,
+    scenarioId: "accumulation-growth",
+    gameplayStage: "CLEANUP_REPLAY",
+    scenarioLabel: "accumulation-growth",
+    gameplayTrigger:
+      "Repeat the owning lifecycle for " +
+      signal.subjectId +
+      ".",
+    gameplayConsequence:
+      "State/resources may accumulate across runs even when early runs appear healthy.",
+    expectedOutcome:
+      "Per-run/session producers are balanced by clear/release/cleanup before reuse.",
+    actualOutcome: signal.reason,
+    affectedScope: signal.subjectId,
+    subjectIds: [signal.subjectId],
+    componentIds: [],
+    evidenceIds: [...signal.evidenceIds],
+    validationReason:
+      "Growth analysis found producer/cleanup imbalance or append-without-clear semantics.",
+    missingProof:
+      "A grounded balancing cleanup/reset path, or mathematical proof that repeated runs do not accumulate state/resources.",
+    validationTest:
+      "Run the lifecycle repeatedly or prove producer/consumer balance statically; fail if state/resource count grows across equivalent runs.",
+    validationGroupKey: signal.id,
+  }));
+
   return sortIssues([
     ...discovery,
     ...shared,
+    ...compound,
+    ...accumulation,
   ]);
 }
