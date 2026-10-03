@@ -22,6 +22,7 @@ export function projectBlindSpotNeedValidationIssues(input: {
     readonly CompoundBoundarySignal[];
   readonly accumulationGrowth?:
     readonly AccumulationGrowthSignal[];
+  readonly replicaDivergenceIds?: readonly string[];
 }): readonly NeedValidationAuditIssueProjection[] {
   const discovery = input.discoveryChallenges.map((signal) => ({
     status: "NEED_VALIDATION" as const,
@@ -166,6 +167,44 @@ export function projectBlindSpotNeedValidationIssues(input: {
     validationGroupKey: signal.id,
   }));
 
+  const replicaDivergence =
+    (input.replicaDivergenceIds ?? []).map((id) => ({
+      status: "NEED_VALIDATION" as const,
+      issueType: "BUG" as const,
+      failureDomain: "world-structure-mutation" as const,
+      contributingDomains: [
+        "world-structure-mutation" as const,
+      ],
+      gameplayFlow: "SETUP" as const,
+      informationMismatch: false,
+      playerFacingEvidenceIds: [],
+      causalLinkId: id,
+      scenarioId: "full-map-replica",
+      gameplayStage: "SETUP",
+      scenarioLabel:
+        "replica-divergence-classification",
+      gameplayTrigger:
+        "Compare the divergent replica against the canonical baseline in its actual gameplay role.",
+      gameplayConsequence:
+        "A world/topology difference exists but its gameplay significance has not yet been classified, so baseline proof cannot safely be inherited.",
+      expectedOutcome:
+        "Every replica divergence is either grounded as non-material/expected or translated into a concrete gameplay consequence.",
+      actualOutcome:
+        "Replica divergence remains semantically unclassified.",
+      affectedScope: id,
+      subjectIds: [id],
+      componentIds: [],
+      evidenceIds: [id],
+      validationReason:
+        "Full-map replica proof found a divergence that still requires semantic/gameplay classification.",
+      missingProof:
+        "Grounded evidence showing whether the divergence is non-material/expected or affects a player-visible gameplay dependency.",
+      validationTest:
+        "Trace the divergent world/topology cells or records to their gameplay purpose. If no player-visible/material dependency is affected, document the non-material rationale; otherwise route the grounded consequence into causal PROVE.",
+      validationGroupKey:
+        "full-map-replica:" + id,
+    }));
+
   const accumulation = (input.accumulationGrowth ?? []).map((signal) => ({
     status: "NEED_VALIDATION" as const,
     issueType: "BUG" as const,
@@ -208,5 +247,6 @@ export function projectBlindSpotNeedValidationIssues(input: {
     ...shared,
     ...compound,
     ...accumulation,
+    ...replicaDivergence,
   ]);
 }
