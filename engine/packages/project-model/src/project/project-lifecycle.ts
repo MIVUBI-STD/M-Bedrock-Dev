@@ -97,6 +97,24 @@ export interface ProjectRegistry {
   readonly projects: readonly ProjectRecord[];
 }
 
+const PROJECT_STATUSES =
+  new Set<ProjectLifecycleStatus>([
+    "working",
+    "ready-for-approval",
+    "approved",
+    "drive-published",
+  ]);
+
+const PROJECT_TASK_CLASSES =
+  new Set<ProjectTaskClass>([
+    "AUDIT",
+    "REPAIR",
+    "MODIFY",
+    "DEVELOP",
+    "VALIDATE",
+    "RESEARCH",
+  ]);
+
 function clean(value: string): string {
   return value.trim();
 }
@@ -110,8 +128,26 @@ function unique(values: readonly string[]): string[] {
 export function normalizeProjectRecord(
   input: ProjectRecord,
 ): ProjectRecord {
+  if (
+    input === null ||
+    typeof input !== "object"
+  ) {
+    throw new Error(
+      "Project record must be an object.",
+    );
+  }
   if (input.schemaVersion !== 1) {
     throw new Error("Unsupported project record schemaVersion.");
+  }
+  if (!PROJECT_STATUSES.has(input.status)) {
+    throw new Error(
+      "Unsupported project lifecycle status.",
+    );
+  }
+  if (!PROJECT_TASK_CLASSES.has(input.taskClass)) {
+    throw new Error(
+      "Unsupported project task class.",
+    );
   }
   if (
     !clean(input.projectId) ||
@@ -125,6 +161,38 @@ export function normalizeProjectRecord(
   }
   if (!Number.isInteger(input.revision) || input.revision < 1) {
     throw new Error("Project revision must be an integer >= 1.");
+  }
+  if (
+    input.work.workSessionRevision !== undefined &&
+    (
+      !Number.isInteger(input.work.workSessionRevision) ||
+      input.work.workSessionRevision < 1
+    )
+  ) {
+    throw new Error(
+      "Work session revision must be an integer >= 1 when present.",
+    );
+  }
+  if (
+    (
+      input.status === "approved" ||
+      input.status === "drive-published"
+    ) &&
+    !input.publication
+      .approvalSnapshotFingerprint?.trim()
+  ) {
+    throw new Error(
+      "Approved project state requires approvalSnapshotFingerprint.",
+    );
+  }
+  if (
+    input.status === "drive-published" &&
+    !input.publication
+      .drivePublishReceiptFingerprint?.trim()
+  ) {
+    throw new Error(
+      "drive-published project state requires drivePublishReceiptFingerprint.",
+    );
   }
 
   return {
@@ -190,8 +258,21 @@ export function normalizeProjectRecord(
 export function normalizeProjectRegistry(
   input: ProjectRegistry,
 ): ProjectRegistry {
+  if (
+    input === null ||
+    typeof input !== "object"
+  ) {
+    throw new Error(
+      "Project registry must be an object.",
+    );
+  }
   if (input.schemaVersion !== 1) {
     throw new Error("Unsupported project registry schemaVersion.");
+  }
+  if (!Array.isArray(input.projects)) {
+    throw new Error(
+      "Project registry projects must be an array.",
+    );
   }
   const byId = new Map<string, ProjectRecord>();
   for (const project of input.projects) {
