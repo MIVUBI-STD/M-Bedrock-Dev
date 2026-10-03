@@ -16,6 +16,8 @@ export interface ReadyAuditIssueProjection {
   readonly reportIssueType: GameplayReportIssueType;
   readonly failureDomain: GameplayIssueFailureDomain;
   readonly gameplayFlow: GameplayIssueFlowStage;
+  readonly informationMismatch: boolean;
+  readonly playerFacingEvidenceIds: readonly string[];
   readonly causalLinkId: string;
   readonly scenarioId: string;
   readonly gameplayStage: string;
@@ -31,6 +33,32 @@ export interface ReadyAuditIssueProjection {
   readonly knowledgeRequirementId?: string;
 }
 
+function relatedCapabilityDelivery(
+  scenarioLabel: string,
+  subjectIds: readonly string[],
+  componentIds: readonly string[],
+  capabilityDelivery:
+    readonly GameplayCapabilityDeliveryAssessment[],
+): readonly GameplayCapabilityDeliveryAssessment[] {
+  return capabilityDelivery.filter(
+    (item) =>
+      (
+        item.status === "DEGRADED" ||
+        item.status === "MISSING"
+      ) &&
+      (
+        subjectIds.includes(item.subjectId) ||
+        componentIds.includes(item.subjectId) ||
+        (
+          item.subjectId ===
+            "runtime:arena-capacity" &&
+          scenarioLabel ===
+            "arena-capacity-plus-one"
+        )
+      ),
+  );
+}
+
 function reportIssueTypeFor(
   scenarioLabel: string,
   subjectIds: readonly string[],
@@ -38,20 +66,11 @@ function reportIssueTypeFor(
   capabilityDelivery:
     readonly GameplayCapabilityDeliveryAssessment[],
 ): GameplayReportIssueType {
-  const related = capabilityDelivery.filter(
-    (item) =>
-      item.status === "DEGRADED" ||
-      item.status === "MISSING",
-  ).filter(
-    (item) =>
-      subjectIds.includes(item.subjectId) ||
-      componentIds.includes(item.subjectId) ||
-      (
-        item.subjectId ===
-          "runtime:arena-capacity" &&
-        scenarioLabel ===
-          "arena-capacity-plus-one"
-      ),
+  const related = relatedCapabilityDelivery(
+    scenarioLabel,
+    subjectIds,
+    componentIds,
+    capabilityDelivery,
   );
 
   return related.some(
@@ -115,6 +134,25 @@ export function projectReadyAuditIssues(
                 item.id ===
                 link.knowledgeRequirementId,
             )?.domain;
+      const relatedDelivery =
+        relatedCapabilityDelivery(
+          scenario.label,
+          subjectIds,
+          componentIds,
+          capabilityDelivery,
+        );
+      const playerFacingEvidenceIds = [
+        ...new Set(
+          relatedDelivery.flatMap(
+            (item) =>
+              item.playerFacingEvidenceIds,
+          ),
+        ),
+      ].sort();
+      const informationMismatch =
+        relatedDelivery.some(
+          (item) => item.informationMismatch,
+        );
       const classification =
         classifyGameplayIssue({
           gameplayStage:
@@ -137,6 +175,8 @@ export function projectReadyAuditIssues(
           classification.failureDomain,
         gameplayFlow:
           classification.gameplayFlow,
+        informationMismatch,
+        playerFacingEvidenceIds,
         causalLinkId: resolution.causalLinkId,
         scenarioId: scenario.id,
         gameplayStage: scenario.gameplayStage,
