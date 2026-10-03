@@ -13,6 +13,21 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — causal issue admission hardening
+
+Source-verified on `Local`:
+
+- A canonical `map-audit-obligations.ts` owner now collects unresolved audit/model/proof work separately from gameplay findings.
+- Pure `RUNTIME_BLOCKED`, `DETECTION_GAP`, gameplay-translation-required, counter-proof-search-required, knowledge-gap, structural/closure gap, blindspot, temporal-risk, shared-resource, compound-boundary, accumulation-growth, and unclassified replica-divergence states no longer inflate `BUG | DESIGN_MISMATCH`.
+- `NEED_VALIDATION` issue projection now starts only from `CONFIRMED_DEFECT_READY` resolutions that already have a concrete gameplay trigger, player-visible consequence, Expected/Actual outcomes, affected scope, and cleared blocking counter-proof, but still miss minimum proof saturation.
+- Audit honesty now checks the union of causal findings and Audit Obligations, so unresolved material work cannot disappear merely because it is no longer mislabeled as a bug.
+- Audit Obligations are preserved through Map Audit Output V2 and downstream report handoff, displayed separately in HTML, and excluded from finding counts.
+- Internal model task packets now include bounded `AUDIT_OBLIGATION` tasks. These tasks are explicitly forbidden from promoting a gap/risk directly to BUG/DESIGN_MISMATCH without a fresh causal audit result.
+- The obsolete `map-audit-validation-signals.ts` and `map-audit-validation-blindspots.ts` gap-to-issue projectors were removed.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. Local typecheck/full verifier and real-map benchmark remain required before executable readiness or measured detection accuracy can be claimed.
+
+
 ## 2026-10-03 — false-positive issue suppression
 
 Source-verified on `Local`:
