@@ -113,6 +113,29 @@ describe("map audit user intent", () => {
     )).toBe(true);
   });
 
+  it("rejects a symptom intake that silently drops interpretation", () => {
+    const incomplete: AuditUserIntentEnvelope = {
+      schemaVersion: 1,
+      policy:
+        "user-input-is-search-guidance-not-gameplay-authority",
+      items: [{
+        kind: "SYMPTOM_REPORT",
+        raw: "game kadang gak selesai",
+        normalized:
+          "possible game completion failure",
+      }],
+      priorityDomains: [],
+      priorityPlayerFlows: [],
+      ambiguities: [],
+    };
+
+    expect(
+      validateAuditUserIntent(incomplete),
+    ).toContain(
+      "User-reported symptoms require at least one bounded priority domain/player-flow interpretation or an explicit ambiguity record.",
+    );
+  });
+
   it("states explicitly that prompt input cannot become proof", () => {
     expect(auditUserIntentAuthorityNote())
       .toContain("cannot establish Expected/Actual behavior");
