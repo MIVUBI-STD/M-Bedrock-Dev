@@ -8,6 +8,9 @@ Use this before broad repository search.
 | Artifact kind/identity/fingerprint | engine/packages/artifact/ |
 | ZIP/archive safety, inventory, package transport | engine/packages/archive/ |
 | Workspace/session/file inventory + telemetry data contracts | engine/packages/project-model/ |
+| Canonical per-project working path | engine/packages/project-model/src/project/workspace.ts → `workspace/projects/<project-id>/` |
+| Project execution continuity | `workspace/projects/<project-id>/state/work-session.json` via orchestrator Work Session store |
+| Canonical current Bug Report V2 state | `workspace/reports/*.json` only; project workspace uses `evidence/` and `output/`, never a second report store |
 | Drive storage root + exact map/current-world pointers | engine/packages/project-model/src/project/drive-binding.ts + workspace/drive-root.json |
 | Runtime semantic attribute convention | engine/packages/project-model/src/runtime/runtime-semantic-convention.ts |
 | Runtime telemetry emission helpers / sinks / instrumentation guards | engine/packages/telemetry/ |
