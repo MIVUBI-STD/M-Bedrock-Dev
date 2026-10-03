@@ -90,14 +90,21 @@ interface MapAuditHtmlInput {
     readonly schemaVersion: 1;
     readonly policy:
       "user-input-is-search-guidance-not-gameplay-authority";
+    readonly fragments: readonly {
+      readonly id: string;
+      readonly raw: string;
+    }[];
     readonly items: readonly {
       readonly kind: string;
       readonly raw: string;
       readonly normalized: string;
+      readonly sourceFragmentIds: readonly string[];
     }[];
+    readonly unmappedFragmentIds: readonly string[];
     readonly priorityDomains: readonly string[];
     readonly priorityPlayerFlows: readonly string[];
     readonly ambiguities: readonly string[];
+    readonly blockingAmbiguities: readonly string[];
   };
   readonly evidenceScope: {
     readonly selectedArtifact: string;
@@ -750,6 +757,21 @@ function userIntentSummary(
       item.kind === "SCOPE_REQUEST" ||
       item.kind === "EXCLUSION_REQUEST",
   );
+  const fragmentById = new Map(
+    intent.fragments.map(
+      (fragment) => [fragment.id, fragment],
+    ),
+  );
+  const unmapped = intent.unmappedFragmentIds
+    .map((id) => fragmentById.get(id))
+    .filter(
+      (
+        item,
+      ): item is {
+        readonly id: string;
+        readonly raw: string;
+      } => item !== undefined,
+    );
 
   const list = (
     items: readonly { readonly normalized: string }[],
@@ -799,6 +821,18 @@ function userIntentSummary(
     '<div class="row"><div class="label">Test Constraints</div><div class="value"><ul>' +
       list(constraints) +
       '</ul></div></div>',
+    ...(unmapped.length === 0
+      ? []
+      : [
+          '<div class="row"><div class="label">Unmapped Input</div><div class="value"><ul>' +
+          unmapped.map(
+            (item) =>
+              '<li>' +
+              escapeHtml(item.raw) +
+              '</li>',
+          ).join("") +
+          '</ul><div class="proof-note">Preserved as Audit Obligation; not ignored and not treated as a bug.</div></div></div>',
+        ]),
     ...(intent.ambiguities.length === 0
       ? []
       : [
