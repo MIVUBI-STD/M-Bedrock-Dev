@@ -16,27 +16,42 @@ function envelope(): AuditUserIntentEnvelope {
     schemaVersion: 1,
     policy:
       "user-input-is-search-guidance-not-gameplay-authority",
+    fragments: [{
+      id: "f1",
+      raw: "wave suka stuck",
+    }, {
+      id: "f2",
+      raw: "kayak ticking area",
+    }, {
+      id: "f3",
+      raw: "jangan test semuanya",
+    }],
     items: [{
       kind: "SYMPTOM_REPORT",
       raw: " wave   suka stuck ",
       normalized:
         "possible progression stall during wave completion",
+      sourceFragmentIds: ["f1"],
     }, {
       kind: "SUSPICION",
       raw: " kayak ticking area ",
       normalized:
         "suspected chunk/residency mechanism",
+      sourceFragmentIds: ["f2"],
     }, {
       kind: "TEST_CONSTRAINT",
       raw: "jangan test semuanya",
       normalized:
         "prefer bounded static-first proof over broad trial-and-error",
+      sourceFragmentIds: ["f3"],
     }, {
       kind: "SYMPTOM_REPORT",
       raw: "kadang wave gak lanjut",
       normalized:
         "possible progression stall during wave completion",
+      sourceFragmentIds: ["f1"],
     }],
+    unmappedFragmentIds: [],
     priorityDomains: [
       "progression-wave-objective",
       "chunk-simulation",
@@ -189,12 +204,18 @@ describe("map audit user intent", () => {
       schemaVersion: 1,
       policy:
         "user-input-is-search-guidance-not-gameplay-authority",
+      fragments: [{
+        id: "f1",
+        raw: "game kadang gak selesai",
+      }],
       items: [{
         kind: "SYMPTOM_REPORT",
         raw: "game kadang gak selesai",
         normalized:
           "possible game completion failure",
+        sourceFragmentIds: ["f1"],
       }],
+      unmappedFragmentIds: [],
       priorityDomains: [],
       priorityPlayerFlows: [],
       ambiguities: [],
@@ -213,12 +234,18 @@ describe("map audit user intent", () => {
       schemaVersion: 1,
       policy:
         "user-input-is-search-guidance-not-gameplay-authority",
+      fragments: [{
+        id: "f1",
+        raw: "barang kadang ilang",
+      }],
       items: [{
         kind: "SYMPTOM_REPORT",
         raw: "barang kadang ilang",
         normalized:
           "possible inventory item loss",
+        sourceFragmentIds: ["f1"],
       }],
+      unmappedFragmentIds: [],
       priorityDomains: [
         "inventory-economy",
       ],
@@ -294,6 +321,96 @@ describe("map audit user intent", () => {
             "user-symptom-uncovered-domain:inventory-economy" &&
           item.source ===
             "user-reported-symptom",
+      ),
+    ).toBe(true);
+  });
+
+  it("preserves unmapped prompt fragments instead of dropping them", () => {
+    const input: AuditUserIntentEnvelope = {
+      schemaVersion: 1,
+      policy:
+        "user-input-is-search-guidance-not-gameplay-authority",
+      fragments: [{
+        id: "f1",
+        raw: "pokoknya yang aneh pas akhir",
+      }],
+      items: [],
+      unmappedFragmentIds: ["f1"],
+      priorityDomains: [],
+      priorityPlayerFlows: [],
+      ambiguities: [
+        "The fragment is too vague to map safely yet.",
+      ],
+      blockingAmbiguities: [],
+    };
+
+    expect(validateAuditUserIntent(input))
+      .toEqual([]);
+
+    const normalized =
+      normalizeAuditUserIntent(input);
+    expect(normalized.unmappedFragmentIds)
+      .toEqual(["f1"]);
+
+    const obligations =
+      deriveAuditObligations({
+        graph: {
+          schemaVersion: 1,
+          policy: "scenario-driven-causal-audit",
+          scenarios: [],
+          components: [],
+          causalLinks: [],
+          knowledgeRequirements: [],
+          knowledgeReceipts: [],
+          requiredInspectionGraph: {
+            policy: "required-inspection-graph",
+            nodes: [],
+            receipts: [],
+          },
+        } as any,
+        defectResolution: {
+          status: "READY_FOR_PROPOSED_BUG_SET",
+          contradictedCausalLinkIds: [],
+          resolutions: [],
+          confirmedDefectReadyIds: [],
+          blockingCounterProofIds: [],
+          runtimeProofRequiredIds: [],
+          detectionGapIds: [],
+          gameplayTranslationRequiredIds: [],
+          counterProofSearchRequiredIds: [],
+          issues: [],
+        } as any,
+        gameplayWorld: {
+          surfaceDiscovery: { surfaceIds: [] },
+          arenas: { detected: false },
+          platformKnowledge: { claims: [] },
+        } as any,
+        userIntent: normalized,
+        gameplayClosure: {
+          status: "CLOSED",
+          surfaces: [],
+          unaccountedSurfaceIds: [],
+          blockingSurfaceIds: [],
+          unknownSurfaceIds: [],
+          stateModelComplete: true,
+          boundariesExtracted: true,
+          reasons: [],
+        } as any,
+        negativeSpace: [],
+        temporalRisks: [],
+        discoveryChallenges: [],
+        sharedResourceSignals: [],
+        compoundBoundaries: [],
+        accumulationGrowth: [],
+      });
+
+    expect(
+      obligations.some(
+        (item) =>
+          item.id ===
+            "user-input-unmapped:f1" &&
+          item.source ===
+            "user-input-unmapped",
       ),
     ).toBe(true);
   });
