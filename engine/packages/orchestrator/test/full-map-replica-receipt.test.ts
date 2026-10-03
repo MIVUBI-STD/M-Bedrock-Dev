@@ -8,19 +8,19 @@ describe("full-map replica receipt", () => {
     const result = buildFullMapReplicaReceipt({
       replicaBaseline: "arena:canonical",
       replicas: [{
-        arenaId: "arena:2",
+        replicaId: "arena:2",
         proofStatus: "complete-proof",
         mismatchCount: 0,
         evidenceIds: ["e:a2"],
       }, {
-        arenaId: "arena:3",
+        replicaId: "arena:3",
         proofStatus: "bounded-proof",
         mismatchCount: 0,
         evidenceIds: ["e:a3"],
       }],
     });
 
-    expect(result.canReuseBaselineProof).toBe(true);
+    expect(result.baselineReusableForAllReplicas).toBe(true);
     expect(
       result.replicaResults.map(
         (item) => item.replicaStatus,
@@ -35,12 +35,12 @@ describe("full-map replica receipt", () => {
     const result = buildFullMapReplicaReceipt({
       replicaBaseline: "arena:canonical",
       replicas: [{
-        arenaId: "arena:4",
+        replicaId: "arena:4",
         proofStatus: "diverged",
         mismatchCount: 2,
         evidenceIds: ["e:a4"],
       }, {
-        arenaId: "arena:5",
+        replicaId: "arena:5",
         proofStatus: "no-proof",
         mismatchCount: 0,
         evidenceIds: [],
@@ -53,6 +53,6 @@ describe("full-map replica receipt", () => {
     expect(result.incompleteReplicaIds).toEqual([
       "arena:5",
     ]);
-    expect(result.canReuseBaselineProof).toBe(false);
+    expect(result.baselineReusableForAllReplicas).toBe(false);
   });
 });
