@@ -4,10 +4,14 @@ import {
 } from "../src/map-audit-issue-projection.js";
 import {
   projectAllNeedValidationAuditIssues,
+} from "../src/map-audit-validation-projection.js";
+import {
   projectSignalNeedValidationAuditIssues,
   projectClosureNeedValidationAuditIssues,
+} from "../src/map-audit-validation-signals.js";
+import {
   groupNeedValidationTests,
-} from "../src/map-audit-validation-projection.js";
+} from "../src/map-audit-validation-plan.js";
 import type {
   GameplayScenarioGraph,
 } from "../src/inspection/gameplay-scenario-model.js";
