@@ -22,6 +22,68 @@ TARGET and DISCOVERY are admission gates for block A. They are not parallel work
 
 Supporting documents such as Gameplay Model Closure, Blind Spots, and Cross-System Interaction provide specialist knowledge. They do not replace this procedure and they do not own a parallel checklist.
 
+## Coverage adequacy invariant
+
+Coverage presence is not coverage completion.
+
+For every discovered material gameplay surface, the canonical audit must prove one of:
+
+```text
+static proof sufficient
+or
+targeted runtime proof executed/requested
+or
+Detection Gap with an exact tester obligation
+or
+not-applicable with positive evidence
+```
+
+A discovered surface, analyzer execution receipt, scenario object, or domain label by itself is never enough to claim that the required behavior was tested.
+
+Unresolved evidence must remain actionable:
+
+```text
+RUNTIME_BLOCKED
+→ exactly one narrow runtime proof request
+
+DETECTION_GAP
+→ exactly one targeted tester obligation
+```
+
+The publication gate may stop final closure, but investigation may continue collecting high-confidence evidence from later surfaces. An earlier blocker must never make unrelated required tests disappear.
+
+### Boundary policy
+
+When a material capacity or count exists, prefer meaningful boundaries rather than an arbitrary representative sample:
+
+```text
+1
+2 when concurrency exists
+known safe limit
+safe limit + 1
+selected-map maximum
+```
+
+Deduplicate identical values. For progression counters also cover first, final-1/final, zero remaining, and the transition immediately after completion when applicable.
+
+### Inverse/negative-space policy
+
+Every acquired or one-way material action must have its semantic inverse or explicit terminal accounting challenged:
+
+```text
+Acquire   → Release
+Reserve   → Free
+Lock      → Unlock
+Spawn     → Death/remove accounting
+Increment → Decrement/consume
+Grant     → Clear/restore/reset
+Persist   → Restore/reset
+Schedule  → Cancel/revalidate
+Create    → Cleanup
+```
+
+Absence of the inverse is not automatically a bug, but it is a mandatory contradiction/test candidate until selected-artifact evidence proves why no inverse is required.
+
 ## Flow-first execution rule
 
 The checkpoint owner remains TARGET → DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE → REPORT, but checks are executed and presented in player-flow order:
