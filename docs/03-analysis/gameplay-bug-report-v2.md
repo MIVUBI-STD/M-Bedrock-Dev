@@ -91,7 +91,11 @@ Map Audit exposes exactly two public statuses:
 - `PROVEN` — sufficiently proven finding, eligible for severity and approval.
 - `NEED_VALIDATION` — materially plausible finding with an exact missing-proof obligation and targeted validation test.
 
-Canonical approved Bug Report V2 persists only approved `PROVEN` BUG items. NEED_VALIDATION remains visible in Map Audit / tester validation output until it is promoted to PROVEN or disproved. Internal uncertainty reasons never create additional public status categories.
+Canonical approved Bug Report V2 persists only approved `PROVEN` BUG items.
+
+The human-facing complete audit report is broader: it must include all material findings from the same audit revision, including `PROVEN` BUG, `PROVEN` DESIGN_MISMATCH, and `NEED_VALIDATION`. NEED_VALIDATION must never be hidden merely because it is not yet eligible for persisted Bug Report V2 approval.
+
+Internal uncertainty reasons never create additional public status categories.
 
 Designed/normal behavior and disproved findings are not published as bugs.
 
