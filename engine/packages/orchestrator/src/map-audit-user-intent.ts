@@ -102,6 +102,15 @@ export function normalizeAuditUserIntent(
       ? input.items
       : []
   ).flatMap((item) => {
+    if (
+      item === null ||
+      typeof item !== "object" ||
+      !USER_INPUT_CLASSES.has(item.kind) ||
+      typeof item.raw !== "string" ||
+      typeof item.normalized !== "string"
+    ) {
+      return [];
+    }
     const raw = clean(item.raw);
     const normalized = clean(item.normalized);
     if (!raw || !normalized) return [];
@@ -117,23 +126,30 @@ export function normalizeAuditUserIntent(
     }];
   });
 
+  const priorityDomains =
+    Array.isArray(input.priorityDomains)
+      ? input.priorityDomains.filter(
+          (domain): domain is GameplayIssueFailureDomain =>
+            FAILURE_DOMAINS.has(domain),
+        )
+      : [];
+  const priorityPlayerFlows =
+    Array.isArray(input.priorityPlayerFlows)
+      ? input.priorityPlayerFlows.filter(
+          (flow): flow is GameplayIssueFlowStage =>
+            PLAYER_FLOWS.has(flow),
+        )
+      : [];
+
   return {
     schemaVersion: 1,
     policy:
       "user-input-is-search-guidance-not-gameplay-authority",
     items,
     priorityDomains:
-      [...new Set(
-        Array.isArray(input.priorityDomains)
-          ? input.priorityDomains
-          : [],
-      )].sort(),
+      [...new Set(priorityDomains)].sort(),
     priorityPlayerFlows:
-      [...new Set(
-        Array.isArray(input.priorityPlayerFlows)
-          ? input.priorityPlayerFlows
-          : [],
-      )].sort(),
+      [...new Set(priorityPlayerFlows)].sort(),
     ambiguities:
       unique(
         Array.isArray(input.ambiguities)
