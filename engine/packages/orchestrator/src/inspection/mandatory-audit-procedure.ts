@@ -84,6 +84,44 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       item.authorityStatus ===
       "multi-writer-unresolved",
   );
+  const capabilityDeliveryFailures =
+    hidden.capabilityDelivery.filter(
+      (item) =>
+        item.status === "DEGRADED" ||
+        item.status === "MISSING",
+    );
+  const capabilityDeliveryUnproven =
+    hidden.capabilityDelivery.filter(
+      (item) => item.status === "UNPROVEN",
+    );
+  const capabilityFailureRoutedIds =
+    capabilityDeliveryFailures
+      .filter((failure) =>
+        graph.causalLinks.some((link) =>
+          link.status === "CONTRADICTED" &&
+          (
+            link.subjectIds.includes(
+              failure.subjectId,
+            ) ||
+            link.componentIds.includes(
+              failure.subjectId,
+            ) ||
+            (
+              failure.subjectId ===
+                "runtime:arena-capacity" &&
+              graph.scenarios.some(
+                (scenario) =>
+                  scenario.id ===
+                    link.scenarioId &&
+                  scenario.label ===
+                    "arena-capacity-plus-one",
+              )
+            )
+          )
+        )
+      )
+      .map((item) => item.subjectId)
+      .sort();
   const progressionIncomplete = progressionContracts.filter(
     (item) =>
       item.kind === "objective"
@@ -559,6 +597,41 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     ["BoundaryRegistry"],
   ));
 
+  checkpoint.push(receipt(
+    "B6",
+    "MODEL",
+    "Gameplay Capability Delivery",
+    capabilityDeliveryUnproven.length > 0
+      ? "PARTIAL"
+      : "CLOSED",
+    capabilityDeliveryUnproven.length > 0
+      ? "Some player-visible/design capability delivery remains unproven: " +
+        capabilityDeliveryUnproven
+          .map((item) => item.subjectId)
+          .join(", ") +
+        "."
+      : capabilityDeliveryFailures.length > 0
+        ? "Capability delivery failures are understood and must continue to PROVE; technical constraints explain root cause but do not erase player-visible design failure."
+        : "Known player-visible gameplay capabilities are delivered by the selected artifact.",
+    hidden.capabilityDelivery.flatMap(
+      (item) => item.evidenceIds,
+    ),
+    ["GameplayCapabilityDelivery"],
+    {
+      obligations: [
+        obligation(
+          "capability-delivery-classified",
+          hidden.capabilityDelivery.length > 0,
+          capabilityDeliveryUnproven.length === 0,
+          "Every grounded player-visible gameplay capability must be classified as delivered, degraded, or missing before proof.",
+          hidden.capabilityDelivery.flatMap(
+            (item) => item.evidenceIds,
+          ),
+        ),
+      ],
+    },
+  ));
+
   const combatApplicable =
     world.combat.hurtHandlers > 0 ||
     world.combat.deathHandlers > 0 ||
@@ -932,12 +1005,36 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "Required Inspection Graph",
     scenarioClosure.missingRequiredKnowledgeIds.length > 0 ||
       scenarioClosure.capabilityGapKnowledgeIds.length > 0 ||
-      scenarioClosure.prerequisiteBlockedKnowledgeIds.length > 0
+      scenarioClosure.prerequisiteBlockedKnowledgeIds.length > 0 ||
+      capabilityFailureRoutedIds.length !==
+        capabilityDeliveryFailures.length
       ? "OPEN"
       : "CLOSED",
-    "RIG knowledge receipts are evaluated fail-closed.",
-    graph.knowledgeReceipts.flatMap((item) => item.evidenceIds),
-    ["RequiredInspectionGraph"],
+    capabilityFailureRoutedIds.length !==
+        capabilityDeliveryFailures.length
+      ? "A gameplay capability delivery failure exists without a CONTRADICTED causal link; design/implementation failure has not been routed into proof."
+      : "RIG knowledge receipts and gameplay capability delivery failures are evaluated fail-closed.",
+    [
+      ...graph.knowledgeReceipts.flatMap(
+        (item) => item.evidenceIds,
+      ),
+      ...hidden.capabilityDelivery.flatMap(
+        (item) => item.evidenceIds,
+      ),
+    ],
+    ["RequiredInspectionGraph", "GameplayCapabilityDelivery"],
+    {
+      obligations: [
+        obligation(
+          "capability-failures-routed-to-proof",
+          capabilityDeliveryFailures.length > 0,
+          capabilityFailureRoutedIds.length ===
+            capabilityDeliveryFailures.length,
+          "Every degraded/missing player-visible capability must map to a CONTRADICTED causal link; technical explanation alone cannot close it.",
+          capabilityFailureRoutedIds,
+        ),
+      ],
+    },
   ));
 
   checkpoint.push(receipt(
