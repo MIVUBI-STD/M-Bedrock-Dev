@@ -12,9 +12,9 @@ A client or tester should understand, in this order:
 2. how many gameplay-relevant issues are open;
 3. which issues need attention first;
 4. what the player experiences;
-5. how to reproduce it using a checkable in-game path;
+5. how to reproduce it using a clear in-game path;
 6. what was observed versus expected;
-7. what work remains to fix/retest;
+7. whether the bug has been verified fixed during retest;
 8. technical/root-cause detail only when needed.
 
 ## Reportability boundary
@@ -82,17 +82,16 @@ Bug ID | Severity | Category | Issue
 
 Bug 01
 Issue
-Tester Checklist
+How to Reproduce
 Result (Observed + Expected)
-Resolution, when supported
-Work Checklist
-Technical Analysis / Relevant Code / Must Preserve, when available
+Tester Checklist — Verified Fixed
+Resolution / Technical Detail, when available
 
 Bug 02
 ...
 ```
 
-Reproduction and work checkboxes are presentation-only aids. They are not canonical bug state.
+The tester checkbox is a presentation-only retest aid. It indicates whether the visible bug has been verified fixed in that HTML copy; it does not mutate canonical bug state. Reproduction steps are instructional text, not checklist state.
 
 Each input report represents one map. One generated HTML therefore corresponds to one map and forms a natural printable page/report unit.
 
