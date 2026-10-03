@@ -4,6 +4,9 @@ import {
 import {
   shouldIncludeInDefaultBugReport,
 } from "../decision.js";
+import {
+  bugFinderCategoryLabel,
+} from "../vocabulary.js";
 import type {
   BugReportV2,
   BugReportV2Bug,
@@ -87,7 +90,7 @@ function projectIssue(
     id: bug.id,
     severity: bug.severity,
     status: status(bug),
-    category: bug.category,
+    category: bugFinderCategoryLabel(bug.category),
     foundBy: bug.foundBy,
     title: bug.title,
     issue: bug.problem,
