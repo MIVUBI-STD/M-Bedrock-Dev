@@ -1166,6 +1166,13 @@ export function deriveGameplayWorldModel(
             basis:
               source.arena.spatialLayout.basis,
           }),
+      ...(source.arena.spatialLayout?.canonical?.arenaId === undefined
+        ? {}
+        : {
+            replicaBaselineId:
+              source.arena.spatialLayout
+                .canonical.arenaId,
+          }),
       ...(source.arena.layoutReconciliation === undefined
         ? {}
         : {
