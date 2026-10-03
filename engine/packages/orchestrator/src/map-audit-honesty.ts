@@ -191,6 +191,7 @@ export function assessAuditHonesty(input: {
     readonly CompoundBoundarySignal[];
   readonly accumulationGrowth:
     readonly AccumulationGrowthSignal[];
+  readonly replicaDivergenceIds?: readonly string[];
   readonly visibleIssues: readonly AuditIssueProjection[];
 }): AuditHonestyAssessment {
   const expectedVisibleResidueIds = [
@@ -222,6 +223,7 @@ export function assessAuditHonesty(input: {
       ...input.accumulationGrowth.map(
         (signal) => signal.id,
       ),
+      ...(input.replicaDivergenceIds ?? []),
     ]),
   ].sort();
 
