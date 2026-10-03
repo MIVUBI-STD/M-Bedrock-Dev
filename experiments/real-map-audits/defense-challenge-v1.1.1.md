@@ -316,11 +316,6 @@ Wave completion only waits for the first owner.
 Expose retry-pending count/generation from EntityLoader to WaveScheduler/CombatTracker, or make a spawn group remain pending until every requested entity is either successfully spawned or explicitly resolved as a terminal spawn failure. Do not infer clearance from live-entity count while retries are outstanding.
 
 
-## Audit obligation — Shop command-delivery transaction is not atomic
-
-The Speed Potion path consumes coins before `runCommandAsync("give @s potion 1 14")` confirms delivery. The catch path does not refund coins.
-
-This is **not admitted as a current gameplay bug** because the selected command is valid in current Bedrock semantics and this source pass has not established a normal selected-artifact trigger that makes that command fail. Keep it as transaction-hardening / failure-path validation only.
 
 ## Proven finding 2
 
@@ -433,15 +428,11 @@ The map defines six arena configs, while `MAX_CONCURRENT_ARENAS = 2`.
 
 This is **not admitted as a bug from source alone** because the selected artifact also implements an explicit ticking-area queue and queue messaging. That makes the concurrency cap look intentionally authored unless a separate current-artifact/player-facing contract proves all six must run simultaneously.
 
-### Spawn retry / wave completion
-
-Entity spawns use bounded retries and wave clearance is reconciled against live tagged hostiles. Spawn failure behavior remains a runtime-risk area, but this source pass did not establish a selected-artifact causal contradiction strong enough to admit a second bug.
-
 ### Internal level-name version mismatch
 
 The file/manifest is v1.1.1 while `levelname.txt` still says `Daigon Defense v1.1.0`. This is recorded as metadata mismatch only, not gameplay defect.
 
-## Audit obligation — Speed Potion purchase delivery is non-atomic
+## Narrow runtime obligation — Speed Potion transaction failure path
 
 This is **not admitted as a gameplay bug yet** because the selected source proves the failure consequence but does not prove that the configured command fails on the target runtime.
 
@@ -476,7 +467,7 @@ Narrow validation:
 3. Verify whether `give @s potion 1 14` succeeds on the actual target runtime.
 4. If command delivery fails, confirm that 12 coins were consumed and the later success message is still shown.
 
-If runtime confirms command failure, promote as a Major economy transaction bug. Until then it remains an Audit Obligation.
+Current Bedrock documentation still documents Swiftness as potion data value 14 in the supported custom-potion table, so the selected command is not source-proven invalid. Keep only this narrow target-runtime check: if command delivery actually fails in the deployed runtime, verify whether coins remain consumed; promote only with that manifestation.
 
 ### Historical regression checks that are not current findings
 
@@ -487,4 +478,4 @@ If runtime confirms command failure, promote as a Major economy transaction bug.
 
 ## Next action
 
-Defense v1.1.1 source pass is complete for this real-test round. Keep the proven reset/lease race pending approval and the Speed Potion transaction as a narrow runtime obligation. Do not ingest either into historical reliability knowledge until the approval boundary is crossed.
+Defense v1.1.1 source pass is complete for this real-test round with four independently source-proven gameplay bugs: two Blockers and two Majors. Keep the Speed Potion transaction as one narrow runtime-only failure-path check. Do not ingest findings into historical reliability knowledge until the approval boundary is crossed.
