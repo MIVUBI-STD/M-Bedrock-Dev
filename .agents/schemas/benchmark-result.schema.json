@@ -9,8 +9,13 @@
     "metrics"
   ],
   "properties": {
-    "schemaVersion": { "const": 1 },
-    "expectationId": { "type": "string", "minLength": 1 },
+    "schemaVersion": {
+      "const": 1
+    },
+    "expectationId": {
+      "type": "string",
+      "minLength": 1
+    },
     "resultClass": {
       "enum": [
         "pass",
@@ -24,19 +29,152 @@
     },
     "metrics": {
       "type": "object",
-      "required": ["tp", "tn", "fp", "fn", "unknown"],
+      "required": [
+        "tp",
+        "tn",
+        "fp",
+        "fn",
+        "unknown"
+      ],
       "properties": {
-        "tp": { "type": "integer", "minimum": 0 },
-        "tn": { "type": "integer", "minimum": 0 },
-        "fp": { "type": "integer", "minimum": 0 },
-        "fn": { "type": "integer", "minimum": 0 },
-        "unknown": { "type": "integer", "minimum": 0 },
-        "precision": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
-        "recall": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
-        "specificity": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
-        "falsePositiveRate": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
+        "tp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unknown": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "precision": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "recall": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "specificity": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "falsePositiveRate": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        }
       },
       "additionalProperties": true
+    },
+    "auditQuality": {
+      "type": "object",
+      "required": [
+        "proven",
+        "needValidation",
+        "runtimeResidue",
+        "honestyStatus"
+      ],
+      "properties": {
+        "proven": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "needValidation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "runtimeResidue": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "totalVisibleFindings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "provenRate": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "needValidationRate": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "runtimeResidueRate": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "honestyStatus": {
+          "enum": [
+            "PASS",
+            "VIOLATION"
+          ]
+        },
+        "validationTestCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fullMapReplica": {
+          "type": "object",
+          "properties": {
+            "equivalent": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "expectedVariant": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "materialDivergence": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "incompleteProof": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": true
