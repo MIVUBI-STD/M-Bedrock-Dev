@@ -448,15 +448,6 @@ export async function runSelectedMapAudit(
     graph: scenario.graph,
     defectResolution: scenario.defectResolution,
   });
-  const modelTaskPackets = deriveAuditModelTaskPackets({
-    admission,
-    procedure,
-    graph: scenario.graph,
-    defectResolution: scenario.defectResolution,
-    intent: inspection.gameplayIntent.model,
-    auditRevision,
-    world: inspection.gameplayWorld,
-  });
   const control = deriveSelectedMapAuditControl({
     admission,
     procedure,
@@ -472,6 +463,23 @@ export async function runSelectedMapAudit(
         .temporalRisks,
     gameplayClosure:
       inspection.gameplayWorld.gameplayClosure,
+  });
+  const needValidationFindings = [
+    ...control.issueLanes.BUG,
+    ...control.issueLanes.DESIGN_MISMATCH,
+  ].filter(
+    (item): item is NeedValidationAuditIssueProjection =>
+      item.status === "NEED_VALIDATION",
+  );
+  const modelTaskPackets = deriveAuditModelTaskPackets({
+    admission,
+    procedure,
+    graph: scenario.graph,
+    defectResolution: scenario.defectResolution,
+    intent: inspection.gameplayIntent.model,
+    auditRevision,
+    world: inspection.gameplayWorld,
+    needValidationFindings,
   });
   return {
     schemaVersion: 1,
@@ -558,15 +566,6 @@ export function resolveSelectedMapAudit(
     graph: scenario.graph,
     defectResolution: scenario.defectResolution,
   });
-  const modelTaskPackets = deriveAuditModelTaskPackets({
-    admission,
-    procedure: mandatoryAuditProcedure,
-    graph: scenario.graph,
-    defectResolution: scenario.defectResolution,
-    intent: updatedInspection.gameplayIntent.model,
-    auditRevision,
-    world: updatedInspection.gameplayWorld,
-  });
   const control = deriveSelectedMapAuditControl({
     admission,
     procedure: mandatoryAuditProcedure,
@@ -579,6 +578,23 @@ export function resolveSelectedMapAudit(
       hidden.temporalRisks,
     gameplayClosure:
       updatedInspection.gameplayWorld.gameplayClosure,
+  });
+  const needValidationFindings = [
+    ...control.issueLanes.BUG,
+    ...control.issueLanes.DESIGN_MISMATCH,
+  ].filter(
+    (item): item is NeedValidationAuditIssueProjection =>
+      item.status === "NEED_VALIDATION",
+  );
+  const modelTaskPackets = deriveAuditModelTaskPackets({
+    admission,
+    procedure: mandatoryAuditProcedure,
+    graph: scenario.graph,
+    defectResolution: scenario.defectResolution,
+    intent: updatedInspection.gameplayIntent.model,
+    auditRevision,
+    world: updatedInspection.gameplayWorld,
+    needValidationFindings,
   });
 
   return {
