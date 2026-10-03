@@ -21,7 +21,7 @@ One concept must have one public name across source, schema, docs, report, and t
 | No-hidden gate | `honesty` | completenessCheck |
 | Consolidated runtime/manual tests | `validationTests` | testerTasks |
 | Historical search influence | `historyPressure` | historicalRiskScore |
-| Sufficient-proof checklist | `familyProofCriteria` | proofChecklist |
+| Family-specific proof guidance | `familyProofCriteria` | proofChecklist |
 
 Internal resolver states such as RUNTIME_PROOF_REQUIRED, DETECTION_GAP, COUNTERPROOF_SEARCH_REQUIRED, and GAMEPLAY_TRANSLATION_REQUIRED may exist internally, but they must project to NEED_VALIDATION rather than becoming additional public statuses.
 
@@ -61,7 +61,7 @@ Use:
 - `replicaId` — stable identifier for one compared replica.
 - `replicaStatus` — `EQUIVALENT | DIVERGENCE_REQUIRES_CLASSIFICATION | INCOMPLETE_PROOF`.
 - `replicaDivergenceIds[]` — only deltas that must continue to STRESS/PROVE.
-- `baselineReusableForAllReplicas` — true only when every replica has sufficient proof and no material delta remains.
+- `baselineReusableForAllReplicas` — true only when every replica has sufficient proof and no unresolved replica divergence remains.
 
 Do not use `copy`, `clone`, `same arena`, or `different arena` as canonical machine terms.
 
