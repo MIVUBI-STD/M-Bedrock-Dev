@@ -7,6 +7,9 @@ import {
   mergeAndSaveHistoricalRegressions,
   type HistoricalRegressionRecord,
 } from "../../../reliability-search/src/index.js";
+import {
+  projectLifecycleStatus,
+} from "../../../project-model/src/index.js";
 import type {
   ProjectRecord,
 } from "../../../project-model/src/index.js";
@@ -155,10 +158,13 @@ export async function syncApprovedProjectIssueHistory(
   readonly historicalRegressionIds:
     readonly string[];
 }> {
+  const lifecycle =
+    projectLifecycleStatus(
+      input.project,
+    );
   if (
-    input.project.status !== "approved" &&
-    input.project.status !==
-      "drive-published"
+    lifecycle !== "approved" &&
+    lifecycle !== "drive-published"
   ) {
     throw new Error(
       "Historical issue sync requires an approved project.",
