@@ -25,6 +25,23 @@ audit <selected.mcworld>
    issueLanes.DESIGN_MISMATCH
 ```
 
+### Full-map receipt integration
+
+`SelectedMapAuditRun` now exposes `fullMapReplica` when per-replica world/topology proof exists.
+
+The receipt is built only from retained replica proof details already produced by the existing world/topology pipeline. It does not recompute world comparison.
+
+Current canonical replica status names are:
+
+```text
+EQUIVALENT
+EXPECTED_VARIANT
+MATERIAL_DIVERGENCE
+INCOMPLETE_PROOF
+```
+
+A MATERIAL_DIVERGENCE produces `materialDeltaIds[]` for continued causal analysis. INCOMPLETE_PROOF prevents baseline safety from being inherited.
+
 ### Naming and output contract alignment
 
 Public naming is now governed by `docs/03-analysis/map-audit-naming-contract.md`.
