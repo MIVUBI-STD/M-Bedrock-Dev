@@ -5,6 +5,9 @@ import {
 import type {
   NeedValidationAuditIssueProjection,
 } from "../src/map-audit-issue-projection.js";
+import type {
+  GameplayWorldModel,
+} from "../src/inspection/gameplay-world-model.js";
 
 function finding(
   failureDomain: NeedValidationAuditIssueProjection["failureDomain"],
@@ -55,6 +58,34 @@ describe("map audit proof navigation", () => {
     expect(result.missingClaims).toEqual([
       "Reachable completion accounting.",
     ]);
+  });
+
+  it("offers static simulation evidence substitution only when world evidence supports it", () => {
+    const world = {
+      entities: {
+        definitions: 12,
+      },
+      platformKnowledge: {
+        profileResolved: true,
+      },
+      chunks: {
+        tickingAreaAcquires: 0,
+        readinessProbes: 0,
+      },
+    } as unknown as GameplayWorldModel;
+
+    const result = buildAuditProofNavigation(
+      finding("chunk-simulation"),
+      world,
+    );
+
+    expect(
+      result.evidenceSubstitutions.map(
+        (item) => item.id,
+      ),
+    ).toContain(
+      "substitution:simulation-ownership",
+    );
   });
 
   it("does not label unevidenced expected/actual narrative as proven claims", () => {
