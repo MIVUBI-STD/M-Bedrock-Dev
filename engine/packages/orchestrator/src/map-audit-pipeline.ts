@@ -57,6 +57,7 @@ import {
 import {
   projectReadyAuditIssues,
   type AuditIssueProjection,
+  type NeedValidationAuditIssueProjection,
   type ReadyAuditIssueProjection,
 } from "./map-audit-issue-projection.js";
 import {
@@ -713,6 +714,10 @@ export interface BuildSelectedMapAuditReportResult
   extends BuildBugReportFromAuditResult {
   readonly designMismatches:
     readonly AuditIssueProjection[];
+  readonly needValidation:
+    readonly NeedValidationAuditIssueProjection[];
+  readonly validationTests:
+    readonly AuditValidationTestGroup[];
 }
 
 /**
@@ -730,6 +735,15 @@ export function buildSelectedMapAuditReport(
     return {
       designMismatches:
         input.audit.issueLanes.DESIGN_MISMATCH,
+      needValidation: [
+        ...input.audit.issueLanes.BUG,
+        ...input.audit.issueLanes.DESIGN_MISMATCH,
+      ].filter(
+        (item): item is NeedValidationAuditIssueProjection =>
+          item.status === "NEED_VALIDATION",
+      ),
+      validationTests:
+        input.audit.validationTests,
       collection: collectConfirmedDefects(
         input.candidates,
         input.engineeringAnalyses ??
@@ -756,6 +770,15 @@ export function buildSelectedMapAuditReport(
     return {
       designMismatches:
         input.audit.issueLanes.DESIGN_MISMATCH,
+      needValidation: [
+        ...input.audit.issueLanes.BUG,
+        ...input.audit.issueLanes.DESIGN_MISMATCH,
+      ].filter(
+        (item): item is NeedValidationAuditIssueProjection =>
+          item.status === "NEED_VALIDATION",
+      ),
+      validationTests:
+        input.audit.validationTests,
       collection: collectConfirmedDefects(
         input.candidates,
         input.engineeringAnalyses ??
@@ -784,6 +807,15 @@ export function buildSelectedMapAuditReport(
     return {
       designMismatches:
         input.audit.issueLanes.DESIGN_MISMATCH,
+      needValidation: [
+        ...input.audit.issueLanes.BUG,
+        ...input.audit.issueLanes.DESIGN_MISMATCH,
+      ].filter(
+        (item): item is NeedValidationAuditIssueProjection =>
+          item.status === "NEED_VALIDATION",
+      ),
+      validationTests:
+        input.audit.validationTests,
       collection: collectConfirmedDefects(
         input.candidates,
         input.engineeringAnalyses ??
@@ -835,5 +867,14 @@ export function buildSelectedMapAuditReport(
     ...bugReport,
     designMismatches:
       input.audit.issueLanes.DESIGN_MISMATCH,
+    needValidation: [
+      ...input.audit.issueLanes.BUG,
+      ...input.audit.issueLanes.DESIGN_MISMATCH,
+    ].filter(
+      (item): item is NeedValidationAuditIssueProjection =>
+        item.status === "NEED_VALIDATION",
+    ),
+    validationTests:
+      input.audit.validationTests,
   };
 }
