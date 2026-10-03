@@ -177,6 +177,22 @@ Every symptom/suspicion/claim should retain the user's original meaning and a no
 
 Do not invent missing detail.
 
+## Target-hint reconciliation
+
+`TARGET_HINT` may help identify which artifact/version the user means, but once production audit receives an exact `.mcworld`, that artifact identity is authoritative.
+
+If the translated target hint materially conflicts with the exact selected artifact/version:
+
+```text
+target hint conflict
+→ blockingAmbiguities[]
+→ do not start production audit
+```
+
+Do not silently relabel the selected artifact to match user wording.
+
+If the selected artifact already resolves the user's vague target wording without conflict, keep the hint as non-authoritative context and continue.
+
 ## Ambiguity handling
 
 When several interpretations are plausible and all can be checked cheaply:
