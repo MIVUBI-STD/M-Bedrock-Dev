@@ -5,6 +5,7 @@ Workspace has three responsibilities only:
 ```text
 workspace/
 ├─ projects/<project-id>/  ignored working continuity for each project
+├─ project-registry.json   tracked compact current-project registry
 ├─ reports/                tracked canonical Bug Report V2 state
 ├─ drive-root.json         tracked Google Drive root binding
 └─ ownership.json          workspace ownership contract
@@ -27,6 +28,9 @@ workspace/projects/<project-id>/
 ├─ evidence/   project-scoped diagnostics/evidence, not report authority
 ├─ patches/    explicit patch transactions/history
 └─ state/      project/session/audit continuity metadata
+   ├─ work-session.json
+   ├─ approvals/<snapshot-fingerprint>.json
+   └─ publications/<snapshot-fingerprint>.json
 ```
 
 ### Ownership
@@ -46,6 +50,20 @@ workspace/reports/
 ```
 
 This avoids two report stores with competing authority.
+
+## Project registry
+
+`workspace/project-registry.json` is the tracked answer to:
+
+- what project is currently being worked on;
+- which artifact/version/fingerprint it is bound to;
+- current project lifecycle status;
+- current Work Session/audit revision and next action;
+- canonical Bug Report reference;
+- historical issue knowledge references;
+- Drive binding and publication fingerprints.
+
+It is intentionally compact. Detailed evidence stays inside the ignored project workspace.
 
 ## Canonical report state
 
