@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  projectLifecycleStatus,
+} from "../../project-model/src/index.js";
+import {
   approveProject,
   applyDrivePublishReceipt,
   assessProjectApprovalReadiness,
@@ -7,6 +10,7 @@ import {
   createDrivePublishReceipt,
   createProjectApprovalSnapshot,
   createProjectRecord,
+  drivePublicationIsComplete,
   updateProjectRecord,
 } from "../src/workflow/index.js";
 
@@ -72,18 +76,19 @@ function approvedProject() {
       requireAuditComplete: true,
       requireBugReport: true,
     });
+  const approved =
+    approveProject(
+      project,
+      snapshot,
+    );
   return {
-    project:
-      approveProject(
-        project,
-        snapshot,
-      ),
+    project: approved,
     snapshot,
   };
 }
 
 describe("project publication lifecycle", () => {
-  it("derives readiness without persisting another status", () => {
+  it("derives readiness without persisting another lifecycle state", () => {
     const project = projectWithReport();
     const readiness =
       assessProjectApprovalReadiness({
@@ -95,10 +100,25 @@ describe("project publication lifecycle", () => {
 
     expect(readiness.ready).toBe(true);
     expect(readiness.missing).toEqual([]);
-    expect(project.status).toBe("working");
+    expect(
+      projectLifecycleStatus(project),
+    ).toBe("working");
   });
 
-  it("invalidates approval when material project work changes", () => {
+  it("derives approved state only from approval proof", () => {
+    const { project } =
+      approvedProject();
+
+    expect(
+      projectLifecycleStatus(project),
+    ).toBe("approved");
+    expect(
+      project.publication
+        .approvalSnapshotFingerprint,
+    ).toBeTruthy();
+  });
+
+  it("invalidates approval proof when material project work changes", () => {
     const approved =
       approvedProject().project;
 
@@ -111,7 +131,9 @@ describe("project publication lifecycle", () => {
         },
       });
 
-    expect(changed.status).toBe("working");
+    expect(
+      projectLifecycleStatus(changed),
+    ).toBe("working");
     expect(
       changed.publication
         .approvalSnapshotFingerprint,
@@ -142,7 +164,7 @@ describe("project publication lifecycle", () => {
     );
   });
 
-  it("requires approved state before Drive publication", () => {
+  it("requires approval proof before Drive publication", () => {
     const project = projectWithReport();
     const snapshot =
       createProjectApprovalSnapshot({
@@ -162,7 +184,7 @@ describe("project publication lifecycle", () => {
     );
   });
 
-  it("does not mark a partial Drive upload as published", () => {
+  it("derives incomplete Drive publication from missing approved files", () => {
     const {
       project,
       snapshot,
@@ -184,19 +206,24 @@ describe("project publication lifecycle", () => {
         }],
       });
 
-    expect(receipt.status)
-      .toBe("PARTIAL");
+    expect(
+      drivePublicationIsComplete(
+        snapshot,
+        receipt,
+      ),
+    ).toBe(false);
     expect(() =>
       applyDrivePublishReceipt(
         project,
+        snapshot,
         receipt,
       )
     ).toThrow(
-      "Partial Drive publication cannot mark project drive-published.",
+      "Incomplete Drive publication cannot mark project drive-published.",
     );
   });
 
-  it("marks the exact approved deliverables as drive-published", () => {
+  it("derives drive-published only from complete approved publication proof", () => {
     const {
       project,
       snapshot,
@@ -227,13 +254,24 @@ describe("project publication lifecycle", () => {
         }],
       });
 
-    expect(receipt.status)
-      .toBe("COMPLETE");
     expect(
+      drivePublicationIsComplete(
+        snapshot,
+        receipt,
+      ),
+    ).toBe(true);
+
+    const published =
       applyDrivePublishReceipt(
         project,
+        snapshot,
         receipt,
-      ).status,
+      );
+
+    expect(
+      projectLifecycleStatus(
+        published,
+      ),
     ).toBe("drive-published");
   });
 });
