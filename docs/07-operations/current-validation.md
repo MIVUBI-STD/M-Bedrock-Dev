@@ -45,6 +45,19 @@ Source-proven contradictions still run automatic bounded counter-proof search fi
 
 Disproved and proven-normal candidates remain in audit trace only. This keeps uncertainty visible without mixing many status vocabularies.
 
+### Resolution-maximization hardening
+
+The current source also pushes more material signals toward resolution before they can disappear:
+
+- unresolved Required Inspection Graph knowledge receipts now surface as NEED_VALIDATION findings instead of living only inside closure metadata;
+- leaf scenarios with components but no causal proof edge surface as NEED_VALIDATION;
+- negative-space lifecycle signals and high temporal interaction risks surface as NEED_VALIDATION rather than remaining attention counters only;
+- partially grounded candidate patterns are retained for targeted proof; only all-unknown low-signal patterns stay as raw evidence work;
+- unknown counter-proof never suppresses a material candidate; only concrete blocking counter-proof may do so;
+- NEED_VALIDATION findings carry stable validation grouping keys and are consolidated into the minimum practical validation test set.
+
+The intended optimization target is therefore: maximize PROVEN, keep every material unresolved signal visible, and minimize tester actions through consolidated high-information tests.
+
 ### False-negative control hardening
 
 The current source now also enforces:
