@@ -33,9 +33,9 @@ For every discovered material gameplay surface, the canonical audit must prove o
 ```text
 static proof sufficient
 or
-targeted runtime proof executed/requested
+targeted runtime proof executed/requested as an Audit Obligation
 or
-Detection Gap with an exact tester obligation
+Detection Gap recorded as an Audit Obligation
 or
 not-applicable with positive evidence
 ```
