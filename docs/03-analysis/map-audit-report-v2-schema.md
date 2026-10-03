@@ -17,7 +17,8 @@ World Artifact
 → Reachability + Capability Exposure
 → Blind-Spot + Cross-System Coverage
 → Gameplay Model Closure
-→ Bug Findings
+→ BUG Findings
+→ DESIGN_MISMATCH Findings
 → Coverage Accounting
 → Closure-gated Production Report
 ```
@@ -53,7 +54,36 @@ Every applicable audit surface is recorded as:
 
 Unsupported or unparsed mechanics are reported as Detection Gap.
 
-## Bug record
+## Issue type split
+
+Map Audit Output V2 has two distinct confirmed-issue lanes:
+
+### BUG
+
+Use when the selected artifact has a grounded intended behavior/design, but implementation or runtime behavior breaks that intent.
+
+Examples:
+
+- spawn should happen but fails;
+- reconnect should restore loadout but does not;
+- purchase consumes currency but fails to deliver effect;
+- cleanup leaves stale state that corrupts the next run.
+
+### DESIGN_MISMATCH
+
+Use when the capability/design presented by the map does not match what can actually be played or delivered, even if the implementation is internally consistent.
+
+Examples:
+
+- six arenas are presented but only two can run concurrently;
+- a visible mechanic or route is offered but the supported capability is materially lower;
+- platform/resource constraints make the authored design undeliverable as presented.
+
+Technical constraints are recorded as root cause/constraint evidence. They do not convert a DESIGN_MISMATCH into normal behavior.
+
+A finding must belong to exactly one of these two lanes. Do not duplicate one root cause into both.
+
+## BUG record
 
 Every reportable issue requires:
 
@@ -75,6 +105,19 @@ Confirmed bugs additionally require:
 - Blocker / Major / Minor severity;
 - cleared counter-evidence;
 - tester-ready reproduction.
+
+## DESIGN_MISMATCH record
+
+DESIGN_MISMATCH uses the same evidence, gameplay-flow, severity, reproduction, expected/actual, proof-ceiling, and counter-evidence discipline as BUG.
+
+Additional fields may include:
+
+```text
+Mismatch Kind
+Technical Constraint
+Presented Capability
+Playable Capability
+```
 
 ## Status
 
