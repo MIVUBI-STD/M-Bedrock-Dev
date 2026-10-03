@@ -57,6 +57,7 @@ import {
 import {
   projectAllNeedValidationAuditIssues,
   projectReadyAuditIssues,
+  projectSignalNeedValidationAuditIssues,
   type AuditIssueProjection,
   type ReadyAuditIssueProjection,
 } from "./map-audit-issue-projection.js";
@@ -150,6 +151,10 @@ function deriveSelectedMapAuditControl(input: {
     InspectArtifactResult["hiddenGameplayDefects"]["scenarioAudit"];
   readonly capabilityDelivery:
     InspectArtifactResult["hiddenGameplayDefects"]["capabilityDelivery"];
+  readonly negativeSpace:
+    InspectArtifactResult["hiddenGameplayDefects"]["negativeSpace"];
+  readonly temporalRisks:
+    InspectArtifactResult["hiddenGameplayDefects"]["temporalRisks"];
 }): Pick<
   SelectedMapAuditRun,
   | "executionTrace"
@@ -179,9 +184,15 @@ function deriveSelectedMapAuditControl(input: {
       input.scenario.defectResolution,
       input.capabilityDelivery,
     );
+  const signalValidationIssues =
+    projectSignalNeedValidationAuditIssues(
+      input.negativeSpace,
+      input.temporalRisks,
+    );
   const allVisibleIssues: readonly AuditIssueProjection[] = [
     ...provenIssues,
     ...needValidationIssues,
+    ...signalValidationIssues,
   ];
   const issueLanes = {
     BUG: allVisibleIssues.filter(
@@ -396,6 +407,12 @@ export async function runSelectedMapAudit(
     capabilityDelivery:
       inspection.hiddenGameplayDefects
         .capabilityDelivery,
+    negativeSpace:
+      inspection.hiddenGameplayDefects
+        .negativeSpace,
+    temporalRisks:
+      inspection.hiddenGameplayDefects
+        .temporalRisks,
   });
   return {
     schemaVersion: 1,
@@ -497,6 +514,10 @@ export function resolveSelectedMapAudit(
     scenario,
     capabilityDelivery:
       hidden.capabilityDelivery,
+    negativeSpace:
+      hidden.negativeSpace,
+    temporalRisks:
+      hidden.temporalRisks,
   });
 
   return {
