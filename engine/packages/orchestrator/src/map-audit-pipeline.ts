@@ -185,6 +185,10 @@ function deriveSelectedMapAuditControl(input: {
     InspectArtifactResult["hiddenGameplayDefects"]["discoveryChallenges"];
   readonly sharedResourceSignals:
     InspectArtifactResult["hiddenGameplayDefects"]["sharedResourceOwnership"]["signals"];
+  readonly compoundBoundaries:
+    InspectArtifactResult["hiddenGameplayDefects"]["compoundBoundaries"];
+  readonly accumulationGrowth:
+    InspectArtifactResult["hiddenGameplayDefects"]["accumulationGrowth"];
 }): Pick<
   SelectedMapAuditRun,
   | "executionTrace"
@@ -231,6 +235,10 @@ function deriveSelectedMapAuditControl(input: {
         input.discoveryChallenges,
       sharedResourceSignals:
         input.sharedResourceSignals,
+      compoundBoundaries:
+        input.compoundBoundaries,
+      accumulationGrowth:
+        input.accumulationGrowth,
     });
   const navigatedNeedValidationIssues = [
     ...needValidationIssues,
@@ -262,6 +270,10 @@ function deriveSelectedMapAuditControl(input: {
       input.discoveryChallenges,
     sharedResourceSignals:
       input.sharedResourceSignals,
+    compoundBoundaries:
+      input.compoundBoundaries,
+    accumulationGrowth:
+      input.accumulationGrowth,
     visibleIssues: allVisibleIssues,
   });
   const issueLanes = {
@@ -495,6 +507,12 @@ export async function runSelectedMapAudit(
     sharedResourceSignals:
       inspection.hiddenGameplayDefects
         .sharedResourceOwnership.signals,
+    compoundBoundaries:
+      inspection.hiddenGameplayDefects
+        .compoundBoundaries,
+    accumulationGrowth:
+      inspection.hiddenGameplayDefects
+        .accumulationGrowth,
   });
   const needValidationFindings = [
     ...control.issueLanes.BUG,
@@ -616,6 +634,10 @@ export function resolveSelectedMapAudit(
       hidden.discoveryChallenges,
     sharedResourceSignals:
       hidden.sharedResourceOwnership.signals,
+    compoundBoundaries:
+      hidden.compoundBoundaries,
+    accumulationGrowth:
+      hidden.accumulationGrowth,
   });
   const needValidationFindings = [
     ...control.issueLanes.BUG,
