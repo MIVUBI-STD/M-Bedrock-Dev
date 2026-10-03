@@ -103,6 +103,8 @@ import {
 import {
   createFallbackAuditUserIntent,
   deriveAuditUserIntentKnowledgeDemand,
+  validateAuditUserIntentConfirmation,
+  type AuditUserIntentConfirmation,
   normalizeAuditUserIntent,
   validateAuditUserIntent,
   type AuditUserIntentEnvelope,
@@ -148,6 +150,11 @@ export interface SelectedMapAuditInput {
    * Search guidance only; never gameplay authority or report proof.
    */
   readonly userIntent?: AuditUserIntentEnvelope;
+  /**
+   * Explicit chat confirmation bound to the normalized user intent.
+   * Required whenever rawUserPrompt or userIntent is supplied.
+   */
+  readonly userIntentConfirmation?: AuditUserIntentConfirmation;
 }
 
 export interface SelectedMapAuditRun {
@@ -716,6 +723,20 @@ export async function runSelectedMapAudit(
       "Blocking user-input ambiguity must be resolved before production audit: " +
         userIntent.blockingAmbiguities.join(" | "),
     );
+  }
+
+  if (userIntent !== undefined) {
+    const confirmationIssues =
+      validateAuditUserIntentConfirmation(
+        userIntent,
+        input.userIntentConfirmation,
+      );
+    if (confirmationIssues.length > 0) {
+      throw new Error(
+        "User prompt confirmation required: " +
+          confirmationIssues.join("; "),
+      );
+    }
   }
 
   const inspectionInput =
