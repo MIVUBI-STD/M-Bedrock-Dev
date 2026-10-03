@@ -12,6 +12,10 @@ export interface AuditValidationTestGroup {
   readonly issueTypes: readonly GameplayReportIssueType[];
   readonly gameplayFlows: readonly GameplayIssueFlowStage[];
   readonly test: string;
+  readonly assertions: readonly {
+    readonly findingId: string;
+    readonly test: string;
+  }[];
   readonly missingProof: readonly string[];
 }
 
@@ -54,14 +58,17 @@ export function groupNeedValidationTests(
       test:
         items.length === 1
           ? items[0]!.validationTest
-          : "Run one consolidated scenario for " +
+          : "Use one shared setup for " +
             key +
-            " and verify all unresolved dependencies covered by findings: " +
-            items
-              .map((item) => item.causalLinkId)
-              .sort()
-              .join(", ") +
-            ".",
+            ", then execute every exact finding assertion in order. Do not replace individual proof obligations with a broad manual test.",
+      assertions: items
+        .map((item) => ({
+          findingId: item.causalLinkId,
+          test: item.validationTest,
+        }))
+        .sort((a, b) =>
+          a.findingId.localeCompare(b.findingId)
+        ),
       missingProof: [
         ...new Set(
           items.map((item) => item.missingProof),
