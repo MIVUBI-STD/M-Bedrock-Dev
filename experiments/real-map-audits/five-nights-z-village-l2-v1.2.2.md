@@ -11,85 +11,94 @@ Runtime execution: not performed
 - Drive filename: `Defense_Level_2_v1_2_0.mcworld`
 - Drive file ID: `1v-7t1gvcPoIxZuaexUnWKxUqtv-ezB8S`
 - Artifact SHA-256: `d515dcf21bc1665f41c0ae8d3b316721d1ef9ee4ba4ed0212ad7f0d36017d96b`
-- Behavior Pack manifest version: `1.2.2`
-- Resource Pack manifest version: `1.2.2`
+- BP/RP manifest version: `1.2.2`
 - Internal level name: `Defense Level 2 v1.2.2`
 
-The Drive filename is stale metadata. Current artifact gameplay authority is internally consistent at v1.2.2.
+The Drive filename is stale relative to the selected artifact's internal manifest/level identity. This is recorded as metadata mismatch only.
 
 ## Proven findings
 
-No source-proven gameplay defect was admitted in this pass.
+**0 source-proven gameplay defects admitted in this pass.**
 
 ## Historical issue re-checks
 
-### keepInventory
+### World rules / time / weather
 
-Current world setup explicitly applies `keepInventory = true`. The historical disabled-keepInventory issue is not present in this source.
+Current `WorldRulesBootstrap` explicitly applies and periodically reasserts:
+
+```text
+keepInventory = true
+doDayLightCycle = false
+doWeatherCycle = false
+pvp = false
+time = night
+weather = clear
+```
+
+The old keepInventory/time/weather mismatch is not reproduced.
 
 ### Builds Shop
 
-Current shop configuration contains real build-item offers, including Barricade and Spike Trap. The historical empty Builds Shop issue is not present.
+Current gameplay configuration contains an active Builds Shop with:
 
-### Purchase atomicity
+- Barricade
+- Spike Trap
 
-Current purchase paths contain failure handling/refund behavior for potion command delivery and enchant persistence. Historical coin-loss behavior was not re-proven from this artifact.
+The historical empty/missing BuildItems surface is not reproduced.
 
 ### Flag loss reachability
 
-Current flag configuration uses `damagePerZombie = 4`, with an explicit current-source note that undefended flags should be able to fall under sustained pressure. The earlier 1-damage unreachable-loss condition is not carried forward as a current issue.
-
-## Arena loading / ticking proof
-
-The current source builds required gameplay chunks from:
-
-- authored path nodes and path edges;
-- Cave/Windmill/Bridge/Gate spawn positions and sub-spawners;
-- random spawn positions;
-- Gatekeeper/start barricades;
-- shop chests;
-- cinematic camera positions;
-- boss summon positions.
-
-Chunks within Chebyshev radius 4 of the arena spawn are treated as reliable gameplay range. Required chunks outside that range are converted into retained ticking rectangles.
-
-For arena 1, current source coordinates produce only three outside path/coverage chunks:
+Current objective logic uses:
 
 ```text
-(-3,5)
-(2,3)
-(3,3)
+damagePerZombie = 4
+healPerPlayer = 0.6
 ```
 
-Their bounding rectangle is:
+and checks the gatekeeper every configured interval. Sustained undefended enemy pressure can reduce flag health to zero and calls `stop("defeat")`.
+
+The historical practically-unreachable loss condition is not reproduced.
+
+### Spawn failure
+
+Normal wave and boss spawn paths retry bounded failures and explicitly stop the session with `spawn_failure` after retry exhaustion.
+
+This prevents the source from silently treating failed required spawns as valid progression.
+
+### Arena loading / ticking ownership
+
+Current arena loading derives required chunks from gameplay paths, entity setup, shop chests, camera locations, spawn, and wave endpoints.
+
+Retained ticking-area ownership is stored with both:
 
 ```text
-x: -3..3  = 7 chunks
-z:  3..5  = 3 chunks
-area       = 21 chunks
+sessionId
+generation
 ```
 
-Because 21 <= the 100-chunk per-area limit, `createKeepAliveAreas()` produces exactly **one** retained area.
+and `release(arenaId, sessionId, generation)` refuses stale ownership.
 
-Therefore the guard:
+This is materially different from the stale arena-only lease ownership bug proven in standalone Defense Challenge v1.1.1.
 
-```text
-if (keepAliveAreas.length > 1)
-→ abort loading
-```
+### Route/path recovery
 
-does **not** deterministically block current v1.2.2 startup.
+The current coordinator owns route nodes per arena/session and contains stuck-zombie/path reconciliation. Source does not establish that the historical bridge-stuck issue survives in this version.
 
-This candidate was rejected rather than reported.
+### Session ownership / reload
 
-## Reset / ownership
+Session Registry increments a per-arena generation and current gameplay checks session+generation before delayed work continues. Reload recovery removes stale session-owned entities rather than accepting obsolete ownership.
 
-`ArenaLoadingCoordinator` binds retained ticking areas to both `sessionId` and `generation`. Cleanup/release verifies the same ownership before removing retained areas.
+## Audit obligations — not bugs
 
-This is materially safer than the stale arena-ID-only lease behavior proven in Defense Challenge v1.1.1.
+- Navigation success remains runtime-sensitive and should be validated if Pillagers still stall on real terrain.
+- The Drive filename/version mismatch should be cleaned for operator clarity but is not a gameplay bug.
 
 ## Result
 
-Five Nights at Z Village Level 2 current artifact v1.2.2: **0 source-proven gameplay findings** in this pass.
+Five Nights at Z Village Level 2 v1.2.2:
 
-No historical regression entry should be created without later current-artifact/runtime proof.
+- **0 source-proven gameplay bugs**
+- major historical configuration/shop/objective/session issues are not reproduced by current source
+- runtime-sensitive pathfinding remains validation work only
+
+Do not create historical regression entries for this map from this pass.
