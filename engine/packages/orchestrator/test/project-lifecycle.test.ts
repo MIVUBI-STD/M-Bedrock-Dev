@@ -27,9 +27,6 @@ function baseProject() {
     work: {
       sessionId: "session:1",
       workSessionRevision: 4,
-      auditRevision: "audit:4",
-      currentStage: "COMPLETE",
-      nextAction: "PREPARE_REVIEW",
     },
     drive: {
       schemaVersion: 1,
@@ -73,7 +70,6 @@ function approvedProject() {
     createProjectApprovalSnapshot({
       project,
       deliverables,
-      requireAuditComplete: true,
       requireBugReport: true,
     });
   const approved =
