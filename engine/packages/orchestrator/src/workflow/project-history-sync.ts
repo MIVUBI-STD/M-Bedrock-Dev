@@ -149,8 +149,11 @@ export async function syncApprovedProjectIssueHistory(input: {
     updateProjectRecord(
       input.project,
       {
-        historicalRegressionIds:
-          records.map((item) => item.id),
+        historicalRegressionIds: [
+          ...input.project.knowledge
+            .historicalRegressionIds,
+          ...records.map((item) => item.id),
+        ],
       },
     );
 
