@@ -32,6 +32,11 @@ describe("gameplay audit scenario preset flow stages", () => {
     expect(byKind.get("multi-arena-parallel")).toBe(
       "READY_START",
     );
+    const parallelScenario = preset.scenarios.find(
+      (scenario) =>
+        scenario.kind === "multi-arena-parallel",
+    );
+    expect(parallelScenario?.concurrentArenas).toBe(3);
     expect(byKind.get("arena-capacity-plus-one")).toBe(
       "READY_START",
     );
