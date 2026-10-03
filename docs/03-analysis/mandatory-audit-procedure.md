@@ -87,6 +87,21 @@ issueType: BUG
 
 Severity is impact-derived later; domain must never preselect severity.
 
+## Issue classification rule
+
+After a contradiction survives proof, classify it exactly once by:
+
+```text
+Issue Type
+→ Gameplay Flow
+→ Primary Failure Domain
+→ Contributing Domains
+→ Information Mismatch facet
+→ Severity after player-impact proof
+```
+
+Cross-system participation does not create extra findings. One root cause remains one issue with one primary domain and optional contributing domains.
+
 ## Crosscheck rule
 
 Every contradiction reaching PROVE must be challenged from all context-relevant dimensions before confirmation:
