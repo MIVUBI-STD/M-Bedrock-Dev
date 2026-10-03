@@ -89,6 +89,14 @@ Reusable mismatch → bounded handoff to m-bedrock-detection-development. Never 
 
 A benchmark failure is evidence for investigation, not permission to broaden the detector blindly.
 
+## Map Audit quality mapping
+
+For selected-map audit evaluation, also apply:
+
+`docs/05-validation/map-audit-benchmark-quality.md`
+
+This preserves the distinction between detector correctness and proof maturity: NEED_VALIDATION is acceptable only when the frozen expectation explicitly permits unresolved proof at the configured evidence ceiling.
+
 ## Reference routing
 
 - references/benchmark-expectation.md
