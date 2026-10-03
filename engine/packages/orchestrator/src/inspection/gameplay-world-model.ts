@@ -570,6 +570,12 @@ export interface GameplayWorldModelSource {
     records: number;
     unresolvedNames: readonly string[];
   };
+  unsupportedSurfaceSignals?: {
+    teleport: boolean;
+    uiForm: boolean;
+    environment: boolean;
+    asyncCommandTransaction: boolean;
+  };
 }
 
 const SUBJECT_KINDS: readonly GameplayIntentNodeKind[] = [
@@ -983,6 +989,54 @@ export function deriveGameplayWorldModel(
     });
   }
 
+  if (source.unsupportedSurfaceSignals?.teleport) {
+    runtimeSurfaces.push({
+      id: "runtime:teleport",
+      label: "Teleport lifecycle and destination safety",
+      kind: "runtime-domain",
+      status: "unknown",
+      material: true,
+      reason:
+        "Teleport behavior is present in the selected artifact, but no complete production semantic owner currently proves destination, dimension, ownership, timing, and post-teleport state.",
+    });
+  }
+  if (source.unsupportedSurfaceSignals?.uiForm) {
+    runtimeSurfaces.push({
+      id: "runtime:ui-form",
+      label: "UI/form reachability and state",
+      kind: "runtime-domain",
+      status: "unknown",
+      material: true,
+      reason:
+        "Player UI/form behavior is present, but menu reachability, state transitions, and delivery semantics are not fully owned by a production analyzer.",
+    });
+  }
+  if (source.unsupportedSurfaceSignals?.environment) {
+    runtimeSurfaces.push({
+      id: "runtime:environment",
+      label: "Environment and gamerule contract",
+      kind: "runtime-domain",
+      status: "unknown",
+      material: true,
+      reason:
+        "Environment/gamerule mutations are present, but selected-artifact time, weather, difficulty, gamemode, and gamerule intent are not fully semantically reconciled.",
+    });
+  }
+  if (
+    source.unsupportedSurfaceSignals
+      ?.asyncCommandTransaction
+  ) {
+    runtimeSurfaces.push({
+      id: "runtime:async-command-transaction",
+      label: "Asynchronous command transaction",
+      kind: "runtime-domain",
+      status: "unknown",
+      material: true,
+      reason:
+        "Gameplay-significant runCommandAsync mutation is present, but generic success/failure/await/rollback semantics are not fully proven before dependent gameplay state commits.",
+    });
+  }
+
   const intentSurfaces =
     buildIntentClosureSurfaces(source.intent);
   const closureSurfaces = [
@@ -1040,6 +1094,15 @@ export function deriveGameplayWorldModel(
     entityEvidence:
       source.entities.definitions > 0,
     boundaryEvidence,
+    teleportEvidence:
+      source.unsupportedSurfaceSignals?.teleport,
+    uiFormEvidence:
+      source.unsupportedSurfaceSignals?.uiForm,
+    environmentEvidence:
+      source.unsupportedSurfaceSignals?.environment,
+    asyncCommandTransactionEvidence:
+      source.unsupportedSurfaceSignals
+        ?.asyncCommandTransaction,
   });
 
   const gameplayClosure =
