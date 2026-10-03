@@ -271,6 +271,28 @@ for (const lane of ["bugs", "designMismatches"]) {
   }
 }
 
+for (const lane of ["bugs", "designMismatches"]) {
+  const item = reportSchema.properties?.[lane]?.items;
+  const required = new Set(item?.required ?? []);
+  for (const field of [
+    "issueType",
+    "failureDomain",
+    "contributingDomains",
+    "gameplayFlow",
+  ]) {
+    if (!required.has(field)) {
+      issues.push(
+        REPORT_SCHEMA_PATH +
+          " " +
+          lane +
+          " must require canonical issue taxonomy field: " +
+          field +
+          ".",
+      );
+    }
+  }
+}
+
 if (!reportSchema.properties?.designMismatches) {
   issues.push(
     REPORT_SCHEMA_PATH +
