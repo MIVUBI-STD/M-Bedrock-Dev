@@ -133,9 +133,16 @@ export function projectSelectedMapAuditWorkSession(input: {
           .sort(),
       proofClaimIds: [
         "audit-revision:" + audit.auditRevision,
-        ...audit.readyDefects.map(
-          (defect) => defect.causalLinkId,
-        ),
+        ...[
+          ...audit.issueLanes.BUG,
+          ...audit.issueLanes.DESIGN_MISMATCH,
+        ]
+          .filter((finding) =>
+            finding.status === "PROVEN"
+          )
+          .map((finding) =>
+            finding.causalLinkId
+          ),
       ].sort(),
       validationScenarioIds:
         scenario.graph.scenarios
