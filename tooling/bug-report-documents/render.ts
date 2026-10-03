@@ -623,6 +623,39 @@ function auditValidationPlan(
   ].join("\n");
 }
 
+function auditObligationsSection(
+  audit: MapAuditHtmlInput,
+): string {
+  const obligations = audit.auditObligations ?? [];
+  if (obligations.length === 0) return "";
+
+  return [
+    '<section class="section obligations">',
+    '<h2>Audit Obligations — Not Bugs</h2>',
+    '<div class="note"><strong>Important:</strong> These are unresolved audit/model/proof obligations. They are not BUG or DESIGN_MISMATCH findings unless later causal analysis proves a player-visible contradiction.</div>',
+    ...obligations.map((item) =>
+      '<article class="obligation-card"><details><summary><strong>' +
+      escapeHtml(item.title) +
+      '</strong><span>' +
+      escapeHtml(item.stage) +
+      ' · ' +
+      escapeHtml(item.source) +
+      '</span></summary><div class="obligation-body">' +
+      '<div class="row"><div class="label">Why It Exists</div><div class="value">' +
+      escapeHtml(item.reason) +
+      '</div></div>' +
+      '<div class="row"><div class="label">Missing Proof</div><div class="value">' +
+      escapeHtml(item.missingProof) +
+      '</div></div>' +
+      '<div class="row"><div class="label">Resolve With</div><div class="value">' +
+      escapeHtml(item.validationTest) +
+      '</div></div>' +
+      '</div></details></article>'
+    ),
+    '</section>',
+  ].join("\n");
+}
+
 function auditControlSummary(
   audit: MapAuditHtmlInput,
 ): string {
