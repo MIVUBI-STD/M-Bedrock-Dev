@@ -134,11 +134,12 @@ Current canonical replica status names are:
 
 ```text
 EQUIVALENT
+BOUNDED_EQUIVALENCE
 DIVERGENCE_REQUIRES_CLASSIFICATION
 INCOMPLETE_PROOF
 ```
 
-A DIVERGENCE_REQUIRES_CLASSIFICATION produces `replicaDivergenceIds[]` for continued causal analysis. INCOMPLETE_PROOF prevents baseline safety from being inherited.
+BOUNDED_EQUIVALENCE means no divergence was found within the bounded proof scope, but it does not authorize full baseline inheritance. DIVERGENCE_REQUIRES_CLASSIFICATION produces `replicaDivergenceIds[]` for continued causal analysis. INCOMPLETE_PROOF prevents baseline safety from being inherited.
 
 ### Naming and output contract alignment
 
