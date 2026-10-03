@@ -30,6 +30,16 @@ export interface DriveRootBinding {
   rootFolderId: string;
 }
 
+function hasOnlyKeys(
+  value: Record<string, unknown>,
+  allowed: readonly string[],
+): boolean {
+  const keys = new Set(allowed);
+  return Object.keys(value).every(
+    (key) => keys.has(key),
+  );
+}
+
 function nonEmpty(
   value: string,
   label: string,
@@ -87,7 +97,17 @@ export function normalizeDriveProjectBinding(
   if (
     binding === null ||
     typeof binding !== "object" ||
-    binding.schemaVersion !== 1
+    binding.schemaVersion !== 1 ||
+    !hasOnlyKeys(
+      binding as unknown as Record<string, unknown>,
+      [
+        "schemaVersion",
+        "projectId",
+        "mapFolder",
+        "folders",
+        "currentWorld",
+      ],
+    )
   ) {
     throw new Error(
       "Unsupported Drive project binding.",
@@ -121,6 +141,22 @@ export function normalizeDriveProjectBinding(
               }
             : {}),
         };
+
+  if (
+    binding.folders !== undefined &&
+    !hasOnlyKeys(
+      binding.folders as unknown as Record<string, unknown>,
+      [
+        "developmentSource",
+        "developmentVersions",
+        "technicalDocs",
+      ],
+    )
+  ) {
+    throw new Error(
+      "Drive project folders contain unsupported fields.",
+    );
+  }
 
   const folders =
     binding.folders === undefined
