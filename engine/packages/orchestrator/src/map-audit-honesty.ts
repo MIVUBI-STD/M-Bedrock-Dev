@@ -1,0 +1,280 @@
+import type {
+  GameplayModelClosureResult,
+} from "../../gameplay-intent/src/index.js";
+import type {
+  NegativeSpaceSignal,
+  TemporalInteractionRisk,
+} from "../../diagnostic-reasoning/src/index.js";
+import type {
+  GameplayDefectResolutionGate,
+} from "./inspection/gameplay-defect-resolution.js";
+import type {
+  GameplayScenarioGraph,
+} from "./inspection/gameplay-scenario-model.js";
+import type {
+  AuditIssueProjection,
+} from "./map-audit-issue-projection.js";
+
+export interface AuditHonestyAssessment {
+  readonly policy: "no-hidden-material-finding";
+  readonly status: "PASS" | "VIOLATION";
+  readonly expectedVisibleResidueIds: readonly string[];
+  readonly visibleNeedValidationIds: readonly string[];
+  readonly expectedProvenIds: readonly string[];
+  readonly visibleProvenIds: readonly string[];
+  readonly missingVisibleResidueIds: readonly string[];
+  readonly missingProvenProjectionIds: readonly string[];
+  readonly reasons: readonly string[];
+}
+
+function temporalId(
+  risk: TemporalInteractionRisk,
+): string {
+  return (
+    "temporal-risk:" +
+    risk.leftSystem +
+    ":" +
+    risk.rightSystem
+  );
+}
+
+function unresolvedGraphResidueIds(
+  graph: GameplayScenarioGraph,
+  gate: GameplayDefectResolutionGate,
+): readonly string[] {
+  const ids = new Set<string>();
+
+  for (const link of graph.causalLinks) {
+    if (
+      link.status === "RUNTIME_BLOCKED" ||
+      link.status === "DETECTION_GAP"
+    ) {
+      ids.add(link.id);
+    }
+  }
+
+  for (const id of [
+    ...gate.runtimeProofRequiredIds,
+    ...gate.detectionGapIds,
+    ...gate.gameplayTranslationRequiredIds,
+    ...gate.counterProofSearchRequiredIds,
+  ]) {
+    ids.add(id);
+  }
+
+  for (const receipt of graph.knowledgeReceipts) {
+    if (receipt.status !== "SATISFIED") {
+      ids.add(
+        "knowledge-gap:" +
+          receipt.requirementId,
+      );
+    }
+  }
+
+  for (const scenario of graph.scenarios) {
+    if (
+      scenario.composedScenarioIds.length === 0 &&
+      scenario.componentIds.length > 0 &&
+      scenario.causalLinkIds.length === 0
+    ) {
+      ids.add(
+        "shallow-scenario:" +
+          scenario.id,
+      );
+    }
+
+    if (
+      scenario.composedScenarioIds.length === 0 &&
+      scenario.componentIds.length === 0
+    ) {
+      ids.add(
+        "scenario-without-components:" +
+          scenario.id,
+      );
+    }
+  }
+
+  const scenarioIds = new Set(
+    graph.scenarios.map((item) => item.id),
+  );
+  for (const scenario of graph.scenarios) {
+    if (
+      scenario.composedScenarioIds.some(
+        (id) => !scenarioIds.has(id),
+      )
+    ) {
+      ids.add(
+        "incomplete-composition:" +
+          scenario.id,
+      );
+    }
+  }
+
+  for (const component of graph.components) {
+    if (component.orphan) {
+      ids.add(
+        "orphan-component:" +
+          component.id,
+      );
+    } else if (!component.gameplayPurpose.trim()) {
+      ids.add(
+        "missing-purpose:" +
+          component.id,
+      );
+    }
+  }
+
+  return [...ids].sort();
+}
+
+function unresolvedClosureResidueIds(
+  closure: GameplayModelClosureResult,
+): readonly string[] {
+  const ids = new Set<string>();
+
+  for (const surface of closure.surfaces) {
+    if (
+      surface.material &&
+      (
+        surface.status === "unknown" ||
+        surface.status === "blocked"
+      )
+    ) {
+      ids.add(
+        "closure-surface:" +
+          surface.id,
+      );
+    }
+  }
+
+  for (const id of closure.unaccountedSurfaceIds) {
+    ids.add(
+      "unaccounted-surface:" +
+        id,
+    );
+  }
+
+  if (!closure.stateModelComplete) {
+    ids.add("closure-gap:state-model");
+  }
+  if (!closure.boundariesExtracted) {
+    ids.add("closure-gap:boundaries");
+  }
+
+  return [...ids].sort();
+}
+
+export function assessAuditHonesty(input: {
+  readonly graph: GameplayScenarioGraph;
+  readonly gate: GameplayDefectResolutionGate;
+  readonly gameplayClosure: GameplayModelClosureResult;
+  readonly negativeSpace: readonly NegativeSpaceSignal[];
+  readonly temporalRisks: readonly TemporalInteractionRisk[];
+  readonly visibleIssues: readonly AuditIssueProjection[];
+}): AuditHonestyAssessment {
+  const expectedVisibleResidueIds = [
+    ...new Set([
+      ...unresolvedGraphResidueIds(
+        input.graph,
+        input.gate,
+      ),
+      ...unresolvedClosureResidueIds(
+        input.gameplayClosure,
+      ),
+      ...input.negativeSpace.map(
+        (signal) => signal.id,
+      ),
+      ...input.temporalRisks
+        .filter(
+          (risk) => risk.priority === "high",
+        )
+        .map(temporalId),
+    ]),
+  ].sort();
+
+  const visibleNeedValidationIds = [
+    ...new Set(
+      input.visibleIssues
+        .filter(
+          (item) =>
+            item.status ===
+            "NEED_VALIDATION",
+        )
+        .map(
+          (item) => item.causalLinkId,
+        ),
+    ),
+  ].sort();
+
+  const expectedProvenIds = [
+    ...new Set(
+      input.gate.confirmedDefectReadyIds,
+    ),
+  ].sort();
+  const visibleProvenIds = [
+    ...new Set(
+      input.visibleIssues
+        .filter(
+          (item) =>
+            item.status === "PROVEN",
+        )
+        .map(
+          (item) => item.causalLinkId,
+        ),
+    ),
+  ].sort();
+
+  const visibleNeedSet = new Set(
+    visibleNeedValidationIds,
+  );
+  const visibleProvenSet = new Set(
+    visibleProvenIds,
+  );
+
+  const missingVisibleResidueIds =
+    expectedVisibleResidueIds.filter(
+      (id) => !visibleNeedSet.has(id),
+    );
+  const missingProvenProjectionIds =
+    expectedProvenIds.filter(
+      (id) => !visibleProvenSet.has(id),
+    );
+
+  const reasons: string[] = [];
+  if (missingVisibleResidueIds.length > 0) {
+    reasons.push(
+      "Material unresolved residue is hidden from NEED_VALIDATION: " +
+        missingVisibleResidueIds.join(", ") +
+        ".",
+    );
+  }
+  if (missingProvenProjectionIds.length > 0) {
+    reasons.push(
+      "Confirmed-defect-ready causal links are not visible as PROVEN: " +
+        missingProvenProjectionIds.join(", ") +
+        ".",
+    );
+  }
+  if (reasons.length === 0) {
+    reasons.push(
+      "Every tracked material unresolved residue is visible as NEED_VALIDATION and every confirmed-defect-ready causal link is visible as PROVEN.",
+    );
+  }
+
+  return {
+    policy: "no-hidden-material-finding",
+    status:
+      reasons.length === 1 &&
+      missingVisibleResidueIds.length === 0 &&
+      missingProvenProjectionIds.length === 0
+        ? "PASS"
+        : "VIOLATION",
+    expectedVisibleResidueIds,
+    visibleNeedValidationIds,
+    expectedProvenIds,
+    visibleProvenIds,
+    missingVisibleResidueIds,
+    missingProvenProjectionIds,
+    reasons,
+  };
+}
