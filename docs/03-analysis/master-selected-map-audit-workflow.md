@@ -545,7 +545,7 @@ grounded scenario
 + NO_BLOCKING_PROOF
 ~~~
 
-Use `familyProofCriteria[]` as domain-specific proof guidance before stopping. The deterministic PROVEN projection gate currently evaluates universal saturation; family criteria guide the bounded proof route and must not be treated as independently machine-verified facts.
+Use `familyProofCriteria[]` as the domain-specific checklist and bind the satisfied criteria through `FamilyProofReceipt`. PROVEN requires both universal saturation and all applicable family criteria to be satisfied with concrete evidence.
 
 When saturated:
 
@@ -661,7 +661,7 @@ A selected-map audit is complete only when:
 - MODEL closed
 - full-map replica proof complete/bounded or divergence explicitly carried
 - STRESS applicable families accounted
-- PROVE resolved
+- PROVE accounted: every material finding is PROVEN or explicitly NEED_VALIDATION with exact missing proof
 - honesty PASS
 - REPORT handoff preserves all visible unresolved work
 
@@ -679,7 +679,7 @@ A clean happy path is never sufficient.
 6. Build shared-resource reverse index
 7. Normalize full map / arena replicas from world DB
 8. Reconcile world vs source/config
-9. Audit only baseline + material deltas
+9. Reuse equivalent baseline proof; classify replica divergence before routing any gameplay-material consequence
 10. Stress lifecycle / boundaries / cross-system interactions
 11. Navigate every issue toward proof
 12. Search counter-proof
