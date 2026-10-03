@@ -79,6 +79,28 @@ execution result over time
 
 Do not create another reliability, benchmark, regression, or corpus owner elsewhere.
 
+## Approved issue history ingestion
+
+Current issue truth remains owned by canonical Bug Report V2.
+
+Once an audit project has passed readiness, approved current-version bugs may be projected into:
+
+```text
+engine/reliability/catalogs/regressions.json
+```
+
+through the canonical project publication workflow.
+
+The historical projection records stable incident identity, map/version, Bug ID, artifact fingerprint, Expected/Observed behavior, reproduction when available, search tags, and provenance back to the canonical report.
+
+Rules:
+
+- historical projection never replaces Bug Report V2;
+- legacy regression records are preserved rather than normalized/backfilled speculatively;
+- a stable historical ID conflict is fail-closed;
+- repeated regression incidents may later support `failure-patterns.json`, but every incident is not automatically promoted into a reusable pattern;
+- historical knowledge raises search pressure only and cannot prove a defect in another/current artifact.
+
 ## Proof rule
 
 Reliability evidence informs confidence and prioritization. It does not redefine map Game Design, Minecraft platform semantics, or runtime truth.
