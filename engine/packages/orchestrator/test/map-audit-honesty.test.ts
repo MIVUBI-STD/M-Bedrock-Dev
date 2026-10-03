@@ -170,7 +170,24 @@ describe("map audit honesty gate", () => {
             "scope",
             "exclusion",
           ],
-          scopeIds: ["objective:wave"],
+        dimensionReceipts: [
+          {
+            dimension: "guard",
+            scopeIds: ["objective:wave"],
+            evidenceIds: ["e:entity"],
+          },
+          {
+            dimension: "scope",
+            scopeIds: ["objective:wave"],
+            evidenceIds: ["e:entity"],
+          },
+          {
+            dimension: "exclusion",
+            scopeIds: ["objective:wave"],
+            evidenceIds: ["e:entity"],
+          }
+        ],
+        scopeIds: ["objective:wave"],
           evidenceIds: ["e:entity"],
           exhaustiveWithinScope: true,
           conclusion: "NO_BLOCKING_PROOF",
