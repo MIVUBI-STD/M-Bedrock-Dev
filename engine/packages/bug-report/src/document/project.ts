@@ -212,14 +212,6 @@ export function projectBugReportClientDocument(
         : severityLegend.filter(
             (entry) => entry.severity !== "minor",
           ),
-    issueIndex: issues.map((issue) => ({
-      number: issue.number,
-      id: issue.id,
-      severity: issue.severity,
-      status: issue.status,
-      category: issue.category,
-      title: issue.title,
-    })),
     issues,
     source: {
       schema: report.schema,
