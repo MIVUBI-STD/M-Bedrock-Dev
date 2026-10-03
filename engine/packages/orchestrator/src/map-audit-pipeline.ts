@@ -61,19 +61,16 @@ import {
   type ReadyAuditIssueProjection,
 } from "./map-audit-issue-projection.js";
 import {
-  projectAllNeedValidationAuditIssues,
+  projectNeedValidationAuditIssues,
 } from "./map-audit-validation-projection.js";
-import {
-  projectSignalNeedValidationAuditIssues,
-  projectClosureNeedValidationAuditIssues,
-} from "./map-audit-validation-signals.js";
 import {
   groupNeedValidationTests,
   type AuditValidationTestGroup,
 } from "./map-audit-validation-plan.js";
 import {
-  projectBlindSpotNeedValidationIssues,
-} from "./map-audit-validation-blindspots.js";
+  deriveAuditObligations,
+  type AuditObligation,
+} from "./map-audit-obligations.js";
 import {
   buildAuditProofNavigation,
 } from "./map-audit-proof-navigation.js";
@@ -173,6 +170,7 @@ export interface SelectedMapAuditRun {
       readonly AuditIssueProjection[];
   };
   readonly candidateGroups: readonly ReadyAuditCandidateGroup[];
+  readonly auditObligations: readonly AuditObligation[];
   readonly validationTests: readonly AuditValidationTestGroup[];
   readonly fullMapReplica?: FullMapReplicaReceipt;
   readonly honesty: AuditHonestyAssessment;
@@ -212,6 +210,7 @@ function deriveSelectedMapAuditControl(input: {
   | "continuation"
   | "issueLanes"
   | "candidateGroups"
+  | "auditObligations"
   | "validationTests"
   | "fullMapReplica"
   | "honesty"
@@ -242,21 +241,10 @@ function deriveSelectedMapAuditControl(input: {
       )
     : [];
   const needValidationIssues = proveAuthorized
-    ? projectAllNeedValidationAuditIssues(
+    ? projectNeedValidationAuditIssues(
         input.scenario.graph,
         input.scenario.defectResolution,
         input.capabilityDelivery,
-      )
-    : [];
-  const signalValidationIssues = stageAuthorized("STRESS")
-    ? projectSignalNeedValidationAuditIssues(
-        input.negativeSpace,
-        input.temporalRisks,
-      )
-    : [];
-  const closureValidationIssues = stageAuthorized("UNDERSTAND")
-    ? projectClosureNeedValidationAuditIssues(
-        input.gameplayClosure,
       )
     : [];
   const replicaDivergenceIds =
@@ -270,8 +258,18 @@ function deriveSelectedMapAuditControl(input: {
       )
       .sort();
 
-  const blindSpotValidationIssues =
-    projectBlindSpotNeedValidationIssues({
+  const auditObligations =
+    deriveAuditObligations({
+      graph: input.scenario.graph,
+      gameplayClosure: input.gameplayClosure,
+      negativeSpace:
+        stageAuthorized("STRESS")
+          ? input.negativeSpace
+          : [],
+      temporalRisks:
+        stageAuthorized("STRESS")
+          ? input.temporalRisks
+          : [],
       discoveryChallenges:
         stageAuthorized("DISCOVERY")
           ? input.discoveryChallenges
@@ -292,12 +290,12 @@ function deriveSelectedMapAuditControl(input: {
         stageAuthorized("MODEL")
           ? replicaDivergenceIds
           : [],
-    });
+    }).filter((item) =>
+      stageAuthorized(item.stage)
+    );
+
   const navigatedNeedValidationIssues = [
     ...needValidationIssues,
-    ...signalValidationIssues,
-    ...closureValidationIssues,
-    ...blindSpotValidationIssues,
   ].map((item) => ({
     ...item,
     proofNavigation:
@@ -348,6 +346,8 @@ function deriveSelectedMapAuditControl(input: {
       input.accumulationGrowth,
     replicaDivergenceIds,
     visibleIssues: allVisibleIssues,
+    visibleObligationIds:
+      auditObligations.map((item) => item.id),
   });
   const issueLanes = {
     BUG: allVisibleIssues.filter(
@@ -415,6 +415,7 @@ function deriveSelectedMapAuditControl(input: {
     continuation,
     issueLanes,
     candidateGroups,
+    auditObligations,
     validationTests,
     ...(fullMapReplica === undefined
       ? {}
@@ -596,6 +597,8 @@ function assembleSelectedMapAuditRun(
       inspection,
       identity,
       issueLanes: control.issueLanes,
+      auditObligations:
+        control.auditObligations,
       validationTests:
         control.validationTests,
       honesty: control.honesty,
