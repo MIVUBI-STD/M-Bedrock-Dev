@@ -67,7 +67,6 @@ For repeated arenas, optionally record:
 
 ```text
 fullMapReplica.equivalent
-fullMapReplica.expectedVariant
 fullMapReplica.materialDivergence
 fullMapReplica.incompleteProof
 ```
