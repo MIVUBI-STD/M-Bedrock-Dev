@@ -47,7 +47,7 @@ describe("full-map replica receipt", () => {
       }],
     });
 
-    expect(result.materialDeltaIds).toEqual([
+    expect(result.replicaDivergenceIds).toEqual([
       "replica-delta:arena:4",
     ]);
     expect(result.incompleteReplicaIds).toEqual([
