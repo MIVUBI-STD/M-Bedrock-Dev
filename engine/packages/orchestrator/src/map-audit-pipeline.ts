@@ -101,6 +101,7 @@ import {
   type FullMapReplicaReceipt,
 } from "./arena/full-map-replica-receipt.js";
 import {
+  deriveAuditUserIntentKnowledgeDemand,
   normalizeAuditUserIntent,
   validateAuditUserIntent,
   type AuditUserIntentEnvelope,
@@ -486,7 +487,11 @@ async function inspectSelectedMapToDemandFixedPoint(
   readonly reconciliation: AuditDemandReconciliation;
 }> {
   const initialRequiredDomains:
-    NonNullable<InspectTargetProfile["requiredKnowledgeDomains"]> = [];
+    NonNullable<InspectTargetProfile["requiredKnowledgeDomains"]> = [
+      ...deriveAuditUserIntentKnowledgeDemand(
+        input.userIntent,
+      ),
+    ];
 
   const firstInspection = await inspectArtifact(
     input.artifactPath,
