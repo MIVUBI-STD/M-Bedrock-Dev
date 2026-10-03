@@ -7,7 +7,10 @@ Architecture is frozen again.
 The only production flow is:
 
 ```text
-audit <selected.mcworld>
+raw user request
+→ Pre-Audit Plan
+→ user confirms scope / method
+→ audit <selected.mcworld>
 → TARGET
 → DISCOVERY
 → UNDERSTAND
@@ -20,7 +23,17 @@ audit <selected.mcworld>
 
 ## Next action
 
-Use one exact selected artifact with stable SHA-256.
+Before source/gameplay analysis, show one compact Pre-Audit Plan in chat and confirm:
+- target/map version;
+- comprehensive pre-testing objective;
+- systems/check families that will be inspected;
+- static-first / bounded causal proof strategy;
+- requested focus or constraints;
+- expected Map Audit output.
+
+Do not ask the user to supply known symptoms unless they already have some. This workflow exists to discover issues before manual testing.
+
+Then use one exact selected artifact with stable SHA-256.
 
 Evaluate the complete flow once and record:
 
