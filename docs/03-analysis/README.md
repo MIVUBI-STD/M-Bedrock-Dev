@@ -85,8 +85,8 @@ Load only when the canonical procedure activates the concern:
 - [Cross-System Interaction Audit](./cross-system-interaction-audit.md) — cross-system evidence questions used by STRESS.
 - [Audit Execution Flow](./audit-execution-flow.md) — reader-facing player-flow projection only.
 - [Audit Finalization Checklist](./audit-finalization-checklist.md) — final review projection only.
-- [Map Audit Report V2](./map-audit-report-v2-schema.md) — single report contract with separate `BUG` and `DESIGN_MISMATCH` lanes.
-- [Bug Report V2](./gameplay-bug-report-v2.md) — persisted approved `BUG` lane only.
+- [Map Audit Report V2](./map-audit-report-v2-schema.md) — **Complete Bug Report**; human-facing full finding set across `PROVEN` and `NEED_VALIDATION`, with separate `BUG` and `DESIGN_MISMATCH` lanes.
+- [Approved Bug Report V2](./gameplay-bug-report-v2.md) — downstream persisted approved `PROVEN BUG` ledger only.
 
 None of these documents may authorize continuation independently of the Mandatory Audit Procedure receipt.
 
