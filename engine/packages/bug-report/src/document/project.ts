@@ -113,7 +113,6 @@ function projectIssue(
           mustPreserve:
             bug.mustPreserve,
         }),
-    workChecklist: deriveBugReportWorkChecklist(bug),
   };
 }
 
