@@ -38,7 +38,9 @@ export interface MapAuditOutputV2Finding {
   readonly expected: string;
   readonly actual: string;
   readonly evidenceIds: readonly string[];
-  readonly proofCeiling: "UNKNOWN";
+  readonly proofCeiling:
+    | "PROVEN"
+    | "NEEDS_DECIDING_PROOF";
   readonly counterEvidence:
     | "cleared"
     | "unresolved";
@@ -108,7 +110,9 @@ export interface MapAuditOutputV2 {
     readonly isolationRules: readonly string[];
   };
   readonly coverage: {
-    readonly disposition: "accounted";
+    readonly disposition:
+      | "accounted"
+      | "incomplete";
     readonly records: readonly {
       readonly surface: string;
       readonly status:
@@ -241,7 +245,10 @@ function projectFinding(
     expected: finding.expectedOutcome,
     actual: finding.actualOutcome,
     evidenceIds: [...finding.evidenceIds],
-    proofCeiling: "UNKNOWN" as const,
+    proofCeiling:
+      finding.status === "PROVEN"
+        ? "PROVEN" as const
+        : "NEEDS_DECIDING_PROOF" as const,
     counterEvidence:
       finding.status === "PROVEN"
         ? "cleared" as const
@@ -426,7 +433,13 @@ export function projectMapAuditOutputV2(input: {
           .sort(),
     },
     coverage: {
-      disposition: "accounted",
+      disposition:
+        closure.status === "CLOSED" &&
+        closure.unaccountedSurfaceIds.length === 0 &&
+        closure.stateModelComplete &&
+        closure.boundariesExtracted
+          ? "accounted"
+          : "incomplete",
       records: coverageRecords,
     },
     gameplayClosure: {
