@@ -1451,7 +1451,7 @@
         "policy",
         "replicaBaseline",
         "replicaResults",
-        "materialDeltaIds",
+        "replicaDivergenceIds",
         "incompleteReplicaIds",
         "baselineReusableForAllReplicas"
       ],
@@ -1470,7 +1470,7 @@
             "required": [
               "replicaId",
               "replicaStatus",
-              "materialDeltaIds",
+              "replicaDivergenceIds",
               "evidenceIds",
               "reason"
             ],
@@ -1478,17 +1478,9 @@
               "replicaStatus": {
                 "enum": [
                   "EQUIVALENT",
-                  "MATERIAL_DIVERGENCE",
+                  "DIVERGENCE_REQUIRES_CLASSIFICATION",
                   "INCOMPLETE_PROOF"
                 ]
-              },
-              "materialDeltaIds": {
-                "type": "array",
-                "uniqueItems": true,
-                "items": {
-                  "type": "string",
-                  "minLength": 1
-                }
               },
               "evidenceIds": {
                 "type": "array",
@@ -1505,17 +1497,17 @@
               "replicaId": {
                 "type": "string",
                 "minLength": 1
+              },
+              "replicaDivergenceIds": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
               }
             },
             "additionalProperties": false
-          }
-        },
-        "materialDeltaIds": {
-          "type": "array",
-          "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "minLength": 1
           }
         },
         "incompleteReplicaIds": {
@@ -1528,6 +1520,14 @@
         },
         "baselineReusableForAllReplicas": {
           "type": "boolean"
+        },
+        "replicaDivergenceIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       },
       "additionalProperties": false
