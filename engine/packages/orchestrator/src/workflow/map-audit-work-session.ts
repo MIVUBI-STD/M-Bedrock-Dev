@@ -110,7 +110,7 @@ export function projectSelectedMapAuditWorkSession(input: {
   const scenario =
     audit.inspection.hiddenGameplayDefects.scenarioAudit;
 
-  return {
+  const candidate: WorkSessionCheckpoint = {
     schemaVersion: 1,
     sessionId: input.sessionId,
     goal: input.goal,
@@ -128,9 +128,7 @@ export function projectSelectedMapAuditWorkSession(input: {
     stage: workSessionStageFromAudit(audit),
     audit: workSessionAuditBinding(audit),
     revision:
-      previous === undefined
-        ? 1
-        : previous.revision + 1,
+      previous?.revision ?? 1,
     references: {
       completedCapabilityIds: [
         ...audit.inspection.gameplayWorld
@@ -165,8 +163,22 @@ export function projectSelectedMapAuditWorkSession(input: {
         ? [...audit.reasons].sort()
         : [],
   };
-}
 
+  if (
+    previous !== undefined &&
+    JSON.stringify(candidate) ===
+      JSON.stringify(previous)
+  ) {
+    return previous;
+  }
+
+  return previous === undefined
+    ? candidate
+    : {
+        ...candidate,
+        revision: previous.revision + 1,
+      };
+}
 export async function saveSelectedMapAuditWorkSessionMirror(
   workspace: ProjectWorkspaceLayout,
   input: {
