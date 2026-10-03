@@ -29,7 +29,7 @@ describe("gameplay capability delivery", () => {
     expect(result.failureClass).toBe(
       "DESIGN_FAILURE",
     );
-    expect(result.reportIssueType).toBe(
+    expect(result.issueType).toBe(
       "DESIGN_MISMATCH",
     );
     expect(result.expectedCapacity).toBe(6);
@@ -60,7 +60,7 @@ describe("gameplay capability delivery", () => {
     expect(result.failureClass).toBe(
       "DESIGN_IMPLEMENTATION_MISMATCH",
     );
-    expect(result.reportIssueType).toBe(
+    expect(result.issueType).toBe(
       "DESIGN_MISMATCH",
     );
     expect(result.informationMismatch).toBe(true);
@@ -81,7 +81,7 @@ describe("gameplay capability delivery", () => {
     expect(result.failureClass).toBe(
       "IMPLEMENTATION_FAILURE",
     );
-    expect(result.reportIssueType).toBe("BUG");
+    expect(result.issueType).toBe("BUG");
   });
 
   it("does not manufacture a design issue when capability evidence is ungrounded", () => {
