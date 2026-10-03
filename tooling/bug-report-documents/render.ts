@@ -57,6 +57,10 @@ interface MapAuditHtmlInput {
     readonly key: string;
     readonly findingIds: readonly string[];
     readonly test: string;
+    readonly assertions?: readonly {
+      readonly findingId: string;
+      readonly test: string;
+    }[];
   }[];
 }
 
@@ -247,9 +251,6 @@ function issueCard(issue: BugReportClientIssue): string {
       '<br><strong>Expected:</strong> ' +
       escapeHtml(issue.expected) +
       "</div></div>",
-    '<div class="row"><div class="label">Work Checklist</div><div class="value">' +
-      checklist(issue.workChecklist, "work-checklist") +
-      "</div></div>",
   ];
 
   if (issue.recommendedResolution) {
@@ -259,6 +260,12 @@ function issueCard(issue: BugReportClientIssue): string {
         "</div></div>",
     );
   }
+
+  rows.push(
+    '<div class="row"><div class="label">Work Checklist</div><div class="value">' +
+      checklist(issue.workChecklist, "work-checklist") +
+      "</div></div>",
+  );
 
   if (
     issue.technicalAnalysis ||
@@ -421,6 +428,43 @@ function auditFindingCard(
   ].join("\n");
 }
 
+function auditValidationPlan(
+  audit: MapAuditHtmlInput,
+): string {
+  const groups = audit.validationTests ?? [];
+  if (groups.length === 0) return "";
+
+  return [
+    '<section class="section">',
+    '<h2>Validation Plan</h2>',
+    '<div class="note">Run only the unresolved proof groups below. Shared setup may be reused, but every exact assertion remains independent.</div>',
+    ...groups.map((group) => {
+      const assertions =
+        group.assertions?.length
+          ? checklist(
+              group.assertions.map(
+                (item) =>
+                  item.findingId + " — " + item.test,
+              ),
+            )
+          : checklist([group.test]);
+      return [
+        '<article class="issue-card">',
+        '<div class="row"><div class="label">Group</div><div class="value"><strong>' +
+          escapeHtml(group.key) +
+          '</strong><br>' +
+          escapeHtml(group.test) +
+          '</div></div>',
+        '<div class="row"><div class="label">Exact Assertions</div><div class="value">' +
+          assertions +
+          '</div></div>',
+        '</article>',
+      ].join("");
+    }),
+    '</section>',
+  ].join("\n");
+}
+
 function renderCompleteMapAuditHtml(
   audit: MapAuditHtmlInput,
 ): string {
@@ -483,6 +527,7 @@ body{margin:0;background:#eef1f5;color:#172033;font:15px/1.45 Arial,Helvetica,sa
     <h2>NEED VALIDATION / UNPROVEN</h2>
     ${needValidation.length > 0 ? needValidation.map(auditFindingCard).join("\n") : "<p>No unresolved material findings.</p>"}
   </section>
+  ${auditValidationPlan(audit)}
 </main>
 </body>
 </html>`;
