@@ -121,6 +121,23 @@ Do not infer current mechanics from older versions, Development/Source, historic
 
 Expected and Actual Behavior must be derived from the same selected map/version. The selected map artifact is the sole current gameplay source of truth.
 
+## User prompt interpretation boundary
+
+Before production map audit, normalize material user wording through `docs/03-analysis/user-input-translation-contract.md`.
+
+User wording is non-authoritative search guidance only:
+
+```text
+raw prompt
+→ typed AuditUserIntentEnvelope
+→ search priority / model context
+→ selected-artifact evidence
+```
+
+A user-reported symptom, suspicion, expectation, design claim, historical example, scope request, or exclusion request cannot establish Expected/Actual behavior, BUG/DESIGN_MISMATCH, severity, safety, proof status, or absence.
+
+If a material user-reported symptom cannot be reconciled with discovered selected-artifact gameplay, retain it as an `Audit Obligation`. Do not silently drop it and do not force it into an issue lane.
+
 ## Single linear production audit
 
 There is one operator entry and one ordered production flow:
