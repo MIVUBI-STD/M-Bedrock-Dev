@@ -22,3 +22,4 @@ export * from "./project-registry-store.js";
 export * from "./project-history-sync.js";
 export * from "./project-drive-publish-plan.js";
 export * from "./project-publication-workflow.js";
+export * from "./project-drive-publish-executor.js";
