@@ -1234,6 +1234,14 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "Gameplay causal links are resolved to scenario-level proof states.",
     graph.causalLinks.flatMap((item) => item.evidenceIds),
     ["GameplayCausalLinks"],
+    {
+      reasonCode:
+        scenarioClosure.status === "PARTIAL"
+          ? "RUNTIME_PROOF_REQUIRED"
+          : scenarioClosure.status === "OPEN"
+            ? "PROCEDURE_BLOCKED"
+            : "COMPLETE",
+    },
   ));
 
   checkpoint.push(receipt(
@@ -1279,15 +1287,19 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
   checkpoint.push(receipt(
     "E1",
     "REPORT",
-    "Final Bug Contract",
+    "Map Audit Report Contract",
     defectResolution.status === "BLOCKED"
       ? "OPEN"
       : "CLOSED",
     defectResolution.status === "BLOCKED"
-      ? "Defect Resolution still blocks Proposed Bug Set admission."
-      : "Report admission may proceed for confirmed defects only.",
-    defectResolution.confirmedDefectReadyIds,
-    ["ProposedBugSet"],
+      ? "Source-side defect resolution work still blocks report readiness."
+      : "Map Audit Report may preserve every material PROVEN and NEED_VALIDATION finding; approved Bug Report V2 promotion remains downstream.",
+    [
+      ...defectResolution.confirmedDefectReadyIds,
+      ...defectResolution.runtimeProofRequiredIds,
+      ...defectResolution.detectionGapIds,
+    ],
+    ["MapAuditReport"],
   ));
 
   const blocks = (
