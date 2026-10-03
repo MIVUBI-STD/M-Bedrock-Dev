@@ -130,8 +130,10 @@ export function assessReadyResolutionSaturation(
     ...new Set([
       ...(link?.evidenceIds ?? []),
       ...(resolution.evidenceIds ?? []),
+      ...(resolution.counterProofSearch?.evidenceIds ?? []),
     ]),
   ].sort();
+  const knownEvidenceIds = new Set(evidenceIds);
 
   const componentIds = [
     ...new Set([
@@ -241,7 +243,10 @@ export function assessReadyResolutionSaturation(
         description: criterion.description,
         satisfied:
           receipt?.satisfied === true &&
-          receipt.evidenceIds.length > 0,
+          receipt.evidenceIds.length > 0 &&
+          receipt.evidenceIds.every((id) =>
+            knownEvidenceIds.has(id)
+          ),
         evidenceIds: [
           ...(receipt?.evidenceIds ?? []),
         ],
