@@ -3,6 +3,7 @@ import {
   projectAllNeedValidationAuditIssues,
   projectReadyAuditIssues,
   projectSignalNeedValidationAuditIssues,
+  projectClosureNeedValidationAuditIssues,
   groupNeedValidationTests,
 } from "../src/map-audit-issue-projection.js";
 import type {
@@ -311,6 +312,48 @@ describe("map audit issue projection", () => {
     expect(groups[0]?.key).toBe(
       "negative-space:state:round",
     );
+  });
+
+  it("surfaces gameplay closure gaps as NEED_VALIDATION findings", () => {
+    const result =
+      projectClosureNeedValidationAuditIssues({
+        status: "OPEN",
+        surfaces: [{
+          id: "runtime:arena-capacity",
+          label: "Arena capacity",
+          kind: "runtime-domain",
+          status: "unknown",
+          material: true,
+          reason:
+            "Concurrent capacity is unresolved.",
+          evidenceIds: ["capacity:source"],
+          boundaries: [],
+        }],
+        unaccountedSurfaceIds: [
+          "mechanic:teleport",
+        ],
+        blockingSurfaceIds: [],
+        unknownSurfaceIds: [
+          "runtime:arena-capacity",
+        ],
+        stateModelComplete: false,
+        boundariesExtracted: false,
+        reasons: [
+          "Gameplay model remains incomplete.",
+        ],
+      });
+
+    expect(result.map(
+      (item) => item.causalLinkId,
+    )).toEqual(expect.arrayContaining([
+      "closure-surface:runtime:arena-capacity",
+      "unaccounted-surface:mechanic:teleport",
+      "closure-gap:state-model",
+      "closure-gap:boundaries",
+    ]));
+    expect(result.every(
+      (item) => item.status === "NEED_VALIDATION",
+    )).toBe(true);
   });
 
   it("separates design mismatch from implementation bug in one projection", () => {
