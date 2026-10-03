@@ -101,6 +101,11 @@ import {
   type FullMapReplicaReceipt,
 } from "./arena/full-map-replica-receipt.js";
 import {
+  normalizeAuditUserIntent,
+  validateAuditUserIntent,
+  type AuditUserIntentEnvelope,
+} from "./map-audit-user-intent.js";
+import {
   auditCandidateGroupCoverageIssues,
   groupReadyAuditIssuesForCandidateCoverage,
   type ReadyAuditCandidateGroup,
@@ -131,6 +136,11 @@ export interface SelectedMapAuditInput {
   readonly knowledgeCatalog?: KnowledgeCatalog;
   readonly telemetry?: readonly TelemetryEvent[] | TelemetryBatch;
   readonly runtimeProbeTranscript?: RuntimeProbeTranscript;
+  /**
+   * Structured interpretation of the user's wording.
+   * Search guidance only; never gameplay authority or report proof.
+   */
+  readonly userIntent?: AuditUserIntentEnvelope;
 }
 
 export interface SelectedMapAuditRun {
@@ -139,6 +149,7 @@ export interface SelectedMapAuditRun {
   readonly inspection: InspectArtifactResult;
   readonly identity: SelectedMapAuditIdentity;
   readonly auditRevision: string;
+  readonly userIntent?: AuditUserIntentEnvelope;
   readonly demandReconciliation: AuditDemandReconciliation;
   readonly executionTrace: AuditExecutionTrace;
   readonly stageOrder: readonly SelectedMapAuditStage[];
@@ -536,6 +547,7 @@ async function inspectSelectedMapToDemandFixedPoint(
 function assembleSelectedMapAuditRun(
   inspection: InspectArtifactResult,
   reconciliation: AuditDemandReconciliation,
+  userIntent?: AuditUserIntentEnvelope,
 ): SelectedMapAuditRun {
   const identity =
     deriveSelectedMapAuditIdentity(inspection);
@@ -592,6 +604,7 @@ function assembleSelectedMapAuditRun(
     intent: inspection.gameplayIntent.model,
     auditRevision,
     world: inspection.gameplayWorld,
+    userIntent,
     needValidationFindings,
     auditObligations:
       control.auditObligations,
@@ -606,6 +619,9 @@ function assembleSelectedMapAuditRun(
       validationTests:
         control.validationTests,
       honesty: control.honesty,
+      ...(userIntent === undefined
+        ? {}
+        : { userIntent }),
       control: {
         status: control.status,
         currentStage: control.currentStage,
@@ -633,6 +649,9 @@ function assembleSelectedMapAuditRun(
     inspection,
     identity,
     auditRevision,
+    ...(userIntent === undefined
+      ? {}
+      : { userIntent }),
     demandReconciliation: reconciliation,
     admission,
     stageOrder: SELECTED_MAP_AUDIT_STAGE_ORDER,
@@ -649,12 +668,28 @@ function assembleSelectedMapAuditRun(
 export async function runSelectedMapAudit(
   input: SelectedMapAuditInput,
 ): Promise<SelectedMapAuditRun> {
+  const userIntent =
+    input.userIntent === undefined
+      ? undefined
+      : normalizeAuditUserIntent(input.userIntent);
+  if (userIntent !== undefined) {
+    const issues =
+      validateAuditUserIntent(userIntent);
+    if (issues.length > 0) {
+      throw new Error(
+        "Invalid non-authoritative user audit intent: " +
+          issues.join("; "),
+      );
+    }
+  }
+
   const { inspection, reconciliation } =
     await inspectSelectedMapToDemandFixedPoint(input);
 
   return assembleSelectedMapAuditRun(
     inspection,
     reconciliation,
+    userIntent,
   );
 }
 
@@ -710,6 +745,7 @@ export function resolveSelectedMapAudit(
   return assembleSelectedMapAuditRun(
     updatedInspection,
     input.audit.demandReconciliation,
+    input.audit.userIntent,
   );
 }
 
