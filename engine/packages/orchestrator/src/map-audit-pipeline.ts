@@ -219,10 +219,21 @@ function deriveSelectedMapAuditControl(input: {
   | "blockingCheckpointIds"
   | "reasons"
 > {
-  const proveAuthorized =
-    input.admission.firstBlockingStage === undefined ||
-    input.admission.firstBlockingStage === "PROVE" ||
-    input.admission.firstBlockingStage === "REPORT";
+  const firstBlockingStage =
+    input.admission.firstBlockingStage;
+  const firstBlockingIndex =
+    firstBlockingStage === undefined
+      ? Number.POSITIVE_INFINITY
+      : SELECTED_MAP_AUDIT_STAGE_ORDER.indexOf(
+          firstBlockingStage,
+        );
+  const stageAuthorized = (
+    stage: SelectedMapAuditStage,
+  ): boolean =>
+    SELECTED_MAP_AUDIT_STAGE_ORDER.indexOf(stage) <=
+    firstBlockingIndex;
+
+  const proveAuthorized = stageAuthorized("PROVE");
   const provenIssues = proveAuthorized
     ? projectReadyAuditIssues(
         input.scenario.graph,
@@ -230,21 +241,24 @@ function deriveSelectedMapAuditControl(input: {
         input.capabilityDelivery,
       )
     : [];
-  const needValidationIssues =
-    projectAllNeedValidationAuditIssues(
-      input.scenario.graph,
-      input.scenario.defectResolution,
-      input.capabilityDelivery,
-    );
-  const signalValidationIssues =
-    projectSignalNeedValidationAuditIssues(
-      input.negativeSpace,
-      input.temporalRisks,
-    );
-  const closureValidationIssues =
-    projectClosureNeedValidationAuditIssues(
-      input.gameplayClosure,
-    );
+  const needValidationIssues = proveAuthorized
+    ? projectAllNeedValidationAuditIssues(
+        input.scenario.graph,
+        input.scenario.defectResolution,
+        input.capabilityDelivery,
+      )
+    : [];
+  const signalValidationIssues = stageAuthorized("STRESS")
+    ? projectSignalNeedValidationAuditIssues(
+        input.negativeSpace,
+        input.temporalRisks,
+      )
+    : [];
+  const closureValidationIssues = stageAuthorized("UNDERSTAND")
+    ? projectClosureNeedValidationAuditIssues(
+        input.gameplayClosure,
+      )
+    : [];
   const replicaDivergenceIds =
     input.gameplayWorld.arenas.replicaProof
       .filter((item) =>
@@ -259,14 +273,25 @@ function deriveSelectedMapAuditControl(input: {
   const blindSpotValidationIssues =
     projectBlindSpotNeedValidationIssues({
       discoveryChallenges:
-        input.discoveryChallenges,
+        stageAuthorized("DISCOVERY")
+          ? input.discoveryChallenges
+          : [],
       sharedResourceSignals:
-        input.sharedResourceSignals,
+        stageAuthorized("UNDERSTAND")
+          ? input.sharedResourceSignals
+          : [],
       compoundBoundaries:
-        input.compoundBoundaries,
+        stageAuthorized("STRESS")
+          ? input.compoundBoundaries
+          : [],
       accumulationGrowth:
-        input.accumulationGrowth,
-      replicaDivergenceIds,
+        stageAuthorized("STRESS")
+          ? input.accumulationGrowth
+          : [],
+      replicaDivergenceIds:
+        stageAuthorized("MODEL")
+          ? replicaDivergenceIds
+          : [],
     });
   const navigatedNeedValidationIssues = [
     ...needValidationIssues,
@@ -346,12 +371,16 @@ function deriveSelectedMapAuditControl(input: {
     admission: input.admission,
     procedure: input.procedure,
   });
+  const readyForReview =
+    input.admission.status === "READY" &&
+    honesty.status === "PASS";
   const currentStage =
-    input.admission.firstBlockingStage ?? "COMPLETE";
+    firstBlockingStage ??
+    (readyForReview ? "COMPLETE" : "REPORT");
   const allowedNextAction =
-    input.admission.status === "READY"
+    readyForReview
       ? "PREPARE_REVIEW" as const
-      : input.admission.firstBlockingStage === "PROVE" &&
+      : firstBlockingStage === "PROVE" &&
           (
             input.scenario.defectResolution
               .gameplayTranslationRequiredIds.length > 0 ||
@@ -392,8 +421,7 @@ function deriveSelectedMapAuditControl(input: {
       : { fullMapReplica }),
     honesty,
     status:
-      input.admission.status === "READY" &&
-      honesty.status === "PASS"
+      readyForReview
         ? "READY_FOR_REVIEW"
         : "BLOCKED",
     blockingCheckpointIds: [
@@ -776,6 +804,34 @@ function designMismatchCandidateIssues(
   return [...new Set(issues)].sort();
 }
 
+function selectedMapAuditReviewAuthorityIssues(
+  audit: SelectedMapAuditRun,
+): readonly string[] {
+  const issues: string[] = [];
+
+  if (audit.status !== "READY_FOR_REVIEW") {
+    issues.push(
+      "Selected-map audit is not READY_FOR_REVIEW.",
+    );
+  }
+  if (audit.honesty.status !== "PASS") {
+    issues.push(
+      "Selected-map audit honesty gate is not PASS.",
+    );
+  }
+  if (
+    audit.currentStage !== "COMPLETE" ||
+    audit.allowedNextAction !== "PREPARE_REVIEW" ||
+    audit.continuation.owner !== "REVIEW"
+  ) {
+    issues.push(
+      "Selected-map audit control state does not authorize review continuation.",
+    );
+  }
+
+  return issues;
+}
+
 export interface PrepareSelectedMapAuditReviewInput {
   readonly audit: SelectedMapAuditRun;
   readonly basedOnAuditRevision: string;
@@ -793,6 +849,21 @@ export function prepareSelectedMapAuditReview(
   input: PrepareSelectedMapAuditReviewInput,
 ): PrepareBugReportReviewFromClosedAuditResult {
   const inspection = input.audit.inspection;
+  const authorityIssues =
+    selectedMapAuditReviewAuthorityIssues(
+      input.audit,
+    );
+  if (authorityIssues.length > 0) {
+    return {
+      collection: collectConfirmedDefects(
+        input.candidates,
+        input.engineeringAnalyses ??
+          inspection.engineeringAnalyses,
+      ),
+      blocked: true,
+      reasons: authorityIssues,
+    };
+  }
   if (
     input.basedOnAuditRevision !==
     input.audit.auditRevision
@@ -951,6 +1022,29 @@ export function buildSelectedMapAuditReport(
   input: BuildSelectedMapAuditReportInput,
 ): BuildSelectedMapAuditReportResult {
   const inspection = input.audit.inspection;
+  const authorityIssues =
+    selectedMapAuditReviewAuthorityIssues(
+      input.audit,
+    );
+  if (authorityIssues.length > 0) {
+    return {
+      ...completeSelectedMapAuditFindingProjection(
+        input.audit,
+      ),
+      collection: collectConfirmedDefects(
+        input.candidates,
+        input.engineeringAnalyses ??
+          inspection.engineeringAnalyses,
+      ),
+      promotion: {
+        ok: false,
+        issues: authorityIssues.map((message) => ({
+          code: "invalid-confirmed-defect" as const,
+          message,
+        })),
+      },
+    };
+  }
   if (
     input.basedOnAuditRevision !==
     input.audit.auditRevision
