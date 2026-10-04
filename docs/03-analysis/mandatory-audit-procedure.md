@@ -709,7 +709,7 @@ A2 Gameplay Surface Discovery
 A4/A5 State + Ownership
 → derive authored Player Capability Model (game mode, abilities, inventory/catalog/build/interact acquisition surfaces) for every ordinary player role
 → build Mutable-State Reverse Index
-→ promote every broad fresh-session reset into a per-player lifecycle invariant
+→ promote every broad fresh-session reset into a state-agnostic per-player lifecycle invariant covering inventory, equipment, currency/scores, tags, properties, role/assignment, mode/capability, health/effects, position/checkpoint, and player-facing session state
 → trace every cleanup writer through its final player/entity ownership scope
 → when cooperative progression exists, model Required / Assigned / Online / Eligible / Gate-Observed participant sets separately
 
