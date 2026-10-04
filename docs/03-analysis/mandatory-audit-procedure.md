@@ -1374,6 +1374,11 @@ Activate only when the selected artifact contains the trigger:
 - Developer / Cheat / Permission → debug/developer triggers, items, commands, tags, test controls.
 - Boundary / Capacity → explicit/shared bounded resources or presented maximums.
 - Recovery / No-Dead-End → waiting, spectator, queue, retry, failure/recovery states.
+- Event / Scheduling Integrity → subscriptions, timers, intervals, delayed callbacks, retry schedulers.
+- Identity / Selector / Cardinality → selectors, stored references, arena/session keys, shared scoreboards/tags/properties.
+- Transaction / Partial Failure → multi-step mutations with commands/APIs that may fail independently.
+- Bootstrap / Initialization → startup defaults, registries, readiness, reload/reinitialization.
+- Resource Baseline / Leak → temporary resources created and cleaned across repeated sessions/rounds.
 
 ### Not-applicable proof
 
@@ -1481,6 +1486,216 @@ The user-facing outputs remain:
 - Approved Bug Report / Golden Tracker for approved issues.
 
 Do not render the family router, work queue, or closure receipt as visible Bug Tracker UI.
+
+---
+
+## A26. Event & Scheduling Integrity Contract
+
+### Purpose
+
+Detect duplicated, stale, or uncancelled work created by subscriptions, timers, intervals, delayed callbacks, and retry schedulers.
+
+For each material scheduled/event-driven path record:
+
+```text
+registration
+→ registration owner
+→ multiplicity
+→ callback owner/generation
+→ cancellation/unsubscribe
+→ re-registration/reload behavior
+→ commit target
+```
+
+Mandatory challenges:
+- handler registers twice after restart/reload;
+- interval/timer survives session cleanup;
+- retry scheduler duplicates pending work;
+- callback fires after owner/session replacement;
+- unsubscribe path is missing or unreachable;
+- one event is consumed by both old and new generation;
+- repeated initialization creates multiple equivalent listeners.
+
+Static proof is sufficient when duplicate reachable registration or stale callback ownership deterministically permits duplicate/invalid mutation.
+
+---
+
+## A27. Identity, Selector & Cardinality Integrity Contract
+
+### Purpose
+
+Ensure gameplay logic addresses exactly the intended owner, player, arena, entity, or state record.
+
+For every material lookup/selector/reference record:
+
+```text
+identity key / selector
+→ expected cardinality
+→ actual possible cardinality
+→ scope
+→ uniqueness guarantee
+→ missing-result behavior
+→ multi-result behavior
+→ stale-reference behavior
+```
+
+Mandatory challenges:
+- code expects one result but selector can return zero or many;
+- arena/session IDs collide or are reused before invalidation;
+- global selector is used from arena-local logic;
+- stored entity/player reference survives invalidation;
+- two mechanics alias the same scoreboard/tag/property for different meanings;
+- coordinate/offset identity resolves to the wrong replica;
+- late join/disconnect changes the player set after a stale snapshot was captured.
+
+Do not treat selector syntax as proof of correct cardinality. Prove the ownership and uniqueness contract.
+
+---
+
+## A28. Transaction & Partial-Failure Integrity Contract
+
+### Purpose
+
+Find multi-step gameplay mutations that leave invalid state when an intermediate operation fails.
+
+Model each material transaction:
+
+```text
+precondition
+→ mutation 1
+→ mutation 2
+→ ...
+→ commit point
+→ success feedback
+→ rollback/compensation
+```
+
+Applicable examples:
+- currency removal + item grant;
+- arena reservation + ticking/residency creation;
+- inventory clear + loadout grant;
+- structure reset + arena-ready publication;
+- score/reward persistence + UI success;
+- teleport + mode/state transition.
+
+Mandatory challenges:
+- command/API result is ignored;
+- early mutation commits before later failure;
+- success feedback is emitted despite failed commit;
+- rollback is absent or incomplete;
+- retry repeats already-committed steps;
+- fail-open behavior allows gameplay after missing prerequisite;
+- fail-closed behavior permanently blocks recovery.
+
+A partial-failure defect is PROVEN when a reachable failure leaves a player-visible postcondition that violates the transaction contract.
+
+---
+
+## A29. Bootstrap & Initialization Integrity Contract
+
+### Purpose
+
+Ensure gameplay cannot consume state before its authoritative initialization is complete.
+
+For each startup/bootstrap dependency reconstruct:
+
+```text
+world/script load
+→ default creation
+→ registry/config load
+→ scoreboard/property/tag initialization
+→ arena/session readiness
+→ event/subscription activation
+→ gameplay admission
+```
+
+Mandatory challenges:
+- gameplay/event fires before required state exists;
+- missing score/property defaults to a meaningful gameplay value;
+- reload reinitializes only part of the state;
+- subscription activates before owner registry is ready;
+- arena is advertised/available before initialization completes;
+- initialization runs twice and duplicates resources;
+- late-created defaults overwrite valid restored state.
+
+Readiness must be explicit or causally guaranteed; file/module order alone is not sufficient proof.
+
+---
+
+## A30. Resource Baseline & Leak Integrity Contract
+
+### Purpose
+
+Detect temporary gameplay resources that accumulate or survive beyond their intended lifecycle.
+
+For every applicable temporary resource define a baseline:
+
+```text
+R0 = valid pre-session baseline
+→ acquire/create during gameplay
+→ terminal/cleanup
+→ R1 = post-cleanup state
+→ classify R1 - R0
+```
+
+Track applicable resources:
+- arena/player assignments;
+- entities;
+- tags;
+- scoreboards/objectives;
+- dynamic properties;
+- event subscriptions;
+- timers/intervals/callbacks;
+- queues/retry work;
+- leases/reservations;
+- ticking/residency areas;
+- temporary structures/blocks;
+- session inventory/loadout state.
+
+Mandatory challenges:
+- producer exists with no bounded consumer/clear;
+- cleanup only removes currently online/live owners;
+- repeated rounds increase resource count monotonically;
+- old-generation resource remains addressable;
+- cleanup returns to a different baseline that affects next-session behavior;
+- persistent delta is accidental but silently treated as normal.
+
+### Baseline classification
+
+A non-zero delta is not automatically a bug.
+
+Classify:
+
+```text
+R1 - R0
+→ intentional persistent state?
+   yes → document ownership and next-session contract
+   no  → does it affect later gameplay?
+          yes → contradiction candidate
+          no  → technical residue / Audit Obligation as appropriate
+```
+
+---
+
+## A31. Software-State Join Gate
+
+### Purpose
+
+Cross the five software-state contracts only with applicable gameplay families and shared material state.
+
+High-yield joins include:
+- duplicate subscription × reward/terminal commit;
+- stale callback × arena reuse;
+- selector cardinality × cross-arena isolation;
+- identity collision × persistence/reconnect;
+- ignored command failure × shop/loadout transaction;
+- partial initialization × admission/start;
+- resource leak × replay/repeated rounds;
+- stale player snapshot × team/arena cleanup;
+- coordinate identity × replica/world mutation;
+- baseline leak × ticking/residency capacity.
+
+Resolve each applicable join to SAFE, CONTRADICTION, or one exact unresolved claim.
 
 ---
 
