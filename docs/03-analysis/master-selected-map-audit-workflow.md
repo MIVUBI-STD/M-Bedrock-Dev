@@ -147,6 +147,31 @@ PROVEN status
 
 ---
 
+# Audit terminology
+
+The master workflow uses the same vocabulary as the Mandatory Gameplay Audit Procedure:
+
+- **Check** — applicable integrity analysis.
+- **Contract** — expected lifecycle/state relationship.
+- **Crosscheck** — targeted interaction analysis between applicable systems.
+- **Contradiction** — grounded violation of an expected contract.
+- **Blocking Proof** — evidence that prevents the suspected contradiction.
+- **PROVEN** — sufficient proof for a reportable finding.
+- **NEED_VALIDATION** — one exact remaining proof question that cannot be resolved from available selected-artifact evidence.
+- **Audit Obligation** — unresolved audit/model/proof work, not an issue status.
+- **Runtime Verification** — narrow in-game confirmation used only for irreducible behavior.
+
+Issue type and proof state are separate:
+
+```text
+Issue Type:   BUG | DESIGN_MISMATCH
+Proof State:  PROVEN | NEED_VALIDATION
+```
+
+Do not introduce alternate names for these states in operator or tester-facing output.
+
+---
+
 # 0. One-door entry
 
 ~~~
@@ -610,7 +635,7 @@ Do not retain NEED_VALIDATION merely because:
 - proof requires arithmetic, ownership reconstruction, lifecycle interleaving, or negative-space reasoning;
 - the issue resembles a historical defect but current proof has not yet been assembled.
 
-For applicable families, actively try deterministic promotion:
+For applicable checks, actively try deterministic promotion:
 
 - multi-arena / capacity → visible capacity + lease/resource budget + admission logic + safe limit;
 - ticking / simulation → remote dependency + region geometry + residency owner + readiness/release;
@@ -632,7 +657,7 @@ Every confirmation-ready NEED_VALIDATION finding receives:
 - ordered proof route[]
 - historicalSearchHints[]
 - evidenceSubstitutions[]
-- familyProofCriteria[]
+- checkProofCriteria[]
 
 Search order:
 
@@ -723,7 +748,7 @@ grounded scenario
 + NO_BLOCKING_PROOF
 ~~~
 
-Use `familyProofCriteria[]` as the domain-specific checklist and bind the satisfied criteria through `FamilyProofReceipt`. PROVEN requires both universal saturation and all applicable family criteria to be satisfied with concrete evidence.
+Use `checkProofCriteria[]` as the domain-specific checklist and bind the satisfied criteria through `CheckProofReceipt`. PROVEN requires both universal saturation and all applicable check criteria to be satisfied with concrete evidence.
 
 When saturated:
 
@@ -866,7 +891,7 @@ A selected-map audit is complete only when:
 - UNDERSTAND closed
 - MODEL closed
 - full-map replica proof complete/bounded or divergence explicitly carried
-- STRESS applicable families accounted
+- STRESS applicable checks accounted
 - PROVE accounted: every causal finding is PROVEN or confirmation-ready NEED_VALIDATION, while unresolved non-finding residue remains explicit in Audit Obligations
 - honesty PASS
 - REPORT handoff preserves all visible unresolved work
