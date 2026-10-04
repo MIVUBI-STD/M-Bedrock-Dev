@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "runType": "PROSPECTIVE_BLIND_AUDIT",
+  "status": "TARGET_LOCKED_READY_FOR_DISCOVERY",
+  "target": {
+    "map": "Raid Arena Classic",
+    "version": "1.1.0",
+    "worldFileId": "1kkqaqb9FQIkAzorCNzVe8vyHgoFoHJWu",
+    "artifactFingerprint": "sha256:c212fb9e7b401ab081b14a062cc24a9d0e03b95202641cf53020a48e216d1ac3",
+    "worldFileFetched": true,
+    "worldFileSizeBytes": 6429954
+  },
+  "validationPurpose": "Prospective blind audit with the frozen post-unseen-repair engine. No historical approved Bug Report V2 exists in the repository, so this run measures proof quality and future tester confirmation rather than historical recall.",
+  "rules": {
+    "engineFrozenBeforeRun": true,
+    "historicalGroundTruthAvailable": false,
+    "historicalRecallWillNotBeClaimed": true,
+    "runtimeExecuted": false,
+    "onlyEvidenceReceiptProvenMayBePublished": true,
+    "genericNeedValidationForbidden": true
+  },
+  "requiredCoverage": [
+    "Mandatory Replica Discovery",
+    "Player Capability Model",
+    "State-Agnostic Fresh-Session Reset",
+    "Inventory / kit / equipment lifecycle",
+    "Combat / death / respawn / reconnect",
+    "Required / Assigned / Online / Eligible participant accounting",
+    "Role/team/player ownership",
+    "Terminal / score / reward idempotency",
+    "World mutation / reset / second-run baseline",
+    "Active-Session Reload Recovery",
+    "Transactional Referential Integrity",
+    "Developer-Item Acquisition Graph",
+    "Multi-player adversarial gameplay QA",
+    "Evidence Receipt Gate"
+  ],
+  "coverageGates": {
+    "materialSurfaceRouting":"OPEN",
+    "mutableResourceOwnership":"OPEN",
+    "requiredCrosschecks":"OPEN",
+    "materialScenarioAccounting":"OPEN",
+    "playerControlledSurfaceAccounting":"OPEN",
+    "genericNeedValidation":0
+  },
+  "futureValidation": {
+    "method":"Independent findings are preserved before any tester/client confirmation. Later confirmations can measure prospective precision/recall where ground truth becomes available.",
+    "status":"PENDING_INDEPENDENT_FINDING_SET"
+  }
+}
