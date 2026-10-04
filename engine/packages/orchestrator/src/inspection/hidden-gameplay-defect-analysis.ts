@@ -188,7 +188,7 @@ function materialIntentChallenges(
         node.kind === "spatial-region" ||
         (
           node.kind === "mechanic" &&
-          /(?:limit|capacity|queue|max|min|fallback|throttle|admission|concurrent|slot)/i.test(
+          /(?:limit|capacity|queue|max|min|fallback|throttle|admission|concurrent|slot|spawn|place|materiali[sz]|tick|chunk|simulat|terminal|finish|complete|timeout|version|release|debug|spectat|owner)/i.test(
             node.label,
           )
         );
