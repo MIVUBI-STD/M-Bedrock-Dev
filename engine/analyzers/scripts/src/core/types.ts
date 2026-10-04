@@ -145,6 +145,7 @@ export interface ScriptDeferredCallback {
 export interface ScriptEntityEventTrigger {
   event: string;
   receiverHint?: string;
+  executionRegion?: string;
   source: SourceRef;
 }
 

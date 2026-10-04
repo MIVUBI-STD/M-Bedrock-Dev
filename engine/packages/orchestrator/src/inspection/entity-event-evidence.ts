@@ -9,6 +9,7 @@ export interface EntityEventExternalEvidence {
   event: string;
   kind: "summon-spawn-event" | "event-command" | "script-trigger-event";
   entityIdentifier?: string;
+  executionRegion?: string;
   source: SourceRef;
 }
 
@@ -58,6 +59,9 @@ export function deriveEntityEventExternalEvidence(
       output.push({
         event: trigger.event,
         kind: "script-trigger-event",
+        ...(trigger.executionRegion === undefined
+          ? {}
+          : { executionRegion: trigger.executionRegion }),
         source: trigger.source,
       });
     }
@@ -75,6 +79,7 @@ export function deriveEntityEventExternalEvidence(
       item.kind,
       item.entityIdentifier ?? "*",
       item.event,
+      item.executionRegion ?? "",
       item.source.relativePath,
       item.source.range?.lineStart ?? 0,
     ].join("\0");

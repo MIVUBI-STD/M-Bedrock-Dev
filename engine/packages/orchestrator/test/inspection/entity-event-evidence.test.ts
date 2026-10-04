@@ -38,6 +38,7 @@ describe("entity event external evidence", () => {
       expect.objectContaining({
         event: "daigon:next_path",
         kind: "script-trigger-event",
+        executionRegion: expect.any(String),
       }),
     ]));
 

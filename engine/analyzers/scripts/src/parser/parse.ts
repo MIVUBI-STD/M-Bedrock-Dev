@@ -2466,6 +2466,7 @@ export function parseScriptFile(
           entityEventTriggers.push({
             event: eventArg.text,
             receiverHint: node.expression.expression.getText(file),
+            executionRegion: localExecutionRegionId(node, file),
             source: lineSource(file, node, source),
           });
         }
