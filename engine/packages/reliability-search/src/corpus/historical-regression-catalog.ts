@@ -1,5 +1,6 @@
 export interface HistoricalRegressionProvenance {
   readonly source: string;
+  readonly canonicalIssueId?: string;
   readonly issueType?: "BUG" | "DESIGN_MISMATCH";
   readonly reportPath?: string;
   readonly map?: string;
@@ -189,16 +190,12 @@ export function mergeHistoricalRegressionCatalog(
 
     byId.set(
       storageId,
-      storageId === item.id
-        ? {
-            ...item,
-            canonicalIssueId,
-          }
-        : {
-            ...item,
-            id: storageId,
-            canonicalIssueId,
-          },
+      {
+        ...(previous ?? {}),
+        ...item,
+        id: storageId,
+        canonicalIssueId,
+      },
     );
     byCanonicalIssueId.set(
       canonicalIssueId,

@@ -76,6 +76,9 @@ describe("historical regression catalog", () => {
             canonicalIssueId:
               canonicalId,
             title: "Legacy title",
+            invariantIds: [
+              "legacy.invariant",
+            ],
             expected: "Legacy expected.",
             observed: "Legacy observed.",
           }],
@@ -98,6 +101,12 @@ describe("historical regression catalog", () => {
     expect(
       merged.regressions[0]?.title,
     ).toBe("Arena state leaks");
+    expect(
+      merged.regressions[0]
+        ?.invariantIds,
+    ).toEqual([
+      "legacy.invariant",
+    ]);
   });
 
   it("rejects semantic conflict for an existing historical id", () => {
