@@ -80,13 +80,29 @@ export function auditArenaNativeSpatialContent(
   const sourceVolumes =
     options.includedVolumes ??
     options.regionPlan?.volumes;
-  const regions = sourceVolumes?.map((volume) => ({
+  const gameplayRegions = sourceVolumes?.map((volume) => ({
     minChunkX: chunkOf(volume.min.x),
     maxChunkX: chunkOf(volume.max.x),
     minChunkZ: chunkOf(volume.min.z),
     maxChunkZ: chunkOf(volume.max.z),
     dimensionId: options.dimensionId ?? 0,
-  })) ?? [region];
+  })) ?? [];
+  const regionKey = (item: ChunkRegion) =>
+    [
+      item.dimensionId,
+      item.minChunkX,
+      item.maxChunkX,
+      item.minChunkZ,
+      item.maxChunkZ,
+    ].join(":");
+  const regions = [
+    ...new Map(
+      [region, ...gameplayRegions].map((item) => [
+        regionKey(item),
+        item,
+      ]),
+    ).values(),
+  ];
 
   if (observations.length === 0) {
     return {
