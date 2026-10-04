@@ -334,6 +334,238 @@ Do not feed the historical answer into the current finding as proof.
 
 ---
 
+# 11. Referential Integrity
+
+Validate material references across selected-artifact content before assuming a gameplay dependency exists.
+
+Applicable references include:
+
+```text
+script import / module
+entity identifier / event
+item / block identifier
+structure name
+function / command target
+dialogue / NPC target
+scoreboard objective
+tag / dynamic-property key
+animation / controller
+resource / behavior-pack dependency
+```
+
+For each material reference record:
+
+```text
+reference
+→ source
+→ target namespace/type
+→ target exists
+→ target version/scope
+→ reachable consumer
+→ failure behavior
+```
+
+Challenge missing, stale, renamed, wrong-namespace, wrong-type, or version-incompatible references.
+
+Referential Integrity does not replace gameplay proof. A broken reference becomes a gameplay contradiction only when its reachable consumer and player-visible consequence are grounded.
+
+---
+
+# 12. Claim-Based Proof
+
+Every contradiction entering PROVE is decomposed into explicit claims.
+
+Required claims:
+
+```text
+REACHABILITY
+CONTRACT
+CONTRADICTION
+PLAYER_CONSEQUENCE
+AFFECTED_SCOPE
+BLOCKING_PROOF_CLEARED
+```
+
+Each claim records:
+
+```text
+status: PROVEN | MISSING
+evidence IDs
+reason
+```
+
+A finding is PROVEN only when all required claims are PROVEN.
+
+Do not use evidence volume or generic confidence as a substitute for claim closure.
+
+---
+
+# 13. Causal Slicing
+
+For each suspicious mutation perform a bounded backward and forward slice.
+
+Backward:
+
+```text
+wrong/suspicious state
+← writer
+← caller/trigger
+← owner/generation
+← lifecycle boundary
+```
+
+Forward:
+
+```text
+mutation
+→ readers/dependencies
+→ transition/commit
+→ player-visible consequence
+```
+
+Stop the slice at:
+- authoritative owner boundary;
+- grounded gameplay contract;
+- irrelevant/unreachable branch;
+- exact Blocking Proof.
+
+The intersection of backward and forward slices should identify:
+
+```text
+Root Cause
+→ Broken Contract
+→ Player Consequence
+```
+
+Do not traverse the entire repository when the relevant dependency slice is already closed.
+
+---
+
+# 14. Formal Absence Proof
+
+Absence claims require more than a keyword search.
+
+To prove a required capability/guard/cleanup is absent:
+
+```text
+required capability
+→ enumerate possible authoritative owners
+→ enumerate applicable implementation surfaces
+→ search create/write/guard/release paths
+→ reconcile dynamic/indirect references
+→ Coverage Ledger confirms relevant surfaces accounted
+→ no implementation found
+→ ABSENCE PROVEN
+```
+
+Use for claims such as:
+- residency/ticking owner is absent;
+- permission guard is absent;
+- fresh-session clear is absent;
+- generation validation is absent;
+- cleanup/release is absent;
+- retry accounting is absent.
+
+If dynamic dispatch or unsupported content prevents exhaustive ownership coverage, absence is not proven; preserve the exact missing claim.
+
+---
+
+# 15. Temporal Proof
+
+Represent timing-sensitive contradictions as an ordered event relation.
+
+Example:
+
+```text
+T0 old work scheduled
+T1 lifecycle invalidated/reset
+T2 new generation becomes authoritative
+T3 new gameplay starts
+T4 old work commits
+```
+
+Prove:
+- each event is reachable;
+- required ordering/overlap is source-grounded;
+- T4 targets state/resource owned by the new lifecycle;
+- no generation/owner/exclusion guard blocks T4.
+
+Timing alone does not force Runtime Verification.
+
+Use Runtime Verification only when the decisive ordering depends on native scheduling semantics that selected-artifact evidence cannot establish.
+
+---
+
+# 16. Proof Substitution Catalog
+
+Before Runtime Verification, attempt the applicable deterministic substitute.
+
+```text
+Runtime question                  Deterministic substitute
+-------------------------------   ---------------------------------------------
+third arena can start?            admission logic + resource budget + safe max
+remote entity remains active?     dependency + geometry + residency ownership
+stale inventory survives?         lifecycle differential + complete clearer set
+double ending occurs?             terminal reachability + idempotency guards
+old callback mutates new run?     temporal ordering + generation guard analysis
+world residue remains?            mutation footprint - restore footprint
+cross-arena mutation occurs?      selector scope + ownership + blocking guards
+duplicate reward occurs?          commit paths + idempotency/transaction guards
+```
+
+A substitute is valid only when it decides the same claim as the proposed runtime question.
+
+---
+
+# 17. NEED_VALIDATION Promotion Matrix
+
+NEED_VALIDATION is represented internally by claim closure, not a generic confidence score.
+
+Example:
+
+```text
+REACHABILITY             PROVEN
+CONTRACT                 PROVEN
+CONTRADICTION             PROVEN
+PLAYER_CONSEQUENCE        PROVEN
+AFFECTED_SCOPE            PROVEN
+BLOCKING_PROOF_CLEARED    MISSING
+```
+
+The remaining work is therefore exactly Blocking-Proof closure.
+
+Rules:
+- more than one vague missing area → continue audit; do not publish NEED_VALIDATION yet;
+- one or more missing claims may remain only when each is exact and the combined deciding action is one narrow verification question;
+- if deterministic substitution closes the claim → promote to PROVEN or SAFE;
+- Runtime Verification asks only the smallest unresolved deciding question;
+- after runtime evidence, re-run Blocking-Proof and claim closure before promotion.
+
+Generic labels such as “needs more testing” are invalid.
+
+---
+
+# 18. Architecture Freeze Rule
+
+The detection architecture is considered structurally complete after sections 1–17.
+
+Do not add another detection family/mechanism unless a confirmed real defect demonstrates that it cannot be represented by:
+- discovered-surface accounting;
+- Referential Integrity;
+- mutable-state ownership;
+- Crosschecks;
+- invariants;
+- state-transition reachability;
+- lifecycle differential;
+- capacity/geometry analysis;
+- causal slicing;
+- absence/temporal proof;
+- claim-based proof.
+
+A missed defect that fits an existing mechanism is an implementation/recall failure, not justification for another taxonomy layer.
+
+---
+
 # Coverage metrics
 
 Track internally per audit:
