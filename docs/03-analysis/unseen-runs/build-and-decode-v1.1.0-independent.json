@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "INDEPENDENT_PASS_CLOSED",
+  "status": "UNSEEN_REPAIR_REQUIRED",
   "target": {
     "map": "Build & Decode",
     "version": "1.1.0",
@@ -172,5 +172,31 @@
       "unaccountedPlayerControlledSurfaces": 0
     },
     "evidenceReceiptGate": "PASSED_FOR_ZERO_FINDING_SET"
+  },
+  "historicalComparison": {
+    "status": "COMPLETE_WITH_MISS",
+    "historicalApprovedIssues": [
+      {
+        "id": "BUG-BAD-DEBUG-STICK",
+        "title": "Temporary coordinate picker is reachable by normal Creative builders"
+      }
+    ],
+    "matched": [],
+    "missed": [
+      {
+        "historicalId": "BUG-BAD-DEBUG-STICK",
+        "classification": "ADVERSARIAL_MISS",
+        "earliestFailure": "Developer-item acquisition closure focused on explicit grants/recipes/resources but did not model Creative-mode catalog/inventory access as an ordinary authored acquisition surface for players intentionally placed in Creative.",
+        "repair": "Player capability modeling must derive acquisition surfaces from game mode. When ordinary participants are authored as Creative, every obtainable item relevant to developer/debug handlers must include Creative inventory/catalog reachability before suppression."
+      }
+    ],
+    "recall": {
+      "detected": 0,
+      "expected": 1,
+      "percent": 0
+    },
+    "unsupportedProven": 0,
+    "genericNeedValidation": 0,
+    "conclusion": "Build-heavy unseen validation reveals a capability-model gap: ordinary-player acquisition differs by authored game mode. Evidence discipline remains clean, but Creative-mode acquisition must be incorporated into the existing Developer-Item Acquisition Graph."
   }
 }
