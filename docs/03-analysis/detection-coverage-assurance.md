@@ -1372,7 +1372,72 @@ For craftable developer items, recipe ingredients must be traced to ordinary gam
 
 ---
 
-# 32. Architecture Freeze Rule
+# 32. Regression Repair: Player Capability Model
+
+This rule is promoted from the unseen Build & Decode validation miss. It extends existing acquisition/reachability analysis; it is not a new issue family.
+
+Before evaluating ordinary-player reachability, derive the capabilities intentionally granted to each player role by the selected artifact.
+
+Record:
+
+```text
+player role
+→ game mode
+→ permission/ability state authored by the map
+→ inventory/catalog access
+→ build/break capability
+→ command/event capability if explicitly granted
+→ interaction capability
+→ movement/flight capability
+→ acquisition surfaces created by those capabilities
+```
+
+### Game-mode acquisition
+
+When an ordinary participant is intentionally placed in Creative or another mode that changes obtainable resources, treat that mode as an ordinary gameplay acquisition surface.
+
+For Creative participants, Developer-Item Acquisition Graph must include:
+
+```text
+developer/debug item
+← Creative inventory/catalog availability
+← ordinary authored Creative role
+```
+
+before suppression.
+
+Do not require a recipe, loot table, direct grant, or container path when the authored game mode itself makes the item obtainable.
+
+### Capability × handler crosscheck
+
+For every gameplay-mutating developer/debug item or control:
+
+```text
+ordinary role capability
+× item/control acquisition
+× activation handler
+× permission/role guard
+× gameplay consequence
+```
+
+A hidden or temporary development item remains reachable if the ordinary authored role can obtain and activate it through its normal capabilities.
+
+### Capability closure
+
+Every ordinary player role must end with:
+
+```text
+capabilities modeled
+→ acquisition surfaces derived
+→ relevant developer/debug surfaces crosschecked
+→ SAFE or contradiction
+```
+
+Unknown capabilities may remain an exact Audit Obligation only when the selected artifact does not determine them.
+
+---
+
+# 33. Architecture Freeze Rule
 
 The detection architecture is considered structurally complete after sections 1–17.
 
