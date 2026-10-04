@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "runType": "INDEPENDENT_SELECTED_ARTIFACT_PASS",
+  "status": "INDEPENDENT_PASS_CLOSED",
+  "target": {
+    "map": "Composite Challenge",
+    "version": "1.1.1",
+    "artifactFingerprint": "sha256:c7a208ccb943d214de6bb6d2f15f265f8dba2b794ae56da40a11bef24162776a",
+    "fingerprintVerified": true,
+    "worldFileId": "1hFF8MaIgsVFBXgh_ll6f2Uoo2Cv3Y_Rr"
+  },
+  "rules": {
+    "historicalReportUsedAsProof": false,
+    "regressionCorpusUsedAsProof": false,
+    "runtimeExecuted": false,
+    "simulationMode": "source-derived state/interleaving analysis"
+  },
+  "independentlyProven": [
+    {
+      "temporaryId": "IND-CMP-001",
+      "check": "Ticking, Residency & Remote Simulation",
+      "crosscheck": "Remote Gameplay × Residency",
+      "title": "Arena-specific ticking regions are configured but never materialized by the runtime owner",
+      "proofState": "PROVEN",
+      "severityHint": "blocker",
+      "evidence": [
+        "chunk-WYD2CS7M.js:368-480 and chunk-2GRFUQFH.js:6286-6410 define/offset per-arena tickingAreas",
+        "chunk-KPA6ZKUE.js:39-145 WorldManager owns tickingarea add and consumes only WorldData static entries",
+        "No dynamic arena tickingarea-add owner exists in selected-artifact script surfaces; EntityLoader explicitly diagnoses locations against configured arena tickingAreas without creating them"
+      ],
+      "claimClosure": "ALL_REQUIRED_CLAIMS_PROVEN"
+    }
+  ],
+  "auditObligations": [
+    {
+      "id": "OBL-CMP-RESET-ASYNC",
+      "check": "Deferred Work & Generation Safety",
+      "closure": "AUDIT_OBLIGATION",
+      "question": "Composite end/reset paths invoke resetPlacedBlocks without awaiting reset completion, then reset session state and rely on a five-second auto-start cooldown. Static source proves asynchronous overlap is possible in principle, but current reset workload duration versus cooldown requires exact timing/command completion proof before promotion.",
+      "evidence": [
+        "chunk-2GRFUQFH.js:28275-28305",
+        "chunk-2GRFUQFH.js:28637-28690",
+        "chunk-2GRFUQFH.js:25180-25195"
+      ]
+    },
+    {
+      "id": "OBL-CMP-DUAL-RECONNECT",
+      "check": "Persistence, Reconnect & Reload Integrity",
+      "closure": "AUDIT_OBLIGATION",
+      "question": "Defense and Attack submanagers both subscribe to initialSpawn and contain active/buy/preload reconnect writers. Determine which submanager sessions remain non-idle under FUTURE_COMPOSITE and whether both handlers can target the same player before classifying a reconnect conflict.",
+      "evidence": [
+        "chunk-2GRFUQFH.js:13091-13200",
+        "chunk-2GRFUQFH.js:21110-21205"
+      ]
+    }
+  ],
+  "referentialIntegrity": {
+    "structureReferences": {
+      "referenced": 75,
+      "missing": 0
+    },
+    "customEntityReferences": {
+      "checked": 20,
+      "missing": 0
+    }
+  },
+  "coverageGates": {
+    "materialSurfaceRouting": "CLOSED",
+    "mutableResourceOwnership": "CLOSED",
+    "requiredCrosschecks": "CLOSED",
+    "materialScenarioAccounting": "CLOSED",
+    "playerControlledSurfaceAccounting": "CLOSED",
+    "genericNeedValidation": 0,
+    "unaccountedMaterialSurfaces": 0,
+    "unaccountedMutableResources": 0,
+    "unaccountedMaterialInterleavings": 0,
+    "unaccountedPlayerControlledSurfaces": 0,
+    "historicalComparison": "UNBLOCKED"
+  }
+}
