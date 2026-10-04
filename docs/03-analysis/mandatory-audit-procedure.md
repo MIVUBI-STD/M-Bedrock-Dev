@@ -832,6 +832,145 @@ UNRESOLVED
 Generic statements such as “needs runtime testing” do not close a family.
 ---
 
+## A10. Lifecycle Race & Generation Contract
+
+### Purpose
+
+Find bugs caused by valid work from an old lifecycle committing after ownership has moved to a new lifecycle.
+
+This contract is mandatory whenever gameplay uses delayed callbacks, scheduled work, async reset, retry queues, deferred cleanup, reconnect recovery, or reusable arenas/sessions.
+
+### Required timeline
+
+For every applicable deferred operation reconstruct:
+
+```text
+schedule
+→ captured owner/session/arena/generation
+→ delay / await / retry
+→ current owner at commit time
+→ guard / generation check
+→ mutation
+→ completion / cleanup
+```
+
+### Mandatory challenges
+
+- old reset commits after a new run starts;
+- old cleanup releases a resource acquired by a new generation;
+- delayed wave/spawn work survives retry/restart;
+- reconnect recovery overwrites death/respawn ownership;
+- timeout/terminal callback commits after another terminal path;
+- delayed reward/score commit occurs after session replacement;
+- deferred world mutation targets a reused arena;
+- scheduled UI/message/audio is delivered to a stale owner.
+
+### Static proof rule
+
+A race does not require runtime merely because timing is involved.
+
+It is statically PROVEN when:
+- both operations are reachable;
+- their ordering can overlap under source-defined scheduling/async behavior;
+- they target the same material state/resource;
+- the old operation lacks an applicable owner/generation/exclusion guard;
+- the resulting commit violates the new lifecycle contract.
+
+If overlap itself depends on native/runtime timing not decidable from source, preserve only that exact ordering question.
+
+---
+
+## A11. Terminal & Idempotency Contract
+
+### Purpose
+
+Prevent duplicate endings, duplicate rewards, contradictory terminal states, and cleanup executing more than once.
+
+For each game/session/level enumerate every terminal trigger:
+
+```text
+win
+loss
+timeout
+flag/objective completion
+all players gone
+admin/developer restart
+retry
+disconnect-driven termination
+fatal/reset path
+```
+
+Build:
+
+```text
+terminal trigger
+→ terminal guard
+→ state transition
+→ score/reward commit
+→ player mode/teleport
+→ cleanup
+→ persistence
+→ reuse publication
+```
+
+Challenge every pair of simultaneously reachable terminal triggers.
+
+Required questions:
+- Is terminal commit idempotent?
+- Is there one authoritative ended/finalizing state?
+- Can two callbacks both pass their guards before either commits?
+- Can reward/score persist twice?
+- Can cleanup run twice or release a new generation?
+- Can timeout race objective completion?
+- Can retry/restart race normal terminal cleanup?
+
+A terminal collision is PROVEN when two reachable terminal paths can both commit a non-idempotent consequence without a blocking guard.
+
+---
+
+## A12. UI / Player-Facing Contract
+
+### Purpose
+
+Treat wrong player-facing information as a real gameplay/reporting defect instead of ignoring it because mechanics still run.
+
+For each material UI/feedback surface map:
+
+```text
+source-of-truth state
+→ formatter/presenter
+→ audience/scope
+→ update trigger
+→ clear/replace trigger
+→ displayed claim
+```
+
+Applicable surfaces include:
+- scoreboard;
+- actionbar/title;
+- NPC/dialogue;
+- queue/start feedback;
+- wave/level/objective status;
+- timer;
+- inventory/shop price or availability;
+- arena/capacity presentation;
+- win/loss/reward feedback.
+
+Challenge:
+- stale display after state transition;
+- wrong arena/player scope;
+- displayed capacity different from playable capacity;
+- timer/status not cleared;
+- UI says success while commit failed;
+- UI says available while admission rejects;
+- scoreboard/objective value sourced from a different lifecycle owner.
+
+Classification remains evidence-driven:
+- broken presentation of an implemented contract → BUG;
+- authored/presented capability differs from delivered capability → DESIGN_MISMATCH.
+
+---
+
 # B. MODEL
 
 ## B1. Actor / Entity Contract
