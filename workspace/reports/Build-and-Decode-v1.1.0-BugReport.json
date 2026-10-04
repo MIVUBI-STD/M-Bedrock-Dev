@@ -1,0 +1,45 @@
+{
+  "schema": "m-bedrock-bug-report/v2",
+  "map": {
+    "name": "Build & Decode",
+    "mapVersion": "1.1.0",
+    "drive": "https://drive.google.com/file/d/1aBAM5Hwu58klnGV1dtZZLffgJATPRmtd/view",
+    "baseVersion": "Not recorded in audit evidence",
+    "testedVersion": "Static source audit only; runtime not executed"
+  },
+  "repairBy": "developer",
+  "bugs": [
+    {
+      "id": "BUG-BAD-DEBUG-STICK",
+      "fixed": false,
+      "severity": "minor",
+      "category": "ui-feedback",
+      "foundBy": "ai",
+      "title": "Temporary coordinate picker is reachable by normal Creative builders",
+      "problem": "A normal builder can hold a stick and trigger production debug tooling, cancelling block interaction and exposing coordinate JSON unrelated to gameplay.",
+      "expected": "Temporary coordinate tooling is removed from production or restricted to developer/admin users.",
+      "observed": "Any builder holding a normal stick can trigger the imported coordinate picker without an admin requirement.",
+      "reproduction": [
+        "Enter a Build & Decode building phase as the active Creative builder.",
+        "Obtain and hold a normal Minecraft stick.",
+        "Interact with a block.",
+        "Confirm normal interaction is cancelled and coordinate/debug output is shown."
+      ],
+      "aiAnalysis": "Production main.js imports the temporary debug-stick module. That module subscribes directly to block interaction, explicitly requires no admin tag, and the arena interaction guard lets stick interactions pass through.",
+      "relevantCode": [
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/main.js",
+          "reason": "Imports the temporary debug-stick module into the production entry point."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/dev/debug-stick.js",
+          "reason": "Implements the non-admin stick coordinate picker and debug output."
+        }
+      ],
+      "suggestedFix": "Remove the debug-stick import from production or gate the existing tool behind the current developer/admin permission owner.",
+      "mustPreserve": [
+        "Normal gameplay stick behavior must remain available when the developer tool is disabled."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "m-bedrock-bug-report/v2",
+  "map": {
+    "name": "The Gauntlet",
+    "mapVersion": "1.0.1",
+    "drive": "https://drive.google.com/file/d/1rFpeCtfpsv6D0g9S4HvZ8T_JmOeTzgwC/view",
+    "baseVersion": "1.21.130",
+    "testedVersion": "Static source audit only; runtime not executed"
+  },
+  "repairBy": "developer",
+  "bugs": [
+    {
+      "id": "BUG-GNT-DISCONNECT-GATE",
+      "fixed": false,
+      "severity": "major",
+      "category": "multiplayer-session",
+      "foundBy": "ai",
+      "title": "Co-op progression can ignore a disconnected required party member",
+      "problem": "All-player progression checks can drop an offline locked member, allowing the remaining player to advance cooperative gates without the full party.",
+      "expected": "Progression gates requiring the locked party wait for every required member, or pause while one is disconnected.",
+      "observed": "The shared all-player predicate filters the locked roster to currently present players before evaluating completion.",
+      "reproduction": [
+        "Start The Gauntlet with at least 2 players and reach an all-player progression gate such as Level 9.",
+        "Disconnect one required party member before the group completes the gate.",
+        "Move the remaining online player into the required completion area within the disconnect recovery window.",
+        "Confirm the level advances even though the disconnected required member never completed the gate."
+      ],
+      "aiAnalysis": "The run persists the original locked playerIds, but the shared positional helper removes missing players before evaluating every(). Started-party recovery keeps a partially disconnected run alive for several minutes, creating a window where cooperative gates evaluate only the remaining online subset.",
+      "relevantCode": [
+        {
+          "file": "selected behavior-pack gameplay bundle",
+          "reason": "Contains the shared all-player positional predicate, locked run roster, and disconnected-member recovery window."
+        }
+      ],
+      "suggestedFix": "Evaluate required cooperative gates against the locked run roster, or pause those gates whenever a required member is disconnected.",
+      "mustPreserve": [
+        "Exit-vote logic that intentionally uses only online players must keep its separate semantics."
+      ]
+    }
+  ]
+}
