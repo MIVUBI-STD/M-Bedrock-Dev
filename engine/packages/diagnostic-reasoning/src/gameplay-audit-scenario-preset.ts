@@ -5,6 +5,7 @@ export type GameplayAuditScenarioKind =
   | "max-party"
   | "party-capacity-plus-one"
   | "multi-arena-parallel"
+  | "arena-replica-integrity"
   | "arena-capacity-plus-one"
   | "disconnect-reconnect"
   | "reload-recovery"
@@ -199,11 +200,32 @@ export function buildGameplayAuditScenarioPreset(
           "Parallel sessions expose global selectors, shared resources, stale cleanup, cross-arena ownership leaks, and capacity failures that may appear only near the selected map's maximum arena count.",
         questions: [
           "Can an event in Arena A mutate players, entities, blocks, score, audio, messages, objectives, or cleanup in Arena B?",
+          "Can arena-local cleanup remove a world-global tag, objective marker, ticking-area name, timer, or other named resource still owned by Arena B?",
+          "Can a per-arena periodic/deferred job reach world-global players/entities/blocks through @a, world player enumeration, global entity queries, or unscoped world mutation?",
           "Can sessions start and progress independently at 2 arenas and at the selected map's maximum arena count?",
           "If a safe concurrency limit is known, is behavior explicitly checked at limit and limit + 1 rather than assuming a two-arena pass generalizes?",
         ],
       }),
     );
+
+    if (arenaCount !== undefined && arenaCount > 1) {
+      scenarios.push(
+        scenario({
+          id: "arena:replica-integrity",
+          kind: "arena-replica-integrity",
+          flowStage: "SETUP",
+          concurrentArenas: arenaCount,
+          reason:
+            "Physical arena replicas must not inherit baseline safety until topology/world proof shows each replica is complete or every material divergence is classified.",
+          questions: [
+            "Does every configured/playable arena have complete world/topology coverage relative to the canonical arena?",
+            "Are missing chunks, structures, block entities, routes, objectives, or spawn regions classified instead of hidden by source/config equality?",
+            "Can a replica that is incomplete or only partially copied still admit players and start gameplay?",
+            "Are cosmetic deltas separated from gameplay-material replica divergence?",
+          ],
+        }),
+      );
+    }
 
     if (
       arenaCount !== undefined &&

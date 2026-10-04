@@ -96,6 +96,7 @@ function presetAnchorIds(
 ): readonly string[] {
   const preferredKinds: readonly GameplayIntentNode["kind"][] =
     kind === "multi-arena-parallel" ||
+    kind === "arena-replica-integrity" ||
     kind === "arena-capacity-plus-one"
       ? ["policy", "lifecycle", "state"]
       : kind === "disconnect-reconnect" ||
@@ -316,9 +317,31 @@ function runtimeEdgeState(
   componentId: string,
   world: GameplayWorldModel,
   sourceLocators: readonly string[] = [],
+  scenarioKind?: GameplayAuditScenarioPreset["scenarios"][number]["kind"] | string,
 ): Pick<GameplayCausalLink, "status" | "reason"> {
   switch (componentId) {
     case "runtime:arena": {
+      if (scenarioKind === "arena-replica-integrity") {
+        if (world.arenas.replicaIntegrity.diverged > 0) {
+          return {
+            status: "CONTRADICTED",
+            reason:
+              "One or more configured arena replicas diverge from the canonical arena. Replica divergence must be classified for gameplay materiality before baseline safety can be reused.",
+          };
+        }
+        if (
+          world.arenas.replicaIntegrity.incomplete > 0 ||
+          world.arenas.replicaIntegrity.noProof > 0 ||
+          world.arenas.replicaIntegrity.bounded > 0
+        ) {
+          return {
+            status: "DETECTION_GAP",
+            reason:
+              "Arena replica proof is incomplete or bounded. A configured/playable replica cannot inherit canonical arena safety until world/topology proof is complete or every material delta is classified.",
+          };
+        }
+      }
+
       const reduced =
         world.arenas.count !== undefined &&
         world.arenas.safeConcurrentArenas !== undefined &&
@@ -908,6 +931,10 @@ export function compileGameplayScenarioGraph(
         addIntentKinds("policy", "lifecycle", "state");
         addRuntime("runtime:arena", "runtime:chunks");
         break;
+      case "arena-replica-integrity":
+        addIntentKinds("policy", "lifecycle", "state", "spatial-region");
+        addRuntime("runtime:arena", "runtime:structures");
+        break;
       case "reload-recovery":
         addIntentKinds("lifecycle", "state", "phase");
         addRuntime(
@@ -1267,6 +1294,7 @@ export function compileGameplayScenarioGraph(
           component.id,
           input.world,
           sourceLocators,
+          scenario.label,
         ),
       });
     }

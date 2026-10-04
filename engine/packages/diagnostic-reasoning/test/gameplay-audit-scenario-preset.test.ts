@@ -32,11 +32,22 @@ describe("gameplay audit scenario preset flow stages", () => {
     expect(byKind.get("multi-arena-parallel")).toBe(
       "READY_START",
     );
+    expect(byKind.get("arena-replica-integrity")).toBe(
+      "SETUP",
+    );
     const parallelScenario = preset.scenarios.find(
       (scenario) =>
         scenario.kind === "multi-arena-parallel",
     );
     expect(parallelScenario?.concurrentArenas).toBe(3);
+    const replicaScenario = preset.scenarios.find(
+      (scenario) =>
+        scenario.kind === "arena-replica-integrity",
+    );
+    expect(replicaScenario?.concurrentArenas).toBe(3);
+    expect(replicaScenario?.questions.join(" ")).toMatch(
+      /world\/topology|replica/i,
+    );
     expect(byKind.get("arena-capacity-plus-one")).toBe(
       "READY_START",
     );

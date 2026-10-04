@@ -649,6 +649,11 @@ export function requiredKnowledgeDomainsForPreset(
       add(domains, "platform-constraints");
       addIfApplicable("chunk-simulation");
       break;
+    case "arena-replica-integrity":
+      addIfApplicable("arena-lifecycle");
+      addIfApplicable("world-structure");
+      addIfApplicable("multiplayer-interleaving");
+      break;
     case "reload-recovery":
       addIfApplicable("persistence-recovery");
       addIfApplicable("inventory-state");
