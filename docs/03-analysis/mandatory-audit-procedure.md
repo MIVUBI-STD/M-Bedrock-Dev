@@ -719,6 +719,10 @@ STRESS
 → run lifecycle differentials, boundaries, repeated-run and partial-failure scenarios
 → derive bounded Multi-Scenario Simulation cases for applicable multiplayer/multi-arena systems
 → interrupt material lifecycle boundaries with disconnect/reconnect where applicable
+→ reduce scenarios through material pairwise coverage and dominance pruning without losing distinct ownership/order boundaries
+→ retain one Scenario Proof Receipt per material scenario
+→ run Connection Recovery Invariants when reconnect exists
+→ pass the Simulation Honesty Gate
 → run Scenario Coverage Gate so no material shared-state interleaving is silently skipped
 
 PROVE
