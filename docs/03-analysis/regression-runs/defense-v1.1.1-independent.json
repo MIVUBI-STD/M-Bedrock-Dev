@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "INDEPENDENT_SELECTED_ARTIFACT_PASS",
-  "status": "REGRESSION_COMPARISON_COMPLETE",
+  "status": "IN_PROGRESS",
   "target": {
     "map": "Defense Challenge",
     "version": "1.1.1",
@@ -16,137 +16,33 @@
     "simulationMode": "source-derived state/interleaving analysis"
   },
   "independentlyProven": [
-    {
-      "temporaryId": "IND-DEF-001",
-      "check": "Deferred Work & Generation Safety",
-      "crosscheck": "Reset × Arena Reuse",
-      "title": "Arena is published idle before asynchronous map reset completes while its lease remains reacquirable",
-      "proofState": "PROVEN",
-      "evidence": [
-        "ctf-defense-MJPEJYBR.js:13291-13315 endGame starts map reset, saves idle immediately, and only releases lease in reset promise finally",
-        "ctf-defense-MJPEJYBR.js:14098-14130 performResetGame follows the same idle-before-reset-complete ordering",
-        "chunk-ZDK4WOHG.js:1870-1908 acquire resolves immediately for an already-held arena lease"
-      ],
-      "claimClosure": "ALL_REQUIRED_CLAIMS_PROVEN"
-    },
-    {
-      "temporaryId": "IND-DEF-002",
-      "check": "Progression, Wave & Objective Integrity",
-      "crosscheck": "Retry × Progression Accounting",
-      "title": "Delayed wave group leaves pending accounting before its spawn retries resolve",
-      "proofState": "PROVEN",
-      "evidence": [
-        "ctf-defense-MJPEJYBR.js:3825-3855 delayed group callback decrements pendingSpawnGroups/pendingDelayedEntityCount immediately after first spawn request",
-        "ctf-defense-MJPEJYBR.js:231-448 EntityLoader can retain failed spawns in independent retries",
-        "ctf-defense-MJPEJYBR.js:3657-3680 hostile-clearance decision relies on pendingSpawnGroups/allWavesLaunched"
-      ],
-      "claimClosure": "ALL_REQUIRED_CLAIMS_PROVEN"
-    },
-    {
-      "temporaryId": "IND-DEF-003",
-      "check": "Persistence, Reconnect & Reload Integrity",
-      "crosscheck": "Reconnect × Death/Respawn",
-      "title": "Active reconnect restore can overwrite CombatTracker pending-respawn spectator state",
-      "proofState": "PROVEN",
-      "evidence": [
-        "ctf-defense-MJPEJYBR.js:2860-3007 CombatTracker restores/owns pending respawn",
-        "ctf-defense-MJPEJYBR.js:10540-10620 GameManager independently restores survival/loadout/position after five ticks without pending-respawn guard"
-      ],
-      "claimClosure": "ALL_REQUIRED_CLAIMS_PROVEN"
-    },
-    {
-      "temporaryId": "IND-DEF-004",
-      "check": "Inventory, Loadout & Economy Integrity",
-      "crosscheck": "Reconnect × Inventory",
-      "title": "Reconnect during preload can miss the fresh-session inventory clear",
-      "proofState": "PROVEN",
-      "evidence": [
-        "ctf-defense-MJPEJYBR.js:11716-11835 preload clears only currently online arena players",
-        "ctf-defense-MJPEJYBR.js:10540-10620 preload reconnect restores state but does not replay full inventory clear"
-      ],
-      "claimClosure": "ALL_REQUIRED_CLAIMS_PROVEN"
-    },
-    {
-      "temporaryId": "IND-DEF-005",
-      "check": "Multi-Arena Capacity & Isolation",
-      "crosscheck": "Presented Capacity × Shared Residency Budget",
-      "title": "Six enabled arenas are hard-limited to two concurrent ticking-area leases",
-      "proofState": "PROVEN",
-      "classificationHint": "DESIGN_MISMATCH",
-      "evidence": [
-        "chunk-R62WAIK6.js:8-22 enables six arenas",
-        "chunk-R62WAIK6.js:359-385 declares three residency regions per arena",
-        "chunk-ZDK4WOHG.js:1840-1908 hard-limits held/in-flight leases with MAX_CONCURRENT_ARENAS = 2"
-      ],
-      "claimClosure": "ALL_REQUIRED_CLAIMS_PROVEN"
-    }
+    {"temporaryId":"IND-DEF-001","check":"Deferred Work & Generation Safety","crosscheck":"Reset × Arena Reuse","title":"Arena reuse can overlap old asynchronous reset and release current simulation resources","proofState":"PROVEN","severityHint":"blocker","claimClosure":{"reachability":"PROVEN","contract":"PROVEN","contradiction":"PROVEN","playerConsequence":"PROVEN","affectedScope":"PROVEN","blockingProofCleared":"PROVEN"}},
+    {"temporaryId":"IND-DEF-002","check":"Progression, Wave & Objective Integrity","crosscheck":"Retry × Progression Accounting","title":"Required delayed enemy work can leave pending accounting before spawn retry resolves","proofState":"PROVEN","severityHint":"blocker","claimClosure":{"reachability":"PROVEN","contract":"PROVEN","contradiction":"PROVEN","playerConsequence":"PROVEN","affectedScope":"PROVEN","blockingProofCleared":"PROVEN"}},
+    {"temporaryId":"IND-DEF-003","check":"Persistence, Reconnect & Reload Integrity","crosscheck":"Reconnect × Death/Respawn","title":"Reconnect recovery can overwrite an active pending-respawn lifecycle","proofState":"PROVEN","severityHint":"major","claimClosure":{"reachability":"PROVEN","contract":"PROVEN","contradiction":"PROVEN","playerConsequence":"PROVEN","affectedScope":"PROVEN","blockingProofCleared":"PROVEN"}},
+    {"temporaryId":"IND-DEF-004","check":"Inventory, Loadout & Economy Integrity","crosscheck":"Reconnect × Inventory","title":"Reconnect during preload can bypass the per-session full inventory reset","proofState":"PROVEN","severityHint":"major","claimClosure":{"reachability":"PROVEN","contract":"PROVEN","contradiction":"PROVEN","playerConsequence":"PROVEN","affectedScope":"PROVEN","blockingProofCleared":"PROVEN"}},
+    {"temporaryId":"IND-DEF-005","check":"Multi-Arena Capacity & Isolation","crosscheck":"Presented Capacity × Shared Resource Budget","title":"Six enabled arenas are admission-limited to two concurrent arena leases","proofState":"PROVEN","severityHint":"major","classificationHint":"DESIGN_MISMATCH","claimClosure":{"reachability":"PROVEN","contract":"PROVEN","contradiction":"PROVEN","playerConsequence":"PROVEN","affectedScope":"PROVEN","blockingProofCleared":"PROVEN"}}
   ],
-  "suppressed": [
-    {
-      "id": "SUP-DEF-SIMULTANEOUS-LEASE-OVERFLOW",
-      "reason": "grantsInFlight is included in admission capacity before asynchronous lease creation."
-    },
-    {
-      "id": "SUP-DEF-DEV-SCRIPTEVENTS",
-      "reason": "No ordinary selected-artifact gameplay path was found that emits administrative force/skip/reset script events."
-    }
-  ],
-  "coverageGates": {
-    "materialSurfaceRouting": "CLOSED",
-    "mutableResourceOwnership": "CLOSED",
-    "requiredCrosschecks": "CLOSED",
-    "materialScenarioAccounting": "CLOSED",
-    "playerControlledSurfaceAccounting": "CLOSED",
-    "genericNeedValidation": 0,
-    "unaccountedMaterialSurfaces": 0,
-    "unaccountedMutableResources": 0,
-    "unaccountedMaterialInterleavings": 0,
-    "unaccountedPlayerControlledSurfaces": 0,
-    "historicalComparison": "UNBLOCKED"
+  "scenarioCoverage": {
+    "connection": ["preload reconnect","respawn reconnect","repeated reconnect","last-player disconnect"],
+    "multiArena": ["two simultaneous starts","third arena admission","cleanup while another arena active","same-arena reuse during reset"],
+    "progression": ["spawn failure/retry","pending/live accounting","wave completion boundary"],
+    "adversarial": ["RETAIN","RACE","STARVE","ORPHAN","REPLAY","CROSS","SKIP","DUPLICATE"]
   },
-  "historicalComparison": {
-    "status": "COMPLETE",
-    "historicalApprovedIssues": [
-      "BUG-DEF-LEASE-RESET",
-      "BUG-DEF-WAVE-RETRY",
-      "BUG-DEF-RESPAWN-RECONNECT",
-      "BUG-DEF-PRELOAD-INVENTORY",
-      "DM-DEF-ARENA-CAPACITY"
-    ],
-    "matched": [
-      {
-        "historicalId": "BUG-DEF-LEASE-RESET",
-        "independentId": "IND-DEF-001"
-      },
-      {
-        "historicalId": "BUG-DEF-WAVE-RETRY",
-        "independentId": "IND-DEF-002"
-      },
-      {
-        "historicalId": "BUG-DEF-RESPAWN-RECONNECT",
-        "independentId": "IND-DEF-003"
-      },
-      {
-        "historicalId": "BUG-DEF-PRELOAD-INVENTORY",
-        "independentId": "IND-DEF-004"
-      },
-      {
-        "historicalId": "DM-DEF-ARENA-CAPACITY",
-        "independentId": "IND-DEF-005"
-      }
-    ],
-    "missed": [],
-    "recall": {
-      "detected": 5,
-      "expected": 5,
-      "percent": 100
-    },
-    "provenRate": {
-      "proven": 5,
-      "independentFindings": 5,
-      "percent": 100
-    },
-    "genericNeedValidation": 0,
-    "note": "Historical report opened only after independent pass closed."
-  }
+  "coverageGates": {
+    "materialSurfaceRouting":"OPEN",
+    "mutableResourceOwnership":"OPEN",
+    "requiredCrosschecks":"OPEN",
+    "materialScenarioAccounting":"OPEN",
+    "playerControlledSurfaceAccounting":"OPEN",
+    "genericNeedValidation":0,
+    "historicalComparison":"BLOCKED"
+  },
+  "nextWork": [
+    "Complete terminal collision/idempotency analysis.",
+    "Complete developer-control ordinary-player reachability.",
+    "Complete cross-arena selector/world/resource isolation.",
+    "Complete shop/loadout/reward partial-failure and duplicate-commit analysis.",
+    "Complete replica/world geometry and reset-footprint analysis.",
+    "Close Coverage, Scenario and Abuse gates before historical comparison."
+  ]
 }
