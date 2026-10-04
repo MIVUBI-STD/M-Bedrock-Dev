@@ -692,6 +692,36 @@ Gameplay Model Closure is `CLOSED` only when:
 `GameplayModelClosure`.
 ---
 
+## UNDERSTAND execution map
+
+Run the base reconstruction first, then route only applicable specialist checks.
+
+```text
+A1–A7  Base reconstruction
+       artifact → surfaces → journey → state → ownership → progression → closure
+          ↓
+A8     Cross-System Coverage Matrix
+          ↓
+A22    Applicable Check Router
+          ↓
+        only applicable checks from:
+        A9–A21 and A26–A30
+          ↓
+A16 / A31 targeted Crosschecks when systems share material state/resources
+          ↓
+A23    Audit Priority & Stop Rules
+          ↓
+A24    Duplicate Finding Consolidation
+          ↓
+A25    Audit Coverage Summary
+          ↓
+B. MODEL
+```
+
+Numbering identifies stable contract references; it does **not** mean every A-section runs sequentially.
+
+---
+
 ## A8. Cross-System Coverage Matrix
 
 ### Purpose
