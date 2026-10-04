@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 2,
+  "reportTitle": "Bug Tracker Report",
+  "repositoryContext": {
+    "repository": "MIVUBI-STD/M-Bedrock-Dev",
+    "branch": "Local",
+    "references": [
+      "README.md",
+      "workspace/reports/README.md",
+      "engine/packages/bug-report/PREVIEW.md",
+      "engine/packages/bug-report/COPY.md",
+      "docs/03-analysis/master-selected-map-audit-workflow.md",
+      "docs/03-analysis/mandatory-audit-procedure.md"
+    ]
+  },
+  "summary": {
+    "bugs": 0,
+    "designMismatches": 0,
+    "uniqueIssues": 0
+  },
+  "games": [],
+  "testerState": {}
+}
