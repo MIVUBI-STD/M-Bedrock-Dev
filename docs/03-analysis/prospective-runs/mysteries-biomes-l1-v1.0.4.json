@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "runType": "PROSPECTIVE_BLIND_AUDIT",
+  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "target": {
+    "map": "Mysteries of Biomes Level 1",
+    "version": "1.0.4",
+    "worldFileId": "1jgOHXyLfV0qcbYYPCTPwoXrSS-NCacqQ",
+    "artifactFingerprint": "sha256:fcfde94b403a8281bf8b2fd589658e74dd4becf7d941e7b3db9b66261ace75ae",
+    "worldFileFetched": true,
+    "worldFileSizeBytes": 6183760
+  },
+  "validationPurpose": "Third prospective frozen-engine audit; emphasize exploration/find-the-button progression, interaction/objective state, spatial boundaries, repeated-run reset, participant/reconnect and player capability.",
+  "rules": {
+    "engineFrozenBeforeRun": true,
+    "historicalGroundTruthAvailable": false,
+    "historicalRecallWillNotBeClaimed": true,
+    "runtimeExecuted": false,
+    "evidenceReceiptRequired": true,
+    "genericNeedValidationForbidden": true
+  },
+  "proofQueue": [
+    {
+      "id": "BIO1-PQ-01",
+      "check": "Progression / Objective Integrity",
+      "state": "PROVING"
+    },
+    {
+      "id": "BIO1-PQ-02",
+      "check": "Interaction / Referential Integrity",
+      "state": "PROVING"
+    },
+    {
+      "id": "BIO1-PQ-03",
+      "check": "Spatial / World Mutation Integrity",
+      "state": "PROVING"
+    },
+    {
+      "id": "BIO1-PQ-04",
+      "check": "State-Agnostic Fresh-Session Reset",
+      "state": "PROVING"
+    },
+    {
+      "id": "BIO1-PQ-05",
+      "check": "Participant / Connection Recovery",
+      "state": "PROVING"
+    },
+    {
+      "id": "BIO1-PQ-06",
+      "check": "World Reset / Second-Run Baseline",
+      "state": "PROVING"
+    },
+    {
+      "id": "BIO1-PQ-07",
+      "check": "Player Capability / Developer Exposure",
+      "state": "PROVING"
+    },
+    {
+      "id": "BIO1-PQ-08",
+      "check": "Adversarial Gameplay QA",
+      "state": "PROVING"
+    }
+  ],
+  "coverageGates": {
+    "materialSurfaceRouting": "IN_PROGRESS",
+    "mutableResourceOwnership": "IN_PROGRESS",
+    "requiredCrosschecks": "IN_PROGRESS",
+    "materialScenarioAccounting": "IN_PROGRESS",
+    "playerControlledSurfaceAccounting": "IN_PROGRESS",
+    "genericNeedValidation": 0
+  },
+  "futureValidation": {
+    "status": "PENDING_INDEPENDENT_FINDING_SET"
+  }
+}
