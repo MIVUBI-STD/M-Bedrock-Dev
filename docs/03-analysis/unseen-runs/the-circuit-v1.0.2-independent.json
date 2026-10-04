@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "TARGET_LOCKED_READY_FOR_DISCOVERY",
+  "status": "IN_PROGRESS_DISCOVERY_MODEL",
   "target": {
     "map": "The Circuit",
     "version": "1.0.2",
@@ -37,12 +37,66 @@
     "Independent Finding Set"
   ],
   "coverageGates": {
-    "materialSurfaceRouting": "OPEN",
-    "mutableResourceOwnership": "OPEN",
-    "requiredCrosschecks": "OPEN",
-    "materialScenarioAccounting": "OPEN",
-    "playerControlledSurfaceAccounting": "OPEN",
+    "materialSurfaceRouting": "IN_PROGRESS",
+    "mutableResourceOwnership": "IN_PROGRESS",
+    "requiredCrosschecks": "IN_PROGRESS",
+    "materialScenarioAccounting": "IN_PROGRESS",
+    "playerControlledSurfaceAccounting": "IN_PROGRESS",
     "genericNeedValidation": 0
   },
-  "comparison": "BLOCKED_UNTIL_INDEPENDENT_PASS_CLOSED"
+  "comparison": "BLOCKED_UNTIL_INDEPENDENT_PASS_CLOSED",
+  "discovery": {
+    "gameplayModel": [
+      "multi-arena/session assignment",
+      "level/stage progression",
+      "player inventory/loadout state",
+      "world/structure mutation and reset",
+      "player/entity ownership",
+      "terminal/retry/replay lifecycle",
+      "player-facing state/feedback"
+    ],
+    "mandatoryDerivedChecks": [
+      "arena/session isolation",
+      "fresh-session reset invariant",
+      "cleanup ownership scope",
+      "recurring world-mutation spatial ownership",
+      "state-transition reachability",
+      "repeated-run baseline",
+      "ordinary-player adversarial actions"
+    ]
+  },
+  "scenarioPlan": {
+    "multiArena": [
+      "parallel starts in separate arenas",
+      "one arena reset while another remains active",
+      "same-arena reuse after terminal/reset",
+      "cleanup while another arena owns active player/entity/world state"
+    ],
+    "multiplayer": [
+      "one player leaves while teammates remain",
+      "simultaneous objective/terminal interactions",
+      "player state changes during shared progression"
+    ],
+    "connection": [
+      "disconnect/reconnect during setup",
+      "disconnect/reconnect during active level",
+      "disconnect/reconnect around terminal/reset",
+      "repeated reconnect"
+    ],
+    "adversarial": [
+      "SKIP progression",
+      "RETAIN stale state",
+      "DUPLICATE commit/reward/state",
+      "CROSS arena/session ownership",
+      "RACE lifecycle boundaries",
+      "REPLAY one-shot transitions",
+      "ORPHAN shared state/resource",
+      "ESCAPE intended gameplay boundary"
+    ]
+  },
+  "notes": [
+    "Historical The Circuit Bug Report remains sealed for this pass.",
+    "No issue is admitted until source-derived causal chain and Blocking-Proof search are closed.",
+    "Unseen validation is testing generalization of the repaired engine, not raw issue count."
+  ]
 }
