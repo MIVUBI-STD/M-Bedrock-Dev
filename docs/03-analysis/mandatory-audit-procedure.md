@@ -1759,273 +1759,98 @@ Resolve each applicable join to SAFE, CONTRADICTION, or one exact unresolved cla
 
 # B. MODEL
 
-## B1. Actor / Entity Contract
+MODEL converts the reconstructed gameplay into compact structural records used by the routed integrity checks. It does not repeat those checks.
 
-### Trigger
+## B1. Actor & Entity Model
 
-When gameplay-critical entities/NPCs/mobs/projectiles exist.
-
-### Required Inputs
-
-Entity definitions, spawn evidence, AI/navigation analysis, progression contracts.
-
-### Mandatory Questions
-
-- What is the actor's role?
-- How is it spawned?
-- Where is it spawned?
-- Does it need remote simulation?
-- What target does it require?
-- Can it navigate to the target?
-- How does it interact/fight?
-- How is death/removal observed?
-- How does it affect progression?
-- How is it cleaned up?
-
-### Required Record
+When gameplay-critical entities exist, record:
 
 ```text
-Entity ID
-Role
-Spawn Trigger
-Spawn Location
-Simulation Requirement
-Target
-Navigation
-Interaction/Combat
-Death/Removal
-Progression Contribution
-Cleanup
+entity/actor
+→ role
+→ spawn trigger/location
+→ required simulation
+→ target/navigation
+→ interaction/combat
+→ death/remove
+→ progression contribution
+→ cleanup
 ```
 
-### Failure Patterns
+A14 owns entity lifecycle/objective-accounting integrity. B1 only provides the structural model it consumes.
 
-- unreachable spawn;
-- missing target;
-- incomplete AI stack;
-- incompatible navigation environment;
-- actor unload/despawn not accounted;
-- cleanup absent;
-- removed entity leaves progression blocked.
+## B2. Spatial & Simulation Model
 
-### Output
-
-Actor/Entity Contract.
-
-### Closure Rule
-
-Every progression-critical actor has a complete spawn→act→terminate→account chain.
-
----
-
-## B2. Spatial & Simulation Contract
-
-### Trigger
-
-When gameplay depends on world regions, distant actors, structures, teleports, or off-player logic.
-
-### Required Inputs
-
-Spatial intent, region contracts, structure placement, chunk/ticking evidence.
-
-### Mandatory Questions
-
-- Which region matters?
-- Which actor/system depends on it?
-- Can the player be outside simulation distance?
-- Is explicit simulation ownership required?
-- Is readiness proven before dependent work?
-- Is capacity sufficient?
-- Is simulation released?
-
-### Required Record
+When gameplay depends on remote regions, structures, teleports, or off-player logic, record:
 
 ```text
-Region
-Actor/System
-Purpose
-Player Distance / Locality
-Needs Simulation?
-Ticking/Residency Mechanism
-Readiness
-Capacity
-Release
+region
+→ dependent actor/system
+→ purpose
+→ locality/player distance
+→ simulation requirement
+→ residency mechanism
+→ readiness
+→ capacity
+→ release
 ```
 
-### Failure Patterns
+A13 owns ticking/residency integrity and quantitative coverage proof. B2 supplies the spatial model.
 
-- remote dependency with no simulation mechanism;
-- acquire without release;
-- release unreachable;
-- capacity unchecked;
-- work begins before readiness;
-- one arena's simulation steals capacity from another.
+## B3. Multiplayer Ownership Model
 
-### Output
-
-Spatial/Simulation Contract.
-
-### Closure Rule
-
-Every remote gameplay dependency has grounded residency/readiness/ownership or a contradiction/detection gap.
-
----
-
-## B3. Multiplayer Contract
-
-### Trigger
-
-When more than one player is supported or shared player state exists.
-
-### Required Inputs
-
-State Registry, Ownership Registry, party/admission/capacity evidence.
-
-### Mandatory Questions
-
-- Which state is player-local?
-- Which is shared?
-- Is there a leader/owner assumption?
-- What changes when one player leaves/dies/disconnects?
-- Can simultaneous actions race?
-- Are rewards/progression scaled or shared correctly?
-
-### Required Scenarios
-
-Where applicable:
+When more than one player can participate, record:
 
 ```text
-1 player
-2 players
-max players
-max + 1
-one player leaves
-one player dies
-one player disconnects
-simultaneous player actions
+player-local state
+shared state
+party/session owner
+admission rules
+leave/death/disconnect ownership transfer
+simultaneous mutation surfaces
+player-count boundaries
 ```
 
-### Failure Patterns
+Use meaningful counts only: 1, 2 when concurrency matters, selected maximum, and maximum + 1 when admission behavior is material.
 
-- offline player blocks wipe/vote/progression;
-- player-local state stored globally;
-- simultaneous actions duplicate transition/reward;
-- party resize invalidates threshold;
-- owner leaves and no authority transfer occurs.
+Applicable integrity checks own the actual contradiction search.
 
-### Output
+## B4. Arena & Session Model
 
-Multiplayer Contract.
-
-### Closure Rule
-
-Shared vs player-local ownership and relevant player-count boundaries are fully accounted.
-
----
-
-## B4. Multi-Arena Contract
-
-### Trigger
-
-When more than one arena/session/front can exist.
-
-### Required Inputs
-
-Arena topology, capacity, lifecycle, isolation, global-state analysis.
-
-### Mandatory Questions
-
-- How is an arena assigned?
-- How many arenas are visible?
-- How many can actually run concurrently?
-- Can sessions start independently?
-- Are selectors/state/entities/world mutations isolated?
-- Is cleanup isolated?
-- Is arena reuse generation-safe?
-
-### Required Checks
+When multiple arenas/sessions/fronts exist, record:
 
 ```text
-Assignment
-Capacity
-Parallel Start
-State Isolation
-Selector Isolation
-Entity Isolation
-Block Mutation Isolation
-Reward Isolation
-Message Isolation
-Audio Isolation
-Cleanup Isolation
-Reuse
+assignment
+visible capacity
+admission owner
+concurrent capacity
+shared resources
+isolation scope
+cleanup owner
+reuse/generation
 ```
 
-### Failure Patterns
-
-- visible arena count exceeds unexplained playable concurrency;
-- global selector crosses arenas;
-- global gamerule/world mutation is arena-owned without lease;
-- cleanup in A mutates B;
-- arena reused before old callbacks/state expire.
-
-### Output
-
-Multi-Arena Contract.
-
-### Closure Rule
-
-Capacity and isolation are grounded independently. Queue/fallback existence alone never proves reduced capacity is intended.
-
----
+A9 Multi-Arena Capacity & Isolation and A20 Capacity & Boundary Quantification own the detailed safety/contradiction checks.
 
 ## B5. Boundary Registry
 
-### Trigger
-
-Whenever a material numeric/discrete limit exists.
-
-### Required Inputs
-
-Config, scripts, scoreboards, gameplay contract.
-
-### Mandatory Questions
-
-- What is the boundary value?
-- What gameplay purpose does it serve?
-- Is it player-visible?
-- What should happen immediately below/at/above the boundary?
-
-### Required Cases
-
-Use only meaningful cases:
+For each material numeric/discrete limit record:
 
 ```text
-0
-1
-max-1
-max
-max+1
+boundary
+source
+gameplay purpose
+player visibility
+below / at / above behavior
 ```
 
-### Typical Boundaries
+Use only relevant cases rather than a generic matrix.
 
-- player/party capacity;
-- arena capacity;
-- retry count;
-- wave/level count;
-- lives;
-- timer;
-- score threshold;
-- reward threshold;
-- ticking-area capacity.
+Typical boundaries include players, arenas, retries, waves/levels, lives, timers, score/reward thresholds, entities, and residency resources.
 
-### Output
+### MODEL closure
 
-Boundary Registry with source, purpose, and expected behavior.
-
-### Closure Rule
-
-Every material boundary has selected-artifact grounding and relevant edge-case semantics.
+MODEL is closed when every applicable structural dependency required by routed checks has a grounded record or one exact unresolved claim.
 
 ---
 
