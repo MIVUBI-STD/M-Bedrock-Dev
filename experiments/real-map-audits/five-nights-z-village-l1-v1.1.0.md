@@ -156,3 +156,21 @@ A runtime test is still appropriate for cave/windmill simulation residency, but 
 ## Result
 
 Five Nights at Z Village Level 1 v1.1.0 is closed for this bounded source batch with **1 current source-proven gameplay finding**.
+
+
+## Deep multi-arena pass — isolation and simultaneous-start closure
+
+The selected artifact generates six arenas from the authored arena table. The deeper pass traced the systems that initially looked capable of cross-arena leakage:
+
+- cinematic ownership is stored in `activeCinematics` per arena/group, not one global queue;
+- a cinematic start is rejected only for the same arena or overlapping player IDs, so independent arenas can run concurrently;
+- cinematic commands/coordinates are translated through the current arena;
+- normal player lookup is filtered by the arena tag;
+- scoreboard/runtime ownership is created with the current arena ID;
+- gameplay entities are reconciled through arena tags/bounds.
+
+No source path was found where starting, ending, or cleaning one arena mutates another arena's cinematic, roster, score, or objective state.
+
+The existing reconnect/currency finding remains valid because it is a per-player session-boundary defect, not cross-arena contamination.
+
+Result of this multi-arena pass: **no additional source-proven cross-arena defect**.
