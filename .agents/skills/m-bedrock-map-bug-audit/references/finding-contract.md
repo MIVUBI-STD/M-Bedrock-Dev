@@ -74,3 +74,53 @@ Internal causes such as `runtime-proof-required`, `insufficient-evidence`, `ambi
 A source-proven contradiction with a complete gameplay translation is automatically challenged by bounded counter-proof search. It should become PROVEN whenever the selected-artifact evidence is sufficient; only irreducible missing proof remains NEED_VALIDATION.
 
 Designed behavior, disproved candidates, and proven-normal surfaces remain hidden from the finding list but stay in the audit trace.
+
+## Finding conservation
+
+No material candidate may disappear between discovery, proof, review, and publication.
+
+Every material candidate must end with exactly one explicit disposition:
+
+```text
+PROVEN
+NEED_VALIDATION
+REJECTED_WITH_COUNTERPROOF
+SUPERSEDED_BY:<finding-id>
+INTENTIONALLY_EXCLUDED:<non-gameplay reason>
+```
+
+Rules:
+
+- `REJECTED_WITH_COUNTERPROOF` requires concrete selected-artifact counter-evidence.
+- `SUPERSEDED_BY` requires the surviving finding ID and must not erase distinct player impact.
+- `INTENTIONALLY_EXCLUDED` is only for non-gameplay/release-health residue; it must retain the reason and may not hide a plausible material gameplay consequence.
+- approval filtering is not a disposition and must never delete a finding silently;
+- runtime-proof-required material findings remain `NEED_VALIDATION` with one exact test;
+- deprecated/stale/release residue remains visible in audit trace and is promoted only when a selected-artifact gameplay consequence is grounded.
+
+Before REPORT is ready, reconcile:
+
+```text
+all material candidates
+=
+visible PROVEN
++ visible NEED_VALIDATION
++ explicit rejected/superseded/excluded dispositions
+```
+
+Any unmatched material candidate is a conservation violation and blocks finalization.
+
+## Delivery-state proof
+
+Configuration or declaration is never sufficient proof that a gameplay dependency is delivered. For every material resource/capability, trace the applicable states:
+
+```text
+declared
+→ materialized
+→ active
+→ owned
+→ simulated
+→ completed/released
+```
+
+Examples include ticking areas, spawned entities, structures, kit stations, objectives, queues, timers, and cleanup resources. A missing transition must become a causal finding or an explicit proof obligation; it must not be treated as normal merely because configuration exists.
