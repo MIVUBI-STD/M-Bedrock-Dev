@@ -140,6 +140,11 @@ function escapedRegex(
 ): string {
   return value.replace(
     /[.*+?^$()|[\]\\]/g,
+    "\\function escapedRegex(
+  value: string,
+): string {
+  return value.replace(
+    /[.*+?^$()|[\]\\]/g,
     "\\function expressionUsesAuthority(
   expression: string | undefined,
   authorities: readonly string[],
@@ -162,6 +167,10 @@ function escapedRegex(
   });
 }
 ",
+  );
+}
+
+function expressionUsesAuthority",
   );
 }
 
@@ -277,28 +286,71 @@ function scoreboardObservation(
 function commandObservation(
   script: ParsedScriptFile,
   command: ParsedScriptFile["commandLiterals"][number],
+  authorities: readonly string[],
 ): ArenaStateIsolationObservation | undefined {
   const raw = command.command.trim().replace(/^\//, "");
   const head = raw.split(/\s+/)[0]?.toLowerCase();
+
   if (
-    head !== "gamerule" &&
-    head !== "difficulty" &&
-    head !== "time" &&
-    head !== "weather"
+    head === "gamerule" ||
+    head === "difficulty" ||
+    head === "time" ||
+    head === "weather"
   ) {
-    return undefined;
+    return {
+      scriptId: script.identifier,
+      region: command.executionRegion ?? "module",
+      surface: "world-command",
+      key: raw,
+      scope: "world-global",
+      status: "shared-global",
+      reason:
+        "The command mutates world-global behavior and can affect concurrent arenas unless ownership/arbitration is proven.",
+    };
   }
 
-  return {
-    scriptId: script.identifier,
-    region: command.executionRegion ?? "module",
-    surface: "world-command",
-    key: raw,
-    scope: "world-global",
-    status: "shared-global",
-    reason:
-      "The command mutates world-global behavior and can affect concurrent arenas unless ownership/arbitration is proven.",
-  };
+  if (head === "tickingarea") {
+    const authorityPartitioned =
+      expressionUsesAuthority(raw, authorities);
+
+    return {
+      scriptId: script.identifier,
+      region: command.executionRegion ?? "module",
+      surface: "world-command",
+      key: raw,
+      scope: authorityPartitioned ? "arena-local" : "world-global",
+      status: authorityPartitioned ? "isolated" : "partition-proof-required",
+      reason: authorityPartitioned
+        ? "Ticking-area command includes the authored arena authority expression, providing arena-specific resource partitioning."
+        : "Ticking-area names are world-shared resources. Arena flow using a non-partitioned name requires proof that concurrent arenas cannot remove or replace another arena's residency resource.",
+    };
+  }
+
+  const targetsAllPlayers =
+    /(^|\s)@a(?:\[|\b)/i.test(raw);
+  const mutatesPlayerOrWorld =
+    /(?:^|\s)(?:fill|setblock|clone|tag|kill|tp|teleport|clear|give|effect|gamemode|scoreboard)\b/i.test(
+      raw,
+    );
+
+  if (targetsAllPlayers && mutatesPlayerOrWorld) {
+    const authorityPartitioned =
+      expressionUsesAuthority(raw, authorities);
+
+    return {
+      scriptId: script.identifier,
+      region: command.executionRegion ?? "module",
+      surface: "world-command",
+      key: raw,
+      scope: authorityPartitioned ? "arena-local" : "world-global",
+      status: authorityPartitioned ? "isolated" : "partition-proof-required",
+      reason: authorityPartitioned
+        ? "Global-selector command is explicitly partitioned by the authored arena authority expression."
+        : "Arena flow mutates players or nearby world state through a global @a selector. Arena-context translation or an equivalent partitioning guard must be proven before cross-arena isolation can close.",
+    };
+  }
+
+  return undefined;
 }
 
 function analyzeScript(
@@ -420,7 +472,11 @@ function analyzeScript(
     const region = command.executionRegion ?? "module";
     if (!regions.has(region)) continue;
     const observation =
-      commandObservation(script, command);
+      commandObservation(
+        script,
+        command,
+        authorities,
+      );
     if (observation) observations.push(observation);
   }
 

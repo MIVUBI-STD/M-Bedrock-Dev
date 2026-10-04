@@ -168,3 +168,60 @@ describe("arena state isolation analysis", () => {
     ).toBe("isolated");
   });
 });
+
+
+  it("requires arena partition proof for global-selector mutations in arena flow", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function maintain(arena) {",
+        "  arena.players.size;",
+        "  world.getDimension('overworld').runCommandAsync('execute as @a at @s run fill ~1 ~0 ~1 ~-1 ~0 ~-1 grass_path replace dirt');",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result = analyzeArenaStateIsolation([script]);
+    expect(
+      result.observations.find(
+        (item) =>
+          item.surface === "world-command" &&
+          item.key.includes("execute as @a"),
+      ),
+    ).toMatchObject({
+      scope: "world-global",
+      status: "partition-proof-required",
+    });
+  });
+
+  it("requires partition proof for literal ticking-area names used by arena flow", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function startArena(arena) {",
+        "  arena.players.size;",
+        "  world.getDimension('overworld').runCommandAsync('tickingarea add circle ~ ~ ~ 4 shared_cinematic true');",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result = analyzeArenaStateIsolation([script]);
+    expect(
+      result.observations.find(
+        (item) =>
+          item.surface === "world-command" &&
+          item.key.includes("tickingarea add"),
+      ),
+    ).toMatchObject({
+      scope: "world-global",
+      status: "partition-proof-required",
+    });
+  });
