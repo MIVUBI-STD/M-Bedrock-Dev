@@ -71,7 +71,7 @@ They are not admitted as bugs without current causal proof.
 
 ## Result
 
-The Circuit v1.0.2 is recorded as **0 current source-proven gameplay findings** in this pass.
+The Circuit v1.0.2 currently has **1 source-proven Minor DESIGN_MISMATCH** after capability-reachability closure.
 
 The metadata mismatch between the file label (v1.0.2) and BP/RP manifest version (v1.0.1) should be cleaned separately if package-version identity is important, but it is not treated as a gameplay defect.
 
@@ -121,3 +121,51 @@ Current source:
 No additional cross-arena state/mutation defect was established in these paths.
 
 The existing five-player party/classroom-capacity fact and unguarded DebugStick trigger remain separate capability/reachability questions; they are not promoted without a selected-artifact requirement/reachability proof.
+
+
+## Proven design mismatch — reachable DebugStick
+
+### DESIGN_MISMATCH — Normal gameplay resources expose the production DebugStick
+
+Severity: Minor  
+Proof: source-proven  
+Domain: developer tooling / player interaction / release hygiene
+
+#### Issue
+
+The production bootstrap initializes `DebugStickService`. Any player using a normal `minecraft:stick` triggers the coordinate logger; the item-use handler has no developer/admin permission check.
+
+The trigger item is reachable through ordinary current gameplay. Circuit grants `minecraft:oak_planks` as a starting block resource and also sells oak planks in the normal shop. Active gameplay explicitly places players in Survival mode, so the vanilla player crafting grid can convert those planks into sticks.
+
+#### Expected
+
+Production gameplay should not expose coordinate/debug tooling to ordinary players. Debug interactions should be disabled in release or gated by the existing developer permission owner.
+
+#### Actual
+
+```text
+Circuit starting resource
+→ 24 × minecraft:oak_planks
+→ Survival gameplay
+→ normal plank → stick crafting
+→ itemUse(minecraft:stick)
+→ DebugStickService.addSelection()
+→ coordinate/debug output
+```
+
+The separate `debug:give_stick` script event is not needed to reach the capability.
+
+#### Reproduction path
+
+1. Start a Circuit gameplay round that grants the normal block resources.
+2. Use two of the supplied oak planks to craft sticks.
+3. Hold/use a stick as a normal non-developer player.
+4. Confirm `[DebugStick]` coordinate-selection output is produced.
+
+#### Player-visible consequence
+
+Ordinary students can enter a developer coordinate-logging interaction surface that is unrelated to the game objective and exposes implementation/debug information.
+
+#### Repair direction
+
+Remove `DebugStickService.init()` from the release bootstrap or gate stick handling through the existing developer permission owner.

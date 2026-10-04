@@ -24,7 +24,7 @@ All 22 selected files used in this reconciliation were fetched from the current 
 | Build & Decode | 1.1.0 | **1 PROVEN Minor DESIGN_MISMATCH** | `build-and-decode-v1.1.0.md` |
 | The Gauntlet | 1.0.1 | **2 PROVEN Major BUGS** | `the-gauntlet-v1.0.1.md` |
 | Composite Challenge | 1.1.1 | **5 PROVEN BUGS — 2 Blocker, 2 Major, 1 Minor** | `composite-challenge-v1.1.1.md` |
-| The Circuit | Drive 1.0.2 / pack 1.0.1 | 0 PROVEN | `the-circuit-v1.0.2.md` |
+| The Circuit | Drive 1.0.2 / pack 1.0.1 | **1 PROVEN Minor DESIGN_MISMATCH** | `the-circuit-v1.0.2.md` |
 | Dark Crystal | 1.0.0 | 0 PROVEN | `dark-crystal-v1.0.0.md` |
 | Manhunt | 1.0.0 | **1 PROVEN Major DESIGN_MISMATCH** | `manhunt-v1.0.0.md` |
 | Five Nights at Z Village L1 | 1.1.0 | **1 PROVEN Major BUG** | `five-nights-z-village-l1-v1.1.0.md` |
@@ -44,7 +44,7 @@ All 22 selected files used in this reconciliation were fetched from the current 
 
 ## Proven findings requiring review
 
-The reopened selected-artifact batch currently contains **16 source-proven BUGs** plus **4 source-proven DESIGN_MISMATCHES**:
+The reopened selected-artifact batch currently contains **16 source-proven BUGs** plus **5 source-proven DESIGN_MISMATCHES**:
 
 - **Defense Challenge v1.1.1** — 4 BUGs + 1 Major DESIGN_MISMATCH:
   - Blocker — arena reset can release the ticking-area lease of a newly started run;
@@ -70,7 +70,7 @@ The reopened selected-artifact batch currently contains **16 source-proven BUGs*
 - **Orb of the Illusioner L2 v1.1.0** — 2 Major BUGs:
   - weapon/armor upgrades consume coins and then fail on an undefined `material` identifier;
   - active-game reload recovery aborts the arena because barricade validation references undefined `selectedBarricades`.
-- **Manhunt v1.0.0** — 1 Major DESIGN_MISMATCH:\n  - Arena 6 is materially incomplete relative to the authored arena replica; native voxel proof shows a concentrated missing-geometry region.\n- **Build & Decode v1.1.0** — 1 Minor DESIGN_MISMATCH:
+- **The Circuit v1.0.2** — 1 Minor DESIGN_MISMATCH:\n  - normal gameplay oak planks + Survival crafting make the production DebugStick reachable without developer permission.\n- **Manhunt v1.0.0** — 1 Major DESIGN_MISMATCH:\n  - Arena 6 is materially incomplete relative to the authored arena replica; native voxel proof shows a concentrated missing-geometry region.\n- **Build & Decode v1.1.0** — 1 Minor DESIGN_MISMATCH:
   - temporary coordinate-picker dev tooling is reachable by a normal Creative builder holding a stick.
 
 These are selected-artifact source findings. Runtime-only obligations remain separate and do not reduce or inflate this count.
@@ -95,7 +95,7 @@ The earlier source-first reconciliation found the current confirmed issue set, b
 Current confirmed findings remain valid while this deeper pass runs:
 
 - **16 source-proven BUGs**: 4 Blocker + 11 Major + 1 Minor.
-- **4 source-proven DESIGN_MISMATCHES**: 3 Major + 1 Minor.
+- **5 source-proven DESIGN_MISMATCHES**: 3 Major + 2 Minor.
 
 The reopened pass must close, where applicable:
 
