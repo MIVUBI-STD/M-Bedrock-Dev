@@ -81,6 +81,8 @@ every material discovered surface
 ```
 
 Block audit closure when:
+- an arena/session-local loop contains an unclassified global selector or world mutation;
+- a shared identity tag/property has no cleanup-scope review;
 - a material surface has no owner;
 - a mutable resource has no lifecycle owner;
 - an applicable check was not routed;
@@ -107,6 +109,9 @@ Retry × Reward Commit
 Reset × Arena Reuse
 Cleanup × New Generation
 Global Selector × Arena Isolation
+Shared Identity Tag × Arena Cleanup
+Arena-Local Maintenance × Global Player Selector
+Reconnect × Fresh-Session Inventory Reset
 Terminal Trigger × Terminal Trigger
 Remote Gameplay × Residency
 Entity Objective × Residency
@@ -156,6 +161,8 @@ Automatically challenge:
 - multiple writers without authority;
 - writer without owner;
 - global clearer for local state;
+- global player/entity selectors or world commands reached from arena/session-local loops;
+- shared tags/properties used as identity while cleanup is scoped by arena/session;
 - deferred writer without generation validation;
 - create/acquire without cleanup;
 - read/write after owner invalidation;
