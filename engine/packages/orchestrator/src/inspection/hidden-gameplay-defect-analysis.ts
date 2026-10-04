@@ -650,6 +650,13 @@ function auditScenarioPresetFromModel(
         input.world.chunks.leases.length > 0 ||
         input.world.spatial.resolvedScriptEffects > 0
       ),
+    hasPlayerFeedbackSurface:
+      input.intent.evidence.some((item) =>
+        item.origin === "dialogue" ||
+        item.origin === "translation" ||
+        item.origin === "scoreboard" ||
+        item.origin === "command"
+      ),
   });
 }
 
@@ -859,6 +866,13 @@ export function refreshHiddenGameplayDefectsForWorld(
           world.chunks.leases.length > 0 ||
           world.spatial.resolvedScriptEffects > 0
         ),
+      hasPlayerFeedbackSurface:
+        intent?.evidence.some((item) =>
+          item.origin === "dialogue" ||
+          item.origin === "translation" ||
+          item.origin === "scoreboard" ||
+          item.origin === "command"
+        ) ?? false,
     });
 
   const scenarioGraph =
