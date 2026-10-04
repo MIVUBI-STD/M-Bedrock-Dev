@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "INDEPENDENT_SELECTED_ARTIFACT_PASS",
-  "status": "INDEPENDENT_PASS_CLOSED",
+  "status": "INDEPENDENT_RERUN_CLOSED",
   "target": {
     "map": "Composite Challenge",
     "version": "1.1.1",
@@ -29,29 +29,69 @@
         "No dynamic arena tickingarea-add owner exists in selected-artifact script surfaces; EntityLoader explicitly diagnoses locations against configured arena tickingAreas without creating them"
       ],
       "claimClosure": "ALL_REQUIRED_CLAIMS_PROVEN"
+    },
+    {
+      "temporaryId": "IND-CMP-002",
+      "check": "Deferred Work & Generation Safety",
+      "crosscheck": "Reset × Arena Reuse",
+      "title": "Arena/session can become startable while chunked reset work is still running",
+      "proofState": "PROVEN",
+      "severityHint": "blocker",
+      "evidence": [
+        "chunk-2GRFUQFH.js:7881-7950 ResetMapService processes reset across scheduled chunks and exposes per-arena reset state",
+        "chunk-2GRFUQFH.js:15296-15375 and 15990-16035 submanager end/reset paths fire resetArenaPlacedBlocks without awaiting completion, then publish idle",
+        "chunk-2GRFUQFH.js:13756+ / 21770+ start validation does not use ResetMapService reset state"
+      ],
+      "claimClosure": "ALL_REQUIRED_CLAIMS_PROVEN"
+    },
+    {
+      "temporaryId": "IND-CMP-003",
+      "check": "Inventory, Loadout & Economy Integrity",
+      "crosscheck": "Reconnect × Fresh-Session Inventory Reset",
+      "title": "Reconnect during preload can miss the online-only full inventory wipe",
+      "proofState": "PROVEN",
+      "severityHint": "major",
+      "evidence": [
+        "chunk-2GRFUQFH.js:13910-14030 and 21940-22095 preload clear iterates current online arena players",
+        "chunk-2GRFUQFH.js:13127-13200 and 21136-21205 reconnect preload writers restore state/position without replaying full clear",
+        "Preparation/loadout paths use scoped loadout refresh rather than fresh-session clear"
+      ],
+      "claimClosure": "ALL_REQUIRED_CLAIMS_PROVEN"
+    },
+    {
+      "temporaryId": "IND-CMP-004",
+      "check": "Multi-Arena Capacity & Isolation",
+      "crosscheck": "Shared Identity Tag × Arena Cleanup",
+      "title": "Per-arena flag cleanup removes the shared carrier tag from players in other arenas",
+      "proofState": "PROVEN",
+      "severityHint": "major",
+      "evidence": [
+        "chunk-2GRFUQFH.js:18691 defines one shared FLAG_CARRIER_TAG",
+        "chunk-2GRFUQFH.js:18868 carrier acquisition writes that shared tag while arena-local flagStates own carrier identity",
+        "chunk-2GRFUQFH.js:19120-19150 cleanup(arenaId) loops over world players and removes FLAG_CARRIER_TAG globally"
+      ],
+      "claimClosure": "ALL_REQUIRED_CLAIMS_PROVEN"
+    },
+    {
+      "temporaryId": "IND-CMP-005",
+      "check": "World Mutation & Reset Integrity",
+      "crosscheck": "Arena-Local Maintenance × Global Player Selector",
+      "title": "Active-arena floor maintenance executes around every world player",
+      "proofState": "PROVEN",
+      "severityHint": "minor",
+      "evidence": [
+        "chunk-2GRFUQFH.js:14055-14075 defense maintenance is entered per active arena but executes fill as @a",
+        "chunk-2GRFUQFH.js:22145-22160 attack maintenance repeats the same global @a mutation"
+      ],
+      "claimClosure": "ALL_REQUIRED_CLAIMS_PROVEN"
     }
   ],
   "auditObligations": [
     {
-      "id": "OBL-CMP-RESET-ASYNC",
-      "check": "Deferred Work & Generation Safety",
-      "closure": "AUDIT_OBLIGATION",
-      "question": "Composite end/reset paths invoke resetPlacedBlocks without awaiting reset completion, then reset session state and rely on a five-second auto-start cooldown. Static source proves asynchronous overlap is possible in principle, but current reset workload duration versus cooldown requires exact timing/command completion proof before promotion.",
-      "evidence": [
-        "chunk-2GRFUQFH.js:28275-28305",
-        "chunk-2GRFUQFH.js:28637-28690",
-        "chunk-2GRFUQFH.js:25180-25195"
-      ]
-    },
-    {
       "id": "OBL-CMP-DUAL-RECONNECT",
       "check": "Persistence, Reconnect & Reload Integrity",
       "closure": "AUDIT_OBLIGATION",
-      "question": "Defense and Attack submanagers both subscribe to initialSpawn and contain active/buy/preload reconnect writers. Determine which submanager sessions remain non-idle under FUTURE_COMPOSITE and whether both handlers can target the same player before classifying a reconnect conflict.",
-      "evidence": [
-        "chunk-2GRFUQFH.js:13091-13200",
-        "chunk-2GRFUQFH.js:21110-21205"
-      ]
+      "question": "Defense and Attack submanagers both subscribe to initialSpawn. The concrete fresh-session inventory contradiction is now proven; any additional dual-writer reconnect consequence beyond that still requires exact shared-session ownership proof."
     }
   ],
   "referentialIntegrity": {
@@ -76,5 +116,9 @@
     "unaccountedMaterialInterleavings": 0,
     "unaccountedPlayerControlledSurfaces": 0,
     "historicalComparison": "UNBLOCKED"
+  },
+  "rerun": {
+    "reason": "Regression comparison exposed four misses; existing mechanisms were tightened at earliest failure points and Composite was re-evaluated from selected-artifact source.",
+    "previousIndependentCount": 1
   }
 }
