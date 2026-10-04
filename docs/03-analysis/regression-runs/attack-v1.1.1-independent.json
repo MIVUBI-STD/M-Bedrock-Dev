@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "INDEPENDENT_SELECTED_ARTIFACT_PASS",
-  "status": "INDEPENDENT_PASS_CLOSED",
+  "status": "REGRESSION_COMPARISON_COMPLETE",
   "target": {
     "map": "Attack Challenge",
     "version": "1.1.1",
@@ -167,7 +167,51 @@
   "nextWork": [
     "Run historical comparison only now that the independent finding set and coverage gates are closed."
   ],
-  "historicalComparison": "BLOCKED_UNTIL_INDEPENDENT_PASS_CLOSES",
+  "historicalComparison": {
+    "status": "COMPLETE",
+    "historicalApprovedIssues": [
+      "BUG-ATK-PRELOAD-INVENTORY",
+      "BUG-ATK-RESPAWN-RECONNECT",
+      "DM-ATK-ARENA-CAPACITY"
+    ],
+    "matched": [
+      {
+        "historicalId": "BUG-ATK-PRELOAD-INVENTORY",
+        "independentId": "IND-ATK-001",
+        "rootCauseEquivalent": true
+      },
+      {
+        "historicalId": "BUG-ATK-RESPAWN-RECONNECT",
+        "independentId": "IND-ATK-002",
+        "rootCauseEquivalent": true
+      },
+      {
+        "historicalId": "DM-ATK-ARENA-CAPACITY",
+        "independentId": "IND-ATK-003",
+        "rootCauseEquivalent": true
+      }
+    ],
+    "missed": [],
+    "newIndependentFindings": [
+      {
+        "independentId": "IND-ATK-004",
+        "title": "Delayed victory can commit after timeout/wipe retry handling begins",
+        "historicalApprovedMatch": null
+      }
+    ],
+    "recall": {
+      "detected": 3,
+      "expected": 3,
+      "percent": 100
+    },
+    "provenRate": {
+      "proven": 4,
+      "independentFindings": 4,
+      "percent": 100
+    },
+    "genericNeedValidation": 0,
+    "note": "Historical data was opened only after INDEPENDENT_PASS_CLOSED."
+  },
   "scenarioCoverage": {
     "connection": [
       {
