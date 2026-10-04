@@ -111,6 +111,9 @@ export interface InspectionSourceIndex {
     embeddedCommands: ReturnType<
       typeof analyzeEmbeddedStructureCommands
     >;
+    containerItems: ReturnType<
+      typeof extractStructureRuntimeContent
+    >["containerItems"];
     transitionResidue?:
       StructureTransitionResidueAssessment;
     queuedTickPositions: number;
@@ -630,6 +633,8 @@ export async function indexInspectionSources(
           ? {}
           : { footprint }),
         embeddedCommands,
+        containerItems:
+          runtimeContent.containerItems,
         transitionResidue:
           assessStructureTransitionResidue(
             structure,

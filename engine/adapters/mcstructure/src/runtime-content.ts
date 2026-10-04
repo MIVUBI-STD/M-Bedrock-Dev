@@ -37,8 +37,18 @@ export interface EmbeddedCommandBlock {
   trackOutput?: boolean;
 }
 
+export interface EmbeddedContainerItem {
+  flatIndex: number;
+  coordinate?: StructureCoordinate;
+  paletteName?: string;
+  blockEntityId?: string;
+  itemId: string;
+  count?: number;
+}
+
 export interface StructureRuntimeContent {
   commandBlocks: EmbeddedCommandBlock[];
+  containerItems: EmbeddedContainerItem[];
   queuedTickPositions: number;
 }
 
@@ -58,6 +68,36 @@ function isCommandBlockPalette(name: string | undefined): boolean {
     name === "minecraft:repeating_command_block";
 }
 
+function containerItemId(value: unknown): string | undefined {
+  const item = asRecord(value);
+  if (!item) return undefined;
+  const raw =
+    item.Name ??
+    item.name ??
+    item.id;
+  return typeof raw === "string" && raw.length > 0
+    ? raw
+    : undefined;
+}
+
+function containerItemCount(value: unknown): number | undefined {
+  const item = asRecord(value);
+  if (!item) return undefined;
+  const raw =
+    item.Count ??
+    item.count;
+  return numberValue(raw);
+}
+
+function containerItems(value: unknown): readonly unknown[] {
+  const blockEntity = asRecord(value);
+  if (!blockEntity) return [];
+  const items =
+    blockEntity.Items ??
+    blockEntity.items;
+  return Array.isArray(items) ? items : [];
+}
+
 function queuedTickCount(value: unknown): number {
   const record = asRecord(value);
   if (!record) return 0;
@@ -70,9 +110,16 @@ export function extractStructureRuntimeContent(
   structure: McStructureModel,
 ): StructureRuntimeContent {
   const positionData = asRecord(structure.blockPositionData);
-  if (!positionData) return { commandBlocks: [], queuedTickPositions: 0 };
+  if (!positionData) {
+    return {
+      commandBlocks: [],
+      containerItems: [],
+      queuedTickPositions: 0,
+    };
+  }
 
   const commandBlocks: EmbeddedCommandBlock[] = [];
+  const embeddedContainerItems: EmbeddedContainerItem[] = [];
   let queuedTickPositions = 0;
 
   for (const [indexText, value] of Object.entries(positionData)) {
@@ -84,7 +131,7 @@ export function extractStructureRuntimeContent(
     if (queuedTickCount(positionRecord) > 0) queuedTickPositions += 1;
 
     const blockEntity = asRecord(positionRecord.block_entity_data);
-    if (!blockEntity || typeof blockEntity.Command !== "string") continue;
+    if (!blockEntity) continue;
 
     const paletteEntry = paletteEntryAt(structure, flatIndex);
     const paletteName = paletteEntry?.name;
@@ -94,15 +141,32 @@ export function extractStructureRuntimeContent(
       : undefined;
     const blockEntityId =
       typeof blockEntity.id === "string" ? blockEntity.id : undefined;
-
-    if (
-      !isCommandBlockPalette(paletteName) &&
-      blockEntityId !== "CommandBlock"
-    ) continue;
-
     const coordinate = structure.size
       ? flatIndexToCoordinate(flatIndex, structure.size)
       : undefined;
+
+    for (const item of containerItems(blockEntity)) {
+      const itemId = containerItemId(item);
+      if (!itemId) continue;
+      const count = containerItemCount(item);
+      embeddedContainerItems.push({
+        flatIndex,
+        ...(coordinate ? { coordinate } : {}),
+        ...(paletteName ? { paletteName } : {}),
+        ...(blockEntityId ? { blockEntityId } : {}),
+        itemId,
+        ...(count === undefined ? {} : { count }),
+      });
+    }
+
+    if (
+      typeof blockEntity.Command !== "string" ||
+      (
+        !isCommandBlockPalette(paletteName) &&
+        blockEntityId !== "CommandBlock"
+      )
+    ) continue;
+
     const auto = boolish(blockEntity.auto);
     const conditional =
       (typeof paletteStates?.conditional_bit === "boolean"
@@ -136,6 +200,14 @@ export function extractStructureRuntimeContent(
   }
 
   commandBlocks.sort((a, b) => a.flatIndex - b.flatIndex);
+  embeddedContainerItems.sort((a, b) =>
+    a.flatIndex - b.flatIndex ||
+    a.itemId.localeCompare(b.itemId)
+  );
 
-  return { commandBlocks, queuedTickPositions };
+  return {
+    commandBlocks,
+    containerItems: embeddedContainerItems,
+    queuedTickPositions,
+  };
 }

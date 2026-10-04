@@ -50,6 +50,48 @@ describe("gameplay reachability stage", () => {
       ).reachable,
     ).toBe(true);
   });
+
+  it("indexes mcstructure container items without assuming the container is player-accessible", () => {
+    const graph = buildGameplayReachabilityGraph(
+      [],
+      [],
+      [{
+        identifier: "levels/chest_build",
+        node: {
+          kind: "structure",
+          source: {
+            artifactId: "map",
+            relativePath: "structures/chest_build.mcstructure",
+          },
+        } as any,
+        containerItems: [{
+          flatIndex: 7,
+          itemId: "minecraft:oak_planks",
+          count: 16,
+        }],
+      }],
+    );
+
+    const plank = graph.nodes.find(
+      (node) => node.id === "item:minecraft:oak_planks",
+    );
+    const container = graph.nodes.find(
+      (node) => node.kind === "container",
+    );
+    expect(plank?.evidenceIds).toContain(
+      "structures/chest_build.mcstructure#container:7",
+    );
+    expect(container?.playerAccessible).not.toBe(true);
+    expect(
+      findGameplayReachability(
+        graph,
+        "item:minecraft:oak_planks",
+      ).resolution,
+    ).toBe("unknown");
+    expect(graph.coverage?.sources).toContain(
+      "mcstructure-container-contents",
+    );
+  });
 });
 
 

@@ -127,6 +127,15 @@ export function buildGameplayReachabilityGraph(
     readonly text?: string;
   }[],
   gameplayJsonNodes: readonly SemanticNode[] = [],
+  structures: readonly {
+    readonly identifier: string;
+    readonly node: SemanticNode;
+    readonly containerItems: readonly {
+      readonly flatIndex: number;
+      readonly itemId: string;
+      readonly count?: number;
+    }[];
+  }[] = [],
 ): GameplayReachabilityGraph {
   const nodes = new Map<
     string,
@@ -139,7 +148,7 @@ export function buildGameplayReachabilityGraph(
     "give-command",
   ]);
   const coverageGaps = new Set<string>([
-    "container-contents",
+    "world-container-contents",
     "engine-loot-table-items",
     "world-natural-acquisition",
   ]);
@@ -291,6 +300,45 @@ export function buildGameplayReachabilityGraph(
   if (recipeFiles > 0) {
     coverageSources.add(
       "behavior-pack-recipes",
+    );
+  }
+
+  let structureContainerItems = 0;
+  for (const structure of structures) {
+    for (const item of structure.containerItems) {
+      structureContainerItems += 1;
+      const evidenceIds = [
+        structure.node.source.relativePath +
+        "#container:" +
+        String(item.flatIndex),
+      ];
+      const containerId =
+        "container:structure:" +
+        structure.identifier +
+        ":" +
+        String(item.flatIndex);
+      if (!nodes.has(containerId)) {
+        nodes.set(containerId, {
+          id: containerId,
+          kind: "container",
+          label:
+            structure.identifier +
+            " container " +
+            String(item.flatIndex),
+          evidenceIds,
+        });
+      }
+      edges.push({
+        from: containerId,
+        to: ensureItem(item.itemId, evidenceIds),
+        kind: "contains",
+        evidenceIds,
+      });
+    }
+  }
+  if (structureContainerItems > 0) {
+    coverageSources.add(
+      "mcstructure-container-contents",
     );
   }
   if (unresolvedRecipes > 0) {
