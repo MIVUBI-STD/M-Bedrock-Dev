@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "INDEPENDENT_SELECTED_ARTIFACT_PASS",
-  "status": "IN_PROGRESS",
+  "status": "IN_PROGRESS_COVERAGE_EXPANSION",
   "target": {
     "map": "Attack Challenge",
     "version": "1.1.1",
@@ -119,10 +119,138 @@
     }
   ],
   "nextWork": [
-    "Complete Coverage Ledger for remaining Attack gameplay surfaces.",
-    "Run multi-player/multi-arena scenario coverage including simultaneous starts, cleanup/reuse, player leave and repeated reconnect.",
-    "Run adversarial player-action coverage for shop/loadout, objective/terminal, exit vote, inventory movement/drop/craft and reachable developer controls.",
-    "Close all remaining material surfaces before historical comparison."
+    "Resolve simultaneous arena-start lease admission and queue ownership.",
+    "Resolve cleanup/reuse and cross-arena selector/resource isolation.",
+    "Resolve repeated reconnect and last-player disconnect ownership.",
+    "Resolve shop/loadout/reward transaction idempotency and partial-failure paths.",
+    "Resolve terminal/objective duplicate-commit paths.",
+    "Resolve ordinary-player reachability of developer controls.",
+    "Close Coverage, Scenario and Abuse gates before historical comparison."
   ],
-  "historicalComparison": "BLOCKED_UNTIL_INDEPENDENT_PASS_CLOSES"
+  "historicalComparison": "BLOCKED_UNTIL_INDEPENDENT_PASS_CLOSES",
+  "scenarioCoverage": {
+    "connection": [
+      {
+        "id": "SCN-ATK-PRELOAD-RECONNECT-INVENTORY",
+        "result": "CONTRADICTION",
+        "finding": "IND-ATK-001"
+      },
+      {
+        "id": "SCN-ATK-RESPAWN-RECONNECT",
+        "result": "CONTRADICTION",
+        "finding": "IND-ATK-002"
+      },
+      {
+        "id": "SCN-ATK-REPEATED-RECONNECT",
+        "result": "REVIEW_REQUIRED",
+        "focus": "duplicate restore/subscription/deferred work and stale player state"
+      },
+      {
+        "id": "SCN-ATK-LAST-PLAYER-DISCONNECT",
+        "result": "REVIEW_REQUIRED",
+        "focus": "session ownership, cleanup and arena release"
+      }
+    ],
+    "multiArena": [
+      {
+        "id": "SCN-ATK-THIRD-ARENA-START",
+        "result": "CONTRADICTION",
+        "finding": "IND-ATK-003"
+      },
+      {
+        "id": "SCN-ATK-SIMULTANEOUS-START",
+        "result": "REVIEW_REQUIRED",
+        "focus": "lease admission atomicity and queue ownership"
+      },
+      {
+        "id": "SCN-ATK-ARENA-CLEANUP-WHILE-OTHER-ACTIVE",
+        "result": "REVIEW_REQUIRED",
+        "focus": "selector/resource isolation"
+      },
+      {
+        "id": "SCN-ATK-REUSE-AFTER-CLEANUP",
+        "result": "REVIEW_REQUIRED",
+        "focus": "old-generation callbacks/state"
+      }
+    ],
+    "multiplayer": [
+      {
+        "id": "SCN-ATK-PLAYER-LEAVE-WHILE-TEAM-ACTIVE",
+        "result": "REVIEW_REQUIRED",
+        "focus": "shared progression/ownership thresholds"
+      },
+      {
+        "id": "SCN-ATK-TWO-PLAYER-TERMINAL",
+        "result": "REVIEW_REQUIRED",
+        "focus": "idempotent terminal/reward commit"
+      }
+    ]
+  },
+  "adversarialCoverage": {
+    "checkedGoals": [
+      "RETAIN",
+      "RACE",
+      "STARVE"
+    ],
+    "provenPaths": [
+      {
+        "goal": "RETAIN",
+        "scenario": "disconnect before fresh-session inventory clear then reconnect after the boundary",
+        "finding": "IND-ATK-001"
+      },
+      {
+        "goal": "RACE",
+        "scenario": "disconnect/reconnect while pending respawn and active-session restore compete",
+        "finding": "IND-ATK-002"
+      },
+      {
+        "goal": "STARVE",
+        "scenario": "fill both concurrent arena leases and attempt another enabled arena",
+        "finding": "IND-ATK-003"
+      }
+    ],
+    "pendingGoals": [
+      {
+        "goal": "DUPLICATE",
+        "focus": "shop/reward/retry/reconnect commit paths"
+      },
+      {
+        "goal": "SKIP",
+        "focus": "objective/level/terminal and reachable developer controls"
+      },
+      {
+        "goal": "CROSS",
+        "focus": "global selector/state across active arenas"
+      },
+      {
+        "goal": "REPLAY",
+        "focus": "terminal/reward one-shot commits"
+      },
+      {
+        "goal": "ORPHAN",
+        "focus": "disconnect/cleanup shared resources"
+      },
+      {
+        "goal": "FORCE-FAIL",
+        "focus": "partial shop/loadout/teleport/residency operations"
+      },
+      {
+        "goal": "ESCAPE",
+        "focus": "arena/phase confinement and exit paths"
+      },
+      {
+        "goal": "DESYNC",
+        "focus": "UI/session state vs actual admission/progression"
+      }
+    ]
+  },
+  "coverageGates": {
+    "materialSurfaceRouting": "OPEN",
+    "mutableResourceOwnership": "OPEN",
+    "requiredCrosschecks": "OPEN",
+    "materialScenarioAccounting": "OPEN",
+    "playerControlledSurfaceAccounting": "OPEN",
+    "genericNeedValidation": 0,
+    "historicalComparison": "BLOCKED"
+  }
 }
