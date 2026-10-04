@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "REPAIR_RERUN_IN_PROGRESS",
+  "status": "UNSEEN_REPAIR_RERUN_COMPLETE",
   "target": {
     "map": "The Circuit",
     "version": "1.0.2",
@@ -261,7 +261,7 @@
     "conclusion": "Unseen validation exposed a generalization miss in ordinary-player developer-item acquisition analysis. The two provisional independent findings must not be published until concrete source receipts are attached."
   },
   "repairRerun": {
-    "status": "RERUN_IN_PROGRESS",
+    "status": "RERUN_COMPLETE",
     "engineRepairCommit": "edaa2d871dc374b989798ade149ea7c27ab011ca",
     "historicalReportUsedAsProof": false,
     "requiredChecks": [
@@ -290,6 +290,43 @@
       "genericNeedValidation": 0,
       "unaccountedMaterialSurfaces": 0,
       "unaccountedPlayerControlledSurfaces": 0
-    }
+    },
+    "results": [
+      {
+        "id": "CIR-RR-DEBUG-ITEM",
+        "result": "DETECTED",
+        "proofState": "PROVEN",
+        "classification": "DESIGN_MISMATCH",
+        "title": "Normal gameplay resource path exposes the production DebugStick",
+        "route": "developer item → ordinary gameplay acquisition/crafting/resource path → activation → developer gameplay mutation",
+        "evidenceReceipt": "CLOSED",
+        "regressionMatch": "DM-CIR-DEBUG-STICK"
+      },
+      {
+        "id": "CIR-RR-OLD-001",
+        "result": "SUPPRESSED",
+        "previousIndependentId": "IND-CIR-001",
+        "reason": "The previous run did not retain concrete selected-artifact evidence sufficient to reconstruct a distinct cross-session mutation. Evidence Receipt Gate correctly prevents publication."
+      },
+      {
+        "id": "CIR-RR-OLD-002",
+        "result": "SUPPRESSED",
+        "previousIndependentId": "IND-CIR-002",
+        "reason": "The previous run did not retain concrete selected-artifact evidence sufficient to reconstruct a distinct stale-reset consequence. Evidence Receipt Gate correctly prevents publication."
+      }
+    ],
+    "metrics": {
+      "historicalRecall": {
+        "detected": 1,
+        "expected": 1,
+        "percent": 100
+      },
+      "unsupportedProven": 0,
+      "genericNeedValidation": 0,
+      "unaccountedMaterialSurfaces": 0,
+      "unaccountedPlayerControlledSurfaces": 0,
+      "falsePositiveProvisionalFindingsRemoved": 2
+    },
+    "conclusion": "Repair rerun catches the historical DebugStick issue and removes both unsupported provisional findings. The unseen miss is repaired without adding a new taxonomy family."
   }
 }
