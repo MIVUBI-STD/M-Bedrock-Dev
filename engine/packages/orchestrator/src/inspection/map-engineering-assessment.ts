@@ -27,6 +27,8 @@ export interface MapEngineeringAssessment {
     proof?: GameplayWorldModel["arenas"]["proof"];
     replicaIntegrity:
       GameplayWorldModel["arenas"]["replicaIntegrity"];
+    replicaProof:
+      GameplayWorldModel["arenas"]["replicaProof"];
   };
   spatial: {
     unresolvedScriptMutations: number;
@@ -115,6 +117,8 @@ export function projectMapEngineeringAssessment(
       ...(source.arenas.proof === undefined ? {} : { proof: source.arenas.proof }),
       replicaIntegrity:
         source.arenas.replicaIntegrity,
+      replicaProof:
+        source.arenas.replicaProof,
     },
     spatial: {
       unresolvedScriptMutations: source.spatial.unresolvedScriptMutations,

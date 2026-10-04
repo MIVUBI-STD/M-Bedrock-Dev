@@ -154,6 +154,19 @@ function runtimeComponents(
     });
   }
   if (
+    world.arenas.detected &&
+    (world.arenas.count ?? 0) > 1
+  ) {
+    output.push({
+      id: "runtime:arena-replica-integrity",
+      label: "Arena replica integrity",
+      kind: "runtime-domain",
+      technicalRole: "World/topology equivalence and material delta classification across configured arena replicas.",
+      gameplayPurpose: "Prevent incomplete or materially diverged physical arenas from inheriting the canonical arena's gameplay safety.",
+      evidenceIds: ["runtime:arena-replica-integrity"],
+    });
+  }
+  if (
     world.chunks.tickingAreaAcquires > 0 ||
     world.chunks.tickingAreaReadinessStates > 0 ||
     world.chunks.capacityUncheckedLeases > 0 ||
@@ -317,31 +330,34 @@ function runtimeEdgeState(
   componentId: string,
   world: GameplayWorldModel,
   sourceLocators: readonly string[] = [],
-  scenarioKind?: GameplayAuditScenarioPreset["scenarios"][number]["kind"] | string,
 ): Pick<GameplayCausalLink, "status" | "reason"> {
   switch (componentId) {
-    case "runtime:arena": {
-      if (scenarioKind === "arena-replica-integrity") {
-        if (world.arenas.replicaIntegrity.diverged > 0) {
-          return {
-            status: "CONTRADICTED",
-            reason:
-              "One or more configured arena replicas diverge from the canonical arena. Replica divergence must be classified for gameplay materiality before baseline safety can be reused.",
-          };
-        }
-        if (
-          world.arenas.replicaIntegrity.incomplete > 0 ||
-          world.arenas.replicaIntegrity.noProof > 0 ||
-          world.arenas.replicaIntegrity.bounded > 0
-        ) {
-          return {
-            status: "DETECTION_GAP",
-            reason:
-              "Arena replica proof is incomplete or bounded. A configured/playable replica cannot inherit canonical arena safety until world/topology proof is complete or every material delta is classified.",
-          };
-        }
+    case "runtime:arena-replica-integrity": {
+      if (world.arenas.replicaIntegrity.diverged > 0) {
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "One or more configured arena replicas diverge from the canonical arena. Replica divergence must be classified for gameplay materiality before baseline safety can be reused.",
+        };
       }
-
+      if (
+        world.arenas.replicaIntegrity.incomplete > 0 ||
+        world.arenas.replicaIntegrity.noProof > 0 ||
+        world.arenas.replicaIntegrity.bounded > 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Arena replica proof is incomplete or bounded. A configured/playable replica cannot inherit canonical arena safety until world/topology proof is complete or every material delta is classified.",
+        };
+      }
+      return {
+        status: "PROVEN",
+        reason:
+          "Configured arena replicas have complete equivalence proof with no unclassified material divergence.",
+      };
+    }
+    case "runtime:arena": {
       const reduced =
         world.arenas.count !== undefined &&
         world.arenas.safeConcurrentArenas !== undefined &&
@@ -933,7 +949,7 @@ export function compileGameplayScenarioGraph(
         break;
       case "arena-replica-integrity":
         addIntentKinds("policy", "lifecycle", "state", "spatial-region");
-        addRuntime("runtime:arena", "runtime:structures");
+        addRuntime("runtime:arena-replica-integrity", "runtime:structures");
         break;
       case "reload-recovery":
         addIntentKinds("lifecycle", "state", "phase");
@@ -1132,6 +1148,7 @@ export function compileGameplayScenarioGraph(
     import("./gameplay-scenario-model.js").GameplayKnowledgeDomain
   >> = {
     "runtime:arena": "arena-lifecycle",
+    "runtime:arena-replica-integrity": "world-structure",
     "runtime:chunks": "chunk-simulation",
     "runtime:entities": "entity-behavior",
     "runtime:combat": "combat-lifecycle",
@@ -1294,7 +1311,6 @@ export function compileGameplayScenarioGraph(
           component.id,
           input.world,
           sourceLocators,
-          scenario.label,
         ),
       });
     }

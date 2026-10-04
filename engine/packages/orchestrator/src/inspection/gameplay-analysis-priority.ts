@@ -52,6 +52,7 @@ function factorsForSurface(
       return [
         "replica-integrity",
         "world-mutation",
+        "multiplayer",
       ];
     case "runtime:state":
       return [
@@ -115,8 +116,9 @@ function criticalityForSurface(
     case "runtime:spatial":
     case "runtime:structures":
     case "runtime:boundaries":
-    case "runtime:arena-replica-integrity":
       return "medium";
+    case "runtime:arena-replica-integrity":
+      return "high";
     default:
       return "low";
   }
@@ -129,6 +131,7 @@ const SURFACE_KNOWLEDGE_DOMAIN:
     "runtime:arena-lifecycle": "arena-lifecycle",
     "runtime:arena-cleanup": "arena-lifecycle",
     "runtime:arena-isolation": "multiplayer-interleaving",
+    "runtime:arena-replica-integrity": "world-structure",
     "runtime:state": "state-flow",
     "runtime:chunks": "chunk-simulation",
     "runtime:persistence": "persistence-recovery",
