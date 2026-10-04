@@ -490,6 +490,24 @@ Stress only applicable systems.
 - deferred ownership
 - boundaries
 
+## Adversarial gameplay QA
+
+For applicable player-controlled surfaces, STRESS also asks how ordinary reachable actions can intentionally pressure or violate the authored gameplay contract.
+
+Use the Adversarial Player Abuse Model from `detection-coverage-assurance.md`.
+
+Focus on bounded gameplay-integrity goals such as:
+- skip required progression;
+- duplicate or retain managed state;
+- cross player/arena ownership boundaries;
+- replay one-shot commits;
+- race legitimate actions at lifecycle boundaries;
+- hold shared resources;
+- leave orphaned state/resources;
+- turn an ordinary recoverable failure into a softlock.
+
+Generate only sequences supported by the selected artifact and ordinary gameplay actions. This is source-based adversarial QA, not a claim that Minecraft was executed and not an assumption of external cheats or modified clients.
+
 ## Negative-space challenges
 
 Always challenge applicable inverse pairs:
