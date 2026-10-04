@@ -22,8 +22,8 @@ All 22 selected files used in this reconciliation were fetched from the current 
 | Defense Challenge | 1.1.1 | **4 PROVEN BUGS — 2 Blocker, 2 Major** | `defense-challenge-v1.1.1.md` |
 | Attack Challenge | 1.1.1 | **2 PROVEN Major BUGS** | `attack-challenge-v1.1.1.md` |
 | Build & Decode | 1.1.0 | **1 PROVEN Minor DESIGN_MISMATCH** | `build-and-decode-v1.1.0.md` |
-| The Gauntlet | 1.0.1 | **1 PROVEN Major BUG** | `the-gauntlet-v1.0.1.md` |
-| Composite Challenge | 1.1.1 | **3 PROVEN BUGS — 2 Blocker, 1 Major** | `composite-challenge-v1.1.1.md` |
+| The Gauntlet | 1.0.1 | **2 PROVEN Major BUGS** | `the-gauntlet-v1.0.1.md` |
+| Composite Challenge | 1.1.1 | **5 PROVEN BUGS — 2 Blocker, 2 Major, 1 Minor** | `composite-challenge-v1.1.1.md` |
 | The Circuit | Drive 1.0.2 / pack 1.0.1 | 0 PROVEN | `the-circuit-v1.0.2.md` |
 | Dark Crystal | 1.0.0 | 0 PROVEN | `dark-crystal-v1.0.0.md` |
 | Manhunt | 1.0.0 | 0 PROVEN | `manhunt-v1.0.0.md` |
@@ -44,7 +44,7 @@ All 22 selected files used in this reconciliation were fetched from the current 
 
 ## Proven findings requiring review
 
-The reconciled selected-artifact batch currently contains **13 source-proven BUGs** plus **1 source-proven DESIGN_MISMATCH**:
+The reopened selected-artifact batch currently contains **16 source-proven BUGs** plus **1 source-proven DESIGN_MISMATCH**:
 
 - **Defense Challenge v1.1.1** — 4 BUGs:
   - Blocker — arena reset can release the ticking-area lease of a newly started run;
@@ -54,14 +54,17 @@ The reconciled selected-artifact batch currently contains **13 source-proven BUG
 - **Attack Challenge v1.1.1** — 2 Major BUGs:
   - disconnect during preload can bypass the fresh-session full inventory wipe;
   - reconnect during combat respawn countdown can bypass the death delay.
-- **Composite Challenge v1.1.1** — 3 BUGs:
+- **Composite Challenge v1.1.1** — 5 BUGs:
   - Blocker — arena-specific ticking areas are declared but never created;
   - Major — disconnect during preload can bypass the fresh-session inventory wipe;
-  - Blocker — arena becomes reusable while asynchronous world reset is still running.
+  - Blocker — arena becomes reusable while asynchronous world reset is still running;
+  - Major — cleanup in one arena can invalidate another arena's active flag carrier;
+  - Minor — active arena floor maintenance can mutate blocks around players outside that arena.
 - **Five Nights at Z Village L1 v1.1.0** — 1 Major BUG:
   - reconnect during cinematic can preserve stale coin currency into a fresh session.
-- **The Gauntlet v1.0.1** — 1 Major BUG:
-  - required-party progression gates can ignore disconnected members because shared all-player predicates filter the locked roster down to currently present players.
+- **The Gauntlet v1.0.1** — 2 Major BUGs:
+  - required-party progression gates can ignore disconnected members because shared all-player predicates filter the locked roster down to currently present players;
+  - ordinary players can reach the enabled developer level-skip capability through authored resources and normal crafting.
 - **Orb of the Illusioner L2 v1.1.0** — 2 Major BUGs:
   - weapon/armor upgrades consume coins and then fail on an undefined `material` identifier;
   - active-game reload recovery aborts the arena because barricade validation references undefined `selectedBarricades`.
@@ -90,7 +93,7 @@ The earlier source-first reconciliation found the current confirmed issue set, b
 
 Current confirmed findings remain valid while this deeper pass runs:
 
-- **13 source-proven BUGs**: 4 Blocker + 9 Major.
+- **16 source-proven BUGs**: 4 Blocker + 11 Major + 1 Minor.
 - **1 source-proven DESIGN_MISMATCH**: 1 Minor.
 
 The reopened pass must close, where applicable:

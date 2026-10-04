@@ -181,4 +181,4 @@ Run the existing fill only for `getArenaOnlinePlayers(arenaId)` / the canonical 
 
 ## Next action
 
-Composite v1.1.1 source pass is complete enough to close for this batch with three independently source-proven findings. Keep them in non-canonical audit evidence until explicit approval.
+Composite v1.1.1 currently has five independently source-proven gameplay findings after the deep multi-arena pass: two Blockers, two Majors, and one Minor. Keep newly added findings in non-canonical audit evidence until explicit approval.

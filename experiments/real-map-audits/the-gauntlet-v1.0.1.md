@@ -101,7 +101,7 @@ Exit-vote quorum intentionally uses currently online participants. This is a sep
 
 ## Result
 
-The Gauntlet v1.0.1: **1 source-proven Major BUG**.
+The Gauntlet v1.0.1: **2 source-proven Major BUGs**.
 
 Do not ingest into historical reliability knowledge until the explicit approval boundary is crossed.
 
