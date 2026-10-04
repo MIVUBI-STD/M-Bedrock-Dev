@@ -1437,7 +1437,87 @@ Unknown capabilities may remain an exact Audit Obligation only when the selected
 
 ---
 
-# 33. Architecture Freeze Rule
+# 33. Regression Repair: Transactional Referential Integrity
+
+This rule is promoted from the unseen Orb of the Illusioner L2 validation miss. It strengthens existing transaction and Referential Integrity mechanisms.
+
+For every purchase, upgrade, crafting-like exchange, or resource-consuming gameplay transaction, build the complete commit chain:
+
+```text
+eligibility
+→ price / required resource
+→ debit / consume
+→ required item/material/reference lookup
+→ target mutation / grant / upgrade
+→ persistence
+→ success feedback
+→ rollback / compensation on failure
+```
+
+Every material identifier/reference used after debit must pass Referential Integrity before the transaction can be considered SAFE.
+
+Mandatory checks:
+- item/material identifier exists and is the expected type;
+- lookup can resolve in the selected artifact/version;
+- required prerequisite/material is obtainable or intentionally internal;
+- debit does not occur before a fallible unresolved prerequisite unless rollback exists;
+- mutation/grant failure cannot still emit success;
+- retry cannot repeat an already committed debit/grant;
+- partial failure has explicit compensation.
+
+A transaction that consumes player value and then deterministically fails because of an invalid/missing required reference is a gameplay contradiction even if the control flow catches the error.
+
+## 33.1 Active-Session Reload Recovery Differential
+
+Treat script/world reload or bootstrap reconstruction during an active session as a first-class lifecycle interruption, distinct from player reconnect.
+
+When reload/bootstrap behavior exists, compare:
+
+```text
+pre-reload active session
+→ authoritative session/player state
+→ required world/entity/structure/object references
+→ reload/bootstrap
+→ registry/cache reconstruction
+→ session recovery
+→ required object/reference rebind
+→ fallback/abort
+→ resulting player state
+```
+
+Mandatory questions:
+- Which state survives reload?
+- Which in-memory ownership is reconstructed?
+- Which world objects/entities/structures must be rediscovered?
+- Are cached references invalid after reload?
+- Does recovery require objects that bootstrap does not recreate/rebind?
+- Can a healthy active arena be aborted solely because recovery lookup fails?
+- Does fallback preserve player/session consistency?
+- Can reload duplicate subscriptions/timers/resources?
+
+Required differential:
+
+```text
+normal uninterrupted active session
+vs
+active session → reload/bootstrap → recovery
+```
+
+Do not substitute player reconnect testing for reload recovery.
+
+Crosschecks:
+
+```text
+Reload × World Object Reconstruction
+Reload × Session Ownership
+Reload × Entity/Structure Reference Validity
+Reload × Subscription/Timer Registration
+Reload × Arena Abort/Recovery
+```
+
+---
+
+# 34. Architecture Freeze Rule
 
 The detection architecture is considered structurally complete after sections 1–17.
 
