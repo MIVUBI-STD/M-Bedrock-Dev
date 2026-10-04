@@ -58,5 +58,56 @@ describe("project historical issue projection", () => {
     expect(
       records[0]?.provenance?.projectId,
     ).toBe("defense-v2");
+    expect(records[0]?.issueType).toBe("BUG");
+  });
+
+  it("preserves design mismatch type in historical learning", () => {
+    const records =
+      projectApprovedBugReportToHistoricalRegressions({
+        projectId: "arena-capacity",
+        report: {
+          schema: "m-bedrock-bug-report/v2",
+          map: {
+            name: "Arena Map",
+            mapVersion: "1.0.0",
+            drive:
+              "https://drive.google.com/example",
+            baseVersion: "1.0.0",
+            testedVersion: "1.0.0",
+          },
+          repairBy: "developer",
+          bugs: [{
+            id: "DM-001",
+            fixed: false,
+            severity: "major",
+            category: "multiplayer-session",
+            foundBy: "ai",
+            issueType: "DESIGN_MISMATCH",
+            title: "Visible capacity exceeds concurrency",
+            problem:
+              "Players see more arenas than can run concurrently.",
+            expected:
+              "Presented capacity matches playable capacity.",
+            observed:
+              "Additional ready arenas are queued.",
+            reproduction: [
+              "Start the supported number of arenas.",
+              "Start one additional visible arena and observe it queue.",
+            ],
+          }],
+        },
+        reportPath:
+          "workspace/reports/Arena-v1.0.0-BugReport.json",
+        artifactFingerprint:
+          "sha256:arena",
+      });
+
+    expect(records[0]?.issueType)
+      .toBe("DESIGN_MISMATCH");
+    expect(
+      records[0]?.provenance?.issueType,
+    ).toBe("DESIGN_MISMATCH");
+    expect(records[0]?.triggerTags)
+      .toContain("design-mismatch");
   });
 });

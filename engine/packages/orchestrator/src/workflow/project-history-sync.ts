@@ -1,6 +1,7 @@
-import type {
-  BugFinderCategory,
-  BugReportV2,
+import {
+  bugReportV2IssueType,
+  type BugFinderCategory,
+  type BugReportV2,
 } from "../../../bug-report/src/index.js";
 import {
   historicalRegressionId,
@@ -99,6 +100,8 @@ export function projectApprovedBugReportToHistoricalRegressions(
         bugId: bug.id,
       }),
       title: bug.title,
+      issueType:
+        bugReportV2IssueType(bug),
       domain:
         DOMAIN_BY_CATEGORY[
           bug.category
@@ -116,6 +119,8 @@ export function projectApprovedBugReportToHistoricalRegressions(
         mapVersion:
           input.report.map.mapVersion,
         bugId: bug.id,
+        issueType:
+          bugReportV2IssueType(bug),
         artifactFingerprint:
           input.artifactFingerprint,
       },
@@ -123,6 +128,9 @@ export function projectApprovedBugReportToHistoricalRegressions(
         "gameplay",
         bug.category,
         bug.severity,
+        bugReportV2IssueType(bug)
+          .toLowerCase()
+          .replaceAll("_", "-"),
       ]),
       capabilityTags: [
         ...CAPABILITIES_BY_CATEGORY[

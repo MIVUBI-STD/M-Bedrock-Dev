@@ -1,5 +1,6 @@
 export interface HistoricalRegressionProvenance {
   readonly source: string;
+  readonly issueType?: "BUG" | "DESIGN_MISMATCH";
   readonly reportPath?: string;
   readonly map?: string;
   readonly mapVersion?: string;
@@ -11,6 +12,7 @@ export interface HistoricalRegressionProvenance {
 export interface HistoricalRegressionRecord {
   readonly id: string;
   readonly title: string;
+  readonly issueType?: "BUG" | "DESIGN_MISMATCH";
   readonly domain: string;
   readonly discoveredBy: string;
   readonly provenance?: HistoricalRegressionProvenance;

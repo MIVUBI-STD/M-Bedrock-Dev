@@ -545,7 +545,8 @@
         "artifactSha256": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee",
         "date": "2026-10-02",
         "targetEdition": "education",
-        "targetVersion": null
+        "targetVersion": null,
+        "issueType": "DESIGN_MISMATCH"
       },
       "invariantIds": [
         "arena.visible-capacity-matches-playable-capacity",
@@ -570,7 +571,8 @@
         "Observe that the third session is queued instead of using one of the remaining visible arenas"
       ],
       "expected": "The player-visible six-arena design can support six independent arena sessions concurrently, or the map design exposes only the concurrency it can actually provide.",
-      "observed": "Six arenas are presented, but the implementation caps concurrent active arenas at two; additional sessions are queued. The queue and ticking-area platform constraint explain the limitation but do not remove the player-visible capacity mismatch."
+      "observed": "Six arenas are presented, but the implementation caps concurrent active arenas at two; additional sessions are queued. The queue and ticking-area platform constraint explain the limitation but do not remove the player-visible capacity mismatch.",
+      "issueType": "DESIGN_MISMATCH"
     },
     {
       "id": "reg_fotp_l1_friendly_fire_enabled",
