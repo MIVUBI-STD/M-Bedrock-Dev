@@ -13,6 +13,7 @@ export type GameplayAuditScenarioKind =
   | "terminal-collision"
   | "transaction-atomicity"
   | "simulation-distance"
+  | "information-correctness"
   | "repeated-run";
 
 export type GameplayAuditScenarioProofMode =
@@ -51,6 +52,7 @@ export interface GameplayAuditScenarioPresetInput {
   readonly hasRepeatedRunSurface?: boolean;
   readonly hasTransactionalGameplay?: boolean;
   readonly hasSimulationDistanceDependency?: boolean;
+  readonly hasPlayerFeedbackSurface?: boolean;
 }
 
 export interface GameplayAuditScenarioPreset {
@@ -288,6 +290,24 @@ export function buildGameplayAuditScenarioPreset(
           "What ticking or chunk residency keeps each required spawn, route, and objective active?",
           "Is residency actually materialized before gameplay depends on it?",
           "Can intended player positioning leave remote NPC spawning or pathing frozen?",
+        ],
+      }),
+    );
+  }
+
+  if (input.hasPlayerFeedbackSurface) {
+    scenarios.push(
+      scenario({
+        id: "feedback:correctness",
+        kind: "information-correctness",
+        flowStage: "PROGRESSION",
+        reason:
+          "Player-facing feedback must describe the committed gameplay state, not a requested, stale, failed, or cross-session state.",
+        questions: [
+          "Can success text be emitted before the underlying transaction or transition succeeds?",
+          "Can failure and success messages both appear for one action?",
+          "Can timer, score, wave, objective, queue, price, tier, or arena status become stale relative to canonical state?",
+          "Can one arena or player receive feedback owned by another session?",
         ],
       }),
     );
