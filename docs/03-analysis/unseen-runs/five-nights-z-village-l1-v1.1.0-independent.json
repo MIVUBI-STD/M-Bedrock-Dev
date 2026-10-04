@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "TARGET_LOCKED_READY_FOR_DISCOVERY",
+  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
   "target": {
     "map": "Five Nights at Z Village Level 1",
     "version": "1.1.0",
@@ -35,12 +35,95 @@
     "Evidence Receipt Gate"
   ],
   "coverageGates": {
-    "materialSurfaceRouting":"OPEN",
-    "mutableResourceOwnership":"OPEN",
-    "requiredCrosschecks":"OPEN",
-    "materialScenarioAccounting":"OPEN",
-    "playerControlledSurfaceAccounting":"OPEN",
-    "genericNeedValidation":0
+    "materialSurfaceRouting": "IN_PROGRESS",
+    "mutableResourceOwnership": "IN_PROGRESS",
+    "requiredCrosschecks": "IN_PROGRESS",
+    "materialScenarioAccounting": "IN_PROGRESS",
+    "playerControlledSurfaceAccounting": "IN_PROGRESS",
+    "genericNeedValidation": 0
   },
-  "comparison":"BLOCKED"
+  "comparison": "BLOCKED",
+  "discovery": {
+    "materialSystems": [
+      "hostile/entity spawn and ownership",
+      "wave/progression accounting",
+      "remote simulation/residency",
+      "objective/base/world state",
+      "player death/respawn/reconnect",
+      "participant membership",
+      "inventory/equipment",
+      "reset/repeated run",
+      "reload/bootstrap recovery",
+      "player capabilities and developer affordances"
+    ],
+    "derivedInvariants": [
+      "required hostile work remains represented until spawn succeeds or is intentionally cancelled",
+      "wave cannot complete while required pending/retry/live work remains",
+      "remote hostile/objective dependencies remain simulated while gameplay requires them",
+      "death/reconnect cannot bypass authored respawn/penalty state",
+      "disconnect cannot silently remove a required participant from progression unless authored",
+      "objective/world state returns to the authored baseline before reuse",
+      "reload reconstructs required active-session entities/objects before resuming"
+    ]
+  },
+  "proofQueue": [
+    {
+      "id": "ZV1-PQ-01",
+      "check": "Ticking, Residency & Remote Simulation",
+      "scenario": "remote hostile/objective dependency × residency ownership",
+      "state": "PROVING"
+    },
+    {
+      "id": "ZV1-PQ-02",
+      "check": "Entity Lifecycle & Objective Accounting",
+      "scenario": "spawn request × retry × live/dead/removed accounting",
+      "state": "PROVING"
+    },
+    {
+      "id": "ZV1-PQ-03",
+      "check": "Progression, Wave & Objective Integrity",
+      "scenario": "pending/retry/live work × completion predicate",
+      "state": "PROVING"
+    },
+    {
+      "id": "ZV1-PQ-04",
+      "check": "Combat Lifecycle",
+      "scenario": "death/respawn × reconnect",
+      "state": "PROVING"
+    },
+    {
+      "id": "ZV1-PQ-05",
+      "check": "Cooperative Participant Accounting",
+      "scenario": "required participants × online/eligible gate",
+      "state": "PROVING"
+    },
+    {
+      "id": "ZV1-PQ-06",
+      "check": "World Mutation & Reset Integrity",
+      "scenario": "objective/world mutation × reset × second run",
+      "state": "PROVING"
+    },
+    {
+      "id": "ZV1-PQ-07",
+      "check": "Active-Session Reload Recovery",
+      "scenario": "reload × entity/object reconstruction",
+      "state": "PROVING"
+    },
+    {
+      "id": "ZV1-PQ-08",
+      "check": "Adversarial Gameplay QA",
+      "scenario": "SKIP / RETAIN / RACE / ORPHAN / FORCE-FAIL",
+      "state": "PROVING"
+    }
+  ],
+  "proofRules": {
+    "evidenceReceiptRequired": true,
+    "claimClosureRequired": true,
+    "pendingWorkAccountingRequired": true,
+    "residencyOwnershipRequired": true,
+    "participantSetReconciliationRequired": true,
+    "reloadRecoveryDifferentialRequired": true,
+    "blockingProofRequiredBeforeSafe": true,
+    "genericNeedValidationForbidden": true
+  }
 }
