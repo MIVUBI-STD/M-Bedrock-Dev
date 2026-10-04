@@ -248,3 +248,42 @@ Current disposition: selected source proves **visible six-arena surface vs two-c
 The client also reported a last-second double ending. That specific issue is **not reproduced** in current source: `endGame(arenaId, "victory")` checks whether the game timer has already expired and converts late victory to timeout before completion handling.
 
 A non-admin selection-stick logger is still initialized in production and reacts to any held `minecraft:stick`; ordinary-player stick reachability remains a separate proof question.
+
+
+## Proven design mismatch — concurrent arena capacity
+
+### DESIGN_MISMATCH — Six playable arena surfaces expose only two concurrent sessions
+
+Severity: Major  
+Proof: source-proven  
+Domain: arena-multi-arena / boundary-capacity / player-facing capability
+
+#### Issue
+
+The selected Attack artifact defines and exposes six arena/join surfaces, but runtime admission hard-caps active arena leases at:
+
+```text
+MAX_CONCURRENT_ARENAS = 2
+```
+
+A third otherwise-ready arena is queued instead of starting concurrently.
+
+#### Expected
+
+When six independent arena surfaces are presented as playable capacity, the delivered concurrent capacity should match those surfaces or the lower capacity must be explicitly part of the authored player-facing capability.
+
+#### Actual
+
+Only two arenas can hold the required runtime lease at once. Arenas 3-6 may exist and accept parties, but cannot all progress as independent simultaneous sessions.
+
+#### Player-visible consequence
+
+The world presents substantially more parallel arena capacity than it can actually deliver. Additional groups must wait even though their own arena is otherwise available.
+
+#### Counter-proof review
+
+The queue and queue-position message mitigate the limitation but do not prove that the six visible arena surfaces were authored to mean only two simultaneous sessions. Under the Multi Arena Audit Contract, an implementation cap or fallback queue cannot define its own intended capacity.
+
+#### Repair direction
+
+Reduce the per-arena runtime resource cost or use another proven simulation-residency strategy so delivered concurrency matches the presented arena capacity. Preserve explicit queue behavior as overflow handling rather than the normal path for visible free arenas.
