@@ -29,6 +29,7 @@ export interface ArenaStateIsolationObservation {
     | "scoreboard"
     | "world-property"
     | "world-command"
+    | "world-player-enumeration"
     | "module-state";
   key: string;
   scope: ArenaStateScope;
@@ -283,6 +284,48 @@ function scoreboardObservation(
   };
 }
 
+function worldPlayerEnumerationObservation(
+  script: ParsedScriptFile,
+  call: ScriptMethodCall,
+  region: string,
+  authorities: readonly string[],
+): ArenaStateIsolationObservation | undefined {
+  if (
+    call.receiverType !== "World" ||
+    !["getPlayers", "getAllPlayers"].includes(call.method)
+  ) {
+    return undefined;
+  }
+
+  const query =
+    (call.argumentTexts ?? []).join(" ");
+  const authorityPartitioned =
+    expressionUsesAuthority(query, authorities);
+
+  return {
+    scriptId: script.identifier,
+    region,
+    surface: "world-player-enumeration",
+    key:
+      call.symbol +
+      "(" +
+      query +
+      ")",
+    scope:
+      authorityPartitioned
+        ? "arena-local"
+        : "world-global",
+    status:
+      authorityPartitioned
+        ? "isolated"
+        : "partition-proof-required",
+    reason:
+      authorityPartitioned
+        ? "World player enumeration is explicitly filtered by the authored arena authority expression."
+        : "Arena flow enumerates world players without proving arena partitioning. Downstream player/tag/state mutations must prove an arena filter or arena-context proxy before isolation can close.",
+  };
+}
+
 function commandObservation(
   script: ParsedScriptFile,
   command: ParsedScriptFile["commandLiterals"][number],
@@ -440,13 +483,24 @@ function analyzeScript(
   for (const call of script.methodCalls) {
     const region = call.executionRegion ?? "module";
     if (!regions.has(region)) continue;
-    const observation = scoreboardObservation(
+    const scoreboard = scoreboardObservation(
       script,
       call,
       region,
       authorities,
     );
-    if (observation) observations.push(observation);
+    if (scoreboard) observations.push(scoreboard);
+
+    const playerEnumeration =
+      worldPlayerEnumerationObservation(
+        script,
+        call,
+        region,
+        authorities,
+      );
+    if (playerEnumeration) {
+      observations.push(playerEnumeration);
+    }
   }
 
   for (const write of script.propertyWrites) {

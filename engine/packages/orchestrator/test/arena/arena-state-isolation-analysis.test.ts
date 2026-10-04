@@ -225,3 +225,63 @@ describe("arena state isolation analysis", () => {
       status: "partition-proof-required",
     });
   });
+
+
+  it("flags world-wide player enumeration inside arena flow until partitioning is proven", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function cleanup(arena) {",
+        "  arena.players.size;",
+        "  for (const player of world.getAllPlayers()) {",
+        "    player.removeTag('shared_carrier');",
+        "  }",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result = analyzeArenaStateIsolation([script]);
+    expect(
+      result.observations.find(
+        (item) =>
+          item.surface ===
+          "world-player-enumeration",
+      ),
+    ).toMatchObject({
+      scope: "world-global",
+      status: "partition-proof-required",
+    });
+  });
+
+  it("accepts arena-keyed world player queries as isolated", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function cleanup(arena) {",
+        "  arena.players.size;",
+        "  const players = world.getPlayers({ tags: ['arena_' + arena.id] });",
+        "  for (const player of players) player.removeTag('carrier');",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result = analyzeArenaStateIsolation([script]);
+    expect(
+      result.observations.find(
+        (item) =>
+          item.surface ===
+          "world-player-enumeration",
+      ),
+    ).toMatchObject({
+      scope: "arena-local",
+      status: "isolated",
+    });
+  });
