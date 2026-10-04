@@ -50,9 +50,9 @@
       "observed": "Scheduled reload validation references undefined selectedBarricades, throws, and sends the active arena into internal-error recovery.",
       "reproduction": [
         "Start Orb of the Illusioner Level 2 and reach active Offense gameplay.",
-        "Reload or restart the world or script runtime while the active game remains persisted.",
-        "Allow the restored arena to initialize and wait about 40 ticks.",
-        "Confirm the arena resets and players are returned to the lobby instead of the game resuming."
+        "Restart the world while the active match is still in progress.",
+        "Rejoin after the world finishes loading and wait a few seconds for recovery.",
+        "Confirm the arena resets and players return to the lobby instead of the match resuming."
       ],
       "aiAnalysis": "The reload path schedules validateBarricadeStates after restoration. That method references selectedBarricades even though the identifier exists only as a parameter elsewhere. The resulting ReferenceError is classified as an arena recovery failure, causing disposal/reset.",
       "relevantCode": [
