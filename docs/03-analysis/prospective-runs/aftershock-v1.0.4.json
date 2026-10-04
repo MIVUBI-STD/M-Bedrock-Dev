@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "PROSPECTIVE_BLIND_AUDIT",
-  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "status": "PROSPECTIVE_PASS_CLOSED",
   "target": {
     "map": "Aftershock",
     "version": "1.0.4",
@@ -22,47 +22,47 @@
     {
       "id": "AFT-PQ-01",
       "check": "Progression / Objective Integrity",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "AFT-PQ-02",
       "check": "Entity / Interaction Lifecycle",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "AFT-PQ-03",
       "check": "World Mutation / Reset Baseline",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "AFT-PQ-04",
       "check": "State-Agnostic Fresh-Session Reset",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "AFT-PQ-05",
       "check": "Participant / Connection Recovery",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "AFT-PQ-06",
       "check": "Active-Session Reload Recovery",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "AFT-PQ-07",
       "check": "Transactional Referential Integrity",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "AFT-PQ-08",
       "check": "Player Capability / Developer Exposure",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "AFT-PQ-09",
       "check": "Adversarial Gameplay QA",
-      "state": "PROVING"
+      "state": "CLOSED"
     }
   ],
   "coverageGates": {
@@ -74,6 +74,61 @@
     "genericNeedValidation": 0
   },
   "futureValidation": {
-    "status": "PENDING_INDEPENDENT_FINDING_SET"
+    "status": "AWAITING_INDEPENDENT_RUNTIME_OR_CLIENT_GROUND_TRUTH",
+    "note": "Zero static findings is not evidence that the map is bug-free. Preserve this frozen snapshot for prospective comparison with later tester/client-confirmed defects."
+  },
+  "independentClosure": {
+    "findings": [],
+    "suppressed": [
+      {
+        "area": "Progression/objective",
+        "reason": "No source-evidenced contradiction retained with a complete Evidence Receipt."
+      },
+      {
+        "area": "Entity/interaction lifecycle",
+        "reason": "No independently proven lifecycle/ownership contradiction retained."
+      },
+      {
+        "area": "World mutation/reset",
+        "reason": "No second-run baseline contradiction retained with sufficient proof."
+      },
+      {
+        "area": "Fresh-session state",
+        "reason": "No per-player state-domain reset/reconnect contradiction retained."
+      },
+      {
+        "area": "Participant/connection recovery",
+        "reason": "No required-membership or recovery contradiction retained."
+      },
+      {
+        "area": "Active-session reload",
+        "reason": "No reconstruction/rebind contradiction retained."
+      },
+      {
+        "area": "Transactions/references",
+        "reason": "No player-value transaction with invalid prerequisite/reference and missing compensation retained."
+      },
+      {
+        "area": "Capability/developer exposure",
+        "reason": "No ordinary-role acquisition + activation contradiction retained."
+      },
+      {
+        "area": "Adversarial sequences",
+        "reason": "No sequence survived Evidence Receipt and Blocking-Proof gates."
+      }
+    ],
+    "gates": {
+      "materialSurfaceRouting": "CLOSED",
+      "mutableResourceOwnership": "CLOSED",
+      "requiredCrosschecks": "CLOSED",
+      "materialScenarioAccounting": "CLOSED",
+      "playerControlledSurfaceAccounting": "CLOSED",
+      "genericNeedValidation": 0,
+      "unaccountedMaterialSurfaces": 0,
+      "unaccountedMutableResources": 0,
+      "unaccountedMaterialInterleavings": 0,
+      "unaccountedPlayerControlledSurfaces": 0
+    },
+    "evidenceReceiptGate": "PASSED_FOR_ZERO_FINDING_SET"
   }
 }
