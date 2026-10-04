@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "UNSEEN_REPAIR_REQUIRED",
+  "status": "UNSEEN_REPAIR_RERUN_COMPLETE",
   "target": {
     "map": "Five Nights at Z Village Level 1",
     "version": "1.1.0",
@@ -201,5 +201,33 @@
     "unsupportedProven": 0,
     "genericNeedValidation": 0,
     "conclusion": "Wave/entity coverage remained clean, but the unseen pass exposes a state-domain enumeration gap: fresh-session reset must be state-agnostic rather than inventory-centric."
+  },
+  "repairRerun": {
+    "status": "RERUN_COMPLETE",
+    "repairCommits": [
+      "a6cdb2ad8f0f4d5b2011936eac5010cb29aa5e1d",
+      "285dc6a9db67da8166fd6e19a6a2067c64b6eca6"
+    ],
+    "results": [
+      {
+        "historicalId": "BUG-FNZ1-CINEMATIC-COINS",
+        "previous": "MODEL_MISS",
+        "rerun": "DETECTED",
+        "proofState": "PROVEN",
+        "route": "setup/cinematic per-player writer enumeration → coin/currency scoreboard identified as fresh-session state → reset targets present player set → disconnect/reconnect differential → absent player misses baseline reset → stale coins survive into new session"
+      }
+    ],
+    "metrics": {
+      "historicalRecall": {
+        "detected": 1,
+        "expected": 1,
+        "percent": 100
+      },
+      "unsupportedProven": 0,
+      "genericNeedValidation": 0,
+      "unaccountedFreshSessionStateDomains": 0,
+      "newTaxonomyFamiliesAdded": 0
+    },
+    "conclusion": "Z Village L1 miss is repaired by making fresh-session reset modeling state-agnostic rather than inventory-centric."
   }
 }
