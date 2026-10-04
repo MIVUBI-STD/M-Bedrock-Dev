@@ -35,6 +35,7 @@ Confirmed Defect
 - normal user-facing creation is approval-gated;
 - only Blocker/Major are shown by default;
 - Issue describes player impact, not implementation mechanism;
+- Issue type is explicit when needed: `BUG` or `DESIGN_MISMATCH`; legacy V2 entries without `issueType` are read as `BUG`.
 - every visible bug needs an in-game trigger;
 - technical diagnostics do not become report copy automatically;
 - Severity, Category, Bug ID, and Fixed state remain engine-owned;
