@@ -140,38 +140,8 @@ function escapedRegex(
   value: string,
 ): string {
   return value.replace(
-    /[.*+?^$()|[\]\\]/g,
-    "\\function escapedRegex(
-  value: string,
-): string {
-  return value.replace(
-    /[.*+?^$()|[\]\\]/g,
-    "\\function expressionUsesAuthority(
-  expression: string | undefined,
-  authorities: readonly string[],
-): boolean {
-  if (!expression) return false;
-  const normalized =
-    normalizedExpression(expression);
-  return authorities.some((authority) => {
-    const candidate =
-      normalizedExpression(authority);
-    return (
-      candidate.length > 0 &&
-      (
-        normalized.includes(candidate) ||
-        normalized.includes(candidate + ".id") ||
-        normalized.includes(candidate + ".generation") ||
-        normalized.includes(candidate + ".index")
-      )
-    );
-  });
-}
-",
-  );
-}
-
-function expressionUsesAuthority",
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&",
   );
 }
 
@@ -206,7 +176,6 @@ function expressionUsesAuthority(
     return normalized.includes(candidate);
   });
 }
-
 function scoreboardObservation(
   script: ParsedScriptFile,
   call: ScriptMethodCall,
