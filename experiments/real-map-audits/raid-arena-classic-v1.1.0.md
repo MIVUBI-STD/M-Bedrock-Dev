@@ -64,3 +64,16 @@ No source path was found where cleanup, countdown, kit state, score, or player o
 Runtime combat ordering remains a runtime concern, but source-side multi-arena isolation is closed for this pass.
 
 Result: **no additional source-proven cross-arena defect**.
+
+
+## Deep multi-arena pass — isolation counter-proof
+
+World-wide player scans were rechecked. Arena gameplay uses the arena pad/state owner as the partition:
+- `onlineMembers(arenaId)` filters current world players through that arena's member-ID set;
+- countdown feedback stores the exact affected player IDs;
+- join-pad detection resolves one current arena per player and rejects busy/foreign pads;
+- match state, kit ownership, death/respawn, and cleanup remain bound to that arena.
+
+Global loops used for server statistics or lobby detection are not arena mutation authority.
+
+Result: no additional source-proven cross-arena defect admitted.

@@ -57,3 +57,20 @@ World reload does not pretend an incompletely snapshotted match can safely resum
 Marathon Test of Tactics Level 2 v2.2.0: **0 source-proven gameplay findings** in this pass.
 
 No historical regression entry should be created without later current-artifact/runtime proof.
+
+
+## Deep multi-arena pass — isolation counter-proof
+
+Global player enumeration was challenged explicitly.
+
+The current application maps every relevant player operation back through arena/session ownership:
+- session creation reserves an arena generation and fixed roster;
+- countdown/cinematic preparation resolves only roster member IDs;
+- pad scanning skips players already owned by a session;
+- PvP safety derives mode from the player's current session;
+- countdown departure removes only that session member;
+- persisted recovery is bound to session ID, arena ID, and generation.
+
+Global `world.getAllPlayers()` calls are used as an online lookup source, not as unscoped mutation authority for one arena.
+
+Result: no additional source-proven multi-arena defect admitted.

@@ -102,3 +102,14 @@ Five Nights at Z Village Level 2 v1.2.2:
 - runtime-sensitive pathfinding remains validation work only
 
 Do not create historical regression entries for this map from this pass.
+
+
+## Deep multi-arena pass — isolation counter-proof
+
+Current Defense Level 2 code was rechecked for world-wide player/entity leakage.
+
+Relevant operations resolve players through session member IDs or session tags before mutation. Arena-owned entities use arena/session route tags, cleanup removes owned entities by those tags, and periodic kit repair filters to Defense session-tagged players.
+
+Global online-player enumeration is therefore an index/lookup surface; gameplay mutations remain session/arena scoped in the inspected paths.
+
+Result: no additional source-proven cross-arena defect admitted.

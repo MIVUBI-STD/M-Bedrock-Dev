@@ -65,3 +65,19 @@ Builder's Memory / BlitzBuild selected artifact:
 - **0 source-proven gameplay bugs** in this pass
 
 Do not create historical regression entries from this pass.
+
+
+## Deep multi-arena pass — isolation counter-proof
+
+Background/world-wide loops were rechecked instead of being accepted by name alone.
+
+Current source:
+- filters background participant work through `engine.membership(player.id)`;
+- derives rollback scope as `arena:<arenaId>`;
+- requires `engine.isActiveBuilder(player)` plus `engine.canModify(player, location)` before protected world mutation;
+- persists arena runtime and recovery with explicit `arenaId` and generation checks;
+- rejects persisted roster/membership mismatches.
+
+Global server policy/statistics loops remain intentionally world-wide but do not own arena gameplay progression.
+
+Result: no additional source-proven cross-arena gameplay defect admitted.

@@ -48,3 +48,21 @@ Cleanup and loading state are explicit. Chunk/button synchronization failures ar
 Mysteries of Biomes Level 1 v1.0.4: **0 source-proven gameplay findings**.
 
 Do not create historical regression entries from this pass.
+
+
+## Deep multi-arena / same-arena multiplayer pass
+
+The selected artifact defines **10 arenas with capacity 3 players each**.
+
+A deeper check specifically challenged the shared physical button state when multiple players in the same arena are on different levels. The current session engine does not let one player's level blindly overwrite another's button projection.
+
+`syncButtons()`:
+- groups active/loading/transition/respawning sessions by the same arena;
+- groups levels sharing the same physical `mapId`;
+- builds the union of all currently required levels;
+- calls the button projection with that complete level set;
+- caches the union signature and fails closed if shared buttons cannot be verified.
+
+This is explicit counter-proof for the suspected same-arena button-overwrite failure.
+
+Result: no new source-proven multiplayer/arena defect admitted from this surface.

@@ -52,3 +52,17 @@ Start performs current team/member validation before transition. Arena state is 
 Beach Bedwars v1.1.0: **0 source-proven gameplay findings**.
 
 Do not create historical regression entries from this pass.
+
+
+## Deep multi-arena pass — isolation counter-proof
+
+The selected artifact defines two independently owned arenas. Arena state, membership, respawn timers, beds, team selection, countdown, running state, reset, and run number are keyed by arena/player ownership rather than one global match state.
+
+Cross-arena review found:
+- player membership resolves to exactly one arena;
+- team/bed mutations operate on that arena's state object;
+- disconnect/reconnect checks the same running arena and run number;
+- reset removes only that arena's memberships/timers before restoring its baseline;
+- no world-wide player mutation path was found in the core match state owner.
+
+Result: no additional source-proven cross-arena defect admitted in this pass.
