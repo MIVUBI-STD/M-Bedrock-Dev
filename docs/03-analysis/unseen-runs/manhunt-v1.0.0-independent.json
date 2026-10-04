@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
+  "status": "TARGET_LOCKED_READY_FOR_DISCOVERY",
+  "target": {
+    "map": "Manhunt",
+    "version": "1.0.0",
+    "worldFileId": "1gaHKkT-VrYVNehLLT_xiTHtpgNJ7BxQe",
+    "artifactFingerprint": "sha256:c666000de5cd052288b00953baf9dc00410a65c6da53c16fb1e31b8e396025f3",
+    "worldFileFetched": true,
+    "worldFileSizeBytes": 14731177
+  },
+  "validationPurpose": "Fifth unseen validation; emphasize asymmetric roles, PvP pursuit, team/role ownership, target tracking, death/reconnect, win conditions, inventory/equipment, capability differences and adversarial role abuse.",
+  "blindRules": {
+    "existingBugReportExists": true,
+    "existingBugReportOpenedForThisPass": false,
+    "comparisonAllowed": "ONLY_AFTER_INDEPENDENT_PASS_CLOSED",
+    "historicalIssueIdsSeeded": false,
+    "historicalRootCausesSeeded": false,
+    "runtimeExecuted": false
+  },
+  "priorityChecks": [
+    "Player Capability Model per asymmetric role",
+    "Required / Assigned / Online / Eligible participant accounting",
+    "Role/team ownership and reassignment",
+    "Target/tracking reference validity",
+    "Combat death/respawn/reconnect lifecycle",
+    "Win/lose/terminal idempotency",
+    "Inventory/equipment reset and persistence",
+    "Active-session reload recovery",
+    "Transaction / Referential Integrity when applicable",
+    "Developer-Item Acquisition Graph",
+    "Multi-player adversarial CROSS / RACE / ESCAPE / REPLAY / ORPHAN / RETAIN",
+    "Evidence Receipt Gate"
+  ],
+  "coverageGates": {
+    "materialSurfaceRouting":"OPEN",
+    "mutableResourceOwnership":"OPEN",
+    "requiredCrosschecks":"OPEN",
+    "materialScenarioAccounting":"OPEN",
+    "playerControlledSurfaceAccounting":"OPEN",
+    "genericNeedValidation":0
+  },
+  "comparison":"BLOCKED"
+}
