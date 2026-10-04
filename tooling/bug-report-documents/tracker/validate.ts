@@ -19,6 +19,8 @@ export function validateBugTrackerDocument(document: BugTrackerDocument): void {
   const errors: string[] = [];
   const ids = trackerIssueIds(document);
   if (new Set(ids).size !== ids.length) errors.push("Duplicate issue ID.");
+  if (document.schema !== "m-bedrock-bug-tracker/v1") errors.push("Invalid Bug Tracker schema.");
+  if (document.title !== "Bug Tracker Report") errors.push("Invalid Bug Tracker title.");
 
   for (const game of document.games) {
     if (!game.name.trim()) errors.push("Game name is required.");
@@ -28,7 +30,12 @@ export function validateBugTrackerDocument(document: BugTrackerDocument): void {
       if (!source.worldFile.trim()) errors.push(game.name + ": World File is required.");
       if (!source.worldFilename.trim()) errors.push(game.name + ": world filename is required.");
       if (!source.artifactFingerprint.trim()) errors.push(game.name + ": artifact fingerprint is required.");
+      if (!["http://", "https://"].some((prefix) => source.driveFolder.startsWith(prefix))) errors.push(game.name + ": invalid Drive Folder URL.");
+      if (!["http://", "https://"].some((prefix) => source.worldFile.startsWith(prefix))) errors.push(game.name + ": invalid World File URL.");
       for (const issue of level.issues) {
+        if (!["BUG", "DESIGN_MISMATCH"].includes(issue.type)) errors.push(issue.id + ": invalid issue type.");
+        if (!["BLOCKER", "MAJOR", "MINOR"].includes(issue.severity)) errors.push(issue.id + ": invalid severity.");
+        if (!["VERIFIED", "NEEDS_VERIFY"].includes(issue.verification)) errors.push(issue.id + ": invalid verification state.");
         if (!issue.id.trim() || !issue.title.trim() || !issue.issue.trim()) {
           errors.push(game.name + ": incomplete issue identity.");
         }
