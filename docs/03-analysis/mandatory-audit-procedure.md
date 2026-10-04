@@ -664,6 +664,60 @@ Gameplay Model Closure is `CLOSED` only when:
 `GameplayModelClosure`.
 ---
 
+## A8. Blindspot Closure Matrix
+
+### Purpose
+
+Before MODEL, convert reconstructed gameplay into explicit contradiction searches so high-value defect families cannot disappear behind a generally complete player journey.
+
+### Required matrix
+
+For every applicable selected-map system, record whether each boundary is grounded, contradicted, or not applicable:
+
+```text
+System
+→ Start / admission
+→ Active owner
+→ Deferred owner
+→ Completion
+→ Cleanup
+→ Reuse
+→ Disconnect / reconnect
+→ Cross-arena scope
+→ Capacity / boundary
+→ Player-facing feedback
+```
+
+### Mandatory high-yield joins
+
+Always inspect these joins when both sides exist:
+
+- session start × inventory reset;
+- death countdown × reconnect recovery;
+- wave pending work × retry queue × completion;
+- arena reset × arena reuse;
+- ticking/residency lease × cleanup × next generation;
+- global selector/tag × arena-local gameplay;
+- shop/loadout writer × death/reconnect/reset writer;
+- terminal trigger × another terminal trigger;
+- visible arena count × safe concurrent resource budget;
+- remote entity/objective × simulation residency;
+- structure/world mutation × next round footprint;
+- score/reward commit × retry/reconnect/duplicate terminal path.
+
+### Closure rule
+
+UNDERSTAND is not complete merely because each subsystem is understood independently.
+
+Every applicable high-yield join must be:
+- proven safe by blocking evidence;
+- promoted to a contradiction for STRESS/PROVE;
+- or explicitly recorded as unresolved residue.
+
+This matrix is not a tester checklist and must not be emitted as a parallel user-facing report.
+
+---
+
 # B. MODEL
 
 ## B1. Actor / Entity Contract
