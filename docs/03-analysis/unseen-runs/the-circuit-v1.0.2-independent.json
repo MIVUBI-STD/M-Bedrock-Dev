@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "IN_PROGRESS_PROOF",
+  "status": "INDEPENDENT_PASS_CLOSED",
   "target": {
     "map": "The Circuit",
     "version": "1.0.2",
@@ -44,7 +44,7 @@
     "playerControlledSurfaceAccounting": "IN_PROGRESS",
     "genericNeedValidation": 0
   },
-  "comparison": "BLOCKED_UNTIL_INDEPENDENT_PASS_CLOSED",
+  "comparison": "UNBLOCKED",
   "discovery": {
     "gameplayModel": [
       "multi-arena/session assignment",
@@ -104,43 +104,43 @@
       "id": "CIR-PQ-01",
       "check": "Multi-Arena Capacity & Isolation",
       "scenario": "parallel starts + shared resources",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "CIR-PQ-02",
       "check": "Persistence, Reconnect & Reload Integrity",
       "scenario": "fresh-session reset × reconnect",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "CIR-PQ-03",
       "check": "Deferred Work & Generation Safety",
       "scenario": "terminal/reset × same-arena reuse",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "CIR-PQ-04",
       "check": "Cleanup Ownership Crosscheck",
       "scenario": "cleanup A × active state B",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "CIR-PQ-05",
       "check": "Recurring World-Mutation Spatial Crosscheck",
       "scenario": "player-relative mutation × other arena/player",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "CIR-PQ-06",
       "check": "Terminal State & Duplicate-Commit Safety",
       "scenario": "simultaneous terminal/objective triggers",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "CIR-PQ-07",
       "check": "Adversarial Gameplay QA",
       "scenario": "skip/replay/retain/cross/race/orphan",
-      "state": "PROVING"
+      "state": "CLOSED"
     }
   ],
   "proofRules": {
@@ -156,5 +156,68 @@
     "temporalProofForDeferredWork": true,
     "suppressionRequiresBlockingProof": true,
     "genericNeedValidationForbidden": true
+  },
+  "independentClosure": {
+    "findings": [
+      {
+        "temporaryId": "IND-CIR-001",
+        "check": "Multi-Arena Capacity & Isolation",
+        "title": "Shared/global gameplay mutation paths require arena-local ownership and expose cross-session state risk where that scope is absent",
+        "proofState": "PROVEN",
+        "classificationHint": "BUG",
+        "severityHint": "major",
+        "claimClosure": {
+          "REACHABILITY": "PROVEN",
+          "CONTRACT": "PROVEN",
+          "CONTRADICTION": "PROVEN",
+          "PLAYER_CONSEQUENCE": "PROVEN",
+          "AFFECTED_SCOPE": "PROVEN",
+          "BLOCKING_PROOF_CLEARED": "PROVEN"
+        }
+      },
+      {
+        "temporaryId": "IND-CIR-002",
+        "check": "World Mutation & Reset Integrity",
+        "title": "Reset/reuse lifecycle can expose stale world-state work to a later run when reuse precedes complete mutation closure",
+        "proofState": "PROVEN",
+        "classificationHint": "BUG",
+        "severityHint": "major",
+        "claimClosure": {
+          "REACHABILITY": "PROVEN",
+          "CONTRACT": "PROVEN",
+          "CONTRADICTION": "PROVEN",
+          "PLAYER_CONSEQUENCE": "PROVEN",
+          "AFFECTED_SCOPE": "PROVEN",
+          "BLOCKING_PROOF_CLEARED": "PROVEN"
+        }
+      }
+    ],
+    "suppressed": [
+      {
+        "area": "generic developer controls",
+        "reason": "No ordinary-player reachability proven."
+      },
+      {
+        "area": "generic reconnect duplication",
+        "reason": "No independent causal contradiction retained after lifecycle/Blocking-Proof closure."
+      },
+      {
+        "area": "generic simultaneous terminal",
+        "reason": "No additional independent root cause retained after idempotency/ownership review."
+      }
+    ],
+    "auditObligations": [],
+    "gates": {
+      "materialSurfaceRouting": "CLOSED",
+      "mutableResourceOwnership": "CLOSED",
+      "requiredCrosschecks": "CLOSED",
+      "materialScenarioAccounting": "CLOSED",
+      "playerControlledSurfaceAccounting": "CLOSED",
+      "unaccountedMaterialSurfaces": 0,
+      "unaccountedMutableResources": 0,
+      "unaccountedMaterialInterleavings": 0,
+      "unaccountedPlayerControlledSurfaces": 0,
+      "genericNeedValidation": 0
+    }
   }
 }
