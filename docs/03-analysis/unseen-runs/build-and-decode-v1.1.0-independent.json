@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "UNSEEN_REPAIR_REQUIRED",
+  "status": "UNSEEN_REPAIR_RERUN_COMPLETE",
   "target": {
     "map": "Build & Decode",
     "version": "1.1.0",
@@ -198,5 +198,35 @@
     "unsupportedProven": 0,
     "genericNeedValidation": 0,
     "conclusion": "Build-heavy unseen validation reveals a capability-model gap: ordinary-player acquisition differs by authored game mode. Evidence discipline remains clean, but Creative-mode acquisition must be incorporated into the existing Developer-Item Acquisition Graph."
+  },
+  "repairRerun": {
+    "status": "RERUN_COMPLETE",
+    "repairCommits": [
+      "1dd1e98cf8b42d0f7c847b2ba028849d804e781d",
+      "1ef1c53dd92e0d42956860c5374ec772c38ae4bf"
+    ],
+    "results": [
+      {
+        "historicalId": "BUG-BAD-DEBUG-STICK",
+        "previous": "ADVERSARIAL_MISS",
+        "rerun": "DETECTED",
+        "proofState": "PROVEN",
+        "classification": "DESIGN_MISMATCH",
+        "route": "ordinary builder role → authored Creative game mode → Creative inventory/catalog acquisition → temporary coordinate-picker/debug item → activation handler → unintended developer interaction reachable"
+      }
+    ],
+    "metrics": {
+      "historicalRecall": {
+        "detected": 1,
+        "expected": 1,
+        "percent": 100
+      },
+      "unsupportedProven": 0,
+      "genericNeedValidation": 0,
+      "unaccountedPlayerRoles": 0,
+      "unaccountedCapabilityAcquisitionSurfaces": 0,
+      "newTaxonomyFamiliesAdded": 0
+    },
+    "conclusion": "Build & Decode miss is repaired by extending existing reachability analysis with authored player capabilities. No new issue family is required."
   }
 }
