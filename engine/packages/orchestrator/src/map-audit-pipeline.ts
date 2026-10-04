@@ -228,6 +228,8 @@ function deriveSelectedMapAuditControl(input: {
     InspectArtifactResult["hiddenGameplayDefects"]["compoundBoundaries"];
   readonly accumulationGrowth:
     InspectArtifactResult["hiddenGameplayDefects"]["accumulationGrowth"];
+  readonly capabilityExposure:
+    InspectArtifactResult["capabilityExposure"];
   readonly userIntent?: AuditUserIntentEnvelope;
 }): Pick<
   SelectedMapAuditRun,
@@ -318,6 +320,10 @@ function deriveSelectedMapAuditControl(input: {
         stageAuthorized("STRESS")
           ? input.accumulationGrowth
           : [],
+      capabilityExposure:
+        stageAuthorized("UNDERSTAND")
+          ? input.capabilityExposure
+          : undefined,
       replicaDivergenceIds:
         stageAuthorized("MODEL")
           ? replicaDivergenceIds
@@ -611,6 +617,8 @@ function assembleSelectedMapAuditRun(
       hidden.compoundBoundaries,
     accumulationGrowth:
       hidden.accumulationGrowth,
+    capabilityExposure:
+      inspection.capabilityExposure,
     userIntent,
   });
   const needValidationFindings = [

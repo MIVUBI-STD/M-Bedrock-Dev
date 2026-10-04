@@ -27,6 +27,9 @@ import type {
   AccumulationGrowthSignal,
   CompoundBoundarySignal,
 } from "./inspection/gameplay-compound-growth-analysis.js";
+import type {
+  CapabilityExposureSummary,
+} from "./inspection/capability-exposure-stage.js";
 
 export type AuditObligationSource =
   | "knowledge-gap"
@@ -770,6 +773,7 @@ export function deriveAuditObligations(input: {
     readonly CompoundBoundarySignal[];
   readonly accumulationGrowth:
     readonly AccumulationGrowthSignal[];
+  readonly capabilityExposure?: CapabilityExposureSummary;
   readonly replicaDivergenceIds?: readonly string[];
 }): readonly AuditObligation[] {
   const items: AuditObligation[] = [
@@ -930,6 +934,137 @@ export function deriveAuditObligations(input: {
       componentIds: [],
       evidenceIds: signal.evidenceIds,
     }));
+  }
+
+
+  for (const observation of input.gameplayWorld.arenas.isolation.observations) {
+    if (observation.status === "isolated") continue;
+    const id =
+      "arena-isolation:" +
+      observation.scriptId +
+      ":" +
+      observation.region +
+      ":" +
+      observation.key;
+    items.push(normalize({
+      id,
+      source: "shared-resource",
+      stage: "STRESS",
+      title:
+        "Prove arena isolation for " +
+        observation.key,
+      reason:
+        observation.status === "shared-global"
+          ? "Arena gameplay reaches a world-shared resource. Concurrent ownership/arbitration has not been proven."
+          : observation.status === "partition-proof-required"
+            ? "Arena gameplay reaches a potentially shared resource, but arena-context partitioning has not been proven."
+            : "Arena isolation scope is unresolved for this gameplay resource.",
+      missingProof:
+        "Arena-specific selector/resource partitioning or explicit arbitration proving one arena cannot mutate another arena's players, entities, world state, objectives, or cleanup.",
+      validationTest:
+        "Trace this exact resource through two simultaneous arenas, including cleanup/reuse. Prove context translation or arena-keyed ownership before closing isolation.",
+      validationGroupKey:
+        "arena-isolation:" +
+        observation.scriptId +
+        ":" +
+        observation.region,
+      subjectIds: [observation.key],
+      componentIds: [
+        observation.scriptId,
+        observation.region,
+      ],
+      evidenceIds: [],
+    }));
+  }
+
+  for (const replica of input.gameplayWorld.arenas.replicaProof) {
+    if (
+      replica.status !== "incomplete-proof" &&
+      replica.status !== "budget-exceeded" &&
+      replica.status !== "no-proof"
+    ) {
+      continue;
+    }
+    items.push(normalize({
+      id:
+        "replica-proof-incomplete:" +
+        replica.arenaId,
+      source: "detection-gap",
+      stage: "MODEL",
+      title:
+        "Complete replica proof for " +
+        replica.arenaId,
+      reason:
+        "This arena replica does not have sufficient world/topology proof to inherit the canonical arena's safety.",
+      missingProof:
+        "World/topology evidence sufficient to classify this replica as equivalent, bounded-equivalent, or materially divergent.",
+      validationTest:
+        "Compare this replica against the canonical arena using normalized coordinates and world/topology evidence. Do not assume source/config equality proves world equality.",
+      validationGroupKey:
+        "full-map-replica:" +
+        replica.arenaId,
+      subjectIds: [replica.arenaId],
+      componentIds: [],
+      evidenceIds: replica.evidenceIds,
+    }));
+  }
+
+  for (const exposure of input.capabilityExposure?.exposures ?? []) {
+    if (
+      exposure.impact !== "progression" &&
+      exposure.impact !== "state" &&
+      exposure.impact !== "fairness"
+    ) {
+      continue;
+    }
+
+    if (exposure.status === "potentially-exposed") {
+      items.push(normalize({
+        id:
+          "capability-reachability:" +
+          exposure.capabilityId,
+        source: "detection-gap",
+        stage: "UNDERSTAND",
+        title:
+          "Prove ordinary-player reachability for " +
+          exposure.capabilityLabel,
+        reason:
+          "A release-enabled restricted capability lacks its required authorization gate, but ordinary-player prerequisite reachability is still unresolved.",
+        missingProof:
+          "A complete player-accessible acquisition path or blocking proof for every required trigger prerequisite.",
+        validationTest:
+          "Trace player-accessible grants, containers, crafting, loot, drops, and world acquisition to the trigger. If reachable, continue to gameplay contradiction classification; if not, retain the blocking proof.",
+        validationGroupKey:
+          "capability-reachability:" +
+          exposure.capabilityId,
+        subjectIds: [exposure.capabilityId],
+        componentIds: [],
+        evidenceIds: exposure.evidenceIds,
+      }));
+    } else if (exposure.status === "exposed") {
+      items.push(normalize({
+        id:
+          "capability-gameplay-translation:" +
+          exposure.capabilityId,
+        source: "gameplay-translation",
+        stage: "PROVE",
+        title:
+          "Translate exposed restricted capability " +
+          exposure.capabilityLabel,
+        reason:
+          "The restricted capability is release-enabled, player-triggerable, reachable, and missing its required authorization gate.",
+        missingProof:
+          "Concrete player-visible trigger, consequence, expected outcome, actual outcome, and affected gameplay scope.",
+        validationTest:
+          "Bind the exposed capability to its exact in-game trigger and player-visible consequence, then run bounded counter-proof before report admission.",
+        validationGroupKey:
+          "capability-exposure:" +
+          exposure.capabilityId,
+        subjectIds: [exposure.capabilityId],
+        componentIds: [],
+        evidenceIds: exposure.evidenceIds,
+      }));
+    }
   }
 
   for (const id of input.replicaDivergenceIds ?? []) {

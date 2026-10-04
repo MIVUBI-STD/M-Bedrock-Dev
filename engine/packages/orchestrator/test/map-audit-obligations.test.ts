@@ -190,3 +190,161 @@ describe("audit obligations versus gameplay findings", () => {
       .toBe("BUG");
   });
 });
+
+
+describe("reusable blind-spot obligations", () => {
+  const gate = {
+    status: "READY_FOR_PROPOSED_BUG_SET",
+    contradictedCausalLinkIds: [],
+    resolutions: [],
+    confirmedDefectReadyIds: [],
+    blockingCounterProofIds: [],
+    runtimeProofRequiredIds: [],
+    detectionGapIds: [],
+    gameplayTranslationRequiredIds: [],
+    counterProofSearchRequiredIds: [],
+    issues: [],
+  } as any;
+
+  const graph = {
+    schemaVersion: 1,
+    policy: "scenario-driven-causal-audit",
+    scenarios: [],
+    components: [],
+    causalLinks: [],
+    knowledgeRequirements: [],
+    knowledgeReceipts: [],
+    requiredInspectionGraph: {
+      policy: "required-inspection-graph",
+      nodes: [],
+      receipts: [],
+    },
+  } as any;
+
+  const baseWorld = {
+    surfaceDiscovery: { surfaceIds: [] },
+    arenas: {
+      detected: true,
+      isolation: {
+        isolated: 0,
+        partitionProofRequired: 0,
+        sharedGlobal: 0,
+        unknown: 0,
+        observations: [],
+      },
+      replicaProof: [],
+    },
+    platformKnowledge: { claims: [] },
+  } as any;
+
+  const derive = (extra: any) =>
+    deriveAuditObligations({
+      graph,
+      defectResolution: gate,
+      gameplayWorld: {
+        ...baseWorld,
+        ...(extra.gameplayWorld ?? {}),
+      },
+      gameplayClosure: closed,
+      negativeSpace: [],
+      temporalRisks: [],
+      discoveryChallenges: [],
+      sharedResourceSignals: [],
+      compoundBoundaries: [],
+      accumulationGrowth: [],
+      capabilityExposure:
+        extra.capabilityExposure,
+    });
+
+  it("surfaces incomplete replica proof instead of inheriting baseline safety", () => {
+    const obligations = derive({
+      gameplayWorld: {
+        ...baseWorld,
+        arenas: {
+          ...baseWorld.arenas,
+          replicaProof: [{
+            arenaId: "arena:6",
+            status: "no-proof",
+            mismatchCount: 0,
+            unresolvedBlocks: 1,
+            evidenceIds: ["world:a6"],
+          }],
+        },
+      },
+    });
+
+    expect(
+      obligations.some(
+        (item) =>
+          item.id ===
+          "replica-proof-incomplete:arena:6" &&
+          item.source === "detection-gap",
+      ),
+    ).toBe(true);
+  });
+
+  it("forces proof for non-isolated arena resources", () => {
+    const obligations = derive({
+      gameplayWorld: {
+        ...baseWorld,
+        arenas: {
+          ...baseWorld.arenas,
+          isolation: {
+            isolated: 0,
+            partitionProofRequired: 1,
+            sharedGlobal: 0,
+            unknown: 0,
+            observations: [{
+              scriptId: "game",
+              region: "arena:start",
+              key: "shared_cinematic",
+              status:
+                "partition-proof-required",
+            }],
+          },
+        },
+      },
+    });
+
+    expect(
+      obligations.some(
+        (item) =>
+          item.source === "shared-resource" &&
+          item.id.includes("shared_cinematic"),
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps unauthorized developer capability open until player reachability is proven", () => {
+    const obligations = derive({
+      capabilityExposure: {
+        exposures: [{
+          capabilityId:
+            "developer-tool:skip",
+          capabilityLabel:
+            "Developer level skip",
+          status: "potentially-exposed",
+          prerequisiteReachability: "unknown",
+          impact: "progression",
+          reasons: [
+            "Authorization is missing.",
+          ],
+          evidenceIds: ["scripts/dev.ts"],
+        }],
+        exposed: 0,
+        potentiallyExposed: 1,
+        releaseBlocking: 1,
+        unresolved: 0,
+      },
+    });
+
+    expect(
+      obligations.some(
+        (item) =>
+          item.id ===
+          "capability-reachability:developer-tool:skip" &&
+          item.source === "detection-gap",
+      ),
+    ).toBe(true);
+  });
+});
