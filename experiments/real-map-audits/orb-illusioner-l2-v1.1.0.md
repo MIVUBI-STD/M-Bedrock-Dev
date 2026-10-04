@@ -201,3 +201,20 @@ The two existing Major findings remain independent:
 Neither requires cross-arena interference to manifest.
 
 Result of this multi-arena pass: **no additional source-proven cross-arena defect**.
+
+
+## Temporary picker reachability closure
+
+The production temporary coordinate picker reacts to `minecraft:stick`, but a fresh reachability pass did not establish a normal-player trigger path.
+
+Current selected artifact:
+
+- normal gameplay can place players in Survival;
+- ordinary block breaking is still policy-controlled: non-admin break events are cancelled unless the block type is explicitly in the allowed set;
+- the default allowed-block set is empty at initialization;
+- plank identifiers found in the main bundle are generic item/block catalog entries rather than gameplay grants;
+- no ordinary gameplay grant/shop path to `minecraft:stick` or craftable planks was found.
+
+World geometry containing planks is therefore not itself acquisition proof because the current break policy blocks ordinary harvesting.
+
+Result: retain the picker as production hygiene only. Do not promote it to a player-facing defect without new selected-artifact acquisition evidence.

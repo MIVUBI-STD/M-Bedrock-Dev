@@ -78,3 +78,18 @@ Counter-proof established in this pass:
 No current-artifact path was found where a normal transition, cleanup, flag operation, entity query, or cinematic in Arena A writes the gameplay state of Arena B.
 
 Result of this multi-arena pass: **no additional source-proven cross-arena defect**.
+
+
+## Developer stick reachability closure
+
+The temporary coordinate-picker import was rechecked through ordinary-player acquisition rather than code presence alone.
+
+Current selected artifact:
+
+- the trigger remains `minecraft:stick`;
+- non-admin players are forced out of Creative/Spectator into Adventure outside arena loading;
+- `playerBreakBlock` is cancelled for non-admin players;
+- selected-script searches show plank identifiers only in a generic block/item icon catalog, not in a gameplay grant/loadout/shop path;
+- no ordinary selected-artifact stick grant was found.
+
+Result: the temporary picker remains release/source hygiene, but **ordinary-player trigger reachability is not proven and current source provides blocking evidence against world-block acquisition**. It is not admitted as a gameplay finding.

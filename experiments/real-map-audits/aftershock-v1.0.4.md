@@ -79,3 +79,22 @@ Counter-proof from the selected artifact:
 - reset/release remains session/arena owned and does not expose an old arena generation as a fresh session.
 
 Result: no additional source-proven cross-arena gameplay defect admitted from the inspected global-loop/module-state surfaces.
+
+
+## Position-logger stick reachability closure
+
+The position logger is release-initialized and reacts to a normal `minecraft:stick`, so its prerequisite was rechecked against all selected-artifact gameplay item/world paths.
+
+Current source does provide jungle planks for the Ascent bridge challenge, but that stack is created with:
+
+```text
+lockMode = ItemLockMode.inventory
+```
+
+Bedrock's `ItemLockMode.inventory` contract prevents the item from being dropped **or crafted with**, so that authored bridge supply cannot be converted into sticks.
+
+The current block-change owner also denies arbitrary player world mutation and only admits objective-scoped placement/breaking (bridge placement, quarry ores, relay/beacon-specific actions). The decorative bamboo/plank world geometry therefore does not establish ordinary harvesting reachability.
+
+The explicit `aftershock:give_stick` script event remains a developer/operator surface, not an ordinary gameplay acquisition path.
+
+Result: no selected-artifact ordinary-player reachability to the position-logger stick was proven. The logger remains release hygiene, not a current gameplay defect.
