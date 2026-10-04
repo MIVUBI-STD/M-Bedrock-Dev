@@ -27,7 +27,11 @@ Every material candidate referenced by the real-map audits must end with exactly
 
 ```text
 PROVEN_CANONICAL:<bug-id>
-NEED_VALIDATION:<runtime-id>
+RUNTIME_IRREDUCIBLE_HIGH:<runtime-id>
+RUNTIME_IRREDUCIBLE_MEDIUM:<runtime-id>
+RUNTIME_IRREDUCIBLE_LOW:<runtime-id>
+CONDITIONAL:<runtime-id>
+STATIC_COUNTERPROOF:<evidence>
 DISPROVEN_CURRENT_ARTIFACT:<counter-proof>
 RELEASE_HEALTH:<reason>
 INTENTIONALLY_EXCLUDED:<reason>
@@ -36,36 +40,76 @@ INTENTIONALLY_EXCLUDED:<reason>
 Rules:
 
 - approval/filtering is never a disposition;
-- NEED_VALIDATION must point to one exact runtime scenario in this file;
+- every RUNTIME_IRREDUCIBLE or CONDITIONAL disposition must point to one exact runtime scenario in this file;
+- STATIC_COUNTERPROOF removes an item from active runtime validation only when selected-current-artifact evidence directly blocks the suspected failure path;
 - DISPROVEN_CURRENT_ARTIFACT requires selected-current-artifact counter-proof;
 - RELEASE_HEALTH remains visible but is not promoted to gameplay BUG without a grounded player-visible consequence;
 - no material candidate may disappear between a per-map audit, this ledger, and canonical report projection.
 
-Batch conservation is not CLOSED while any listed NEED_VALIDATION item is unexecuted or INCONCLUSIVE. This does not turn runtime residue into a bug; it prevents the audit from being described as exhaustive/final prematurely.
+Batch conservation is not CLOSED while any active RUNTIME_IRREDUCIBLE item is unexecuted or INCONCLUSIVE. CONDITIONAL items are active only when their stated prerequisite is present. This does not turn runtime residue into a bug; it prevents the audit from being described as exhaustive/final prematurely.
 
 ### Current reconciliation dispositions from client re-check
 
 | Candidate | Current disposition | Basis |
 | --- | --- | --- |
 | Attack last-second double ending | DISPROVEN_CURRENT_ARTIFACT | Current `endGame(arenaId, "victory")` rechecks timer expiry and converts late victory to timeout before completion handling. |
-| Attack ticking-area lease handoff | NEED_VALIDATION:RT-ATK-LEASE-HANDOFF | Async Minecraft-area removal can overlap logical lease reuse; exact command interleaving is runtime-sensitive. |
-| Defense ticking-area lease handoff | NEED_VALIDATION:RT-DEF-LEASE-HANDOFF | Same release/acquire boundary with three residency regions. |
-| Defense Speed Potion delivery atomicity | NEED_VALIDATION:RT-DEF-SPEED-POTION | Failure consequence is source-grounded; target-runtime command success is not. |
+| Attack ticking-area lease handoff | RUNTIME_IRREDUCIBLE_HIGH:RT-ATK-LEASE-HANDOFF | Async Minecraft-area removal can overlap logical lease reuse; exact command interleaving is runtime-sensitive. |
+| Defense ticking-area lease handoff | RUNTIME_IRREDUCIBLE_HIGH:RT-DEF-LEASE-HANDOFF | Same release/acquire boundary with three residency regions. |
+| Defense Speed Potion delivery atomicity | RUNTIME_IRREDUCIBLE_HIGH:RT-DEF-SPEED-POTION | Failure consequence is source-grounded; target-runtime command success is not. |
 | Defense internal version label v1.1.0 vs delivered v1.1.1 | RELEASE_HEALTH | Current metadata identity mismatch without grounded gameplay consequence. |
 | Circuit missing gameplay ticking areas | DISPROVEN_CURRENT_ARTIFACT | Current PathwayLoader dynamically creates/removes arena-specific `circuit_path_<arena>` residency. |
 | Circuit five-player capacity | INTENTIONALLY_EXCLUDED | Current artifact proves max_member 5 but no independent selected-artifact requirement for >5 players is grounded. |
 | Circuit version 1.0.2 / pack 1.0.1 / internal 1.0.0 | RELEASE_HEALTH | Current artifact identity is inconsistent, but no gameplay failure is yet grounded. |
-| Circuit far-chunk pathway residency | NEED_VALIDATION:RT-CIRCUIT-FAR-CHUNK | Dynamic residency exists; sufficiency under deployed simulation timing remains runtime-sensitive. |
-| Circuit round reconnect recovery | NEED_VALIDATION:RT-CIRCUIT-RECONNECT | Distinct round recovery owners require representative runtime proof. |
-| Five Nights L1 cave/windmill remote simulation | NEED_VALIDATION:RT-FNZ1-REMOTE-SIM | Current source has chunk-loaded spawn retry/bridge residency; remaining remote route behavior is runtime-sensitive. |
+| Circuit far-chunk pathway residency | RUNTIME_IRREDUCIBLE_HIGH:RT-CIRCUIT-FAR-CHUNK | Dynamic residency exists; sufficiency under deployed simulation timing remains runtime-sensitive. |
+| Circuit round reconnect recovery | RUNTIME_IRREDUCIBLE_MEDIUM:RT-CIRCUIT-RECONNECT | Distinct round recovery owners require representative runtime proof. |
+| Five Nights L1 cave/windmill remote simulation | RUNTIME_IRREDUCIBLE_LOW:RT-FNZ1-REMOTE-SIM | Current source has chunk-loaded spawn retry/bridge residency; remaining remote route behavior is runtime-sensitive. |
 | Deprecated command/API residue | RELEASE_HEALTH | Deprecation alone is not a gameplay defect; promote only when current hot-path behavior fails. |
-| Hardcoded spectator/default-arena residue | NEED_VALIDATION:RT-DEFAULT-ARENA-REACHABILITY | Must prove whether the dormant/default-arena path is reachable from a non-default active session before classification. |
-| Queued/requested kit-station materialization | NEED_VALIDATION:RT-KIT-STATION-MATERIALIZATION | Queue/request evidence is not proof that all required stations materialize in world state. |
-| Clockwork cinematic disconnect/transition recovery | NEED_VALIDATION:RT-CLOCKWORK-DISCONNECT | Exact disconnect timing and client presentation are runtime-sensitive. |
+| Hardcoded spectator/default-arena residue | CONDITIONAL:RT-DEFAULT-ARENA-REACHABILITY | Must prove whether the dormant/default-arena path is reachable from a non-default active session before classification. |
+| Queued/requested kit-station materialization | CONDITIONAL:RT-KIT-STATION-MATERIALIZATION | Queue/request evidence is not proof that all required stations materialize in world state. |
+| Clockwork cinematic disconnect/transition recovery | RUNTIME_IRREDUCIBLE_LOW:RT-CLOCKWORK-DISCONNECT | Exact disconnect timing and client presentation are runtime-sensitive. |
 | Five Nights L2 Drive filename/version identity | RELEASE_HEALTH | Operator-facing artifact identity mismatch without grounded gameplay consequence. |
-| Orb L1 disconnect at objective boundary | NEED_VALIDATION:RT-ORB1-OBJECTIVE-DISCONNECT | Source does not prove a bypass; exact objective/disconnect interleaving remains runtime-sensitive. |
-| Raid kit durability refresh | NEED_VALIDATION:RT-RAID-KIT-DURABILITY | Per-kit durability refresh requires deployed-runtime confirmation across all four kits. |
-| Raid four-arena entity/score isolation | NEED_VALIDATION:RT-RAID-FOUR-ARENA-ISOLATION | Maximum parallel arena isolation remains runtime-sensitive. |
+| Orb L1 disconnect at objective boundary | RUNTIME_IRREDUCIBLE_LOW:RT-ORB1-OBJECTIVE-DISCONNECT | Source does not prove a bypass; exact objective/disconnect interleaving remains runtime-sensitive. |
+| Raid kit durability refresh | RUNTIME_IRREDUCIBLE_MEDIUM:RT-RAID-KIT-DURABILITY | Per-kit durability refresh requires deployed-runtime confirmation across all four kits. |
+| Raid four-arena entity/score isolation | STATIC_COUNTERPROOF | Membership, gameplay tags, timers, match state, finish/reset and cleanup are arena-scoped; inspected global loops are not arena mutation authority. |
+
+## Runtime priority after deep static counter-proof
+
+### HIGH — execute first
+
+- `RT-CLOCKWORK-WORKSHOP-TA` — source proves six arenas contend for one global ticking-area name; runtime only decides player-visible manifestation.
+- `RT-ATK-LEASE-HANDOFF` — source proves logical lease reuse can begin before physical area removal settles.
+- `RT-DEF-LEASE-HANDOFF` — same handoff window across three residency regions.
+- `RT-DEF-SPEED-POTION` — transaction consequence is grounded; target-runtime command delivery decides reachability.
+- `RT-CIRCUIT-FAR-CHUNK` — dynamic residency exists, but deployed simulation sufficiency decides progression.
+
+### MEDIUM
+
+- `RT-BBW-DEATH-LEAVE` — same-tick terminal ordering is engine-scheduler dependent.
+- `RT-RAID-DEATH-LEAVE` — same terminal-ordering class with explicit match lifecycle.
+- `RT-RAID-KIT-DURABILITY` — actual item durability state requires runtime observation.
+- `RT-CIRCUIT-RECONNECT` — round-specific recovery owners need representative runtime proof.
+- `RT-AFTERSHOCK-PHYSICS` — physics/entity semantics are runtime-owned.
+
+### LOW
+
+- `RT-FNZ1-REMOTE-SIM` — source already has chunk-loaded spawn retry and bridge residency.
+- `RT-FNZ2-NAVIGATION` — session/generation and spawn-failure handling are hardened; terrain navigation remains runtime-owned.
+- `RT-ORB1-NAVIGATION` — source has scoped context/recovery counter-proof; only actual navigation remains.
+- `RT-ORB1-OBJECTIVE-DISCONNECT` — no source bypass found; exact boundary ordering remains.
+- `RT-CLOCKWORK-DISCONNECT` — persistence/interruption ownership is explicit; exact cinematic handoff remains.
+- `RT-MOB2-SHARED-ENTITY` — inspected global loops are non-progression owners; exact entity timing remains.
+
+### STATIC COUNTER-PROOF — remove from active runtime queue
+
+- `RT-MOB1-SHARED-BUTTON`: `syncButtons()` unions all active required levels for the shared physical map and fails closed if projection cannot be verified.
+- `RT-RAID-CLEANUP-RETRY`: durable `match_cleanup_pending` blocks fresh admission and cleanup is retried until success.
+- `RT-RAID-FOUR-ARENA-ISOLATION`: membership, tags, timers, match state, finish/reset and cleanup are arena-scoped; global loops inspected are not mutation authority.
+
+### CONDITIONAL
+
+- `RT-BBW-TERRAIN-CLEANUP`: execute only when a normal match actually leaves mutable terrain requiring journal restoration.
+- `RT-DEFAULT-ARENA-REACHABILITY`: execute only for a specifically identified artifact retaining a reachable hardcoded default-arena path.
+- `RT-KIT-STATION-MATERIALIZATION`: execute only for a specifically identified artifact where required station placement is queued/requested and presence is not already statically proven.
 
 ## Execution rule
 
@@ -414,4 +458,4 @@ INCONCLUSIVE → remains explicit runtime residue
 
 Do not convert INCONCLUSIVE to PASS.
 
-Static/source proof may be complete, but batch reconciliation remains PARTIAL while any NEED_VALIDATION item is unexecuted or INCONCLUSIVE. The audit may only be described as exhaustive/final after every material candidate has an explicit terminal disposition and the conservation ledger balances.
+Static/source proof may be complete, but batch reconciliation remains PARTIAL while any active RUNTIME_IRREDUCIBLE item is unexecuted or INCONCLUSIVE. STATIC_COUNTERPROOF items are closed by current-artifact evidence; CONDITIONAL items activate only when their prerequisite is grounded. The audit may only be described as exhaustive/final after every material candidate has an explicit terminal disposition and the conservation ledger balances.
