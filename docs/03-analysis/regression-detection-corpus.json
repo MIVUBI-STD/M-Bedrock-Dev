@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Historical confirmed-defect recall expectations. Search pressure only; never current-artifact proof.",
+  "cases": [
+    {
+      "id": "REG-MULTIARENA-CONCURRENCY",
+      "defectFamily": "Multi-Arena Capacity & Isolation",
+      "historicalSymptom": "Visible arenas exceed delivered concurrent capacity.",
+      "expectedDetectionCheck": "A9 Multi-Arena Capacity & Isolation",
+      "expectedCrosscheck": "Presented Capacity × Shared Resource Budget",
+      "expectedProofMethod": "Quantitative capacity analysis + admission ownership",
+      "forbiddenShortcut": "Do not assume historical capacity values apply to the current artifact."
+    },
+    {
+      "id": "REG-TICKING-NOT-CREATED",
+      "defectFamily": "Ticking, Residency & Remote Simulation",
+      "historicalSymptom": "Gameplay declares/depends on remote residency but required arena residency is not created.",
+      "expectedDetectionCheck": "A13 Ticking, Residency & Remote Simulation",
+      "expectedCrosscheck": "Remote Gameplay × Residency",
+      "expectedProofMethod": "Dependency + geometry + creation owner + readiness",
+      "forbiddenShortcut": "Do not treat declaration/config presence as proof of runtime ownership."
+    },
+    {
+      "id": "REG-RECONNECT-INVENTORY",
+      "defectFamily": "Inventory / Reconnect",
+      "historicalSymptom": "Reconnect path misses a fresh-session inventory reset/clear performed by the normal path.",
+      "expectedDetectionCheck": "A17 Persistence, Reconnect & Reload Integrity",
+      "expectedCrosscheck": "Reconnect × Inventory",
+      "expectedProofMethod": "Differential lifecycle analysis + writer/clearer matrix",
+      "forbiddenShortcut": "Do not infer current failure from historical handler names."
+    },
+    {
+      "id": "REG-RESPAWN-RECONNECT",
+      "defectFamily": "Lifecycle Ownership",
+      "historicalSymptom": "Reconnect recovery conflicts with pending death/respawn ownership.",
+      "expectedDetectionCheck": "A10 Deferred Work & Generation Safety",
+      "expectedCrosscheck": "Reconnect × Death/Respawn",
+      "expectedProofMethod": "State-transition reachability + owner/generation comparison",
+      "forbiddenShortcut": "Do not claim ordering without source-grounded overlap."
+    },
+    {
+      "id": "REG-RESET-REUSE",
+      "defectFamily": "Arena Reuse",
+      "historicalSymptom": "Arena can become reusable while old reset/deferred cleanup still owns mutable state.",
+      "expectedDetectionCheck": "A10 Deferred Work & Generation Safety",
+      "expectedCrosscheck": "Reset × Arena Reuse",
+      "expectedProofMethod": "Generation timeline + reuse publication ordering",
+      "forbiddenShortcut": "Do not require runtime if source ordering already permits stale commit."
+    },
+    {
+      "id": "REG-WAVE-PREMATURE-COMPLETE",
+      "defectFamily": "Progression / Wave",
+      "historicalSymptom": "Pending/retry work can escape outstanding accounting and allow premature completion or stuck progression.",
+      "expectedDetectionCheck": "A9 Progression, Wave & Objective Integrity",
+      "expectedCrosscheck": "Retry × Progression Accounting",
+      "expectedProofMethod": "Required/pending/live/completed accounting invariant",
+      "forbiddenShortcut": "Do not equate spawn request with completed work."
+    },
+    {
+      "id": "REG-GLOBAL-SELECTOR-ARENA",
+      "defectFamily": "Arena Isolation",
+      "historicalSymptom": "Global selector/tag/state is reachable from arena-local gameplay.",
+      "expectedDetectionCheck": "A27 Identity, Selector & Result-Count Integrity",
+      "expectedCrosscheck": "Global Selector × Arena Isolation",
+      "expectedProofMethod": "Reverse state index + selector scope ownership",
+      "forbiddenShortcut": "Do not assume selector intent from naming."
+    },
+    {
+      "id": "REG-DEVELOPER-TOOL-EXPOSURE",
+      "defectFamily": "Developer Tool Exposure",
+      "historicalSymptom": "Ordinary player can reach a debug/skip/restart affordance.",
+      "expectedDetectionCheck": "A19 Developer Tool & Permission Exposure",
+      "expectedCrosscheck": "Acquisition × Permission",
+      "expectedProofMethod": "Reachability + permission guard analysis",
+      "forbiddenShortcut": "Do not classify unreachable developer code as a gameplay defect."
+    },
+    {
+      "id": "REG-INCOMPLETE-REPLICA",
+      "defectFamily": "World / Replica Integrity",
+      "historicalSymptom": "One repeated arena/region is structurally incomplete compared with the canonical baseline.",
+      "expectedDetectionCheck": "A15 World Mutation & Reset Integrity",
+      "expectedCrosscheck": "Replica Geometry × Gameplay Dependency",
+      "expectedProofMethod": "Normalized replica footprint/topology comparison",
+      "forbiddenShortcut": "Do not assume physical replicas are equivalent."
+    },
+    {
+      "id": "REG-DOUBLE-TERMINAL",
+      "defectFamily": "Terminal State",
+      "historicalSymptom": "Two reachable terminal triggers can both commit non-idempotent consequences.",
+      "expectedDetectionCheck": "A11 Terminal State & Duplicate-Commit Safety",
+      "expectedCrosscheck": "Terminal Trigger × Terminal Trigger",
+      "expectedProofMethod": "Terminal reachability + guard/idempotency analysis",
+      "forbiddenShortcut": "Do not treat nearby ended-state code as Blocking Proof unless it guards the exact commit."
+    }
+  ]
+}
