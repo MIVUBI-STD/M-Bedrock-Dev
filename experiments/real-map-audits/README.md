@@ -84,16 +84,27 @@ Examples of historical/suspicious behavior that was **not** blindly promoted:
 - Aftershock scanner/dev surfaces without a proven ordinary-player capability path;
 - BlitzBuild script-event diagnostics, which are not ordinary-player reachable because `/scriptevent` requires operator-level Game Directors permission and cheats.
 
-## Batch source-audit finalization
+## Batch audit status — multi-arena deep pass reopened
 
-Source-side reconciliation for the current 22-artifact Drive batch is complete.
+The earlier source-first reconciliation found the current confirmed issue set, but the batch is **not yet closed** under the repository's Multi Arena Audit Contract. A dedicated MODEL/STRESS pass is reopened for every selected artifact with multiple arena/replica instances.
+
+Current confirmed findings remain valid while this deeper pass runs:
 
 - **13 source-proven BUGs**: 4 Blocker + 9 Major.
 - **1 source-proven DESIGN_MISMATCH**: 1 Minor.
-- Remaining zero-finding maps retain only narrow runtime-sensitive residue where native simulation/timing cannot be decided safely from source, or symptom-triggered checks that should not be run speculatively.
-- No broad manual-testing matrix is required by this batch.
-- Runtime was **not executed** in this source-audit pass.
-- Findings remain non-canonical until human review/approval promotes them into `workspace/reports/*.json`.
+
+The reopened pass must close, where applicable:
+
+- visible vs playable arena count;
+- concurrent arena limit and capacity + 1 behavior;
+- queue/admission feedback;
+- simultaneous start;
+- shared/global resource contention;
+- player/session/entity/projectile/score isolation;
+- timers/cinematics/world mutation isolation;
+- cleanup, second-run reuse, and generation safety.
+
+Runtime was **not executed** in the source audit. Existing canonical Bug Report V2 files remain current approved findings, but they must not be treated as evidence that multi-arena coverage is complete.
 
 
 ## Approval boundary
