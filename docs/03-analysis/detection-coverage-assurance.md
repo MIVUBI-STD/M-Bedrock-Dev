@@ -545,7 +545,209 @@ Generic labels such as “needs more testing” are invalid.
 
 ---
 
-# 18. Architecture Freeze Rule
+# 18. Multi-Scenario Simulation Model
+
+### Purpose
+
+Reason through realistic concurrent gameplay as if sessions are progressing together, without pretending static analysis is an actual Minecraft runtime execution.
+
+This model generates deterministic scenario interleavings from selected-artifact state machines, ownership, timers, callbacks, admission rules, and failure/recovery paths.
+
+### Simulation dimensions
+
+For every applicable multiplayer/multi-arena map, vary only dimensions supported by the selected artifact:
+
+```text
+Players
+→ 1
+→ 2
+→ normal party/team size
+→ selected maximum
+→ maximum + 1 when admission is material
+
+Arenas / Sessions
+→ 1 active
+→ 2 concurrent
+→ safe calculated maximum
+→ safe maximum + 1
+→ presented maximum
+
+Connection state
+→ stable
+→ disconnect before lifecycle boundary
+→ disconnect during boundary
+→ reconnect before completion
+→ reconnect after completion
+→ repeated disconnect/reconnect
+→ one player disconnects while teammates remain
+→ owner/leader disconnects
+→ last player disconnects
+→ late join when supported
+
+Timing / interruption
+→ preload
+→ buy/loadout
+→ active combat
+→ death/respawn
+→ wave transition
+→ terminal window
+→ reset/cleanup
+→ arena reuse
+
+Failure injection
+→ required command/API step fails where failure is representable
+→ spawn attempt fails/retries
+→ residency/resource acquisition unavailable
+→ teleport/structure mutation incomplete
+→ delayed callback survives owner invalidation
+```
+
+Do not invent packet loss percentages, latency values, native server ordering, or platform behavior not grounded by selected-artifact/runtime knowledge.
+
+### Scenario tuple
+
+Represent each simulated case as:
+
+```text
+Scenario ID
+Players
+Arena/session count
+Initial state
+Connection event
+Concurrent event
+Resource pressure
+Expected invariant
+Ordered state transitions
+Writers / clearers / deferred writers
+Blocking Proof
+Result
+```
+
+Result is one of:
+
+```text
+SAFE
+CONTRADICTION
+IRREDUCIBLE_RUNTIME_QUESTION
+```
+
+### Connection-interruption matrix
+
+When reconnect is applicable, automatically generate targeted interruptions at every material lifecycle boundary:
+
+```text
+join/admission
+preload/setup
+inventory reset
+loadout/shop
+active gameplay
+death/respawn
+objective/wave transition
+terminal commit
+cleanup/reset
+arena reuse
+```
+
+For each interruption compare:
+
+```text
+uninterrupted path
+vs
+disconnect path
+vs
+reconnect path
+```
+
+Compare owner, generation, writers, clearers, pending work, inventory/economy, position/mode, arena assignment, reward/score, and recovery state.
+
+### Multi-player interleavings
+
+When shared state exists, generate bounded cases such as:
+
+```text
+P1 acts while P2 disconnects
+P1 dies while P2 completes objective
+P1 reconnects while P2 advances wave
+leader/owner disconnects while party remains
+two players trigger the same terminal/objective
+two players buy/claim the same bounded resource
+one player leaves during cleanup while another remains
+```
+
+Only generate a case when both actions share a material state/resource/transition.
+
+### Multi-arena interleavings
+
+When multiple arenas exist, generate:
+
+```text
+Arena A starts while Arena B starts
+Arena A resets while Arena B remains active
+Arena A cleanup while Arena B acquires shared resource
+Arena A reconnect while Arena B transitions
+Arena A terminal while Arena B uses global selector/state
+old Arena A generation cleanup while new Arena A run starts
+safe capacity + 1 admission
+presented maximum admission
+```
+
+Verify arena-local invariants and shared-budget invariants independently.
+
+### Connection proof rule
+
+A connection scenario can become statically PROVEN when selected-artifact evidence establishes:
+- the disconnect/reconnect handler is reachable;
+- the interrupted lifecycle state is reachable;
+- competing writers/clearers have a source-grounded order or overlap;
+- the resulting postcondition violates an invariant;
+- no applicable Blocking Proof prevents it.
+
+If the deciding fact is native network timing/order not represented by the artifact, preserve one narrow Runtime Verification question instead of inventing behavior.
+
+---
+
+# 19. Scenario Coverage Gate
+
+Before an applicable multiplayer/multi-arena audit closes, require:
+
+```text
+all material lifecycle boundaries
+× applicable connection interruption
+× applicable shared-state interleavings
+× applicable arena concurrency boundaries
+→ accounted
+```
+
+This is a bounded derived set, not a Cartesian product.
+
+A scenario is generated only when its dimensions share:
+- state;
+- owner;
+- lifecycle transition;
+- resource;
+- selector;
+- commit target;
+- or recovery path.
+
+Block closure when a material shared-state boundary has no uninterrupted/interrupted comparison.
+
+Track internally:
+
+```text
+Generated Scenarios
+Safe Scenarios
+Contradiction Scenarios
+Irreducible Runtime Questions
+Unaccounted Material Interleavings
+```
+
+Target:
+- Unaccounted Material Interleavings = 0
+- generic connection-related NEED_VALIDATION = 0
+
+---
+
+# 20. Architecture Freeze Rule
 
 The detection architecture is considered structurally complete after sections 1–17.
 
