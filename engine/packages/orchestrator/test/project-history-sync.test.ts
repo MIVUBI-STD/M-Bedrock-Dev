@@ -133,6 +133,28 @@ describe("project historical issue projection", () => {
         ),
         { recursive: true },
       );
+      await mkdir(
+        join(
+          root,
+          "engine/reliability/catalogs",
+        ),
+        { recursive: true },
+      );
+      await writeFile(
+        join(
+          root,
+          "engine/reliability/catalogs/regressions.json",
+        ),
+        JSON.stringify(
+          {
+            schemaVersion: 1,
+            regressions: [],
+          },
+          null,
+          2,
+        ) + "\n",
+        "utf8",
+      );
       const report = {
         schema: "m-bedrock-bug-report/v2" as const,
         map: {
@@ -245,6 +267,28 @@ describe("project historical issue projection", () => {
       await mkdir(
         join(root, "workspace/reports"),
         { recursive: true },
+      );
+      await mkdir(
+        join(
+          root,
+          "engine/reliability/catalogs",
+        ),
+        { recursive: true },
+      );
+      await writeFile(
+        join(
+          root,
+          "engine/reliability/catalogs/regressions.json",
+        ),
+        JSON.stringify(
+          {
+            schemaVersion: 1,
+            regressions: [],
+          },
+          null,
+          2,
+        ) + "\n",
+        "utf8",
       );
       const persisted = {
         schema:
