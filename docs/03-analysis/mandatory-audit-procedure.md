@@ -703,6 +703,7 @@ Mandatory integration points:
 
 ```text
 A2 Gameplay Surface Discovery
+→ before specialist routing, enumerate every repeated physical arena/region/plot/room and normalize replica geometry/footprint
 → create/update Coverage Ledger
 
 A4/A5 State + Ownership
