@@ -80,10 +80,17 @@ describe("bug report v2", () => {
   });
 
   it("round-trips explicit design mismatch issue type", () => {
-    const source = report();
-    source.bugs[0] = {
-      ...source.bugs[0]!,
-      issueType: "DESIGN_MISMATCH",
+    const base = report();
+    const source: BugReportV2 = {
+      ...base,
+      bugs: base.bugs.map((bug, index) =>
+        index === 0
+          ? {
+              ...bug,
+              issueType: "DESIGN_MISMATCH" as const,
+            }
+          : bug
+      ),
     };
     const serialized = serializeBugReportV2(source);
     expect(serialized.ok).toBe(true);
