@@ -98,4 +98,97 @@ describe("project lifecycle contracts", () => {
       "Project registry contains duplicate projectId",
     );
   });
+
+  it("rejects different project ids bound to the same artifact", () => {
+    expect(() =>
+      normalizeProjectRegistry({
+        schemaVersion: 1,
+        projects: [
+          record(),
+          {
+            ...record(),
+            projectId: "defense-alias",
+          },
+        ],
+      })
+    ).toThrow(
+      "duplicate artifactId",
+    );
+  });
+
+  it("rejects different projects bound to the same current Drive world", () => {
+    const withDrive = {
+      ...record(),
+      publication: {
+        drive: {
+          schemaVersion: 1,
+          projectId: "defense-v2",
+          mapFolder: {
+            folderId: "folder:a",
+          },
+          currentWorld: {
+            fileId: "drive:world",
+            fileName: "world.mcworld",
+            artifactFingerprint:
+              "sha256:map",
+            version: "1.0.0",
+          },
+        },
+      },
+    };
+    expect(() =>
+      normalizeProjectRegistry({
+        schemaVersion: 1,
+        projects: [
+          withDrive,
+          {
+            ...withDrive,
+            projectId: "other",
+            artifact: {
+              artifactId: "map:other",
+              artifactFingerprint:
+                "sha256:other",
+            },
+            publication: {
+              drive: {
+                ...withDrive.publication.drive,
+                projectId: "other",
+              },
+            },
+          },
+        ],
+      })
+    ).toThrow(
+      "duplicate current-world Drive file",
+    );
+  });
+
+  it("rejects one canonical report path owned by multiple projects", () => {
+    const withReport = {
+      ...record(),
+      knowledge: {
+        bugReportPath:
+          "workspace/reports/shared.json",
+      },
+    };
+    expect(() =>
+      normalizeProjectRegistry({
+        schemaVersion: 1,
+        projects: [
+          withReport,
+          {
+            ...withReport,
+            projectId: "other",
+            artifact: {
+              artifactId: "map:other",
+              artifactFingerprint:
+                "sha256:other",
+            },
+          },
+        ],
+      })
+    ).toThrow(
+      "duplicate canonical Bug Report path",
+    );
+  });
 });

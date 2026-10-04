@@ -444,6 +444,13 @@ export function normalizeProjectRegistry(
 
   const byId =
     new Map<string, ProjectRecord>();
+  const artifactOwner =
+    new Map<string, string>();
+  const driveFileOwner =
+    new Map<string, string>();
+  const reportOwner =
+    new Map<string, string>();
+
   for (const project of input.projects) {
     const normalized =
       normalizeProjectRecord(project);
@@ -453,6 +460,84 @@ export function normalizeProjectRegistry(
           normalized.projectId,
       );
     }
+
+    const previousArtifactOwner =
+      artifactOwner.get(
+        normalized.artifact.artifactId,
+      );
+    if (
+      previousArtifactOwner !== undefined &&
+      previousArtifactOwner !==
+        normalized.projectId
+    ) {
+      throw new Error(
+        "Project registry contains duplicate artifactId owned by multiple projects: " +
+          normalized.artifact.artifactId +
+          " (" +
+          previousArtifactOwner +
+          ", " +
+          normalized.projectId +
+          ").",
+      );
+    }
+    artifactOwner.set(
+      normalized.artifact.artifactId,
+      normalized.projectId,
+    );
+
+    const driveFileId =
+      normalized.publication.drive
+        ?.currentWorld?.fileId;
+    if (driveFileId) {
+      const previousDriveOwner =
+        driveFileOwner.get(driveFileId);
+      if (
+        previousDriveOwner !== undefined &&
+        previousDriveOwner !==
+          normalized.projectId
+      ) {
+        throw new Error(
+          "Project registry contains duplicate current-world Drive file owned by multiple projects: " +
+            driveFileId +
+            " (" +
+            previousDriveOwner +
+            ", " +
+            normalized.projectId +
+            ").",
+        );
+      }
+      driveFileOwner.set(
+        driveFileId,
+        normalized.projectId,
+      );
+    }
+
+    const reportPath =
+      normalized.knowledge.bugReportPath;
+    if (reportPath) {
+      const previousReportOwner =
+        reportOwner.get(reportPath);
+      if (
+        previousReportOwner !== undefined &&
+        previousReportOwner !==
+          normalized.projectId
+      ) {
+        throw new Error(
+          "Project registry contains duplicate canonical Bug Report path owned by multiple projects: " +
+            reportPath +
+            " (" +
+            previousReportOwner +
+            ", " +
+            normalized.projectId +
+            ").",
+        );
+      }
+      reportOwner.set(
+        reportPath,
+        normalized.projectId,
+      );
+    }
+
     byId.set(
       normalized.projectId,
       normalized,
