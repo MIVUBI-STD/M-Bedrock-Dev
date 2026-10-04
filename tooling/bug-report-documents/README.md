@@ -3,7 +3,7 @@
 This tooling renders one self-contained HTML file from either:
 
 - **SelectedMapAuditRun / Map Audit Output V2** → Map Audit Report, using the canonical `mapAuditReport` projection and showing every material `PROVEN` and `NEED_VALIDATION` finding across BUG and DESIGN_MISMATCH;
-- **Approved Bug Report V2** → approved PROVEN BUG ledger view.
+- **Approved Bug Report V2** → approved PROVEN issue ledger view, preserving separate BUG and DESIGN_MISMATCH sections.
 
 ## Flow
 
@@ -15,7 +15,7 @@ Map Audit Output V2
 or
 
 Approved Bug Report V2 JSON
-→ approved-bug client projection
+→ approved-issue client projection
 → self-contained HTML
 ```
 
@@ -25,7 +25,7 @@ HTML is presentation only. It must not invent, promote, hide, or backfill audit 
 
 For **Map Audit Output V2**, all material findings are shown. NEED_VALIDATION findings are labeled **NEED VALIDATION / UNPROVEN**, include the exact missing proof and validation test, and never receive a final severity.
 
-For **Approved Bug Report V2**, the existing approved-ledger filters remain: open Blocker/Major by default; `--include-minor` and `--include-fixed` broaden only that approved-ledger view.
+For **Approved Bug Report V2**, the approved-ledger filters remain: open Blocker/Major issues by default; `--include-minor` and `--include-fixed` broaden only that approved-ledger view.
 
 ## Usage
 
@@ -63,7 +63,7 @@ The generated HTML contains its CSS inline and can be opened directly in any mod
 
 ## Reader-first design
 
-Each bug is one compact block:
+Each approved issue is one compact block, grouped under **Bugs** or **Design Mismatches**:
 
 ```text
 Severity + title

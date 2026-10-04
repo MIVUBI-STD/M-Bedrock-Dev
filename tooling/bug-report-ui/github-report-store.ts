@@ -299,20 +299,34 @@ export class GitHubBugReportStore {
       throw new GitHubBugReportConflictError();
     }
 
-    const currentById = new Map(
-      current.report.bugs.map((bug) => [bug.id, bug.fixed]),
-    );
-
-    const unverifiedCompletion = report.bugs.some((bug) =>
-      currentById.get(bug.id) === false && bug.fixed
-    );
-    if (unverifiedCompletion) {
+    const currentSerialized =
+      serializeBugReportV2(current.report);
+    const incomingSerialized =
+      serializeBugReportV2(report);
+    if (
+      !currentSerialized.ok ||
+      !currentSerialized.json ||
+      !incomingSerialized.ok ||
+      !incomingSerialized.json
+    ) {
       throw new Error(
-        "Generic report save cannot mark bugs fixed; use closed repair completion.",
+        "Generic report save requires valid canonical Bug Report V2 state.",
       );
     }
 
-    return this.#saveReport(path, report, expectedRevision);
+    if (
+      currentSerialized.json !==
+      incomingSerialized.json
+    ) {
+      throw new Error(
+        "Presentation UI cannot modify canonical issue facts or repair state; use the approved report workflow for issue changes or closed repair completion for Fixed state.",
+      );
+    }
+
+    // Exact no-op saves are accepted without creating another Git revision.
+    return {
+      revision: current.revision,
+    };
   }
 
   async completeClosedRepair(
