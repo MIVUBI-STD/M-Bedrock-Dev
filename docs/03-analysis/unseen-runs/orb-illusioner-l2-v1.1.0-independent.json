@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "TARGET_LOCKED_READY_FOR_DISCOVERY",
+  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
   "target": {
     "map": "Orb of the Illusioner Level 2",
     "version": "1.1.0",
@@ -34,12 +34,87 @@
     "Evidence Receipt Gate"
   ],
   "coverageGates": {
-    "materialSurfaceRouting":"OPEN",
-    "mutableResourceOwnership":"OPEN",
-    "requiredCrosschecks":"OPEN",
-    "materialScenarioAccounting":"OPEN",
-    "playerControlledSurfaceAccounting":"OPEN",
-    "genericNeedValidation":0
+    "materialSurfaceRouting": "IN_PROGRESS",
+    "mutableResourceOwnership": "IN_PROGRESS",
+    "requiredCrosschecks": "IN_PROGRESS",
+    "materialScenarioAccounting": "IN_PROGRESS",
+    "playerControlledSurfaceAccounting": "IN_PROGRESS",
+    "genericNeedValidation": 0
   },
-  "comparison":"BLOCKED"
+  "comparison": "BLOCKED",
+  "discovery": {
+    "materialSystems": [
+      "player/team assignment",
+      "combat damage/death/respawn/revive",
+      "inventory/equipment/loadout",
+      "score/reward/terminal state",
+      "objective/progression",
+      "reconnect/recovery",
+      "cross-player/team mutation",
+      "player capabilities",
+      "developer/debug affordances"
+    ],
+    "derivedInvariants": [
+      "dead/downed player cannot regain active ownership before authored recovery",
+      "one player's combat lifecycle cannot overwrite another player's state",
+      "team/participant gates reconcile required vs online/eligible membership",
+      "fresh-session inventory/equipment reset applies to every participant",
+      "one-shot score/reward/terminal commits are idempotent",
+      "reconnect cannot duplicate or bypass death/revive/penalty state",
+      "ordinary player capabilities cannot expose unintended developer progression controls"
+    ]
+  },
+  "proofQueue": [
+    {
+      "id": "ORB-PQ-01",
+      "check": "Combat Lifecycle",
+      "scenario": "death/downed/revive × reconnect",
+      "state": "PROVING"
+    },
+    {
+      "id": "ORB-PQ-02",
+      "check": "Cooperative Participant Accounting",
+      "scenario": "required/assigned × online/eligible team members",
+      "state": "PROVING"
+    },
+    {
+      "id": "ORB-PQ-03",
+      "check": "Inventory / Equipment Integrity",
+      "scenario": "fresh-session reset × death/reconnect/loadout",
+      "state": "PROVING"
+    },
+    {
+      "id": "ORB-PQ-04",
+      "check": "Cross-Player / Team Ownership",
+      "scenario": "P1 lifecycle mutation × P2/team state",
+      "state": "PROVING"
+    },
+    {
+      "id": "ORB-PQ-05",
+      "check": "Reward / Score / Terminal Integrity",
+      "scenario": "simultaneous objective/death/terminal commits",
+      "state": "PROVING"
+    },
+    {
+      "id": "ORB-PQ-06",
+      "check": "Player Capability Model",
+      "scenario": "ordinary role capabilities × reachable gameplay/debug surfaces",
+      "state": "PROVING"
+    },
+    {
+      "id": "ORB-PQ-07",
+      "check": "Adversarial Gameplay QA",
+      "scenario": "SKIP / RETAIN / DUPLICATE / CROSS / RACE / REPLAY / ESCAPE",
+      "state": "PROVING"
+    }
+  ],
+  "proofRules": {
+    "evidenceReceiptRequired": true,
+    "claimClosureRequired": true,
+    "combatOwnerRequired": true,
+    "participantSetReconciliationRequired": true,
+    "developerAcquisitionMandatoryToClosure": true,
+    "blockingProofRequiredBeforeSafe": true,
+    "genericNeedValidationForbidden": true
+  }
 }
