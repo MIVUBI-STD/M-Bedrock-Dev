@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "PROSPECTIVE_BLIND_AUDIT",
-  "status": "TARGET_LOCKED_READY_FOR_DISCOVERY",
+  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
   "target": {
     "map": "Raid Arena Classic",
     "version": "1.1.0",
@@ -36,15 +36,113 @@
     "Evidence Receipt Gate"
   ],
   "coverageGates": {
-    "materialSurfaceRouting":"OPEN",
-    "mutableResourceOwnership":"OPEN",
-    "requiredCrosschecks":"OPEN",
-    "materialScenarioAccounting":"OPEN",
-    "playerControlledSurfaceAccounting":"OPEN",
-    "genericNeedValidation":0
+    "materialSurfaceRouting": "IN_PROGRESS",
+    "mutableResourceOwnership": "IN_PROGRESS",
+    "requiredCrosschecks": "IN_PROGRESS",
+    "materialScenarioAccounting": "IN_PROGRESS",
+    "playerControlledSurfaceAccounting": "IN_PROGRESS",
+    "genericNeedValidation": 0
   },
   "futureValidation": {
-    "method":"Independent findings are preserved before any tester/client confirmation. Later confirmations can measure prospective precision/recall where ground truth becomes available.",
-    "status":"PENDING_INDEPENDENT_FINDING_SET"
+    "method": "Independent findings are preserved before any tester/client confirmation. Later confirmations can measure prospective precision/recall where ground truth becomes available.",
+    "status": "PENDING_INDEPENDENT_FINDING_SET"
+  },
+  "discovery": {
+    "materialSystems": [
+      "player/team admission and session ownership",
+      "kit/loadout/inventory/equipment",
+      "combat/death/respawn/reconnect",
+      "score/objective/terminal state",
+      "arena/world mutation and reset",
+      "participant membership",
+      "role/capability state",
+      "reload/bootstrap recovery",
+      "developer/debug affordances"
+    ],
+    "derivedInvariants": [
+      "fresh session clears or intentionally restores all prior-session player state domains",
+      "kit/loadout change cannot duplicate or retain incompatible managed equipment",
+      "death/reconnect cannot bypass authored respawn/penalty lifecycle",
+      "required participants remain represented in session/objective gates according to authored rules",
+      "one player's/team's state cannot mutate unrelated ownership",
+      "score/reward/terminal consequences commit once",
+      "arena reuse begins only from an authored reset baseline",
+      "reload reconstructs active session ownership and required world state before resuming",
+      "ordinary authored capabilities cannot expose unintended developer controls"
+    ]
+  },
+  "proofQueue": [
+    {
+      "id": "RAID-PQ-01",
+      "check": "State-Agnostic Fresh-Session Reset",
+      "scenario": "all per-player state domains × start/reconnect",
+      "state": "PROVING"
+    },
+    {
+      "id": "RAID-PQ-02",
+      "check": "Inventory / Kit / Equipment Integrity",
+      "scenario": "kit selection/change × clear/grant/death/reconnect",
+      "state": "PROVING"
+    },
+    {
+      "id": "RAID-PQ-03",
+      "check": "Combat Lifecycle",
+      "scenario": "death/respawn × reconnect × cleanup",
+      "state": "PROVING"
+    },
+    {
+      "id": "RAID-PQ-04",
+      "check": "Participant Accounting",
+      "scenario": "required/assigned × online/eligible/gate-observed players",
+      "state": "PROVING"
+    },
+    {
+      "id": "RAID-PQ-05",
+      "check": "Cross-Player / Team Ownership",
+      "scenario": "P1/team A mutation × P2/team B state",
+      "state": "PROVING"
+    },
+    {
+      "id": "RAID-PQ-06",
+      "check": "Terminal / Score / Reward Integrity",
+      "scenario": "simultaneous combat/objective/terminal commits",
+      "state": "PROVING"
+    },
+    {
+      "id": "RAID-PQ-07",
+      "check": "World Mutation & Reset Integrity",
+      "scenario": "run 1 footprint × cleanup/reset × run 2",
+      "state": "PROVING"
+    },
+    {
+      "id": "RAID-PQ-08",
+      "check": "Active-Session Reload Recovery",
+      "scenario": "reload × session/world reconstruction",
+      "state": "PROVING"
+    },
+    {
+      "id": "RAID-PQ-09",
+      "check": "Player Capability / Developer Exposure",
+      "scenario": "ordinary role capability × acquisition × activation",
+      "state": "PROVING"
+    },
+    {
+      "id": "RAID-PQ-10",
+      "check": "Adversarial Gameplay QA",
+      "scenario": "SKIP / RETAIN / DUPLICATE / CROSS / RACE / REPLAY / ORPHAN / ESCAPE",
+      "state": "PROVING"
+    }
+  ],
+  "proofRules": {
+    "evidenceReceiptRequired": true,
+    "claimClosureRequired": true,
+    "stateDomainEnumerationRequired": true,
+    "kitManagedItemOwnershipRequired": true,
+    "participantSetReconciliationRequired": true,
+    "replicaDiscoveryRequired": true,
+    "reloadRecoveryDifferentialRequired": true,
+    "developerAcquisitionMandatoryToClosure": true,
+    "blockingProofRequiredBeforeSafe": true,
+    "genericNeedValidationForbidden": true
   }
 }
