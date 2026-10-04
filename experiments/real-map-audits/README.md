@@ -19,8 +19,8 @@ All 22 selected files used in this reconciliation were fetched from the current 
 
 | Target | Artifact version | Reconciled source result | Evidence |
 |---|---:|---|---|
-| Defense Challenge | 1.1.1 | **4 PROVEN BUGS — 2 Blocker, 2 Major** | `defense-challenge-v1.1.1.md` |
-| Attack Challenge | 1.1.1 | **2 PROVEN Major BUGS** | `attack-challenge-v1.1.1.md` |
+| Defense Challenge | 1.1.1 | **4 PROVEN BUGS — 2 Blocker, 2 Major + 1 Major DESIGN_MISMATCH** | `defense-challenge-v1.1.1.md` |
+| Attack Challenge | 1.1.1 | **2 PROVEN Major BUGS + 1 Major DESIGN_MISMATCH** | `attack-challenge-v1.1.1.md` |
 | Build & Decode | 1.1.0 | **1 PROVEN Minor DESIGN_MISMATCH** | `build-and-decode-v1.1.0.md` |
 | The Gauntlet | 1.0.1 | **2 PROVEN Major BUGS** | `the-gauntlet-v1.0.1.md` |
 | Composite Challenge | 1.1.1 | **5 PROVEN BUGS — 2 Blocker, 2 Major, 1 Minor** | `composite-challenge-v1.1.1.md` |
@@ -44,16 +44,18 @@ All 22 selected files used in this reconciliation were fetched from the current 
 
 ## Proven findings requiring review
 
-The reopened selected-artifact batch currently contains **16 source-proven BUGs** plus **1 source-proven DESIGN_MISMATCH**:
+The reopened selected-artifact batch currently contains **16 source-proven BUGs** plus **3 source-proven DESIGN_MISMATCHES**:
 
-- **Defense Challenge v1.1.1** — 4 BUGs:
+- **Defense Challenge v1.1.1** — 4 BUGs + 1 Major DESIGN_MISMATCH:
   - Blocker — arena reset can release the ticking-area lease of a newly started run;
   - Major — reconnect during combat respawn countdown bypasses the death delay;
   - Blocker — failed delayed wave spawns can be treated as cleared before spawn retries finish;
-  - Major — disconnect during preload can bypass the fresh-session inventory wipe.
-- **Attack Challenge v1.1.1** — 2 Major BUGs:
+  - Major — disconnect during preload can bypass the fresh-session inventory wipe;
+  - Major DESIGN_MISMATCH — six playable arena surfaces expose only two concurrent sessions.
+- **Attack Challenge v1.1.1** — 2 Major BUGs + 1 Major DESIGN_MISMATCH:
   - disconnect during preload can bypass the fresh-session full inventory wipe;
-  - reconnect during combat respawn countdown can bypass the death delay.
+  - reconnect during combat respawn countdown can bypass the death delay;
+  - Major DESIGN_MISMATCH — six playable arena surfaces expose only two concurrent sessions.
 - **Composite Challenge v1.1.1** — 5 BUGs:
   - Blocker — arena-specific ticking areas are declared but never created;
   - Major — disconnect during preload can bypass the fresh-session inventory wipe;
@@ -79,7 +81,6 @@ A zero-finding pass is retained intentionally when current selected-artifact pro
 
 Examples of historical/suspicious behavior that was **not** blindly promoted:
 
-- Defense concurrency cap when explicit queue ownership exists;
 - Circuit empty static ticking list when PathwayLoader dynamically owns ticking areas;
 - FNAZ historical shop/keepInventory/spawn/path issues where current source contains explicit fixes;
 - FOTP historical friendly-hit/sword/revive/targeting issues where current source contains explicit fixes;
@@ -94,7 +95,7 @@ The earlier source-first reconciliation found the current confirmed issue set, b
 Current confirmed findings remain valid while this deeper pass runs:
 
 - **16 source-proven BUGs**: 4 Blocker + 11 Major + 1 Minor.
-- **1 source-proven DESIGN_MISMATCH**: 1 Minor.
+- **3 source-proven DESIGN_MISMATCHES**: 2 Major + 1 Minor.
 
 The reopened pass must close, where applicable:
 
