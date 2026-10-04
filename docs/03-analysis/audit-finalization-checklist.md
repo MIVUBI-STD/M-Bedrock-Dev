@@ -16,7 +16,7 @@ This checklist is a publication review only. The executable checkpoint owner is 
 - [ ] MODEL block is closed for every applicable system.
 - [ ] STRESS block is closed for every applicable lifecycle/cross-system scenario.
 - [ ] PROVE has no blocking source-side work; non-blocking PARTIAL is allowed only for explicit irreducible runtime proof residue with targeted validation.
-- [ ] REPORT / E1 Map Audit Report Contract preserves every material finding as PROVEN or NEED_VALIDATION; approved Bug Report V2 promotion remains limited to approved PROVEN BUG items.
+- [ ] REPORT / E1 Map Audit Report Contract preserves every material finding as PROVEN or NEED_VALIDATION; approved Bug Report V2 promotion remains limited to approved PROVEN reportable issues, with `issueType` preserving `BUG` versus `DESIGN_MISMATCH`.
 
 ## Gameplay closure
 
@@ -144,7 +144,7 @@ Review the audit in the same order the player experiences the game:
 - [ ] Proposed Bug Set review resolved: approved / rejected / needs-discussion.
 - [ ] Every material finding is visible as either PROVEN or NEED_VALIDATION; unresolved runtime, ambiguous-intent, insufficient-evidence, and Detection Gap reasons are carried inside NEED_VALIDATION with an exact targeted test.
 - [ ] Map Audit Report contains every material PROVEN and NEED_VALIDATION finding.
-- [ ] Canonical Bug Report V2 contains approved PROVEN BUG items only.
+- [ ] Canonical Bug Report V2 contains approved PROVEN reportable issues only, with each issue classified as `BUG` or `DESIGN_MISMATCH`.
 - [ ] Coverage remains recorded in Map Audit Output.
 - [ ] Chat preview follows PREVIEW contract.
 - [ ] HTML follows Bug Report V2 client layout and uses presentation-only checklists.

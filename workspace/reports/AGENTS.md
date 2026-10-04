@@ -9,9 +9,9 @@ Applies to persisted bug reports under `workspace/reports/`.
 - Record the current audited map version first. Do not backfill missing historical reports merely for completeness, and never invent old bug state.
 - One report represents one audited map/version set.
 - `map.mapVersion` and `map.drive` are mandatory; `map.drive` must be a Google Drive URL for the audited map artifact.
-- One report has one `Repair By` value for the whole bug list.
-- Per-bug `Fixed` is the only persisted repair-progress field.
-- New bugs always start `Fixed: false`. Only the orchestrator-owned closed-repair completion path may set `Fixed: true`; generic saves/imports/reconciliation must not close bugs.
+- One report has one `Repair By` value for the whole issue list.
+- Per-issue `Fixed` is the only persisted repair-progress field.
+- New issues always start `Fixed: false`. Only the orchestrator-owned closed-repair completion path may set `Fixed: true`; generic saves/imports/reconciliation must not close bugs.
 - Git history is the revision history; do not duplicate revision logs in report JSON.
 
 ## Presentation
@@ -23,7 +23,7 @@ For AI Bug Trigger authoring, use the evidence-bound compiler in `engine/package
 Default behavior:
 
 - standard preview;
-- open bugs only;
+- open issues only;
 - Blocker → Major only;
 - Minor appears only when explicitly requested;
 - show Issue first;
@@ -55,8 +55,9 @@ Use `engine/packages/bug-report/` as the semantic owner of the report contract.
 Normal user-facing report creation is discussion-first.
 
 - Proposed Bug Set is temporary derived review data.
-- Every proposed Blocker/Major requires an explicit chat decision.
+- Every proposed Blocker/Major issue requires an explicit chat decision.
 - `needs-discussion` or missing decisions block persistence/publication.
 - Rejected items never enter canonical Bug Report V2.
-- No approved bugs means no report file and no HTML.
+- Approved canonical issues must preserve `issueType` as `BUG` or `DESIGN_MISMATCH`; legacy V2 entries without it are interpreted as `BUG`.
+- No approved issues means no report file and no HTML.
 - The UI is not an approval authority and must not create a new canonical report from an arbitrary imported file.
