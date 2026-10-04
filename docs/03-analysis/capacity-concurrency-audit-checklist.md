@@ -58,3 +58,36 @@ Berlaku untuk:
 - matchmaking;
 - concurrent sessions;
 - shared world instances.
+
+
+### 6. Effective Player Throughput
+
+Arena count alone is not capacity. Derive all applicable limits independently:
+
+```text
+visible arena count
+party size
+party/session count
+maximum simultaneous matches
+maximum active arenas
+per-arena player capacity
+effective simultaneous player capacity
+classroom/presented capacity
+```
+
+Use the smallest active bottleneck to compute delivered throughput. A map with five visible arenas can still expose only one five-player party; conversely a six-arena map can be limited by residency leases to two active sessions.
+
+Check the boundary and boundary + 1 for both **sessions** and **players**. Queue code is mitigation, not proof that presented capacity is delivered.
+
+### 7. Capacity Dependencies
+
+Capacity proof must include dependencies that can lower real throughput:
+
+- ticking-area/chunk residency budget;
+- shared global state or singleton party/session owner;
+- shared queues;
+- entity/simulation budget;
+- fixed-size kit/role/station allocation;
+- cleanup/reset lease lifetime.
+
+If a dependency is only declared/configured, continue through delivery-state proof before accepting it as available capacity.
