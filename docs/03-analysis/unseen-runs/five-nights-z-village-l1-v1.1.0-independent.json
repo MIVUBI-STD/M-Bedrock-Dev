@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
+  "status": "TARGET_LOCKED_READY_FOR_DISCOVERY",
+  "target": {
+    "map": "Five Nights at Z Village Level 1",
+    "version": "1.1.0",
+    "worldFileId": "1npTapvqtd_Yyd1gOch6U03SIPzkY-pUK",
+    "artifactFingerprint": "sha256:6910cb83e6d5866896e29553398b3a889e3942f553f9a0423b365f0799018bf2",
+    "worldFileFetched": true,
+    "worldFileSizeBytes": 8803738
+  },
+  "validationPurpose": "Sixth unseen validation; emphasize defense/wave survival, hostile entity lifecycle, remote simulation, progression accounting, player death/reconnect, world/objective state and repeated-run cleanup.",
+  "blindRules": {
+    "existingBugReportExists": true,
+    "existingBugReportOpenedForThisPass": false,
+    "comparisonAllowed": "ONLY_AFTER_INDEPENDENT_PASS_CLOSED",
+    "historicalIssueIdsSeeded": false,
+    "historicalRootCausesSeeded": false,
+    "runtimeExecuted": false
+  },
+  "priorityChecks": [
+    "Mandatory Replica Discovery",
+    "Ticking / Residency / Remote Simulation",
+    "Entity Lifecycle & Objective Accounting",
+    "Progression / Wave completion",
+    "Retry / deferred spawn accounting",
+    "Combat death / respawn / reconnect",
+    "Required / Online / Eligible participant accounting",
+    "World/objective mutation and reset baseline",
+    "Active-session reload recovery",
+    "Player Capability Model",
+    "Developer-Item Acquisition Graph",
+    "Adversarial SKIP / RETAIN / RACE / ORPHAN / FORCE-FAIL",
+    "Evidence Receipt Gate"
+  ],
+  "coverageGates": {
+    "materialSurfaceRouting":"OPEN",
+    "mutableResourceOwnership":"OPEN",
+    "requiredCrosschecks":"OPEN",
+    "materialScenarioAccounting":"OPEN",
+    "playerControlledSurfaceAccounting":"OPEN",
+    "genericNeedValidation":0
+  },
+  "comparison":"BLOCKED"
+}
