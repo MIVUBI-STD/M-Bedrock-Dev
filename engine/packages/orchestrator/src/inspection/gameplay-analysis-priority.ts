@@ -176,7 +176,7 @@ export function deriveGameplayAnalysisPriorities(
     );
   }
 
-  return world.surfaceDiscovery.surfaceIds
+  const surfacePriorities = world.surfaceDiscovery.surfaceIds
     .map((surfaceId) => {
       const base = assessAuditRisk({
         surfaceId,
@@ -203,14 +203,52 @@ export function deriveGameplayAnalysisPriorities(
             world,
           ),
       };
-    })
-    .sort(
-      (a, b) =>
-        b.historyPressure - a.historyPressure ||
-        b.rigDemand - a.rigDemand ||
-        b.score - a.score ||
-        a.surfaceId.localeCompare(
-          b.surfaceId,
-        ),
-    );
+    });
+
+  const capabilityPriorities: GameplayAnalysisPriority[] =
+    capabilities.exposures
+      .filter(
+        (item) =>
+          item.status === "exposed" ||
+          item.status === "potentially-exposed" ||
+          item.status === "unknown",
+      )
+      .map((item) => {
+        const highImpact =
+          item.impact === "progression" ||
+          item.impact === "state" ||
+          item.impact === "fairness";
+        const base = assessAuditRisk({
+          surfaceId:
+            "capability:" + item.capabilityId,
+          factors: ["permission"],
+          unresolved:
+            item.status !== "exposed",
+          criticality:
+            highImpact
+              ? "high"
+              : item.impact === "interaction" ||
+                  item.impact === "debug-information"
+                ? "medium"
+                : "low",
+        });
+        return {
+          ...base,
+          rigDemand: 0,
+          historyPressure: 0,
+        };
+      });
+
+  return [
+    ...surfacePriorities,
+    ...capabilityPriorities,
+  ].sort(
+    (a, b) =>
+      b.historyPressure - a.historyPressure ||
+      b.rigDemand - a.rigDemand ||
+      b.score - a.score ||
+      a.surfaceId.localeCompare(
+        b.surfaceId,
+      ),
+  );
 }

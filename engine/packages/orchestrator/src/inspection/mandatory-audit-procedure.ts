@@ -554,7 +554,8 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     world.arenas.detected && (world.arenas.count ?? 0) > 1;
   const replicaProofIncomplete =
     world.arenas.replicaIntegrity.incomplete > 0 ||
-    world.arenas.replicaIntegrity.noProof > 0;
+    world.arenas.replicaIntegrity.noProof > 0 ||
+    world.arenas.replicaIntegrity.bounded > 0;
   checkpoint.push(receipt(
     "B4",
     "MODEL",
@@ -1055,6 +1056,11 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
   if (hasArena && hasMultiplayer) {
     requiredCrossSystemScenarioLabels.add(
       "multi-arena-parallel",
+    );
+  }
+  if (multiArena) {
+    requiredCrossSystemScenarioLabels.add(
+      "arena-replica-integrity",
     );
   }
   if (
