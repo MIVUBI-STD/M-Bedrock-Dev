@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "INDEPENDENT_SELECTED_ARTIFACT_PASS",
-  "status": "INDEPENDENT_RERUN_CLOSED",
+  "status": "REGRESSION_COMPARISON_COMPLETE",
   "target": {
     "map": "Composite Challenge",
     "version": "1.1.1",
@@ -120,5 +120,68 @@
   "rerun": {
     "reason": "Regression comparison exposed four misses; existing mechanisms were tightened at earliest failure points and Composite was re-evaluated from selected-artifact source.",
     "previousIndependentCount": 1
+  },
+  "historicalComparison": {
+    "status": "COMPLETE_AFTER_RERUN",
+    "historicalApprovedIssues": [
+      "BUG-CMP-TICKING-AREAS",
+      "BUG-CMP-ASYNC-RESET",
+      "BUG-CMP-PRELOAD-INVENTORY",
+      "BUG-CMP-CROSS-ARENA-FLAG",
+      "BUG-CMP-CROSS-ARENA-FLOOR"
+    ],
+    "matched": [
+      {
+        "historicalId": "BUG-CMP-TICKING-AREAS",
+        "independentId": "IND-CMP-001"
+      },
+      {
+        "historicalId": "BUG-CMP-ASYNC-RESET",
+        "independentId": "IND-CMP-002"
+      },
+      {
+        "historicalId": "BUG-CMP-PRELOAD-INVENTORY",
+        "independentId": "IND-CMP-003"
+      },
+      {
+        "historicalId": "BUG-CMP-CROSS-ARENA-FLAG",
+        "independentId": "IND-CMP-004"
+      },
+      {
+        "historicalId": "BUG-CMP-CROSS-ARENA-FLOOR",
+        "independentId": "IND-CMP-005"
+      }
+    ],
+    "missed": [],
+    "recall": {
+      "detected": 5,
+      "expected": 5,
+      "percent": 100
+    },
+    "provenRate": {
+      "proven": 5,
+      "independentFindings": 5,
+      "percent": 100
+    },
+    "genericNeedValidation": 0,
+    "firstPassMisses": [
+      {
+        "historicalId": "BUG-CMP-ASYNC-RESET",
+        "earliestFailure": "PROOF_MISS"
+      },
+      {
+        "historicalId": "BUG-CMP-PRELOAD-INVENTORY",
+        "earliestFailure": "CROSSCHECK_MISS"
+      },
+      {
+        "historicalId": "BUG-CMP-CROSS-ARENA-FLAG",
+        "earliestFailure": "CROSSCHECK_MISS"
+      },
+      {
+        "historicalId": "BUG-CMP-CROSS-ARENA-FLOOR",
+        "earliestFailure": "DISCOVERY_MISS"
+      }
+    ],
+    "note": "Misses were used to tighten existing mechanisms; no new taxonomy family was added."
   }
 }
