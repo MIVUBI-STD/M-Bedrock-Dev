@@ -124,6 +124,8 @@ export function buildGameplayAuditScenarioPreset(
         questions: [
           "What changes when one player dies, disconnects, leaves, or finishes before the other?",
           "Are shared and per-player states separated correctly?",
+          "After one player leaves, can stale roster membership still be selected as builder/role/target or counted by readiness/progression/terminal predicates?",
+          "Can a normal per-player exit/leave action terminate or reset the whole party/session without an authored quorum, leader, teacher, or admin rule?",
         ],
       }),
       scenario({
@@ -135,7 +137,8 @@ export function buildGameplayAuditScenarioPreset(
           "Reconnect must preserve or intentionally reset ownership without creating stale active/offline composite states.",
         questions: [
           "What membership/state remains while one player is offline?",
-          "Can offline membership block wipe, vote, reward, cleanup, or progression?",
+          "Can offline membership block wipe, vote, reward, cleanup, progression, builder/role selection, or completion?",
+          "Do all-player/cooperative predicates use the locked required roster, or silently shrink to currently online players?",
           "Can reconnect bypass pending death/respawn/phase ownership?",
         ],
       }),

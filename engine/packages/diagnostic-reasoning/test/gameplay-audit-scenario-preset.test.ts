@@ -62,6 +62,20 @@ describe("gameplay audit scenario preset flow stages", () => {
     expect(byKind.get("terminal-collision")).toBe(
       "TERMINAL",
     );
+    const terminalScenario = preset.scenarios.find(
+      (scenario) =>
+        scenario.kind === "terminal-collision",
+    );
+    expect(terminalScenario?.questions.join(" ")).toMatch(
+      /ordinary player|terminal scopes/i,
+    );
+    const reconnectScenario = preset.scenarios.find(
+      (scenario) =>
+        scenario.kind === "disconnect-reconnect",
+    );
+    expect(reconnectScenario?.questions.join(" ")).toMatch(
+      /locked required roster|builder\/role selection/i,
+    );
     expect(byKind.get("disconnect-reconnect")).toBe(
       "RECOVERY",
     );
