@@ -153,6 +153,10 @@ export function findGameplayReachability(
     targetId,
     nodeIds: [],
     edgeKinds: [],
-    evidenceIds: [],
+    evidenceIds: [
+      ...new Set(
+        nodes.get(targetId)?.evidenceIds ?? [],
+      ),
+    ].sort(),
   };
 }

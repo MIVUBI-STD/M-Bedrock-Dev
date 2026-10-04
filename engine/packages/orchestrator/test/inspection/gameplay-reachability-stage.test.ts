@@ -82,12 +82,14 @@ describe("gameplay reachability stage", () => {
       "structures/chest_build.mcstructure#container:7",
     );
     expect(container?.playerAccessible).not.toBe(true);
-    expect(
-      findGameplayReachability(
-        graph,
-        "item:minecraft:oak_planks",
-      ).resolution,
-    ).toBe("unknown");
+    const path = findGameplayReachability(
+      graph,
+      "item:minecraft:oak_planks",
+    );
+    expect(path.resolution).toBe("unknown");
+    expect(path.evidenceIds).toContain(
+      "structures/chest_build.mcstructure#container:7",
+    );
     expect(graph.coverage?.sources).toContain(
       "mcstructure-container-contents",
     );
