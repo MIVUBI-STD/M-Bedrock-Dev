@@ -704,9 +704,13 @@ A2 Gameplay Surface Discovery
 
 A4/A5 State + Ownership
 → build Mutable-State Reverse Index
+→ promote every broad fresh-session reset into a per-player lifecycle invariant
+→ trace every cleanup writer through its final player/entity ownership scope
 
 A8 Cross-System Coverage
 → generate required Crosschecks
+→ require Cleanup × Cross-Arena Ownership for broad cleanup selectors
+→ require Recurring World Mutation × Arena Isolation for player/entity-relative mutations
 
 A22 Applicable Check Router
 → bind every material surface to applicable checks
