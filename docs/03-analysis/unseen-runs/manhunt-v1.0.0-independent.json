@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "TARGET_LOCKED_READY_FOR_DISCOVERY",
+  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
   "target": {
     "map": "Manhunt",
     "version": "1.0.0",
@@ -34,12 +34,95 @@
     "Evidence Receipt Gate"
   ],
   "coverageGates": {
-    "materialSurfaceRouting":"OPEN",
-    "mutableResourceOwnership":"OPEN",
-    "requiredCrosschecks":"OPEN",
-    "materialScenarioAccounting":"OPEN",
-    "playerControlledSurfaceAccounting":"OPEN",
-    "genericNeedValidation":0
+    "materialSurfaceRouting": "IN_PROGRESS",
+    "mutableResourceOwnership": "IN_PROGRESS",
+    "requiredCrosschecks": "IN_PROGRESS",
+    "materialScenarioAccounting": "IN_PROGRESS",
+    "playerControlledSurfaceAccounting": "IN_PROGRESS",
+    "genericNeedValidation": 0
   },
-  "comparison":"BLOCKED"
+  "comparison": "BLOCKED",
+  "discovery": {
+    "materialSystems": [
+      "asymmetric player roles and role assignment",
+      "runner/hunter capabilities",
+      "target/tracking ownership",
+      "combat/death/respawn",
+      "disconnect/reconnect and role continuity",
+      "inventory/equipment",
+      "win/loss/terminal state",
+      "session/team participant accounting",
+      "reload/bootstrap recovery",
+      "developer/debug affordances"
+    ],
+    "derivedInvariants": [
+      "each active role has one authoritative owner unless multi-owner is explicitly authored",
+      "tracking references the current valid target and cannot silently bind stale/disconnected ownership",
+      "disconnect does not erase a required role from win/progression logic unless authored",
+      "reconnect cannot duplicate role assignment or bypass death/penalty state",
+      "role-specific capabilities and equipment match the authoritative role",
+      "terminal result is committed once even when combat/disconnect/objective events overlap",
+      "reload reconstructs active role and target references before gameplay resumes"
+    ]
+  },
+  "proofQueue": [
+    {
+      "id": "MAN-PQ-01",
+      "check": "Role / Team Ownership",
+      "scenario": "role assignment × disconnect/reconnect × reassignment",
+      "state": "PROVING"
+    },
+    {
+      "id": "MAN-PQ-02",
+      "check": "Target / Tracking Referential Integrity",
+      "scenario": "target reference × death/disconnect/role change",
+      "state": "PROVING"
+    },
+    {
+      "id": "MAN-PQ-03",
+      "check": "Cooperative Participant Accounting",
+      "scenario": "required roles × online/eligible/gate-observed players",
+      "state": "PROVING"
+    },
+    {
+      "id": "MAN-PQ-04",
+      "check": "Combat Lifecycle",
+      "scenario": "death/respawn × reconnect × role authority",
+      "state": "PROVING"
+    },
+    {
+      "id": "MAN-PQ-05",
+      "check": "Inventory / Equipment Integrity",
+      "scenario": "role equipment × reset/reconnect/reassignment",
+      "state": "PROVING"
+    },
+    {
+      "id": "MAN-PQ-06",
+      "check": "Terminal State & Duplicate-Commit Safety",
+      "scenario": "combat kill × disconnect × objective/win trigger",
+      "state": "PROVING"
+    },
+    {
+      "id": "MAN-PQ-07",
+      "check": "Active-Session Reload Recovery",
+      "scenario": "reload × role/target reconstruction",
+      "state": "PROVING"
+    },
+    {
+      "id": "MAN-PQ-08",
+      "check": "Adversarial Gameplay QA",
+      "scenario": "CROSS / RACE / ESCAPE / REPLAY / ORPHAN / RETAIN",
+      "state": "PROVING"
+    }
+  ],
+  "proofRules": {
+    "evidenceReceiptRequired": true,
+    "claimClosureRequired": true,
+    "asymmetricRoleOwnershipRequired": true,
+    "participantSetReconciliationRequired": true,
+    "targetReferenceValidityRequired": true,
+    "reloadRecoveryDifferentialRequired": true,
+    "blockingProofRequiredBeforeSafe": true,
+    "genericNeedValidationForbidden": true
+  }
 }
