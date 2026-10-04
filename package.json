@@ -37,7 +37,9 @@
     "score:agent-eval": "node tooling/repository/score-agent-eval.mjs",
     "generate:proof-backlog": "node tooling/repository/generate-capability-proof-backlog.mjs",
     "bug-report-html": "tsx tooling/bug-report-documents/render.ts",
-    "verify:audit-entrypoint": "node tooling/repository/verify-selected-map-audit-entrypoint.mjs"
+    "verify:audit-entrypoint": "node tooling/repository/verify-selected-map-audit-entrypoint.mjs",
+    "test:bug-tracker": "vitest run tooling/bug-report-documents/tracker",
+    "verify:bug-tracker": "npm run typecheck && npm run test:bug-tracker"
   },
   "dependencies": {
     "@8crafter/leveldb-zlib": "1.6.0",
