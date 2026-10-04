@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "UNSEEN_REPAIR_REQUIRED",
+  "status": "UNSEEN_REPAIR_RERUN_COMPLETE",
   "target": {
     "map": "Manhunt",
     "version": "1.0.0",
@@ -200,5 +200,34 @@
     "unsupportedProven": 0,
     "genericNeedValidation": 0,
     "conclusion": "Manhunt exposes a discovery-priority gap: map archetype focus must not suppress mandatory physical-world replica discovery."
+  },
+  "repairRerun": {
+    "status": "RERUN_COMPLETE",
+    "repairCommits": [
+      "c39dab507ee6048ec4076d9ed6c04712b1dc1383",
+      "f21dc0583b5dcce6a9159020c5738bd355de1b07"
+    ],
+    "results": [
+      {
+        "historicalId": "DM-MAN-ARENA6-REPLICA",
+        "previous": "DISCOVERY_MISS",
+        "rerun": "DETECTED",
+        "proofState": "PROVEN",
+        "classification": "DESIGN_MISMATCH",
+        "route": "mandatory repeated-instance enumeration → normalize arena replicas by authored offsets → compare gameplay-required physical footprint/topology → Arena 6 materially diverges/incomplete → player-visible playable-space mismatch"
+      }
+    ],
+    "metrics": {
+      "historicalRecall": {
+        "detected": 1,
+        "expected": 1,
+        "percent": 100
+      },
+      "unsupportedProven": 0,
+      "genericNeedValidation": 0,
+      "unenumeratedReplicas": 0,
+      "newTaxonomyFamiliesAdded": 0
+    },
+    "conclusion": "Manhunt miss is repaired by making replica enumeration part of base discovery, independent of map genre."
   }
 }
