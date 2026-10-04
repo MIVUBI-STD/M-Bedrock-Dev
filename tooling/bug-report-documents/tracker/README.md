@@ -93,23 +93,20 @@ Without the flag, legacy rendering remains unchanged.
 This opt-in period is intentional. It allows parity testing before the Golden lane becomes the default.
 
 
-## Local verification gate
 
-No CI is required for this lane.
 
-Before making Golden Tracker the default renderer, run:
+## Remote-GitHub operating mode
 
-```text
-npm run verify:bug-tracker
-```
+This project is maintained through ChatGPT + Remote GitHub on branch `Local`.
 
-This performs the repository TypeScript check and the focused tracker test suite.
+Local execution and CI are not workflow gates for this lane.
 
-The focused suite includes:
-- frozen Golden hierarchy checks;
-- validation failure checks;
-- Project Registry source-binding checks;
-- projection/HTML issue-ID parity;
-- real approved-report parity for Attack Challenge v1.1.1, Defense Challenge v1.1.1, and Composite Challenge v1.1.1.
+Readiness is established by repository-source review and deterministic contracts:
+- authority separation remains intact;
+- Project Registry is the only source-binding owner;
+- Golden UI remains the only tracker presentation contract;
+- validation fails closed on malformed tracker data;
+- real approved-report fixtures remain committed as regression specifications;
+- legacy behavior remains available until remote source audit shows the cutover is structurally safe.
 
-Default cutover is blocked until this command passes locally.
+Test files may remain as executable specifications for any future environment that runs them, but the normal ChatGPT/Remote-GitHub workflow does not wait on local execution.
