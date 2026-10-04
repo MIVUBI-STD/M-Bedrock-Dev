@@ -76,6 +76,26 @@ describe("bug report v2", () => {
     expect(parsed.report.map.baseVersion).toBe("1.26.20");
     expect(parsed.report.map.testedVersion).toBe("1.26.32");
     expect(parsed.report.bugs[0]?.severity).toBe("blocker");
+    expect(parsed.report.bugs[0]?.issueType).toBe("BUG");
+  });
+
+  it("round-trips explicit design mismatch issue type", () => {
+    const source = report();
+    source.bugs[0] = {
+      ...source.bugs[0]!,
+      issueType: "DESIGN_MISMATCH",
+    };
+    const serialized = serializeBugReportV2(source);
+    expect(serialized.ok).toBe(true);
+    if (!serialized.ok || !serialized.json) return;
+    const parsed = parseBugReportV2Json(serialized.json);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(
+      parsed.report.bugs.some(
+        (bug) => bug.issueType === "DESIGN_MISMATCH",
+      ),
+    ).toBe(true);
   });
 
   it("derives report progress from per-bug fixed checkboxes", () => {

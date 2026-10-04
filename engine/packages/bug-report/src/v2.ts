@@ -28,6 +28,7 @@ export const BUG_REPORT_V2_LABELS = {
   severity: "Severity",
   category: "Category",
   foundBy: "Found By",
+  issueType: "Issue Type",
   problem: "Problem",
   expected: "Expected",
   observed: "Observed",
@@ -53,6 +54,14 @@ export type BugReportV2RepairBy =
 export type BugReportV2FoundBy =
   (typeof BUG_REPORT_V2_FOUND_BY_VALUES)[number];
 
+export const BUG_REPORT_V2_ISSUE_TYPES = [
+  "BUG",
+  "DESIGN_MISMATCH",
+] as const;
+
+export type BugReportV2IssueType =
+  (typeof BUG_REPORT_V2_ISSUE_TYPES)[number];
+
 export interface BugReportV2Map {
   readonly name: string;
   readonly mapVersion: string;
@@ -72,6 +81,7 @@ export interface BugReportV2Bug {
   readonly severity: BugSeverity;
   readonly category: BugFinderCategory;
   readonly foundBy: BugReportV2FoundBy;
+  readonly issueType?: BugReportV2IssueType;
   readonly title: string;
   readonly problem: string;
   readonly expected: string;
@@ -112,6 +122,9 @@ const repairByValues =
 
 const foundByValues =
   new Set<BugReportV2FoundBy>(BUG_REPORT_V2_FOUND_BY_VALUES);
+
+const issueTypes =
+  new Set<BugReportV2IssueType>(BUG_REPORT_V2_ISSUE_TYPES);
 
 function object(
   value: unknown,
@@ -288,6 +301,7 @@ function parseBug(
       "severity",
       "category",
       "foundBy",
+      "issueType",
       "title",
       "problem",
       "expected",
@@ -340,6 +354,17 @@ function parseBug(
     });
   }
 
+  if (
+    value.issueType !== undefined &&
+    !issueTypes.has(value.issueType as BugReportV2IssueType)
+  ) {
+    issues.push({
+      code: "invalid-value",
+      path: path + ".issueType",
+      message: "Expected BUG or DESIGN_MISMATCH.",
+    });
+  }
+
   const reproduction = stringList(
     value.reproduction,
     path + ".reproduction",
@@ -385,6 +410,10 @@ function parseBug(
     severity: value.severity as BugSeverity,
     category: value.category as BugFinderCategory,
     foundBy: value.foundBy as BugReportV2FoundBy,
+    issueType:
+      value.issueType === undefined
+        ? "BUG"
+        : value.issueType as BugReportV2IssueType,
     title,
     problem,
     expected,
@@ -538,6 +567,12 @@ export function serializeBugReportV2(
     json: JSON.stringify(normalized, null, 2) + "\n",
     issues: [],
   };
+}
+
+export function bugReportV2IssueType(
+  bug: BugReportV2Bug,
+): BugReportV2IssueType {
+  return bug.issueType ?? "BUG";
 }
 
 export function bugReportV2Progress(

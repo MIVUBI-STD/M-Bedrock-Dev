@@ -7,9 +7,10 @@ import {
 import {
   bugFinderCategoryLabel,
 } from "../vocabulary.js";
-import type {
-  BugReportV2,
-  BugReportV2Bug,
+import {
+  bugReportV2IssueType,
+  type BugReportV2,
+  type BugReportV2Bug,
 } from "../v2.js";
 import {
   BUG_REPORT_CLIENT_DOCUMENT_SCHEMA,
@@ -80,6 +81,7 @@ function projectIssue(
   return {
     number,
     id: bug.id,
+    issueType: bugReportV2IssueType(bug),
     severity: bug.severity,
     status: status(bug),
     category: bugFinderCategoryLabel(bug.category),

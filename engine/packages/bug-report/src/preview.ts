@@ -1,9 +1,11 @@
 import {
   shouldIncludeInDefaultBugReport,
 } from "./decision.js";
-import type {
-  BugReportV2,
-  BugReportV2Bug,
+import {
+  bugReportV2IssueType,
+  type BugReportV2,
+  type BugReportV2Bug,
+  type BugReportV2IssueType,
 } from "./v2.js";
 import {
   bugFinderCategoryLabel,
@@ -36,6 +38,7 @@ export interface BugReportPreviewBug {
   readonly severity: BugSeverity;
   readonly category: BugReportV2Bug["category"];
   readonly foundBy: BugReportV2Bug["foundBy"];
+  readonly issueType: BugReportV2IssueType;
   readonly fixed: boolean;
   readonly issue: string;
   readonly solution?: string;
@@ -100,6 +103,7 @@ function projectBug(
     severity: bug.severity,
     category: bug.category,
     foundBy: bug.foundBy,
+    issueType: bugReportV2IssueType(bug),
     fixed: bug.fixed,
     issue: bug.problem,
     ...(bug.reproduction ? { bugTrigger: bug.reproduction } : {}),
@@ -203,13 +207,13 @@ export function renderBugReportPreviewMarkdown(
 
   out.push(
     "",
-    "| # | Severity | Category | Issue |",
-    "|---:|---|---|---|",
+    "| # | Type | Severity | Category | Issue |",
+    "|---:|---|---|---|---|",
   );
 
   preview.bugs.forEach((bug, index) => {
     out.push(
-      `| ${index + 1} | ${severityLabel(bug.severity)} | ${tableCell(bugFinderCategoryLabel(bug.category))} | ${tableCell(bug.title + ": " + bug.issue)} |`,
+      `| ${index + 1} | ${bug.issueType} | ${severityLabel(bug.severity)} | ${tableCell(bugFinderCategoryLabel(bug.category))} | ${tableCell(bug.title + ": " + bug.issue)} |`,
     );
   });
 
@@ -222,7 +226,7 @@ export function renderBugReportPreviewMarkdown(
   for (const bug of preview.bugs) {
     out.push(
       "",
-      `### [${severityLabel(bug.severity)}] ${bug.id} — ${line(bug.title)}`,
+      `### [${bug.issueType} · ${severityLabel(bug.severity)}] ${bug.id} — ${line(bug.title)}`,
       `**Issue:** ${line(bug.issue)}`,
     );
 

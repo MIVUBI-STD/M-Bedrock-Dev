@@ -1,6 +1,9 @@
 import type {
   BugSeverity,
 } from "../vocabulary.js";
+import type {
+  BugReportV2IssueType,
+} from "../v2.js";
 
 export const BUG_REPORT_CLIENT_DOCUMENT_SCHEMA =
   "m-bedrock-bug-report-client-document/v1" as const;
@@ -34,6 +37,7 @@ export interface BugReportClientSeverityLegendItem {
 export interface BugReportClientIssue {
   readonly number: number;
   readonly id: string;
+  readonly issueType: BugReportV2IssueType;
   readonly severity: BugSeverity;
   readonly status: BugReportClientIssueStatus;
   readonly category: string;
