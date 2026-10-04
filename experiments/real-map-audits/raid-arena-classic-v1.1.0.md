@@ -44,3 +44,23 @@ Arena enters finishing before results settle. Player cleanup proof is independen
 ## Result
 
 Raid Arena Classic v1.1.0 is recorded as **0 current source-proven gameplay findings** in this pass.
+
+
+## Deep multi-arena pass — four-arena isolation closure
+
+Raid Arena Classic defines four arena instances.
+
+The deeper pass established:
+
+- arena membership and online-member lookup are resolved by arena ID;
+- join/start rejects players already owned by another arena;
+- countdown feedback is tracked per arena/player set;
+- gameplay/player tags carry the arena ID;
+- match/session state and timers are per arena;
+- finish/reset removes ownership only for members of the arena being finalized.
+
+No source path was found where cleanup, countdown, kit state, score, or player ownership from one arena is applied to another.
+
+Runtime combat ordering remains a runtime concern, but source-side multi-arena isolation is closed for this pass.
+
+Result: **no additional source-proven cross-arena defect**.
