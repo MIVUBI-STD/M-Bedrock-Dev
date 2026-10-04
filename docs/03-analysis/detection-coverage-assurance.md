@@ -878,7 +878,248 @@ Never describe source-derived simulation as an executed Minecraft playtest.
 
 ---
 
-# 24. Architecture Freeze Rule
+# 24. Adversarial Player Abuse Model
+
+### Purpose
+
+Audit the selected map from the perspective of a player actively trying to break rules, escape intended progression, gain unintended advantage, corrupt shared state, or force other sessions into invalid states.
+
+This is a gameplay integrity model for the selected artifact. It does not assume access to server administration, external cheats, modified clients, packet manipulation, credential compromise, or platform exploitation.
+
+### Adversarial objective classes
+
+For every applicable gameplay system, ask whether an ordinary player can intentionally achieve:
+
+```text
+SKIP
+→ bypass required stage/objective/cooldown
+
+DUPLICATE
+→ receive item/reward/score/state more than once
+
+RETAIN
+→ keep state/item/privilege past its intended boundary
+
+ESCAPE
+→ leave confinement/arena/state without intended transition
+
+CROSS
+→ affect another arena/team/player/session
+
+DESYNC
+→ make UI/state/ownership disagree
+
+STARVE
+→ consume/hold a shared resource so others cannot progress
+
+REPLAY
+→ repeat a one-shot action/commit
+
+RACE
+→ exploit timing between two legitimate actions
+
+ORPHAN
+→ leave resource/session/state without an owner/cleanup
+
+FORCE-FAIL
+→ intentionally trigger a recoverable operation failure into a softlock/invalid state
+```
+
+These are adversarial goals, not issue types.
+
+### Allowed player action surface
+
+Build an abuse surface from ordinary reachable gameplay actions:
+
+- join/leave/reconnect;
+- rapid repeated interaction;
+- simultaneous interactions by multiple players;
+- death/respawn;
+- inventory move/drop/use/craft;
+- kit/loadout/shop operations;
+- movement/teleport boundaries;
+- objective interaction;
+- ready/start/retry/restart controls reachable to players;
+- arena/team switching when supported;
+- timing actions immediately before/after lifecycle boundaries;
+- filling capacity/queues/resources through normal admission;
+- intentionally causing ordinary in-game failure conditions.
+
+Do not assume unauthorized external tooling or capabilities not provided by the selected artifact.
+
+---
+
+# 25. Abuse-Sequence Generator
+
+For each applicable adversarial objective, derive the shortest reachable sequence of legitimate player actions that could violate an invariant.
+
+Pattern:
+
+```text
+target invariant
+→ player-controllable actions
+→ lifecycle boundary
+→ shared/mutable state
+→ shortest adversarial sequence
+→ Blocking Proof
+→ result
+```
+
+High-yield sequence shapes:
+
+```text
+repeat same action
+A → A
+
+interrupt action
+A → disconnect → reconnect
+
+cross boundary
+A → transition → repeat A
+
+race
+P1:A || P2:B
+
+reuse
+run 1:A → cleanup → run 2:B
+
+capacity pressure
+acquire until safe max → one more acquire
+
+ownership theft
+owner leaves → another actor commits
+
+partial transaction
+commit step 1 → force/encounter step 2 failure → retry
+
+stale-state reuse
+create state → invalidate owner → trigger old consumer
+```
+
+Bound sequence depth by material lifecycle relevance. Do not brute-force arbitrary action permutations.
+
+---
+
+# 26. Adversarial Invariant Challenges
+
+Automatically challenge applicable invariants from an abuse perspective.
+
+### Progression
+
+- Can a player skip a required stage?
+- Can objective completion be triggered early?
+- Can retry/reconnect preserve completion credit incorrectly?
+- Can a player intentionally strand required work?
+
+### Inventory / Economy
+
+- Can item/currency/reward be duplicated?
+- Can stale items be carried across a fresh-session boundary?
+- Can drop/move/craft bypass managed-item restrictions?
+- Can purchase/refund/retry create partial or repeated commit?
+
+### Multiplayer / Multi-Arena
+
+- Can one player/session mutate another arena?
+- Can a player reserve/hold capacity indefinitely?
+- Can simultaneous starts exceed or corrupt shared ownership?
+- Can disconnect force incorrect ownership transfer?
+- Can one arena's cleanup remove another arena's resource?
+
+### Death / Reconnect / Recovery
+
+- Can disconnect shorten/bypass death, cooldown, spectator, or penalty state?
+- Can repeated reconnect multiply restore/grant/subscription behavior?
+- Can leave/rejoin escape an intended restriction?
+
+### Terminal / Reward
+
+- Can two players or two terminal conditions commit reward/result twice?
+- Can retry/reconnect replay a one-shot terminal consequence?
+- Can a player intentionally trigger timeout and objective completion together?
+
+### World / Spatial
+
+- Can movement or interaction escape intended arena/plot/extract boundaries?
+- Can player-built/broken state survive reset and affect the next run?
+- Can ordinary actions force gameplay into an uncovered simulation region?
+
+### Developer / Debug
+
+- Can ordinary crafting, inventory acquisition, interaction, or command/event reach a developer affordance?
+- Can a reachable debug/restart/skip action affect another player/arena?
+
+### UI / Information
+
+- Can a player act on stale/wrong UI information to obtain unintended state?
+- Can player-facing availability/capacity disagree with actual admission in an exploitable way?
+
+---
+
+# 27. Abuse Impact & Exploitability Assessment
+
+Do not create a separate exploit issue taxonomy.
+
+For each grounded adversarial path record internally:
+
+```text
+Player Control
+Repeatability
+Required Participants
+Required Timing
+Affected Scope
+Persistence
+Recovery
+Gameplay Advantage / Denial / Corruption
+Existing Blocking Proof
+```
+
+Use this to improve severity and reproduction quality, not to replace the canonical BUG / DESIGN_MISMATCH classification.
+
+A defect is not suppressed merely because exploitation requires intentional player behavior. If ordinary reachable actions can deterministically violate the gameplay contract, it remains a valid gameplay finding.
+
+---
+
+# 28. Abuse Coverage Gate
+
+For every material player-controllable mutation or lifecycle boundary, require one of:
+
+```text
+not abuse-relevant + reason
+abuse path blocked by exact proof
+adversarial sequence checked SAFE
+adversarial contradiction sent to PROVE
+exact irreducible runtime question
+```
+
+Before closure verify that applicable adversarial goals have been considered against:
+- progression;
+- inventory/economy;
+- ownership;
+- capacity;
+- reconnect/recovery;
+- terminal/reward;
+- world mutation;
+- developer affordances.
+
+Track:
+
+```text
+Player-Controlled Surfaces
+Adversarial Sequences Generated
+Blocked Abuse Paths
+Adversarial Contradictions
+Irreducible Abuse Runtime Questions
+Unaccounted Abuse Surfaces
+```
+
+Target:
+- Unaccounted Abuse Surfaces = 0
+- generic "player might exploit this" findings = 0
+
+---
+
+# 29. Architecture Freeze Rule
 
 The detection architecture is considered structurally complete after sections 1–17.
 
