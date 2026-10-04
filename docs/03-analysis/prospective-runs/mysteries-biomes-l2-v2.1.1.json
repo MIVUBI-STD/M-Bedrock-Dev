@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "PROSPECTIVE_BLIND_AUDIT",
-  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "status": "PROSPECTIVE_PASS_CLOSED",
   "target": {
     "map": "Mysteries of Biomes Level 2",
     "version": "2.1.1",
@@ -23,47 +23,47 @@
     {
       "id": "BIO2-PQ-01",
       "check": "Progression / Stage Integrity",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "BIO2-PQ-02",
       "check": "Interaction / Referential Integrity",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "BIO2-PQ-03",
       "check": "Spatial / World Mutation Integrity",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "BIO2-PQ-04",
       "check": "State-Agnostic Fresh-Session Reset",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "BIO2-PQ-05",
       "check": "Participant / Connection Recovery",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "BIO2-PQ-06",
       "check": "World Reset / Second-Run Baseline",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "BIO2-PQ-07",
       "check": "Active-Session Reload Recovery",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "BIO2-PQ-08",
       "check": "Player Capability / Developer Exposure",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "BIO2-PQ-09",
       "check": "Adversarial Gameplay QA",
-      "state": "PROVING"
+      "state": "CLOSED"
     }
   ],
   "coverageGates": {
@@ -75,6 +75,61 @@
     "genericNeedValidation": 0
   },
   "futureValidation": {
-    "status": "PENDING_INDEPENDENT_FINDING_SET"
+    "status": "AWAITING_INDEPENDENT_RUNTIME_OR_CLIENT_GROUND_TRUTH",
+    "note": "Frozen zero-finding static snapshot; not proof that the map is bug-free."
+  },
+  "independentClosure": {
+    "findings": [],
+    "suppressed": [
+      {
+        "area": "Progression/stage",
+        "reason": "No source-evidenced stage/progression contradiction retained with complete Evidence Receipt."
+      },
+      {
+        "area": "Interaction/references",
+        "reason": "No reachable broken reference/interaction with grounded player consequence retained."
+      },
+      {
+        "area": "Spatial/world mutation",
+        "reason": "No independently proven boundary or cross-scope mutation retained."
+      },
+      {
+        "area": "Fresh-session state",
+        "reason": "No state-domain reset/reconnect contradiction retained."
+      },
+      {
+        "area": "Participant/connection recovery",
+        "reason": "No membership or recovery contradiction retained."
+      },
+      {
+        "area": "Second-run baseline",
+        "reason": "No residual world/objective state contradiction retained."
+      },
+      {
+        "area": "Active-session reload",
+        "reason": "No reconstruction/rebind contradiction retained."
+      },
+      {
+        "area": "Capability/developer exposure",
+        "reason": "No ordinary-role acquisition + activation contradiction retained."
+      },
+      {
+        "area": "Adversarial paths",
+        "reason": "No additional sequence survived Evidence Receipt and Blocking-Proof gates."
+      }
+    ],
+    "gates": {
+      "materialSurfaceRouting": "CLOSED",
+      "mutableResourceOwnership": "CLOSED",
+      "requiredCrosschecks": "CLOSED",
+      "materialScenarioAccounting": "CLOSED",
+      "playerControlledSurfaceAccounting": "CLOSED",
+      "genericNeedValidation": 0,
+      "unaccountedMaterialSurfaces": 0,
+      "unaccountedMutableResources": 0,
+      "unaccountedMaterialInterleavings": 0,
+      "unaccountedPlayerControlledSurfaces": 0
+    },
+    "evidenceReceiptGate": "PASSED_FOR_ZERO_FINDING_SET"
   }
 }
