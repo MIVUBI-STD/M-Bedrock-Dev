@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "runType": "PROSPECTIVE_BLIND_AUDIT",
+  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "target": {
+    "map": "Marathon Test of Tactics Level 2",
+    "version": "2.2.0",
+    "worldFileId": "1WyB9P4kjirf-ft34Fcq2q6jR4wRkjqX8",
+    "artifactFingerprint": "sha256:163b85be6d350fe9ea3cb1dce553c046593375f7c901392cb83a29f8c5b77482",
+    "worldFileFetched": true,
+    "worldFileSizeBytes": 9561123
+  },
+  "validationPurpose": "Fifth prospective frozen-engine audit; emphasize minigame/tactics rounds, stage transitions, player/team state, score/reward, inventory/loadout, concurrent actions, reconnect/reload and repeated-run cleanup.",
+  "rules": {
+    "engineFrozenBeforeRun": true,
+    "historicalGroundTruthAvailable": false,
+    "historicalRecallWillNotBeClaimed": true,
+    "runtimeExecuted": false,
+    "evidenceReceiptRequired": true,
+    "genericNeedValidationForbidden": true
+  },
+  "proofQueue": [
+    {
+      "id": "MTT2-PQ-01",
+      "check": "Round / Stage Progression Integrity",
+      "state": "PROVING"
+    },
+    {
+      "id": "MTT2-PQ-02",
+      "check": "Participant / Team Accounting",
+      "state": "PROVING"
+    },
+    {
+      "id": "MTT2-PQ-03",
+      "check": "Inventory / Loadout Lifecycle",
+      "state": "PROVING"
+    },
+    {
+      "id": "MTT2-PQ-04",
+      "check": "Score / Reward / Terminal Integrity",
+      "state": "PROVING"
+    },
+    {
+      "id": "MTT2-PQ-05",
+      "check": "Multi-player Concurrent Action Ownership",
+      "state": "PROVING"
+    },
+    {
+      "id": "MTT2-PQ-06",
+      "check": "State-Agnostic Fresh-Session Reset",
+      "state": "PROVING"
+    },
+    {
+      "id": "MTT2-PQ-07",
+      "check": "Connection / Reconnect Recovery",
+      "state": "PROVING"
+    },
+    {
+      "id": "MTT2-PQ-08",
+      "check": "Active-Session Reload Recovery",
+      "state": "PROVING"
+    },
+    {
+      "id": "MTT2-PQ-09",
+      "check": "World Reset / Repeated-Run Baseline",
+      "state": "PROVING"
+    },
+    {
+      "id": "MTT2-PQ-10",
+      "check": "Adversarial Gameplay QA",
+      "state": "PROVING"
+    }
+  ],
+  "coverageGates": {
+    "materialSurfaceRouting": "IN_PROGRESS",
+    "mutableResourceOwnership": "IN_PROGRESS",
+    "requiredCrosschecks": "IN_PROGRESS",
+    "materialScenarioAccounting": "IN_PROGRESS",
+    "playerControlledSurfaceAccounting": "IN_PROGRESS",
+    "genericNeedValidation": 0
+  },
+  "futureValidation": {
+    "status": "PENDING_INDEPENDENT_FINDING_SET"
+  }
+}
