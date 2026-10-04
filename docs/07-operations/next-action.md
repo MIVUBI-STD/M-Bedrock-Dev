@@ -23,7 +23,21 @@ raw user request
 
 ## Next action
 
-Before source/gameplay analysis, show one compact Pre-Audit Plan in chat and confirm:
+The current 22-map source/package deep pass is closed. For this batch, do **not** reopen broad source discovery unless the artifact/version changes or new evidence exposes a concrete detection gap.
+
+Current continuation:
+
+```text
+approved canonical findings
+→ targeted runtime residue only
+→ exact scenario execution on LOCAL_MINECRAFT / LIVE_MINECRAFT
+→ PASS | FAIL→promote | INCONCLUSIVE
+```
+
+Runtime scenarios for the current batch are projected in:
+`experiments/real-map-audits/runtime-validation.md`.
+
+For a new or changed selected artifact, before source/gameplay analysis, show one compact Pre-Audit Plan in chat and confirm:
 - target/map version;
 - comprehensive pre-testing objective;
 - systems/check families that will be inspected;
@@ -72,7 +86,7 @@ A blocking PROVE checkpoint is different: it requires `RESOLVE_DEFECTS` before r
 - source-accounted does not mean semantically understood;
 - unknown semantic ownership = Detection Gap, never PASS;
 - technical/platform explanation does not erase player-visible Design Mismatch;
-- DESIGN_MISMATCH never enters Bug Report V2 promotion;
+- Bug Report V2 preserves explicit `issueType` (`BUG` or `DESIGN_MISMATCH`); legacy entries without it are interpreted as `BUG`;
 - one root cause belongs to one issue lane;
 - Scenario PARTIAL is allowed only for irreducible runtime proof;
 - no new manager/router/state machine/report authority unless real-map evidence proves the existing owner cannot express the required behavior.

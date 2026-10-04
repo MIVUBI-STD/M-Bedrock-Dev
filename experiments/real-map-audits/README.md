@@ -117,6 +117,9 @@ Source-side coverage closed, where applicable:
 
 ### Runtime-only residue
 
+Tester-ready narrow scenarios are maintained in `runtime-validation.md`. That file is a validation projection only and does not become current bug authority.
+
+
 Minecraft runtime was **not executed** in this pass. The remaining obligations are intentionally narrow and are not current bugs:
 
 - Attack/Defense — exact asynchronous ticking-area release → next-lease acquisition interleaving at capacity+1;
