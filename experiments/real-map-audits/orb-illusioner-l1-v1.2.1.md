@@ -47,3 +47,21 @@ Developer/admin operations are separated from normal gameplay surfaces. No playe
 Orb of the Illusioner Level 1 v1.2.1: **0 source-proven gameplay findings**.
 
 Do not create historical regression entries from this pass.
+
+
+## Deep multi-arena pass — context-proxy counter-proof
+
+Orb L1 generates six arena instances. Several legacy manager methods appear world-global when read in isolation, including calls such as `world.getPlayers()` / `getAllPlayers()`.
+
+The selected artifact's scoped server context is the blocking counter-proof:
+
+- gameplay construction runs inside the current arena context;
+- scoped `world.getAllPlayers()` returns only current arena/session players;
+- scoped dimensions filter player queries to the current arena;
+- entity queries/spawns are bound to current arena ownership;
+- scheduled gameplay work executes with the same arena context;
+- persisted session/recovery state remains bound to the current arena/run.
+
+This prevents the apparent Knockdown/revive/global-player patterns from becoming cross-arena operations.
+
+Result of this multi-arena pass: **no additional source-proven cross-arena defect**.
