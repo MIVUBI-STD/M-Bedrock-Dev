@@ -26,74 +26,7 @@ describe("arena state isolation analysis", () => {
     ).toMatchObject({
       scope: "world-global",
       status: "partition-proof-required",
-      it("requires partition proof for generic player tags mutated from arena flow", () => {
-    const script = {
-      identifier: "arena-gameplay",
-      arenaAuthorityPaths: [{
-        executionRegion: "function:runArena",
-        arenaExpression: "arenaId",
-      }],
-      localFunctionCalls: [],
-      dynamicProperties: [],
-      propertyWrites: [],
-      commandLiterals: [],
-      stateMutations: [],
-      methodCalls: [{
-        executionRegion: "function:runArena",
-        receiverType: "Player",
-        receiver: "player",
-        method: "removeTag",
-        symbol: "player.removeTag",
-        argumentTexts: ['"flag_carrier"'],
-      }],
-    } as any;
-
-    const result =
-      analyzeArenaStateIsolation([script]);
-
-    expect(
-      result.observations.some(
-        (item) =>
-          item.surface === "entity-tag" &&
-          item.status === "partition-proof-required",
-      ),
-    ).toBe(true);
-  });
-
-  it("accepts arena-keyed player tags as isolated", () => {
-    const script = {
-      identifier: "arena-gameplay",
-      arenaAuthorityPaths: [{
-        executionRegion: "function:runArena",
-        arenaExpression: "arenaId",
-      }],
-      localFunctionCalls: [],
-      dynamicProperties: [],
-      propertyWrites: [],
-      commandLiterals: [],
-      stateMutations: [],
-      methodCalls: [{
-        executionRegion: "function:runArena",
-        receiverType: "Player",
-        receiver: "player",
-        method: "addTag",
-        symbol: "player.addTag",
-        argumentTexts: ['"flag_carrier:" + arenaId'],
-      }],
-    } as any;
-
-    const result =
-      analyzeArenaStateIsolation([script]);
-
-    expect(
-      result.observations.some(
-        (item) =>
-          item.surface === "entity-tag" &&
-          item.status === "isolated",
-      ),
-    ).toBe(true);
-  });
-});
+    });
   });
 
   it("proves arena-keyed dynamic properties and scoreboard participants automatically", () => {
@@ -234,6 +167,75 @@ describe("arena state isolation analysis", () => {
       )?.status,
     ).toBe("isolated");
   });
+
+  it("requires partition proof for generic player tags mutated from arena flow", () => {
+    const script = {
+      identifier: "arena-gameplay",
+      arenaAuthorityPaths: [{
+        executionRegion: "function:runArena",
+        arenaExpression: "arenaId",
+      }],
+      localFunctionCalls: [],
+      dynamicProperties: [],
+      propertyWrites: [],
+      commandLiterals: [],
+      stateMutations: [],
+      methodCalls: [{
+        executionRegion: "function:runArena",
+        receiverType: "Player",
+        receiver: "player",
+        method: "removeTag",
+        symbol: "player.removeTag",
+        argumentTexts: ['"flag_carrier"'],
+      }],
+    } as any;
+
+    const result =
+      analyzeArenaStateIsolation([script]);
+
+    expect(
+      result.observations.some(
+        (item) =>
+          item.surface === "entity-tag" &&
+          item.status === "partition-proof-required",
+      ),
+    ).toBe(true);
+  });
+
+  it("accepts arena-keyed player tags as isolated", () => {
+    const script = {
+      identifier: "arena-gameplay",
+      arenaAuthorityPaths: [{
+        executionRegion: "function:runArena",
+        arenaExpression: "arenaId",
+      }],
+      localFunctionCalls: [],
+      dynamicProperties: [],
+      propertyWrites: [],
+      commandLiterals: [],
+      stateMutations: [],
+      methodCalls: [{
+        executionRegion: "function:runArena",
+        receiverType: "Player",
+        receiver: "player",
+        method: "addTag",
+        symbol: "player.addTag",
+        argumentTexts: ['"flag_carrier:" + arenaId'],
+      }],
+    } as any;
+
+    const result =
+      analyzeArenaStateIsolation([script]);
+
+    expect(
+      result.observations.some(
+        (item) =>
+          item.surface === "entity-tag" &&
+          item.status === "isolated",
+      ),
+    ).toBe(true);
+  });
+
 });
 
 
