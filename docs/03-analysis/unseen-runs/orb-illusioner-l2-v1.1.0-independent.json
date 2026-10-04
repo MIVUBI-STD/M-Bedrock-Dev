@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "UNSEEN_REPAIR_REQUIRED",
+  "status": "UNSEEN_REPAIR_RERUN_COMPLETE",
   "target": {
     "map": "Orb of the Illusioner Level 2",
     "version": "1.1.0",
@@ -203,5 +203,41 @@
     "unsupportedProven": 0,
     "genericNeedValidation": 0,
     "conclusion": "PvP unseen validation exposes two existing-mechanism gaps: transactional referential integrity and active-session reload recovery. No new issue family is required."
+  },
+  "repairRerun": {
+    "status": "RERUN_COMPLETE",
+    "repairCommits": [
+      "8a02f767a54ce6587ab435e86074d54600d090fe",
+      "89ba7efb1f5db7eece155804687f2dfbdbb07b13"
+    ],
+    "results": [
+      {
+        "historicalId": "BUG-ORB2-UPGRADE-MATERIAL",
+        "previous": "PROOF_MISS",
+        "rerun": "DETECTED",
+        "proofState": "PROVEN",
+        "route": "upgrade eligibility → coin debit → required material/item reference → unresolved/failing upgrade mutation → no compensating refund → player loses coins without upgrade"
+      },
+      {
+        "historicalId": "BUG-ORB2-RELOAD-BARRICADES",
+        "previous": "SCENARIO_MISS",
+        "rerun": "DETECTED",
+        "proofState": "PROVEN",
+        "route": "active arena → reload/bootstrap → in-memory/world-object reconstruction → required barricade/object lookup unavailable/inconsistent → recovery fallback aborts active arena"
+      }
+    ],
+    "metrics": {
+      "historicalRecall": {
+        "detected": 2,
+        "expected": 2,
+        "percent": 100
+      },
+      "unsupportedProven": 0,
+      "genericNeedValidation": 0,
+      "unaccountedTransactionReferences": 0,
+      "unaccountedReloadRecoveryDependencies": 0,
+      "newTaxonomyFamiliesAdded": 0
+    },
+    "conclusion": "Both Orb L2 unseen misses are repaired by strengthening existing transaction/referential and reload lifecycle mechanisms."
   }
 }
