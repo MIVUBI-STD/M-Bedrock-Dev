@@ -1032,6 +1032,14 @@ export function compileGameplayScenarioGraph(
           "runtime:arena",
         );
         break;
+      case "information-correctness":
+        addIntentKinds("objective", "resource", "state", "outcome", "policy");
+        addRuntime(
+          "runtime:economy",
+          "runtime:arena",
+          "runtime:persistence",
+        );
+        break;
       case "repeated-run":
         addIntentKinds("lifecycle", "phase", "state", "outcome");
         addRuntime(
