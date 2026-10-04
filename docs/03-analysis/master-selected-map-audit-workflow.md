@@ -553,6 +553,34 @@ raw risk / detection gap / model gap / runtime unknown
 
 `Audit Obligation` is not an issue status and does not enter BUG / DESIGN_MISMATCH lanes.
 
+## Proof-maximization sequence
+
+For every admitted contradiction, use the coverage-assurance proof sequence:
+
+```text
+Referential Integrity where applicable
+→ Causal Slicing
+→ Claim-Based Proof
+→ Blocking-Proof Search
+→ Formal Absence / Temporal Proof where applicable
+→ deterministic Proof Substitution
+→ NEED_VALIDATION Promotion Matrix
+→ Runtime Verification only for the final irreducible claim
+```
+
+Required claim closure:
+
+```text
+Reachability
+Contract
+Contradiction
+Player Consequence
+Affected Scope
+Blocking Proof Cleared
+```
+
+Do not replace claim closure with a generic confidence score.
+
 ## 6.0 Proof-promotion rule
 
 The audit should not treat NEED_VALIDATION as a comfortable resting state.
