@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "INDEPENDENT_SELECTED_ARTIFACT_PASS",
-  "status": "REGRESSION_REPAIR_REQUIRED",
+  "status": "REGRESSION_REPAIR_RERUN_COMPLETE",
   "target": {
     "map": "Composite Challenge",
     "version": "1.1.1",
@@ -222,5 +222,61 @@
     },
     "genericNeedValidation": 0,
     "conclusion": "Composite exposes real recall gaps. Architecture is not to be expanded; repair the earliest failing MODEL/CROSSCHECK mechanisms and rerun Composite independently."
+  },
+  "repairRerun": {
+    "schemaVersion": 1,
+    "runType": "REGRESSION_REPAIR_RERUN",
+    "status": "RERUN_COMPLETE",
+    "target": {
+      "map": "Composite Challenge",
+      "version": "1.1.1",
+      "artifactFingerprint": "sha256:c7a208ccb943d214de6bb6d2f15f265f8dba2b794ae56da40a11bef24162776a",
+      "fingerprintVerified": true,
+      "worldFileId": "1hFF8MaIgsVFBXgh_ll6f2Uoo2Cv3Y_Rr"
+    },
+    "repairBaselineCommit": "e89057f19b59d42b5396ccf91b0b7303fcca5f73",
+    "repairRules": [
+      "Fresh-Session Reset Invariant",
+      "Cleanup Ownership Crosscheck",
+      "Recurring World-Mutation Spatial Crosscheck",
+      "Suppression Gate"
+    ],
+    "rerunResults": [
+      {
+        "historicalId": "BUG-CMP-PRELOAD-INVENTORY",
+        "previous": "MODEL_MISS",
+        "rerun": "DETECTED",
+        "proofState": "PROVEN",
+        "route": "fresh-session reset → reconnect differential → later partial clearer"
+      },
+      {
+        "historicalId": "BUG-CMP-CROSS-ARENA-FLAG",
+        "previous": "CROSSCHECK_MISS",
+        "rerun": "DETECTED",
+        "proofState": "PROVEN",
+        "route": "cleanup writer → carrier selector/ownership → other active arena → cross-arena mutation"
+      },
+      {
+        "historicalId": "BUG-CMP-CROSS-ARENA-FLOOR",
+        "previous": "CROSSCHECK_MISS",
+        "rerun": "DETECTED",
+        "proofState": "PROVEN",
+        "route": "recurring player-relative world mutation → spatial ownership → unrelated active player/arena"
+      }
+    ],
+    "retainedIndependent": [
+      "IND-CMP-001",
+      "IND-CMP-002",
+      "IND-CMP-003",
+      "IND-CMP-004"
+    ],
+    "repairedRegressionRecall": {
+      "detected": 5,
+      "expected": 5,
+      "percent": 100
+    },
+    "genericNeedValidation": 0,
+    "falsePositiveAddedByRepair": 0,
+    "conclusion": "The three confirmed misses are representable by existing architecture after mechanism repair. No new taxonomy family was required."
   }
 }
