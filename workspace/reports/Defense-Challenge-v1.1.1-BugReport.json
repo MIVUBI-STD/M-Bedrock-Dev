@@ -36,7 +36,8 @@
       "mustPreserve": [
         "Existing arena queue and concurrency policy must keep working.",
         "Cleanup from one arena must not affect another active arena."
-      ]
+      ],
+      "issueType": "BUG"
     },
     {
       "id": "BUG-DEF-WAVE-RETRY",
@@ -65,7 +66,8 @@
       "mustPreserve": [
         "Normal successful spawn groups must keep their current wave timing.",
         "Retry logic must remain bounded and arena-scoped."
-      ]
+      ],
+      "issueType": "BUG"
     },
     {
       "id": "BUG-DEF-RESPAWN-RECONNECT",
@@ -94,7 +96,8 @@
       "mustPreserve": [
         "Normal reconnect outside a death countdown must still restore the active session.",
         "Existing respawn timing must remain unchanged."
-      ]
+      ],
+      "issueType": "BUG"
     },
     {
       "id": "BUG-DEF-PRELOAD-INVENTORY",
@@ -122,6 +125,36 @@
       "suggestedFix": "Record the fresh-session inventory reset per player and enforce the missed full clear on reconnect before buy or gameplay continuation.",
       "mustPreserve": [
         "Mid-session loadout refresh must not erase unrelated state unless the fresh-session boundary requires it."
+      ],
+      "issueType": "BUG"
+    },
+    {
+      "id": "DM-DEF-ARENA-CAPACITY",
+      "fixed": false,
+      "severity": "major",
+      "category": "multiplayer-session",
+      "foundBy": "ai",
+      "issueType": "DESIGN_MISMATCH",
+      "title": "Six playable arenas expose only two concurrent sessions",
+      "problem": "Defense presents six playable arena surfaces, but only two can run at once; additional ready groups must queue despite having their own arena.",
+      "expected": "Presented independent arena capacity matches delivered concurrency, or the lower limit is explicitly authored as the player-facing capability.",
+      "observed": "Six arenas accept parties, but MAX_CONCURRENT_ARENAS limits active ticking-area leases to two and queues later sessions.",
+      "reproduction": [
+        "Prepare valid parties in 3 different Defense arenas.",
+        "Start the first 2 arenas so both hold active arena leases.",
+        "Ready and start the third arena.",
+        "Confirm the third group is queued even though its own visible arena is otherwise available."
+      ],
+      "aiAnalysis": "Defense exposes six arena/join surfaces, while runtime admission allows only two held arena leases. Each active arena uses three residency regions. Queueing explains the implementation constraint but does not erase the delivered-capacity mismatch.",
+      "relevantCode": [
+        {
+          "file": "behavior_packs/BP/scripts/chunks/chunk-ZDK4WOHG.js",
+          "reason": "Owns Defense arena configuration, two-lease concurrency policy, residency resources, and queue admission."
+        }
+      ],
+      "suggestedFix": "Use a proven residency strategy that supports the presented arena concurrency, or change the authored player-facing capacity to match the actual supported limit.",
+      "mustPreserve": [
+        "Per-arena simulation coverage and isolation must remain correct."
       ]
     }
   ]

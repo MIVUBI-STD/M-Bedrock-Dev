@@ -39,7 +39,8 @@
       "suggestedFix": "Create and release the selected arena's declared simulation regions through the existing residency owner before gameplay uses remote chunks.",
       "mustPreserve": [
         "Lobby and permission ticking areas must keep their existing lifecycle."
-      ]
+      ],
+      "issueType": "BUG"
     },
     {
       "id": "BUG-CMP-ASYNC-RESET",
@@ -68,7 +69,8 @@
       "mustPreserve": [
         "Arena resets must remain bounded and non-blocking across ticks.",
         "One arena reset must not block unrelated arenas."
-      ]
+      ],
+      "issueType": "BUG"
     },
     {
       "id": "BUG-CMP-PRELOAD-INVENTORY",
@@ -96,6 +98,65 @@
       "suggestedFix": "Make the fresh-session inventory reset a per-player invariant and reconcile any missed full clear before reconnecting players continue.",
       "mustPreserve": [
         "Normal mid-session loadout refresh must retain its existing scoped cleanup behavior."
+      ],
+      "issueType": "BUG"
+    },
+    {
+      "id": "BUG-CMP-CROSS-ARENA-FLAG",
+      "fixed": false,
+      "severity": "major",
+      "category": "multiplayer-session",
+      "foundBy": "ai",
+      "issueType": "BUG",
+      "title": "Cleanup in one arena can invalidate another arena's flag carrier",
+      "problem": "Ending or resetting one Composite arena can remove another arena's active carrier marker, causing its flag objective to drop or reset unexpectedly.",
+      "expected": "Per-arena cleanup changes only the flag carrier state owned by that arena.",
+      "observed": "Flag cleanup receives one arena ID but removes the shared carrier tag from every online player in the world.",
+      "reproduction": [
+        "Run Composite Attack concurrently in Arena A and Arena B.",
+        "In Arena B, take the red flag and remain alive as its active carrier.",
+        "Complete, retry, or reset Arena A so its flag cleanup runs.",
+        "Confirm Arena B drops or returns its flag even though its carrier did not die or disconnect."
+      ],
+      "aiAnalysis": "Carrier identity is split between arena-local flagStates and the global ctf_composite_attack_flag_carrier tag. FlagService.cleanup(arenaId) removes that tag from all world players, so Arena A cleanup invalidates Arena B's otherwise-valid carrier.",
+      "relevantCode": [
+        {
+          "file": "chunk-2GRFUQFH.js",
+          "reason": "Contains Composite Attack flag state, shared carrier tag validation, per-arena transitions, and world-wide cleanup."
+        }
+      ],
+      "suggestedFix": "Scope carrier-tag cleanup to the carrier owned by the target arena, or make the carrier tag arena-specific while keeping flagStates as the authority.",
+      "mustPreserve": [
+        "Flag death/disconnect recovery must remain per-arena."
+      ]
+    },
+    {
+      "id": "BUG-CMP-CROSS-ARENA-FLOOR",
+      "fixed": false,
+      "severity": "minor",
+      "category": "world-interaction",
+      "foundBy": "ai",
+      "issueType": "BUG",
+      "title": "Arena floor maintenance mutates blocks around unrelated players",
+      "problem": "An active Composite arena can convert dirt around lobby or other-arena players because its maintenance command targets every player in the world.",
+      "expected": "Periodic arena floor maintenance affects only players and world space owned by that active arena.",
+      "observed": "Each active arena runs a grass-path fill as @a, so the mutation executes around players outside the arena too.",
+      "reproduction": [
+        "Keep Player A outside the active Composite arena while standing near dirt.",
+        "Start gameplay in Arena B.",
+        "Wait for the periodic floor-maintenance interval.",
+        "Confirm dirt around Player A changes to grass path despite Player A not belonging to Arena B."
+      ],
+      "aiAnalysis": "Defense and Attack maintenance loops are entered per active arena, but the fill command executes as global @a. The command therefore escapes arena ownership and mutates nearby world state around unrelated players.",
+      "relevantCode": [
+        {
+          "file": "chunk-2GRFUQFH.js",
+          "reason": "Contains the per-arena maintenance loop and global execute as @a fill command."
+        }
+      ],
+      "suggestedFix": "Execute floor maintenance only for the canonical online-player set of the active arena instead of global @a.",
+      "mustPreserve": [
+        "Existing floor repair around legitimate active-arena players must continue."
       ]
     }
   ]

@@ -39,7 +39,8 @@
       "suggestedFix": "Remove the debug-stick import from production or gate the existing tool behind the current developer/admin permission owner.",
       "mustPreserve": [
         "Normal gameplay stick behavior must remain available when the developer tool is disabled."
-      ]
+      ],
+      "issueType": "DESIGN_MISMATCH"
     }
   ]
 }

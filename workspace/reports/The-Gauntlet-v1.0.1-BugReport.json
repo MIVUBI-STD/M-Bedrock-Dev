@@ -35,6 +35,40 @@
       "suggestedFix": "Evaluate required cooperative gates against the locked run roster, or pause those gates whenever a required member is disconnected.",
       "mustPreserve": [
         "Exit-vote logic that intentionally uses only online players must keep its separate semantics."
+      ],
+      "issueType": "BUG"
+    },
+    {
+      "id": "BUG-GNT-DEV-SKIP",
+      "fixed": false,
+      "severity": "major",
+      "category": "game-flow",
+      "foundBy": "ai",
+      "issueType": "BUG",
+      "title": "Ordinary players can craft the developer level-skip item",
+      "problem": "A normal player can craft a stick from authored level resources and use the release-enabled developer control to skip the current level for the arena.",
+      "expected": "Level-skip controls are disabled in release or require the existing developer permission before changing progression.",
+      "observed": "The stick-triggered skip is enabled without a permission check, and authored Survival resources provide planks that can be crafted into sticks.",
+      "reproduction": [
+        "Reach Gauntlet Level 13 as a normal non-developer player.",
+        "Take oak or dark-oak planks from the authored resource barrels.",
+        "Craft a normal Minecraft stick.",
+        "Use the stick and confirm the current level is skipped for the arena."
+      ],
+      "aiAnalysis": "The release enables devSkipLevel on minecraft:stick and the itemUse path executes the skip without developer authorization. The selected structure/resource flow provides planks to Survival players, closing the ordinary-player acquisition path.",
+      "relevantCode": [
+        {
+          "file": "selected Gauntlet behavior-pack gameplay bundle",
+          "reason": "Defines enabled stick-based level skip and the unguarded itemUse progression mutation."
+        },
+        {
+          "file": "selected Gauntlet chest_build.mcstructure",
+          "reason": "Provides authored plank resources that ordinary Survival players can craft into the trigger stick."
+        }
+      ],
+      "suggestedFix": "Disable item-triggered developer skip/retry controls in release or gate them through the existing developer-permission owner.",
+      "mustPreserve": [
+        "Authorized developer skip/retry workflows may remain available through the existing permission owner."
       ]
     }
   ]
