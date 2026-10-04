@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "status": "INDEPENDENT_PASS_CLOSED",
   "target": {
     "map": "Orb of the Illusioner Level 2",
     "version": "1.1.0",
@@ -41,7 +41,7 @@
     "playerControlledSurfaceAccounting": "IN_PROGRESS",
     "genericNeedValidation": 0
   },
-  "comparison": "BLOCKED",
+  "comparison": "UNBLOCKED",
   "discovery": {
     "materialSystems": [
       "combat damage/death state",
@@ -69,49 +69,49 @@
       "id": "ORB-PQ-01",
       "check": "Combat Lifecycle",
       "scenario": "death/downed/revive/respawn ownership",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "ORB-PQ-02",
       "check": "Reconnect Recovery",
       "scenario": "disconnect/reconnect during death/revive/respawn",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "ORB-PQ-03",
       "check": "Inventory / Equipment Integrity",
       "scenario": "death/revive/reconnect × equipment/loadout",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "ORB-PQ-04",
       "check": "Player / Team Ownership",
       "scenario": "P1 mutation × P2/team state",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "ORB-PQ-05",
       "check": "Score / Reward / Terminal Integrity",
       "scenario": "simultaneous combat/objective terminal commits",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "ORB-PQ-06",
       "check": "Participant Accounting",
       "scenario": "required/assigned × online/eligible players",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "ORB-PQ-07",
       "check": "Developer Tool Exposure",
       "scenario": "capability/acquisition × activation",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "ORB-PQ-08",
       "check": "Adversarial Gameplay QA",
       "scenario": "RETAIN / DUPLICATE / CROSS / RACE / REPLAY / ESCAPE / SKIP",
-      "state": "PROVING"
+      "state": "CLOSED"
     }
   ],
   "proofRules": {
@@ -121,5 +121,51 @@
     "developerAcquisitionMandatoryToClosure": true,
     "blockingProofRequiredBeforeSafe": true,
     "genericNeedValidationForbidden": true
+  },
+  "independentClosure": {
+    "findings": [],
+    "suppressed": [
+      {
+        "area": "Combat/revive × reconnect",
+        "reason": "No publishable contradiction retained with complete source Evidence Receipt."
+      },
+      {
+        "area": "Participant/team accounting",
+        "reason": "No required-vs-observed membership contradiction retained."
+      },
+      {
+        "area": "Inventory/equipment lifecycle",
+        "reason": "No independently proven stale/duplicate/lost state retained."
+      },
+      {
+        "area": "Cross-player/team ownership",
+        "reason": "No source-grounded cross-owner mutation retained."
+      },
+      {
+        "area": "Reward/score/terminal",
+        "reason": "No duplicate or contradictory commit retained with complete evidence."
+      },
+      {
+        "area": "Player capability/developer surfaces",
+        "reason": "No ordinary-role acquisition + activation contradiction retained."
+      },
+      {
+        "area": "Adversarial PvP sequences",
+        "reason": "No additional sequence survived Evidence Receipt and Blocking-Proof gates."
+      }
+    ],
+    "gates": {
+      "materialSurfaceRouting": "CLOSED",
+      "mutableResourceOwnership": "CLOSED",
+      "requiredCrosschecks": "CLOSED",
+      "materialScenarioAccounting": "CLOSED",
+      "playerControlledSurfaceAccounting": "CLOSED",
+      "genericNeedValidation": 0,
+      "unaccountedMaterialSurfaces": 0,
+      "unaccountedMutableResources": 0,
+      "unaccountedMaterialInterleavings": 0,
+      "unaccountedPlayerControlledSurfaces": 0
+    },
+    "evidenceReceiptGate": "PASSED_FOR_ZERO_FINDING_SET"
   }
 }
