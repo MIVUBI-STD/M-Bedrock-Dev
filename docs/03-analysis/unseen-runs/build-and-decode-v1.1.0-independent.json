@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
+  "status": "TARGET_LOCKED_READY_FOR_DISCOVERY",
+  "target": {
+    "map": "Build & Decode",
+    "version": "1.1.0",
+    "worldFileId": "1aBAM5Hwu58klnGV1dtZZLffgJATPRmtd",
+    "artifactFingerprint": "sha256:d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
+    "worldFileFetched": true,
+    "worldFileSizeBytes": 8222297
+  },
+  "validationPurpose": "Third unseen map; emphasize build/world mutation, placement boundaries, reset baseline, multiplayer ownership and adversarial player construction rather than challenge-map-specific patterns.",
+  "blindRules": {
+    "existingBugReportExists": true,
+    "existingBugReportOpenedForThisPass": false,
+    "comparisonAllowed": "ONLY_AFTER_INDEPENDENT_PASS_CLOSED",
+    "historicalIssueIdsSeeded": false,
+    "historicalRootCausesSeeded": false,
+    "runtimeExecuted": false
+  },
+  "priorityChecks": [
+    "World Mutation & Reset Integrity",
+    "Mutation & Replica Footprint Analysis",
+    "Recurring World-Mutation Spatial Crosscheck",
+    "Inventory / Build Resource Lifecycle",
+    "Progression / Decode Completion",
+    "Required vs Online Participant Accounting",
+    "Multi-player ownership/isolation",
+    "Fresh-Session Reset Invariant",
+    "Connection Recovery Invariants",
+    "Developer-Item Acquisition Graph",
+    "Adversarial SKIP / RETAIN / DUPLICATE / CROSS / ESCAPE / RACE",
+    "Evidence Receipt Gate"
+  ],
+  "coverageGates": {
+    "materialSurfaceRouting":"OPEN",
+    "mutableResourceOwnership":"OPEN",
+    "requiredCrosschecks":"OPEN",
+    "materialScenarioAccounting":"OPEN",
+    "playerControlledSurfaceAccounting":"OPEN",
+    "genericNeedValidation":0
+  },
+  "comparison":"BLOCKED"
+}
