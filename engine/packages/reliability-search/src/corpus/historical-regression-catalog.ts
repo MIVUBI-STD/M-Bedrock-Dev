@@ -11,6 +11,7 @@ export interface HistoricalRegressionProvenance {
 
 export interface HistoricalRegressionRecord {
   readonly id: string;
+  readonly canonicalIssueId?: string;
   readonly title: string;
   readonly issueType?: "BUG" | "DESIGN_MISMATCH";
   readonly domain: string;
@@ -26,6 +27,7 @@ export interface HistoricalRegressionRecord {
 
 export interface HistoricalRegressionCatalogEntry {
   readonly id: string;
+  readonly canonicalIssueId?: string;
   readonly title?: string;
   readonly [key: string]: unknown;
 }
@@ -130,11 +132,53 @@ export function mergeHistoricalRegressionCatalog(
         (item) => [item.id, item] as const,
       ),
     );
+  const byCanonicalIssueId =
+    new Map<string, string>();
+  for (const item of catalog.regressions) {
+    if (item.canonicalIssueId?.trim()) {
+      const previous =
+        byCanonicalIssueId.get(
+          item.canonicalIssueId,
+        );
+      if (
+        previous !== undefined &&
+        previous !== item.id
+      ) {
+        throw new Error(
+          "Historical catalog contains duplicate canonicalIssueId: " +
+            item.canonicalIssueId +
+            ".",
+        );
+      }
+      byCanonicalIssueId.set(
+        item.canonicalIssueId,
+        item.id,
+      );
+    }
+  }
 
   for (const item of incoming) {
-    const previous = byId.get(item.id);
+    const canonicalIssueId =
+      item.canonicalIssueId ??
+      item.id;
+    const mappedId =
+      byCanonicalIssueId.get(
+        canonicalIssueId,
+      );
+    const storageId =
+      mappedId ??
+      item.id;
+    const previous =
+      byId.get(storageId);
+    const explicitLegacyMapping =
+      previous !== undefined &&
+      storageId !== item.id &&
+      previous.canonicalIssueId ===
+        canonicalIssueId;
+
     if (
       previous !== undefined &&
+      !explicitLegacyMapping &&
       !sameMeaning(previous, item)
     ) {
       throw new Error(
@@ -142,7 +186,24 @@ export function mergeHistoricalRegressionCatalog(
           item.id,
       );
     }
-    byId.set(item.id, item);
+
+    byId.set(
+      storageId,
+      storageId === item.id
+        ? {
+            ...item,
+            canonicalIssueId,
+          }
+        : {
+            ...item,
+            id: storageId,
+            canonicalIssueId,
+          },
+    );
+    byCanonicalIssueId.set(
+      canonicalIssueId,
+      storageId,
+    );
   }
 
   return {

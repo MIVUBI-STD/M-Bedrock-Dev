@@ -64,6 +64,42 @@ describe("historical regression catalog", () => {
     ]);
   });
 
+  it("merges a canonical approved issue into an explicitly mapped legacy incident", () => {
+    const canonicalId =
+      "reg_defense_2_0_0_bug_001";
+    const merged =
+      mergeHistoricalRegressionCatalog(
+        {
+          schemaVersion: 1,
+          regressions: [{
+            id: "legacy-defense-race",
+            canonicalIssueId:
+              canonicalId,
+            title: "Legacy title",
+            expected: "Legacy expected.",
+            observed: "Legacy observed.",
+          }],
+        },
+        [{
+          ...incoming,
+          id: canonicalId,
+          canonicalIssueId:
+            canonicalId,
+        }],
+      );
+
+    expect(merged.regressions).toHaveLength(1);
+    expect(merged.regressions[0]?.id)
+      .toBe("legacy-defense-race");
+    expect(
+      merged.regressions[0]
+        ?.canonicalIssueId,
+    ).toBe(canonicalId);
+    expect(
+      merged.regressions[0]?.title,
+    ).toBe("Arena state leaks");
+  });
+
   it("rejects semantic conflict for an existing historical id", () => {
     expect(() =>
       mergeHistoricalRegressionCatalog(

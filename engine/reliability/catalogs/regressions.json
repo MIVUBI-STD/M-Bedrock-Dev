@@ -38,7 +38,9 @@
         "date": "2026-10-02",
         "targetEdition": "education",
         "targetVersion": null,
-        "artifactSha256": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee"
+        "artifactSha256": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee",
+        "canonicalIssueId": "reg_defense_challenge_1_1_1_bug_def_lease_reset",
+        "issueType": "BUG"
       },
       "invariantIds": [
         "arena.reuse-requires-cleanup-complete",
@@ -64,7 +66,9 @@
         "Observe ticking-area ownership when the previous reset completes"
       ],
       "expected": "The arena remains unavailable until reset completes, or lease release is generation-bound so an old cleanup cannot release a new run's lease.",
-      "observed": "The session is set to idle before reset completion; start validation does not check reset state, acquire succeeds against the already-held lease, and the old reset completion later calls release(arenaId) without a generation token."
+      "observed": "The session is set to idle before reset completion; start validation does not check reset state, acquire succeeds against the already-held lease, and the old reset completion later calls release(arenaId) without a generation token.",
+      "canonicalIssueId": "reg_defense_challenge_1_1_1_bug_def_lease_reset",
+      "issueType": "BUG"
     },
     {
       "id": "reg_defense_cutscene_reconnect_loadout_loss",
@@ -546,7 +550,8 @@
         "date": "2026-10-02",
         "targetEdition": "education",
         "targetVersion": null,
-        "issueType": "DESIGN_MISMATCH"
+        "issueType": "DESIGN_MISMATCH",
+        "canonicalIssueId": "reg_defense_challenge_1_1_1_dm_def_arena_capacity"
       },
       "invariantIds": [
         "arena.visible-capacity-matches-playable-capacity",
@@ -572,7 +577,8 @@
       ],
       "expected": "The player-visible six-arena design can support six independent arena sessions concurrently, or the map design exposes only the concurrency it can actually provide.",
       "observed": "Six arenas are presented, but the implementation caps concurrent active arenas at two; additional sessions are queued. The queue and ticking-area platform constraint explain the limitation but do not remove the player-visible capacity mismatch.",
-      "issueType": "DESIGN_MISMATCH"
+      "issueType": "DESIGN_MISMATCH",
+      "canonicalIssueId": "reg_defense_challenge_1_1_1_dm_def_arena_capacity"
     },
     {
       "id": "reg_fotp_l1_friendly_fire_enabled",

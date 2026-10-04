@@ -51,6 +51,11 @@ describe("project historical issue projection", () => {
     expect(records).toHaveLength(1);
     expect(records[0]?.id)
       .toBe("reg_defense_2_0_0_bug_001");
+    expect(
+      records[0]?.canonicalIssueId,
+    ).toBe(
+      "reg_defense_2_0_0_bug_001",
+    );
     expect(records[0]?.domain)
       .toBe("multiplayer");
     expect(records[0]?.discoveredBy)

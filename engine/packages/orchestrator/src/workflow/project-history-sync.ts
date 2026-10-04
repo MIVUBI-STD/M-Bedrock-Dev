@@ -93,14 +93,19 @@ export function projectApprovedBugReportToHistoricalRegressions(
   },
 ): readonly HistoricalRegressionRecord[] {
   return input.report.bugs.map(
-    (bug) => ({
-      id: historicalRegressionId({
-        mapName: input.report.map.name,
-        mapVersion:
-          input.report.map.mapVersion,
-        bugId: bug.id,
-      }),
-      title: bug.title,
+    (bug) => {
+      const canonicalIssueId =
+        historicalRegressionId({
+          mapName:
+            input.report.map.name,
+          mapVersion:
+            input.report.map.mapVersion,
+          bugId: bug.id,
+        });
+      return {
+        id: canonicalIssueId,
+        canonicalIssueId,
+        title: bug.title,
       issueType:
         bugReportV2IssueType(bug),
       domain:
@@ -120,6 +125,7 @@ export function projectApprovedBugReportToHistoricalRegressions(
         mapVersion:
           input.report.map.mapVersion,
         bugId: bug.id,
+        canonicalIssueId,
         issueType:
           bugReportV2IssueType(bug),
         artifactFingerprint:
@@ -145,9 +151,10 @@ export function projectApprovedBugReportToHistoricalRegressions(
             ],
           }
         : {}),
-      expected: bug.expected,
-      observed: bug.observed,
-    }),
+        expected: bug.expected,
+        observed: bug.observed,
+      };
+    },
   );
 }
 
@@ -308,15 +315,29 @@ export async function syncApprovedProjectIssueHistory(
           .artifactFingerprint,
     });
 
-  await mergeAndSaveHistoricalRegressions(
-    input.repositoryRoot,
-    records,
-  );
+  const merged =
+    await mergeAndSaveHistoricalRegressions(
+      input.repositoryRoot,
+      records,
+    );
 
   return {
     historicalRegressionIds:
       records
-        .map((item) => item.id)
+        .map((record) => {
+          const canonicalIssueId =
+            record.canonicalIssueId ??
+            record.id;
+          return (
+            merged.regressions.find(
+              (item) =>
+                item.id === record.id ||
+                item.canonicalIssueId ===
+                  canonicalIssueId,
+            )?.id ??
+            record.id
+          );
+        })
         .sort(),
   };
 }
