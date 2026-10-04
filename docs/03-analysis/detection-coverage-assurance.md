@@ -1574,7 +1574,76 @@ No repeated instance may remain unenumerated at Coverage Completeness Gate.
 
 ---
 
-# 35. Architecture Freeze Rule
+# 35. Regression Repair: State-Agnostic Fresh-Session Reset
+
+This rule is promoted from the unseen Five Nights at Z Village L1 validation miss. It strengthens the existing Fresh-Session Reset Invariant.
+
+A fresh-session reset is not an inventory-only concept.
+
+Whenever setup, cinematic, preload, join, round start, or session start writes/reset player state, enumerate every affected mutable state domain:
+
+```text
+inventory / equipment
+currency / coins / economy score
+gameplay score / objective values
+tags
+dynamic properties
+role / team / arena assignment
+game mode / capability state
+health / effects / cooldowns
+position / checkpoint
+UI/player-facing session state
+other per-player mutable state
+```
+
+For each state domain record:
+
+```text
+state
+→ previous-session value possible?
+→ fresh-session expected baseline
+→ reset writer
+→ target player set
+→ reset timing/boundary
+→ player absent/disconnected at boundary?
+→ reconnect/late-join reconciliation
+→ later writer/grant
+→ Blocking Proof
+```
+
+### Setup/Cinematic interruption
+
+Disconnect/reconnect differential is mandatory at every setup boundary that performs per-player reset, including cinematic phases.
+
+```text
+present through reset
+vs
+disconnect before reset
+vs
+disconnect during reset
+vs
+reconnect after reset
+```
+
+Compare all discovered state domains, not only inventory.
+
+### Reset-domain closure
+
+Coverage Completeness Gate may close fresh-session state only when:
+
+```text
+all per-player setup/start writers enumerated
+→ state domains classified
+→ reset baseline known
+→ disconnect/reconnect differential checked
+→ reconciliation or contradiction established
+```
+
+Do not create separate checks for coins, tags, properties, or inventory. They are domains of the same fresh-session lifecycle contract.
+
+---
+
+# 36. Architecture Freeze Rule
 
 The detection architecture is considered structurally complete after sections 1–17.
 
