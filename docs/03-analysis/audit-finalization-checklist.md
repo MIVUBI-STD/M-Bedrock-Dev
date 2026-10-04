@@ -152,3 +152,18 @@ Review the audit in the same order the player experiences the game:
 ## STOP
 
 Do not publish a final report until all applicable surfaces are accounted for. A clean happy path is not sufficient evidence that the audit is complete.
+
+
+## Conservation / delivery final gate
+
+- [ ] Every material candidate discovered during the run has an explicit final disposition: PROVEN, NEED_VALIDATION, REJECTED_WITH_COUNTERPROOF, SUPERSEDED_BY, or INTENTIONALLY_EXCLUDED with reason.
+- [ ] No finding disappeared only because it failed approval/promotion; approval is not a disposition.
+- [ ] Material runtime-only residue remains visible as NEED_VALIDATION with one exact deciding test.
+- [ ] Every material configured dependency was checked across applicable delivery states: declared → materialized → active → owned → simulated → completed/released.
+- [ ] Queued/requested placement is not treated as proof of world materialization.
+- [ ] Declared ticking/chunk configuration is not treated as proof of runtime residency.
+- [ ] Effective player throughput was derived independently from arena count, party/session limits, concurrency caps, per-arena capacity, and runtime resource limits.
+- [ ] Every terminal path was checked for same-tick/adjacent-tick collision and exactly-once result/reward/cleanup ownership.
+- [ ] Current artifact version identity was reconciled across filename, manifests, world/level labels, exports/results, and report binding where present.
+- [ ] Deprecated calls, dormant debug paths, and hardcoded arena/session IDs have explicit reachability/materiality dispositions; they are neither auto-promoted nor silently discarded.
+- [ ] Final conservation equation balances: all material candidates = visible findings + explicit non-finding dispositions.
