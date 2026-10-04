@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "runType": "FULL_PRODUCTION_REAUDIT",
+  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "target": {
+    "map": "The Clockwork Vault",
+    "version": "1.0.1",
+    "worldFileId": "1bET36z9mdi3-GYEdHrbKet5QLPZpMq87",
+    "artifactFingerprint": "sha256:1802103da030b448c4a91e98eeef6f53d95235abda761b35fc0ab4b8453f7c1d",
+    "worldFileFetched": true,
+    "worldFileSizeBytes": 16537422
+  },
+  "proofQueue": [
+    {
+      "id": "CLK-PQ-01",
+      "check": "Progression / Puzzle / Stage Integrity",
+      "state": "PROVING"
+    },
+    {
+      "id": "CLK-PQ-02",
+      "check": "Interaction / Referential Integrity",
+      "state": "PROVING"
+    },
+    {
+      "id": "CLK-PQ-03",
+      "check": "Entity / Mechanism Lifecycle",
+      "state": "PROVING"
+    },
+    {
+      "id": "CLK-PQ-04",
+      "check": "World / Structure Mutation & Reset",
+      "state": "PROVING"
+    },
+    {
+      "id": "CLK-PQ-05",
+      "check": "Inventory / Key / Item Lifecycle",
+      "state": "PROVING"
+    },
+    {
+      "id": "CLK-PQ-06",
+      "check": "State-Agnostic Fresh-Session Reset",
+      "state": "PROVING"
+    },
+    {
+      "id": "CLK-PQ-07",
+      "check": "Participant / Connection Recovery",
+      "state": "PROVING"
+    },
+    {
+      "id": "CLK-PQ-08",
+      "check": "Active-Session Reload Recovery",
+      "state": "PROVING"
+    },
+    {
+      "id": "CLK-PQ-09",
+      "check": "Terminal / Reward / Completion Integrity",
+      "state": "PROVING"
+    },
+    {
+      "id": "CLK-PQ-10",
+      "check": "Player Capability / Developer Exposure",
+      "state": "PROVING"
+    },
+    {
+      "id": "CLK-PQ-11",
+      "check": "Adversarial SKIP / RETAIN / REPLAY / RACE / FORCE-FAIL / ESCAPE",
+      "state": "PROVING"
+    }
+  ],
+  "coverageGates": {
+    "materialSurfaceRouting": "IN_PROGRESS",
+    "mutableResourceOwnership": "IN_PROGRESS",
+    "requiredCrosschecks": "IN_PROGRESS",
+    "materialScenarioAccounting": "IN_PROGRESS",
+    "playerControlledSurfaceAccounting": "IN_PROGRESS",
+    "genericNeedValidation": 0
+  },
+  "evidenceReceiptRequired": true
+}
