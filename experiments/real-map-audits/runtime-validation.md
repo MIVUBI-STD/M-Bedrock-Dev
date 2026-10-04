@@ -1,6 +1,6 @@
 # Runtime Validation Packet — Current 22-Map Batch
 
-Status: **runtime execution pending**  
+Status: **reconciliation open — runtime execution pending**  
 Authority: selected current artifacts already bound in `workspace/project-registry.json`  
 Purpose: close only irreducible Minecraft-runtime residue left after the source/package deep pass.
 
@@ -18,6 +18,49 @@ selected artifact
 ```
 
 Do not add a bug merely because the source contains a risky timing/resource pattern.
+
+## Reconciliation ledger contract
+
+This file is the single batch-level reconciliation projection for material findings that are not already canonical PROVEN Bug Report V2 issues.
+
+Every material candidate referenced by the real-map audits must end with exactly one disposition:
+
+```text
+PROVEN_CANONICAL:<bug-id>
+NEED_VALIDATION:<runtime-id>
+DISPROVEN_CURRENT_ARTIFACT:<counter-proof>
+RELEASE_HEALTH:<reason>
+INTENTIONALLY_EXCLUDED:<reason>
+```
+
+Rules:
+
+- approval/filtering is never a disposition;
+- NEED_VALIDATION must point to one exact runtime scenario in this file;
+- DISPROVEN_CURRENT_ARTIFACT requires selected-current-artifact counter-proof;
+- RELEASE_HEALTH remains visible but is not promoted to gameplay BUG without a grounded player-visible consequence;
+- no material candidate may disappear between a per-map audit, this ledger, and canonical report projection.
+
+Batch conservation is not CLOSED while any listed NEED_VALIDATION item is unexecuted or INCONCLUSIVE. This does not turn runtime residue into a bug; it prevents the audit from being described as exhaustive/final prematurely.
+
+### Current reconciliation dispositions from client re-check
+
+| Candidate | Current disposition | Basis |
+| --- | --- | --- |
+| Attack last-second double ending | DISPROVEN_CURRENT_ARTIFACT | Current `endGame(arenaId, "victory")` rechecks timer expiry and converts late victory to timeout before completion handling. |
+| Attack ticking-area lease handoff | NEED_VALIDATION:RT-ATK-LEASE-HANDOFF | Async Minecraft-area removal can overlap logical lease reuse; exact command interleaving is runtime-sensitive. |
+| Defense ticking-area lease handoff | NEED_VALIDATION:RT-DEF-LEASE-HANDOFF | Same release/acquire boundary with three residency regions. |
+| Defense Speed Potion delivery atomicity | NEED_VALIDATION:RT-DEF-SPEED-POTION | Failure consequence is source-grounded; target-runtime command success is not. |
+| Defense internal version label v1.1.0 vs delivered v1.1.1 | RELEASE_HEALTH | Current metadata identity mismatch without grounded gameplay consequence. |
+| Circuit missing gameplay ticking areas | DISPROVEN_CURRENT_ARTIFACT | Current PathwayLoader dynamically creates/removes arena-specific `circuit_path_<arena>` residency. |
+| Circuit five-player capacity | INTENTIONALLY_EXCLUDED | Current artifact proves max_member 5 but no independent selected-artifact requirement for >5 players is grounded. |
+| Circuit version 1.0.2 / pack 1.0.1 / internal 1.0.0 | RELEASE_HEALTH | Current artifact identity is inconsistent, but no gameplay failure is yet grounded. |
+| Circuit far-chunk pathway residency | NEED_VALIDATION:RT-CIRCUIT-FAR-CHUNK | Dynamic residency exists; sufficiency under deployed simulation timing remains runtime-sensitive. |
+| Circuit round reconnect recovery | NEED_VALIDATION:RT-CIRCUIT-RECONNECT | Distinct round recovery owners require representative runtime proof. |
+| Five Nights L1 cave/windmill remote simulation | NEED_VALIDATION:RT-FNZ1-REMOTE-SIM | Current source has chunk-loaded spawn retry/bridge residency; remaining remote route behavior is runtime-sensitive. |
+| Deprecated command/API residue | RELEASE_HEALTH | Deprecation alone is not a gameplay defect; promote only when current hot-path behavior fails. |
+| Hardcoded spectator/default-arena residue | NEED_VALIDATION:RT-DEFAULT-ARENA-REACHABILITY | Must prove whether the dormant/default-arena path is reachable from a non-default active session before classification. |
+| Queued/requested kit-station materialization | NEED_VALIDATION:RT-KIT-STATION-MATERIALIZATION | Queue/request evidence is not proof that all required stations materialize in world state. |
 
 ## Execution rule
 
@@ -83,6 +126,19 @@ Same boundary as Attack, using Defense's three arena residency regions.
 **Promotion class:** BUG, economy/player-state.
 
 ---
+
+## Five Nights at Z Village L1 v1.1.0
+
+### RT-FNZ1-REMOTE-SIM — cave/windmill remote simulation
+
+**Deciding question:** Do required remote actors remain simulated and reach their intended route/objective while players follow normal authored positioning?
+
+**PASS**
+- Required actors spawn only after their target chunk is ready.
+- Cave/windmill route actors remain simulated and progression resolves normally.
+
+**FAIL / promote**
+- Required actors stall/unload/fail to progress in a way that blocks or incorrectly advances the game.
 
 ## The Clockwork Vault v1.0.1
 
@@ -266,6 +322,28 @@ Run reconnect at one representative state for each distinct recovery owner, not 
 
 ---
 
+## Cross-map targeted residue
+
+### RT-DEFAULT-ARENA-REACHABILITY — hardcoded default-arena/spectator residue
+
+Run only on artifacts where audit evidence retains a hardcoded default arena/session path.
+
+**PASS**
+- The path is unreachable in production, permission-gated, or resolves the current arena/session before mutation.
+
+**FAIL / promote**
+- A player in a non-default arena can reach the path and is teleported, mutated, messaged, or cleaned against the wrong arena/session.
+
+### RT-KIT-STATION-MATERIALIZATION — queued/requested station delivery
+
+Run only on artifacts where required kit/station placement is queued/requested rather than statically proven present.
+
+**PASS**
+- Every required station becomes materially present before players depend on it and remains owned by the correct arena/session.
+
+**FAIL / promote**
+- A required station remains absent/partial/stale while gameplay exposes it as available, blocking or misdirecting player interaction.
+
 ## Completion condition
 
 This runtime packet is complete when every item above has exactly one final disposition:
@@ -280,4 +358,4 @@ INCONCLUSIVE → remains explicit runtime residue
 
 Do not convert INCONCLUSIVE to PASS.
 
-The current source-side audit remains closed regardless of these runtime outcomes.
+Static/source proof may be complete, but batch reconciliation remains PARTIAL while any NEED_VALIDATION item is unexecuted or INCONCLUSIVE. The audit may only be described as exhaustive/final after every material candidate has an explicit terminal disposition and the conservation ledger balances.
