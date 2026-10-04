@@ -243,7 +243,7 @@ The client reported that only two of six arenas can run simultaneously. The sele
 
 This must **not** be dismissed merely because queue code exists. Under the Multi Arena Audit Contract, queueing is mitigation/behavior, not proof that two concurrent arenas is the intended delivered capacity.
 
-Current disposition: selected source proves **visible six-arena surface vs two-concurrent implementation**. Keep this open for classification against the current product requirement/client capacity contract before promoting it as DESIGN_MISMATCH.
+Current disposition: resolved below as a source-proven Major DESIGN_MISMATCH. The queue remains mitigation, not counter-proof for the delivered-capacity mismatch.
 
 The client also reported a last-second double ending. That specific issue is **not reproduced** in current source: `endGame(arenaId, "victory")` checks whether the game timer has already expired and converts late victory to timeout before completion handling.
 

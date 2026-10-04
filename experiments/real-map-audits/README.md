@@ -70,7 +70,11 @@ The reopened selected-artifact batch currently contains **16 source-proven BUGs*
 - **Orb of the Illusioner L2 v1.1.0** — 2 Major BUGs:
   - weapon/armor upgrades consume coins and then fail on an undefined `material` identifier;
   - active-game reload recovery aborts the arena because barricade validation references undefined `selectedBarricades`.
-- **The Circuit v1.0.2** — 1 Minor DESIGN_MISMATCH:\n  - normal gameplay oak planks + Survival crafting make the production DebugStick reachable without developer permission.\n- **Manhunt v1.0.0** — 1 Major DESIGN_MISMATCH:\n  - Arena 6 is materially incomplete relative to the authored arena replica; native voxel proof shows a concentrated missing-geometry region.\n- **Build & Decode v1.1.0** — 1 Minor DESIGN_MISMATCH:
+- **The Circuit v1.0.2** — 1 Minor DESIGN_MISMATCH:
+  - normal gameplay oak planks + Survival crafting make the production DebugStick reachable without developer permission.
+- **Manhunt v1.0.0** — 1 Major DESIGN_MISMATCH:
+  - Arena 6 is materially incomplete relative to the authored arena replica; native voxel proof shows a concentrated missing-geometry region.
+- **Build & Decode v1.1.0** — 1 Minor DESIGN_MISMATCH:
   - temporary coordinate-picker dev tooling is reachable by a normal Creative builder holding a stick.
 
 These are selected-artifact source findings. Runtime-only obligations remain separate and do not reduce or inflate this count.
@@ -88,27 +92,46 @@ Examples of historical/suspicious behavior that was **not** blindly promoted:
 - Aftershock scanner/dev surfaces without a proven ordinary-player capability path;
 - BlitzBuild script-event diagnostics, which are not ordinary-player reachable because `/scriptevent` requires operator-level Game Directors permission and cheats.
 
-## Batch audit status — multi-arena deep pass reopened
+## Batch audit status — source-side deep pass closed
 
-The earlier source-first reconciliation found the current confirmed issue set, but the batch is **not yet closed** under the repository's Multi Arena Audit Contract. A dedicated MODEL/STRESS pass is reopened for every selected artifact with multiple arena/replica instances.
+The current 22-artifact batch has completed its selected-artifact **source/package deep pass**, including the Multi Arena Audit Contract, client-reported search pressure, replica proof, capability reachability, roster/terminal ownership, shared-resource isolation, cleanup/reuse, and capacity+1 analysis.
 
-Current confirmed findings remain valid while this deeper pass runs:
+No material **source-decidable detection gap** remains open in this batch. Current confirmed findings are:
 
 - **16 source-proven BUGs**: 4 Blocker + 11 Major + 1 Minor.
 - **5 source-proven DESIGN_MISMATCHES**: 3 Major + 2 Minor.
 
-The reopened pass must close, where applicable:
+Source-side coverage closed, where applicable:
 
 - visible vs playable arena count;
 - concurrent arena limit and capacity + 1 behavior;
 - queue/admission feedback;
-- simultaneous start;
+- simultaneous-start ownership;
 - shared/global resource contention;
 - player/session/entity/projectile/score isolation;
 - timers/cinematics/world mutation isolation;
+- replica completeness;
+- developer/restricted capability reachability;
+- disconnect/reconnect roster semantics;
 - cleanup, second-run reuse, and generation safety.
 
-Runtime was **not executed** in the source audit. Existing canonical Bug Report V2 files remain current approved findings, but they must not be treated as evidence that multi-arena coverage is complete.
+### Runtime-only residue
+
+Minecraft runtime was **not executed** in this pass. The remaining obligations are intentionally narrow and are not current bugs:
+
+- Attack/Defense — exact asynchronous ticking-area release → next-lease acquisition interleaving at capacity+1;
+- Defense — Speed Potion transaction only if the configured command actually fails in the deployed runtime;
+- Clockwork Vault — overlapping Workshop cinematics that contend for the shared ticking-area name;
+- Beach Bedwars — death/disconnect same-tick ordering and terrain cleanup only if manifested;
+- FNAZ L2 / Orb L1 — navigation/entity simulation behavior that cannot be proven from source alone;
+- Mysteries L1/L2 — exact shared-button/entity interaction timing;
+- Raid Arena Classic — combat/death/leave/result cleanup ordering;
+- The Circuit — far-chunk entity/pathway marker behavior and round-specific reconnect timing;
+- Aftershock — physics/entity interactions in Quarry/Ascent.
+
+These runtime obligations do not reopen source discovery. A runtime result should promote a finding only when it proves a wrong player-visible outcome on the exact selected artifact.
+
+Existing canonical Bug Report V2 files remain the previously approved current bug ledger. Newly discovered deep-pass findings remain review evidence until explicit approval.
 
 
 ## Approval boundary

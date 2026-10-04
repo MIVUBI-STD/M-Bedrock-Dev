@@ -56,7 +56,7 @@ The bundle also contains scanner/selection adapter surfaces without an obvious i
 ## Audit obligations — not bugs
 
 - Runtime physics/entity interactions in quarry/ascent remain runtime-sensitive.
-- Developer scanner/wand reachability should be runtime-checked only if ordinary players can actually obtain/invoke those surfaces.
+- Developer scanner/wand/position-tool reachability was rechecked from selected-artifact acquisition paths; no ordinary-player trigger path was proven.
 
 ## Result
 

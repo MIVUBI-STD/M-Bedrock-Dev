@@ -165,7 +165,7 @@ This is **not admitted as a current player-facing defect** from source alone bec
 - current configured kits/shop surfaces inspected in this pass do not provide a stick;
 - no normal selected-artifact progression path to the required trigger item was proven.
 
-Keep it as source-hygiene/developer-tool residue unless runtime evidence proves a player-reachable stick path.
+A later selected-artifact reachability pass closes this as source-hygiene only: no ordinary-player stick/plank acquisition path was proven under the current block-break policy.
 
 ## Checks completed
 

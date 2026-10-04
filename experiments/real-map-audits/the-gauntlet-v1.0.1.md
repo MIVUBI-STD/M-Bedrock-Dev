@@ -121,11 +121,7 @@ devRetryLevel.itemId = "minecraft:blaze_rod"
 
 Production `itemUse` handlers call the skip/retry operations for the player's current arena and **do not consult the existing developer-permission registry**.
 
-This establishes the unsafe capability path once an ordinary player possesses the trigger item. The client additionally reports ordinary stick reachability from arena resources/crafting; current world-container proof for that inventory path still needs to be bound before this becomes a fully selected-artifact PROVEN report finding.
-
-Keep as a high-priority gameplay-translation obligation:
-- prove ordinary-player stick/blaze-rod reachability in the selected world;
-- if reachable, promote the stick path at least as a Major progression bypass.
+This establishes the unsafe capability path once an ordinary player possesses the trigger item. Ordinary-player stick reachability was subsequently closed from the selected artifact and is recorded as Proven finding 2 below.
 
 
 ## Proven finding 2 — client-reported developer capability reachability

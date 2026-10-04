@@ -85,7 +85,7 @@ The client note contains a mix of still-current and stale claims.
 - `Circuit Party` has `max_member: 5`.
 - Five arena configs exist, so the current design assigns at most one simultaneous player lane per party member.
 - Drive/pack/internal version labels remain inconsistent (Drive 1.0.2, pack 1.0.1, internal world naming 1.0.0).
-- `DebugStickService` is initialized in the production bootstrap and reacts to any held `minecraft:stick` without an internal permission check. Normal-player stick reachability still requires gameplay/world evidence before report promotion.
+- `DebugStickService` is initialized in the production bootstrap and reacts to any held `minecraft:stick` without an internal permission check. Normal-player reachability is resolved later in this record as a source-proven Minor DESIGN_MISMATCH.
 
 ### Not reproduced
 
@@ -120,7 +120,7 @@ Current source:
 
 No additional cross-arena state/mutation defect was established in these paths.
 
-The existing five-player party/classroom-capacity fact and unguarded DebugStick trigger remain separate capability/reachability questions; they are not promoted without a selected-artifact requirement/reachability proof.
+The five-player party/classroom-capacity fact remains a product-capacity fact without an independent selected-artifact requirement for a larger class size. DebugStick reachability is resolved separately as a source-proven Minor DESIGN_MISMATCH.
 
 
 ## Proven design mismatch — reachable DebugStick

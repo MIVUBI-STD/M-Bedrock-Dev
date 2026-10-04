@@ -496,7 +496,7 @@ This is not promoted to a source-proven bug because the exact interleaving of co
 4. Let the third arena acquire the newly freed slot immediately.
 5. Verify the third arena receives all three ticking areas and does not fail/abort while old-area removal is still completing.
 
-The queue itself is grounded and player-facing, so the two-arena cap remains a designed resource policy unless runtime proves this release-window failure.
+The queue itself is grounded and player-facing, but the six-visible-vs-two-concurrent capacity mismatch is classified separately below. This runtime obligation concerns only the release/acquire interleaving.
 
 
 ## Client-reported issue re-check — multi-arena capacity
@@ -508,7 +508,7 @@ The client reported that only two of six Defense arenas can run simultaneously. 
 - each active arena uses three arena-owned ticking areas;
 - additional arenas are queued.
 
-As with Attack, the queue is not blocking counter-proof for a capacity mismatch. The current audit keeps **six visible arenas vs two concurrent arenas** open for requirement/design classification instead of treating the hard-coded cap as automatically intended.
+As with Attack, the queue is not blocking counter-proof for a capacity mismatch. This is resolved below as a source-proven Major DESIGN_MISMATCH.
 
 Defense's three regions are materially larger than Attack's and are split to keep individual ticking-area coverage bounded; replacing them with one whole-arena ticking region is not assumed safe without target-runtime/platform proof.
 
