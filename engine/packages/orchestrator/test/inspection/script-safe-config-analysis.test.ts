@@ -46,6 +46,51 @@ describe("script safe config analysis", () => {
     ).toBe(false);
   });
 
+
+  it("resolves an immutable bundler-lowered var concurrency cap", () => {
+    const result = analyzeScriptSafeConfig([
+      parsed(
+        "bundle",
+        [
+          "var ARENA_COUNT = 6;",
+          "var MAX_CONCURRENT_ARENAS = 2;",
+          "function queue() {",
+          "  return MAX_CONCURRENT_ARENAS;",
+          "}",
+        ].join("\n"),
+      ),
+    ]);
+
+    expect(result.resolvedArenaCount).toBe(6);
+    expect(
+      result.resolvedArenaConcurrencyLimit,
+    ).toBe(2);
+  });
+
+  it("rejects a reassigned bundler-lowered concurrency variable", () => {
+    const result = analyzeScriptSafeConfig([
+      parsed(
+        "bundle",
+        [
+          "var MAX_CONCURRENT_ARENAS = 2;",
+          "MAX_CONCURRENT_ARENAS = 4;",
+        ].join("\n"),
+      ),
+    ]);
+
+    expect(
+      result.resolvedArenaConcurrencyLimit,
+    ).toBeUndefined();
+    expect(
+      result.failedBindings.some(
+        (item) =>
+          item.name ===
+            "MAX_CONCURRENT_ARENAS" &&
+          item.reason === "non-const",
+      ),
+    ).toBe(true);
+  });
+
   it("resolves named relative imports and aliases without executing modules", () => {
     const result = analyzeScriptSafeConfig([
       parsed(

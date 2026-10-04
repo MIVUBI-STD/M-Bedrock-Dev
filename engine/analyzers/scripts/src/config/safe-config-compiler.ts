@@ -753,6 +753,55 @@ function rejectionReason(
   return "unsupported-expression";
 }
 
+function identifierIsReassigned(
+  file: ts.SourceFile,
+  name: string,
+  declaration: ts.VariableDeclaration,
+): boolean {
+  let reassigned = false;
+
+  const visit = (node: ts.Node): void => {
+    if (reassigned) return;
+    if (node === declaration) return;
+
+    if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind >=
+        ts.SyntaxKind.FirstAssignment &&
+      node.operatorToken.kind <=
+        ts.SyntaxKind.LastAssignment &&
+      ts.isIdentifier(node.left) &&
+      node.left.text === name
+    ) {
+      reassigned = true;
+      return;
+    }
+
+    if (
+      (
+        ts.isPrefixUnaryExpression(node) ||
+        ts.isPostfixUnaryExpression(node)
+      ) &&
+      (
+        node.operator ===
+          ts.SyntaxKind.PlusPlusToken ||
+        node.operator ===
+          ts.SyntaxKind.MinusMinusToken
+      ) &&
+      ts.isIdentifier(node.operand) &&
+      node.operand.text === name
+    ) {
+      reassigned = true;
+      return;
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  ts.forEachChild(file, visit);
+  return reassigned;
+}
+
 export function compileScriptSafeConfig(
   text: string,
   source: SourceRef,
@@ -1072,12 +1121,19 @@ export function compileScriptSafeConfig(
       }
 
       const name = declaration.name.text;
-      if (!isConst) {
+      if (
+        !isConst &&
+        identifierIsReassigned(
+          file,
+          name,
+          declaration,
+        )
+      ) {
         rejected.push({
           name,
           reason: "non-const",
           detail:
-            "Only top-level const declarations are accepted by safe config compilation.",
+            "Mutable top-level let/var declarations are rejected. Bundler-lowered let/var is accepted only when no reassignment exists in the file.",
           source: nodeSource(file, declaration, source),
         });
         continue;
