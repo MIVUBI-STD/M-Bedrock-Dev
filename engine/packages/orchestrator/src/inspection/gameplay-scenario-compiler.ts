@@ -167,6 +167,18 @@ function runtimeComponents(
     });
   }
   if (
+    world.arenas.cleanup.resourceLedger.resources > 0
+  ) {
+    output.push({
+      id: "runtime:arena-cleanup",
+      label: "Arena cleanup resource ledger",
+      kind: "runtime-domain",
+      technicalRole: "Acquired gameplay resources and their terminal release coverage across tags, effects, scoreboards, callbacks, entities, permissions, membership, and dynamic properties.",
+      gameplayPurpose: "Return every completed or aborted session to a reusable baseline without leaking Run 1 state into Run 2.",
+      evidenceIds: ["runtime:arena-cleanup"],
+    });
+  }
+  if (
     world.chunks.tickingAreaAcquires > 0 ||
     world.chunks.tickingAreaReadinessStates > 0 ||
     world.chunks.capacityUncheckedLeases > 0 ||
@@ -997,6 +1009,7 @@ export function compileGameplayScenarioGraph(
         addIntentKinds("lifecycle", "phase", "state", "outcome");
         addRuntime(
           "runtime:arena",
+          "runtime:arena-cleanup",
           "runtime:structures",
           "runtime:entities",
           "runtime:inventory",
@@ -1164,6 +1177,7 @@ export function compileGameplayScenarioGraph(
     import("./gameplay-scenario-model.js").GameplayKnowledgeDomain
   >> = {
     "runtime:arena": "arena-lifecycle",
+    "runtime:arena-cleanup": "arena-lifecycle",
     "runtime:arena-replica-integrity": "world-structure",
     "runtime:chunks": "chunk-simulation",
     "runtime:entities": "entity-behavior",
