@@ -718,6 +718,120 @@ This matrix is not a tester checklist and must not be emitted as a parallel user
 
 ---
 
+## A9. High-Yield Family Contracts
+
+These contracts are mandatory when the selected map exposes the corresponding system. They refine the Blindspot Closure Matrix; they do not create a second audit lane.
+
+### Inventory / Loadout / Economy
+
+Build one writer matrix per player inventory/equipment/economy scope:
+
+```text
+boundary/event
+→ writer
+→ scope
+→ full clear / partial clear / grant / replace / purchase / refund
+→ idempotency or generation guard
+→ competing writer
+→ postcondition
+```
+
+Always include applicable boundaries:
+- fresh session;
+- join / late join;
+- disconnect / reconnect;
+- kit/loadout change;
+- shop purchase/refund;
+- death/respawn;
+- level transition;
+- retry/restart;
+- terminal cleanup;
+- replay/new session.
+
+Required contradiction searches:
+- stale item survives a fresh-session boundary;
+- managed cleanup misses ordinary inventory;
+- duplicate grant/purchase/reward after retry/reconnect;
+- two writers race or overwrite each other;
+- reset removes state that should persist;
+- persistence restores state that should have been cleared;
+- economy commit occurs without matching ownership/session guard.
+
+A player-visible inventory finding is PROVEN statically when the exact boundary, all applicable writers/clearers, missing exclusion/idempotency, and resulting wrong postcondition are grounded.
+
+### Multi-Arena / Shared Capacity
+
+Build:
+
+```text
+visible arenas
+→ admission owner
+→ declared limit
+→ actual shared resources per active arena
+→ safe resource budget
+→ queue/rejection behavior
+→ isolation selectors/state
+→ cleanup/release
+→ arena reuse
+```
+
+Always challenge:
+- visible capacity vs delivered concurrency;
+- simultaneous start;
+- safe limit and safe limit + 1;
+- global tags/selectors from arena-local paths;
+- cross-arena entity/world/UI/reward mutation;
+- one arena cleanup releasing another arena's resource;
+- reuse before old generation/reset completion;
+- reconnect assignment and stale arena ownership.
+
+Do not require runtime to prove a deterministic capacity mismatch when visible capacity, admission limit, and resource budget are source-grounded.
+
+### Progression / Wave / Objective
+
+For every required unit of progression, distinguish requested work from completed work:
+
+```text
+required work
+→ scheduled/pending
+→ attempt
+→ retry/deferred owner
+→ actual spawned/created/committed work
+→ live/outstanding accounting
+→ completion predicate
+→ transition
+```
+
+Always challenge:
+- pending work removed before retry resolves;
+- spawn/request failure disappears from accounting;
+- duplicate retry increments twice;
+- entity unload/remove bypasses decrement;
+- completion observes zero while required work remains pending;
+- transition can fire twice;
+- terminal path races normal completion;
+- wave/level reset leaves delayed callbacks from the old generation.
+
+A wave/progression finding is PROVEN when required work can deterministically escape the completion predicate or the transition can deterministically commit under an invalid state.
+
+### Family closure
+
+For each applicable family, closure requires one of:
+
+```text
+SAFE
+→ exact blocking guard/ownership/accounting proof
+
+CONTRADICTION
+→ send to STRESS / PROVE
+
+UNRESOLVED
+→ preserve the exact missing claim and proof route
+```
+
+Generic statements such as “needs runtime testing” do not close a family.
+---
+
 # B. MODEL
 
 ## B1. Actor / Entity Contract
