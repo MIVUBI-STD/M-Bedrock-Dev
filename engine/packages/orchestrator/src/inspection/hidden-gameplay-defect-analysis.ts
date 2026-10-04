@@ -641,6 +641,15 @@ function auditScenarioPresetFromModel(
     hasDeferredWork: deferredWork,
     hasRepeatedRunSurface:
       input.world.arenas.detected,
+    hasTransactionalGameplay:
+      input.world.economy.paths.length > 0 ||
+      input.world.inventory.lifecyclePaths.length > 0,
+    hasSimulationDistanceDependency:
+      input.world.entities.definitions > 0 &&
+      (
+        input.world.chunks.leases.length > 0 ||
+        input.world.spatial.resolvedScriptEffects > 0
+      ),
   });
 }
 
@@ -841,6 +850,15 @@ export function refreshHiddenGameplayDefectsForWorld(
         ),
       hasRepeatedRunSurface:
         world.arenas.detected,
+      hasTransactionalGameplay:
+        world.economy.paths.length > 0 ||
+        world.inventory.lifecyclePaths.length > 0,
+      hasSimulationDistanceDependency:
+        world.entities.definitions > 0 &&
+        (
+          world.chunks.leases.length > 0 ||
+          world.spatial.resolvedScriptEffects > 0
+        ),
     });
 
   const scenarioGraph =
