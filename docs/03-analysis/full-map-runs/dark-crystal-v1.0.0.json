@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "runType": "FULL_PRODUCTION_REAUDIT",
+  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "target": {
+    "map": "Dark Crystal",
+    "version": "1.0.0",
+    "worldFileId": "1ELPTLlxFiyLhd0Wv3PHnnXO2PD9VHyJq",
+    "artifactFingerprint": "sha256:189a4a85e704a03a244d9bf42abf289039198831a1d2d933276a49db05a4d79b",
+    "worldFileFetched": true,
+    "worldFileSizeBytes": 9874701
+  },
+  "proofQueue": [
+    {
+      "id": "DCR-PQ-01",
+      "check": "Mandatory Replica / Arena Geometry",
+      "state": "PROVING"
+    },
+    {
+      "id": "DCR-PQ-02",
+      "check": "Role / Team / Participant Ownership",
+      "state": "PROVING"
+    },
+    {
+      "id": "DCR-PQ-03",
+      "check": "Combat / Death / Respawn / Reconnect",
+      "state": "PROVING"
+    },
+    {
+      "id": "DCR-PQ-04",
+      "check": "Objective / Progression / Terminal Integrity",
+      "state": "PROVING"
+    },
+    {
+      "id": "DCR-PQ-05",
+      "check": "Inventory / Equipment / Item Lifecycle",
+      "state": "PROVING"
+    },
+    {
+      "id": "DCR-PQ-06",
+      "check": "State-Agnostic Fresh-Session Reset",
+      "state": "PROVING"
+    },
+    {
+      "id": "DCR-PQ-07",
+      "check": "Cross-Player / Cross-Team Mutation",
+      "state": "PROVING"
+    },
+    {
+      "id": "DCR-PQ-08",
+      "check": "World Mutation / Reset / Second Run",
+      "state": "PROVING"
+    },
+    {
+      "id": "DCR-PQ-09",
+      "check": "Connection / Active-Session Reload Recovery",
+      "state": "PROVING"
+    },
+    {
+      "id": "DCR-PQ-10",
+      "check": "Player Capability / Developer Exposure",
+      "state": "PROVING"
+    },
+    {
+      "id": "DCR-PQ-11",
+      "check": "Adversarial CROSS / RACE / RETAIN / REPLAY / ESCAPE / ORPHAN",
+      "state": "PROVING"
+    }
+  ],
+  "coverageGates": {
+    "materialSurfaceRouting": "IN_PROGRESS",
+    "mutableResourceOwnership": "IN_PROGRESS",
+    "requiredCrosschecks": "IN_PROGRESS",
+    "materialScenarioAccounting": "IN_PROGRESS",
+    "playerControlledSurfaceAccounting": "IN_PROGRESS",
+    "genericNeedValidation": 0
+  },
+  "evidenceReceiptRequired": true
+}
