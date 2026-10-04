@@ -2031,433 +2031,103 @@ Every material boundary has selected-artifact grounding and relevant edge-case s
 
 # C. STRESS
 
-## C1. Combat Lifecycle
+STRESS does not redefine the integrity contracts selected in UNDERSTAND. It applies adversarial timing, boundary, interruption, and repeated-run scenarios to the applicable checks already routed by A22.
 
-### Trigger
+## C1. Stress Scenario Builder
 
-When damage/combat/downed/death mechanics exist.
+For each applicable check with a material mutable lifecycle, generate only scenarios supported by discovered mechanics.
 
-### Required Chain
+Use these stress dimensions when relevant:
 
 ```text
-Damage
-→ Hurt
-→ Downed?
-→ Revive?
-→ Death
-→ Respawn
-→ Terminal?
+interrupt
+→ disconnect / leave / death / abort
+
+overlap
+→ two owners / two terminal triggers / old + new generation
+
+delay
+→ timer / callback / retry / async reset
+
+boundary
+→ safe maximum / safe maximum + 1 / geometry edge
+
+repeat
+→ retry / replay / second run / reload
+
+partial failure
+→ one step succeeds and a later step fails
 ```
 
-### Mandatory Questions
+Do not duplicate the base contract here. Reference the applicable A-section check and attack its weak boundaries.
 
-- Is death distinct from hurt/downed?
-- Can self-revive happen?
-- Can multiple revivers race?
-- Can stale revive commit?
-- Can revive happen after death?
-- Are projectiles/effects cleaned up?
-- Is respawn generation-safe?
+### Mandatory combat extension
 
-### Failure Patterns
-
-- self revive where forbidden;
-- multiple revive ownership;
-- stale revive;
-- revive after terminal death;
-- projectile/effect survives cleanup;
-- combat callback mutates next run.
-
-### Output
-
-Combat Lifecycle Contract.
-
-### Closure Rule
-
-Every combat terminal/recovery path is accounted or explicitly unresolved.
+When combat/downed/revive exists, additionally challenge:
+- self-revive where forbidden;
+- multiple revivers;
+- stale revive after death/terminal;
+- respawn ownership after reconnect;
+- projectile/effect cleanup.
 
 ---
 
-## C2. Inventory Lifecycle
+## C2. Repeated-Run Baseline Comparison
 
-### Trigger
+When replay, retry, reload, or arena reuse is possible, compare the next-run baseline against the valid fresh baseline defined by A30.
 
-When gameplay grants/equips/drops/restores items.
-
-### Required Chain
-
-```text
-Grant
-→ Equip
-→ Use
-→ Drop
-→ Consume
-→ Clear
-→ Restore
-```
-
-### Mandatory Contexts
-
-- start;
-- death;
-- respawn;
-- retry;
-- disconnect;
-- reconnect;
-- cleanup;
-- second run.
-
-### Failure Patterns
-
-- inventory cleared but equipment remains;
-- copy mutation without writeback;
-- multiple restore owners;
-- reconnect duplicates loadout;
-- stale item survives second run.
-
-### Output
-
-Inventory Lifecycle Contract.
-
-### Closure Rule
-
-Every material item class has a deterministic lifecycle across all applicable recovery/cleanup contexts.
-
----
-
-## C3. Reward / Economy Contract
-
-### Trigger
-
-When rewards, loot, score, currency, pickups, or shops exist.
-
-### Required Record
-
-```text
-Source
-Trigger
-Eligibility
-Delivery
-Consume
-Idempotency
-Persistence
-Cleanup
-```
-
-### Mandatory Questions
-
-- Can engine loot and script reward overlap?
-- Does pickup conversion consume/reconcile the pickup?
-- Can terminal callbacks award twice?
-- Is reward bound to the correct player/arena/run?
-- What happens if inventory is full?
-
-### Failure Patterns
-
-- duplicate reward path;
-- non-idempotent reward;
-- pickup credits without consume;
-- stale drops survive cleanup;
-- reward commits after terminal ownership changes.
-
-### Output
-
-Reward/Economy Contract.
-
-### Closure Rule
-
-Every material reward path has grounded entitlement, delivery, idempotency, and cleanup semantics.
-
----
-
-## C4. Persistence Matrix
-
-### Trigger
-
-When persistent/dynamic/saveable state exists.
-
-### Required Rows
-
-Where applicable:
-
-```text
-level
-wave
-timer
-score
-currency
-inventory
-upgrade
-life state
-enemy state
-arena ownership
-pending callback
-objective
-```
-
-### Required Columns
-
-```text
-Persist on Disconnect?
-Restore on Reconnect?
-Persist on Reload?
-Clear on Defeat?
-Clear on Victory?
-Clear on Cleanup?
-Clear Before Second Run?
-```
-
-### Failure Patterns
-
-- append without clear;
-- world-scoped state for run-local behavior;
-- timer/callback not reconstructed;
-- stale session/arena ownership survives;
-- state over-persists or under-persists.
-
-### Output
-
-Persistence Matrix.
-
-### Closure Rule
-
-Every material persisted state has explicit save/reset/restore behavior for applicable lifecycle boundaries.
-
----
-
-## C5. Deferred Work Registry
-
-### Trigger
-
-When timers, intervals, delayed callbacks, cinematics, delayed spawn/teleport/cleanup exist.
-
-### Required Record
-
-```text
-Scheduled By
-Owner
-Generation
-Delay
-Mutation
-Guard Before Commit
-Cancel Path
-```
-
-### Mandatory Questions
-
-- Is owner still valid at commit?
-- Is generation/revision unchanged?
-- Can cleanup/retry/reconnect happen first?
-- Is pending work cancelled or revalidated?
-
-### Failure Patterns
-
-- callback from old generation mutates new run;
-- delayed teleport moves reconnected player;
-- delayed spawn occurs after terminal;
-- timer survives cleanup.
-
-### Output
-
-Deferred Work Registry.
-
-### Closure Rule
-
-Every material deferred mutation is generation/owner guarded or explicitly unresolved.
-
----
-
-## C6. Terminal Ownership
-
-### Trigger
-
-When two or more terminal conditions exist.
-
-### Required Terminal Events
-
-Applicable examples:
-
-```text
-victory
-defeat
-timeout
-all dead
-objective complete
-abort
-disconnect
-admin stop
-```
-
-### Mandatory Questions
-
-For each materially co-occurring pair:
-
-- Can both become true in the same tick/window?
-- Which authority wins?
-- Is the loser invalidated?
-- Can losing callbacks still commit?
-
-### Failure Patterns
-
-- duplicate terminal transition;
-- reward after defeat;
-- respawn after victory;
-- cleanup before result commit;
-- timeout and objective completion both commit.
-
-### Output
-
-Terminal Collision Matrix.
-
-### Closure Rule
-
-Every materially concurrent terminal pair has deterministic ownership.
-
----
-
-## C7. Cleanup Ledger
-
-### Trigger
-
-Whenever gameplay acquires mutable resources.
-
-### Required Resources
-
-Applicable:
-
-```text
-membership
-tags
-effects
-entities
-timers
-callbacks
-scoreboards
-inventory
-structures
-gamerules
-ticking areas
-input permissions
-world mutations
-```
-
-### Required Record
-
-```text
-Resource
-Acquire
-Owner
-Release/Reset
-Terminal Paths Covered
-```
-
-### Failure Patterns
-
-- acquired with no release;
-- cleanup reachable only from one terminal;
-- partial equipment/state cleanup;
-- global resource not restored;
-- callback/resource survives arena reuse.
-
-### Output
-
-Cleanup Ledger.
-
-### Closure Rule
-
-Every acquired material resource is released/reset on every applicable terminal path or explicitly blocked.
-
----
-
-## C8. Second-Run Equivalence
-
-### Trigger
-
-When replay/retry/arena reuse is possible.
-
-### Mandatory Comparison
-
-Compare Run 2 baseline against a fresh run for:
-
-- state;
+Compare only applicable state/resources:
+- assignments/ownership;
 - entities;
-- inventory;
-- score;
-- structures;
-- timers;
-- callbacks;
-- arena/session ownership;
-- global state.
+- inventory/loadout/economy;
+- score/objectives;
+- structures/world mutation;
+- timers/callbacks/subscriptions;
+- residency/ticking resources;
+- persistent properties/tags.
 
-### Failure Pattern
-
-Run 2 is not gameplay-equivalent to a fresh run because stale state/resource survives.
-
-### Output
-
-Second-Run Equivalence Assessment.
-
-### Closure Rule
-
-Run 2 is gameplay-equivalent or every divergence is grounded as intended.
+Any divergence must be classified as intentional persistence, contradiction, or unresolved exact claim.
 
 ---
 
-## C9. Cross-System Activation
+## C3. Activated Cross-System Scenarios
 
-### Trigger
+Use A8 Cross-System Coverage, A16 Simulation–Entity–World Crosscheck, and A31 Software-State Crosscheck as the scenario source.
 
-Automatically when relevant systems coexist.
+Activate an interaction only when systems coexist and share material state, ownership, timing, selector, resource, or commit target.
 
-### Activation Rules
-
-At minimum:
+High-yield examples:
 
 ```text
-IF reconnect + death/respawn
-→ require Reconnect × Death/Respawn
-
-IF reconnect + inventory/reward
-→ require Reconnect × Inventory/Rewards
-
-IF reload + timer/deferred work
-→ require Reload × Deferred Work
-
-IF retry + progression/reward
-→ require Retry × Progression/Rewards
-
-IF cleanup + entity/world/reward
-→ require relevant Cleanup intersection
-
-IF multi-arena + global state/selector/projectile
-→ require relevant Multi-Arena intersection
-
-IF structure load + enemy spawn/teleport
-→ require Structure Load intersection
-
-IF death/timeout + objective completion
-→ require Terminal Collision intersection
-
-IF player leave + arena ownership
-→ require ownership intersection
+reconnect × death/respawn
+reconnect × inventory/reward
+reload × deferred work
+retry × progression/reward
+cleanup × entity/world/residency
+multi-arena × global selector/state
+structure mutation × spawn/teleport
+timeout × objective completion
+player leave × arena ownership
+old generation × new generation
+partial transaction × retry
 ```
 
-### Mandatory Questions
-
-- Can both systems act in the same tick/window?
-- Which one owns authority?
+For each activated scenario ask:
+- Which owner has authority?
+- Can both operations overlap?
 - Can one invalidate the other's pending work?
 - Is state revalidated before commit?
-- Can the combination duplicate/skip/reorder transition?
-- Can state leak to another player/arena/run?
+- Can the combination duplicate, skip, or reorder a transition?
+- Can state/resource leak to another player, arena, or run?
 
-### Output
+### Closure
 
-Activated Cross-System Scenario Set.
+STRESS is closed when every activated scenario is:
+- blocked by exact safety proof;
+- translated into a contradiction for PROVE;
+- or preserved as one exact unresolved claim.
 
-### Closure Rule
-
-Every applicable activated intersection is checked, blocked, or explicitly not-applicable with reason.
+Do not create a broad generic testing matrix.
 
 ---
 
