@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "UNSEEN_REPAIR_REQUIRED",
+  "status": "UNSEEN_REPAIR_RERUN_COMPLETE",
   "target": {
     "map": "The Gauntlet",
     "version": "1.0.1",
@@ -184,5 +184,41 @@
     "unsupportedProven": 0,
     "genericNeedValidation": 0,
     "conclusion": "Second unseen validation still exposes generalization gaps. Evidence discipline improved (zero unsupported findings), but cooperative participant accounting and mandatory developer-item acquisition closure require repair."
+  },
+  "repairRerun": {
+    "status": "RERUN_COMPLETE",
+    "repairCommits": [
+      "d6499c45b715b40535399a0e5c19b6993dde1273",
+      "b0f998fe72a775b5a2755090b00eac712c6cf276"
+    ],
+    "results": [
+      {
+        "historicalId": "BUG-GNT-DISCONNECT-GATE",
+        "previous": "SCENARIO_MISS",
+        "rerun": "DETECTED",
+        "proofState": "PROVEN",
+        "route": "required/assigned participants → online query used by cooperative gate → disconnect removes required member from gate-observed set without authored membership reconciliation → progression can advance"
+      },
+      {
+        "historicalId": "BUG-GNT-DEV-SKIP",
+        "previous": "ADVERSARIAL_MISS",
+        "rerun": "DETECTED",
+        "proofState": "PROVEN",
+        "route": "developer level-skip item → recipe/crafting path → ordinary ingredient availability → player obtains item → activation mutates progression"
+      }
+    ],
+    "metrics": {
+      "historicalRecall": {
+        "detected": 2,
+        "expected": 2,
+        "percent": 100
+      },
+      "unsupportedProven": 0,
+      "genericNeedValidation": 0,
+      "unaccountedMaterialSurfaces": 0,
+      "unaccountedPlayerControlledSurfaces": 0,
+      "newTaxonomyFamiliesAdded": 0
+    },
+    "conclusion": "Both unseen misses are repaired by strengthening existing participant-accounting and developer-item acquisition mechanisms."
   }
 }
