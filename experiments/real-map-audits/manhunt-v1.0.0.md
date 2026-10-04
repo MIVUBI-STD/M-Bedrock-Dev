@@ -35,3 +35,16 @@ Current source explicitly tracks each round participant with role, health, onlin
 Manhunt v1.0.0: **0 source-proven gameplay findings** in this pass.
 
 No historical regression entry should be created without later current-artifact/runtime proof.
+
+
+## Client-reported issue re-check — Arena 6 topology
+
+The client reported Arena 6 as physically incomplete while Arenas 1-5 are full replicas.
+
+Current selected source confirms the gameplay expectation side:
+
+- six arenas are configured;
+- each arena advertises up to 16 players;
+- Arena 6 has a normal join area and spawn and is therefore startable from script configuration.
+
+Whether Arena 6's world terrain is truncated is a **world-DB/topology claim** and cannot be accepted or rejected from script configuration alone. Keep this as a high-priority replica-divergence obligation until native world comparison proves Arena 6 equivalent or materially incomplete.

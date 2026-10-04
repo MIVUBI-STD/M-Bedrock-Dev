@@ -497,3 +497,17 @@ This is not promoted to a source-proven bug because the exact interleaving of co
 5. Verify the third arena receives all three ticking areas and does not fail/abort while old-area removal is still completing.
 
 The queue itself is grounded and player-facing, so the two-arena cap remains a designed resource policy unless runtime proves this release-window failure.
+
+
+## Client-reported issue re-check — multi-arena capacity
+
+The client reported that only two of six Defense arenas can run simultaneously. The selected v1.1.1 artifact confirms:
+
+- six join areas / arena configs exist;
+- `MAX_CONCURRENT_ARENAS = 2`;
+- each active arena uses three arena-owned ticking areas;
+- additional arenas are queued.
+
+As with Attack, the queue is not blocking counter-proof for a capacity mismatch. The current audit keeps **six visible arenas vs two concurrent arenas** open for requirement/design classification instead of treating the hard-coded cap as automatically intended.
+
+Defense's three regions are materially larger than Attack's and are split to keep individual ticking-area coverage bounded; replacing them with one whole-arena ticking region is not assumed safe without target-runtime/platform proof.

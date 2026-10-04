@@ -114,3 +114,17 @@ The session lifecycle persists resumable arena state, pauses safe phases when pa
 Build & Decode v1.1.0: **1 source-proven DESIGN_MISMATCH (Minor)**.
 
 Do not promote it to historical reliability knowledge until the approval boundary is crossed.
+
+
+## Client-reported issue re-check — current artifact
+
+The supplied client note described an older/smaller implementation with one playable plot, a global Exit action, and disconnected students remaining selectable.
+
+Those claims are **not reproduced by the selected v1.1.0 artifact**:
+
+- current `ArenaConfig` defines four independent arenas (`arena_1` through `arena_4`) with offset plot/lobby/team bounds;
+- the slot-9 Exit flow calls `depart(game, player.id, "exit")`, removing only the confirming player;
+- `playerLeave` routes into the session lifecycle's disconnect handling;
+- disconnected members receive offline deadlines, safe phases pause when required participants/builders are missing, and expiry removes the disconnected member before continuing/aborting.
+
+The already-proven production debug-stick DESIGN_MISMATCH remains valid and separate.

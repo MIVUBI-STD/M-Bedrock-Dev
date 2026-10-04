@@ -230,3 +230,21 @@ Narrow validation:
 3. End one active arena while the second remains active.
 4. Allow the third arena to acquire immediately.
 5. Verify all required ticking areas are created and the third start does not fail during the prior arena's removal window.
+
+
+## Client-reported issue re-check — multi-arena capacity
+
+The client reported that only two of six arenas can run simultaneously. The selected v1.1.1 artifact confirms the implementation fact:
+
+- six arena configs / join surfaces exist;
+- `MAX_CONCURRENT_ARENAS = 2`;
+- each active arena leases three ticking areas;
+- a third arena is queued and receives a queue-position message.
+
+This must **not** be dismissed merely because queue code exists. Under the Multi Arena Audit Contract, queueing is mitigation/behavior, not proof that two concurrent arenas is the intended delivered capacity.
+
+Current disposition: selected source proves **visible six-arena surface vs two-concurrent implementation**. Keep this open for classification against the current product requirement/client capacity contract before promoting it as DESIGN_MISMATCH.
+
+The client also reported a last-second double ending. That specific issue is **not reproduced** in current source: `endGame(arenaId, "victory")` checks whether the game timer has already expired and converts late victory to timeout before completion handling.
+
+A non-admin selection-stick logger is still initialized in production and reacts to any held `minecraft:stick`; ordinary-player stick reachability remains a separate proof question.

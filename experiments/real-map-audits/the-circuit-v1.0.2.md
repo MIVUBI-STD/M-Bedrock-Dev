@@ -74,3 +74,33 @@ They are not admitted as bugs without current causal proof.
 The Circuit v1.0.2 is recorded as **0 current source-proven gameplay findings** in this pass.
 
 The metadata mismatch between the file label (v1.0.2) and BP/RP manifest version (v1.0.1) should be cleaned separately if package-version identity is important, but it is not treated as a gameplay defect.
+
+
+## Client-reported issue re-check — current artifact
+
+The client note contains a mix of still-current and stale claims.
+
+### Still current
+
+- `Circuit Party` has `max_member: 5`.
+- Five arena configs exist, so the current design assigns at most one simultaneous player lane per party member.
+- Drive/pack/internal version labels remain inconsistent (Drive 1.0.2, pack 1.0.1, internal world naming 1.0.0).
+- `DebugStickService` is initialized in the production bootstrap and reacts to any held `minecraft:stick` without an internal permission check. Normal-player stick reachability still requires gameplay/world evidence before report promotion.
+
+### Not reproduced
+
+The claim that Circuit creates no gameplay ticking areas is stale for the selected artifact.
+
+Current flow:
+
+```text
+SessionStartService
+→ PathwayLoader.ensureArena(...)
+→ _activateTickingArea(...)
+→ tickingarea add <gameplay pathway bounds> <arena-specific name> true
+→ pathway marker initialization
+```
+
+The ticking area is removed again when the arena/gameplay is deactivated. Therefore the empty static `arena.tickingAreas` array is not missing-residency proof in this version.
+
+The five-player classroom-capacity concern is real as an implementation/product-capacity fact, but it is not automatically a gameplay BUG without adopting a higher required class capacity as the current requirement.

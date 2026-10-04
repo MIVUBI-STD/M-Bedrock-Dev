@@ -104,3 +104,25 @@ Exit-vote quorum intentionally uses currently online participants. This is a sep
 The Gauntlet v1.0.1: **1 source-proven Major BUG**.
 
 Do not ingest into historical reliability knowledge until the explicit approval boundary is crossed.
+
+
+## Client-reported issue re-check — developer skip/retry items
+
+The client reported that students can skip a level with a stick and retry it with a blaze rod.
+
+The selected v1.0.1 source confirms the developer tooling is live:
+
+```text
+devSkipLevel.enabled = true
+devSkipLevel.itemId = "minecraft:stick"
+devRetryLevel.enabled = true
+devRetryLevel.itemId = "minecraft:blaze_rod"
+```
+
+Production `itemUse` handlers call the skip/retry operations for the player's current arena and **do not consult the existing developer-permission registry**.
+
+This establishes the unsafe capability path once an ordinary player possesses the trigger item. The client additionally reports ordinary stick reachability from arena resources/crafting; current world-container proof for that inventory path still needs to be bound before this becomes a fully selected-artifact PROVEN report finding.
+
+Keep as a high-priority gameplay-translation obligation:
+- prove ordinary-player stick/blaze-rod reachability in the selected world;
+- if reachable, promote the stick path at least as a Major progression bypass.
