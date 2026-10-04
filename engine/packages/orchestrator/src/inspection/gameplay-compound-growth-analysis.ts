@@ -66,6 +66,56 @@ export function analyzeCompoundBoundaries(
   }
 
   if (
+    world.arenas.detected &&
+    (world.arenas.count ?? 0) > 1
+  ) {
+    const staticLeaseKeys = [
+      ...new Set(
+        world.chunks.leases
+          .map((lease) => lease.leaseKey)
+          .filter(
+            (leaseKey): leaseKey is string =>
+              typeof leaseKey === "string" &&
+              leaseKey.trim().length > 0,
+          ),
+      ),
+    ].sort();
+
+    for (const leaseKey of staticLeaseKeys) {
+      const leases = world.chunks.leases.filter(
+        (lease) => lease.leaseKey === leaseKey,
+      );
+      const lifecycleOwned = leases.some(
+        (lease) =>
+          lease.acquireRegions.length > 0 &&
+          lease.releaseRegions.length > 0,
+      );
+      if (!lifecycleOwned) continue;
+
+      output.push({
+        id:
+          "compound-boundary:multi-arena-static-lease:" +
+          leaseKey,
+        dimensions: [
+          "arenas=" + String(world.arenas.count ?? 0),
+          "leaseKey=" + leaseKey,
+          "leaseOwners=" +
+            String(
+              new Set(
+                leases.map((lease) => lease.scriptId),
+              ).size,
+            ),
+        ],
+        evidenceIds: [
+          "analysis:chunk-simulation",
+        ],
+        reason:
+          "A multi-arena artifact acquires and releases a literal named simulation resource. Prove the resource is intentionally shared/serialized or arena-namespaced; otherwise one arena lifecycle can remove or replace another arena's active lease.",
+      });
+    }
+  }
+
+  if (
     world.chunks.capacityUncheckedLeases > 0 &&
     world.arenas.detected &&
     (world.arenas.count ?? 0) > 1

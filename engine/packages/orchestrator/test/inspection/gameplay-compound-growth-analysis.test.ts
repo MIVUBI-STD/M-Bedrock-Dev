@@ -67,4 +67,33 @@ describe("compound boundary and accumulation analysis", () => {
       ]),
     );
   });
+
+  it("flags literal simulation lease names for multi-arena isolation proof", () => {
+    const result = analyzeCompoundBoundaries({
+      arenas: {
+        detected: true,
+        count: 6,
+      },
+      chunks: {
+        capacityUncheckedLeases: 0,
+        leases: [{
+          scriptId: "scripts/cinematic.ts",
+          leaseKey: "workshop_cinematic",
+          acquireRegions: ["start"],
+          releaseRegions: ["finish"],
+          capacityCheckRegions: [],
+          status: "paired",
+        }],
+      },
+    } as any);
+
+    expect(
+      result.some(
+        (item) =>
+          item.id ===
+          "compound-boundary:multi-arena-static-lease:workshop_cinematic",
+      ),
+    ).toBe(true);
+  });
+
 });
