@@ -7,6 +7,7 @@ import {
 import {
   BUG_FINDER_CATEGORIES,
   BUG_REPORT_V2_FOUND_BY_VALUES,
+  BUG_REPORT_V2_ISSUE_TYPES,
   BUG_REPORT_V2_REPAIR_BY_VALUES,
   BUG_SEVERITIES,
 } from "../src/index.js";
@@ -25,6 +26,7 @@ interface BugReportSchema {
         readonly severity?: EnumSchema;
         readonly category?: EnumSchema;
         readonly foundBy?: EnumSchema;
+        readonly issueType?: EnumSchema;
       };
     };
   };
@@ -51,5 +53,7 @@ describe("Bug Report V2 schema/runtime parity", () => {
       .toEqual(BUG_FINDER_CATEGORIES);
     expect(bug?.foundBy?.enum)
       .toEqual(BUG_REPORT_V2_FOUND_BY_VALUES);
+    expect(bug?.issueType?.enum)
+      .toEqual(BUG_REPORT_V2_ISSUE_TYPES);
   });
 });
