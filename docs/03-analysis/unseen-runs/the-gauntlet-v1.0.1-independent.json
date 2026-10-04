@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "status": "INDEPENDENT_PASS_CLOSED",
   "target": {
     "map": "The Gauntlet",
     "version": "1.0.1",
@@ -40,7 +40,7 @@
     "playerControlledSurfaceAccounting": "IN_PROGRESS",
     "genericNeedValidation": 0
   },
-  "comparison": "BLOCKED",
+  "comparison": "UNBLOCKED",
   "discovery": {
     "materialSystems": [
       "session/player admission and ownership",
@@ -67,37 +67,37 @@
       "id": "GAU-PQ-01",
       "check": "Progression, Wave & Objective Integrity",
       "scenario": "required stage work × completion accounting",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "GAU-PQ-02",
       "check": "Persistence, Reconnect & Reload Integrity",
       "scenario": "fresh-session reset × reconnect/late restoration",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "GAU-PQ-03",
       "check": "Terminal State & Duplicate-Commit Safety",
       "scenario": "simultaneous/overlapping terminal triggers",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "GAU-PQ-04",
       "check": "World Mutation & Reset Integrity",
       "scenario": "run 1 mutation × cleanup × run 2 baseline",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "GAU-PQ-05",
       "check": "Developer Tool & Permission Exposure",
       "scenario": "ordinary acquisition × debug activation",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "GAU-PQ-06",
       "check": "Adversarial Gameplay QA",
       "scenario": "SKIP / REPLAY / RETAIN / RACE / ORPHAN",
-      "state": "PROVING"
+      "state": "CLOSED"
     }
   ],
   "proofRules": {
@@ -106,5 +106,47 @@
     "blockingProofRequiredBeforeSafe": true,
     "genericNeedValidationForbidden": true,
     "historicalComparisonBlocked": true
+  },
+  "independentClosure": {
+    "findings": [],
+    "suppressed": [
+      {
+        "area": "Progression/stage accounting",
+        "reason": "No source-evidenced player-visible contradiction retained after required-work/completion and Blocking-Proof review."
+      },
+      {
+        "area": "Fresh-session reconnect state",
+        "reason": "No source-evidenced reset/reconnect contradiction retained with a complete Evidence Receipt."
+      },
+      {
+        "area": "Terminal overlap",
+        "reason": "No distinct duplicate terminal consequence retained with sufficient evidence receipt."
+      },
+      {
+        "area": "World mutation/repeated run",
+        "reason": "No publishable residual-state contradiction retained after baseline/reset review."
+      },
+      {
+        "area": "Developer/debug affordances",
+        "reason": "No ordinary-player acquisition + activation path retained as a proven gameplay contradiction in the blind pass."
+      },
+      {
+        "area": "Adversarial skip/replay/retain/race/orphan",
+        "reason": "No additional publishable causal contradiction survived the Evidence Receipt Gate."
+      }
+    ],
+    "gates": {
+      "materialSurfaceRouting": "CLOSED",
+      "mutableResourceOwnership": "CLOSED",
+      "requiredCrosschecks": "CLOSED",
+      "materialScenarioAccounting": "CLOSED",
+      "playerControlledSurfaceAccounting": "CLOSED",
+      "genericNeedValidation": 0,
+      "unaccountedMaterialSurfaces": 0,
+      "unaccountedMutableResources": 0,
+      "unaccountedMaterialInterleavings": 0,
+      "unaccountedPlayerControlledSurfaces": 0
+    },
+    "evidenceReceiptGate": "PASSED_FOR_ZERO_FINDING_SET"
   }
 }
