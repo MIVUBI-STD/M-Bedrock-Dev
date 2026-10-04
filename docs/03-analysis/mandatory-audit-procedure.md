@@ -664,7 +664,7 @@ Gameplay Model Closure is `CLOSED` only when:
 `GameplayModelClosure`.
 ---
 
-## A8. Blindspot Closure Matrix
+## A8. Cross-System Coverage Matrix
 
 ### Purpose
 
@@ -718,11 +718,11 @@ This matrix is not a tester checklist and must not be emitted as a parallel user
 
 ---
 
-## A9. High-Yield Family Contracts
+## A9. Core Gameplay Integrity Contracts
 
 These contracts are mandatory when the selected map exposes the corresponding system. They refine the Blindspot Closure Matrix; they do not create a second audit lane.
 
-### Inventory / Loadout / Economy
+### Inventory, Loadout & Economy Integrity
 
 Build one writer matrix per player inventory/equipment/economy scope:
 
@@ -759,7 +759,7 @@ Required contradiction searches:
 
 A player-visible inventory finding is PROVEN statically when the exact boundary, all applicable writers/clearers, missing exclusion/idempotency, and resulting wrong postcondition are grounded.
 
-### Multi-Arena / Shared Capacity
+### Multi-Arena Capacity & Isolation
 
 Build:
 
@@ -787,7 +787,7 @@ Always challenge:
 
 Do not require runtime to prove a deterministic capacity mismatch when visible capacity, admission limit, and resource budget are source-grounded.
 
-### Progression / Wave / Objective
+### Progression, Wave & Objective Integrity
 
 For every required unit of progression, distinguish requested work from completed work:
 
@@ -832,7 +832,7 @@ UNRESOLVED
 Generic statements such as “needs runtime testing” do not close a family.
 ---
 
-## A10. Lifecycle Race & Generation Contract
+## A10. Deferred Work & Generation Safety
 
 ### Purpose
 
@@ -880,7 +880,7 @@ If overlap itself depends on native/runtime timing not decidable from source, pr
 
 ---
 
-## A11. Terminal & Idempotency Contract
+## A11. Terminal State & Duplicate-Commit Safety
 
 ### Purpose
 
@@ -928,7 +928,7 @@ A terminal collision is PROVEN when two reachable terminal paths can both commit
 
 ---
 
-## A12. UI / Player-Facing Contract
+## A12. Player-Facing Information Integrity
 
 ### Purpose
 
@@ -971,7 +971,7 @@ Classification remains evidence-driven:
 
 ---
 
-## A13. Spatial / Ticking / Residency Deep Contract
+## A13. Ticking, Residency & Remote Simulation
 
 ### Purpose
 
@@ -1022,7 +1022,7 @@ Runtime is reserved for native simulation behavior that source + geometry + plat
 
 ---
 
-## A14. Entity Lifecycle & Progression Ownership Contract
+## A14. Entity Lifecycle & Objective Accounting
 
 ### Purpose
 
@@ -1066,7 +1066,7 @@ Progression proof must reconcile required, pending, live, terminal, and cleaned 
 
 ---
 
-## A15. World / Structure Mutation Contract
+## A15. World Mutation & Reset Integrity
 
 ### Purpose
 
@@ -1119,7 +1119,7 @@ Any material non-empty delta that survives into a later gameplay dependency is a
 
 ---
 
-## A16. Spatial–Entity–World Join Gate
+## A16. Simulation–Entity–World Crosscheck
 
 ### Purpose
 
@@ -1144,7 +1144,7 @@ These joins must resolve to SAFE, CONTRADICTION, or an exact irreducible missing
 
 ---
 
-## A17. Persistence / Reconnect / Reload Contract
+## A17. Persistence, Reconnect & Reload Integrity
 
 ### Purpose
 
@@ -1187,7 +1187,7 @@ If handler A restores a protected lifecycle state and handler B later overwrites
 
 ---
 
-## A18. Reward / Score / Economy Commit Contract
+## A18. Reward, Score & Economy Transaction Integrity
 
 ### Purpose
 
@@ -1223,7 +1223,7 @@ A duplicate/partial transaction is PROVEN when commit paths and missing idempote
 
 ---
 
-## A19. Developer / Cheat / Permission Exposure Contract
+## A19. Developer Tool & Permission Exposure
 
 ### Purpose
 
@@ -1262,7 +1262,7 @@ Do not classify an unreachable developer affordance as a gameplay bug. Player re
 
 ---
 
-## A20. Boundary / Capacity Quantification Contract
+## A20. Capacity & Boundary Quantification
 
 ### Purpose
 
@@ -1302,7 +1302,7 @@ Use arithmetic/static resource accounting when sufficient. Do not request broad 
 
 ---
 
-## A21. Recovery / No-Dead-End Contract
+## A21. Recovery & Softlock Prevention
 
 ### Purpose
 
@@ -1335,7 +1335,7 @@ A softlock is a Blocker candidate when the normal player cannot continue or reco
 
 ---
 
-## A22. Applicable-Family Router
+## A22. Applicable Check Router
 
 ### Purpose
 
@@ -1392,13 +1392,13 @@ This replaces broad Cartesian-product testing.
 
 ---
 
-## A23. Audit Work Queue & Stop Rules
+## A23. Audit Priority & Stop Rules
 
 ### Purpose
 
 Prioritize high-yield contradictions and stop analysis once sufficient proof exists.
 
-Build one ordered work queue from applicable families.
+Build one ordered work queue from applicable checks.
 
 Priority order:
 
@@ -1432,7 +1432,7 @@ Do not continue searching merely to accumulate more evidence after proof saturat
 
 ---
 
-## A24. Root-Cause Deduplication
+## A24. Duplicate Finding Consolidation
 
 ### Purpose
 
@@ -1459,7 +1459,7 @@ Do not deduplicate unrelated defects merely because they occur in the same subsy
 
 ---
 
-## A25. Compact Closure Receipt
+## A25. Audit Coverage Summary
 
 ### Purpose
 
@@ -1468,11 +1468,11 @@ Preserve audit completeness internally without leaking a giant checklist into th
 At the end of UNDERSTAND / MODEL / STRESS, retain one compact receipt:
 
 ```text
-applicable families
-safe families
-contradiction families
-unresolved families
-cross-family joins checked
+applicable checks
+safe checks
+contradiction checks
+unresolved checks
+cross-system joins checked
 suppressed candidates with blocking proof
 proven root-cause clusters
 remaining exact validation questions
@@ -1485,11 +1485,11 @@ The user-facing outputs remain:
 - Map Audit output where appropriate;
 - Approved Bug Report / Golden Tracker for approved issues.
 
-Do not render the family router, work queue, or closure receipt as visible Bug Tracker UI.
+Do not render the check router, work queue, or closure receipt as visible Bug Tracker UI.
 
 ---
 
-## A26. Event & Scheduling Integrity Contract
+## A26. Event Subscription & Scheduling Integrity
 
 ### Purpose
 
@@ -1520,7 +1520,7 @@ Static proof is sufficient when duplicate reachable registration or stale callba
 
 ---
 
-## A27. Identity, Selector & Cardinality Integrity Contract
+## A27. Identity, Selector & Result-Count Integrity
 
 ### Purpose
 
@@ -1552,7 +1552,7 @@ Do not treat selector syntax as proof of correct cardinality. Prove the ownershi
 
 ---
 
-## A28. Transaction & Partial-Failure Integrity Contract
+## A28. Multi-Step Transaction & Failure Recovery
 
 ### Purpose
 
@@ -1591,7 +1591,7 @@ A partial-failure defect is PROVEN when a reachable failure leaves a player-visi
 
 ---
 
-## A29. Bootstrap & Initialization Integrity Contract
+## A29. Startup, Reload & Initialization Integrity
 
 ### Purpose
 
@@ -1622,7 +1622,7 @@ Readiness must be explicit or causally guaranteed; file/module order alone is no
 
 ---
 
-## A30. Resource Baseline & Leak Integrity Contract
+## A30. Temporary Resource Cleanup & Leak Detection
 
 ### Purpose
 
@@ -1677,7 +1677,7 @@ R1 - R0
 
 ---
 
-## A31. Software-State Join Gate
+## A31. Software-State Crosscheck
 
 ### Purpose
 
