@@ -44,7 +44,7 @@ All 22 selected files used in this reconciliation were fetched from the current 
 
 ## Approved proven findings
 
-The reopened selected-artifact batch currently contains **16 source-proven BUGs** plus **5 source-proven DESIGN_MISMATCHES**:
+The selected-artifact batch contains **16 approved source-proven BUGs** plus **5 approved source-proven DESIGN_MISMATCHES**:
 
 - **Defense Challenge v1.1.1** — 4 BUGs + 1 Major DESIGN_MISMATCH:
   - Blocker — arena reset can release the ticking-area lease of a newly started run;
