@@ -32,3 +32,25 @@ Quality rules:
 - aggregate metrics must not hide a severe domain-specific regression.
 
 A detector change is evaluated against the previous baseline and frozen corpus. Do not invent a universal pass threshold before enough real-map evidence exists.
+
+
+## Conservation metrics
+
+For full-map audits, also record:
+
+- material candidates discovered;
+- candidates with explicit final disposition;
+- silently lost candidates;
+- PROVEN findings projected;
+- NEED_VALIDATION findings projected;
+- explicit rejected/superseded/excluded candidates.
+
+`silent finding loss` is a quality failure independent of precision/recall. Approval or report filtering must not reduce the disposition denominator.
+
+Track delivery-state coverage for applicable gameplay dependencies:
+
+```text
+declared / materialized / active / owned / simulated / completed-or-released
+```
+
+A detector does not receive coverage credit for a later delivery state merely because an earlier configuration state was observed.
