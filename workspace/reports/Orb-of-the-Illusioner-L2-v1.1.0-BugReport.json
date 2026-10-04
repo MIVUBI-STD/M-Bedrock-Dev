@@ -35,7 +35,8 @@
       "suggestedFix": "Derive and validate the target material before charging coins, then make delivery atomic or refund currency on any post-charge failure.",
       "mustPreserve": [
         "Existing tier progression and affordability rules must remain unchanged."
-      ]
+      ],
+      "issueType": "BUG"
     },
     {
       "id": "BUG-ORB2-RELOAD-BARRICADES",
@@ -63,7 +64,8 @@
       "suggestedFix": "Make reload validation iterate the stage's configured barricades or pass the intended set explicitly through the existing recovery owner.",
       "mustPreserve": [
         "Existing persisted-session resume timing and arena cleanup ownership must remain intact."
-      ]
+      ],
+      "issueType": "BUG"
     }
   ]
 }

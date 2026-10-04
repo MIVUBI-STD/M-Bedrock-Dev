@@ -35,7 +35,8 @@
       "suggestedFix": "Track completion of the fresh-session reset per participant and replay it on reconnect before cinematic or gameplay continuation.",
       "mustPreserve": [
         "Normal mid-session kit reapplication may continue preserving coins when no fresh-session reset is required."
-      ]
+      ],
+      "issueType": "BUG"
     }
   ]
 }
