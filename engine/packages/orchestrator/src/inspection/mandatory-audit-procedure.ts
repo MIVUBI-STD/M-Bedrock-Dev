@@ -1314,6 +1314,15 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       ...defectResolution.detectionGapIds,
     ],
     ["MapAuditReport"],
+    {
+      reasonCode:
+        scenarioClosure.status === "PARTIAL"
+          ? "RUNTIME_PROOF_REQUIRED"
+          : scenarioClosure.status === "OPEN" ||
+              defectResolution.status === "BLOCKED"
+            ? "PROCEDURE_BLOCKED"
+            : "COMPLETE",
+    },
   ));
 
   const blocks = (
