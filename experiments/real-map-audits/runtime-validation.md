@@ -61,6 +61,11 @@ Batch conservation is not CLOSED while any listed NEED_VALIDATION item is unexec
 | Deprecated command/API residue | RELEASE_HEALTH | Deprecation alone is not a gameplay defect; promote only when current hot-path behavior fails. |
 | Hardcoded spectator/default-arena residue | NEED_VALIDATION:RT-DEFAULT-ARENA-REACHABILITY | Must prove whether the dormant/default-arena path is reachable from a non-default active session before classification. |
 | Queued/requested kit-station materialization | NEED_VALIDATION:RT-KIT-STATION-MATERIALIZATION | Queue/request evidence is not proof that all required stations materialize in world state. |
+| Clockwork cinematic disconnect/transition recovery | NEED_VALIDATION:RT-CLOCKWORK-DISCONNECT | Exact disconnect timing and client presentation are runtime-sensitive. |
+| Five Nights L2 Drive filename/version identity | RELEASE_HEALTH | Operator-facing artifact identity mismatch without grounded gameplay consequence. |
+| Orb L1 disconnect at objective boundary | NEED_VALIDATION:RT-ORB1-OBJECTIVE-DISCONNECT | Source does not prove a bypass; exact objective/disconnect interleaving remains runtime-sensitive. |
+| Raid kit durability refresh | NEED_VALIDATION:RT-RAID-KIT-DURABILITY | Per-kit durability refresh requires deployed-runtime confirmation across all four kits. |
+| Raid four-arena entity/score isolation | NEED_VALIDATION:RT-RAID-FOUR-ARENA-ISOLATION | Maximum parallel arena isolation remains runtime-sensitive. |
 
 ## Execution rule
 
@@ -165,6 +170,19 @@ Source proves all six arenas use the same ticking-area name:
 
 ---
 
+### RT-CLOCKWORK-DISCONNECT — cinematic/transition disconnect recovery
+
+**Trigger**
+1. Start a normal Clockwork cinematic/transition.
+2. Disconnect one participant at the handoff boundary.
+3. Reconnect before or after the transition commits.
+
+**PASS**
+- Arena ownership, player state, Custodian/entity state, dialogue/audio, and transition resolve to one intended state.
+
+**FAIL / promote**
+- Reconnect leaves stale cinematic state, duplicates/skips progression, or produces a wrong player-visible transition.
+
 ## Beach Bedwars v1.1.0
 
 ### RT-BBW-DEATH-LEAVE — same-tick death/disconnect ordering
@@ -218,6 +236,19 @@ Run only the historically sensitive remote Pillager route.
 - Runtime entity/navigation/simulation behavior causes a wrong objective/progression state that source cannot decide.
 
 ---
+
+### RT-ORB1-OBJECTIVE-DISCONNECT — disconnect at objective boundary
+
+**Trigger**
+1. Reach a material Orb L1 objective transition.
+2. Disconnect one required participant in the same/adjacent transition window.
+3. Reconnect and observe objective ownership/progression.
+
+**PASS**
+- Objective state resolves once and reconnect returns to the authored state.
+
+**FAIL / promote**
+- Disconnect/reconnect skips, duplicates, resets incorrectly, or bypasses objective progression.
 
 ## Mysteries of Biomes L1 v1.0.4
 
@@ -279,6 +310,31 @@ Run only the historically sensitive remote Pillager route.
 - Old participant/session state leaks into the next run.
 
 ---
+
+### RT-RAID-KIT-DURABILITY — all-kit durability refresh
+
+**Trigger**
+1. Exercise each of the four normal kits through durability loss.
+2. Cross the authored refresh/reset boundary.
+3. Repeat on a second run.
+
+**PASS**
+- Every kit returns to its intended durability/state exactly once.
+
+**FAIL / promote**
+- Any kit retains stale durability, duplicates equipment, or refreshes inconsistently.
+
+### RT-RAID-FOUR-ARENA-ISOLATION — maximum parallel isolation
+
+**Trigger**
+1. Run all four Raid arenas concurrently with independent parties.
+2. Exercise entity, score, result, and cleanup paths in overlapping windows.
+
+**PASS**
+- Entity/score/result/cleanup state remains arena-scoped.
+
+**FAIL / promote**
+- Any arena mutates or observes another arena's entity, score, result, or cleanup state.
 
 ## The Circuit v1.0.2
 
