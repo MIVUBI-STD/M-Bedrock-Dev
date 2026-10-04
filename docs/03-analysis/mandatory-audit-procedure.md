@@ -1335,6 +1335,155 @@ A softlock is a Blocker candidate when the normal player cannot continue or reco
 
 ---
 
+## A22. Applicable-Family Router
+
+### Purpose
+
+Keep the audit complete without turning every map into a giant generic checklist.
+
+The contracts in A8–A21 are conditional specialists. They are activated by discovered gameplay evidence, not run blindly.
+
+### Routing rule
+
+After UNDERSTAND reconstructs the player journey, state, ownership, progression, and gameplay surfaces, build one compact applicability record:
+
+```text
+family
+→ trigger evidence
+→ applicable: yes / no
+→ reason
+→ owned surfaces/resources
+→ required joins
+```
+
+### Activation table
+
+Activate only when the selected artifact contains the trigger:
+
+- Inventory / Loadout / Economy → inventory writers, kits, shops, grants, equipment, currency, item persistence.
+- Multi-Arena / Shared Capacity → multiple arenas/sessions/teams or shared admission/resource limits.
+- Progression / Wave / Objective → waves, levels, counters, objectives, required entity/work accounting.
+- Lifecycle Race / Generation → delayed callbacks, async work, retry, scheduled cleanup, reusable owner/session.
+- Terminal / Idempotency → two or more terminal/retry/restart paths or non-idempotent terminal consequences.
+- UI / Player-Facing → material scoreboard, actionbar/title, dialogue, timer, queue/capacity/reward feedback.
+- Spatial / Ticking / Residency → remote world dependency, distant entities/objectives, explicit residency/ticking configuration.
+- Entity Lifecycle → gameplay-critical spawned entities or entity-backed objectives.
+- World / Structure Mutation → block/structure/container/world mutation expected to reset or remain arena-scoped.
+- Persistence / Reconnect / Reload → saved state, dynamic properties/tags, reconnect/reload recovery.
+- Reward / Score / Economy Commit → score, currency, reward, purchase, refund, one-shot grant.
+- Developer / Cheat / Permission → debug/developer triggers, items, commands, tags, test controls.
+- Boundary / Capacity → explicit/shared bounded resources or presented maximums.
+- Recovery / No-Dead-End → waiting, spectator, queue, retry, failure/recovery states.
+
+### Not-applicable proof
+
+`not applicable` must be supported by discovery/model evidence. Do not run a family merely because it exists in this procedure.
+
+### Join selection
+
+Only generate cross-family joins when both families are applicable and share at least one material resource, owner, lifecycle boundary, selector, or commit target.
+
+This replaces broad Cartesian-product testing.
+
+---
+
+## A23. Audit Work Queue & Stop Rules
+
+### Purpose
+
+Prioritize high-yield contradictions and stop analysis once sufficient proof exists.
+
+Build one ordered work queue from applicable families.
+
+Priority order:
+
+```text
+1. progression blockers / no-recovery paths
+2. shared ownership / cross-arena contamination
+3. lifecycle generation races
+4. simulation/residency blockers
+5. inventory/reconnect state corruption
+6. terminal/reward duplication
+7. world/reset persistence
+8. player-facing contract mismatch
+9. lower-impact applicable residue
+```
+
+Within a priority, prefer:
+- deterministic static proof over runtime;
+- one root cause that explains multiple symptoms;
+- shared-resource joins over isolated low-impact anomalies;
+- player-visible consequence over technical irregularity.
+
+### Stop rules
+
+Stop investigating a candidate when:
+- minimum sufficient proof is saturated and counter-proof is cleared → PROVEN;
+- exact blocking proof shows the behavior is safe → suppress;
+- only one irreducible deciding question remains → NEED_VALIDATION;
+- the signal has no justified player-visible contradiction → Audit Obligation or suppress, as appropriate.
+
+Do not continue searching merely to accumulate more evidence after proof saturation.
+
+---
+
+## A24. Root-Cause Deduplication
+
+### Purpose
+
+Prevent one underlying defect from becoming many noisy issue cards.
+
+Before REPORT, cluster contradictions by:
+
+```text
+same owner/resource
++ same missing guard/accounting rule
++ same lifecycle boundary
++ same repair direction
+```
+
+If multiple symptoms share one causal defect, publish one issue with the affected scope and reproduction paths needed to demonstrate it.
+
+Split findings only when:
+- repair ownership differs;
+- player contract differs materially;
+- severity differs because consequences are independently reachable;
+- fixing one does not necessarily fix the other.
+
+Do not deduplicate unrelated defects merely because they occur in the same subsystem.
+
+---
+
+## A25. Compact Closure Receipt
+
+### Purpose
+
+Preserve audit completeness internally without leaking a giant checklist into the user-facing report.
+
+At the end of UNDERSTAND / MODEL / STRESS, retain one compact receipt:
+
+```text
+applicable families
+safe families
+contradiction families
+unresolved families
+cross-family joins checked
+suppressed candidates with blocking proof
+proven root-cause clusters
+remaining exact validation questions
+```
+
+The receipt is internal audit/control data.
+
+The user-facing outputs remain:
+- concise issue list in chat;
+- Map Audit output where appropriate;
+- Approved Bug Report / Golden Tracker for approved issues.
+
+Do not render the family router, work queue, or closure receipt as visible Bug Tracker UI.
+
+---
+
 # B. MODEL
 
 ## B1. Actor / Entity Contract
