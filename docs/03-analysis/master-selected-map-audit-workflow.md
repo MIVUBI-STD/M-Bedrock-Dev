@@ -582,6 +582,47 @@ raw risk / detection gap / model gap / runtime unknown
 
 `Audit Obligation` is not an issue status and does not enter BUG / DESIGN_MISMATCH lanes.
 
+## 6.0 Proof-promotion rule
+
+The audit should not treat NEED_VALIDATION as a comfortable resting state.
+
+Before a gameplay finding remains NEED_VALIDATION, the proof owner must record why each applicable earlier proof route failed to decide the contradiction.
+
+Required promotion record:
+
+```text
+finding
+→ exact missing claim
+→ selected-artifact search attempted
+→ cross-domain search attempted
+→ applicable formal / quantitative proof attempted
+→ exact counter-proof search attempted
+→ result of each attempt
+→ smallest remaining deciding question
+```
+
+A finding may remain NEED_VALIDATION only when the remaining question is genuinely irreducible from available selected-artifact evidence.
+
+Do not retain NEED_VALIDATION merely because:
+- runtime would be convenient;
+- source evidence is distributed across files/domains;
+- the first search did not find a direct statement;
+- proof requires arithmetic, ownership reconstruction, lifecycle interleaving, or negative-space reasoning;
+- the issue resembles a historical defect but current proof has not yet been assembled.
+
+For applicable families, actively try deterministic promotion:
+
+- multi-arena / capacity → visible capacity + lease/resource budget + admission logic + safe limit;
+- ticking / simulation → remote dependency + region geometry + residency owner + readiness/release;
+- inventory → all writers/clearers across fresh-session, reconnect, loadout, shop, death, reset;
+- progression / waves → required work + pending accounting + retry ownership + completion gate;
+- reconnect → pre-disconnect owner + persisted state + reconnect writers + delayed/deferred writers;
+- cleanup / reuse → old generation writers + publication of reusable state + release timing;
+- cross-arena isolation → global selectors/tags/state + arena-local owner + cleanup/mutation scope;
+- terminal collision → every terminal trigger + guards + idempotency + ordering window.
+
+If deterministic promotion succeeds, move the finding to PROVEN and stop. If it fails, preserve only the narrow remaining test needed to decide it.
+
 ## 6.1 Proof navigation
 
 Every confirmation-ready NEED_VALIDATION finding receives:
