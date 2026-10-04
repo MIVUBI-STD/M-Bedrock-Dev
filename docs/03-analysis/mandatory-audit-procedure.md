@@ -713,12 +713,16 @@ A22 Applicable Check Router
 
 MODEL
 → derive structural invariants and transition graphs
+→ validate material cross-content references
 
 STRESS
 → run lifecycle differentials, boundaries, repeated-run and partial-failure scenarios
 
 PROVE
-→ close every contradiction / exact unresolved claim
+→ causal slice each contradiction
+→ close Reachability / Contract / Contradiction / Player Consequence / Affected Scope / Blocking Proof claims
+→ attempt formal Absence / Temporal Proof and deterministic Proof Substitution
+→ retain NEED_VALIDATION only through the Promotion Matrix
 
 before REPORT
 → Coverage Completeness Gate must pass
