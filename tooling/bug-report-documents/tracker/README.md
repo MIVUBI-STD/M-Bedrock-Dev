@@ -87,7 +87,7 @@ Readiness is established by repository-source review and deterministic contracts
 - Golden UI remains the only tracker presentation contract;
 - validation fails closed on malformed tracker data;
 - real approved-report fixtures remain committed as regression specifications;
-- legacy behavior remains available until remote source audit shows the cutover is structurally safe.
+- Approved Bug Report presentation has completed cutover to the Golden Tracker; Map Audit remains a separate renderer.
 
 Test files may remain as executable specifications for any future environment that runs them, but the normal ChatGPT/Remote-GitHub workflow does not wait on local execution.
 
@@ -112,7 +112,7 @@ Approved Bug Report V2
 → Bug-Tracker-Report.json
 ```
 
-There is no `--golden-tracker` feature flag after cutover.
+Golden Tracker is unconditional for Approved Bug Report V2; there is no presentation feature flag.
 
 The old Approved Bug Report HTML presentation helpers were removed from `render.ts`; Map Audit presentation was retained because it is a separate report surface and authority.
 
