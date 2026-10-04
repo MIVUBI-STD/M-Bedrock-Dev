@@ -199,3 +199,58 @@ For every limitation ask, in order:
 4. Does it block, distort or mislead material gameplay?
 
 Existence of implementation code is not proof of intended design.
+
+
+### 13. Delivery-state lifecycle
+
+For every material configured or authored gameplay dependency, distinguish:
+
+```text
+declared → materialized → active → owned → simulated → completed/released
+```
+
+Do not infer a later state from an earlier one. In particular:
+
+- declared ticking regions are not proof they were created;
+- queued structure/station placement is not proof it materialized;
+- spawned/configured actors are not proof their chunks remain simulated;
+- a cleanup request is not proof ownership was safely released;
+- an end request is not proof the terminal result was committed exactly once.
+
+Missing delivery-state evidence creates a targeted proof obligation. A proven missing transition with player impact is a gameplay finding.
+
+### 14. Terminal single-commit ownership
+
+For every win, loss, timeout, death, retry, abort, and objective-complete path:
+
+- enumerate all callers that can request terminal transition;
+- check same-tick and adjacent-tick collisions;
+- prove a single canonical terminal owner or idempotent commit guard;
+- verify result, reward, score, cleanup, and messaging execute once;
+- test final-second objective completion against timeout when both exist.
+
+Two terminal request paths reaching an unguarded terminal mutation are not cleared merely because each path works independently.
+
+### 15. Artifact identity consistency
+
+Compare current selected-artifact identity across every release-bearing surface that exists:
+
+- delivered filename/version label;
+- behavior/resource pack manifest version;
+- world/level display name when versioned;
+- results/export metadata;
+- report binding/version.
+
+A disagreement is retained as an information/release-health finding. Promote it to BUG or DESIGN_MISMATCH only when it creates a grounded player/tester/client-visible contract failure. Never silently discard it.
+
+### 16. Release residue and compatibility
+
+Deprecated calls, dormant debug code, hardcoded arena IDs, and unused compatibility paths are not automatically gameplay bugs.
+
+They must receive one of:
+
+- proven unreachable/non-material with explicit disposition;
+- NEED_VALIDATION when reachability or gameplay consequence is unresolved;
+- PROVEN when a selected-artifact player-visible failure path is established.
+
+For hardcoded arena/session IDs, explicitly test reachability under non-default arenas before calling the residue harmless.
