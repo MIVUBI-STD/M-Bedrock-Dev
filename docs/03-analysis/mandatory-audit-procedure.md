@@ -2071,77 +2071,79 @@ No alternate proof-state vocabulary may leave this stage.
 
 # E. REPORT
 
-## E1. Final Bug Contract
+REPORT projects proven gameplay findings into the existing issue/report authorities. It does not create a new taxonomy.
 
-### Trigger
+## E1. Finding Contract
 
-Only after Gameplay Defect Resolution.
-
-### Required Fields
+A reportable finding must contain:
 
 ```text
-Bug ID
-Category
-Gameplay Stage
-Scenario
-Severity
+Issue ID
+Issue Type: BUG | DESIGN_MISMATCH
+Severity: BLOCKER | MAJOR | MINOR
+Gameplay Stage / Scenario
 Issue
-Trigger
+Trigger (In-Game)
 Expected
-Actual
+Observed
 Player Impact
-Technical Cause
 Affected Scope
+Technical Analysis
 Source Evidence
 Reproduction
-Root Cause
+Recommended Resolution
+Must Preserve, when applicable
 ```
 
-### Admission Rule
+### Admission
 
-A bug enters Proposed Bug Set only when:
+Only PROVEN findings may enter the Proposed Issue Set.
+
+BUG:
+- an implemented/required gameplay contract is broken.
+
+DESIGN_MISMATCH:
+- authored/presented capability differs materially from delivered playable capability.
+
+NEED_VALIDATION remains in Map Audit output and does not enter canonical Approved Bug Report V2 until promoted and approved.
+
+Audit Obligations remain internal audit work.
+
+### Severity
+
+Assign severity only after finding admission:
+
+- **BLOCKER** — required gameplay cannot normally start, continue, or complete, or normal recovery is unavailable.
+- **MAJOR** — core gameplay, important player state, fairness, or delivered capability is materially wrong but normal play can continue/recover.
+- **MINOR** — limited but real player-visible impact.
+
+### Reproduction
+
+Reproduction is written entirely in tester/gameplay language. The final step states the observable wrong result.
+
+Do not ask the tester to inspect source code, logs, internal variables, scripts, or architecture.
+
+### Publication flow
 
 ```text
-Scenario
-+
-Trigger
-+
-Expected
-+
-Actual
-+
-Broken Dependency
-+
-Player-visible Consequence
-+
-Affected Scope
-+
-Technical Cause
-+
-Source Evidence
-+
-Counter-proof Cleared
+PROVEN findings
+→ Proposed Issue Set
+→ explicit chat review
+→ Approved Issue Set
+→ Bug Report V2
+→ Golden Bug Tracker HTML + JSON
 ```
 
-### Reproduction Rule
+Bug Report V2 owns persisted issue facts. Golden Bug Tracker owns presentation/workspace state only.
 
-Reproduction uses tester/gameplay language, not implementation instructions.
+### REPORT closure
 
-### Severity Rule
+Every PROVEN finding is either:
+- approved and persisted once;
+- rejected with explicit review decision;
+- or held from publication pending user decision.
 
-Assign severity only after defect admission:
-
-- Blocker — required gameplay cannot normally start/continue/complete and recovery is unavailable.
-- Major — core gameplay/state/fairness is materially wrong.
-- Minor — limited but real player-visible impact.
-
-### Output
-
-Proposed Bug Set → Chat Approval → Approved Bug Set → Production Bug Report V2.
-
-### Closure Rule
-
-Only approved confirmed defects enter the canonical production bug report.
+No duplicate Markdown/HTML/JSON issue authority is created.
 
 ---
 
