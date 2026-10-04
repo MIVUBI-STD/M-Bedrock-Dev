@@ -28,6 +28,9 @@ TARGET
 → UNDERSTAND
 → MODEL
 → STRESS
+→ when a transaction consumes player value, reconcile debit → required references/materials → mutation/grant → rollback → feedback
+→ when reload/bootstrap behavior exists, run Active-Session Reload Recovery differential separately from player reconnect
+
 → PROVE
 → REPORT
 ```
