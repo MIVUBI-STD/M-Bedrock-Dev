@@ -11,6 +11,8 @@ export type GameplayAuditScenarioKind =
   | "reload-recovery"
   | "deferred-ownership"
   | "terminal-collision"
+  | "transaction-atomicity"
+  | "simulation-distance"
   | "repeated-run";
 
 export type GameplayAuditScenarioProofMode =
@@ -47,6 +49,8 @@ export interface GameplayAuditScenarioPresetInput {
   readonly hasPersistence?: boolean;
   readonly hasDeferredWork?: boolean;
   readonly hasRepeatedRunSurface?: boolean;
+  readonly hasTransactionalGameplay?: boolean;
+  readonly hasSimulationDistanceDependency?: boolean;
 }
 
 export interface GameplayAuditScenarioPreset {
@@ -251,6 +255,42 @@ export function buildGameplayAuditScenarioPreset(
         }),
       );
     }
+  }
+
+  if (input.hasTransactionalGameplay) {
+    scenarios.push(
+      scenario({
+        id: "transaction:atomicity",
+        kind: "transaction-atomicity",
+        flowStage: "PROGRESSION",
+        reason:
+          "Gameplay transactions must preserve payment/delivery atomicity across failure, retry, reconnect, and reload.",
+        questions: [
+          "Can payment or state consumption commit before item, upgrade, reward, or effect delivery succeeds?",
+          "If delivery fails, is payment rolled back or safely reconciled?",
+          "Can retry or reconnect duplicate delivery or consume payment twice?",
+          "Do success and failure messages match the committed transaction result?",
+        ],
+      }),
+    );
+  }
+
+  if (input.hasSimulationDistanceDependency) {
+    scenarios.push(
+      scenario({
+        id: "simulation:distance",
+        kind: "simulation-distance",
+        flowStage: "ACTIVE_GAMEPLAY",
+        reason:
+          "Remote actors, objectives, or routes must remain simulated when progression depends on them and players are not nearby.",
+        questions: [
+          "Which required actors or objectives can be farther than normal player-loaded simulation coverage?",
+          "What ticking or chunk residency keeps each required spawn, route, and objective active?",
+          "Is residency actually materialized before gameplay depends on it?",
+          "Can intended player positioning leave remote NPC spawning or pathing frozen?",
+        ],
+      }),
+    );
   }
 
   if (input.hasPersistence) {
