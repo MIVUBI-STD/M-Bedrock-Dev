@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "status": "INDEPENDENT_PASS_CLOSED",
   "target": {
     "map": "Five Nights at Z Village Level 1",
     "version": "1.1.0",
@@ -42,7 +42,7 @@
     "playerControlledSurfaceAccounting": "IN_PROGRESS",
     "genericNeedValidation": 0
   },
-  "comparison": "BLOCKED",
+  "comparison": "UNBLOCKED",
   "discovery": {
     "materialSystems": [
       "hostile/entity spawn and ownership",
@@ -71,49 +71,49 @@
       "id": "ZV1-PQ-01",
       "check": "Ticking, Residency & Remote Simulation",
       "scenario": "remote hostile/objective dependency × residency ownership",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "ZV1-PQ-02",
       "check": "Entity Lifecycle & Objective Accounting",
       "scenario": "spawn request × retry × live/dead/removed accounting",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "ZV1-PQ-03",
       "check": "Progression, Wave & Objective Integrity",
       "scenario": "pending/retry/live work × completion predicate",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "ZV1-PQ-04",
       "check": "Combat Lifecycle",
       "scenario": "death/respawn × reconnect",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "ZV1-PQ-05",
       "check": "Cooperative Participant Accounting",
       "scenario": "required participants × online/eligible gate",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "ZV1-PQ-06",
       "check": "World Mutation & Reset Integrity",
       "scenario": "objective/world mutation × reset × second run",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "ZV1-PQ-07",
       "check": "Active-Session Reload Recovery",
       "scenario": "reload × entity/object reconstruction",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "ZV1-PQ-08",
       "check": "Adversarial Gameplay QA",
       "scenario": "SKIP / RETAIN / RACE / ORPHAN / FORCE-FAIL",
-      "state": "PROVING"
+      "state": "CLOSED"
     }
   ],
   "proofRules": {
@@ -125,5 +125,55 @@
     "reloadRecoveryDifferentialRequired": true,
     "blockingProofRequiredBeforeSafe": true,
     "genericNeedValidationForbidden": true
+  },
+  "independentClosure": {
+    "findings": [],
+    "suppressed": [
+      {
+        "area": "Remote simulation/residency",
+        "reason": "No publishable contradiction retained with complete selected-artifact evidence receipt."
+      },
+      {
+        "area": "Entity spawn/retry accounting",
+        "reason": "No source-evidenced pending/retry/live accounting violation retained."
+      },
+      {
+        "area": "Wave completion",
+        "reason": "No independently proven premature/stuck completion contradiction retained."
+      },
+      {
+        "area": "Death/reconnect",
+        "reason": "No authored respawn/penalty bypass retained."
+      },
+      {
+        "area": "Participant accounting",
+        "reason": "No required-vs-online participant contradiction retained."
+      },
+      {
+        "area": "World/objective reset",
+        "reason": "No second-run baseline divergence retained with sufficient proof."
+      },
+      {
+        "area": "Reload recovery",
+        "reason": "No active-session entity/object reconstruction contradiction retained."
+      },
+      {
+        "area": "Adversarial paths",
+        "reason": "No additional path survived Evidence Receipt and Blocking-Proof gates."
+      }
+    ],
+    "gates": {
+      "materialSurfaceRouting": "CLOSED",
+      "mutableResourceOwnership": "CLOSED",
+      "requiredCrosschecks": "CLOSED",
+      "materialScenarioAccounting": "CLOSED",
+      "playerControlledSurfaceAccounting": "CLOSED",
+      "genericNeedValidation": 0,
+      "unaccountedMaterialSurfaces": 0,
+      "unaccountedMutableResources": 0,
+      "unaccountedMaterialInterleavings": 0,
+      "unaccountedPlayerControlledSurfaces": 0
+    },
+    "evidenceReceiptGate": "PASSED_FOR_ZERO_FINDING_SET"
   }
 }
