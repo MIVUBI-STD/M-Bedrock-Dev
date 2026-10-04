@@ -161,6 +161,16 @@ If identity is ambiguous, stop publication.
 
 ---
 
+## Detection coverage authority
+
+`detection-coverage-assurance.md` owns the coverage-accounting mechanism used across DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE.
+
+Its Coverage Ledger and Coverage Completeness Gate ensure every material discovered surface is routed, checked, and closed. Its regression corpus is search pressure only and never current-artifact proof.
+
+This is part of the same canonical audit flow, not a second workflow.
+
+---
+
 # 2. DISCOVERY — find every material gameplay surface
 
 ## Goal
