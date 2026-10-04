@@ -126,3 +126,64 @@ This establishes the unsafe capability path once an ordinary player possesses th
 Keep as a high-priority gameplay-translation obligation:
 - prove ordinary-player stick/blaze-rod reachability in the selected world;
 - if reachable, promote the stick path at least as a Major progression bypass.
+
+
+## Proven finding 2 — client-reported developer capability reachability
+
+### BUG — Ordinary players can craft the live developer skip item and skip the current level
+
+Severity: Major  
+Proof: source-proven  
+Domain: progression / developer capability exposure
+
+#### Issue
+
+The release enables the developer level-skip tool on `minecraft:stick`, and its normal `itemUse` path does not consult the existing developer-permission registry.
+
+The selected artifact also gives ordinary players a deterministic route to obtain the trigger item. Level 13 runs players in Survival, loads the authored reference build, derives required block types from that build, and distributes those requirements into player-accessible resource barrels. The current `chest_build.mcstructure` contains both `minecraft:oak_planks` and `minecraft:dark_oak_planks`, so planks are part of the authored resource distribution. Ordinary Minecraft crafting can turn two planks into sticks.
+
+#### Expected
+
+Release gameplay must not expose level-skip capability to ordinary students. Developer skip/retry controls must require the existing developer permission owner or be disabled in the release.
+
+#### Observed source behavior
+
+Release configuration:
+
+```text
+devSkipLevel.enabled = true
+devSkipLevel.itemId = "minecraft:stick"
+```
+
+The player item-use handler invokes the current arena's skip operation from the configured item trigger without checking developer permission.
+
+Level 13 player permissions explicitly use Survival mode. Its initialization:
+
+```text
+reference build
+→ derive block requirements
+→ split requirements across west/east resource barrels
+→ players gather resources from those barrels
+```
+
+The selected `chest_build.mcstructure` contains oak and dark-oak planks, providing the crafting prerequisite for a stick.
+
+#### Reproduction path
+
+1. Start The Gauntlet as a normal non-developer player and reach Level 13.
+2. Take oak/dark-oak planks from the authored resource barrels.
+3. Craft a normal Minecraft stick in the player crafting grid.
+4. Hold/use the stick while the level is active.
+5. Confirm the current level is skipped for the arena/team even though the player has no developer permission.
+
+#### Player-visible consequence
+
+A normal student can bypass required progression and advance the whole arena using a developer test control left active in the release.
+
+#### Root cause
+
+Developer capability exposure is gated only by possession of the trigger item. The release leaves that capability enabled, omits the existing developer authorization check, and the normal gameplay resource/crafting path makes the trigger reachable.
+
+#### Repair direction
+
+Disable the item-triggered developer skip/retry controls in release builds, or gate them through the existing developer-permission owner before executing any progression mutation.
