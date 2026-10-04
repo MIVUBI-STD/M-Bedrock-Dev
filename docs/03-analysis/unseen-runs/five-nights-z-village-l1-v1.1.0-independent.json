@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "INDEPENDENT_PASS_CLOSED",
+  "status": "UNSEEN_REPAIR_REQUIRED",
   "target": {
     "map": "Five Nights at Z Village Level 1",
     "version": "1.1.0",
@@ -175,5 +175,31 @@
       "unaccountedPlayerControlledSurfaces": 0
     },
     "evidenceReceiptGate": "PASSED_FOR_ZERO_FINDING_SET"
+  },
+  "historicalComparison": {
+    "status": "COMPLETE_WITH_MISS",
+    "historicalApprovedIssues": [
+      {
+        "id": "BUG-FNZ1-CINEMATIC-COINS",
+        "title": "Reconnect during cinematic can carry stale coins into a fresh session"
+      }
+    ],
+    "matched": [],
+    "missed": [
+      {
+        "historicalId": "BUG-FNZ1-CINEMATIC-COINS",
+        "classification": "MODEL_MISS",
+        "earliestFailure": "Fresh-session reset modeling covered inventory/equipment and active gameplay boundaries but did not enumerate score/currency state cleared during cinematic/setup as part of the per-player fresh-session reset invariant.",
+        "repair": "Fresh-Session Reset Invariant must enumerate every per-player mutable state reset during setup/cinematic, including scoreboard currency/coins, tags, properties, inventory and equipment, then differential each reset writer against disconnect/reconnect timing."
+      }
+    ],
+    "recall": {
+      "detected": 0,
+      "expected": 1,
+      "percent": 0
+    },
+    "unsupportedProven": 0,
+    "genericNeedValidation": 0,
+    "conclusion": "Wave/entity coverage remained clean, but the unseen pass exposes a state-domain enumeration gap: fresh-session reset must be state-agnostic rather than inventory-centric."
   }
 }
