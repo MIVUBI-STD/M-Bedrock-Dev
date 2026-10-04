@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "name": "bug-tracker-golden-ui",
+  "locked": true,
+  "header": {
+    "title": "Bug Tracker Report",
+    "eyebrow": false,
+    "summaryLayout": "2x2",
+    "jumpLayout": "2-column"
+  },
+  "map": {
+    "defaultOpen": false,
+    "openLabel": "Collapse Map ↑",
+    "closedLabel": "Expand Map ↓",
+    "activeSurface": "navy-active"
+  },
+  "level": {
+    "nestedUnderMap": true,
+    "separateSourceBinding": true,
+    "headerStyle": "neutral-subsection"
+  },
+  "source": {
+    "required": [
+      "driveFolder",
+      "worldFile",
+      "worldFilename"
+    ],
+    "layout": "two-equal-bordered-buttons",
+    "label": "SOURCE"
+  },
+  "issue": {
+    "defaultOpen": false,
+    "closed": {
+      "surface": "white",
+      "action": "View Details ↓"
+    },
+    "expanded": {
+      "surface": "soft-blue",
+      "action": "Collapse Details ↑",
+      "continuousCard": true
+    },
+    "fixed": {
+      "surface": "soft-green",
+      "label": "✓ FIXED",
+      "continuousCard": true
+    },
+    "needsVerify": {
+      "badge": "amber",
+      "label": "NEEDS VERIFY"
+    }
+  },
+  "detailOrder": [
+    "issue",
+    "reproduction",
+    "observedOrEvidence",
+    "expected",
+    "resolution",
+    "testerNotes",
+    "evidenceAttachments",
+    "markFixed"
+  ],
+  "workspace": [
+    "testerNotes",
+    "attachments",
+    "attachmentCaption",
+    "imagePreview",
+    "markFixed"
+  ],
+  "exports": [
+    "json",
+    "htmlSnapshot",
+    "importJson",
+    "resetTesterData"
+  ],
+  "forbiddenVisibleTerms": [
+    "system prompt",
+    "chain of thought",
+    "proof yield",
+    "canonical projection",
+    "candidate generated",
+    "AI thinks"
+  ]
+}
