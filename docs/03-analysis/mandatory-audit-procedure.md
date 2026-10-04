@@ -717,6 +717,9 @@ MODEL
 
 STRESS
 → run lifecycle differentials, boundaries, repeated-run and partial-failure scenarios
+→ derive bounded Multi-Scenario Simulation cases for applicable multiplayer/multi-arena systems
+→ interrupt material lifecycle boundaries with disconnect/reconnect where applicable
+→ run Scenario Coverage Gate so no material shared-state interleaving is silently skipped
 
 PROVE
 → causal slice each contradiction
