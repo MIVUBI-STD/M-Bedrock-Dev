@@ -36,14 +36,16 @@
       "projectId": "attack-challenge",
       "projectName": "Attack Challenge",
       "taskClass": "DIAGNOSE",
-      "revision": 1,
+      "revision": 2,
       "artifact": {
         "artifactId": "drive:14JStk_EK0XlAyBTdPLyUE2lCKyk9BKpX",
         "artifactFingerprint": "sha256:95bf318070b3948f0a0d1d093bae2f7b1a3a37e4d94e94d2adfc4d80a501ccba",
         "version": "1.1.1"
       },
       "work": {},
-      "knowledge": {},
+      "knowledge": {
+        "bugReportPath": "workspace/reports/Attack-Challenge-v1.1.1-BugReport.json"
+      },
       "publication": {
         "drive": {
           "schemaVersion": 1,
@@ -126,14 +128,16 @@
       "projectId": "build-and-decode",
       "projectName": "Build & Decode",
       "taskClass": "DIAGNOSE",
-      "revision": 1,
+      "revision": 2,
       "artifact": {
         "artifactId": "drive:1aBAM5Hwu58klnGV1dtZZLffgJATPRmtd",
         "artifactFingerprint": "sha256:d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
         "version": "1.1.0"
       },
       "work": {},
-      "knowledge": {},
+      "knowledge": {
+        "bugReportPath": "workspace/reports/Build-and-Decode-v1.1.0-BugReport.json"
+      },
       "publication": {
         "drive": {
           "schemaVersion": 1,
@@ -186,14 +190,16 @@
       "projectId": "composite-challenge",
       "projectName": "Composite Challenge",
       "taskClass": "DIAGNOSE",
-      "revision": 1,
+      "revision": 2,
       "artifact": {
         "artifactId": "drive:1hFF8MaIgsVFBXgh_ll6f2Uoo2Cv3Y_Rr",
         "artifactFingerprint": "sha256:c7a208ccb943d214de6bb6d2f15f265f8dba2b794ae56da40a11bef24162776a",
         "version": "1.1.1"
       },
       "work": {},
-      "knowledge": {},
+      "knowledge": {
+        "bugReportPath": "workspace/reports/Composite-Challenge-v1.1.1-BugReport.json"
+      },
       "publication": {
         "drive": {
           "schemaVersion": 1,
@@ -246,14 +252,16 @@
       "projectId": "defense-challenge",
       "projectName": "Defense Challenge",
       "taskClass": "DIAGNOSE",
-      "revision": 1,
+      "revision": 2,
       "artifact": {
         "artifactId": "drive:1Y7G96SRBgSkfhlpnm8xFV3VpmzluvWh-",
         "artifactFingerprint": "sha256:edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee",
         "version": "1.1.1"
       },
       "work": {},
-      "knowledge": {},
+      "knowledge": {
+        "bugReportPath": "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json"
+      },
       "publication": {
         "drive": {
           "schemaVersion": 1,
@@ -336,14 +344,16 @@
       "projectId": "five-nights-z-village-l1",
       "projectName": "Five Nights at Z Village Level 1",
       "taskClass": "DIAGNOSE",
-      "revision": 1,
+      "revision": 2,
       "artifact": {
         "artifactId": "drive:1npTapvqtd_Yyd1gOch6U03SIPzkY-pUK",
         "artifactFingerprint": "sha256:6910cb83e6d5866896e29553398b3a889e3942f553f9a0423b365f0799018bf2",
         "version": "1.1.0"
       },
       "work": {},
-      "knowledge": {},
+      "knowledge": {
+        "bugReportPath": "workspace/reports/Five-Nights-at-Z-Village-L1-v1.1.0-BugReport.json"
+      },
       "publication": {
         "drive": {
           "schemaVersion": 1,
@@ -396,14 +406,16 @@
       "projectId": "manhunt",
       "projectName": "Manhunt",
       "taskClass": "DIAGNOSE",
-      "revision": 1,
+      "revision": 2,
       "artifact": {
         "artifactId": "drive:1gaHKkT-VrYVNehLLT_xiTHtpgNJ7BxQe",
         "artifactFingerprint": "sha256:c666000de5cd052288b00953baf9dc00410a65c6da53c16fb1e31b8e396025f3",
         "version": "1.0.0"
       },
       "work": {},
-      "knowledge": {},
+      "knowledge": {
+        "bugReportPath": "workspace/reports/Manhunt-v1.0.0-BugReport.json"
+      },
       "publication": {
         "drive": {
           "schemaVersion": 1,
@@ -546,14 +558,16 @@
       "projectId": "orb-illusioner-l2",
       "projectName": "Orb of the Illusioner Level 2",
       "taskClass": "DIAGNOSE",
-      "revision": 1,
+      "revision": 2,
       "artifact": {
         "artifactId": "drive:1o6LDmNJZfCPqQzQRmDILIFz0PDzVYcuv",
         "artifactFingerprint": "sha256:b17661f9330f4a80301a6a2559b0dcf945204fa6ed9d8d3cf75f7350b369cb2e",
         "version": "1.1.0"
       },
       "work": {},
-      "knowledge": {},
+      "knowledge": {
+        "bugReportPath": "workspace/reports/Orb-of-the-Illusioner-L2-v1.1.0-BugReport.json"
+      },
       "publication": {
         "drive": {
           "schemaVersion": 1,
@@ -606,14 +620,16 @@
       "projectId": "the-circuit",
       "projectName": "The Circuit",
       "taskClass": "DIAGNOSE",
-      "revision": 1,
+      "revision": 2,
       "artifact": {
         "artifactId": "drive:1oH2nPJJzgg5SRgORMYV_wzMkiSK9GRGS",
         "artifactFingerprint": "sha256:19e2eb038b0b01fe756715c725df7e39d74e8cf2de8c45705d1897ea3ffb6151",
         "version": "1.0.2"
       },
       "work": {},
-      "knowledge": {},
+      "knowledge": {
+        "bugReportPath": "workspace/reports/The-Circuit-v1.0.2-BugReport.json"
+      },
       "publication": {
         "drive": {
           "schemaVersion": 1,
@@ -636,14 +652,16 @@
       "projectId": "the-gauntlet",
       "projectName": "The Gauntlet",
       "taskClass": "DIAGNOSE",
-      "revision": 1,
+      "revision": 2,
       "artifact": {
         "artifactId": "drive:1rFpeCtfpsv6D0g9S4HvZ8T_JmOeTzgwC",
         "artifactFingerprint": "sha256:68d062f8cee3167baa808e18e1b537d4961570dbfaac9305286dca6748619f7f",
         "version": "1.0.1"
       },
       "work": {},
-      "knowledge": {},
+      "knowledge": {
+        "bugReportPath": "workspace/reports/The-Gauntlet-v1.0.1-BugReport.json"
+      },
       "publication": {
         "drive": {
           "schemaVersion": 1,
