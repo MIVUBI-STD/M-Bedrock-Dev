@@ -42,7 +42,7 @@ All 22 selected files used in this reconciliation were fetched from the current 
 | Mysteries of Biomes L2 | 2.1.1 | 0 PROVEN | `mysteries-biomes-l2-v2.1.1.md` |
 | Builder's Memory / BlitzBuild | internal 1.0.3 | 0 PROVEN | `blitzbuild-v1.0.3.md` |
 
-## Proven findings requiring review
+## Approved proven findings
 
 The reopened selected-artifact batch currently contains **16 source-proven BUGs** plus **5 source-proven DESIGN_MISMATCHES**:
 
@@ -77,7 +77,7 @@ The reopened selected-artifact batch currently contains **16 source-proven BUGs*
 - **Build & Decode v1.1.0** — 1 Minor DESIGN_MISMATCH:
   - temporary coordinate-picker dev tooling is reachable by a normal Creative builder holding a stick.
 
-These are selected-artifact source findings. Runtime-only obligations remain separate and do not reduce or inflate this count.
+These selected-artifact findings are approved and represented in the canonical Bug Report V2 ledger. Runtime-only obligations remain separate and do not reduce or inflate this count.
 
 ## Important clean-pass behavior
 
