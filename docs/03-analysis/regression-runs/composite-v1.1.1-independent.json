@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "INDEPENDENT_SELECTED_ARTIFACT_PASS",
-  "status": "REGRESSION_COMPARISON_COMPLETE",
+  "status": "IN_PROGRESS",
   "target": {
     "map": "Composite Challenge",
     "version": "1.1.1",
@@ -17,171 +17,49 @@
   },
   "independentlyProven": [
     {
-      "temporaryId": "IND-CMP-001",
-      "check": "Ticking, Residency & Remote Simulation",
-      "crosscheck": "Remote Gameplay × Residency",
-      "title": "Arena-specific ticking regions are configured but never materialized by the runtime owner",
-      "proofState": "PROVEN",
-      "severityHint": "blocker",
-      "evidence": [
-        "chunk-WYD2CS7M.js:368-480 and chunk-2GRFUQFH.js:6286-6410 define/offset per-arena tickingAreas",
-        "chunk-KPA6ZKUE.js:39-145 WorldManager owns tickingarea add and consumes only WorldData static entries",
-        "No dynamic arena tickingarea-add owner exists in selected-artifact script surfaces; EntityLoader explicitly diagnoses locations against configured arena tickingAreas without creating them"
-      ],
-      "claimClosure": "ALL_REQUIRED_CLAIMS_PROVEN"
+      "temporaryId":"IND-CMP-001",
+      "check":"Ticking, Residency & Remote Simulation",
+      "crosscheck":"Remote Gameplay × Residency",
+      "title":"Arena-specific residency regions are configured but have no runtime creation owner",
+      "proofState":"PROVEN",
+      "severityHint":"blocker",
+      "proofMethod":"Formal Absence Proof + remote-dependency/residency ownership analysis",
+      "claimClosure":{"reachability":"PROVEN","contract":"PROVEN","contradiction":"PROVEN","playerConsequence":"PROVEN","affectedScope":"PROVEN","blockingProofCleared":"PROVEN"}
     },
     {
-      "temporaryId": "IND-CMP-002",
-      "check": "Deferred Work & Generation Safety",
-      "crosscheck": "Reset × Arena Reuse",
-      "title": "Arena/session can become startable while chunked reset work is still running",
-      "proofState": "PROVEN",
-      "severityHint": "blocker",
-      "evidence": [
-        "chunk-2GRFUQFH.js:7881-7950 ResetMapService processes reset across scheduled chunks and exposes per-arena reset state",
-        "chunk-2GRFUQFH.js:15296-15375 and 15990-16035 submanager end/reset paths fire resetArenaPlacedBlocks without awaiting completion, then publish idle",
-        "chunk-2GRFUQFH.js:13756+ / 21770+ start validation does not use ResetMapService reset state"
-      ],
-      "claimClosure": "ALL_REQUIRED_CLAIMS_PROVEN"
-    },
-    {
-      "temporaryId": "IND-CMP-003",
-      "check": "Inventory, Loadout & Economy Integrity",
-      "crosscheck": "Reconnect × Fresh-Session Inventory Reset",
-      "title": "Reconnect during preload can miss the online-only full inventory wipe",
-      "proofState": "PROVEN",
-      "severityHint": "major",
-      "evidence": [
-        "chunk-2GRFUQFH.js:13910-14030 and 21940-22095 preload clear iterates current online arena players",
-        "chunk-2GRFUQFH.js:13127-13200 and 21136-21205 reconnect preload writers restore state/position without replaying full clear",
-        "Preparation/loadout paths use scoped loadout refresh rather than fresh-session clear"
-      ],
-      "claimClosure": "ALL_REQUIRED_CLAIMS_PROVEN"
-    },
-    {
-      "temporaryId": "IND-CMP-004",
-      "check": "Multi-Arena Capacity & Isolation",
-      "crosscheck": "Shared Identity Tag × Arena Cleanup",
-      "title": "Per-arena flag cleanup removes the shared carrier tag from players in other arenas",
-      "proofState": "PROVEN",
-      "severityHint": "major",
-      "evidence": [
-        "chunk-2GRFUQFH.js:18691 defines one shared FLAG_CARRIER_TAG",
-        "chunk-2GRFUQFH.js:18868 carrier acquisition writes that shared tag while arena-local flagStates own carrier identity",
-        "chunk-2GRFUQFH.js:19120-19150 cleanup(arenaId) loops over world players and removes FLAG_CARRIER_TAG globally"
-      ],
-      "claimClosure": "ALL_REQUIRED_CLAIMS_PROVEN"
-    },
-    {
-      "temporaryId": "IND-CMP-005",
-      "check": "World Mutation & Reset Integrity",
-      "crosscheck": "Arena-Local Maintenance × Global Player Selector",
-      "title": "Active-arena floor maintenance executes around every world player",
-      "proofState": "PROVEN",
-      "severityHint": "minor",
-      "evidence": [
-        "chunk-2GRFUQFH.js:14055-14075 defense maintenance is entered per active arena but executes fill as @a",
-        "chunk-2GRFUQFH.js:22145-22160 attack maintenance repeats the same global @a mutation"
-      ],
-      "claimClosure": "ALL_REQUIRED_CLAIMS_PROVEN"
+      "temporaryId":"IND-CMP-002",
+      "check":"Deferred Work & Generation Safety",
+      "crosscheck":"Reset × Arena Reuse",
+      "title":"Arena can become reusable before asynchronous world reset completes",
+      "proofState":"PROVEN",
+      "severityHint":"blocker",
+      "proofMethod":"Temporal Proof + state-transition reachability",
+      "claimClosure":{"reachability":"PROVEN","contract":"PROVEN","contradiction":"PROVEN","playerConsequence":"PROVEN","affectedScope":"PROVEN","blockingProofCleared":"PROVEN"}
     }
   ],
-  "auditObligations": [
-    {
-      "id": "OBL-CMP-DUAL-RECONNECT",
-      "check": "Persistence, Reconnect & Reload Integrity",
-      "closure": "AUDIT_OBLIGATION",
-      "question": "Defense and Attack submanagers both subscribe to initialSpawn. The concrete fresh-session inventory contradiction is now proven; any additional dual-writer reconnect consequence beyond that still requires exact shared-session ownership proof."
-    }
-  ],
-  "referentialIntegrity": {
-    "structureReferences": {
-      "referenced": 75,
-      "missing": 0
-    },
-    "customEntityReferences": {
-      "checked": 20,
-      "missing": 0
-    }
+  "scenarioCoverage": {
+    "residency":["remote spawn/path/objective while players remain outside dependent region","arena start without materialized arena residency"],
+    "reuse":["terminal → idle/reusable → new start while old reset work remains"],
+    "multiArena":["parallel arena activity","global/shared state isolation","cleanup/resource isolation"],
+    "connection":["disconnect/reconnect at preload","active gameplay","terminal/reset"],
+    "adversarial":["SKIP","DUPLICATE","RETAIN","CROSS","RACE","ORPHAN","STARVE","REPLAY","FORCE-FAIL","ESCAPE","DESYNC"]
   },
   "coverageGates": {
-    "materialSurfaceRouting": "CLOSED",
-    "mutableResourceOwnership": "CLOSED",
-    "requiredCrosschecks": "CLOSED",
-    "materialScenarioAccounting": "CLOSED",
-    "playerControlledSurfaceAccounting": "CLOSED",
-    "genericNeedValidation": 0,
-    "unaccountedMaterialSurfaces": 0,
-    "unaccountedMutableResources": 0,
-    "unaccountedMaterialInterleavings": 0,
-    "unaccountedPlayerControlledSurfaces": 0,
-    "historicalComparison": "UNBLOCKED"
+    "materialSurfaceRouting":"OPEN",
+    "mutableResourceOwnership":"OPEN",
+    "requiredCrosschecks":"OPEN",
+    "materialScenarioAccounting":"OPEN",
+    "playerControlledSurfaceAccounting":"OPEN",
+    "genericNeedValidation":0,
+    "historicalComparison":"BLOCKED"
   },
-  "rerun": {
-    "reason": "Regression comparison exposed four misses; existing mechanisms were tightened at earliest failure points and Composite was re-evaluated from selected-artifact source.",
-    "previousIndependentCount": 1
-  },
-  "historicalComparison": {
-    "status": "COMPLETE_AFTER_RERUN",
-    "historicalApprovedIssues": [
-      "BUG-CMP-TICKING-AREAS",
-      "BUG-CMP-ASYNC-RESET",
-      "BUG-CMP-PRELOAD-INVENTORY",
-      "BUG-CMP-CROSS-ARENA-FLAG",
-      "BUG-CMP-CROSS-ARENA-FLOOR"
-    ],
-    "matched": [
-      {
-        "historicalId": "BUG-CMP-TICKING-AREAS",
-        "independentId": "IND-CMP-001"
-      },
-      {
-        "historicalId": "BUG-CMP-ASYNC-RESET",
-        "independentId": "IND-CMP-002"
-      },
-      {
-        "historicalId": "BUG-CMP-PRELOAD-INVENTORY",
-        "independentId": "IND-CMP-003"
-      },
-      {
-        "historicalId": "BUG-CMP-CROSS-ARENA-FLAG",
-        "independentId": "IND-CMP-004"
-      },
-      {
-        "historicalId": "BUG-CMP-CROSS-ARENA-FLOOR",
-        "independentId": "IND-CMP-005"
-      }
-    ],
-    "missed": [],
-    "recall": {
-      "detected": 5,
-      "expected": 5,
-      "percent": 100
-    },
-    "provenRate": {
-      "proven": 5,
-      "independentFindings": 5,
-      "percent": 100
-    },
-    "genericNeedValidation": 0,
-    "firstPassMisses": [
-      {
-        "historicalId": "BUG-CMP-ASYNC-RESET",
-        "earliestFailure": "PROOF_MISS"
-      },
-      {
-        "historicalId": "BUG-CMP-PRELOAD-INVENTORY",
-        "earliestFailure": "CROSSCHECK_MISS"
-      },
-      {
-        "historicalId": "BUG-CMP-CROSS-ARENA-FLAG",
-        "earliestFailure": "CROSSCHECK_MISS"
-      },
-      {
-        "historicalId": "BUG-CMP-CROSS-ARENA-FLOOR",
-        "earliestFailure": "DISCOVERY_MISS"
-      }
-    ],
-    "note": "Misses were used to tighten existing mechanisms; no new taxonomy family was added."
-  }
+  "nextWork": [
+    "Complete multi-arena capacity/isolation and shared-state analysis.",
+    "Complete reconnect/inventory/persistence lifecycle differential.",
+    "Complete terminal/reward duplicate-commit analysis.",
+    "Complete developer-control reachability.",
+    "Complete world/replica/reset-footprint analysis.",
+    "Complete progression/entity accounting and softlock analysis.",
+    "Close Coverage, Scenario and Abuse gates before historical comparison."
+  ]
 }
