@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "INDEPENDENT_PASS_CLOSED",
+  "status": "UNSEEN_REPAIR_REQUIRED",
   "target": {
     "map": "Manhunt",
     "version": "1.0.0",
@@ -174,5 +174,31 @@
       "unaccountedPlayerControlledSurfaces": 0
     },
     "evidenceReceiptGate": "PASSED_FOR_ZERO_FINDING_SET"
+  },
+  "historicalComparison": {
+    "status": "COMPLETE_WITH_MISS",
+    "historicalApprovedIssues": [
+      {
+        "id": "DM-MAN-ARENA6-REPLICA",
+        "title": "Arena 6 is materially incomplete compared with the authored replica"
+      }
+    ],
+    "matched": [],
+    "missed": [
+      {
+        "historicalId": "DM-MAN-ARENA6-REPLICA",
+        "classification": "DISCOVERY_MISS",
+        "earliestFailure": "The asymmetric-role pass focused on scripts/state and did not require physical replica enumeration and normalized world-footprint comparison for every repeated arena.",
+        "repair": "Replica discovery must be mandatory whenever multiple arena/region instances are authored: enumerate all replicas from world/structure evidence, normalize by offset, compare material footprint/topology, and route every divergent replica before gameplay-family prioritization."
+      }
+    ],
+    "recall": {
+      "detected": 0,
+      "expected": 1,
+      "percent": 0
+    },
+    "unsupportedProven": 0,
+    "genericNeedValidation": 0,
+    "conclusion": "Manhunt exposes a discovery-priority gap: map archetype focus must not suppress mandatory physical-world replica discovery."
   }
 }
