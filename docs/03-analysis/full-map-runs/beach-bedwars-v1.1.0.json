@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "runType": "FULL_PRODUCTION_REAUDIT",
+  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "target": {
+    "map": "Beach Bedwars",
+    "version": "1.1.0",
+    "worldFileId": "1JNNZpRPj6IYE3nMgOC01p-9P-Ct8pSWC",
+    "artifactFingerprint": "sha256:97b4b143d674b37763501c82d63ba2f7ba0602d44e71f30cde6e5a23a08979c8",
+    "worldFileFetched": true,
+    "worldFileSizeBytes": 2976518
+  },
+  "proofQueue": [
+    {
+      "id": "BBW-PQ-01",
+      "check": "Mandatory Replica Discovery / Arena Geometry",
+      "state": "PROVING"
+    },
+    {
+      "id": "BBW-PQ-02",
+      "check": "Team / Participant / Arena Ownership",
+      "state": "PROVING"
+    },
+    {
+      "id": "BBW-PQ-03",
+      "check": "Bed / Objective / Terminal Lifecycle",
+      "state": "PROVING"
+    },
+    {
+      "id": "BBW-PQ-04",
+      "check": "Death / Respawn / Elimination × Reconnect",
+      "state": "PROVING"
+    },
+    {
+      "id": "BBW-PQ-05",
+      "check": "Inventory / Shop / Upgrade / Equipment Lifecycle",
+      "state": "PROVING"
+    },
+    {
+      "id": "BBW-PQ-06",
+      "check": "Transactional Referential Integrity",
+      "state": "PROVING"
+    },
+    {
+      "id": "BBW-PQ-07",
+      "check": "State-Agnostic Fresh-Session Reset",
+      "state": "PROVING"
+    },
+    {
+      "id": "BBW-PQ-08",
+      "check": "World Mutation / Build / Reset / Second Run",
+      "state": "PROVING"
+    },
+    {
+      "id": "BBW-PQ-09",
+      "check": "Multi-player / Multi-team Concurrent Actions",
+      "state": "PROVING"
+    },
+    {
+      "id": "BBW-PQ-10",
+      "check": "Connection / Reload Recovery",
+      "state": "PROVING"
+    },
+    {
+      "id": "BBW-PQ-11",
+      "check": "Player Capability / Developer Exposure",
+      "state": "PROVING"
+    },
+    {
+      "id": "BBW-PQ-12",
+      "check": "Adversarial SKIP / DUPLICATE / RETAIN / CROSS / RACE / REPLAY / ESCAPE / ORPHAN",
+      "state": "PROVING"
+    }
+  ],
+  "invariants": [
+    "team/player ownership remains isolated",
+    "bed/objective destruction and elimination are committed once",
+    "respawn is permitted only while authored team survival conditions allow it",
+    "shop/upgrade transactions cannot debit without valid commit or compensation",
+    "fresh session removes or intentionally restores prior-session state",
+    "build/world mutations reset to authored baseline before reuse",
+    "disconnect/reconnect cannot bypass elimination or duplicate role/resources",
+    "ordinary capabilities cannot expose unintended developer controls"
+  ],
+  "coverageGates": {
+    "materialSurfaceRouting": "IN_PROGRESS",
+    "mutableResourceOwnership": "IN_PROGRESS",
+    "requiredCrosschecks": "IN_PROGRESS",
+    "materialScenarioAccounting": "IN_PROGRESS",
+    "playerControlledSurfaceAccounting": "IN_PROGRESS",
+    "genericNeedValidation": 0
+  },
+  "evidenceReceiptRequired": true
+}
