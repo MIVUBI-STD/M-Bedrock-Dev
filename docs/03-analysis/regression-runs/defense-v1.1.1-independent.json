@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "INDEPENDENT_SELECTED_ARTIFACT_PASS",
-  "status": "INDEPENDENT_PASS_CLOSED",
+  "status": "REGRESSION_COMPARISON_COMPLETE",
   "target": {
     "map": "Defense Challenge",
     "version": "1.1.1",
@@ -183,5 +183,62 @@
       "closure": "AUDIT_OBLIGATION",
       "question": "Replica/world geometry requires complete normalized world-footprint comparison before declaring a structural mismatch beyond the independently proven lifecycle defects."
     }
-  ]
+  ],
+  "historicalComparison": {
+    "status": "COMPLETE",
+    "historicalApprovedIssues": [
+      "BUG-DEF-LEASE-RESET",
+      "BUG-DEF-WAVE-RETRY",
+      "BUG-DEF-RESPAWN-RECONNECT",
+      "BUG-DEF-PRELOAD-INVENTORY",
+      "DM-DEF-ARENA-CAPACITY"
+    ],
+    "matched": [
+      {
+        "historicalId": "BUG-DEF-LEASE-RESET",
+        "independentId": "IND-DEF-001",
+        "rootCauseEquivalent": true
+      },
+      {
+        "historicalId": "BUG-DEF-WAVE-RETRY",
+        "independentId": "IND-DEF-002",
+        "rootCauseEquivalent": true
+      },
+      {
+        "historicalId": "BUG-DEF-RESPAWN-RECONNECT",
+        "independentId": "IND-DEF-003",
+        "rootCauseEquivalent": true
+      },
+      {
+        "historicalId": "BUG-DEF-PRELOAD-INVENTORY",
+        "independentId": "IND-DEF-004",
+        "rootCauseEquivalent": true
+      },
+      {
+        "historicalId": "DM-DEF-ARENA-CAPACITY",
+        "independentId": "IND-DEF-005",
+        "rootCauseEquivalent": true
+      }
+    ],
+    "missed": [],
+    "newIndependentFindings": [
+      {
+        "independentId": "IND-DEF-006",
+        "title": "Delayed objective victory can commit after timeout/wipe retry handling begins",
+        "historicalApprovedMatch": null
+      }
+    ],
+    "recall": {
+      "detected": 5,
+      "expected": 5,
+      "percent": 100
+    },
+    "provenRate": {
+      "proven": 6,
+      "independentFindings": 6,
+      "percent": 100
+    },
+    "genericNeedValidation": 0,
+    "note": "Historical report opened only after independent coverage gates closed."
+  }
 }
