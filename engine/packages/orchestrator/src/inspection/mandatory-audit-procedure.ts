@@ -1282,10 +1282,13 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "D4",
     "PROVE",
     "Root-Cause Consolidation",
-    defectResolution.status === "BLOCKED"
+    scenarioClosure.status === "OPEN" ||
+      defectResolution.status === "BLOCKED"
       ? "PARTIAL"
       : "CLOSED",
-    "Resolved defects are ready for semantic root-cause consolidation; report coverage enforces one-time causal-link coverage.",
+    scenarioClosure.status === "OPEN"
+      ? "Root-cause consolidation cannot close while material scenario residue remains unresolved."
+      : "Resolved defects are ready for semantic root-cause consolidation; report coverage enforces one-time causal-link coverage.",
     defectResolution.confirmedDefectReadyIds,
     ["RootCauseConsolidation"],
   ));
@@ -1294,12 +1297,17 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "E1",
     "REPORT",
     "Map Audit Report Contract",
-    defectResolution.status === "BLOCKED"
+    scenarioClosure.status === "OPEN" ||
+      defectResolution.status === "BLOCKED"
       ? "OPEN"
-      : "CLOSED",
-    defectResolution.status === "BLOCKED"
-      ? "Source-side defect resolution work still blocks report readiness."
-      : "Map Audit Report may preserve every material PROVEN and NEED_VALIDATION finding; approved Bug Report V2 promotion remains downstream.",
+      : scenarioClosure.status === "PARTIAL"
+        ? "PARTIAL"
+        : "CLOSED",
+    scenarioClosure.status === "OPEN"
+      ? "Material scenario residue remains unresolved; report readiness is blocked until it becomes PROVEN, targeted NEED_VALIDATION, or explicit counter-proof."
+      : scenarioClosure.status === "PARTIAL"
+        ? "Only irreducible runtime-proof residue remains; every item must stay visible with its targeted validation test."
+        : "Map Audit Report may preserve every material PROVEN and NEED_VALIDATION finding; approved Bug Report V2 promotion remains downstream.",
     [
       ...defectResolution.confirmedDefectReadyIds,
       ...defectResolution.runtimeProofRequiredIds,
