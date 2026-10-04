@@ -703,6 +703,7 @@ A2 Gameplay Surface Discovery
 → create/update Coverage Ledger
 
 A4/A5 State + Ownership
+→ derive authored Player Capability Model (game mode, abilities, inventory/catalog/build/interact acquisition surfaces) for every ordinary player role
 → build Mutable-State Reverse Index
 → promote every broad fresh-session reset into a per-player lifecycle invariant
 → trace every cleanup writer through its final player/entity ownership scope
