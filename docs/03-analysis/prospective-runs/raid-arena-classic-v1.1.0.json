@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "PROSPECTIVE_BLIND_AUDIT",
-  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "status": "PROSPECTIVE_PASS_CLOSED",
   "target": {
     "map": "Raid Arena Classic",
     "version": "1.1.0",
@@ -45,7 +45,8 @@
   },
   "futureValidation": {
     "method": "Independent findings are preserved before any tester/client confirmation. Later confirmations can measure prospective precision/recall where ground truth becomes available.",
-    "status": "PENDING_INDEPENDENT_FINDING_SET"
+    "status": "AWAITING_INDEPENDENT_RUNTIME_OR_CLIENT_GROUND_TRUTH",
+    "note": "A zero-finding static prospective pass is not proof that the map is bug-free. Preserve this frozen result for later comparison with tester/client-confirmed defects."
   },
   "discovery": {
     "materialSystems": [
@@ -76,61 +77,61 @@
       "id": "RAID-PQ-01",
       "check": "State-Agnostic Fresh-Session Reset",
       "scenario": "all per-player state domains × start/reconnect",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "RAID-PQ-02",
       "check": "Inventory / Kit / Equipment Integrity",
       "scenario": "kit selection/change × clear/grant/death/reconnect",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "RAID-PQ-03",
       "check": "Combat Lifecycle",
       "scenario": "death/respawn × reconnect × cleanup",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "RAID-PQ-04",
       "check": "Participant Accounting",
       "scenario": "required/assigned × online/eligible/gate-observed players",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "RAID-PQ-05",
       "check": "Cross-Player / Team Ownership",
       "scenario": "P1/team A mutation × P2/team B state",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "RAID-PQ-06",
       "check": "Terminal / Score / Reward Integrity",
       "scenario": "simultaneous combat/objective/terminal commits",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "RAID-PQ-07",
       "check": "World Mutation & Reset Integrity",
       "scenario": "run 1 footprint × cleanup/reset × run 2",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "RAID-PQ-08",
       "check": "Active-Session Reload Recovery",
       "scenario": "reload × session/world reconstruction",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "RAID-PQ-09",
       "check": "Player Capability / Developer Exposure",
       "scenario": "ordinary role capability × acquisition × activation",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "RAID-PQ-10",
       "check": "Adversarial Gameplay QA",
       "scenario": "SKIP / RETAIN / DUPLICATE / CROSS / RACE / REPLAY / ORPHAN / ESCAPE",
-      "state": "PROVING"
+      "state": "CLOSED"
     }
   ],
   "proofRules": {
@@ -144,5 +145,63 @@
     "developerAcquisitionMandatoryToClosure": true,
     "blockingProofRequiredBeforeSafe": true,
     "genericNeedValidationForbidden": true
+  },
+  "independentClosure": {
+    "findings": [],
+    "suppressed": [
+      {
+        "area": "Fresh-session state",
+        "reason": "No publishable contradiction retained with complete Evidence Receipt."
+      },
+      {
+        "area": "Kit/loadout lifecycle",
+        "reason": "No independently proven duplicate/retained/lost managed equipment contradiction retained."
+      },
+      {
+        "area": "Combat/reconnect",
+        "reason": "No source-grounded respawn/penalty bypass retained."
+      },
+      {
+        "area": "Participant accounting",
+        "reason": "No required-vs-observed membership contradiction retained."
+      },
+      {
+        "area": "Cross-player/team ownership",
+        "reason": "No independently proven ownership leak retained."
+      },
+      {
+        "area": "Terminal/score/reward",
+        "reason": "No duplicate or contradictory commit retained with complete evidence."
+      },
+      {
+        "area": "World reset/second run",
+        "reason": "No residual-state contradiction retained."
+      },
+      {
+        "area": "Reload recovery",
+        "reason": "No active-session reconstruction contradiction retained."
+      },
+      {
+        "area": "Capability/developer exposure",
+        "reason": "No ordinary-role acquisition + activation contradiction retained."
+      },
+      {
+        "area": "Adversarial sequences",
+        "reason": "No additional sequence survived Evidence Receipt and Blocking-Proof gates."
+      }
+    ],
+    "gates": {
+      "materialSurfaceRouting": "CLOSED",
+      "mutableResourceOwnership": "CLOSED",
+      "requiredCrosschecks": "CLOSED",
+      "materialScenarioAccounting": "CLOSED",
+      "playerControlledSurfaceAccounting": "CLOSED",
+      "genericNeedValidation": 0,
+      "unaccountedMaterialSurfaces": 0,
+      "unaccountedMutableResources": 0,
+      "unaccountedMaterialInterleavings": 0,
+      "unaccountedPlayerControlledSurfaces": 0
+    },
+    "evidenceReceiptGate": "PASSED_FOR_ZERO_FINDING_SET"
   }
 }
