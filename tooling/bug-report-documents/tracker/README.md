@@ -91,3 +91,25 @@ When `--golden-tracker` is present:
 Without the flag, legacy rendering remains unchanged.
 
 This opt-in period is intentional. It allows parity testing before the Golden lane becomes the default.
+
+
+## Local verification gate
+
+No CI is required for this lane.
+
+Before making Golden Tracker the default renderer, run:
+
+```text
+npm run verify:bug-tracker
+```
+
+This performs the repository TypeScript check and the focused tracker test suite.
+
+The focused suite includes:
+- frozen Golden hierarchy checks;
+- validation failure checks;
+- Project Registry source-binding checks;
+- projection/HTML issue-ID parity;
+- real approved-report parity for Attack Challenge v1.1.1, Defense Challenge v1.1.1, and Composite Challenge v1.1.1.
+
+Default cutover is blocked until this command passes locally.
