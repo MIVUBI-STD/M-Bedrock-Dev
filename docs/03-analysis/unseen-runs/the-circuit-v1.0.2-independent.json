@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "IN_PROGRESS_DISCOVERY_MODEL",
+  "status": "IN_PROGRESS_PROOF",
   "target": {
     "map": "The Circuit",
     "version": "1.0.2",
@@ -98,5 +98,63 @@
     "Historical The Circuit Bug Report remains sealed for this pass.",
     "No issue is admitted until source-derived causal chain and Blocking-Proof search are closed.",
     "Unseen validation is testing generalization of the repaired engine, not raw issue count."
-  ]
+  ],
+  "proofQueue": [
+    {
+      "id": "CIR-PQ-01",
+      "check": "Multi-Arena Capacity & Isolation",
+      "scenario": "parallel starts + shared resources",
+      "state": "PROVING"
+    },
+    {
+      "id": "CIR-PQ-02",
+      "check": "Persistence, Reconnect & Reload Integrity",
+      "scenario": "fresh-session reset × reconnect",
+      "state": "PROVING"
+    },
+    {
+      "id": "CIR-PQ-03",
+      "check": "Deferred Work & Generation Safety",
+      "scenario": "terminal/reset × same-arena reuse",
+      "state": "PROVING"
+    },
+    {
+      "id": "CIR-PQ-04",
+      "check": "Cleanup Ownership Crosscheck",
+      "scenario": "cleanup A × active state B",
+      "state": "PROVING"
+    },
+    {
+      "id": "CIR-PQ-05",
+      "check": "Recurring World-Mutation Spatial Crosscheck",
+      "scenario": "player-relative mutation × other arena/player",
+      "state": "PROVING"
+    },
+    {
+      "id": "CIR-PQ-06",
+      "check": "Terminal State & Duplicate-Commit Safety",
+      "scenario": "simultaneous terminal/objective triggers",
+      "state": "PROVING"
+    },
+    {
+      "id": "CIR-PQ-07",
+      "check": "Adversarial Gameplay QA",
+      "scenario": "skip/replay/retain/cross/race/orphan",
+      "state": "PROVING"
+    }
+  ],
+  "proofRules": {
+    "requiredClaims": [
+      "REACHABILITY",
+      "CONTRACT",
+      "CONTRADICTION",
+      "PLAYER_CONSEQUENCE",
+      "AFFECTED_SCOPE",
+      "BLOCKING_PROOF_CLEARED"
+    ],
+    "absenceProofForMissingGuards": true,
+    "temporalProofForDeferredWork": true,
+    "suppressionRequiresBlockingProof": true,
+    "genericNeedValidationForbidden": true
+  }
 }
