@@ -1,0 +1,54 @@
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
+import {
+  parseBugReportV2Json,
+  projectBugReportClientDocument,
+  reviewBugReportClientDocument,
+} from "../../../engine/packages/bug-report/src/index.js";
+import { projectClientDocumentToTracker, type ProjectRegistry } from "./project.js";
+import { renderBugTrackerHtml } from "./render-html.js";
+import { trackerIssueIds, validateBugTrackerDocument } from "./validate.js";
+
+const reportPaths = [
+  "workspace/reports/Attack-Challenge-v1.1.1-BugReport.json",
+  "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json",
+  "workspace/reports/Composite-Challenge-v1.1.1-BugReport.json",
+] as const;
+
+describe("Golden Tracker real approved-report parity", () => {
+  for (const reportPath of reportPaths) {
+    it(reportPath, async () => {
+      const [source, registrySource] = await Promise.all([
+        readFile(resolve(reportPath), "utf8"),
+        readFile(resolve("workspace/project-registry.json"), "utf8"),
+      ]);
+      const parsed = parseBugReportV2Json(source);
+      expect(parsed.ok).toBe(true);
+      if (!parsed.ok) return;
+
+      const client = projectBugReportClientDocument(parsed.report, {
+        includeFixed: true,
+        includeMinor: true,
+      });
+      expect(reviewBugReportClientDocument(client)).toEqual([]);
+
+      const tracker = projectClientDocumentToTracker(
+        client,
+        JSON.parse(registrySource) as ProjectRegistry,
+      );
+      validateBugTrackerDocument(tracker);
+      const ids = trackerIssueIds(tracker);
+      const html = renderBugTrackerHtml(tracker);
+
+      expect(ids.length).toBe(client.issues.length);
+      expect(new Set(ids).size).toBe(ids.length);
+      for (const id of ids) {
+        expect(html).toContain('data-issue-id="' + id + '"');
+      }
+      expect(html).toContain("Drive Folder ↗");
+      expect(html).toContain("World File ↗");
+      expect(html).not.toContain('<details class="map" open');
+    });
+  }
+});
