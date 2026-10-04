@@ -48,3 +48,21 @@ Arena displays/clue NPCs are reconciled by authored arena tags and current confi
 Mysteries of Biomes Level 2 v2.1.1: **0 source-proven gameplay findings**.
 
 Do not create historical regression entries from this pass.
+
+
+## Deep multiplayer / arena pass — global-loop counter-proof
+
+The current artifact's world-wide player loops were challenged explicitly.
+
+The inspected `getAllPlayers()` uses are limited to:
+
+- server statistics / unique-player bookkeeping;
+- delayed welcome messaging;
+- leaderboard name refresh;
+- non-admin Creative/Spectator enforcement.
+
+Gameplay progression, checkpoint/stat ownership, clue/arena projection, and admin coordinate tooling remain bound to player identity, arena configuration, or explicit admin authorization.
+
+No world-wide player loop inspected here owns one arena's progression or cleanup.
+
+Result: no additional source-proven cross-player/cross-arena gameplay defect admitted.

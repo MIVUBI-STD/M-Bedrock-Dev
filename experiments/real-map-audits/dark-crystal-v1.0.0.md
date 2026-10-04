@@ -47,3 +47,21 @@ Current source explicitly configures keepInventory, immediate respawn, PvP, nigh
 Dark Crystal v1.0.0: **0 source-proven gameplay findings** in this pass.
 
 No historical regression entry should be created from this map without additional current-artifact/runtime proof.
+
+
+## Deep multi-arena pass — isolation counter-proof
+
+The six-arena party/PvP system was rechecked for generic tag and world-player leakage.
+
+Current source:
+
+- resolves online players from the exact party/member ID set before per-party player mutation;
+- uses distinct player PvP tags `party_arena_1` through `party_arena_6`;
+- derives each player's desired tag from the currently started party containing that player;
+- world player reconciliation may scan all online players, but only projects each player's own party-derived PvP tag;
+- start cinematic operations receive the explicit `playerIds` of one arena/party;
+- player leave updates both party membership and active Dark Crystal round ownership.
+
+No current source path was found where Arena A's normal transition or cleanup writes Arena B's match state.
+
+Result: no additional source-proven cross-arena defect admitted.

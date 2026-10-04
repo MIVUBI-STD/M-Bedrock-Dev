@@ -63,3 +63,19 @@ The bundle also contains scanner/selection adapter surfaces without an obvious i
 Aftershock v1.0.4: **0 source-proven gameplay findings**.
 
 Do not create historical regression entries from this pass.
+
+
+## Deep multi-arena pass — isolation counter-proof
+
+The six-arena implementation was rechecked for world-wide player/entity loops and module-shared runtime state.
+
+Counter-proof from the selected artifact:
+
+- arena leases bind the current `sessionId + playerId` and objective actions revalidate that active lease;
+- Stoneball may enumerate online players, but each trigger/hit path rejects players that are not active in the matching Ascent runtime;
+- active Stoneball drops retain `ownerPlayerId` and per-player cleanup removes only that player's owned drops;
+- wind runtimes carry their authored arena setup and only remain active while a player satisfies the activation predicate for that runtime;
+- world-wide selection-particle scans belong to the developer glass-selection tool, not arena gameplay progression;
+- reset/release remains session/arena owned and does not expose an old arena generation as a fresh session.
+
+Result: no additional source-proven cross-arena gameplay defect admitted from the inspected global-loop/module-state surfaces.

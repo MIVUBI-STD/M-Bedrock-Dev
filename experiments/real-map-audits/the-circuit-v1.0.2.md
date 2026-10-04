@@ -104,3 +104,20 @@ SessionStartService
 The ticking area is removed again when the arena/gameplay is deactivated. Therefore the empty static `arena.tickingAreas` array is not missing-residency proof in this version.
 
 The five-player classroom-capacity concern is real as an implementation/product-capacity fact, but it is not automatically a gameplay BUG without adopting a higher required class capacity as the current requirement.
+
+
+## Deep multi-arena pass — assignment and world-mutation counter-proof
+
+The five independent Circuit arenas were rechecked for world-global maintenance and cleanup leakage.
+
+Current source:
+
+- gameplay assignment is stored per player and resolves one active arena/gameplay owner;
+- auto-repair and nearby-dirt maintenance iterate scheduler players but immediately skip anyone without a current arena assignment;
+- pathway ticking areas use an arena-specific resource name and are activated/deactivated through the assigned gameplay path;
+- global player enumeration in ExitVote cleanup is used only when the overall Circuit session is no longer active, to remove stale session exit items;
+- developer skip commands require the current developer permission owner before resolving the player's assigned arena/gameplay.
+
+No additional cross-arena state/mutation defect was established in these paths.
+
+The existing five-player party/classroom-capacity fact and unguarded DebugStick trigger remain separate capability/reachability questions; they are not promoted without a selected-artifact requirement/reachability proof.
