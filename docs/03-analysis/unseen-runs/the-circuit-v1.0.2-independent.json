@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "INDEPENDENT_PASS_CLOSED",
+  "status": "UNSEEN_REPAIR_REQUIRED",
   "target": {
     "map": "The Circuit",
     "version": "1.0.2",
@@ -219,5 +219,45 @@
       "unaccountedPlayerControlledSurfaces": 0,
       "genericNeedValidation": 0
     }
+  },
+  "historicalComparison": {
+    "status": "COMPLETE_WITH_MISS_AND_FALSE_POSITIVE_RISK",
+    "historicalApprovedIssues": [
+      {
+        "id": "DM-CIR-DEBUG-STICK",
+        "title": "Normal gameplay resources expose the production DebugStick"
+      }
+    ],
+    "matched": [],
+    "missed": [
+      {
+        "historicalId": "DM-CIR-DEBUG-STICK",
+        "classification": "ADVERSARIAL_MISS",
+        "earliestFailure": "Developer-control reachability was suppressed after script-event reachability review without fully tracing ordinary gameplay resource acquisition/crafting into the production DebugStick.",
+        "repair": "Developer Tool Exposure must trace acquisition graph across loot/container/crafting/recipe/item conversion and interaction handlers, not only script-event emission."
+      }
+    ],
+    "independentFindingsReview": [
+      {
+        "independentId": "IND-CIR-001",
+        "historicalMatch": null,
+        "disposition": "REOPEN_FOR_EVIDENCE",
+        "reason": "No historical match; current run record lacks concrete source-evidence receipts sufficient for publication."
+      },
+      {
+        "independentId": "IND-CIR-002",
+        "historicalMatch": null,
+        "disposition": "REOPEN_FOR_EVIDENCE",
+        "reason": "No historical match; current run record lacks concrete source-evidence receipts sufficient for publication."
+      }
+    ],
+    "recall": {
+      "detected": 0,
+      "expected": 1,
+      "percent": 0
+    },
+    "provenRateAfterEvidenceReview": "NOT_CLAIMED",
+    "genericNeedValidation": 0,
+    "conclusion": "Unseen validation exposed a generalization miss in ordinary-player developer-item acquisition analysis. The two provisional independent findings must not be published until concrete source receipts are attached."
   }
 }
