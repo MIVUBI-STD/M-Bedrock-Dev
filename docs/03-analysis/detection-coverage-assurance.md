@@ -1283,7 +1283,96 @@ A claim-closure matrix without attached evidence receipts is not publication pro
 
 ---
 
-# 31. Architecture Freeze Rule
+# 31. Regression Repair: Cooperative Participant Accounting
+
+This rule is promoted from the unseen The Gauntlet validation miss. It strengthens progression/multiplayer modeling.
+
+Whenever progression/readiness/completion depends on multiple players, maintain separate sets:
+
+```text
+Required Participants
+Assigned Session Participants
+Currently Online Participants
+Currently Eligible/Alive Participants
+Participants Observed by the Gate
+```
+
+For every cooperative gate record:
+
+```text
+authored participant requirement
+→ session membership source
+→ online-player query/filter
+→ disconnect behavior
+→ reconnect behavior
+→ gate predicate
+→ missing-member policy
+→ progression consequence
+```
+
+Mandatory scenario:
+
+```text
+P1 + P2 are required/assigned
+→ P2 disconnects
+→ gate reevaluates using its actual query
+→ determine whether P2 is intentionally preserved, removed, replaced, or silently ignored
+```
+
+A gate that queries only currently online players is not automatically safe. Prove that online membership is the authored requirement or that disconnect explicitly updates authoritative required membership.
+
+Crosschecks:
+
+```text
+Required Participants × Online Query
+Disconnect × Completion Gate
+Reconnect × Participant Membership
+Last/Owner Player Disconnect × Session Progression
+```
+
+Do not suppress cooperative disconnect scenarios until required membership and gate-observed membership are reconciled.
+
+## 31.1 Mandatory Developer-Item Acquisition Closure
+
+For every developer/debug item whose activation mutates progression, terminal state, score, arena/session state, or reset behavior, acquisition analysis is mandatory-to-closure.
+
+Trace all applicable backward paths:
+
+```text
+developer item
+← recipe/crafting
+← recipe ingredients
+← ordinary world/container resources
+← loot/drop
+← shop/reward
+← structure-loaded inventory
+← direct grant
+```
+
+Then prove one of:
+
+```text
+UNREACHABLE
+→ every ordinary-player acquisition path is blocked by exact evidence
+
+REACHABLE
+→ ordinary gameplay can obtain the item
+→ trace activation and permission
+→ send contradiction to PROVE when gameplay contract is violated
+```
+
+The following are not sufficient for suppression:
+- no direct grant found;
+- no script-event emission found;
+- item name implies developer-only use;
+- activation handler is hidden from UI;
+- recipe existence was not inspected.
+
+For craftable developer items, recipe ingredients must be traced to ordinary gameplay availability before closure.
+
+---
+
+# 32. Architecture Freeze Rule
 
 The detection architecture is considered structurally complete after sections 1–17.
 
