@@ -2,6 +2,9 @@ import type {
   ParsedScriptFile,
 } from "../../../../analyzers/scripts/src/index.js";
 import type {
+  SemanticNode,
+} from "../../../graph/src/index.js";
+import type {
   GameplayReachabilityEdge,
   GameplayReachabilityGraph,
   GameplayReachabilityNode,
@@ -21,17 +24,125 @@ function normalizeItemIdentifier(
     : "minecraft:" + value.toLowerCase();
 }
 
+function record(
+  value: unknown,
+): Record<string, unknown> | undefined {
+  return value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value)
+      ? value as Record<string, unknown>
+      : undefined;
+}
+
+function itemIdentifier(
+  value: unknown,
+): string | undefined {
+  if (typeof value === "string") {
+    return normalizeItemIdentifier(value);
+  }
+  const object = record(value);
+  const item =
+    object?.item ??
+    object?.name;
+  return typeof item === "string"
+    ? normalizeItemIdentifier(item)
+    : undefined;
+}
+
+function recipeIngredients(
+  definition: Record<string, unknown>,
+): {
+  readonly itemIds: readonly string[];
+  readonly unresolved: boolean;
+} {
+  const ids: string[] = [];
+  let unresolved = false;
+
+  const ingredients = definition.ingredients;
+  if (Array.isArray(ingredients)) {
+    for (const ingredient of ingredients) {
+      const id = itemIdentifier(ingredient);
+      if (id) ids.push(id);
+      else unresolved = true;
+    }
+  }
+
+  const key = record(definition.key);
+  if (key) {
+    for (const ingredient of Object.values(key)) {
+      const id = itemIdentifier(ingredient);
+      if (id) ids.push(id);
+      else unresolved = true;
+    }
+  }
+
+  return {
+    itemIds: [...new Set(ids)].sort(),
+    unresolved,
+  };
+}
+
+function recipeResult(
+  definition: Record<string, unknown>,
+): string | undefined {
+  const result = definition.result;
+  if (Array.isArray(result)) {
+    const ids = [
+      ...new Set(
+        result
+          .map(itemIdentifier)
+          .filter(
+            (item): item is string =>
+              item !== undefined,
+          ),
+      ),
+    ];
+    return ids.length === 1
+      ? ids[0]
+      : undefined;
+  }
+  return itemIdentifier(result);
+}
+
+function recipeDefinitions(
+  node: SemanticNode,
+): readonly Record<string, unknown>[] {
+  if (node.kind !== "recipe") return [];
+  const root = record(node.data);
+  if (!root) return [];
+
+  return Object.entries(root)
+    .filter(([key]) =>
+      key.startsWith("minecraft:recipe_")
+    )
+    .flatMap(([, value]) => {
+      const definition = record(value);
+      return definition ? [definition] : [];
+    });
+}
+
 export function buildGameplayReachabilityGraph(
   scripts: readonly {
     readonly parsed: ParsedScriptFile;
     readonly text?: string;
   }[],
+  gameplayJsonNodes: readonly SemanticNode[] = [],
 ): GameplayReachabilityGraph {
   const nodes = new Map<
     string,
     GameplayReachabilityNode
   >();
   const edges: GameplayReachabilityEdge[] = [];
+  const coverageSources = new Set<string>([
+    "script-item-grants",
+    "script-world-drops",
+    "give-command",
+  ]);
+  const coverageGaps = new Set<string>([
+    "container-contents",
+    "engine-loot-table-items",
+    "world-natural-acquisition",
+  ]);
 
   const playerId = "player:ordinary";
   nodes.set(playerId, {
@@ -136,6 +247,58 @@ export function buildGameplayReachabilityGraph(
     }
   }
 
+  let recipeFiles = 0;
+  let unresolvedRecipes = 0;
+  for (const node of gameplayJsonNodes) {
+    const definitions = recipeDefinitions(node);
+    if (definitions.length === 0) continue;
+    recipeFiles += 1;
+    const evidenceIds = [
+      node.source.relativePath,
+    ];
+
+    for (const definition of definitions) {
+      const ingredients =
+        recipeIngredients(definition);
+      const result =
+        recipeResult(definition);
+
+      if (
+        result === undefined ||
+        ingredients.unresolved ||
+        ingredients.itemIds.length !== 1
+      ) {
+        unresolvedRecipes += 1;
+        continue;
+      }
+
+      const ingredient =
+        ensureItem(
+          ingredients.itemIds[0]!,
+          evidenceIds,
+        );
+      const output =
+        ensureItem(result, evidenceIds);
+      edges.push({
+        from: ingredient,
+        to: output,
+        kind: "crafts",
+        evidenceIds,
+      });
+    }
+  }
+
+  if (recipeFiles > 0) {
+    coverageSources.add(
+      "behavior-pack-recipes",
+    );
+  }
+  if (unresolvedRecipes > 0) {
+    coverageGaps.add(
+      "multi-ingredient-or-tag-recipes",
+    );
+  }
+
   return {
     nodes: [...nodes.values()].sort(
       (a, b) => a.id.localeCompare(b.id),
@@ -148,17 +311,8 @@ export function buildGameplayReachabilityGraph(
     ),
     coverage: {
       complete: false,
-      sources: [
-        "script-item-grants",
-        "script-world-drops",
-        "give-command",
-      ],
-      gaps: [
-        "container-contents",
-        "crafting-recipes",
-        "engine-loot-table-items",
-        "world-natural-acquisition",
-      ],
+      sources: [...coverageSources].sort(),
+      gaps: [...coverageGaps].sort(),
     },
   };
 }

@@ -558,6 +558,7 @@ export function buildInspectionResult(
   const gameplayReachability =
     buildGameplayReachabilityGraph(
       parsedScripts,
+      nodes,
     );
   const developerToolRelease =
     analyzeDeveloperToolReleaseExposure(
