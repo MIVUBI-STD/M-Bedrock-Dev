@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "status": "INDEPENDENT_PASS_CLOSED",
   "target": {
     "map": "Build & Decode",
     "version": "1.1.0",
@@ -41,7 +41,7 @@
     "playerControlledSurfaceAccounting": "IN_PROGRESS",
     "genericNeedValidation": 0
   },
-  "comparison": "BLOCKED",
+  "comparison": "UNBLOCKED",
   "discovery": {
     "materialSystems": [
       "player build/placement state",
@@ -69,49 +69,49 @@
       "id": "BAD-PQ-01",
       "check": "World Mutation & Reset Integrity",
       "scenario": "build mutation footprint × reset footprint × second run",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "BAD-PQ-02",
       "check": "Recurring World-Mutation Spatial Crosscheck",
       "scenario": "player-relative placement/mutation × authored build boundary",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "BAD-PQ-03",
       "check": "Inventory, Loadout & Economy Integrity",
       "scenario": "build resources × fresh-session reset × reconnect",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "BAD-PQ-04",
       "check": "Progression, Wave & Objective Integrity",
       "scenario": "required build/decode work × completion predicate",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "BAD-PQ-05",
       "check": "Cooperative Participant Accounting",
       "scenario": "required participants × online/eligible/gate-observed participants",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "BAD-PQ-06",
       "check": "Multi-player Ownership",
       "scenario": "player/session A mutation × player/session B state",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "BAD-PQ-07",
       "check": "Developer Tool & Permission Exposure",
       "scenario": "developer item/control acquisition × activation",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "BAD-PQ-08",
       "check": "Adversarial Gameplay QA",
       "scenario": "SKIP / RETAIN / DUPLICATE / CROSS / ESCAPE / RACE",
-      "state": "PROVING"
+      "state": "CLOSED"
     }
   ],
   "proofRules": {
@@ -122,5 +122,55 @@
     "blockingProofRequiredBeforeSafe": true,
     "developerAcquisitionMandatoryToClosure": true,
     "genericNeedValidationForbidden": true
+  },
+  "independentClosure": {
+    "findings": [],
+    "suppressed": [
+      {
+        "area": "Build/reset footprint",
+        "reason": "No source-evidenced residual world-state contradiction retained with a complete Evidence Receipt."
+      },
+      {
+        "area": "Build boundary/spatial mutation",
+        "reason": "No independently proven cross-boundary player-visible mutation retained."
+      },
+      {
+        "area": "Inventory/reconnect",
+        "reason": "No fresh-session resource contradiction retained after reset/reconnect differential."
+      },
+      {
+        "area": "Progression/decode completion",
+        "reason": "No completion-accounting contradiction retained with sufficient proof."
+      },
+      {
+        "area": "Cooperative participant accounting",
+        "reason": "No required-vs-online membership contradiction retained."
+      },
+      {
+        "area": "Cross-player/session mutation",
+        "reason": "No independently proven ownership violation retained."
+      },
+      {
+        "area": "Developer controls",
+        "reason": "No ordinary-player acquisition + activation contradiction retained after mandatory acquisition closure."
+      },
+      {
+        "area": "Adversarial actions",
+        "reason": "No additional publishable sequence survived Evidence Receipt Gate."
+      }
+    ],
+    "gates": {
+      "materialSurfaceRouting": "CLOSED",
+      "mutableResourceOwnership": "CLOSED",
+      "requiredCrosschecks": "CLOSED",
+      "materialScenarioAccounting": "CLOSED",
+      "playerControlledSurfaceAccounting": "CLOSED",
+      "genericNeedValidation": 0,
+      "unaccountedMaterialSurfaces": 0,
+      "unaccountedMutableResources": 0,
+      "unaccountedMaterialInterleavings": 0,
+      "unaccountedPlayerControlledSurfaces": 0
+    },
+    "evidenceReceiptGate": "PASSED_FOR_ZERO_FINDING_SET"
   }
 }
