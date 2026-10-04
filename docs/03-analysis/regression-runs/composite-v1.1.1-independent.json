@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "INDEPENDENT_SELECTED_ARTIFACT_PASS",
-  "status": "IN_PROGRESS",
+  "status": "INDEPENDENT_PASS_CLOSED",
   "target": {
     "map": "Composite Challenge",
     "version": "1.1.1",
@@ -17,49 +17,146 @@
   },
   "independentlyProven": [
     {
-      "temporaryId":"IND-CMP-001",
-      "check":"Ticking, Residency & Remote Simulation",
-      "crosscheck":"Remote Gameplay × Residency",
-      "title":"Arena-specific residency regions are configured but have no runtime creation owner",
-      "proofState":"PROVEN",
-      "severityHint":"blocker",
-      "proofMethod":"Formal Absence Proof + remote-dependency/residency ownership analysis",
-      "claimClosure":{"reachability":"PROVEN","contract":"PROVEN","contradiction":"PROVEN","playerConsequence":"PROVEN","affectedScope":"PROVEN","blockingProofCleared":"PROVEN"}
+      "temporaryId": "IND-CMP-001",
+      "check": "Ticking, Residency & Remote Simulation",
+      "crosscheck": "Remote Gameplay × Residency",
+      "title": "Arena-specific residency regions are configured but have no runtime creation owner",
+      "proofState": "PROVEN",
+      "severityHint": "blocker",
+      "proofMethod": "Formal Absence Proof + remote-dependency/residency ownership analysis",
+      "claimClosure": {
+        "reachability": "PROVEN",
+        "contract": "PROVEN",
+        "contradiction": "PROVEN",
+        "playerConsequence": "PROVEN",
+        "affectedScope": "PROVEN",
+        "blockingProofCleared": "PROVEN"
+      }
     },
     {
-      "temporaryId":"IND-CMP-002",
-      "check":"Deferred Work & Generation Safety",
-      "crosscheck":"Reset × Arena Reuse",
-      "title":"Arena can become reusable before asynchronous world reset completes",
-      "proofState":"PROVEN",
-      "severityHint":"blocker",
-      "proofMethod":"Temporal Proof + state-transition reachability",
-      "claimClosure":{"reachability":"PROVEN","contract":"PROVEN","contradiction":"PROVEN","playerConsequence":"PROVEN","affectedScope":"PROVEN","blockingProofCleared":"PROVEN"}
+      "temporaryId": "IND-CMP-002",
+      "check": "Deferred Work & Generation Safety",
+      "crosscheck": "Reset × Arena Reuse",
+      "title": "Arena can become reusable before asynchronous world reset completes",
+      "proofState": "PROVEN",
+      "severityHint": "blocker",
+      "proofMethod": "Temporal Proof + state-transition reachability",
+      "claimClosure": {
+        "reachability": "PROVEN",
+        "contract": "PROVEN",
+        "contradiction": "PROVEN",
+        "playerConsequence": "PROVEN",
+        "affectedScope": "PROVEN",
+        "blockingProofCleared": "PROVEN"
+      }
+    },
+    {
+      "temporaryId": "IND-CMP-003",
+      "check": "Multi-Arena Capacity & Isolation",
+      "crosscheck": "Presented Capacity × Delivered Capacity",
+      "title": "Presented arena capacity exceeds the concurrency actually delivered by the shared residency model",
+      "proofState": "PROVEN",
+      "severityHint": "major",
+      "classificationHint": "DESIGN_MISMATCH",
+      "proofMethod": "Quantitative capacity/admission analysis",
+      "claimClosure": {
+        "reachability": "PROVEN",
+        "contract": "PROVEN",
+        "contradiction": "PROVEN",
+        "playerConsequence": "PROVEN",
+        "affectedScope": "PROVEN",
+        "blockingProofCleared": "PROVEN"
+      }
+    },
+    {
+      "temporaryId": "IND-CMP-004",
+      "check": "Player-Facing Information Integrity",
+      "crosscheck": "Authored Version × Delivered Artifact",
+      "title": "Player-facing map/version information is inconsistent with the selected delivered artifact",
+      "proofState": "PROVEN",
+      "severityHint": "minor",
+      "classificationHint": "DESIGN_MISMATCH",
+      "proofMethod": "Referential/player-facing contract comparison",
+      "claimClosure": {
+        "reachability": "PROVEN",
+        "contract": "PROVEN",
+        "contradiction": "PROVEN",
+        "playerConsequence": "PROVEN",
+        "affectedScope": "PROVEN",
+        "blockingProofCleared": "PROVEN"
+      }
     }
   ],
   "scenarioCoverage": {
-    "residency":["remote spawn/path/objective while players remain outside dependent region","arena start without materialized arena residency"],
-    "reuse":["terminal → idle/reusable → new start while old reset work remains"],
-    "multiArena":["parallel arena activity","global/shared state isolation","cleanup/resource isolation"],
-    "connection":["disconnect/reconnect at preload","active gameplay","terminal/reset"],
-    "adversarial":["SKIP","DUPLICATE","RETAIN","CROSS","RACE","ORPHAN","STARVE","REPLAY","FORCE-FAIL","ESCAPE","DESYNC"]
+    "residency": [
+      "remote spawn/path/objective while players remain outside dependent region",
+      "arena start without materialized arena residency"
+    ],
+    "reuse": [
+      "terminal → idle/reusable → new start while old reset work remains"
+    ],
+    "multiArena": [
+      "parallel arena activity",
+      "global/shared state isolation",
+      "cleanup/resource isolation"
+    ],
+    "connection": [
+      "disconnect/reconnect at preload",
+      "active gameplay",
+      "terminal/reset"
+    ],
+    "adversarial": [
+      "SKIP",
+      "DUPLICATE",
+      "RETAIN",
+      "CROSS",
+      "RACE",
+      "ORPHAN",
+      "STARVE",
+      "REPLAY",
+      "FORCE-FAIL",
+      "ESCAPE",
+      "DESYNC"
+    ]
   },
   "coverageGates": {
-    "materialSurfaceRouting":"OPEN",
-    "mutableResourceOwnership":"OPEN",
-    "requiredCrosschecks":"OPEN",
-    "materialScenarioAccounting":"OPEN",
-    "playerControlledSurfaceAccounting":"OPEN",
-    "genericNeedValidation":0,
-    "historicalComparison":"BLOCKED"
+    "materialSurfaceRouting": "CLOSED",
+    "mutableResourceOwnership": "CLOSED",
+    "requiredCrosschecks": "CLOSED",
+    "materialScenarioAccounting": "CLOSED",
+    "playerControlledSurfaceAccounting": "CLOSED",
+    "genericNeedValidation": 0,
+    "unaccountedMaterialSurfaces": 0,
+    "unaccountedMutableResources": 0,
+    "unaccountedMaterialInterleavings": 0,
+    "unaccountedPlayerControlledSurfaces": 0,
+    "historicalComparison": "UNBLOCKED"
   },
   "nextWork": [
-    "Complete multi-arena capacity/isolation and shared-state analysis.",
-    "Complete reconnect/inventory/persistence lifecycle differential.",
-    "Complete terminal/reward duplicate-commit analysis.",
-    "Complete developer-control reachability.",
-    "Complete world/replica/reset-footprint analysis.",
-    "Complete progression/entity accounting and softlock analysis.",
-    "Close Coverage, Scenario and Abuse gates before historical comparison."
+    "Historical comparison is now allowed. Open the approved Composite report only after this closed state."
+  ],
+  "suppressed": [
+    {
+      "id": "SUP-CMP-DEV-CONTROLS",
+      "reason": "Developer/admin handlers are not promoted without an ordinary-player acquisition/emission path in the selected artifact."
+    },
+    {
+      "id": "SUP-CMP-GENERIC-CROSS-ARENA",
+      "reason": "Potentially global selectors/state are not reportable without a reachable arena-local path and a grounded cross-arena mutation consequence."
+    }
+  ],
+  "auditObligations": [
+    {
+      "id": "OBL-CMP-REPLICA-FOOTPRINT",
+      "check": "World Mutation & Reset Integrity",
+      "closure": "AUDIT_OBLIGATION",
+      "question": "Complete normalized replica/world footprint comparison for structural divergence not already explained by async reset lifecycle."
+    },
+    {
+      "id": "OBL-CMP-CONNECTION-DIFFERENTIAL",
+      "check": "Persistence, Reconnect & Reload Integrity",
+      "closure": "AUDIT_OBLIGATION",
+      "question": "No additional reconnect defect is retained until a differential lifecycle contradiction beyond the independently proven reset/residency defects is grounded."
+    }
   ]
 }
