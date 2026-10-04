@@ -977,6 +977,22 @@ export function compileGameplayScenarioGraph(
           "runtime:economy",
         );
         break;
+      case "transaction-atomicity":
+        addIntentKinds("resource", "mechanic", "state", "outcome");
+        addRuntime(
+          "runtime:economy",
+          "runtime:inventory",
+          "runtime:persistence",
+        );
+        break;
+      case "simulation-distance":
+        addIntentKinds("mechanic", "objective", "spatial-region", "lifecycle");
+        addRuntime(
+          "runtime:chunks",
+          "runtime:entities",
+          "runtime:arena",
+        );
+        break;
       case "repeated-run":
         addIntentKinds("lifecycle", "phase", "state", "outcome");
         addRuntime(
