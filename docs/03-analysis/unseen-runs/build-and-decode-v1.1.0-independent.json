@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "TARGET_LOCKED_READY_FOR_DISCOVERY",
+  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
   "target": {
     "map": "Build & Decode",
     "version": "1.1.0",
@@ -34,12 +34,93 @@
     "Evidence Receipt Gate"
   ],
   "coverageGates": {
-    "materialSurfaceRouting":"OPEN",
-    "mutableResourceOwnership":"OPEN",
-    "requiredCrosschecks":"OPEN",
-    "materialScenarioAccounting":"OPEN",
-    "playerControlledSurfaceAccounting":"OPEN",
-    "genericNeedValidation":0
+    "materialSurfaceRouting": "IN_PROGRESS",
+    "mutableResourceOwnership": "IN_PROGRESS",
+    "requiredCrosschecks": "IN_PROGRESS",
+    "materialScenarioAccounting": "IN_PROGRESS",
+    "playerControlledSurfaceAccounting": "IN_PROGRESS",
+    "genericNeedValidation": 0
   },
-  "comparison":"BLOCKED"
+  "comparison": "BLOCKED",
+  "discovery": {
+    "materialSystems": [
+      "player build/placement state",
+      "build-area/world mutation",
+      "inventory/build resources",
+      "decode/progression completion",
+      "session/player ownership",
+      "reset/replay baseline",
+      "connection/recovery",
+      "player-facing progression feedback",
+      "developer/debug affordances"
+    ],
+    "derivedInvariants": [
+      "player mutation remains inside authored build scope",
+      "fresh run starts from authored world baseline",
+      "temporary build state is removed or intentionally persisted",
+      "completion observes authoritative required work rather than incidental online state",
+      "disconnect/reconnect cannot bypass required reset or completion membership",
+      "one player/session cannot mutate another player's or session's build state",
+      "developer progression controls are unreachable to ordinary players unless intentionally authored"
+    ]
+  },
+  "proofQueue": [
+    {
+      "id": "BAD-PQ-01",
+      "check": "World Mutation & Reset Integrity",
+      "scenario": "build mutation footprint × reset footprint × second run",
+      "state": "PROVING"
+    },
+    {
+      "id": "BAD-PQ-02",
+      "check": "Recurring World-Mutation Spatial Crosscheck",
+      "scenario": "player-relative placement/mutation × authored build boundary",
+      "state": "PROVING"
+    },
+    {
+      "id": "BAD-PQ-03",
+      "check": "Inventory, Loadout & Economy Integrity",
+      "scenario": "build resources × fresh-session reset × reconnect",
+      "state": "PROVING"
+    },
+    {
+      "id": "BAD-PQ-04",
+      "check": "Progression, Wave & Objective Integrity",
+      "scenario": "required build/decode work × completion predicate",
+      "state": "PROVING"
+    },
+    {
+      "id": "BAD-PQ-05",
+      "check": "Cooperative Participant Accounting",
+      "scenario": "required participants × online/eligible/gate-observed participants",
+      "state": "PROVING"
+    },
+    {
+      "id": "BAD-PQ-06",
+      "check": "Multi-player Ownership",
+      "scenario": "player/session A mutation × player/session B state",
+      "state": "PROVING"
+    },
+    {
+      "id": "BAD-PQ-07",
+      "check": "Developer Tool & Permission Exposure",
+      "scenario": "developer item/control acquisition × activation",
+      "state": "PROVING"
+    },
+    {
+      "id": "BAD-PQ-08",
+      "check": "Adversarial Gameplay QA",
+      "scenario": "SKIP / RETAIN / DUPLICATE / CROSS / ESCAPE / RACE",
+      "state": "PROVING"
+    }
+  ],
+  "proofRules": {
+    "evidenceReceiptRequired": true,
+    "claimClosureRequired": true,
+    "mutationFootprintRequiredWhenApplicable": true,
+    "secondRunBaselineRequired": true,
+    "blockingProofRequiredBeforeSafe": true,
+    "developerAcquisitionMandatoryToClosure": true,
+    "genericNeedValidationForbidden": true
+  }
 }
