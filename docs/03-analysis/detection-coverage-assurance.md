@@ -747,7 +747,138 @@ Target:
 
 ---
 
-# 20. Architecture Freeze Rule
+# 20. Scenario Reduction & Pairwise Interaction Coverage
+
+### Purpose
+
+Keep multi-scenario simulation broad enough to expose interaction defects without exploding into an unbounded Cartesian test matrix.
+
+### Reduction rule
+
+Start from material scenario dimensions discovered in the selected artifact:
+
+```text
+player role/count
+arena/session
+lifecycle state
+connection interruption
+concurrent action
+shared resource pressure
+failure injection
+generation
+```
+
+Generate a scenario only when at least two dimensions interact through a shared material dependency.
+
+Prioritize pairwise coverage of material interactions, then add higher-order cases only when:
+- three or more writers converge on the same resource;
+- a terminal/recovery boundary is involved;
+- shared capacity is involved;
+- an old/new generation overlap exists;
+- a known invariant requires all participating dimensions.
+
+### Dominance pruning
+
+Scenario A may cover Scenario B only when A preserves every material condition of B and adds stress without changing the expected contract.
+
+Do not prune when:
+- player role/authority differs;
+- arena ownership differs;
+- lifecycle boundary differs;
+- connection interruption occurs on a different side of the commit;
+- different writer/clearer ordering is exercised;
+- safe maximum vs safe maximum + 1 differs.
+
+### Scenario identity
+
+Use deterministic IDs derived from the material dimensions, for example:
+
+```text
+SCN-RECONNECT-PRELOAD-INVENTORY
+SCN-ARENA-2START-SHARED-RESIDENCY
+SCN-RESPAWN-RECONNECT-ACTIVE-RESTORE
+SCN-RESET-REUSE-OLD-CLEANUP
+```
+
+Names describe the interaction being evaluated, not an assumed bug outcome.
+
+---
+
+# 21. Scenario Proof Receipt
+
+Every generated material scenario retains one compact internal receipt:
+
+```text
+Scenario ID
+Triggering checks
+Initial authoritative state
+Actors / arenas
+Ordered events
+Shared resources
+Expected invariants
+Observed source-derived transitions
+Blocking Proof searched
+Claim closure
+Result
+Evidence IDs
+```
+
+Result:
+
+```text
+SAFE
+CONTRADICTION
+IRREDUCIBLE_RUNTIME_QUESTION
+```
+
+A scenario receipt is evidence/control data, not a parallel user-facing report.
+
+When multiple scenarios prove the same root cause, A24 Duplicate Finding Consolidation owns publication.
+
+---
+
+# 22. Connection Recovery Invariants
+
+When disconnect/reconnect exists, derive applicable invariants rather than relying on generic reconnect tests.
+
+Examples:
+
+```text
+reconnect does not create a second session owner
+reconnect cannot bypass an unfinished death/respawn lifecycle
+reconnect cannot bypass a fresh-session reset requirement
+reconnect restores the same arena/session identity when that is the authored contract
+reconnect cannot duplicate one-shot reward/score commits
+disconnect cannot orphan a shared resource indefinitely
+last-player disconnect resolves or intentionally preserves session ownership
+repeated reconnect does not multiply subscriptions/timers/callbacks
+late join does not inherit stale state from another player/session
+```
+
+Each invariant must be grounded by the selected artifact's authored lifecycle. Do not impose a generic resume/reset policy on every map.
+
+---
+
+# 23. Simulation Honesty Gate
+
+Before a simulated scenario is promoted to PROVEN, verify:
+
+```text
+all relevant transitions are source-grounded
+all assumed actors/resources exist in the selected artifact
+ordering/overlap is established or causally guaranteed
+no native network/server behavior was invented
+Blocking Proof search covers the exact commit path
+player-visible consequence follows from grounded state
+```
+
+If any decisive condition depends on unknown native behavior, convert only that condition into an IRREDUCIBLE_RUNTIME_QUESTION.
+
+Never describe source-derived simulation as an executed Minecraft playtest.
+
+---
+
+# 24. Architecture Freeze Rule
 
 The detection architecture is considered structurally complete after sections 1–17.
 
