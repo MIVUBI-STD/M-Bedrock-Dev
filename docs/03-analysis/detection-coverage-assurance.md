@@ -1517,7 +1517,64 @@ Reload × Arena Abort/Recovery
 
 ---
 
-# 34. Architecture Freeze Rule
+# 34. Regression Repair: Mandatory Replica Discovery
+
+This rule is promoted from the unseen Manhunt validation miss. It strengthens base Discovery and existing Mutation & Replica Footprint Analysis.
+
+Whenever the selected artifact contains multiple authored arenas, lanes, plots, rooms, islands, regions, or other repeated gameplay instances, replica discovery is mandatory before genre/family prioritization.
+
+Base Discovery must:
+
+```text
+enumerate all repeated instances
+→ identify instance anchors/offsets/bounds
+→ determine canonical authored baseline when supported
+→ normalize coordinates
+→ compare material footprint/topology
+→ record per-instance divergence
+→ route every material divergence to gameplay consequence analysis
+```
+
+### Material replica comparison
+
+Compare applicable:
+- occupied block footprint;
+- structural volume/bounds;
+- required paths/platforms/walls/barriers;
+- spawn/join/objective locations;
+- reset/mutation regions;
+- entity/structure anchors;
+- gameplay-critical containers/block entities;
+- void/missing-region exposure.
+
+Do not require byte-identical replicas when intentional variation is authored. Compare the gameplay-required contract.
+
+### Discovery priority rule
+
+Applicable Check Router may reduce specialist checks, but it may not suppress base discovery of:
+- repeated physical instances;
+- material world geometry;
+- instance count/capacity;
+- instance-specific configuration.
+
+Map genre is never evidence that physical replica analysis is unnecessary.
+
+### Replica closure
+
+Every repeated instance must be exactly one:
+
+```text
+EQUIVALENT FOR GAMEPLAY
+INTENTIONALLY DIFFERENT + grounded contract
+MATERIALLY DIVERGENT → routed to PROVE
+UNRESOLVED → exact missing evidence
+```
+
+No repeated instance may remain unenumerated at Coverage Completeness Gate.
+
+---
+
+# 35. Architecture Freeze Rule
 
 The detection architecture is considered structurally complete after sections 1–17.
 
