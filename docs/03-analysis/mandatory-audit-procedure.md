@@ -706,6 +706,7 @@ A4/A5 State + Ownership
 → build Mutable-State Reverse Index
 → promote every broad fresh-session reset into a per-player lifecycle invariant
 → trace every cleanup writer through its final player/entity ownership scope
+→ when cooperative progression exists, model Required / Assigned / Online / Eligible / Gate-Observed participant sets separately
 
 A8 Cross-System Coverage
 → generate required Crosschecks
@@ -731,6 +732,8 @@ STRESS
 → evaluate ordinary player actions against applicable gameplay invariants using the Adversarial Player Abuse Model
 → derive bounded misuse/edge-case sequences for progression, inventory/economy, ownership, capacity, reconnect/recovery, terminal/reward, world mutation, and reachable developer controls
 → run the Abuse Coverage Gate so every material player-controlled surface is accounted
+
+→ require every progression-mutating developer item to close its acquisition graph through recipe ingredients and ordinary gameplay availability before suppression
 
 PROVE
 → causal slice each contradiction
