@@ -60,3 +60,21 @@ Therefore the imported debug tool is not admitted as a player-reachable current 
 Fall of the Pillager Level 2 v2.2.2: **0 source-proven gameplay findings** in this pass.
 
 No historical regression entry should be created without later current-artifact/runtime proof.
+
+
+## Deep multi-arena pass — selector, entity, objective, and cinematic isolation
+
+The current artifact supports repeated arena instances and translates authored gameplay into arena scope.
+
+Counter-proof established in this pass:
+
+- raw authored `@a` commands are translated to the current arena-player selector;
+- entity selectors gain the current arena entity tag;
+- arena coordinates are translated by the current arena offset;
+- flag carrier state uses an arena-specific carrier tag;
+- objective/entity queries are arena-tagged;
+- cinematic state is stored in a map and can advance independent arena sessions concurrently rather than through one global cinematic queue.
+
+No current-artifact path was found where a normal transition, cleanup, flag operation, entity query, or cinematic in Arena A writes the gameplay state of Arena B.
+
+Result of this multi-arena pass: **no additional source-proven cross-arena defect**.
