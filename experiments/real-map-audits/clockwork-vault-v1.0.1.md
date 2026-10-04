@@ -56,3 +56,41 @@ Each arena is assigned to one player/session, so party-wide disconnect/completio
 The Clockwork Vault v1.0.1: **0 source-proven gameplay findings**.
 
 Do not create historical regression entries from this pass.
+
+## Deep multi-arena pass — runtime obligation
+
+### Workshop cinematics share one global ticking-area name across six arenas
+
+Clockwork offsets Workshop cinematic coordinates per arena, but the cinematic ticking-area name remains the same literal:
+
+```text
+clockwork_workshop_cinematic
+```
+
+Every arena instantiates its own Workshop cinematic controller. Starting a cinematic first removes that name and then recreates it at the current arena's Workshop center; cinematic completion/abort removes the same name again.
+
+Therefore two overlapping Workshop cinematics contend for one Minecraft resource name:
+
+```text
+Arena A cinematic starts
+→ add clockwork_workshop_cinematic at A
+
+Arena B cinematic starts
+→ remove clockwork_workshop_cinematic
+→ add same name at B
+
+Arena A completes/aborts
+→ remove clockwork_workshop_cinematic
+→ B no longer owns its intended area
+```
+
+This is a source-proven cross-arena ownership collision, but the selected source alone does not prove a player-visible cinematic failure because actual simulation/chunk residency while the player is present is runtime-sensitive.
+
+Targeted validation only:
+
+1. Run two Clockwork arenas independently.
+2. Reach Workshop in both.
+3. Overlap both Workshop intro cinematics.
+4. Verify both cinematics, Custodian pathing, dialogue/audio, and transition to gameplay complete normally when either cinematic starts or ends.
+
+Do not classify as a gameplay bug until manifestation is proven.

@@ -214,3 +214,19 @@ Attack has an explicit lease queue/messenger and `MAX_CONCURRENT_ARENAS` resourc
 ## Next action
 
 Attack v1.1.1 source pass is closed for this batch with two independently source-proven Major findings. Keep it as non-canonical audit evidence until explicit approval.
+
+## Deep multi-arena pass — additional runtime obligation
+
+### Ticking-area lease release can temporarily undercount live Minecraft areas
+
+Attack uses the same two-held-lease policy with arena-specific ticking areas and explicit queue feedback. Its release path deletes the logical lease before asynchronous area removal finishes.
+
+A capacity+1 acquisition can therefore begin while the previous arena's Minecraft ticking areas are still being removed. Source proves the ownership window but not the exact command interleaving, so this remains runtime-only rather than a confirmed bug.
+
+Narrow validation:
+
+1. Run two Attack arenas simultaneously.
+2. Queue/start a third arena.
+3. End one active arena while the second remains active.
+4. Allow the third arena to acquire immediately.
+5. Verify all required ticking areas are created and the third start does not fail during the prior arena's removal window.

@@ -479,3 +479,21 @@ Current Bedrock documentation still documents Swiftness as potion data value 14 
 ## Next action
 
 Defense v1.1.1 source pass is complete for this real-test round with four independently source-proven gameplay bugs: two Blockers and two Majors. Keep the Speed Potion transaction as one narrow runtime-only failure-path check. Do not ingest findings into historical reliability knowledge until the approval boundary is crossed.
+
+## Deep multi-arena pass — additional runtime obligation
+
+### Ticking-area lease release can temporarily undercount live Minecraft areas
+
+Defense intentionally allows at most two held arena leases and uses a queue for additional arenas. Each held arena owns three named ticking areas.
+
+The release path removes the arena from `heldLeases` **before** asynchronous `tickingarea remove` commands finish. A later `acquire()` can therefore see a free logical slot and begin creating the next arena's three areas while the prior arena's areas may still exist in Minecraft.
+
+This is not promoted to a source-proven bug because the exact interleaving of concurrent `runCommandAsync` remove/add work is runtime-sensitive. Keep one narrow capacity+1 validation:
+
+1. Run two Defense arenas simultaneously.
+2. Queue/start a third arena.
+3. End one active arena while the other remains active.
+4. Let the third arena acquire the newly freed slot immediately.
+5. Verify the third arena receives all three ticking areas and does not fail/abort while old-area removal is still completing.
+
+The queue itself is grounded and player-facing, so the two-arena cap remains a designed resource policy unless runtime proves this release-window failure.

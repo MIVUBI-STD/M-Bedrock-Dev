@@ -83,3 +83,29 @@ No current source proof was found for the old cross-session cinematic serializat
 Fall of the Pillager Level 1 v1.1.0: **0 source-proven gameplay findings** in this pass.
 
 No historical regression entry should be created without later current-artifact/runtime proof.
+
+## Deep multi-arena pass — isolation re-check
+
+### Arena context proxy prevents apparent global-selector leakage
+
+A deeper review challenged direct calls such as:
+
+```text
+this.context.world.getAllPlayers()
+this.context.world.getDimension(...).getEntities(...)
+```
+
+These initially appear world-global. In the current artifact, however, each active OffenseManager is created from a per-arena gameplay context whose proxy implements:
+
+- `world.getAllPlayers()` / `getPlayers()` → only the session's member IDs;
+- proxied `dimension.getPlayers()` → only arena session members in that dimension;
+- proxied `dimension.getEntities(query)` → automatically adds the current arena entity tag;
+- `context.execute(... @a ...)` → arena members;
+- entity spawn → adds the current arena entity tag;
+- ticking-area name → current arena ID.
+
+This counter-proof applies to the HUD update, jail-door queries, stage entity counts, rewards, fireworks, and translated commands inspected in this pass.
+
+Result: the apparent raw `@a` / all-player / all-entity patterns in those paths are **not** admitted as cross-arena bugs.
+
+Simultaneous cinematic ownership also remains session/arena scoped in the current implementation; the historical single global cinematic queue was not reproduced.
