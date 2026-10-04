@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "status": "READY_FOR_INDEPENDENT_PASS",
+  "maps": [
+    {
+      "map": "Attack Challenge",
+      "version": "1.1.1",
+      "independentPass": "PENDING",
+      "comparison": "BLOCKED_UNTIL_INDEPENDENT_PASS_CLOSES"
+    },
+    {
+      "map": "Defense Challenge",
+      "version": "1.1.1",
+      "independentPass": "PENDING",
+      "comparison": "BLOCKED_UNTIL_INDEPENDENT_PASS_CLOSES"
+    },
+    {
+      "map": "Composite Challenge",
+      "version": "1.1.1",
+      "independentPass": "PENDING",
+      "comparison": "BLOCKED_UNTIL_INDEPENDENT_PASS_CLOSES"
+    }
+  ],
+  "metrics": {
+    "materialSurfaceRouting": null,
+    "mutableResourceOwnership": null,
+    "applicableCheckRouting": null,
+    "requiredCrosscheckGeneration": null,
+    "materialScenarioAccounting": null,
+    "playerControlledSurfaceAccounting": null,
+    "regressionRecall": null,
+    "provenRate": null,
+    "genericNeedValidation": null,
+    "falsePositives": null,
+    "duplicateRootCauses": null
+  },
+  "missClasses": [
+    "DISCOVERY_MISS",
+    "ROUTING_MISS",
+    "CROSSCHECK_MISS",
+    "MODEL_MISS",
+    "SCENARIO_MISS",
+    "ADVERSARIAL_MISS",
+    "PROOF_MISS",
+    "DEDUP_MISS",
+    "REPORT_MISS"
+  ],
+  "rule": "Do not populate recall from historical reports before the independent selected-artifact pass is closed."
+}
