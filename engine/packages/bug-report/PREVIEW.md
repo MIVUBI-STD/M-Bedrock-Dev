@@ -89,7 +89,7 @@ Do not infer gameplay order from category or title.
 
 Preview never invents or repairs facts.
 
-## Proposed Bug Set review
+## Proposed Issue Set review
 
 Before canonical Bug Report V2 or HTML exists, discuss the proposed set in chat.
 

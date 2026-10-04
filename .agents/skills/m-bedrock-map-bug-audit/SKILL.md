@@ -329,7 +329,7 @@ Selected Map
 → analyze player-count/failure/recovery variants
 → translate technical contradictions into player-visible gameplay consequences
 → Gameplay Scenario Closure
-→ Proposed Bug Set
+→ Proposed Issue Set
 ```
 
 A component is not considered understood merely because it was parsed or counted. For every material component answer:
@@ -495,9 +495,9 @@ Gameplay Causal Links
 → Gameplay Defect Resolution
 → CONFIRMED_DEFECT_READY only
 → Confirmed Defect
-→ Proposed Bug Set
+→ Proposed Issue Set
 → chat review
-→ Approved Bug Set
+→ Approved Issue Set
 → Bug Report V2
 ```
 
@@ -543,7 +543,7 @@ The audit may stop only when:
 ✓ Confirmed defects are consolidated by gameplay/root cause
 ✓ Runtime proof residue is narrow and explicitly justified
 ✓ Detection gaps name the missing engine capability
-✓ Proposed Bug Set contains confirmed defects only
+✓ Proposed Issue Set contains confirmed defects only
 ✓ Production report is generated only after chat approval
 ```
 

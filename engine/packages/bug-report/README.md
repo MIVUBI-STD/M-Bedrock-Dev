@@ -7,9 +7,9 @@ This package owns canonical Bug Report V2 semantics, approval projection, severi
 ```text
 Confirmed Defect
 → Tester Readiness
-→ Proposed Bug Set
+→ Proposed Issue Set
 → Chat Approval
-→ Approved Bug Set
+→ Approved Issue Set
 → Bug Report V2
 → preview / HTML
 ```
@@ -50,7 +50,7 @@ If all proposed bugs are rejected, no report artifact is generated.
 
 ## Repair boundary
 
-Bug Report V2 records bug state. Repair authorization is owned by the repair workflow:
+Bug Report V2 records approved issue state. Repair authorization is owned by the repair workflow:
 
 ```text
 Approved Bug

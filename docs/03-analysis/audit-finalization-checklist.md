@@ -141,7 +141,7 @@ Review the audit in the same order the player experiences the game:
 
 ## Report output
 
-- [ ] Proposed Bug Set review resolved: approved / rejected / needs-discussion.
+- [ ] Proposed Issue Set review resolved: approved / rejected / needs-discussion.
 - [ ] Every material finding is visible as either PROVEN or NEED_VALIDATION; unresolved runtime, ambiguous-intent, insufficient-evidence, and Detection Gap reasons are carried inside NEED_VALIDATION with an exact targeted test.
 - [ ] Map Audit Report contains every material PROVEN and NEED_VALIDATION finding.
 - [ ] Canonical Bug Report V2 contains approved PROVEN reportable issues only, with each issue classified as `BUG` or `DESIGN_MISMATCH`.

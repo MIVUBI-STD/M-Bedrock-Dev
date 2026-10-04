@@ -54,7 +54,7 @@ Use `engine/packages/bug-report/` as the semantic owner of the report contract.
 
 Normal user-facing report creation is discussion-first.
 
-- Proposed Bug Set is temporary derived review data.
+- Proposed Issue Set is temporary derived review data.
 - Every proposed Blocker/Major issue requires an explicit chat decision.
 - `needs-discussion` or missing decisions block persistence/publication.
 - Rejected items never enter canonical Bug Report V2.

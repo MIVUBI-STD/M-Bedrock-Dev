@@ -17,7 +17,7 @@ MAP AUDIT REPORT
 → REPAIR
 ```
 
-Store only canonical Bug Report V2 JSON here. This directory is the persisted bug-state authority; UI state, derived HTML, Drive copies, spreadsheets, and external QA notes are not parallel authorities. Do not store raw analysis traces, caches, temporary evidence indexes, repair forms, verification records, or duplicate Markdown copies.
+Store only canonical Bug Report V2 JSON here. This directory is the persisted issue-state authority; UI state, derived HTML, Drive copies, spreadsheets, and external QA notes are not parallel authorities. Do not store raw analysis traces, caches, temporary evidence indexes, repair forms, verification records, or duplicate Markdown copies.
 
 
 Report policy is owned by `engine/packages/bug-report/`:
