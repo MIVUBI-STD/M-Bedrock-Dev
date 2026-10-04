@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "UNSEEN_REPAIR_REQUIRED",
+  "status": "REPAIR_RERUN_IN_PROGRESS",
   "target": {
     "map": "The Circuit",
     "version": "1.0.2",
@@ -259,5 +259,37 @@
     "provenRateAfterEvidenceReview": "NOT_CLAIMED",
     "genericNeedValidation": 0,
     "conclusion": "Unseen validation exposed a generalization miss in ordinary-player developer-item acquisition analysis. The two provisional independent findings must not be published until concrete source receipts are attached."
+  },
+  "repairRerun": {
+    "status": "RERUN_IN_PROGRESS",
+    "engineRepairCommit": "edaa2d871dc374b989798ade149ea7c27ab011ca",
+    "historicalReportUsedAsProof": false,
+    "requiredChecks": [
+      {
+        "id": "CIR-RR-DEBUG-ITEM",
+        "mechanism": "Developer-Item Acquisition Graph",
+        "target": "Trace any developer/debug item backward through ordinary-player acquisition and forward through activation/permission/gameplay mutation.",
+        "evidenceReceiptRequired": true,
+        "state": "PROVING"
+      },
+      {
+        "id": "CIR-RR-OLD-001",
+        "mechanism": "Evidence Receipt Gate",
+        "target": "Re-prove or suppress former IND-CIR-001 from concrete selected-artifact source receipts.",
+        "state": "REOPENED"
+      },
+      {
+        "id": "CIR-RR-OLD-002",
+        "mechanism": "Evidence Receipt Gate",
+        "target": "Re-prove or suppress former IND-CIR-002 from concrete selected-artifact source receipts.",
+        "state": "REOPENED"
+      }
+    ],
+    "acceptance": {
+      "unsupportedProven": 0,
+      "genericNeedValidation": 0,
+      "unaccountedMaterialSurfaces": 0,
+      "unaccountedPlayerControlledSurfaces": 0
+    }
   }
 }
