@@ -60,15 +60,15 @@ It does not own audit discovery, proof, severity, or classification.
 
 It does not introduce a UI framework or a second Drive registry.
 
-## Integration plan
+## Integration status
 
-1. Keep the existing `render.ts` behavior intact while this lane is introduced.
-2. Add the Golden HTML renderer against `BugTrackerDocument`.
-3. Add a small deterministic fixture/snapshot test.
-4. Route approved Bug Report V2 client projection through this lane.
-5. Only after parity is proven, remove redundant legacy presentation code.
+The migration is complete for Approved Bug Report V2 presentation.
 
-Do not perform steps 4–5 until the Golden renderer and regression fixture pass.
+- Approved Bug Report V2 has one presentation path: Golden Tracker.
+- Map Audit Output V2 retains its separate Map Audit renderer.
+- Project Registry remains the only source-binding authority.
+- Golden UI remains the only Approved Bug Report presentation authority.
+- Legacy Approved Bug Report HTML helpers were removed from the entrypoint.
 
 
 
@@ -117,3 +117,31 @@ There is no `--golden-tracker` feature flag after cutover.
 The old Approved Bug Report HTML presentation helpers were removed from `render.ts`; Map Audit presentation was retained because it is a separate report surface and authority.
 
 Do not reintroduce a second Approved Bug Report renderer.
+
+
+## Workspace export contract
+
+The standalone Golden Tracker supports tester workspace state without mutating canonical issue facts.
+
+Per issue:
+- Tester Notes;
+- Mark Fixed;
+- evidence image paste / drag-drop / browse;
+- optional attachment caption;
+- image preview;
+- attachment removal.
+
+Browser workspace state is stored separately from the embedded canonical report.
+
+`Export JSON` produces:
+
+```json
+{
+  "canonical": { "...": "complete BugTrackerDocument" },
+  "testerState": { "...": "notes, fixed state, attachments" }
+}
+```
+
+`Export HTML Snapshot` embeds the current tester state into the standalone exported HTML so the report can be moved or archived as one file.
+
+`Import JSON` restores tester state. `Reset Tester Data` clears only tester workspace state; canonical issue facts remain unchanged.
