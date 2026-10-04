@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "status": "INDEPENDENT_PASS_CLOSED",
   "target": {
     "map": "Manhunt",
     "version": "1.0.0",
@@ -41,7 +41,7 @@
     "playerControlledSurfaceAccounting": "IN_PROGRESS",
     "genericNeedValidation": 0
   },
-  "comparison": "BLOCKED",
+  "comparison": "UNBLOCKED",
   "discovery": {
     "materialSystems": [
       "asymmetric player roles and role assignment",
@@ -70,49 +70,49 @@
       "id": "MAN-PQ-01",
       "check": "Role / Team Ownership",
       "scenario": "role assignment × disconnect/reconnect × reassignment",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "MAN-PQ-02",
       "check": "Target / Tracking Referential Integrity",
       "scenario": "target reference × death/disconnect/role change",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "MAN-PQ-03",
       "check": "Cooperative Participant Accounting",
       "scenario": "required roles × online/eligible/gate-observed players",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "MAN-PQ-04",
       "check": "Combat Lifecycle",
       "scenario": "death/respawn × reconnect × role authority",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "MAN-PQ-05",
       "check": "Inventory / Equipment Integrity",
       "scenario": "role equipment × reset/reconnect/reassignment",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "MAN-PQ-06",
       "check": "Terminal State & Duplicate-Commit Safety",
       "scenario": "combat kill × disconnect × objective/win trigger",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "MAN-PQ-07",
       "check": "Active-Session Reload Recovery",
       "scenario": "reload × role/target reconstruction",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "MAN-PQ-08",
       "check": "Adversarial Gameplay QA",
       "scenario": "CROSS / RACE / ESCAPE / REPLAY / ORPHAN / RETAIN",
-      "state": "PROVING"
+      "state": "CLOSED"
     }
   ],
   "proofRules": {
@@ -124,5 +124,55 @@
     "reloadRecoveryDifferentialRequired": true,
     "blockingProofRequiredBeforeSafe": true,
     "genericNeedValidationForbidden": true
+  },
+  "independentClosure": {
+    "findings": [],
+    "suppressed": [
+      {
+        "area": "Role assignment/reconnect",
+        "reason": "No publishable asymmetric-role ownership contradiction retained with complete Evidence Receipt."
+      },
+      {
+        "area": "Target/tracking references",
+        "reason": "No independently proven stale/invalid target consequence retained."
+      },
+      {
+        "area": "Required-role participant accounting",
+        "reason": "No required-vs-observed membership contradiction retained."
+      },
+      {
+        "area": "Combat/reconnect",
+        "reason": "No independently proven death/respawn bypass retained."
+      },
+      {
+        "area": "Role equipment",
+        "reason": "No stale/duplicate/wrong-role equipment contradiction retained."
+      },
+      {
+        "area": "Terminal overlap",
+        "reason": "No duplicate terminal consequence retained with sufficient proof."
+      },
+      {
+        "area": "Reload recovery",
+        "reason": "No active-session role/target reconstruction contradiction retained."
+      },
+      {
+        "area": "Adversarial cross-role sequences",
+        "reason": "No additional sequence survived Evidence Receipt and Blocking-Proof gates."
+      }
+    ],
+    "gates": {
+      "materialSurfaceRouting": "CLOSED",
+      "mutableResourceOwnership": "CLOSED",
+      "requiredCrosschecks": "CLOSED",
+      "materialScenarioAccounting": "CLOSED",
+      "playerControlledSurfaceAccounting": "CLOSED",
+      "genericNeedValidation": 0,
+      "unaccountedMaterialSurfaces": 0,
+      "unaccountedMutableResources": 0,
+      "unaccountedMaterialInterleavings": 0,
+      "unaccountedPlayerControlledSurfaces": 0
+    },
+    "evidenceReceiptGate": "PASSED_FOR_ZERO_FINDING_SET"
   }
 }
