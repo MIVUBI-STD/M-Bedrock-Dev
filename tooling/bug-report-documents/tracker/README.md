@@ -71,26 +71,6 @@ It does not introduce a UI framework or a second Drive registry.
 Do not perform steps 4–5 until the Golden renderer and regression fixture pass.
 
 
-## Opt-in integration
-
-The existing document entrypoint now supports the Golden Tracker lane without replacing legacy output:
-
-```text
-npm run bug-report-html -- --input <approved-v2.json> --out <dir> --golden-tracker
-```
-
-When `--golden-tracker` is present:
-
-1. the existing Approved Bug Report V2 parser and client-document quality gate still run first;
-2. `workspace/project-registry.json` supplies the exact artifact/Drive binding;
-3. the tracker projection and tracker validation run;
-4. the Golden renderer produces `Bug-Tracker-Report.html`;
-5. the same projection is serialized as `Bug-Tracker-Report.json`;
-6. HTML/JSON issue-ID parity is checked before output.
-
-Without the flag, legacy rendering remains unchanged.
-
-This opt-in period is intentional. It allows parity testing before the Golden lane becomes the default.
 
 
 
@@ -110,3 +90,30 @@ Readiness is established by repository-source review and deterministic contracts
 - legacy behavior remains available until remote source audit shows the cutover is structurally safe.
 
 Test files may remain as executable specifications for any future environment that runs them, but the normal ChatGPT/Remote-GitHub workflow does not wait on local execution.
+
+
+## Default renderer cutover
+
+Golden Tracker is now the default presentation path for Approved Bug Report V2 input handled by `tooling/bug-report-documents/render.ts`.
+
+The entrypoint now has two intentionally separate lanes:
+
+```text
+Map Audit Output V2
+→ existing Map Audit renderer
+
+Approved Bug Report V2
+→ existing parser + client quality gate
+→ Project Registry binding
+→ Bug Tracker projection
+→ tracker validation
+→ Golden renderer
+→ Bug-Tracker-Report.html
+→ Bug-Tracker-Report.json
+```
+
+There is no `--golden-tracker` feature flag after cutover.
+
+The old Approved Bug Report HTML presentation helpers were removed from `render.ts`; Map Audit presentation was retained because it is a separate report surface and authority.
+
+Do not reintroduce a second Approved Bug Report renderer.
