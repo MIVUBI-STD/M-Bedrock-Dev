@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
+  "status": "TARGET_LOCKED_READY_FOR_DISCOVERY",
+  "target": {
+    "map": "Orb of the Illusioner Level 2",
+    "version": "1.1.0",
+    "worldFileId": "1o6LDmNJZfCPqQzQRmDILIFz0PDzVYcuv",
+    "artifactFingerprint": "sha256:b17661f9330f4a80301a6a2559b0dcf945204fa6ed9d8d3cf75f7350b369cb2e",
+    "worldFileFetched": true,
+    "worldFileSizeBytes": 15394541
+  },
+  "validationPurpose": "Fourth unseen validation; emphasize PvP/combat, death/revive, inventory/equipment, multiplayer ownership, scoring/terminal state, reconnect and adversarial player capabilities.",
+  "blindRules": {
+    "existingBugReportExists": true,
+    "existingBugReportOpenedForThisPass": false,
+    "comparisonAllowed": "ONLY_AFTER_INDEPENDENT_PASS_CLOSED",
+    "historicalIssueIdsSeeded": false,
+    "historicalRootCausesSeeded": false,
+    "runtimeExecuted": false
+  },
+  "priorityChecks": [
+    "Player Capability Model",
+    "Combat / death / revive lifecycle",
+    "Required / Assigned / Online / Eligible participant accounting",
+    "Inventory / equipment lifecycle",
+    "Reconnect × death/respawn",
+    "Score / reward / terminal idempotency",
+    "Cross-player / team ownership",
+    "Fresh-Session Reset Invariant",
+    "Developer-Item Acquisition Graph",
+    "Multi-Scenario PvP interleavings",
+    "Adversarial SKIP / RETAIN / DUPLICATE / CROSS / RACE / REPLAY / ESCAPE",
+    "Evidence Receipt Gate"
+  ],
+  "coverageGates": {
+    "materialSurfaceRouting":"OPEN",
+    "mutableResourceOwnership":"OPEN",
+    "requiredCrosschecks":"OPEN",
+    "materialScenarioAccounting":"OPEN",
+    "playerControlledSurfaceAccounting":"OPEN",
+    "genericNeedValidation":0
+  },
+  "comparison":"BLOCKED"
+}
