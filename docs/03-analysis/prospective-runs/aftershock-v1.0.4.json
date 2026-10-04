@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "runType": "PROSPECTIVE_BLIND_AUDIT",
+  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "target": {
+    "map": "Aftershock",
+    "version": "1.0.4",
+    "worldFileId": "1eSlTNBhoWslPs8xUlxsK0FVEkBe3uGz1",
+    "artifactFingerprint": "sha256:b8bff14da9e71bf58f9d3b277408ec00d51d1193cee5c8eb1b3f7644584fbab9",
+    "worldFileFetched": true,
+    "worldFileSizeBytes": 16527637
+  },
+  "rules": {
+    "engineFrozenBeforeRun": true,
+    "historicalGroundTruthAvailable": false,
+    "historicalRecallWillNotBeClaimed": true,
+    "runtimeExecuted": false,
+    "evidenceReceiptRequired": true,
+    "genericNeedValidationForbidden": true
+  },
+  "proofQueue": [
+    {
+      "id": "AFT-PQ-01",
+      "check": "Progression / Objective Integrity",
+      "state": "PROVING"
+    },
+    {
+      "id": "AFT-PQ-02",
+      "check": "Entity / Interaction Lifecycle",
+      "state": "PROVING"
+    },
+    {
+      "id": "AFT-PQ-03",
+      "check": "World Mutation / Reset Baseline",
+      "state": "PROVING"
+    },
+    {
+      "id": "AFT-PQ-04",
+      "check": "State-Agnostic Fresh-Session Reset",
+      "state": "PROVING"
+    },
+    {
+      "id": "AFT-PQ-05",
+      "check": "Participant / Connection Recovery",
+      "state": "PROVING"
+    },
+    {
+      "id": "AFT-PQ-06",
+      "check": "Active-Session Reload Recovery",
+      "state": "PROVING"
+    },
+    {
+      "id": "AFT-PQ-07",
+      "check": "Transactional Referential Integrity",
+      "state": "PROVING"
+    },
+    {
+      "id": "AFT-PQ-08",
+      "check": "Player Capability / Developer Exposure",
+      "state": "PROVING"
+    },
+    {
+      "id": "AFT-PQ-09",
+      "check": "Adversarial Gameplay QA",
+      "state": "PROVING"
+    }
+  ],
+  "coverageGates": {
+    "materialSurfaceRouting": "IN_PROGRESS",
+    "mutableResourceOwnership": "IN_PROGRESS",
+    "requiredCrosschecks": "IN_PROGRESS",
+    "materialScenarioAccounting": "IN_PROGRESS",
+    "playerControlledSurfaceAccounting": "IN_PROGRESS",
+    "genericNeedValidation": 0
+  },
+  "futureValidation": {
+    "status": "PENDING_INDEPENDENT_FINDING_SET"
+  }
+}
