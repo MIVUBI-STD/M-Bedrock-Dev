@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
+  "status": "TARGET_LOCKED_READY_FOR_DISCOVERY",
+  "target": {
+    "map": "The Gauntlet",
+    "version": "1.0.1",
+    "worldFileId": "1rFpeCtfpsv6D0g9S4HvZ8T_JmOeTzgwC",
+    "artifactFingerprint": "sha256:68d062f8cee3167baa808e18e1b537d4961570dbfaac9305286dca6748619f7f",
+    "worldFileFetched": true,
+    "worldFileSizeBytes": 15064579
+  },
+  "blindRules": {
+    "existingBugReportExists": true,
+    "existingBugReportOpenedForThisPass": false,
+    "comparisonAllowed": "ONLY_AFTER_INDEPENDENT_PASS_CLOSED",
+    "historicalIssueIdsSeeded": false,
+    "historicalRootCausesSeeded": false,
+    "runtimeExecuted": false
+  },
+  "engineRequirements": [
+    "Coverage Ledger",
+    "Mutable-State Reverse Index",
+    "Fresh-Session Reset Invariant",
+    "Referential Integrity",
+    "Applicable Check Router",
+    "Automatic Crosschecks",
+    "Developer-Item Acquisition Graph",
+    "Evidence Receipt Gate",
+    "Multi-Scenario Simulation",
+    "Connection Recovery Invariants",
+    "Adversarial Gameplay QA",
+    "Claim-Based Proof"
+  ],
+  "coverageGates": {
+    "materialSurfaceRouting": "OPEN",
+    "mutableResourceOwnership": "OPEN",
+    "requiredCrosschecks": "OPEN",
+    "materialScenarioAccounting": "OPEN",
+    "playerControlledSurfaceAccounting": "OPEN",
+    "genericNeedValidation": 0
+  },
+  "comparison": "BLOCKED"
+}
