@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "runType": "INDEPENDENT_SELECTED_ARTIFACT_PASS",
+  "status": "IN_PROGRESS",
+  "target": {
+    "map": "Attack Challenge",
+    "version": "1.1.1",
+    "artifactFingerprint": "sha256:95bf318070b3948f0a0d1d093bae2f7b1a3a37e4d94e94d2adfc4d80a501ccba",
+    "fingerprintVerified": true,
+    "worldFileId": "14JStk_EK0XlAyBTdPLyUE2lCKyk9BKpX"
+  },
+  "rules": {
+    "historicalReportUsedAsProof": false,
+    "regressionCorpusUsedAsProof": false,
+    "runtimeExecuted": false,
+    "simulationMode": "source-derived state/interleaving analysis"
+  },
+  "independentlyProven": [
+    {
+      "temporaryId": "IND-ATK-001",
+      "check": "Persistence, Reconnect & Reload Integrity",
+      "crosscheck": "Reconnect × Inventory",
+      "title": "Reconnect during preload can miss the fresh-session full inventory clear",
+      "proofState": "PROVEN",
+      "evidence": [
+        {
+          "file": "behavior_packs/BP/scripts/chunks/chunk-Y6V6JTGX.js",
+          "lines": "6502-6550",
+          "claim": "Preload performs the fresh-session clear only over players online when the timed preload callback executes."
+        },
+        {
+          "file": "behavior_packs/BP/scripts/chunks/chunk-Y6V6JTGX.js",
+          "lines": "5688-5755",
+          "claim": "Preloading reconnect restores gameplay state/position but does not replay the full inventory clear."
+        },
+        {
+          "file": "behavior_packs/BP/scripts/chunks/chunk-Y6V6JTGX.js",
+          "lines": "4131-4165,7300-7330",
+          "claim": "Later loadout application defaults to managed-item cleanup rather than a full-slot clear."
+        }
+      ],
+      "claimClosure": {
+        "reachability": "PROVEN",
+        "contract": "PROVEN",
+        "contradiction": "PROVEN",
+        "playerConsequence": "PROVEN",
+        "affectedScope": "PROVEN",
+        "blockingProofCleared": "PROVEN"
+      }
+    },
+    {
+      "temporaryId": "IND-ATK-002",
+      "check": "Deferred Work & Generation Safety",
+      "crosscheck": "Reconnect × Death/Respawn",
+      "title": "Active-session reconnect recovery can overwrite a pending respawn lifecycle",
+      "proofState": "PROVEN",
+      "evidence": [
+        {
+          "file": "behavior_packs/BP/scripts/chunks/chunk-Y6V6JTGX.js",
+          "lines": "4937-4952,4970-5065",
+          "claim": "CombatTracker owns pending respawn and restores reconnecting players to spectator/countdown state."
+        },
+        {
+          "file": "behavior_packs/BP/scripts/chunks/chunk-Y6V6JTGX.js",
+          "lines": "5666-5755",
+          "claim": "GameManager independently handles the same initialSpawn and, after five ticks, restores survival/loadout/position for an active session without consulting pending respawn ownership."
+        }
+      ],
+      "claimClosure": {
+        "reachability": "PROVEN",
+        "contract": "PROVEN",
+        "contradiction": "PROVEN",
+        "playerConsequence": "PROVEN",
+        "affectedScope": "PROVEN",
+        "blockingProofCleared": "PROVEN"
+      }
+    },
+    {
+      "temporaryId": "IND-ATK-003",
+      "check": "Multi-Arena Capacity & Isolation",
+      "crosscheck": "Presented Capacity × Admission Capacity",
+      "title": "Six enabled arenas are admission-limited to two concurrent arena leases",
+      "proofState": "PROVEN",
+      "classificationHint": "DESIGN_MISMATCH",
+      "evidence": [
+        {
+          "file": "behavior_packs/BP/scripts/chunks/chunk-BRLWZXPR.js",
+          "lines": "148-164",
+          "claim": "Six arenas are explicitly enabled and independently offset."
+        },
+        {
+          "file": "behavior_packs/BP/scripts/chunks/chunk-Y6V6JTGX.js",
+          "lines": "5229-5232,5272-5350",
+          "claim": "TickingAreaManager hard-limits concurrent held/in-flight arena leases to MAX_CONCURRENT_ARENAS = 2 and queues later requests."
+        }
+      ],
+      "claimClosure": {
+        "reachability": "PROVEN",
+        "contract": "PROVEN",
+        "contradiction": "PROVEN",
+        "playerConsequence": "PROVEN",
+        "affectedScope": "PROVEN",
+        "blockingProofCleared": "PROVEN"
+      }
+    }
+  ],
+  "auditObligations": [
+    {
+      "id": "OBL-ATK-DEV-COMMAND-REACHABILITY",
+      "check": "Developer Tool & Permission Exposure",
+      "question": "Force-start/force-end/reset/skip-level handlers do not visibly perform an admin check at the handler boundary. Determine whether an ordinary player has any selected-artifact path that can emit these script events before classifying a gameplay defect.",
+      "evidence": [
+        {
+          "file": "behavior_packs/BP/scripts/chunks/chunk-Y6V6JTGX.js",
+          "lines": "5630-5651,8260-8395",
+          "claim": "Administrative gameplay script-event handlers are registered and execute without a local PermissionService check."
+        }
+      ]
+    }
+  ],
+  "nextWork": [
+    "Complete Coverage Ledger for remaining Attack gameplay surfaces.",
+    "Run multi-player/multi-arena scenario coverage including simultaneous starts, cleanup/reuse, player leave and repeated reconnect.",
+    "Run adversarial player-action coverage for shop/loadout, objective/terminal, exit vote, inventory movement/drop/craft and reachable developer controls.",
+    "Close all remaining material surfaces before historical comparison."
+  ],
+  "historicalComparison": "BLOCKED_UNTIL_INDEPENDENT_PASS_CLOSES"
+}
