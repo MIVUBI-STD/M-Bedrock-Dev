@@ -30,7 +30,7 @@ export function resolveSourceBinding(registry: ProjectRegistry, mapName: string,
     driveFolder: driveUrl(drive.mapFolder.folderId),
     worldFile: fileUrl(drive.currentWorld.fileId),
     worldFilename: drive.currentWorld.fileName,
-    bugReportPath: p.knowledge?.bugReportPath,
+    ...(p.knowledge?.bugReportPath ? { bugReportPath: p.knowledge.bugReportPath } : {}),
   };
 }
 
@@ -45,10 +45,10 @@ function issueFromClient(issue: BugReportClientDocument["issues"][number]): Trac
     reproduction: issue.reproduction,
     observed: issue.observed,
     expected: issue.expected,
-    resolution: issue.recommendedResolution,
-    technicalAnalysis: issue.technicalAnalysis,
-    relevantCode: issue.relevantCode,
-    mustPreserve: issue.mustPreserve,
+    ...(issue.recommendedResolution ? { resolution: issue.recommendedResolution } : {}),
+    ...(issue.technicalAnalysis ? { technicalAnalysis: issue.technicalAnalysis } : {}),
+    ...(issue.relevantCode ? { relevantCode: issue.relevantCode } : {}),
+    ...(issue.mustPreserve ? { mustPreserve: issue.mustPreserve } : {}),
   };
 }
 
