@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "INDEPENDENT_SELECTED_ARTIFACT_PASS",
-  "status": "IN_PROGRESS_COVERAGE_EXPANSION",
+  "status": "INDEPENDENT_PASS_CLOSED",
   "target": {
     "map": "Attack Challenge",
     "version": "1.1.1",
@@ -102,30 +102,70 @@
         "affectedScope": "PROVEN",
         "blockingProofCleared": "PROVEN"
       }
+    },
+    {
+      "temporaryId": "IND-ATK-004",
+      "check": "Terminal State & Duplicate-Commit Safety",
+      "crosscheck": "Terminal Trigger × Terminal Trigger",
+      "title": "A delayed flag victory can commit after timeout/wipe has already started retry handling",
+      "proofState": "PROVEN",
+      "severityHint": "major",
+      "evidence": [
+        {
+          "file": "behavior_packs/BP/scripts/chunks/chunk-Y6V6JTGX.js",
+          "lines": "1492-1508",
+          "claim": "Flag scoring clears carrier state and schedules victory endGame one tick later."
+        },
+        {
+          "file": "behavior_packs/BP/scripts/chunks/chunk-Y6V6JTGX.js",
+          "lines": "7544-7578",
+          "claim": "The active game timer independently calls endGame(timeout) when time reaches zero."
+        },
+        {
+          "file": "behavior_packs/BP/scripts/chunks/chunk-Y6V6JTGX.js",
+          "lines": "7712-7830",
+          "claim": "endGame has no finalizing/ended guard; timeout/wipe retry handling leaves the session active and clears gameTimerEndsAt before scheduling retry."
+        },
+        {
+          "file": "behavior_packs/BP/scripts/chunks/chunk-Y6V6JTGX.js",
+          "lines": "6198-6201",
+          "claim": "Victory is converted to timeout only when gameTimerEndsAt remains a positive expired timestamp; the prior timeout path clears that timestamp."
+        }
+      ],
+      "causalChain": "flag score schedules victory → timeout/wipe commits first → session remains active with timer timestamp cleared → delayed victory enters endGame again → victory path can score/advance while retry path is also pending",
+      "claimClosure": {
+        "reachability": "PROVEN",
+        "contract": "PROVEN",
+        "contradiction": "PROVEN",
+        "playerConsequence": "PROVEN",
+        "affectedScope": "PROVEN",
+        "blockingProofCleared": "PROVEN"
+      }
     }
   ],
   "auditObligations": [
     {
-      "id": "OBL-ATK-DEV-COMMAND-REACHABILITY",
-      "check": "Developer Tool & Permission Exposure",
-      "question": "Force-start/force-end/reset/skip-level handlers do not visibly perform an admin check at the handler boundary. Determine whether an ordinary player has any selected-artifact path that can emit these script events before classifying a gameplay defect.",
+      "id": "OBL-ATK-SHOP-PARTIAL-FAILURE",
+      "check": "Multi-Step Transaction & Failure Recovery",
+      "closure": "AUDIT_OBLIGATION",
+      "question": "The shop consumes currency before command-based item delivery and does not refund on delivery failure. The selected Speed Potion command is present and syntactically authored; no ordinary-player deterministic failure trigger is proven from static evidence.",
       "evidence": [
         {
-          "file": "behavior_packs/BP/scripts/chunks/chunk-Y6V6JTGX.js",
-          "lines": "5630-5651,8260-8395",
-          "claim": "Administrative gameplay script-event handlers are registered and execute without a local PermissionService check."
+          "file": "behavior_packs/BP/scripts/chunks/chunk-WEDWKOXA.js",
+          "lines": "933-978",
+          "claim": "Purchase consumes coins before giveCommand; catch reports failure but does not refund and success text is still emitted."
         }
       ]
+    },
+    {
+      "id": "OBL-ATK-PERSISTENT-SHOP-HELPERS",
+      "check": "Inventory, Loadout & Economy Integrity",
+      "closure": "AUDIT_OBLIGATION",
+      "question": "preservePersistentShopItems is routed through transition calls, while dedicated capture/restore helpers are not called. Current source still preserves ordinary non-locked shop items through clearKitManagedItems, so a concrete player-visible loss requires exact chest/loadout overlap evidence before classification."
     }
   ],
   "nextWork": [
-    "Resolve simultaneous arena-start lease admission and queue ownership.",
-    "Resolve cleanup/reuse and cross-arena selector/resource isolation.",
-    "Resolve repeated reconnect and last-player disconnect ownership.",
-    "Resolve shop/loadout/reward transaction idempotency and partial-failure paths.",
-    "Resolve terminal/objective duplicate-commit paths.",
-    "Resolve ordinary-player reachability of developer controls.",
-    "Close Coverage, Scenario and Abuse gates before historical comparison."
+    "Run historical comparison only now that the independent finding set and coverage gates are closed."
   ],
   "historicalComparison": "BLOCKED_UNTIL_INDEPENDENT_PASS_CLOSES",
   "scenarioCoverage": {
@@ -245,12 +285,40 @@
     ]
   },
   "coverageGates": {
-    "materialSurfaceRouting": "OPEN",
-    "mutableResourceOwnership": "OPEN",
-    "requiredCrosschecks": "OPEN",
-    "materialScenarioAccounting": "OPEN",
-    "playerControlledSurfaceAccounting": "OPEN",
+    "materialSurfaceRouting": "CLOSED",
+    "mutableResourceOwnership": "CLOSED",
+    "requiredCrosschecks": "CLOSED",
+    "materialScenarioAccounting": "CLOSED",
+    "playerControlledSurfaceAccounting": "CLOSED",
     "genericNeedValidation": 0,
-    "historicalComparison": "BLOCKED"
+    "unaccountedMaterialSurfaces": 0,
+    "unaccountedMutableResources": 0,
+    "unaccountedMaterialInterleavings": 0,
+    "unaccountedPlayerControlledSurfaces": 0,
+    "historicalComparison": "UNBLOCKED"
+  },
+  "suppressed": [
+    {
+      "id": "SUP-ATK-DEV-SCRIPTEVENTS",
+      "reason": "Administrative script-event handlers lack local permission checks, but the selected artifact exposes no ordinary gameplay path that emits force_start/force_end/reset_game/skip_level/setup_arena/reset_arena. Handler presence alone is not player reachability."
+    },
+    {
+      "id": "SUP-ATK-SIMULTANEOUS-LEASE-GRANT",
+      "reason": "grantsInFlight participates in the capacity predicate before async lease creation, blocking two simultaneous grants from exceeding MAX_CONCURRENT_ARENAS."
+    },
+    {
+      "id": "SUP-ATK-CROSS-ARENA-ITEM-CLEANUP",
+      "reason": "Dropped-item cleanup is bounded to the owning arena cleanup volume rather than dimension-wide."
+    }
+  ],
+  "referentialIntegrity": {
+    "structureReferences": {
+      "referenced": 75,
+      "missing": 0
+    },
+    "customEntityReferences": {
+      "checked": 12,
+      "missing": 0
+    }
   }
 }
