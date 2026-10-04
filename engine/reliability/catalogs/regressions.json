@@ -1022,6 +1022,43 @@
       "canonicalIssueId": "reg_defense_challenge_1_1_1_dm_def_arena_capacity"
     },
     {
+      "id": "reg_five_nights_at_z_village_level_1_1_1_0_bug_fnz1_cinematic_coins",
+      "canonicalIssueId": "reg_five_nights_at_z_village_level_1_1_1_0_bug_fnz1_cinematic_coins",
+      "title": "Reconnect during cinematic can carry stale coins into a fresh session",
+      "issueType": "BUG",
+      "domain": "economy",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "five-nights-z-village-l1",
+        "reportPath": "workspace/reports/Five-Nights-at-Z-Village-L1-v1.1.0-BugReport.json",
+        "map": "Five Nights at Z Village Level 1",
+        "mapVersion": "1.1.0",
+        "bugId": "BUG-FNZ1-CINEMATIC-COINS",
+        "canonicalIssueId": "reg_five_nights_at_z_village_level_1_1_1_0_bug_fnz1_cinematic_coins",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:6910cb83e6d5866896e29553398b3a889e3942f553f9a0423b365f0799018bf2"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "major",
+        "score-reward"
+      ],
+      "capabilityTags": [
+        "economy",
+        "reward"
+      ],
+      "reproduction": [
+        "Have a party member carry one or more daigon:coin items before starting a new session.",
+        "Start the arena and disconnect that player while arena loading is still running.",
+        "Reconnect after loading completes while the intro cinematic is active.",
+        "Confirm the old coin stack is still available when gameplay begins."
+      ],
+      "expected": "Every new-session participant has stale inventory and currency cleared regardless of disconnect or reconnect timing.",
+      "observed": "The cinematic clear only affects online players, and later kit reconciliation intentionally preserves daigon:coin."
+    },
+    {
       "id": "reg_fotp_l1_friendly_fire_enabled",
       "title": "Fall of the Pillager L1 allows teammate damage",
       "domain": "combat",
@@ -1264,6 +1301,43 @@
       "observed": "The entity does not break the wall and progression is blocked."
     },
     {
+      "id": "reg_manhunt_1_0_0_dm_man_arena6_replica",
+      "canonicalIssueId": "reg_manhunt_1_0_0_dm_man_arena6_replica",
+      "title": "Arena 6 is materially incomplete compared with the authored replica",
+      "issueType": "DESIGN_MISMATCH",
+      "domain": "world",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "manhunt",
+        "reportPath": "workspace/reports/Manhunt-v1.0.0-BugReport.json",
+        "map": "Manhunt",
+        "mapVersion": "1.0.0",
+        "bugId": "DM-MAN-ARENA6-REPLICA",
+        "canonicalIssueId": "reg_manhunt_1_0_0_dm_man_arena6_replica",
+        "issueType": "DESIGN_MISMATCH",
+        "artifactFingerprint": "sha256:c666000de5cd052288b00953baf9dc00410a65c6da53c16fb1e31b8e396025f3"
+      },
+      "triggerTags": [
+        "design-mismatch",
+        "gameplay",
+        "major",
+        "world-interaction"
+      ],
+      "capabilityTags": [
+        "world-mutation",
+        "spatial"
+      ],
+      "reproduction": [
+        "Enter or inspect Manhunt Arena 1 and Arena 6.",
+        "Compare the corresponding far-side arena region using the authored Arena 6 translation.",
+        "Move through the area corresponding roughly to the canonical Z -340 through -220 region.",
+        "Confirm substantial geometry present in the canonical arena is missing in Arena 6."
+      ],
+      "expected": "Arena 6 contains the same gameplay world structure as the canonical arena after the authored translation, aside from bounded intentional differences.",
+      "observed": "Native voxel proof finds about 5.62% sampled mismatches in Arena 6, concentrated where thousands of canonical structure blocks are missing as air."
+    },
+    {
       "id": "reg_multi_arena_cutscene_queue",
       "title": "Concurrent arena starts serialize cutscenes across sessions",
       "domain": "multiplayer",
@@ -1287,6 +1361,191 @@
       ],
       "expected": "Each arena can start its own cutscene independently.",
       "observed": "Cutscenes behave like a shared queue, leaving one arena apparently unable to start."
+    },
+    {
+      "id": "reg_orb_of_the_illusioner_level_2_1_1_0_bug_orb2_reload_barricades",
+      "canonicalIssueId": "reg_orb_of_the_illusioner_level_2_1_1_0_bug_orb2_reload_barricades",
+      "title": "Active-game reload recovery aborts the arena",
+      "issueType": "BUG",
+      "domain": "gameplay",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "orb-illusioner-l2",
+        "reportPath": "workspace/reports/Orb-of-the-Illusioner-L2-v1.1.0-BugReport.json",
+        "map": "Orb of the Illusioner Level 2",
+        "mapVersion": "1.1.0",
+        "bugId": "BUG-ORB2-RELOAD-BARRICADES",
+        "canonicalIssueId": "reg_orb_of_the_illusioner_level_2_1_1_0_bug_orb2_reload_barricades",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:b17661f9330f4a80301a6a2559b0dcf945204fa6ed9d8d3cf75f7350b369cb2e"
+      },
+      "triggerTags": [
+        "bug",
+        "game-flow",
+        "gameplay",
+        "major"
+      ],
+      "capabilityTags": [
+        "gameplay-state",
+        "progression"
+      ],
+      "reproduction": [
+        "Start Orb of the Illusioner Level 2 and reach active Offense gameplay.",
+        "Restart the world while the active match is still in progress.",
+        "Rejoin after the world finishes loading and wait a few seconds for recovery.",
+        "Confirm the arena resets and players return to the lobby instead of the match resuming."
+      ],
+      "expected": "A persisted active game resumes and reconciles its stage barricades without terminating the arena.",
+      "observed": "Scheduled reload validation references undefined selectedBarricades, throws, and sends the active arena into internal-error recovery."
+    },
+    {
+      "id": "reg_orb_of_the_illusioner_level_2_1_1_0_bug_orb2_upgrade_material",
+      "canonicalIssueId": "reg_orb_of_the_illusioner_level_2_1_1_0_bug_orb2_upgrade_material",
+      "title": "Weapon and armor upgrades consume coins then fail",
+      "issueType": "BUG",
+      "domain": "economy",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "orb-illusioner-l2",
+        "reportPath": "workspace/reports/Orb-of-the-Illusioner-L2-v1.1.0-BugReport.json",
+        "map": "Orb of the Illusioner Level 2",
+        "mapVersion": "1.1.0",
+        "bugId": "BUG-ORB2-UPGRADE-MATERIAL",
+        "canonicalIssueId": "reg_orb_of_the_illusioner_level_2_1_1_0_bug_orb2_upgrade_material",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:b17661f9330f4a80301a6a2559b0dcf945204fa6ed9d8d3cf75f7350b369cb2e"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "major",
+        "score-reward"
+      ],
+      "capabilityTags": [
+        "economy",
+        "reward"
+      ],
+      "reproduction": [
+        "Enter an Orb L2 session and obtain enough coins for a valid weapon or armor upgrade.",
+        "Open the normal upgrade UI and buy the next available tier.",
+        "Wait for the purchase result.",
+        "Confirm the upgrade fails while the spent coins remain deducted."
+      ],
+      "expected": "A valid upgrade delivers the requested item tier, and any failed delivery leaves the player's coin balance unchanged.",
+      "observed": "Coins are consumed before code references an undefined material identifier, causing the upgrade to fail without refund."
+    },
+    {
+      "id": "reg_the_circuit_1_0_2_dm_cir_debug_stick",
+      "canonicalIssueId": "reg_the_circuit_1_0_2_dm_cir_debug_stick",
+      "title": "Normal gameplay resources expose the production DebugStick",
+      "issueType": "DESIGN_MISMATCH",
+      "domain": "ui",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "the-circuit",
+        "reportPath": "workspace/reports/The-Circuit-v1.0.2-BugReport.json",
+        "map": "The Circuit",
+        "mapVersion": "1.0.2",
+        "bugId": "DM-CIR-DEBUG-STICK",
+        "canonicalIssueId": "reg_the_circuit_1_0_2_dm_cir_debug_stick",
+        "issueType": "DESIGN_MISMATCH",
+        "artifactFingerprint": "sha256:19e2eb038b0b01fe756715c725df7e39d74e8cf2de8c45705d1897ea3ffb6151"
+      },
+      "triggerTags": [
+        "design-mismatch",
+        "gameplay",
+        "minor",
+        "ui-feedback"
+      ],
+      "capabilityTags": [
+        "ui-state",
+        "gameplay-state"
+      ],
+      "reproduction": [
+        "Start a Circuit round that grants the normal block resources.",
+        "Use 2 supplied oak planks to craft sticks.",
+        "Hold or use a stick as a normal non-developer player.",
+        "Confirm DebugStick coordinate-selection output appears."
+      ],
+      "expected": "Production debug interactions are disabled for ordinary players or gated by the existing developer permission owner.",
+      "observed": "DebugStickService is initialized in release and handles normal sticks; Circuit supplies oak planks in Survival, making the trigger craftable."
+    },
+    {
+      "id": "reg_the_gauntlet_1_0_1_bug_gnt_dev_skip",
+      "canonicalIssueId": "reg_the_gauntlet_1_0_1_bug_gnt_dev_skip",
+      "title": "Ordinary players can craft the developer level-skip item",
+      "issueType": "BUG",
+      "domain": "gameplay",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "the-gauntlet",
+        "reportPath": "workspace/reports/The-Gauntlet-v1.0.1-BugReport.json",
+        "map": "The Gauntlet",
+        "mapVersion": "1.0.1",
+        "bugId": "BUG-GNT-DEV-SKIP",
+        "canonicalIssueId": "reg_the_gauntlet_1_0_1_bug_gnt_dev_skip",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:68d062f8cee3167baa808e18e1b537d4961570dbfaac9305286dca6748619f7f"
+      },
+      "triggerTags": [
+        "bug",
+        "game-flow",
+        "gameplay",
+        "major"
+      ],
+      "capabilityTags": [
+        "gameplay-state",
+        "progression"
+      ],
+      "reproduction": [
+        "Reach Gauntlet Level 13 as a normal non-developer player.",
+        "Take oak or dark-oak planks from the authored resource barrels.",
+        "Craft a normal Minecraft stick.",
+        "Use the stick and confirm the current level is skipped for the arena."
+      ],
+      "expected": "Level-skip controls are disabled in release or require the existing developer permission before changing progression.",
+      "observed": "The stick-triggered skip is enabled without a permission check, and authored Survival resources provide planks that can be crafted into sticks."
+    },
+    {
+      "id": "reg_the_gauntlet_1_0_1_bug_gnt_disconnect_gate",
+      "canonicalIssueId": "reg_the_gauntlet_1_0_1_bug_gnt_disconnect_gate",
+      "title": "Co-op progression can ignore a disconnected required party member",
+      "issueType": "BUG",
+      "domain": "multiplayer",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "the-gauntlet",
+        "reportPath": "workspace/reports/The-Gauntlet-v1.0.1-BugReport.json",
+        "map": "The Gauntlet",
+        "mapVersion": "1.0.1",
+        "bugId": "BUG-GNT-DISCONNECT-GATE",
+        "canonicalIssueId": "reg_the_gauntlet_1_0_1_bug_gnt_disconnect_gate",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:68d062f8cee3167baa808e18e1b537d4961570dbfaac9305286dca6748619f7f"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "major",
+        "multiplayer-session"
+      ],
+      "capabilityTags": [
+        "multiplayer",
+        "arena-lifecycle"
+      ],
+      "reproduction": [
+        "Start The Gauntlet with at least 2 players and reach an all-player progression gate such as Level 9.",
+        "Disconnect one required party member before the group completes the gate.",
+        "Move the remaining online player into the required completion area within the disconnect recovery window.",
+        "Confirm the level advances even though the disconnected required member never completed the gate."
+      ],
+      "expected": "Progression gates requiring the locked party wait for every required member, or pause while one is disconnected.",
+      "observed": "The shared all-player predicate filters the locked roster to currently present players before evaluating completion."
     }
   ]
 }
