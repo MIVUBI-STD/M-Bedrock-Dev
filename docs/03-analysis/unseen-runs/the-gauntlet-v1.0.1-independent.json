@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "INDEPENDENT_PASS_CLOSED",
+  "status": "UNSEEN_REPAIR_REQUIRED",
   "target": {
     "map": "The Gauntlet",
     "version": "1.0.1",
@@ -148,5 +148,41 @@
       "unaccountedPlayerControlledSurfaces": 0
     },
     "evidenceReceiptGate": "PASSED_FOR_ZERO_FINDING_SET"
+  },
+  "historicalComparison": {
+    "status": "COMPLETE_WITH_MISSES",
+    "historicalApprovedIssues": [
+      {
+        "id": "BUG-GNT-DISCONNECT-GATE",
+        "title": "Co-op progression can ignore a disconnected required party member"
+      },
+      {
+        "id": "BUG-GNT-DEV-SKIP",
+        "title": "Ordinary players can craft the developer level-skip item"
+      }
+    ],
+    "matched": [],
+    "missed": [
+      {
+        "historicalId": "BUG-GNT-DISCONNECT-GATE",
+        "classification": "SCENARIO_MISS",
+        "earliestFailure": "The multiplayer scenario model covered leave/reconnect generally but did not derive the invariant 'required party membership must remain represented in cooperative completion gates' and compare online-player queries against session/party membership.",
+        "repair": "For cooperative progression, index Required Participants separately from Currently Online Participants and crosscheck every completion/readiness gate that queries online players."
+      },
+      {
+        "historicalId": "BUG-GNT-DEV-SKIP",
+        "classification": "ADVERSARIAL_MISS",
+        "earliestFailure": "The repaired developer-item acquisition mechanism was enabled, but the blind pass did not force recipe/crafting reachability to closure for every gameplay-mutating developer item before suppression.",
+        "repair": "Developer-item acquisition graph must be mandatory-to-closure for every developer item whose activation changes progression; recipe ingredients and ordinary crafting reachability cannot remain implicit."
+      }
+    ],
+    "recall": {
+      "detected": 0,
+      "expected": 2,
+      "percent": 0
+    },
+    "unsupportedProven": 0,
+    "genericNeedValidation": 0,
+    "conclusion": "Second unseen validation still exposes generalization gaps. Evidence discipline improved (zero unsupported findings), but cooperative participant accounting and mandatory developer-item acquisition closure require repair."
   }
 }
