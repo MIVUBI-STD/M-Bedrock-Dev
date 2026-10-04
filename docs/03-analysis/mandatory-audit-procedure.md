@@ -1144,6 +1144,197 @@ These joins must resolve to SAFE, CONTRADICTION, or an exact irreducible missing
 
 ---
 
+## A17. Persistence / Reconnect / Reload Contract
+
+### Purpose
+
+Prove whether state survives, restores, or resets at the correct lifecycle boundary.
+
+For every material persisted or reconnect-restored state build:
+
+```text
+state
+→ persistence scope
+→ writer
+→ save trigger
+→ restore trigger
+→ owner/session identity
+→ generation/version guard
+→ clear/reset trigger
+→ fallback when owner is gone
+→ post-restore gameplay effect
+```
+
+Mandatory challenges:
+- stale session state restores into a fresh session;
+- reconnect restores state that death/reset already invalidated;
+- disconnect misses a required fresh-session clear;
+- player is assigned to the wrong arena/session on reconnect;
+- persisted inventory/economy duplicates a later grant;
+- old dynamic property/tag survives replay;
+- restore happens before authoritative owner/session resolution;
+- reload/reconnect replays a one-shot reward or terminal commit;
+- reset clears persistent state that should survive;
+- persistent state has append/growth with no bounded clear.
+
+### Reconnect interleaving
+
+When multiple reconnect handlers exist, order every writer by scheduling boundary and target state.
+
+Do not declare reconnect safe because each handler is individually reasonable.
+
+If handler A restores a protected lifecycle state and handler B later overwrites the same state without consulting A's owner, treat that as a direct contradiction candidate.
+
+---
+
+## A18. Reward / Score / Economy Commit Contract
+
+### Purpose
+
+Treat rewards and score as transactional gameplay state with explicit commit ownership.
+
+For each material reward/score/economy mutation reconstruct:
+
+```text
+eligibility
+→ owner/session
+→ commit trigger
+→ amount/item
+→ idempotency key or guard
+→ persistence
+→ UI feedback
+→ retry/reconnect behavior
+→ rollback/refund if applicable
+```
+
+Mandatory challenges:
+- terminal path can commit twice;
+- reconnect/reload repeats a one-shot reward;
+- retry duplicates score/currency/item grant;
+- reward commits before objective success is authoritative;
+- UI announces reward when commit failed;
+- shop purchase removes currency without item grant;
+- item grant occurs without matching currency commit;
+- refund and purchase can both commit;
+- cross-arena event rewards the wrong player/group;
+- stale generation commits reward into a new session.
+
+A duplicate/partial transaction is PROVEN when commit paths and missing idempotency/atomicity can be established from selected-artifact evidence.
+
+---
+
+## A19. Developer / Cheat / Permission Exposure Contract
+
+### Purpose
+
+Detect development affordances that remain reachable by ordinary players and can alter progression, state, score, or report validity.
+
+Discover all applicable:
+- developer items;
+- debug commands;
+- skip/retry/restart controls;
+- admin NPC/dialogue;
+- special tags/permissions;
+- test scoreboards;
+- hidden interaction triggers;
+- crafting paths to developer-trigger items.
+
+For each affordance map:
+
+```text
+trigger
+→ acquisition/reachability
+→ permission guard
+→ gameplay mutation
+→ persistence/cleanup
+→ ordinary-player path
+```
+
+Mandatory challenges:
+- debug item can be crafted or found normally;
+- command/event lacks developer permission guard;
+- ordinary interaction can skip level/wave;
+- restart/reset control can grief another arena;
+- debug state persists after developer use;
+- hidden tool alters score/reward or invalidates normal completion.
+
+Do not classify an unreachable developer affordance as a gameplay bug. Player reachability or missing authorization must be grounded.
+
+---
+
+## A20. Boundary / Capacity Quantification Contract
+
+### Purpose
+
+Replace vague capacity concerns with bounded quantitative proof.
+
+For each bounded resource or gameplay limit identify:
+
+```text
+declared maximum
+presented maximum
+per-unit cost
+shared budget
+safe maximum
+admission behavior
+overflow behavior
+cleanup/release
+```
+
+Applicable resources include:
+- ticking/residency areas;
+- chunks/regions;
+- active arenas;
+- players/teams;
+- entities;
+- scheduled callbacks;
+- scoreboards/tags/properties where bounded;
+- structure/reset workload.
+
+Required boundary probes in reasoning:
+- 1;
+- 2 when concurrency exists;
+- safe maximum;
+- safe maximum + 1;
+- presented/selected-map maximum.
+
+Use arithmetic/static resource accounting when sufficient. Do not request broad runtime load testing merely to confirm a mathematically determined admission/capacity contradiction.
+
+---
+
+## A21. Recovery / No-Dead-End Contract
+
+### Purpose
+
+Ensure every abnormal but reachable player state has a normal recovery path or an intentional terminal path.
+
+For each material abnormal state record:
+
+```text
+failure state
+→ detection
+→ player feedback
+→ recovery owner
+→ recovery action
+→ timeout/fallback
+→ cleanup
+→ next valid state
+```
+
+Challenge:
+- queue entry never admitted or cancelled;
+- spectator/death state never resolves;
+- wave/objective cannot progress and has no retry;
+- disconnected owner leaves party/session locked;
+- failed teleport/load leaves player stranded;
+- failed structure/reset leaves arena permanently unavailable;
+- shop/loadout failure removes required progression item with no recovery;
+- UI says waiting while no owner can advance the state.
+
+A softlock is a Blocker candidate when the normal player cannot continue or recover without leaving/restarting outside intended gameplay.
+
+---
+
 # B. MODEL
 
 ## B1. Actor / Entity Contract
