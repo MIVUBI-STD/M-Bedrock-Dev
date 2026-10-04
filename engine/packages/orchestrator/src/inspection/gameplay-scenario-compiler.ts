@@ -713,6 +713,33 @@ function runtimeEdgeState(
           "Inventory lifecycle has no scoped contradiction for the mapped gameplay dependency.",
       };
     }
+    case "runtime:arena-cleanup": {
+      const ledger = world.arenas.cleanup.resourceLedger;
+      if (ledger.missing > 0) {
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Arena cleanup resource ledger has " +
+            ledger.missing +
+            " acquired resource(s) with no proven terminal release path.",
+        };
+      }
+      if (
+        ledger.partial > 0 ||
+        world.arenas.cleanup.unresolved > 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Arena cleanup resource release is only partially proven; second-run baseline equivalence requires targeted validation.",
+        };
+      }
+      return {
+        status: "PROVEN",
+        reason:
+          "Arena cleanup resource ledger has complete terminal release coverage for discovered resources.",
+      };
+    }
     case "runtime:persistence": {
       const scopedProperties = scopedByScript(
         world.persistence?.propertiesDetail ?? [],
