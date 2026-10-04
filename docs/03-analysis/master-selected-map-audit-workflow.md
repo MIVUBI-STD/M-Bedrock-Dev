@@ -24,126 +24,62 @@ Use this document to know what happens next, what must exist before moving on, a
 
 ---
 
-# PRE-AUDIT — confirm what will be checked
+# PRE-AUDIT — confirm scope before production audit
+
+This is a communication gate, not an audit stage or a second state machine.
 
 ## Goal
 
-Before any production audit work starts, confirm the planned audit scope and working method with the user.
+Confirm what the user wants audited and how the audit will work before `TARGET` begins. The user is not expected to know existing bugs or symptoms.
 
-This workflow is designed for **pre-testing**. The user is not expected to know existing bugs or symptoms.
+## Pre-Audit Plan
 
-## Required confirmation
+Build one compact plan containing:
 
-Build one compact Pre-Audit Plan from the user's request. It must state:
-
-~~~
+```text
 Target / selected map hint
 Audit objective
-Planned gameplay/system checks
+Applicable planned gameplay/system checks
 Proof strategy
 User-requested focus / constraints
 Expected output
-Optional symptoms / suspicions if supplied
-Ambiguities / unmapped input if relevant
-~~~
+Optional supplied symptoms / suspicions
+Material ambiguities, if any
+```
 
-The default planned checks cover, when applicable:
+Default planned coverage, when applicable:
 
-- exact selected map/version identity;
+- exact selected artifact/version;
 - complete player journey;
-- gameplay-surface discovery and semantic ownership;
-- progression / wave / objective completion;
-- terminal transitions and softlocks;
-- state ownership, reset, cleanup, replay, and stale/deferred state;
-- multiplayer / multi-arena assignment, concurrency, isolation, cleanup, and reuse;
-- inventory / loadout / economy lifecycle;
-- entity / combat / navigation;
-- chunk / simulation residency and ownership;
-- persistence / disconnect / reconnect / reload / recovery;
-- world / structure / spatial mutation;
-- boundaries / capacity / edge conditions;
-- UI / feedback / presented capability versus actual playable capability;
-- cross-system interaction and blocking counter-proof.
+- gameplay surfaces and ownership;
+- progression/wave/objective completion;
+- terminal transitions and recovery/softlock;
+- state lifecycle, cleanup, replay, deferred work;
+- multiplayer/multi-arena concurrency, isolation, capacity, cleanup, reuse;
+- inventory/loadout/economy;
+- entity/combat/navigation;
+- ticking/residency/simulation;
+- persistence/reconnect/reload;
+- world/structure mutation;
+- boundaries/capacity;
+- player-facing information/capability;
+- cross-system interactions and counter-proof.
 
-## Confirmation rule
-
-~~~
-Pre-Audit Plan
-→ user confirms / corrects
-→ confirmation receipt bound to normalized intent fingerprint
-→ only then production audit may start
-~~~
-
-If the plan changes materially after confirmation, the previous receipt is stale and confirmation must be repeated once for the revised plan.
-
-Do not ask the user to invent symptoms. Absence of known symptoms is normal.
-
-## Boundary
-
-The confirmation establishes only:
-
-> “Yes, this is what I want you to check and how I want you to work.”
-
-It does **not** establish gameplay truth, Expected/Actual behavior, issue type, severity, or proof status.
-
----
-
-# PRE-AUDIT — confirm the plan before work starts
-
-This is a communication gate, **not** an audit stage and not a second state machine.
-
-Before `audit <selected.mcworld>` starts:
+## Confirmation
 
 ```text
 raw user request
-→ preserve/translate prompt
-→ build Pre-Audit Plan
-→ show plan in chat
+→ Pre-Audit Plan
 → user confirms/corrects
-→ bind AuditUserIntentConfirmation
-→ start TARGET
+→ confirmation receipt
+→ TARGET
 ```
 
-For normal pre-testing work, the user is **not expected to know any bugs or symptoms yet**.
+One explicit confirmation is sufficient. If scope or interpretation changes materially, regenerate and reconfirm the plan.
 
-The confirmation must focus on what the system will do:
+Confirmation proves only that the planned work matches user intent. It never proves gameplay truth, Expected/Actual behavior, issue type, severity, or proof state.
 
-- exact target/map/version when known;
-- comprehensive selected-map gameplay audit objective;
-- full player journey coverage;
-- progression/completion/terminal/softlock checks;
-- state ownership/reset/cleanup/replay/recovery checks;
-- applicable multiplayer/multi-arena checks;
-- applicable inventory/loadout/economy checks;
-- applicable entity/combat/navigation/chunk-simulation checks;
-- applicable persistence/reconnect/reload checks;
-- world/structure/spatial mutation checks;
-- capacity/boundary/edge-case checks;
-- UI/player-facing capability mismatch checks;
-- cross-system interaction and counter-proof;
-- static/source-first proof strategy;
-- runtime only for irreducible behavior;
-- expected report/output structure.
-
-User-provided symptoms, suspicions, or special focus are optional additions to this plan.
-
-One explicit confirmation is sufficient. If the plan/interpretation materially changes afterward, regenerate it and confirm again. The old confirmation becomes stale automatically.
-
-The confirmation proves only:
-
-```text
-"this is the work the user wants"
-```
-
-It never proves:
-
-```text
-gameplay truth
-Expected / Actual behavior
-BUG / DESIGN_MISMATCH
-severity
-PROVEN status
-```
+Do not ask the user to invent symptoms.
 
 ---
 
