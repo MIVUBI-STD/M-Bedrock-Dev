@@ -44,75 +44,80 @@
   "comparison": "BLOCKED",
   "discovery": {
     "materialSystems": [
-      "player/team assignment",
-      "combat damage/death/respawn/revive",
+      "combat damage/death state",
+      "downed/revive/respawn lifecycle",
+      "player/team ownership",
       "inventory/equipment/loadout",
-      "score/reward/terminal state",
-      "objective/progression",
+      "score/reward/terminal commit",
+      "session admission and participant membership",
       "reconnect/recovery",
-      "cross-player/team mutation",
-      "player capabilities",
+      "player capability/game mode",
       "developer/debug affordances"
     ],
     "derivedInvariants": [
-      "dead/downed player cannot regain active ownership before authored recovery",
-      "one player's combat lifecycle cannot overwrite another player's state",
-      "team/participant gates reconcile required vs online/eligible membership",
-      "fresh-session inventory/equipment reset applies to every participant",
+      "dead/downed player cannot simultaneously own active combat state unless explicitly authored",
+      "revive/respawn has one authoritative owner and cannot commit twice",
+      "team/player state mutations remain scoped to intended owner",
+      "fresh-session inventory/equipment baseline is reconciled for reconnecting participants",
       "one-shot score/reward/terminal commits are idempotent",
-      "reconnect cannot duplicate or bypass death/revive/penalty state",
-      "ordinary player capabilities cannot expose unintended developer progression controls"
+      "required participants are not silently removed from progression gates solely by disconnect",
+      "ordinary player capabilities are included in acquisition/reachability analysis"
     ]
   },
   "proofQueue": [
     {
       "id": "ORB-PQ-01",
       "check": "Combat Lifecycle",
-      "scenario": "death/downed/revive × reconnect",
+      "scenario": "death/downed/revive/respawn ownership",
       "state": "PROVING"
     },
     {
       "id": "ORB-PQ-02",
-      "check": "Cooperative Participant Accounting",
-      "scenario": "required/assigned × online/eligible team members",
+      "check": "Reconnect Recovery",
+      "scenario": "disconnect/reconnect during death/revive/respawn",
       "state": "PROVING"
     },
     {
       "id": "ORB-PQ-03",
       "check": "Inventory / Equipment Integrity",
-      "scenario": "fresh-session reset × death/reconnect/loadout",
+      "scenario": "death/revive/reconnect × equipment/loadout",
       "state": "PROVING"
     },
     {
       "id": "ORB-PQ-04",
-      "check": "Cross-Player / Team Ownership",
-      "scenario": "P1 lifecycle mutation × P2/team state",
+      "check": "Player / Team Ownership",
+      "scenario": "P1 mutation × P2/team state",
       "state": "PROVING"
     },
     {
       "id": "ORB-PQ-05",
-      "check": "Reward / Score / Terminal Integrity",
-      "scenario": "simultaneous objective/death/terminal commits",
+      "check": "Score / Reward / Terminal Integrity",
+      "scenario": "simultaneous combat/objective terminal commits",
       "state": "PROVING"
     },
     {
       "id": "ORB-PQ-06",
-      "check": "Player Capability Model",
-      "scenario": "ordinary role capabilities × reachable gameplay/debug surfaces",
+      "check": "Participant Accounting",
+      "scenario": "required/assigned × online/eligible players",
       "state": "PROVING"
     },
     {
       "id": "ORB-PQ-07",
+      "check": "Developer Tool Exposure",
+      "scenario": "capability/acquisition × activation",
+      "state": "PROVING"
+    },
+    {
+      "id": "ORB-PQ-08",
       "check": "Adversarial Gameplay QA",
-      "scenario": "SKIP / RETAIN / DUPLICATE / CROSS / RACE / REPLAY / ESCAPE",
+      "scenario": "RETAIN / DUPLICATE / CROSS / RACE / REPLAY / ESCAPE / SKIP",
       "state": "PROVING"
     }
   ],
   "proofRules": {
     "evidenceReceiptRequired": true,
-    "claimClosureRequired": true,
-    "combatOwnerRequired": true,
-    "participantSetReconciliationRequired": true,
+    "playerCapabilityModelRequired": true,
+    "participantSetModelRequired": true,
     "developerAcquisitionMandatoryToClosure": true,
     "blockingProofRequiredBeforeSafe": true,
     "genericNeedValidationForbidden": true
