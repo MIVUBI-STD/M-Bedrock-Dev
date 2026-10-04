@@ -88,6 +88,97 @@ Root cause: arena lifecycle publishes `idle` before reset completion, while the 
 
 Repair direction: keep the arena unavailable until the existing reset Promise settles, or make the existing reset lock part of canonical start admission. Do not add a second reset-state owner.
 
+
+## Proven finding 4 — deep multi-arena pass
+
+### BUG — Cleanup in one arena can invalidate another arena's active flag carrier
+
+Severity: Major  
+Proof: source-proven  
+Domain: arena-multi-arena / objective state / cleanup isolation
+
+#### Issue
+
+Composite Attack keeps per-arena carrier identity in `flagStates`, but the player marker used to validate carrier state is the single global tag `ctf_composite_attack_flag_carrier`.
+
+`FlagService.cleanup(arenaId)` is called on normal level completion, retry, reset, forced level transition, and attempt cleanup. Despite receiving one arena ID, cleanup removes that global carrier tag from **every online player**.
+
+A second arena may therefore have a valid active flag carrier whose per-arena `carrierPlayerId` remains intact while another arena's cleanup removes the tag required by `isCarrierPlayer()`. On the next tick the second arena treats its carrier as invalid/dead and runs carrier-death handling.
+
+#### Source evidence
+
+- `FLAG_CARRIER_TAG = "ctf_composite_attack_flag_carrier"` is shared by every arena.
+- `captureFlag(arenaId, player)` adds that generic tag while storing the carrier ID in the arena-specific state.
+- `isCarrierPlayer(arenaId, player)` requires both the per-arena carrier ID and the generic tag.
+- `cleanup(arenaId)` loops `world.getPlayers()` and removes `FLAG_CARRIER_TAG` from every player.
+- Normal per-arena transitions call `FlagService.cleanup(arenaId)` independently.
+
+#### Reproduction path
+
+1. Run Composite Attack gameplay concurrently in Arena A and Arena B.
+2. In Arena B, take the red flag and remain alive as the active carrier.
+3. Complete/retry/reset a level in Arena A so Arena A calls `FlagService.cleanup(A)`.
+4. Arena A cleanup removes the generic carrier tag from Arena B's carrier.
+5. Allow Arena B's next flag tick to run.
+6. Observe Arena B drop/return the flag even though its carrier did not die or disconnect.
+
+#### Player-visible consequence
+
+Progress in one arena can directly invalidate the core capture-the-flag objective state of another active arena.
+
+#### Root cause
+
+Carrier identity is split between arena-local state and a world-global player tag, while per-arena cleanup treats the global tag as arena-owned.
+
+#### Repair direction
+
+Make the carrier tag arena-specific, or remove it only from the carrier owned by the arena being cleaned. Keep `flagStates` as the existing per-arena authority.
+
+## Proven finding 5 — deep multi-arena pass
+
+### BUG — Active arena floor maintenance mutates blocks around players outside that arena
+
+Severity: Minor  
+Proof: source-proven  
+Domain: arena-multi-arena / world interaction / isolation
+
+#### Issue
+
+Both Composite Defense and Attack GameManagers describe floor maintenance as operating around players in active arenas, but each active arena executes:
+
+```text
+execute as @a at @s run fill ~4 ~3 ~4 ~-4 ~-3 ~-4 grass_path replace dirt
+```
+
+The selector is world-global and is not restricted to the current arena's party/player set.
+
+#### Expected
+
+An active arena's maintenance mutation must affect only players belonging to that active arena.
+
+#### Observed source behavior
+
+For every active arena, the maintenance interval runs the fill command as every player in the dimension. Players in the lobby, waiting arenas, or other active/inactive arenas can therefore have nearby dirt converted to grass path because an unrelated arena is active.
+
+#### Reproduction path
+
+1. Keep Player A outside the active Composite arena, for example in the lobby or another inactive arena, standing near dirt.
+2. Start gameplay in Arena B.
+3. Wait for the periodic arena-floor maintenance interval.
+4. Observe dirt around Player A convert to grass path despite Player A not belonging to Arena B.
+
+#### Player-visible consequence
+
+One arena can mutate world state around unrelated players and other arena surfaces.
+
+#### Root cause
+
+The maintenance loop is arena-scoped, but the actual command target is global `@a` instead of the arena's online player set.
+
+#### Repair direction
+
+Run the existing fill only for `getArenaOnlinePlayers(arenaId)` / the canonical arena-player owner, matching the scoped pattern already used by other per-arena maintenance paths.
+
 ## Next action
 
 Composite v1.1.1 source pass is complete enough to close for this batch with three independently source-proven findings. Keep them in non-canonical audit evidence until explicit approval.
