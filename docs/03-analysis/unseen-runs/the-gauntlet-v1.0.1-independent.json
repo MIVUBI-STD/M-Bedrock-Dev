@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "TARGET_LOCKED_READY_FOR_DISCOVERY",
+  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
   "target": {
     "map": "The Gauntlet",
     "version": "1.0.1",
@@ -33,12 +33,78 @@
     "Claim-Based Proof"
   ],
   "coverageGates": {
-    "materialSurfaceRouting": "OPEN",
-    "mutableResourceOwnership": "OPEN",
-    "requiredCrosschecks": "OPEN",
-    "materialScenarioAccounting": "OPEN",
-    "playerControlledSurfaceAccounting": "OPEN",
+    "materialSurfaceRouting": "IN_PROGRESS",
+    "mutableResourceOwnership": "IN_PROGRESS",
+    "requiredCrosschecks": "IN_PROGRESS",
+    "materialScenarioAccounting": "IN_PROGRESS",
+    "playerControlledSurfaceAccounting": "IN_PROGRESS",
     "genericNeedValidation": 0
   },
-  "comparison": "BLOCKED"
+  "comparison": "BLOCKED",
+  "discovery": {
+    "materialSystems": [
+      "session/player admission and ownership",
+      "level/stage progression",
+      "inventory/loadout and session reset",
+      "entity/objective lifecycle",
+      "terminal/retry/reset",
+      "world/structure mutation",
+      "player-facing progression state",
+      "developer/debug affordances"
+    ],
+    "derivedChecks": [
+      "fresh-session reset × reconnect",
+      "progression accounting × retry",
+      "terminal trigger × terminal trigger",
+      "cleanup × next run",
+      "player-controlled skip/replay paths",
+      "developer item acquisition × activation",
+      "world mutation × repeated-run baseline"
+    ]
+  },
+  "proofQueue": [
+    {
+      "id": "GAU-PQ-01",
+      "check": "Progression, Wave & Objective Integrity",
+      "scenario": "required stage work × completion accounting",
+      "state": "PROVING"
+    },
+    {
+      "id": "GAU-PQ-02",
+      "check": "Persistence, Reconnect & Reload Integrity",
+      "scenario": "fresh-session reset × reconnect/late restoration",
+      "state": "PROVING"
+    },
+    {
+      "id": "GAU-PQ-03",
+      "check": "Terminal State & Duplicate-Commit Safety",
+      "scenario": "simultaneous/overlapping terminal triggers",
+      "state": "PROVING"
+    },
+    {
+      "id": "GAU-PQ-04",
+      "check": "World Mutation & Reset Integrity",
+      "scenario": "run 1 mutation × cleanup × run 2 baseline",
+      "state": "PROVING"
+    },
+    {
+      "id": "GAU-PQ-05",
+      "check": "Developer Tool & Permission Exposure",
+      "scenario": "ordinary acquisition × debug activation",
+      "state": "PROVING"
+    },
+    {
+      "id": "GAU-PQ-06",
+      "check": "Adversarial Gameplay QA",
+      "scenario": "SKIP / REPLAY / RETAIN / RACE / ORPHAN",
+      "state": "PROVING"
+    }
+  ],
+  "proofRules": {
+    "evidenceReceiptRequired": true,
+    "claimClosureRequired": true,
+    "blockingProofRequiredBeforeSafe": true,
+    "genericNeedValidationForbidden": true,
+    "historicalComparisonBlocked": true
+  }
 }
