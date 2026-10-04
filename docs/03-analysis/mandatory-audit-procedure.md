@@ -724,6 +724,9 @@ STRESS
 → run Connection Recovery Invariants when reconnect exists
 → pass the Simulation Honesty Gate
 → run Scenario Coverage Gate so no material shared-state interleaving is silently skipped
+→ evaluate ordinary player actions against applicable gameplay invariants using the Adversarial Player Abuse Model
+→ derive bounded misuse/edge-case sequences for progression, inventory/economy, ownership, capacity, reconnect/recovery, terminal/reward, world mutation, and reachable developer controls
+→ run the Abuse Coverage Gate so every material player-controlled surface is accounted
 
 PROVE
 → causal slice each contradiction
