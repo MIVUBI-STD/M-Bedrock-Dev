@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "UNSEEN_MAP_INDEPENDENT_VALIDATION",
-  "status": "INDEPENDENT_PASS_CLOSED",
+  "status": "UNSEEN_REPAIR_REQUIRED",
   "target": {
     "map": "Orb of the Illusioner Level 2",
     "version": "1.1.0",
@@ -167,5 +167,41 @@
       "unaccountedPlayerControlledSurfaces": 0
     },
     "evidenceReceiptGate": "PASSED_FOR_ZERO_FINDING_SET"
+  },
+  "historicalComparison": {
+    "status": "COMPLETE_WITH_MISSES",
+    "historicalApprovedIssues": [
+      {
+        "id": "BUG-ORB2-UPGRADE-MATERIAL",
+        "title": "Weapon and armor upgrades consume coins then fail"
+      },
+      {
+        "id": "BUG-ORB2-RELOAD-BARRICADES",
+        "title": "Active-game reload recovery aborts the arena"
+      }
+    ],
+    "matched": [],
+    "missed": [
+      {
+        "historicalId": "BUG-ORB2-UPGRADE-MATERIAL",
+        "classification": "PROOF_MISS",
+        "earliestFailure": "Economy/inventory coverage did not force a transaction to reconcile consumed currency with the exact required upgrade-material/item reference and delivery preconditions.",
+        "repair": "For every purchase/upgrade transaction, build a debit → prerequisite/material lookup → mutation/grant → success feedback chain and require Referential Integrity for every item/material identifier before SAFE."
+      },
+      {
+        "historicalId": "BUG-ORB2-RELOAD-BARRICADES",
+        "classification": "SCENARIO_MISS",
+        "earliestFailure": "Connection/recovery scenarios emphasized player reconnect but did not treat script/world reload during an active session as a first-class lifecycle interruption with world-object reconstruction dependencies.",
+        "repair": "Add active-session Reload Recovery differential: pre-reload authoritative session/world objects → bootstrap/reconstruction → required object/reference availability → fallback/abort behavior."
+      }
+    ],
+    "recall": {
+      "detected": 0,
+      "expected": 2,
+      "percent": 0
+    },
+    "unsupportedProven": 0,
+    "genericNeedValidation": 0,
+    "conclusion": "PvP unseen validation exposes two existing-mechanism gaps: transactional referential integrity and active-session reload recovery. No new issue family is required."
   }
 }
