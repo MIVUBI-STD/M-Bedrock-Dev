@@ -2,6 +2,154 @@
   "schemaVersion": 1,
   "regressions": [
     {
+      "id": "reg_attack_challenge_1_1_1_bug_atk_preload_inventory",
+      "canonicalIssueId": "reg_attack_challenge_1_1_1_bug_atk_preload_inventory",
+      "title": "Reconnect during preload can bypass the fresh-session inventory wipe",
+      "issueType": "BUG",
+      "domain": "state",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "attack-challenge",
+        "reportPath": "workspace/reports/Attack-Challenge-v1.1.1-BugReport.json",
+        "map": "Attack Challenge",
+        "mapVersion": "1.1.1",
+        "bugId": "BUG-ATK-PRELOAD-INVENTORY",
+        "canonicalIssueId": "reg_attack_challenge_1_1_1_bug_atk_preload_inventory",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:95bf318070b3948f0a0d1d093bae2f7b1a3a37e4d94e94d2adfc4d80a501ccba"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "major",
+        "player-state"
+      ],
+      "capabilityTags": [
+        "state",
+        "persistence"
+      ],
+      "reproduction": [
+        "Carry a recognizable ordinary item before starting an Attack match.",
+        "Disconnect before the preload inventory-clear callback runs.",
+        "Reconnect after that callback while the session is still preloading.",
+        "Confirm the stale item remains when the match reaches the initial buy phase."
+      ],
+      "expected": "Every participant entering a fresh Attack session receives the same full inventory reset regardless of reconnect timing.",
+      "observed": "The wipe only targets players online at the preload callback, while reconnect and the first buy-phase loadout do not remove ordinary stale items."
+    },
+    {
+      "id": "reg_attack_challenge_1_1_1_bug_atk_respawn_reconnect",
+      "canonicalIssueId": "reg_attack_challenge_1_1_1_bug_atk_respawn_reconnect",
+      "title": "Reconnect bypasses an active combat respawn countdown",
+      "issueType": "BUG",
+      "domain": "state",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "attack-challenge",
+        "reportPath": "workspace/reports/Attack-Challenge-v1.1.1-BugReport.json",
+        "map": "Attack Challenge",
+        "mapVersion": "1.1.1",
+        "bugId": "BUG-ATK-RESPAWN-RECONNECT",
+        "canonicalIssueId": "reg_attack_challenge_1_1_1_bug_atk_respawn_reconnect",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:95bf318070b3948f0a0d1d093bae2f7b1a3a37e4d94e94d2adfc4d80a501ccba"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "major",
+        "player-state"
+      ],
+      "capabilityTags": [
+        "state",
+        "persistence"
+      ],
+      "reproduction": [
+        "Start an Attack match and die during active combat.",
+        "Disconnect while the respawn countdown is running.",
+        "Reconnect before the countdown expires.",
+        "Confirm the player returns to active gameplay before the original countdown finishes."
+      ],
+      "expected": "A reconnecting player with a pending respawn stays in spectator/death state until the existing countdown ends.",
+      "observed": "CombatTracker restores the countdown, then GameManager restores survival, loadout, and gameplay position about five ticks later."
+    },
+    {
+      "id": "reg_attack_challenge_1_1_1_dm_atk_arena_capacity",
+      "canonicalIssueId": "reg_attack_challenge_1_1_1_dm_atk_arena_capacity",
+      "title": "Six playable arenas expose only two concurrent sessions",
+      "issueType": "DESIGN_MISMATCH",
+      "domain": "multiplayer",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "attack-challenge",
+        "reportPath": "workspace/reports/Attack-Challenge-v1.1.1-BugReport.json",
+        "map": "Attack Challenge",
+        "mapVersion": "1.1.1",
+        "bugId": "DM-ATK-ARENA-CAPACITY",
+        "canonicalIssueId": "reg_attack_challenge_1_1_1_dm_atk_arena_capacity",
+        "issueType": "DESIGN_MISMATCH",
+        "artifactFingerprint": "sha256:95bf318070b3948f0a0d1d093bae2f7b1a3a37e4d94e94d2adfc4d80a501ccba"
+      },
+      "triggerTags": [
+        "design-mismatch",
+        "gameplay",
+        "major",
+        "multiplayer-session"
+      ],
+      "capabilityTags": [
+        "multiplayer",
+        "arena-lifecycle"
+      ],
+      "reproduction": [
+        "Prepare valid parties in 3 different Attack arenas.",
+        "Start the first 2 arenas so both hold active arena leases.",
+        "Ready and start the third arena.",
+        "Confirm the third group is queued even though its own visible arena is otherwise available."
+      ],
+      "expected": "Presented independent arena capacity matches delivered concurrency, or the lower limit is explicitly authored as the player-facing capability.",
+      "observed": "Six arenas accept parties, but MAX_CONCURRENT_ARENAS limits active ticking-area leases to two and queues the third session."
+    },
+    {
+      "id": "reg_build_decode_1_1_0_bug_bad_debug_stick",
+      "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_debug_stick",
+      "title": "Temporary coordinate picker is reachable by normal Creative builders",
+      "issueType": "DESIGN_MISMATCH",
+      "domain": "ui",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "build-and-decode",
+        "reportPath": "workspace/reports/Build-and-Decode-v1.1.0-BugReport.json",
+        "map": "Build & Decode",
+        "mapVersion": "1.1.0",
+        "bugId": "BUG-BAD-DEBUG-STICK",
+        "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_debug_stick",
+        "issueType": "DESIGN_MISMATCH",
+        "artifactFingerprint": "sha256:d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030"
+      },
+      "triggerTags": [
+        "design-mismatch",
+        "gameplay",
+        "minor",
+        "ui-feedback"
+      ],
+      "capabilityTags": [
+        "ui-state",
+        "gameplay-state"
+      ],
+      "reproduction": [
+        "Enter a Build & Decode building phase as the active Creative builder.",
+        "Obtain and hold a normal Minecraft stick.",
+        "Interact with a block.",
+        "Confirm normal interaction is cancelled and coordinate/debug output is shown."
+      ],
+      "expected": "Temporary coordinate tooling is removed from production or restricted to developer/admin users.",
+      "observed": "Any builder holding a normal stick can trigger the imported coordinate picker without an admin requirement."
+    },
+    {
       "id": "reg_capture_run_gate_blocked",
       "title": "Capture Run extract gate blocked by unintended fill",
       "domain": "commands",
@@ -28,47 +176,341 @@
       "observed": "A spruce-wood fill blocks the entrance and prevents entry."
     },
     {
-      "id": "reg_defense_async_reset_lease_reuse_race",
-      "title": "Arena can become reusable before asynchronous reset releases its old lease",
-      "domain": "multiplayer",
-      "discoveredBy": "static-audit",
+      "id": "reg_composite_challenge_1_1_1_bug_cmp_async_reset",
+      "canonicalIssueId": "reg_composite_challenge_1_1_1_bug_cmp_async_reset",
+      "title": "Arena can restart while its asynchronous world reset is still running",
+      "issueType": "BUG",
+      "domain": "world",
+      "discoveredBy": "approved-ai",
       "provenance": {
-        "source": "Selected artifact static audit",
-        "artifact": "Defense Challenge v1.1.1.mcworld",
-        "date": "2026-10-02",
-        "targetEdition": "education",
-        "targetVersion": null,
-        "artifactSha256": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee",
+        "source": "Canonical Bug Report V2",
+        "projectId": "composite-challenge",
+        "reportPath": "workspace/reports/Composite-Challenge-v1.1.1-BugReport.json",
+        "map": "Composite Challenge",
+        "mapVersion": "1.1.1",
+        "bugId": "BUG-CMP-ASYNC-RESET",
+        "canonicalIssueId": "reg_composite_challenge_1_1_1_bug_cmp_async_reset",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:c7a208ccb943d214de6bb6d2f15f265f8dba2b794ae56da40a11bef24162776a"
+      },
+      "triggerTags": [
+        "blocker",
+        "bug",
+        "gameplay",
+        "world-interaction"
+      ],
+      "capabilityTags": [
+        "world-mutation",
+        "spatial"
+      ],
+      "reproduction": [
+        "Run a Composite arena and change blocks covered by the arena reset.",
+        "End or reset the match.",
+        "Start the same arena again before reset processing finishes.",
+        "Confirm blocks can continue changing underneath the new session during setup or gameplay."
+      ],
+      "expected": "The arena remains unavailable until its reset finishes, or start admission is blocked by the existing reset lock.",
+      "observed": "resetGame starts reset work without awaiting it, then publishes idle state while the reset continues over later ticks."
+    },
+    {
+      "id": "reg_composite_challenge_1_1_1_bug_cmp_cross_arena_flag",
+      "canonicalIssueId": "reg_composite_challenge_1_1_1_bug_cmp_cross_arena_flag",
+      "title": "Cleanup in one arena can invalidate another arena's flag carrier",
+      "issueType": "BUG",
+      "domain": "multiplayer",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "composite-challenge",
+        "reportPath": "workspace/reports/Composite-Challenge-v1.1.1-BugReport.json",
+        "map": "Composite Challenge",
+        "mapVersion": "1.1.1",
+        "bugId": "BUG-CMP-CROSS-ARENA-FLAG",
+        "canonicalIssueId": "reg_composite_challenge_1_1_1_bug_cmp_cross_arena_flag",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:c7a208ccb943d214de6bb6d2f15f265f8dba2b794ae56da40a11bef24162776a"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "major",
+        "multiplayer-session"
+      ],
+      "capabilityTags": [
+        "multiplayer",
+        "arena-lifecycle"
+      ],
+      "reproduction": [
+        "Run Composite Attack concurrently in Arena A and Arena B.",
+        "In Arena B, take the red flag and remain alive as its active carrier.",
+        "Complete, retry, or reset Arena A so its flag cleanup runs.",
+        "Confirm Arena B drops or returns its flag even though its carrier did not die or disconnect."
+      ],
+      "expected": "Per-arena cleanup changes only the flag carrier state owned by that arena.",
+      "observed": "Flag cleanup receives one arena ID but removes the shared carrier tag from every online player in the world."
+    },
+    {
+      "id": "reg_composite_challenge_1_1_1_bug_cmp_cross_arena_floor",
+      "canonicalIssueId": "reg_composite_challenge_1_1_1_bug_cmp_cross_arena_floor",
+      "title": "Arena floor maintenance mutates blocks around unrelated players",
+      "issueType": "BUG",
+      "domain": "world",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "composite-challenge",
+        "reportPath": "workspace/reports/Composite-Challenge-v1.1.1-BugReport.json",
+        "map": "Composite Challenge",
+        "mapVersion": "1.1.1",
+        "bugId": "BUG-CMP-CROSS-ARENA-FLOOR",
+        "canonicalIssueId": "reg_composite_challenge_1_1_1_bug_cmp_cross_arena_floor",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:c7a208ccb943d214de6bb6d2f15f265f8dba2b794ae56da40a11bef24162776a"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "minor",
+        "world-interaction"
+      ],
+      "capabilityTags": [
+        "world-mutation",
+        "spatial"
+      ],
+      "reproduction": [
+        "Keep Player A outside the active Composite arena while standing near dirt.",
+        "Start gameplay in Arena B.",
+        "Wait for the periodic floor-maintenance interval.",
+        "Confirm dirt around Player A changes to grass path despite Player A not belonging to Arena B."
+      ],
+      "expected": "Periodic arena floor maintenance affects only players and world space owned by that active arena.",
+      "observed": "Each active arena runs a grass-path fill as @a, so the mutation executes around players outside the arena too."
+    },
+    {
+      "id": "reg_composite_challenge_1_1_1_bug_cmp_preload_inventory",
+      "canonicalIssueId": "reg_composite_challenge_1_1_1_bug_cmp_preload_inventory",
+      "title": "Reconnect during preload can carry stale inventory into a fresh session",
+      "issueType": "BUG",
+      "domain": "state",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "composite-challenge",
+        "reportPath": "workspace/reports/Composite-Challenge-v1.1.1-BugReport.json",
+        "map": "Composite Challenge",
+        "mapVersion": "1.1.1",
+        "bugId": "BUG-CMP-PRELOAD-INVENTORY",
+        "canonicalIssueId": "reg_composite_challenge_1_1_1_bug_cmp_preload_inventory",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:c7a208ccb943d214de6bb6d2f15f265f8dba2b794ae56da40a11bef24162776a"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "major",
+        "player-state"
+      ],
+      "capabilityTags": [
+        "state",
+        "persistence"
+      ],
+      "reproduction": [
+        "Carry a recognizable non-session item before starting a Composite arena.",
+        "Disconnect before the preload inventory clear runs.",
+        "Reconnect after the clear while the session is still preloading.",
+        "Confirm the stale item remains when preparation or gameplay begins."
+      ],
+      "expected": "Every player entering a fresh Composite session receives the same full inventory reset regardless of reconnect timing.",
+      "observed": "The preload clear only covers online arena players, and later reconnect plus partial loadout refresh does not replay the missed full wipe."
+    },
+    {
+      "id": "reg_composite_challenge_1_1_1_bug_cmp_ticking_areas",
+      "canonicalIssueId": "reg_composite_challenge_1_1_1_bug_cmp_ticking_areas",
+      "title": "Arena-specific ticking areas are declared but never created",
+      "issueType": "BUG",
+      "domain": "stability",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "composite-challenge",
+        "reportPath": "workspace/reports/Composite-Challenge-v1.1.1-BugReport.json",
+        "map": "Composite Challenge",
+        "mapVersion": "1.1.1",
+        "bugId": "BUG-CMP-TICKING-AREAS",
+        "canonicalIssueId": "reg_composite_challenge_1_1_1_bug_cmp_ticking_areas",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:c7a208ccb943d214de6bb6d2f15f265f8dba2b794ae56da40a11bef24162776a"
+      },
+      "triggerTags": [
+        "blocker",
+        "bug",
+        "gameplay",
+        "performance-stability"
+      ],
+      "capabilityTags": [
+        "runtime-stability",
+        "chunks"
+      ],
+      "reproduction": [
+        "Start a Composite Challenge arena and progress to gameplay that spawns or moves entities far from players.",
+        "Keep players away from the remote spawn or pathing region.",
+        "Continue until the game depends on that distant simulation region.",
+        "Confirm remote spawning, pathing, or wave progression can stop because the arena region is not kept ticking."
+      ],
+      "expected": "Each started arena activates its required simulation regions before gameplay depends on remote chunks.",
+      "observed": "Only lobby and permission ticking areas are created; the configured per-arena ticking areas are never materialized."
+    },
+    {
+      "id": "reg_defense_async_reset_lease_reuse_race",
+      "title": "Arena reset can remove ticking areas from a newly started run",
+      "domain": "multiplayer",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "defense-challenge",
+        "reportPath": "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json",
+        "map": "Defense Challenge",
+        "mapVersion": "1.1.1",
+        "bugId": "BUG-DEF-LEASE-RESET",
         "canonicalIssueId": "reg_defense_challenge_1_1_1_bug_def_lease_reset",
-        "issueType": "BUG"
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee"
       },
       "invariantIds": [
         "arena.reuse-requires-cleanup-complete",
         "chunk.lease-generation-ownership"
       ],
       "triggerTags": [
+        "blocker",
+        "bug",
         "gameplay",
-        "cleanup",
-        "arena-reuse",
-        "ticking-area",
-        "race"
+        "multiplayer-session"
       ],
       "capabilityTags": [
-        "arena-lifecycle",
-        "chunks",
-        "multiplayer-concurrency",
-        "temporal"
+        "multiplayer",
+        "arena-lifecycle"
       ],
       "reproduction": [
-        "End or reset a match so asynchronous arena block reset begins",
-        "Before the reset promise completes, make a new valid party ready for the same arena",
-        "Start the new match while the old ticking-area lease is still held",
-        "Observe ticking-area ownership when the previous reset completes"
+        "Start a Defense match in an arena.",
+        "End or reset the match so the arena begins its map reset.",
+        "Start a new match in the same arena before reset work finishes.",
+        "Confirm the new match loses its arena ticking areas and gameplay simulation can stop."
       ],
-      "expected": "The arena remains unavailable until reset completes, or lease release is generation-bound so an old cleanup cannot release a new run's lease.",
-      "observed": "The session is set to idle before reset completion; start validation does not check reset state, acquire succeeds against the already-held lease, and the old reset completion later calls release(arenaId) without a generation token.",
+      "expected": "An arena becomes reusable only after reset completes, and old cleanup cannot release resources owned by a newer run.",
+      "observed": "A new run can reuse the arena before reset finishes, then the old reset releases the ticking-area lease used by the new run.",
       "canonicalIssueId": "reg_defense_challenge_1_1_1_bug_def_lease_reset",
       "issueType": "BUG"
+    },
+    {
+      "id": "reg_defense_challenge_1_1_1_bug_def_preload_inventory",
+      "canonicalIssueId": "reg_defense_challenge_1_1_1_bug_def_preload_inventory",
+      "title": "Reconnect during preload can carry stale inventory into a new match",
+      "issueType": "BUG",
+      "domain": "state",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "defense-challenge",
+        "reportPath": "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json",
+        "map": "Defense Challenge",
+        "mapVersion": "1.1.1",
+        "bugId": "BUG-DEF-PRELOAD-INVENTORY",
+        "canonicalIssueId": "reg_defense_challenge_1_1_1_bug_def_preload_inventory",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "major",
+        "player-state"
+      ],
+      "capabilityTags": [
+        "state",
+        "persistence"
+      ],
+      "reproduction": [
+        "Carry a recognizable non-session item in an inventory slot.",
+        "Start a Defense match, then disconnect before the preload inventory wipe runs.",
+        "Reconnect after the wipe while the session is still preloading.",
+        "Confirm the stale item remains when the new match reaches buy or gameplay phase."
+      ],
+      "expected": "Every player entering a fresh Defense session passes the same full inventory reset regardless of reconnect timing.",
+      "observed": "The preload wipe only affects online players, and reconnect plus later loadout refresh does not clear ordinary items outside managed loadout state."
+    },
+    {
+      "id": "reg_defense_challenge_1_1_1_bug_def_respawn_reconnect",
+      "canonicalIssueId": "reg_defense_challenge_1_1_1_bug_def_respawn_reconnect",
+      "title": "Reconnect bypasses an active combat respawn countdown",
+      "issueType": "BUG",
+      "domain": "state",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "defense-challenge",
+        "reportPath": "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json",
+        "map": "Defense Challenge",
+        "mapVersion": "1.1.1",
+        "bugId": "BUG-DEF-RESPAWN-RECONNECT",
+        "canonicalIssueId": "reg_defense_challenge_1_1_1_bug_def_respawn_reconnect",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "major",
+        "player-state"
+      ],
+      "capabilityTags": [
+        "state",
+        "persistence"
+      ],
+      "reproduction": [
+        "Start a Defense match and die during active combat.",
+        "Disconnect while the respawn countdown is still running.",
+        "Reconnect before the countdown expires.",
+        "Confirm the player returns to active gameplay before the original respawn delay finishes."
+      ],
+      "expected": "A reconnecting player with a pending respawn stays in spectator/death state until the existing countdown ends.",
+      "observed": "Combat recovery restores spectator state, then a second reconnect path restores survival, loadout, and gameplay position about five ticks later."
+    },
+    {
+      "id": "reg_defense_challenge_1_1_1_bug_def_wave_retry",
+      "canonicalIssueId": "reg_defense_challenge_1_1_1_bug_def_wave_retry",
+      "title": "Delayed wave can clear before failed spawn retries finish",
+      "issueType": "BUG",
+      "domain": "gameplay",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "defense-challenge",
+        "reportPath": "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json",
+        "map": "Defense Challenge",
+        "mapVersion": "1.1.1",
+        "bugId": "BUG-DEF-WAVE-RETRY",
+        "canonicalIssueId": "reg_defense_challenge_1_1_1_bug_def_wave_retry",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee"
+      },
+      "triggerTags": [
+        "blocker",
+        "bug",
+        "game-flow",
+        "gameplay"
+      ],
+      "capabilityTags": [
+        "gameplay-state",
+        "progression"
+      ],
+      "reproduction": [
+        "Reach Defense Level 15, Wave 3.",
+        "Trigger the delayed enemy group while its spawn chunk is not ready.",
+        "Let the first spawn attempt fail and queue its retry.",
+        "Confirm the wave can advance as cleared before the delayed enemies actually spawn."
+      ],
+      "expected": "A wave remains active while any required enemy spawn is still pending retry.",
+      "observed": "Pending group count can reach zero with no live hostiles, so wave-clear logic can run before retry-spawned enemies appear."
     },
     {
       "id": "reg_defense_cutscene_reconnect_loadout_loss",
@@ -540,43 +982,42 @@
     },
     {
       "id": "reg_defense_visible_arena_capacity_reduced",
-      "title": "Defense exposes six arenas but only two can run concurrently",
+      "title": "Six playable arenas expose only two concurrent sessions",
       "domain": "multiplayer",
-      "discoveredBy": "static-audit",
+      "discoveredBy": "approved-ai",
       "provenance": {
-        "source": "Selected artifact static audit",
-        "artifact": "Defense Challenge v1.1.1.mcworld",
-        "artifactSha256": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee",
-        "date": "2026-10-02",
-        "targetEdition": "education",
-        "targetVersion": null,
+        "source": "Canonical Bug Report V2",
+        "projectId": "defense-challenge",
+        "reportPath": "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json",
+        "map": "Defense Challenge",
+        "mapVersion": "1.1.1",
+        "bugId": "DM-DEF-ARENA-CAPACITY",
+        "canonicalIssueId": "reg_defense_challenge_1_1_1_dm_def_arena_capacity",
         "issueType": "DESIGN_MISMATCH",
-        "canonicalIssueId": "reg_defense_challenge_1_1_1_dm_def_arena_capacity"
+        "artifactFingerprint": "sha256:edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee"
       },
       "invariantIds": [
         "arena.visible-capacity-matches-playable-capacity",
         "arena.capacity-degradation-must-be-reported"
       ],
       "triggerTags": [
+        "design-mismatch",
         "gameplay",
-        "multi-arena",
-        "capacity",
-        "queue",
-        "design"
+        "major",
+        "multiplayer-session"
       ],
       "capabilityTags": [
-        "arena-lifecycle",
-        "multiplayer-concurrency",
-        "chunks"
+        "multiplayer",
+        "arena-lifecycle"
       ],
       "reproduction": [
-        "Assign/start independent parties across the six available arenas",
-        "Run two arenas concurrently",
-        "Attempt to start a third arena while the first two remain active",
-        "Observe that the third session is queued instead of using one of the remaining visible arenas"
+        "Prepare valid parties in 3 different Defense arenas.",
+        "Start the first 2 arenas so both hold active arena leases.",
+        "Ready and start the third arena.",
+        "Confirm the third group is queued even though its own visible arena is otherwise available."
       ],
-      "expected": "The player-visible six-arena design can support six independent arena sessions concurrently, or the map design exposes only the concurrency it can actually provide.",
-      "observed": "Six arenas are presented, but the implementation caps concurrent active arenas at two; additional sessions are queued. The queue and ticking-area platform constraint explain the limitation but do not remove the player-visible capacity mismatch.",
+      "expected": "Presented independent arena capacity matches delivered concurrency, or the lower limit is explicitly authored as the player-facing capability.",
+      "observed": "Six arenas accept parties, but MAX_CONCURRENT_ARENAS limits active ticking-area leases to two and queues later sessions.",
       "issueType": "DESIGN_MISMATCH",
       "canonicalIssueId": "reg_defense_challenge_1_1_1_dm_def_arena_capacity"
     },
