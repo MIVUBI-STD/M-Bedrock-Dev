@@ -1234,7 +1234,56 @@ Absence of an immediately obvious consequence is not sufficient for suppression.
 
 ---
 
-# 30. Architecture Freeze Rule
+# 30. Developer-Item Acquisition Graph
+
+This rule is promoted from the unseen The Circuit validation miss. It strengthens Developer Tool & Permission Exposure; it is not a new issue family.
+
+Whenever a developer/debug item or interaction trigger exists, trace ordinary-player acquisition through all applicable content surfaces:
+
+```text
+developer item / trigger
+← direct grant
+← container / authored world inventory
+← loot table
+← recipe / crafting
+← item conversion / replacement
+← shop / reward
+← structure-loaded inventory
+← dropped item / entity drop
+← interaction-created item
+```
+
+Then trace forward:
+
+```text
+item acquired
+→ use / hit / interact / drop / craft / equip
+→ handler/event
+→ gameplay mutation
+→ permission/role guard
+→ affected scope
+```
+
+A developer affordance may be suppressed only after both acquisition and activation graphs are closed.
+
+Script-event reachability alone is not sufficient to close developer-tool exposure when a physical/debug item exists.
+
+## Evidence Receipt Gate
+
+No independent finding may be marked PROVEN in regression/unseen validation unless its run record contains concrete source-evidence receipts sufficient to reconstruct:
+
+```text
+reachable trigger
+→ wrong mutation/state
+→ player-visible consequence
+→ Blocking-Proof search
+```
+
+A claim-closure matrix without attached evidence receipts is not publication proof.
+
+---
+
+# 31. Architecture Freeze Rule
 
 The detection architecture is considered structurally complete after sections 1–17.
 
