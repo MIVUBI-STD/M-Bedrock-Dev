@@ -1958,67 +1958,29 @@ Do not create a broad generic testing matrix.
 
 # D. PROVE
 
-## D1. Required Inspection Graph (RIG)
+PROVE decides whether a contradiction has enough evidence to become a finding. It does not rediscover gameplay structure or repeat routed integrity checks.
 
-### Trigger
+## D1. Evidence Coverage
 
-For every material Gameplay Scenario.
-
-### Required Node
+For every contradiction entering PROVE, bind only the evidence needed to decide these claims:
 
 ```text
-Requirement ID
-Scenario
-Gameplay Dependency
-Knowledge Domain
-Scope
-Required Capability
-Prerequisite Nodes
-Execution Status
-Evidence
-Finding
+scenario is reachable
+expected contract is grounded
+actual contradictory path is reachable
+trigger is explicit
+player-visible consequence is grounded
+affected scope is known
+applicable blocking proof has been searched
 ```
 
-### Mandatory Rule
+If a required knowledge/capability dependency is missing, preserve that exact missing claim as an Audit Obligation or NEED_VALIDATION input as appropriate.
 
-`checked` is not a valid proof state.
+The internal evidence graph/receipts may remain implementation details; they are not additional user-facing proof states.
 
-Each node must resolve through:
+## D2. Gameplay Contradiction
 
-```text
-scenario
-→ required knowledge
-→ capability
-→ execution
-→ scoped evidence
-→ receipt
-```
-
-### Failure Patterns
-
-- analyzer exists but was not executed;
-- execution receipt not scoped to requirement;
-- prerequisite unresolved;
-- capability missing;
-- aggregate counter used as scenario proof.
-
-### Output
-
-Required Inspection Graph + Knowledge Receipts.
-
-### Closure Rule
-
-Every required node is SATISFIED or explicitly blocks closure as prerequisite/knowledge/capability gap.
-
----
-
-## D2. Contradiction Admission
-
-### Trigger
-
-Whenever technical evidence conflicts with a required gameplay dependency.
-
-### Required Chain
+Translate technical evidence through one canonical causal chain:
 
 ```text
 Technical Fact
@@ -2031,107 +1993,79 @@ Technical Fact
 → Affected Scope
 ```
 
-### Failure Pattern
+A technical anomaly without grounded Expected behavior or player-visible consequence does not become a gameplay finding.
 
-Technical anomaly has no player-visible gameplay consequence or no grounded Expected behavior.
+## D3. Blocking-Proof Search
 
-### Output
-
-Gameplay Causal Link with PROVEN / CONTRADICTED / RUNTIME_BLOCKED / DETECTION_GAP.
-
-### Closure Rule
-
-No technical finding enters report reasoning without gameplay correlation.
-
----
-
-## D3. Counter-Proof Search
-
-### Trigger
-
-Every CONTRADICTED causal link before defect confirmation.
-
-### Required Search Targets
+Before confirming a contradiction, search the exact path for applicable:
 
 - reachable guard;
 - ownership validation;
-- generation/revision check;
+- generation/revision validation;
 - scope validation;
 - explicit exclusion;
-- reachable cleanup;
-- deterministic fallback that prevents the wrong state.
+- reachable cleanup/recovery;
+- deterministic fallback.
 
-### Blocking Standard
+Blocking Proof is valid only when it is reachable, executes before the wrong mutation/commit, and makes the contradicted state unreachable.
 
-Counter-proof is valid only if it is:
-
-```text
-reachable
-+
-executes before the wrong mutation
-+
-deterministically makes the wrong state unreachable
-```
-
-### Non-Proof
-
-Not sufficient:
-
+The following are not Blocking Proof by themselves:
 - nearby healthy code;
-- queue exists;
-- fallback exists;
-- config exists;
-- naming suggests safety;
-- implementation appears intentional.
+- existence of a queue/fallback/config;
+- naming that implies safety;
+- apparently intentional implementation.
 
-### Output
-
-One of:
+Resolve the contradiction to exactly one canonical outcome:
 
 ```text
-BLOCKING_COUNTERPROOF
-COUNTERPROOF_SEARCH_REQUIRED
-RUNTIME_PROOF_REQUIRED
-DETECTION_GAP
-CONFIRMED_DEFECT_READY
+SAFE
+→ exact Blocking Proof prevents the contradiction
+
+PROVEN
+→ contradiction + player consequence + affected scope are sufficiently proven
+
+NEED_VALIDATION
+→ exactly identified deciding proof remains irreducible
+
+AUDIT_OBLIGATION
+→ evidence/model gap is not yet justified as a gameplay finding
 ```
 
-### Closure Rule
+Do not expose internal intermediate labels as additional finding statuses.
 
-No contradiction reaches Proposed Bug Set with counter-proof search unresolved.
+## D4. Proof Promotion
 
----
+Before retaining NEED_VALIDATION:
 
-## D4. Root-Cause Consolidation
+1. search selected-artifact evidence;
+2. search applicable cross-domain evidence;
+3. perform applicable quantitative/formal reasoning;
+4. perform Blocking-Proof search;
+5. use deterministic evidence substitution where valid;
+6. isolate the smallest remaining deciding question.
 
-### Trigger
+If these steps decide the contradiction, promote to PROVEN or SAFE immediately.
 
-Before report candidate creation.
+Runtime Verification is permitted only for the final irreducible question.
 
-### Mandatory Questions
+## D5. Duplicate Finding Consolidation
 
-- Do multiple causal links share one semantic owner?
-- Do they share one wrong mutation/guard/selector/state owner?
-- Would one repair unit fix all manifestations?
-- Are manifestations merely different player-visible consequences of one root cause?
+Use A24 as the consolidation authority.
 
-### Example
+Every PROVEN causal contradiction must map to exactly one published root-cause finding unless independent repair ownership or independently reachable player contracts require separation.
+
+### PROVE closure
+
+PROVE is closed when every admitted contradiction is exactly one of:
 
 ```text
-global @a selector
-→ wrong reward
-→ wrong message
-→ wrong sound
-= one root-cause defect
+SAFE
+PROVEN
+NEED_VALIDATION
+AUDIT_OBLIGATION
 ```
 
-### Output
-
-One report candidate may cover multiple `scenarioCausalLinkIds`.
-
-### Closure Rule
-
-Every CONFIRMED_DEFECT_READY link is covered exactly once across the consolidated candidate set.
+No alternate proof-state vocabulary may leave this stage.
 
 ---
 
