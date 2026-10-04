@@ -112,6 +112,32 @@ describe("bug report preview", () => {
     expect(preview.counts.minor).toBe(1);
   });
 
+  it("separates design mismatches from bugs", () => {
+    const base = report();
+    const typed: BugReportV2 = {
+      ...base,
+      bugs: base.bugs.map((bug) =>
+        bug.id === "BUG-001"
+          ? {
+              ...bug,
+              issueType: "DESIGN_MISMATCH" as const,
+            }
+          : bug
+      ),
+    };
+    const preview = projectBugReportPreview(typed);
+    const markdown =
+      renderBugReportPreviewMarkdown(
+        preview,
+        "standard",
+      );
+
+    expect(markdown).toContain(
+      "## Design Mismatches",
+    );
+    expect(markdown).not.toContain("## Bugs");
+  });
+
   it("keeps solution grounded in Suggested Fix", () => {
     const preview = projectBugReportPreview(report(), {
       mode: "summary",
@@ -148,8 +174,9 @@ describe("bug report preview", () => {
     });
     const markdown = renderBugReportPreviewMarkdown(preview, "full");
 
+    expect(markdown).toContain("## Bugs");
     expect(markdown).toContain("| # | Severity | Category | Issue |");
-    expect(markdown).toContain("| #1 · BLOCKER | Match cannot restart |");
+    expect(markdown).toContain("#### [BLOCKER] BUG-001 — Match cannot restart");
 
     expect(markdown).not.toContain("Work Checklist");
     expect(markdown).not.toContain("☐");

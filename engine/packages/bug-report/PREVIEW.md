@@ -25,12 +25,20 @@ Tested Version: <exact tested version>
 Open Issues: <count>
 Blocker: <count> · Major: <count>
 
+## Bugs
+# | Severity | Category | Issue
+
+## Design Mismatches
 # | Severity | Category | Issue
 ```
 
 Do not show Fixed checkboxes, How to Reproduce steps, solution, Expected/Observed, or Technical Analysis in the default chat preview.
 
 Those operational details belong in HTML or explicit full-detail mode.
+
+## Type separation
+
+BUG and DESIGN_MISMATCH are rendered in separate sections. Do not merge both types into one undifferentiated table. Severity ordering applies independently within each section.
 
 ## Issue rule
 
@@ -48,7 +56,7 @@ Minor means limited player-visible impact and is hidden by default.
 
 ## Trigger rule
 
-Every visible bug must have a tester-verifiable in-game path. The final step must state the wrong visible result.
+Every visible issue must have a tester-verifiable in-game path. The final step must state the wrong visible result.
 
 Do not ask testers to inspect code, logs, variables, scripts, source files, or architecture.
 
@@ -88,7 +96,7 @@ Before canonical Bug Report V2 or HTML exists, discuss the proposed set in chat.
 Use a compact review table:
 
 ```text
-Proposed Bugs
+Proposed Issues
 # | Severity | Player Issue | Contract Violated | Decision
 ```
 
@@ -101,11 +109,11 @@ When useful, show two short companion sections:
 
 Review decisions are explicit:
 
-- approve — enters the approved bug set;
+- approve — enters the approved issue set;
 - reject — excluded, with concise reason;
 - needs-discussion — blocks publication until resolved.
 
-Do not generate canonical Bug Report V2 or HTML while any proposed bug has no decision or remains needs-discussion. If all proposed bugs are rejected, stop without generating a report artifact.
+Do not generate canonical Bug Report V2 or HTML while any proposed bug has no decision or remains needs-discussion. If all proposed issues are rejected, stop without generating a report artifact.
 
 
 ## Full-detail formatting

@@ -1083,10 +1083,38 @@ function renderHtml(
       : null,
   ].filter(Boolean).join(" · ");
 
+  const bugs =
+    document.issues.filter(
+      (issue) => issue.issueType === "BUG",
+    );
+  const designMismatches =
+    document.issues.filter(
+      (issue) =>
+        issue.issueType === "DESIGN_MISMATCH",
+    );
+  const issueSection = (
+    title: string,
+    issues: readonly BugReportClientIssue[],
+  ): string =>
+    issues.length === 0
+      ? ""
+      : [
+          '<section class="issue-group">',
+          '<h2>' + escapeHtml(title) + '</h2>',
+          issues.map(issueCard).join("\n\n"),
+          '</section>',
+        ].join("\n");
+
   const cards =
     document.issues.length === 0
       ? '<section class="empty">No gameplay-blocking or materially disruptive open issues are recorded.</section>'
-      : document.issues.map(issueCard).join("\n\n");
+      : [
+          issueSection("Bugs", bugs),
+          issueSection(
+            "Design Mismatches",
+            designMismatches,
+          ),
+        ].filter(Boolean).join("\n\n");
 
   const severityLegend =
     document.issues.length > 0
@@ -1193,6 +1221,12 @@ body {
 .summary p { margin:0; }.severity-line{margin-top:6px!important;color:var(--muted);font-size:12px}.retest-note{margin-top:8px!important;color:var(--muted);font-size:12px;line-height:1.5}
 .issues {
   padding:18px 24px 28px;
+}
+.issue-group + .issue-group { margin-top:26px; }
+.issue-group > h2 {
+  margin:0 0 12px;
+  font-size:16px;
+  color:var(--navy);
 }
 .bug-row {
   display:grid;
@@ -1436,7 +1470,7 @@ th {
   <section class="summary">
     <p>${escapeHtml(document.summary.statement)}</p>
     <p class="severity-line"><strong>Priority:</strong> ${escapeHtml(severitySummary || "—")}</p>
-    <p class="retest-note"><strong>Retest:</strong> open a bug, follow How to Reproduce, compare Observed vs Expected, then check Fixed only when the wrong behavior no longer occurs and the Expected result is confirmed.</p>
+    <p class="retest-note"><strong>Retest:</strong> open an issue, follow How to Reproduce, compare Observed vs Expected, then check Fixed only when the wrong behavior no longer occurs and the Expected result is confirmed.</p>
   </section>
   ${severityLegend}
   <section class="issues">

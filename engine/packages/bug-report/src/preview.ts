@@ -200,22 +200,44 @@ export function renderBugReportPreviewMarkdown(
   if (preview.bugs.length === 0) {
     out.push(
       "",
-      "No gameplay-blocking or materially disruptive open bugs.",
+      "No gameplay-blocking or materially disruptive open issues.",
     );
     return out.join("\n") + "\n";
   }
 
-  out.push(
-    "",
-    "| # | Type | Severity | Category | Issue |",
-    "|---:|---|---|---|---|",
-  );
+  const sections = [
+    {
+      title: "Bugs",
+      issueType: "BUG" as const,
+      issues: preview.bugs.filter(
+        (bug) => bug.issueType === "BUG",
+      ),
+    },
+    {
+      title: "Design Mismatches",
+      issueType: "DESIGN_MISMATCH" as const,
+      issues: preview.bugs.filter(
+        (bug) =>
+          bug.issueType === "DESIGN_MISMATCH",
+      ),
+    },
+  ];
 
-  preview.bugs.forEach((bug, index) => {
+  for (const section of sections) {
+    if (section.issues.length === 0) continue;
     out.push(
-      `| ${index + 1} | ${bug.issueType} | ${severityLabel(bug.severity)} | ${tableCell(bugFinderCategoryLabel(bug.category))} | ${tableCell(bug.title + ": " + bug.issue)} |`,
+      "",
+      "## " + section.title,
+      "",
+      "| # | Severity | Category | Issue |",
+      "|---:|---|---|---|",
     );
-  });
+    section.issues.forEach((bug, index) => {
+      out.push(
+        `| ${index + 1} | ${severityLabel(bug.severity)} | ${tableCell(bugFinderCategoryLabel(bug.category))} | ${tableCell(bug.title + ": " + bug.issue)} |`,
+      );
+    });
+  }
 
   if (mode !== "full") {
     return out.join("\n") + "\n";
@@ -223,12 +245,15 @@ export function renderBugReportPreviewMarkdown(
 
   out.push("", "## Details");
 
-  for (const bug of preview.bugs) {
-    out.push(
-      "",
-      `### [${bug.issueType} · ${severityLabel(bug.severity)}] ${bug.id} — ${line(bug.title)}`,
-      `**Issue:** ${line(bug.issue)}`,
-    );
+  for (const section of sections) {
+    if (section.issues.length === 0) continue;
+    out.push("", "### " + section.title);
+    for (const bug of section.issues) {
+      out.push(
+        "",
+        `#### [${severityLabel(bug.severity)}] ${bug.id} — ${line(bug.title)}`,
+        `**Issue:** ${line(bug.issue)}`,
+      );
 
     if (bug.observed) {
       out.push(
@@ -263,10 +288,11 @@ export function renderBugReportPreviewMarkdown(
       }
     }
 
-    if (bug.mustPreserve?.length) {
-      out.push("**Must Preserve:**");
-      for (const item of bug.mustPreserve) {
-        out.push(`- ${line(item)}`);
+      if (bug.mustPreserve?.length) {
+        out.push("**Must Preserve:**");
+        for (const item of bug.mustPreserve) {
+          out.push(`- ${line(item)}`);
+        }
       }
     }
   }

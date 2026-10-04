@@ -8,10 +8,10 @@ Canonical flow:
 
 ```text
 MAP AUDIT REPORT
-→ approved PROVEN BUG subset
-→ PROPOSED BUG SET
+→ approved PROVEN reportable issues
+→ PROPOSED ISSUE SET
 → CHAT REVIEW
-→ APPROVED BUG SET
+→ APPROVED ISSUE SET
 → BUG REPORT V2
 → HTML
 → REPAIR
@@ -53,8 +53,8 @@ The canonical report may carry:
 - Base Version
 - Tested Version
 - Repair By
-- confirmed Bugs
-- per-bug Fixed state
+- confirmed Issues with explicit `issueType` (`BUG` or `DESIGN_MISMATCH`)
+- per-issue Fixed state
 - Bug Trigger (In-Game)
 - tester-facing Issue and supported Solution
 - Repair Detail fields for on-demand technical work
@@ -67,23 +67,24 @@ Compatibility note:
 - Bug Report V2 is the canonical persisted format.
 - Bug Report V1 is read-only compatibility input for migration and must not be newly persisted.
 - Canonical `Found By` values are `ai` or `tester`; combined evidence belongs in the evidence/analysis fields, not a third origin value.
+- Canonical `issueType` values are `BUG` or `DESIGN_MISMATCH`. Legacy V2 entries without `issueType` are interpreted as `BUG`.
 
 
 Handoff rule:
 
 - normal user-facing creation requires an Approved Bug Set from explicit chat review;
-- every proposed Blocker/Major must be approve, reject, or resolved from needs-discussion before publication;
+- every proposed Blocker/Major issue must be approve, reject, or resolved from needs-discussion before publication;
 - rejected items never enter canonical Bug Report V2;
-- if no bugs are approved, no report is created;
+- if no issues are approved, no report is created;
 - new reports must pass tester readiness and copy quality before being created in this workspace;
 - schema-valid legacy reports may remain for compatibility, but must not be treated as handoff-ready automatically;
-- normal human presentation follows `Bug → Issue → Bug Trigger (In-Game) → Solution`.
+- normal human presentation separates **Bugs** and **Design Mismatches**, then follows `Issue → Bug Trigger (In-Game) → Solution` within each section.
 
 
 Repair completion rule:
 
 - `fixed: true` is written only after verified repair completion;
-- generic report saves must not close an open bug;
+- generic report saves must not close an open issue;
 - completion requires current passing validation with evidence;
 - stale validation cannot be used to close a bug;
 - Git history remains the persisted change history; do not add a second repair-status log.
