@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "INDEPENDENT_SELECTED_ARTIFACT_PASS",
-  "status": "INDEPENDENT_PASS_CLOSED",
+  "status": "REGRESSION_COMPARISON_COMPLETE",
   "target": {
     "map": "Defense Challenge",
     "version": "1.1.1",
@@ -103,5 +103,50 @@
     "unaccountedMaterialInterleavings": 0,
     "unaccountedPlayerControlledSurfaces": 0,
     "historicalComparison": "UNBLOCKED"
+  },
+  "historicalComparison": {
+    "status": "COMPLETE",
+    "historicalApprovedIssues": [
+      "BUG-DEF-LEASE-RESET",
+      "BUG-DEF-WAVE-RETRY",
+      "BUG-DEF-RESPAWN-RECONNECT",
+      "BUG-DEF-PRELOAD-INVENTORY",
+      "DM-DEF-ARENA-CAPACITY"
+    ],
+    "matched": [
+      {
+        "historicalId": "BUG-DEF-LEASE-RESET",
+        "independentId": "IND-DEF-001"
+      },
+      {
+        "historicalId": "BUG-DEF-WAVE-RETRY",
+        "independentId": "IND-DEF-002"
+      },
+      {
+        "historicalId": "BUG-DEF-RESPAWN-RECONNECT",
+        "independentId": "IND-DEF-003"
+      },
+      {
+        "historicalId": "BUG-DEF-PRELOAD-INVENTORY",
+        "independentId": "IND-DEF-004"
+      },
+      {
+        "historicalId": "DM-DEF-ARENA-CAPACITY",
+        "independentId": "IND-DEF-005"
+      }
+    ],
+    "missed": [],
+    "recall": {
+      "detected": 5,
+      "expected": 5,
+      "percent": 100
+    },
+    "provenRate": {
+      "proven": 5,
+      "independentFindings": 5,
+      "percent": 100
+    },
+    "genericNeedValidation": 0,
+    "note": "Historical report opened only after independent pass closed."
   }
 }
