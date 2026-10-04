@@ -72,7 +72,7 @@ Compatibility note:
 
 Handoff rule:
 
-- normal user-facing creation requires an Approved Bug Set from explicit chat review;
+- normal user-facing creation requires an Approved Issue Set from explicit chat review;
 - every proposed Blocker/Major issue must be approve, reject, or resolved from needs-discussion before publication;
 - rejected items never enter canonical Bug Report V2;
 - if no issues are approved, no report is created;
@@ -86,7 +86,7 @@ Repair completion rule:
 - `fixed: true` is written only after verified repair completion;
 - generic report saves must not close an open issue;
 - completion requires current passing validation with evidence;
-- stale validation cannot be used to close a bug;
+- stale validation cannot be used to close an issue;
 - Git history remains the persisted change history; do not add a second repair-status log.
 
 

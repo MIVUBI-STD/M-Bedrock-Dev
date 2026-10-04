@@ -2,7 +2,7 @@
 
 Status: selected-artifact source audit evidence  
 Authority: selected current Drive artifact only  
-Historical regression ingestion: not applicable; no current finding approved  
+Historical regression ingestion: not yet projected; current finding is approved in the canonical report ledger  
 Runtime execution: not performed
 
 ## Target
@@ -17,7 +17,7 @@ Runtime execution: not performed
 
 ## Current source-proven findings
 
-None admitted in this bounded source pass.
+**1 Minor DESIGN_MISMATCH** — normal gameplay resources make the production DebugStick reachable to ordinary players.
 
 ## High-risk areas checked
 

@@ -213,7 +213,7 @@ Attack has an explicit lease queue/messenger and `MAX_CONCURRENT_ARENAS` resourc
 
 ## Next action
 
-Attack v1.1.1 source pass is closed for this batch with two independently source-proven Major findings. Keep it as non-canonical audit evidence until explicit approval.
+Attack v1.1.1 source pass is closed with **2 Major BUGs + 1 Major DESIGN_MISMATCH**. These approved findings are now represented in the canonical Bug Report V2 ledger; the ticking-area handoff scenario below remains runtime-only.
 
 ## Deep multi-arena pass — additional runtime obligation
 

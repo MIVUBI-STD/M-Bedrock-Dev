@@ -134,7 +134,7 @@ Minecraft runtime was **not executed** in this pass. The remaining obligations a
 
 These runtime obligations do not reopen source discovery. A runtime result should promote a finding only when it proves a wrong player-visible outcome on the exact selected artifact.
 
-Existing canonical Bug Report V2 files remain the previously approved current bug ledger. Newly discovered deep-pass findings remain review evidence until explicit approval.
+Canonical Bug Report V2 now includes the approved deep-pass findings. Runtime-only residue remains outside the canonical ledger until a real runtime observation proves a wrong player-visible outcome and that new finding is reviewed.
 
 
 ## Approval boundary

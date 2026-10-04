@@ -16,7 +16,7 @@ Runtime execution: not performed
 
 ## Proven findings
 
-No source-proven gameplay defect was admitted in this pass.
+No current BUG is source-proven. The deep replica pass proves **1 Major DESIGN_MISMATCH**: Arena 6 is materially incomplete relative to the authored arena replica.
 
 ## Checks completed
 
@@ -34,7 +34,7 @@ Current source explicitly tracks each round participant with role, health, onlin
 
 Manhunt v1.0.0: **1 selected-artifact Major DESIGN_MISMATCH** after native replica proof.
 
-No historical regression entry should be created without later current-artifact/runtime proof.
+The current DESIGN_MISMATCH is approved in the canonical report ledger. Historical reliability ingestion remains a separate approval/projection step.
 
 
 ## Proven design mismatch — Arena 6 replica completeness

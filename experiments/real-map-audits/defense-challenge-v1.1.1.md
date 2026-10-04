@@ -478,7 +478,7 @@ Current Bedrock documentation still documents Swiftness as potion data value 14 
 
 ## Next action
 
-Defense v1.1.1 source pass is complete for this real-test round with four independently source-proven gameplay bugs: two Blockers and two Majors. Keep the Speed Potion transaction as one narrow runtime-only failure-path check. Do not ingest findings into historical reliability knowledge until the approval boundary is crossed.
+Defense v1.1.1 source pass is complete with **4 BUGs (2 Blocker, 2 Major) + 1 Major DESIGN_MISMATCH**. These approved findings are represented in the canonical Bug Report V2 ledger. Keep the Speed Potion transaction and lease-handoff timing as narrow runtime-only checks; historical reliability ingestion remains a separate downstream approval/projection.
 
 ## Deep multi-arena pass — additional runtime obligation
 
