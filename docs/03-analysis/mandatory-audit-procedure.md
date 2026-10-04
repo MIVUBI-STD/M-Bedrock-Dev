@@ -971,6 +971,179 @@ Classification remains evidence-driven:
 
 ---
 
+## A13. Spatial / Ticking / Residency Deep Contract
+
+### Purpose
+
+Prove whether gameplay-critical world regions remain simulated for the full period in which remote gameplay depends on them.
+
+For every gameplay-critical remote region build:
+
+```text
+gameplay dependency
+→ region geometry / coordinates
+→ maximum player distance
+→ residency requirement
+→ residency owner
+→ acquire/create
+→ readiness before use
+→ resource/chunk cost
+→ shared capacity
+→ release
+→ reuse / next generation
+```
+
+Mandatory searches:
+- configured ticking/residency region is never created;
+- region exists but does not cover the actual spawn/path/objective footprint;
+- gameplay starts before residency readiness;
+- player movement can unload a required remote dependency;
+- active arenas exceed safe residency capacity;
+- cleanup removes another arena/generation's residency;
+- acquire exists without reachable release;
+- release exists without generation/owner validation;
+- one oversized region exceeds platform/resource constraints;
+- source/config declares residency that runtime owner never consumes.
+
+### Geometry proof
+
+Do not stop at the presence of a ticking-area declaration.
+
+When coordinates are available, compare:
+- declared bounds;
+- gameplay spawn/objective/path bounds;
+- arena offsets/replicas;
+- player-local simulation assumptions;
+- resource/chunk budget.
+
+A missing or insufficient residency mechanism is statically PROVEN when a required remote dependency and its uncovered/unowned simulation region are both source-grounded.
+
+Runtime is reserved for native simulation behavior that source + geometry + platform constraints cannot decide.
+
+---
+
+## A14. Entity Lifecycle & Progression Ownership Contract
+
+### Purpose
+
+Prevent entity behavior from being treated as correct merely because spawn code exists.
+
+For each progression-critical entity family reconstruct:
+
+```text
+request/spawn trigger
+→ spawn attempt
+→ retry owner
+→ actual entity
+→ arena/session ownership
+→ target/navigation
+→ combat/interaction
+→ death/remove/despawn/unload
+→ progression accounting
+→ cleanup
+```
+
+Mandatory challenges:
+- failed spawn is counted as completed work;
+- retry creates duplicate entities/accounting;
+- spawned entity lacks arena/session ownership;
+- global selector can mutate another arena's entity;
+- despawn/unload/remove bypasses objective accounting;
+- entity death is counted twice;
+- target becomes invalid without recovery;
+- navigation-critical entity is outside residency;
+- cleanup removes entities belonging to another generation;
+- stale entity survives replay/reset and satisfies or blocks a later objective.
+
+### Entity/accounting proof rule
+
+Never equate:
+- spawn requested with entity exists;
+- entity removed with objective completed;
+- zero currently visible entities with zero required outstanding work.
+
+Progression proof must reconcile required, pending, live, terminal, and cleaned entity state.
+
+---
+
+## A15. World / Structure Mutation Contract
+
+### Purpose
+
+Find persistent world-state defects that survive level, round, arena, or session boundaries.
+
+For each material mutation build:
+
+```text
+baseline footprint
+→ mutation owner
+→ changed footprint
+→ persistence
+→ reset/restore source
+→ restore footprint
+→ uncovered delta
+→ next-session reader/dependency
+```
+
+Applicable mutations include:
+- structure load/place;
+- fill/setblock;
+- block break/place;
+- doors/gates/barriers;
+- fluids;
+- containers/block entities;
+- temporary paths/platforms;
+- arena destruction/building;
+- reset schematics/structures.
+
+Mandatory challenges:
+- reset footprint is smaller than mutation footprint;
+- old structure cells remain outside the next footprint;
+- structure replacement leaves block entities/container state;
+- async restore overlaps next-session mutation;
+- global fill/execute escapes arena scope;
+- player-built blocks survive when a fresh arena is expected;
+- required authored blocks are removed and never restored;
+- replica arena geometry differs from canonical reset assumptions;
+- reset publishes arena reusable before mutation finishes.
+
+### Footprint-delta proof
+
+When before/after/reset geometry is available, calculate:
+
+```text
+mutation footprint - guaranteed restore footprint
+```
+
+Any material non-empty delta that survives into a later gameplay dependency is a deterministic contradiction; do not require runtime solely to observe leftover blocks.
+
+---
+
+## A16. Spatial–Entity–World Join Gate
+
+### Purpose
+
+Close defects that exist only when the three contracts above interact.
+
+Always challenge applicable joins:
+
+- remote spawn × missing residency;
+- navigation path × unloaded region;
+- entity retry × arena reset;
+- entity cleanup × reused arena;
+- structure placement × spawn/nav footprint;
+- world reset × ticking/residency release;
+- global world mutation × multi-arena isolation;
+- replica geometry × source/config offset;
+- delayed structure mutation × terminal/retry;
+- entity objective × persistent stale block/entity from prior run.
+
+### Closure
+
+These joins must resolve to SAFE, CONTRADICTION, or an exact irreducible missing claim before STRESS/PROVE closure.
+
+---
+
 # B. MODEL
 
 ## B1. Actor / Entity Contract
