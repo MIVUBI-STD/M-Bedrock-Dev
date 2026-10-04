@@ -246,6 +246,34 @@ A heading without these answers is not an implemented audit procedure.
 
 ---
 
+## Operator Vocabulary
+
+Use these terms consistently throughout the audit.
+
+| Term | Meaning |
+| --- | --- |
+| **Check** | One applicable integrity analysis performed against the selected artifact. |
+| **Contract** | The expected lifecycle or state relationship that the check evaluates. |
+| **Crosscheck** | A targeted interaction check between applicable systems that share state, ownership, timing, or resources. |
+| **Contradiction** | Grounded evidence that actual behavior can violate the expected contract. |
+| **Blocking Proof** | Evidence that prevents the suspected contradiction from occurring. |
+| **PROVEN** | A reportable finding whose causal contradiction and player-visible consequence have sufficient proof. |
+| **NEED_VALIDATION** | A confirmation-ready finding with exactly identified missing proof that cannot currently be resolved from available selected-artifact evidence. |
+| **Audit Obligation** | Unresolved audit/model/proof work that is not yet justified as a gameplay finding. |
+| **Runtime Verification** | One narrow in-game question used only when the deciding behavior is irreducible from available static evidence. |
+| **Closure** | The point where an applicable check is resolved as safe, contradiction, or explicitly unresolved. |
+
+Naming rules:
+
+- Prefer concrete gameplay/system names over abstract framework terminology.
+- Use **check** for routed audit work; reserve **contract** for the expected behavior being evaluated.
+- Use **Crosscheck** consistently for interactions between systems.
+- Do not use `candidate` as a user-facing issue status.
+- Do not use `runtime validation`, `runtime residue`, or generic `needs testing` as final finding labels.
+- BUG and DESIGN_MISMATCH are issue types; PROVEN and NEED_VALIDATION are proof states. Do not mix these axes.
+
+---
+
 # A. UNDERSTAND
 
 ## A1. Selected Artifact Integrity
@@ -816,7 +844,7 @@ A wave/progression finding is PROVEN when required work can deterministically es
 
 ### Family closure
 
-For each applicable family, closure requires one of:
+For each applicable check, closure requires one of:
 
 ```text
 SAFE
