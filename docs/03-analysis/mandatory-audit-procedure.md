@@ -692,6 +692,42 @@ Gameplay Model Closure is `CLOSED` only when:
 `GameplayModelClosure`.
 ---
 
+## Detection Coverage Assurance
+
+The executable coverage-accounting rules are owned by `detection-coverage-assurance.md`.
+
+Mandatory integration points:
+
+```text
+A2 Gameplay Surface Discovery
+→ create/update Coverage Ledger
+
+A4/A5 State + Ownership
+→ build Mutable-State Reverse Index
+
+A8 Cross-System Coverage
+→ generate required Crosschecks
+
+A22 Applicable Check Router
+→ bind every material surface to applicable checks
+
+MODEL
+→ derive structural invariants and transition graphs
+
+STRESS
+→ run lifecycle differentials, boundaries, repeated-run and partial-failure scenarios
+
+PROVE
+→ close every contradiction / exact unresolved claim
+
+before REPORT
+→ Coverage Completeness Gate must pass
+```
+
+Regression cases are recall expectations only; they cannot supply current-artifact evidence.
+
+---
+
 ## UNDERSTAND execution map
 
 Run the base reconstruction first, then route only applicable specialist checks.
