@@ -1126,7 +1126,115 @@ Target:
 
 ---
 
-# 29. Architecture Freeze Rule
+# 29. Regression Repair Rules
+
+These rules are promoted from confirmed Composite regression misses. They strengthen existing mechanisms; they do not add new detection families.
+
+## 29.1 Fresh-Session Reset Invariant
+
+Whenever setup/preload/start performs a full or broad reset of player state, the reset becomes a mandatory lifecycle invariant.
+
+Create a reverse-index entry:
+
+```text
+fresh-session reset
+→ reset writer
+→ targeted players
+→ targeted state
+→ execution boundary
+→ players absent at boundary
+→ reconnect/late-join reconciliation
+→ later partial clear/grant writers
+```
+
+Mandatory differential:
+
+```text
+player present during reset
+vs
+player disconnected during reset and reconnects later
+vs
+late join when supported
+```
+
+Do not close reconnect/inventory coverage until every fresh-session reset has a per-player reconciliation path or a grounded contradiction.
+
+This applies to inventory and any other player state reset at session start.
+
+## 29.2 Cleanup Ownership Crosscheck
+
+Every cleanup writer that mutates player/entity ownership must prove its target is limited to the cleanup owner.
+
+For each cleanup mutation record:
+
+```text
+cleanup owner arena/session
+→ selector/query
+→ target player/entity
+→ ownership key/tag/property
+→ other active arena/session possible?
+→ scope guard
+→ mutation
+```
+
+If another active arena/session can satisfy the selector/query, automatically generate:
+
+```text
+Cleanup × Cross-Arena Ownership
+```
+
+Do not suppress a global/broad cleanup path before tracing the complete ownership predicate to its mutation target.
+
+## 29.3 Recurring World-Mutation Spatial Crosscheck
+
+Every recurring or event-driven world mutation around players/entities must prove spatial ownership.
+
+Record:
+
+```text
+mutation trigger
+→ reference player/entity
+→ computed coordinates/volume
+→ intended arena/session
+→ arena boundary/offset
+→ other players/arenas inside possible mutation scope
+→ scope guard
+→ affected blocks
+```
+
+Automatically generate:
+
+```text
+Recurring World Mutation × Arena Isolation
+```
+
+when:
+- coordinates are derived from players/entities rather than a fixed arena-local region;
+- the mutation repeats during active gameplay;
+- multiple arenas/sessions can coexist.
+
+A mutation is not arena-safe merely because the triggering loop originates from an arena-local subsystem.
+
+## 29.4 Suppression Gate
+
+A potential cross-arena or reconnect contradiction may be suppressed only after the applicable ownership/spatial/reset invariant is fully traced.
+
+Required before suppression:
+
+```text
+surface discovered
+→ reverse ownership/state index complete
+→ required Crosscheck generated
+→ exact scope/guard inspected
+→ Blocking Proof established
+→ SAFE
+```
+
+Absence of an immediately obvious consequence is not sufficient for suppression.
+
+---
+
+# 30. Architecture Freeze Rule
 
 The detection architecture is considered structurally complete after sections 1–17.
 
