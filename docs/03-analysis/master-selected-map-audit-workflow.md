@@ -623,7 +623,7 @@ For applicable families, actively try deterministic promotion:
 
 If deterministic promotion succeeds, move the finding to PROVEN and stop. If it fails, preserve only the narrow remaining test needed to decide it.
 
-## 6.1 Proof navigation
+## 6.1 Proof Navigation
 
 Every confirmation-ready NEED_VALIDATION finding receives:
 - proofGoal
@@ -646,7 +646,7 @@ selected-artifact evidence
 → runtime last resort
 ~~~
 
-## 6.2 Historical search pressure
+## 6.2 Historical Search Pressure
 
 Past defects may only:
 - raise search priority;
@@ -655,7 +655,7 @@ Past defects may only:
 
 They may not prove the current bug.
 
-## 6.3 Evidence substitution
+## 6.3 Evidence Substitution
 
 Before runtime, try deterministic substitutes.
 
@@ -689,11 +689,11 @@ Structure residue:
 
 Runtime demonstrates manifestation only when source proof cannot decide semantics.
 
-## 6.4 Counter-proof
+## 6.4 Counter-Proof
 
 A candidate may be suppressed only by real blocking proof.
 
-Counter-proof must cover applicable dimensions:
+Counter-Proof must cover applicable dimensions:
 - guard
 - scope
 - exclusion
@@ -705,7 +705,7 @@ Nearby healthy code is not counter-proof.
 
 A guard/exclusion must apply to the exact contradicted dependency / commit target.
 
-## 6.5 Proof saturation
+## 6.5 Proof Saturation
 
 Stop searching once sufficient proof is complete.
 
@@ -736,7 +736,7 @@ Do not request runtime merely for reassurance.
 
 ---
 
-# 7. Runtime residue — only irreducible behavior
+# 7. Runtime Verification — only irreducible behavior
 
 Runtime is allowed when behavior cannot safely be decided statically.
 
