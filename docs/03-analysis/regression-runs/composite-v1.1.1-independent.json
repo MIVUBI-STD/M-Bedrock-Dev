@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "INDEPENDENT_SELECTED_ARTIFACT_PASS",
-  "status": "INDEPENDENT_PASS_CLOSED",
+  "status": "REGRESSION_REPAIR_REQUIRED",
   "target": {
     "map": "Composite Challenge",
     "version": "1.1.1",
@@ -158,5 +158,69 @@
       "closure": "AUDIT_OBLIGATION",
       "question": "No additional reconnect defect is retained until a differential lifecycle contradiction beyond the independently proven reset/residency defects is grounded."
     }
-  ]
+  ],
+  "historicalComparison": {
+    "status": "COMPLETE_WITH_MISSES",
+    "historicalApprovedIssues": [
+      "BUG-CMP-TICKING-AREAS",
+      "BUG-CMP-ASYNC-RESET",
+      "BUG-CMP-PRELOAD-INVENTORY",
+      "BUG-CMP-CROSS-ARENA-FLAG",
+      "BUG-CMP-CROSS-ARENA-FLOOR"
+    ],
+    "matched": [
+      {
+        "historicalId": "BUG-CMP-TICKING-AREAS",
+        "independentId": "IND-CMP-001",
+        "rootCauseEquivalent": true
+      },
+      {
+        "historicalId": "BUG-CMP-ASYNC-RESET",
+        "independentId": "IND-CMP-002",
+        "rootCauseEquivalent": true
+      }
+    ],
+    "missed": [
+      {
+        "historicalId": "BUG-CMP-PRELOAD-INVENTORY",
+        "classification": "MODEL_MISS",
+        "earliestFailure": "Connection differential was closed without enumerating the fresh-session full-clear writer against reconnect/loadout clearers.",
+        "repair": "Require fresh-session reset invariants to enter Mutable-State Reverse Index whenever preload/setup performs inventory clearing."
+      },
+      {
+        "historicalId": "BUG-CMP-CROSS-ARENA-FLAG",
+        "classification": "CROSSCHECK_MISS",
+        "earliestFailure": "Cross-arena cleanup was suppressed generically before tracing flag-carrier ownership and cleanup selector scope.",
+        "repair": "Require every arena cleanup writer touching player/entity ownership to crosscheck against other active arenas before suppression."
+      },
+      {
+        "historicalId": "BUG-CMP-CROSS-ARENA-FLOOR",
+        "classification": "CROSSCHECK_MISS",
+        "earliestFailure": "World-maintenance mutation was not paired with unrelated-player/arena spatial scope.",
+        "repair": "Require recurring world mutation around players/entities to prove arena-local spatial ownership or generate a Cross-Arena World Mutation crosscheck."
+      }
+    ],
+    "newIndependentFindings": [
+      {
+        "independentId": "IND-CMP-003",
+        "historicalApprovedMatch": null
+      },
+      {
+        "independentId": "IND-CMP-004",
+        "historicalApprovedMatch": null
+      }
+    ],
+    "recall": {
+      "detected": 2,
+      "expected": 5,
+      "percent": 40
+    },
+    "provenRate": {
+      "proven": 4,
+      "independentFindings": 4,
+      "percent": 100
+    },
+    "genericNeedValidation": 0,
+    "conclusion": "Composite exposes real recall gaps. Architecture is not to be expanded; repair the earliest failing MODEL/CROSSCHECK mechanisms and rerun Composite independently."
+  }
 }
