@@ -16,12 +16,19 @@ import type {
   BugReportClientDocument,
   BugReportClientIssue,
 } from "../../engine/packages/bug-report/src/document/model.js";
+import {
+  projectClientDocumentToTracker,
+  type ProjectRegistry,
+} from "./tracker/project.js";
+import { renderBugTrackerHtml } from "./tracker/render-html.js";
+import { exportBugTracker } from "./tracker/export.js";
 
 interface Args {
   readonly input: string;
   readonly outDir: string;
   readonly includeFixed: boolean;
   readonly includeMinor: boolean;
+  readonly goldenTracker: boolean;
 }
 
 interface MapAuditHtmlFinding {
@@ -248,6 +255,7 @@ function parseArgs(argv: readonly string[]): Args {
   let outDir = "";
   let includeFixed = false;
   let includeMinor = false;
+  let goldenTracker = false;
 
   for (let i = 0; i < argv.length; i += 1) {
     const value = argv[i];
@@ -269,6 +277,10 @@ function parseArgs(argv: readonly string[]): Args {
       includeMinor = true;
       continue;
     }
+    if (value === "--golden-tracker") {
+      goldenTracker = true;
+      continue;
+    }
     throw new Error("Unknown argument: " + value);
   }
 
@@ -288,6 +300,7 @@ function parseArgs(argv: readonly string[]): Args {
     outDir: resolve(outDir),
     includeFixed,
     includeMinor,
+    goldenTracker,
   };
 }
 
@@ -1570,6 +1583,30 @@ async function main(): Promise<void> {
           )
           .join("; "),
     );
+  }
+
+  if (args.goldenTracker) {
+    const registryPath = resolve(
+      process.cwd(),
+      "workspace/project-registry.json",
+    );
+    const registrySource = await readFile(registryPath, "utf8");
+    const registry = JSON.parse(registrySource) as ProjectRegistry;
+    const tracker = projectClientDocumentToTracker(
+      document,
+      registry,
+    );
+    await mkdir(args.outDir, { recursive: true });
+    await exportBugTracker(
+      tracker,
+      args.outDir,
+      renderBugTrackerHtml,
+    );
+    process.stdout.write(
+      join(args.outDir, "Bug-Tracker-Report.html") + "\n" +
+      join(args.outDir, "Bug-Tracker-Report.json") + "\n",
+    );
+    return;
   }
 
   const stem =
