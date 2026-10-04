@@ -186,3 +186,18 @@ Current administrative commands inspected in the main orchestration path require
 Orb of the Illusioner Level 2 v1.1.0: **2 source-proven Major BUGs**.
 
 Do not create historical regression entries from this pass.
+
+
+## Deep multi-arena pass — arena-context isolation
+
+Orb L2 generates six arenas and routes active gameplay through arena-bound contexts. The deeper pass challenged player lookup, entity lookup, scheduler callbacks, recovery, and cleanup for cross-arena leakage.
+
+The current context layer keeps player/entity operations bound to the active arena/run, and persisted recovery is resolved against that same ownership. No source-proven A→B player/entity/score/cleanup contamination was established.
+
+The two existing Major findings remain independent:
+- the upgrade transaction fails because `material` is undefined;
+- reload recovery fails because `selectedBarricades` is undefined.
+
+Neither requires cross-arena interference to manifest.
+
+Result of this multi-arena pass: **no additional source-proven cross-arena defect**.
