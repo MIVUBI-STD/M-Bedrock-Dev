@@ -30,6 +30,7 @@ export interface ArenaStateIsolationObservation {
     | "world-property"
     | "world-command"
     | "world-player-enumeration"
+    | "entity-tag"
     | "module-state";
   key: string;
   scope: ArenaStateScope;
@@ -295,6 +296,64 @@ function worldPlayerEnumerationObservation(
   };
 }
 
+function tagMutationObservation(
+  script: ParsedScriptFile,
+  call: ScriptMethodCall,
+  region: string,
+  authorities: readonly string[],
+): ArenaStateIsolationObservation | undefined {
+  if (
+    !["addTag", "removeTag"].includes(call.method) ||
+    !/(?:Player|Entity)$/i.test(call.receiverType ?? "")
+  ) {
+    return undefined;
+  }
+
+  const tagExpression =
+    call.argumentTexts?.[0];
+  if (!tagExpression) {
+    return {
+      scriptId: script.identifier,
+      region,
+      surface: "entity-tag",
+      key: call.symbol + "(*)",
+      scope: "unknown",
+      status: "partition-proof-required",
+      reason:
+        "Arena flow mutates a player/entity tag but the tag expression is unresolved. Prove receiver scope and tag ownership before cross-arena isolation can close.",
+    };
+  }
+
+  const authorityPartitioned =
+    expressionUsesAuthority(
+      tagExpression,
+      authorities,
+    );
+
+  return {
+    scriptId: script.identifier,
+    region,
+    surface: "entity-tag",
+    key:
+      call.symbol +
+      "(" +
+      tagExpression +
+      ")",
+    scope:
+      authorityPartitioned
+        ? "arena-local"
+        : "unknown",
+    status:
+      authorityPartitioned
+        ? "isolated"
+        : "partition-proof-required",
+    reason:
+      authorityPartitioned
+        ? "Player/entity tag expression is explicitly keyed by the authored arena authority expression."
+        : "Arena flow mutates a player/entity tag without proving the tag or receiver is arena-partitioned. Generic tags are world-visible and cleanup/reconciliation must prove they cannot affect another arena.",
+  };
+}
+
 function commandObservation(
   script: ParsedScriptFile,
   command: ParsedScriptFile["commandLiterals"][number],
@@ -469,6 +528,17 @@ function analyzeScript(
       );
     if (playerEnumeration) {
       observations.push(playerEnumeration);
+    }
+
+    const tagMutation =
+      tagMutationObservation(
+        script,
+        call,
+        region,
+        authorities,
+      );
+    if (tagMutation) {
+      observations.push(tagMutation);
     }
   }
 
