@@ -70,19 +70,21 @@ export function groupReadyAuditIssuesForCandidateCoverage(
             (item) => item.id === link.knowledgeRequirementId,
           );
     const technicalOwnerId = link.fromComponentId;
-    // Evidence sets and human-readable reasons may differ across scenarios
-    // even when one technical cause is responsible. Group on stable structural
-    // ownership/failure semantics; prose is presentation, never identity.
-    const technicalCauseSignature = hash([
+    // Root-cause identity must be structural. Player-visible symptoms and
+    // failure domains can differ even when the same authoritative component
+    // and dependency are responsible. Do not duplicate one causal root merely
+    // because it manifests through multiple report domains.
+    const rootCauseSignature = hash([
       technicalOwnerId,
+      requirement?.domain ?? "intent",
       link.intentEdgeKind ?? "runtime-domain",
-      defect.failureDomain,
+      ...link.componentIds,
     ]);
     const key = [
       defect.issueType,
       requirement?.domain ?? "intent",
       technicalOwnerId,
-      technicalCauseSignature,
+      rootCauseSignature,
     ].join("|");
     const list = buckets.get(key) ?? [];
     list.push(defect);
