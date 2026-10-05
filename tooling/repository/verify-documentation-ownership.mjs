@@ -100,6 +100,7 @@ const compatibilityPointers = [
   "docs/03-analysis/dialogue-scene-graph.md",
   "docs/03-analysis/project-model.md",
   "docs/03-analysis/forward-ground-truth-intake.md",
+  "docs/03-analysis/command-effects.md",
   "docs/05-validation/active-runtime-diagnosis.md",
   "docs/05-validation/runtime-control.md",
   "docs/05-validation/runtime-observation.md",
@@ -172,6 +173,11 @@ const retiredAuthorityPaths = [
   "docs/03-analysis/runtime-test-queue.json",
   "docs/03-analysis/regression-detection-corpus.json",
   "docs/03-analysis/runtime-coverage-audit.md",
+  "docs/03-analysis/map-audit-schema-migration.md",
+  "docs/03-analysis/map-audit-output-v2.json.example",
+  "docs/03-analysis/proof-escalation-receipt.schema.json",
+  "docs/03-analysis/multi-scenario-check-ledger.schema.json",
+  "docs/06-system/contract-registry.json",
 ];
 for (const path of retiredAuthorityPaths) {
   if (existsSync(path)) {
