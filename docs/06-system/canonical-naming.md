@@ -2,6 +2,33 @@
 
 This document defines repository-wide canonical terminology.
 
+## Repository domain vocabulary
+
+Use these names consistently:
+
+| Domain | Canonical meaning |
+|---|---|
+| `apps/` | user-facing executable surfaces |
+| `engine/` | product implementation and executable semantics |
+| `docs/` | durable human-facing guides, architecture, reference, and specifications |
+| `planning/` | development, operations, and project work intent |
+| `workspace/` | working artifacts, project execution data, continuity, and canonical current report handoff |
+| `experiments/` | bounded non-authoritative research |
+| `tooling/` | repository/build/developer verification tooling |
+| `.agents/` | bounded agent procedures, routing, permissions, and evals |
+
+Do not use `workspace` as a synonym for backlog/planning. Do not use `docs` as a store for current work state. Do not use `planning` as proof, gameplay truth, or execution-state authority.
+
+### Planning vocabulary
+
+```text
+planning/development.md → improve M-Bedrock-Dev itself
+planning/operations.md  → operate/maintain across projects
+planning/projects.md    → concise project-specific continuation intent
+```
+
+Avoid parallel names such as `todo`, `next-to-do`, `current-work`, `misc`, `latest`, or `final` as planning owners.
+
 ## Authorities
 
 | Canonical term | Meaning | Canonical location |
