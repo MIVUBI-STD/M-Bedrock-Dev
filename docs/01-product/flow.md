@@ -155,13 +155,18 @@ Fix Verification Readiness is a projection of the existing post-repair different
 
 ## Final quality projections
 
-After canonical REPORT projection, two final assessments make result interpretation explicit without adding another audit path:
+After canonical REPORT projection, final assessments make result interpretation explicit without adding another audit path:
 
 ```text
 closed canonical audit
+→ Vital Gameplay Knowledge Closure
 → Information Integrity projection
 → Zero-Finding assessment when findings = 0
 ```
+
+Vital Gameplay Knowledge Closure projects eight production-critical domains across the same canonical evidence: entry/admission, progression, multi-arena isolation, connection/recovery, inventory/player capability, world/reset integrity, score/result integrity, and player-facing information. Its detailed contract is in `../03-analysis/vital-gameplay-knowledge-closure.md`.
+
+It never creates findings or advances audit stages. A domain may only be `UNDERSTOOD_PROVEN_SAFE` after the canonical audit itself is ready for review. Runtime residue remains `RUNTIME_REQUIRED`; semantic/capability uncertainty remains `DETECTION_GAP`.
 
 Information Integrity crosschecks the canonical finding lanes for player-facing information contradictions. It may be `CLOSED_CLEAR`, `CLOSED_WITH_FINDINGS`, or `BLOCKED`; findings remain normal `BUG | DESIGN_MISMATCH` items and are never duplicated into a new issue lane.
 
