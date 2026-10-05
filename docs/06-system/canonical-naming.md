@@ -24,6 +24,10 @@ This document defines repository-wide canonical terminology.
 | Gameplay Semantic Model | Canonical gameplay meaning projection | orchestrator `gameplaySemantic` |
 | Engineering Assessment | Canonical QA/engineering projection | orchestrator `engineeringAssessment` |
 | Runtime Evidence | What was observed in Minecraft/runtime | runtime/telemetry/probe layers |
+| Audit Obligation | Unresolved audit/model/proof work that is not yet a gameplay finding | orchestrator `auditObligations[]` |
+| Blocking Proof | Evidence that prevents the exact suspected causal path | gameplay defect resolution / counter-proof search |
+| Runtime Verification | Narrow final runtime check for an irreducible native-behavior question | validation plan / runtime proof |
+| Physical Containment Proof | Geometry/collision proof that decides whether a player-sized path can leave an enclosure | orchestrator arena voxel proof |
 
 ## Operator workflow vocabulary
 
@@ -83,3 +87,31 @@ Ask whether a statement would remain true if the map were replaced by a complete
 - **No** → selected-map Gameplay Contract / Behavior Contract.
 - **Yes, because Minecraft behaves that way** → Platform Knowledge / Platform Rule.
 - **Yes, because MIVUBI requires implementations to be safe that way** → Engineering Contract.
+
+
+## Audit role and spatial vocabulary
+
+Canonical role labels:
+
+```text
+Player
+Builder
+Roommaster / Operator
+Developer / Maintenance
+```
+
+Canonical spatial-bound labels:
+
+```text
+Loading Bounds
+Simulation Bounds
+Gameplay Bounds
+Physical Collision Bounds
+Session Ownership Bounds
+```
+
+These names are deliberately non-interchangeable. Source-native identifiers such as `admin` remain valid in evidence/code references, but human-facing audit language maps them to the appropriate canonical role.
+
+Detailed audit status, role, proof, and bound naming is owned by:
+
+`docs/03-analysis/map-audit-naming-contract.md`
