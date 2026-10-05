@@ -44,3 +44,27 @@ If content requires Education features:
 - unknown → minor diagnostic.
 
 This describes compatibility evidence, not runtime proof.
+
+## Runtime integrity
+
+Education runtime identity must also account for:
+
+```text
+exact Education version/build
+host vs dedicated server
+Code Builder / Agent capability
+classroom/admin controls
+multiplayer scale assumptions
+Bedrock parity gaps
+```
+
+Do not treat Education as retail Bedrock with a label change.
+
+When applicable, audit:
+- Agent or classroom/admin mutation scope;
+- privileged ability to modify protected gameplay areas;
+- global classroom changes whose owner cannot be attributed;
+- dedicated-server or multiplayer-scale assumptions;
+- feature parity assumptions imported from retail Bedrock.
+
+These runtime/profile facts support compatibility analysis; they do not independently prove gameplay failure.
