@@ -92,7 +92,7 @@ reset
 → start VM
 ```
 
-VMware snapshots represent a stored VM/guest state, and reverting discards changes made after that snapshot. The backend therefore exposes reset as an explicit destructive clean-state action. citeturn616526search5turn616526search7
+VMware snapshots represent a stored VM/guest state, and reverting discards changes made after that snapshot. The backend therefore exposes reset as an explicit destructive clean-state action.
 
 ## Command surface
 
@@ -102,6 +102,7 @@ From `experiments/runtime-lab/backend`:
 cargo run --bin runtime-lab -- doctor
 cargo run --bin runtime-lab -- provision
 cargo run --bin runtime-lab -- status
+cargo run --bin runtime-lab -- reprovision <MCE-02..04>
 cargo run --bin runtime-lab -- start <1-4>
 cargo run --bin runtime-lab -- open <MCE-01..04>
 cargo run --bin runtime-lab -- restart <MCE-02..04>
@@ -114,6 +115,7 @@ cargo run --bin runtime-lab -- stop [MCE-01..04]
 
 - `doctor` checks provider, base VM and per-client QA-ready state.
 - `provision` creates MCE-02..04 as linked clones.
+- `reprovision` replaces one stopped virtual client from the immutable base and clears its previous QA state.
 - `start` powers on the requested client count; MCE-01 remains native/manual.
 - `open` opens the VM in VMware.
 - `restart` reboots the current VM state.
@@ -122,6 +124,10 @@ cargo run --bin runtime-lab -- stop [MCE-01..04]
 - `stop` performs a soft VM stop.
 
 The backend serializes mutating operations with an OS file lock, uses bounded provider commands, and does not maintain a second VM-state database.
+
+Virtual clients are normalized to 4 GB RAM and 2 vCPU during provisioning. Multi-client startup is intentionally staggered by 2 seconds to reduce simultaneous CPU/disk spikes.
+
+Shutdown is graceful-first. If a soft guest shutdown does not reach the stopped state within the bounded wait, the provider falls back to a hard power-off as recovery.
 
 Gameplay automation, scenarios and bot control are outside V1.
 
