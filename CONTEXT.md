@@ -114,14 +114,14 @@ DEV.cmd
 
 ```text
 documentation router        → docs/README.md
-repository/domain naming    → docs/06-system/canonical-naming.md
-architecture                → docs/06-system/architecture.md
-semantic authority          → docs/06-system/authority-model.md
-implementation ownership    → docs/06-system/implementation-map.md
-development discipline      → docs/06-system/development-discipline.md
-developer operations        → docs/06-system/development-operations.md
-skill routing               → docs/06-system/skill-routing.md
-minimum-sufficient execution→ docs/06-system/zero-waste-execution.md
+repository/domain naming    → docs/system/canonical-naming.md
+architecture                → docs/system/architecture.md
+semantic authority          → docs/system/authority-model.md
+implementation ownership    → docs/system/implementation-map.md
+development discipline      → docs/system/development-discipline.md
+developer operations        → docs/system/development-operations.md
+skill routing               → docs/system/skill-routing.md
+minimum-sufficient execution→ docs/system/zero-waste-execution.md
 current work intent         → planning/
 working/project state       → workspace/
 historical evidence         → engine/reliability/history/
