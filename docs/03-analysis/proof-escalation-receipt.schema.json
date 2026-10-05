@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "title": "Proof Escalation Receipt",
+  "required": [
+    "contradictionId",
+    "missingClaim",
+    "staticEvidenceExhausted",
+    "coverageLedgerClosed",
+    "blockingProofExhausted",
+    "deterministicSubstitutesExhausted",
+    "crossFileCausalSlice",
+    "remainingDecidingFact",
+    "outcome"
+  ],
+  "properties": {
+    "contradictionId": {
+      "type": "string"
+    },
+    "missingClaim": {
+      "enum": [
+        "REACHABILITY",
+        "CONTRACT",
+        "CONTRADICTION",
+        "PLAYER_CONSEQUENCE",
+        "AFFECTED_SCOPE",
+        "BLOCKING_PROOF_CLEARED"
+      ]
+    },
+    "targetedSearchPerformed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "applicableBlockersChecked": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "blocker",
+          "applicable",
+          "evidence",
+          "blocksContradiction"
+        ],
+        "properties": {
+          "blocker": {
+            "type": "string"
+          },
+          "applicable": {
+            "type": "boolean"
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "blocksContradiction": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "substitutionMethodsAttempted": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "staticEvidenceExhausted": {
+      "const": true
+    },
+    "coverageLedgerClosed": {
+      "const": true
+    },
+    "blockingProofExhausted": {
+      "const": true
+    },
+    "deterministicSubstitutesExhausted": {
+      "const": true
+    },
+    "crossFileCausalSlice": {
+      "enum": [
+        "CLOSED",
+        "CLOSED_TO_IRREDUCIBLE_BOUNDARY"
+      ]
+    },
+    "remainingDecidingFact": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "whyArtifactCannotDecide": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "minimalRuntimeScenario": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observableResultA": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observableResultB": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "outcome": {
+      "enum": [
+        "PROVEN",
+        "SAFE",
+        "NEED_VALIDATION"
+      ]
+    }
+  },
+  "needValidationRule": "When outcome=NEED_VALIDATION, remainingDecidingFact, whyArtifactCannotDecide, minimalRuntimeScenario, observableResultA and observableResultB must all be non-empty and describe one deciding runtime fact."
+}
