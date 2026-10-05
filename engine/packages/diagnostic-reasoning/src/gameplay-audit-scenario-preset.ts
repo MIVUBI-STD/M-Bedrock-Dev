@@ -14,6 +14,10 @@ export type GameplayAuditScenarioKind =
   | "transaction-atomicity"
   | "simulation-distance"
   | "information-correctness"
+  | "player-capability-integrity"
+  | "world-rule-authority"
+  | "client-server-reconciliation"
+  | "spatial-containment"
   | "repeated-run";
 
 export type GameplayAuditScenarioProofMode =
@@ -53,6 +57,10 @@ export interface GameplayAuditScenarioPresetInput {
   readonly hasTransactionalGameplay?: boolean;
   readonly hasSimulationDistanceDependency?: boolean;
   readonly hasPlayerFeedbackSurface?: boolean;
+  readonly hasPrivilegedCapabilitySurface?: boolean;
+  readonly hasWorldRuleSurface?: boolean;
+  readonly hasCancelledWorldMutationSurface?: boolean;
+  readonly hasSpatialContainmentSurface?: boolean;
 }
 
 export interface GameplayAuditScenarioPreset {
@@ -341,6 +349,77 @@ export function buildGameplayAuditScenarioPreset(
           "What ownership revision existed when the callback was scheduled?",
           "Is ownership revalidated before mutation commits?",
           "Can cleanup, reuse, reconnect, reload, or phase transition happen first?",
+        ],
+      }),
+    );
+  }
+
+  if (input.hasPrivilegedCapabilitySurface) {
+    scenarios.push(
+      scenario({
+        id: "capability:privileged-role",
+        kind: "player-capability-integrity",
+        flowStage: "ACTIVE_GAMEPLAY",
+        reason:
+          "Privileged gameplay/operator roles must not silently inherit unrestricted world mutation or developer authority.",
+        questions: [
+          "What exact role, tag, gamemode, player permission and command permission authorize each privileged action?",
+          "Does any admin/Roommaster/operator shortcut bypass arena build, break, item-use, entity-spawn or cross-arena protection?",
+          "Is every credited protection actually imported, instantiated, subscribed and reachable in production?",
+          "Can developer operation remain available without granting blanket live-world mutation?",
+        ],
+      }),
+    );
+  }
+
+  if (input.hasWorldRuleSurface) {
+    scenarios.push(
+      scenario({
+        id: "world:rule-authority",
+        kind: "world-rule-authority",
+        flowStage: "SETUP",
+        reason:
+          "World-rule observations must be attributed to the exact mechanism they govern instead of treating every world mutation as a gamerule effect.",
+        questions: [
+          "What is the authored world-rule baseline and who can rewrite it after setup?",
+          "For entity creation, is the path natural spawning, spawn egg, command, script spawn, structure load, or setup tooling?",
+          "Does the claimed gamerule actually control the observed path?",
+          "Can a privileged role bypass a gameplay guard even while the world rule itself is correct?",
+        ],
+      }),
+    );
+  }
+
+  if (input.hasCancelledWorldMutationSurface) {
+    scenarios.push(
+      scenario({
+        id: "representation:cancelled-mutation",
+        kind: "client-server-reconciliation",
+        flowStage: "ACTIVE_GAMEPLAY",
+        reason:
+          "Client-predicted world actions that are cancelled or rewritten by the server can leave one client visually inconsistent with authoritative world state.",
+        questions: [
+          "Which player actions are client-predicted before a before-event guard cancels them?",
+          "After cancellation, does the acting client reconcile to the same block/liquid/state seen by other clients?",
+          "Do waterlogging, liquid placement, block replacement or interactive block-state changes require a narrow runtime proof?",
+        ],
+      }),
+    );
+  }
+
+  if (input.hasSpatialContainmentSurface) {
+    scenarios.push(
+      scenario({
+        id: "spatial:containment",
+        kind: "spatial-containment",
+        flowStage: "ACTIVE_GAMEPLAY",
+        reason:
+          "Movement capability and logical/loading bounds do not prove physical escape; collision geometry must decide containment.",
+        questions: [
+          "Can a player-sized 3D path actually cross the physical arena enclosure?",
+          "Do minecraft:barrier, ceiling, floor, walls or other collision blocks close every reachable path?",
+          "If physical escape is possible, can the player reach another arena or its interaction volume?",
+          "Are loading bounds, gameplay bounds, collision bounds and session ownership bounds kept distinct?",
         ],
       }),
     );
