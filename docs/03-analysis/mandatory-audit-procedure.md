@@ -2209,6 +2209,24 @@ No duplicate Markdown/HTML/JSON issue authority is created.
 
 ---
 
+## Vital Gameplay Knowledge Closure projection
+
+Before describing the selected map as fully understood, project the canonical audit through `vital-gameplay-knowledge-closure.md`.
+
+This projection does not add a checkpoint or alternate state machine. It reads the already-authorized finding lanes and Audit Obligations and must preserve the ordered TARGET → DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE → REPORT authority.
+
+Closure rule:
+
+```text
+all applicable vital domains
+→ UNDERSTOOD_PROVEN_SAFE
+   or UNDERSTOOD_WITH_FINDING
+   or NOT_APPLICABLE
+→ Vital Gameplay Closure CLOSED
+```
+
+Any `RUNTIME_REQUIRED`, `DETECTION_GAP`, or unrouted material residue keeps the knowledge closure OPEN. Do not use absence of a finding as proof that a blocked vital domain is safe.
+
 # Procedure Closure
 
 The base procedure is complete only when:
