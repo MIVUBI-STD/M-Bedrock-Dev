@@ -38,6 +38,25 @@ describe("Map Audit Output V2 naming contract", () => {
     ]);
   });
 
+  it("requires the vital gameplay closure inside quality gates", () => {
+    const vital =
+      schema.properties.qualityGates.properties.vitalGameplay;
+    expect(
+      schema.properties.qualityGates.required,
+    ).toContain("vitalGameplay");
+    expect(vital.properties.domains.minItems).toBe(8);
+    expect(vital.properties.domains.maxItems).toBe(8);
+    expect(
+      vital.properties.domains.items.properties.status.enum,
+    ).toEqual([
+      "UNDERSTOOD_PROVEN_SAFE",
+      "UNDERSTOOD_WITH_FINDING",
+      "RUNTIME_REQUIRED",
+      "DETECTION_GAP",
+      "NOT_APPLICABLE",
+    ]);
+  });
+
   it("keeps NEED_VALIDATION naming aligned with source contracts", () => {
     for (const lane of [
       "bugs",
