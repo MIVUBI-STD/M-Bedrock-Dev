@@ -109,3 +109,77 @@ Useful quality metrics include:
 - unaccounted material residue.
 
 Regression acceptance must remain honest. Never force recall to 100% by copying historical answers.
+
+## Reliability planning model
+
+Retest priority combines bounded evidence inputs rather than subjective confidence:
+
+```text
+invariants
++ regression knowledge
++ map compatibility fingerprint
++ Minecraft update delta
++ explicit coverage/blindspot state
+→ bounded retest priority
+```
+
+Unknown/partial coverage remains visible.
+
+### Map compatibility fingerprint
+
+A map fingerprint describes semantic dependency/risk surfaces such as:
+- commands and Script API modules;
+- structures and native world usage;
+- state mutation surfaces;
+- topology/concurrency-sensitive features;
+- target edition/experiments.
+
+Fingerprint identity is deterministic and remains separate from artifact SHA.
+
+### Update intelligence
+
+Update evidence retains provenance, target version, affected domain/capability, change kind, and confidence.
+
+Normalize evidence into a bounded update delta for retest planning. Prefer official platform sources; observed/inferred evidence must keep its evidence class.
+
+### Native/script update correlation
+
+Before/after artifact comparison may combine:
+- update delta;
+- compatibility fingerprint;
+- historical regressions;
+- native world differential;
+- Script API usage.
+
+Module overlap, exact symbol overlap, and native changes are correlation evidence only. They narrow investigation; they do not prove causation.
+
+### Reliability owners
+
+```text
+engine/reliability/catalogs/ → durable reliability knowledge
+engine/reliability/corpus/   → frozen evaluation expectations
+engine/fixtures/regressions/ → minimized executable evidence
+engine/reliability/history/  → chronological execution evidence
+```
+
+Do not create another reliability owner in docs.
+
+### Blindspot portfolio
+
+Survived detector mutations may be aggregated across maps/campaigns by domain/operator to identify repeated detector weakness and adjust bounded search budget.
+
+Search-budget recommendations are allocation signals, not quality scores.
+
+### Benchmark quality
+
+Benchmarking must distinguish:
+- false negative;
+- false positive;
+- semantic mismatch;
+- evidence insufficient;
+- runtime proof required;
+- invalid fixture.
+
+A NEED_VALIDATION production result is not automatically a false negative. Compare against the frozen evidence ceiling and expected public status.
+
+Benchmark quality must reward recall/precision/proof quality without gaming PROVEN rate by weakening evidence requirements.
