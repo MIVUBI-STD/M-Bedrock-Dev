@@ -19,6 +19,7 @@ export interface GameplaySurfaceDiscoveryInput {
   readonly teleportEvidence?: boolean;
   readonly uiFormEvidence?: boolean;
   readonly environmentEvidence?: boolean;
+  readonly playerCapabilityEvidence?: boolean;
   readonly asyncCommandTransactionEvidence?: boolean;
   readonly dynamicCommandEvidence?: boolean;
 }
@@ -89,6 +90,9 @@ export function discoverGameplaySurfaces(
   }
   if (input.environmentEvidence) {
     runtime.add("runtime:environment");
+  }
+  if (input.playerCapabilityEvidence) {
+    runtime.add("runtime:player-capability");
   }
   if (input.asyncCommandTransactionEvidence) {
     runtime.add("runtime:async-command-transaction");
