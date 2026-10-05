@@ -32,6 +32,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let client = args.next().map(|value| parse_client(&value)).transpose()?;
             print_json(&lab.stop(client)?)?;
         }
+        "restart" => {
+            let client = parse_client(&args.next().ok_or("client id is required")?)?;
+            print_json(&lab.restart(client)?)?;
+        }
+        "set-ready" => {
+            let client = parse_client(&args.next().ok_or("client id is required")?)?;
+            print_json(&lab.set_ready(client)?)?;
+        }
         "reset" => {
             let client = parse_client(&args.next().ok_or("client id is required")?)?;
             print_json(&lab.reset(client)?)?;
@@ -47,6 +55,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("  status");
             println!("  start <1-4>");
             println!("  open <MCE-01..04>");
+            println!("  restart <MCE-02..04>");
+            println!("  set-ready <MCE-02..04>");
             println!("  reset <MCE-02..04>");
             println!("  stop [MCE-01..04]");
         }
