@@ -74,8 +74,9 @@ engine/knowledge/     Minecraft platform/runtime facts
 engine/contracts/     Engineering Contracts
 engine/reliability/   repository-owned reliability catalogs/history data
 engine/runtime/       bounded runtime proof harness content
-docs/          canonical product/system/operations docs
+docs/          durable human-facing documentation
 tooling/       repository-owned developer/build control plane
+planning/      development/operations/project work intent
 workspace/     project working/saved continuity + Map Game Design + tracked report handoff
 experiments/   bounded research only
 ```
@@ -142,8 +143,6 @@ interface presentation             → apps/*
 
 Repository foundation, domain-intelligence layers, repair routing, first-pass gameplay discovery/closure, risk-directed diagnosis, reachability/capability exposure, contradiction consolidation, and production bug-report presentation are implemented. The active operational lane is real-map usage and calibration against selected current map artifacts; new framework work should be driven only by proven Detection Gaps or repeated production bottlenecks.
 
-Current continuation: `docs/07-operations/next-action.md`.
-Current proof state: `docs/07-operations/current-validation.md`.
 Implementation ownership: `docs/06-system/implementation-map.md`.
 
 ## Gameplay bug workflow invariant
