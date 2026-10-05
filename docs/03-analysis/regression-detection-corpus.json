@@ -91,6 +91,53 @@
       "expectedCrosscheck": "Terminal Trigger × Terminal Trigger",
       "expectedProofMethod": "Terminal reachability + guard/idempotency analysis",
       "forbiddenShortcut": "Do not treat nearby ended-state code as Blocking Proof unless it guards the exact commit."
+    },
+    {
+      "id": "REG-TRANSITION-CONTAINER-RESIDUE",
+      "defectFamily": "Transition Residue / Container Carryover",
+      "historicalSymptom": "Resources from a previous station remain in a reused gameplay chest and bypass the next station's economy contract.",
+      "expectedDetectionCheck": "Aggressive Transition Simulation + Container & Economy Carryover Simulation",
+      "expectedCrosscheck": "Previous-stage Mutation Footprint × Next-stage Allowed Resource Set",
+      "expectedProofMethod": "Resource provenance ledger + mutation/reset differential + transition ordering",
+      "forbiddenShortcut": "Do not assume a configured clear call is effective without checking later structure/world writers and the exact handoff order."
+    },
+    {
+      "id": "REG-WORLD-MUTATION-NEXT-STAGE-BLOCKER",
+      "defectFamily": "World Mutation Compatibility",
+      "historicalSymptom": "A block restored by one stage remains in shared geometry and the next stage's actors cannot remove or traverse it.",
+      "expectedDetectionCheck": "World Mutation Compatibility Simulation",
+      "expectedCrosscheck": "Previous-stage World Mutation × Next-stage Route × Actor Interaction Capability",
+      "expectedProofMethod": "Geometry overlap + restore owner + next-stage route dependency + break/use allowlist",
+      "forbiddenShortcut": "Do not inspect each stage in isolation when they reuse the same physical space."
+    },
+    {
+      "id": "REG-OBJECTIVE-CARRIER-DISCONNECT",
+      "defectFamily": "Objective Custody / Disconnect",
+      "historicalSymptom": "A carried objective remains logically owned by an offline player while its world/base representation is missing.",
+      "expectedDetectionCheck": "Objective Custody Simulation",
+      "expectedCrosscheck": "Carrier Ownership × PlayerLeave × Objective Respawn/Return",
+      "expectedProofMethod": "Custody state machine + disconnect handler + exclusivity invariant",
+      "forbiddenShortcut": "Do not treat death cleanup as proof that disconnect cleanup exists."
+    },
+    {
+      "id": "REG-OFFLINE-CINEMATIC-ADVANCE",
+      "defectFamily": "Offline Progression / Transition",
+      "historicalSymptom": "A gameplay cinematic or timer completes while the required player is offline and starts downstream gameplay with incomplete transition assumptions.",
+      "expectedDetectionCheck": "Offline-Progression Simulation",
+      "expectedCrosscheck": "Player Online/Eligible State × Timer/Cinematic Completion × Downstream Initialization",
+      "expectedProofMethod": "Temporal proof + participant ownership + reconnect differential",
+      "forbiddenShortcut": "Do not assume a persisted timer is safe merely because reconnect restores the latest state."
+    },
+    {
+      "id": "REG-BLOCK-BREAK-TARGET-FEEDBACK",
+      "defectFamily": "Player-Facing Diagnostic Quality",
+      "historicalSymptom": "NPC attacks a blocking world object but only the attacker animates; the targeted block has no progress cue.",
+      "expectedDetectionCheck": "Player-Facing Information / Diagnostic Quality",
+      "expectedCrosscheck": "Authoritative Break Target/Timer × Player-Visible Feedback",
+      "expectedProofMethod": "Break-state owner + visual output inventory",
+      "forbiddenShortcut": "Do not promote to gameplay BUG unless missing feedback contradicts authored requirements or blocks play; otherwise retain as DEV NOTE."
     }
-  ]
+  ],
+  "lastUpdated": "2026-10-05",
+  "updateSource": "Circuit manual runtime findings converted into generalized regression pressure; historical cases remain search pressure only."
 }
