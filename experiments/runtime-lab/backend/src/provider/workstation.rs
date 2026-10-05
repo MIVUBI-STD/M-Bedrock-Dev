@@ -251,7 +251,7 @@ impl Provider for VmwareWorkstationProvider {
         Ok(ClientState::Stopped)
     }
 
-    fn reset(&self, client: ClientId) -> io::Result<ClientState> {
+    fn reset(&self, client: ClientId, memory_mb: u64) -> io::Result<ClientState> {
         let vmx = self.require_client(client)?;
         if !self.has_ready(client)? {
             return Err(io::Error::new(
@@ -268,6 +268,7 @@ impl Provider for VmwareWorkstationProvider {
             self.require_vmrun()?,
             ["-T", "ws", "revertToSnapshot", vmx.to_string_lossy().as_ref(), READY_SNAPSHOT],
         )?;
+        set_vmx_memory(&vmx, memory_mb)?;
         command_output(
             self.require_vmrun()?,
             ["-T", "ws", "start", vmx.to_string_lossy().as_ref(), "gui"],
