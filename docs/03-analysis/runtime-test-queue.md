@@ -11,7 +11,7 @@
 - A clean runtime probe creates no issue.
 - A failure must go through source cross-check and the normal PROVE gate before publication.
 
-## Priority A — system-side reduction backlog
+## Priority A — closed by system-side reduction
 
 ### 1. Fall of the Pillager Level 2 — RTQ-FOP2-CUTSCENE-DISCONNECT
 
@@ -172,6 +172,18 @@
 
 **Reason:** Regression verification only; current canonical artifact already has a PROVEN friendly-fire bug.
 
+
+## Reduction Result
+
+```text
+Fresh artifacts verified: 8/8
+Closed SAFE / no contradiction: 8
+New PROVEN bugs: 0
+Runtime-irreducible items: 0
+Human tests required: 0
+```
+
+Authority: `docs/03-analysis/runtime-queue-reduction/pass-01.json`
 
 ## Handling a failure
 
