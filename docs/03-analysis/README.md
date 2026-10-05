@@ -98,8 +98,7 @@ None of these documents may authorize continuation independently of the Mandator
 
 ### Authored source semantics
 - [Content discovery](./content-discovery.md) — file/pack discovery and first semantic extraction.
-- [Command effects](./command-effects.md) — typed command reads/writes/effects.
-- [Command context](./command-context-runtime.md) — executor, dimension, position, selector scope, and target cardinality.
+- [Command semantics](./command-context-runtime.md) — typed effects plus executor, dimension, position, selector scope, and target cardinality.
 - [Entity state analysis](./entity-state-analysis.md) — possible-state modeling plus attack, sensor, targeting, navigation, event-reachability, and prerequisite knowledge.
 - [Script API](./script-api.md) — static Script API usage and compatibility semantics.
 
