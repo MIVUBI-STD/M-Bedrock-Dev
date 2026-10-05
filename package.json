@@ -9,7 +9,7 @@
   },
   "scripts": {
     "check": "npm run verify:full",
-    "verify:repository": "node tooling/repository/verify.mjs && npm run verify:ownership && npm run verify:capability-truth && npm run verify:authority && npm run verify:naming && npm run verify:information-architecture && npm run verify:documentation-ownership && npm run verify:bug-finding-coverage && npm run verify:skills && npm run verify:skill-evals && npm run verify:permissions && npm run verify:audit-entrypoint && npm run audit:skills && npm run verify:modules && npm run verify:dependencies && node tooling/repository/verify-boundaries.mjs && node tooling/repository/verify-contract-registry.mjs && node tooling/repository/verify-reliability-catalogs.mjs && node tooling/repository/verify-reliability-history.mjs && node tooling/repository/verify-knowledge-catalogs.mjs && npm run verify:knowledge-bindings",
+    "verify:repository": "node tooling/repository/verify.mjs && npm run verify:ownership && npm run verify:capability-truth && npm run verify:authority && npm run verify:naming && npm run verify:information-architecture && npm run verify:documentation-paths && npm run verify:documentation-ownership && npm run verify:bug-finding-coverage && npm run verify:skills && npm run verify:skill-evals && npm run verify:permissions && npm run verify:audit-entrypoint && npm run audit:skills && npm run verify:modules && npm run verify:dependencies && node tooling/repository/verify-boundaries.mjs && node tooling/repository/verify-contract-registry.mjs && node tooling/repository/verify-reliability-catalogs.mjs && node tooling/repository/verify-reliability-history.mjs && node tooling/repository/verify-knowledge-catalogs.mjs && npm run verify:knowledge-bindings",
     "verify:boundaries": "node tooling/repository/verify-boundaries.mjs",
     "verify:source": "npm run typecheck && npm run bug-report-ui:build && npm test",
     "verify:full": "npm run verify:repository && npm run verify:source",
@@ -42,9 +42,9 @@
     "verify:information-architecture": "node tooling/repository/verify-information-architecture.mjs",
     "verify:bug-finding-coverage": "node tooling/repository/verify-bug-finding-coverage.mjs",
     "verify:documentation-ownership": "node tooling/repository/verify-documentation-ownership.mjs",
-    "verify:docs-migration-ready": "node tooling/repository/verify-doc-path-migration-readiness.mjs",
     "audit:knowledge-consumption": "node tooling/repository/audit-knowledge-consumption.mjs",
-    "verify:knowledge-consumption": "node tooling/repository/audit-knowledge-consumption.mjs --strict"
+    "verify:knowledge-consumption": "node tooling/repository/audit-knowledge-consumption.mjs --strict",
+    "verify:documentation-paths": "node tooling/repository/verify-documentation-paths.mjs"
   },
   "dependencies": {
     "@8crafter/leveldb-zlib": "1.6.0",
