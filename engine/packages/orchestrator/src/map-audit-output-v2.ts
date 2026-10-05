@@ -467,11 +467,19 @@ export function projectMapAuditOutputV2(input: {
       status: finding.status,
       informationMismatch:
         finding.informationMismatch,
+      failureDomain: finding.failureDomain,
+      contributingDomains:
+        [...finding.contributingDomains],
+      gameplayFlow: finding.gameplayFlow,
     })),
     auditObligationCount:
       input.auditObligations.length,
     validationTestCount:
       input.validationTests.length,
+    auditObligations:
+      input.auditObligations,
+    multiArenaDetected:
+      world.arenas.detected,
   });
 
   return {
