@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "READY_FOR_SYSTEM_REDUCTION",
+  "status": "CLOSED",
   "userManualTestingRequiredNow": false,
   "sourceQueue": "docs/03-analysis/runtime-test-queue.json",
   "totalPriorityA": 8,
@@ -22,5 +22,14 @@
     "unsupportedProven": 0,
     "manualTests": "minimum practical count"
   },
-  "note": "Current runtime queue came from evidence-backed prioritization, but no item is eligible for user handoff until the system performs the fresh-artifact reduction pass."
+  "note": "All Priority A items were reopened against fresh selected artifacts whose SHA-256 fingerprints matched the registry. Deterministic reduction closed every item without a remaining runtime-native deciding fact.",
+  "reductionPasses": [
+    "docs/03-analysis/runtime-queue-reduction/pass-01.json"
+  ],
+  "result": {
+    "closedSafe": 8,
+    "provenNewBugs": 0,
+    "deferredRuntimeIrreducible": 0,
+    "humanTestsRequired": 0
+  }
 }
