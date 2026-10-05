@@ -112,11 +112,12 @@ Canonical details: `docs/06-system/project-lifecycle.md`.
 
 ```text
 apps/          user-facing executable/UI surfaces
-docs/          canonical product, system, and operations documentation
-engine/        Bedrock analysis and repair engine
+engine/        Bedrock analysis and repair implementation
+docs/          durable guides, architecture, reference, and specifications
+planning/      development, operations, and project work intent
+workspace/     working artifacts, project continuity, and canonical report handoff
 experiments/   bounded non-authoritative research
 tooling/       repository/developer/build/verification tooling
-workspace/     project continuity + compact registry + tracked report handoff
 ```
 
 ### Engine map
@@ -146,7 +147,8 @@ Interfaces remain thin: Bedrock semantics belong to `engine/`, not CLI/UI/toolin
 AGENTS.md                    task routing / execution context
 GITHUB_RULES.md              GitHub delivery / proof / STOP rules
 CONTEXT.md                   stable architecture facts
-docs/README.md               documentation router
+docs/README.md               durable documentation router
+planning/README.md           work-intent router
 .agents/skills/              bounded specialist procedures
 DEV.cmd                      sole repository-level developer entrypoint
 tooling/windows-toolchain/   developer/build routing
