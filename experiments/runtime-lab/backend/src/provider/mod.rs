@@ -88,15 +88,15 @@ pub(crate) fn base_vmx_path() -> io::Result<PathBuf> {
 
     #[cfg(target_os = "windows")]
     {
-        return Ok(root.join("base").join("MCE-BASE").join("MCE-BASE.vmx"));
+        return Ok(root.join("base").join("Base").join("Base.vmx"));
     }
 
     #[cfg(target_os = "macos")]
     {
         return Ok(root
             .join("base")
-            .join("MCE-BASE.vmwarevm")
-            .join("MCE-BASE.vmx"));
+            .join("Base.vmwarevm")
+            .join("Base.vmx"));
     }
 
     #[allow(unreachable_code)]
@@ -327,10 +327,10 @@ mod tests {
 
     #[test]
     fn detects_running_vm_from_vmrun_list() {
-        let output = "Total running VMs: 1\nC:\\Lab\\MCE-02\\MCE-02.vmx\n";
+        let output = "Total running VMs: 1\nC:\\Lab\\Virtual-01\\Virtual-01.vmx\n";
         assert!(listed_as_running(
             output,
-            std::path::Path::new(r"C:\Lab\MCE-02\MCE-02.vmx")
+            std::path::Path::new(r"C:\Lab\Virtual-01\Virtual-01.vmx")
         ));
     }
 
