@@ -6,9 +6,11 @@ Current and future work that improves M-Bedrock-Dev itself.
 
 - Repository information-architecture consolidation: reduce duplicate documentation authority, clarify naming, and separate durable docs from operational data.
 - Consolidate bug-finding coverage and validation documentation into canonical owners while compatibility pointers protect active references.
-- Add structural enforcement only after the target repository layout is agreed and migrated safely.
+- Keep structural ownership/naming/coverage verifiers aligned with each consolidation step.
 
 ## Backlog
+
+- Migrate numbered documentation directories to clear semantic names only after internal references are clean; do this as one controlled path migration, not piecemeal aliases.
 
 - Continue consolidating `docs/03-analysis` and `docs/06-system` only where files share the same owner, audience, and lifecycle; preserve genuinely distinct domains.
 
