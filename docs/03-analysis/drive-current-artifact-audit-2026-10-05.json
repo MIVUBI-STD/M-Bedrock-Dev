@@ -76,7 +76,7 @@
       "worldFileName": "Build & Decode v1.1.0.mcworld",
       "sha256": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
       "fingerprintMatch": true,
-      "publishedGameplayFindings": 5,
+      "publishedGameplayFindings": 7,
       "publishedDevNotes": 0
     },
     {
@@ -290,9 +290,9 @@
     "postUpgradeCoverage": "22/22",
     "runtimeQueueReduction": "8/8 closed by system-side reduction",
     "manualRuntimeQueueNow": 0,
-    "knownGameplayDesignFindings": 30,
+    "knownGameplayDesignFindings": 32,
     "knownDevNotes": 4,
-    "totalActionableItems": 34
+    "totalActionableItems": 36
   },
   "safetyInterpretation": {
     "artifactIntegrity": "PASS",
