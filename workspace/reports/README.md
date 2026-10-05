@@ -102,11 +102,11 @@ Must Preserve verification:
 
 This section is navigation only; the JSON files remain canonical.
 
-- **9 canonical map reports**
-- **21 approved open issues**
-- **16 BUG**
+- **10 canonical map reports**
+- **34 approved open issues**
+- **29 BUG**
 - **5 DESIGN_MISMATCH**
-- Severity total: **4 Blocker · 14 Major · 3 Minor**
+- Severity total: **4 Blocker · 25 Major · 5 Minor**
 - fixed=true: **0**
 
 Current canonical reports:
@@ -114,11 +114,12 @@ Current canonical reports:
 - Attack Challenge v1.1.1 — 2 BUG + 1 DESIGN_MISMATCH
 - Defense Challenge v1.1.1 — 4 BUG + 1 DESIGN_MISMATCH
 - Composite Challenge v1.1.1 — 5 BUG
+- Fall of the Pillager L1 v1.1.0 — 1 BUG
 - Five Nights at Z Village L1 v1.1.0 — 1 BUG
 - The Gauntlet v1.0.1 — 2 BUG
 - Orb of the Illusioner L2 v1.1.0 — 2 BUG
-- Build & Decode v1.1.0 — 1 DESIGN_MISMATCH
-- The Circuit v1.0.2 — 1 DESIGN_MISMATCH
+- Build & Decode v1.1.0 — 8 BUG + 1 DESIGN_MISMATCH
+- The Circuit v1.0.2 — 4 BUG + 1 DESIGN_MISMATCH
 - Manhunt v1.0.0 — 1 DESIGN_MISMATCH
 
 Runtime-only obligations are intentionally excluded from this ledger until real Minecraft evidence proves a wrong player-visible outcome and that finding is approved.
