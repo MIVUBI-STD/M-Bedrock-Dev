@@ -25,6 +25,12 @@
       "entries": [
         "publication"
       ]
+    },
+    "developerNotes": {
+      "purpose": "Tracked current Developer Note ledger, separate from gameplay Bug Report V2 state.",
+      "entries": [
+        "developer-notes.json"
+      ]
     }
   }
 }
