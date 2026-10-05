@@ -1,5 +1,5 @@
 use crate::{
-    client::{ClientId, ClientState, ClientStatus},
+    client::{ClientId, ClientState, ClientStatus, IdentityState},
     doctor::{doctor, DoctorReport},
     provider::{current_platform_provider, runtime_root, MemoryMode, Provider},
     resources::{evaluate_pressure, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
@@ -80,6 +80,26 @@ fn pressure(report: &DoctorReport) -> HostPressure {
     )
 }
 
+fn identity_state(provider: &dyn Provider, client: ClientId) -> IdentityState {
+    let Ok(Some(identity)) = provider.identity_key(client) else {
+        return IdentityState::Unknown;
+    };
+
+    for other in ClientId::VIRTUAL {
+        if other == client {
+            continue;
+        }
+        if provider.status(other).ok() == Some(ClientState::NotProvisioned) {
+            continue;
+        }
+        if provider.identity_key(other).ok().flatten().as_deref() == Some(identity.as_str()) {
+            return IdentityState::Duplicate;
+        }
+    }
+
+    IdentityState::Unique
+}
+
 fn client_status(provider: &dyn Provider, client: ClientId) -> io::Result<ClientStatus> {
     let state = provider.status(client)?;
     if state == ClientState::NotProvisioned {
@@ -90,6 +110,7 @@ fn client_status(provider: &dyn Provider, client: ClientId) -> io::Result<Client
             ready_snapshot: Some(false),
             memory_limit_mb: None,
             host_working_set_mb: None,
+            identity: Some(IdentityState::Unknown),
         });
     }
 
@@ -100,6 +121,7 @@ fn client_status(provider: &dyn Provider, client: ClientId) -> io::Result<Client
         ready_snapshot: Some(provider.has_ready(client).unwrap_or(false)),
         memory_limit_mb: provider.memory_limit_mb(client).ok(),
         host_working_set_mb: provider.host_working_set_mb(client).ok().flatten(),
+        identity: Some(identity_state(provider, client)),
     })
 }
 
@@ -151,6 +173,7 @@ impl RuntimeLab {
             ready_snapshot: None,
             memory_limit_mb: None,
             host_working_set_mb: None,
+            identity: None,
         });
 
         if let Some(provider) = provider.as_ref() {
@@ -166,6 +189,7 @@ impl RuntimeLab {
                     ready_snapshot: Some(false),
                     memory_limit_mb: None,
                     host_working_set_mb: None,
+                    identity: Some(IdentityState::Unknown),
                 });
             }
         }
@@ -301,6 +325,7 @@ impl RuntimeLab {
                     ready_snapshot: None,
                     memory_limit_mb: None,
                     host_working_set_mb: None,
+                    identity: None,
                 }]);
             }
             Some(client) => vec![client],
@@ -372,6 +397,7 @@ impl RuntimeLab {
                 ready_snapshot: None,
                 memory_limit_mb: None,
                 host_working_set_mb: None,
+                identity: None,
             });
         }
 
