@@ -42,7 +42,9 @@
     "verify:information-architecture": "node tooling/repository/verify-information-architecture.mjs",
     "verify:bug-finding-coverage": "node tooling/repository/verify-bug-finding-coverage.mjs",
     "verify:documentation-ownership": "node tooling/repository/verify-documentation-ownership.mjs",
-    "verify:docs-migration-ready": "node tooling/repository/verify-doc-path-migration-readiness.mjs"
+    "verify:docs-migration-ready": "node tooling/repository/verify-doc-path-migration-readiness.mjs",
+    "audit:knowledge-consumption": "node tooling/repository/audit-knowledge-consumption.mjs",
+    "verify:knowledge-consumption": "node tooling/repository/audit-knowledge-consumption.mjs --strict"
   },
   "dependencies": {
     "@8crafter/leveldb-zlib": "1.6.0",
