@@ -23,6 +23,7 @@ pub trait Provider {
     fn id(&self) -> &'static str;
     fn detect(&self) -> bool;
     fn provision(&self, client: ClientId) -> io::Result<ClientState>;
+    fn reprovision(&self, client: ClientId) -> io::Result<ClientState>;
     fn status(&self, client: ClientId) -> io::Result<ClientState>;
     fn start(&self, client: ClientId) -> io::Result<ClientState>;
     fn stop(&self, client: ClientId) -> io::Result<ClientState>;
@@ -244,6 +245,25 @@ pub(crate) fn listed_as_running(list_output: &str, vmx: &Path) -> bool {
         .any(|line| line.eq_ignore_ascii_case(&target))
 }
 
+
+pub(crate) fn wait_for_state<F>(mut predicate: F, expected: bool, timeout: Duration) -> io::Result<()>
+where
+    F: FnMut() -> io::Result<bool>,
+{
+    let started = Instant::now();
+    loop {
+        if predicate()? == expected {
+            return Ok(());
+        }
+        if started.elapsed() >= timeout {
+            return Err(io::Error::new(
+                io::ErrorKind::TimedOut,
+                "virtual machine did not reach the expected power state",
+            ));
+        }
+        thread::sleep(Duration::from_millis(250));
+    }
+}
 
 pub(crate) fn snapshot_list_contains(list_output: &str, name: &str) -> bool {
     list_output.lines().map(str::trim).any(|line| line == name)
