@@ -2821,3 +2821,288 @@ Decision Produced by A/B
 
 Without this receipt, keep the work inside the system.
 
+---
+
+# 37. Causal Counter-Proof Closure
+
+### Purpose
+
+Prevent a suspicious technical condition from being promoted directly into a gameplay finding.
+
+This strengthens the existing PROVE lane. It does **not** create a new workflow stage.
+
+Every proposed BUG / DESIGN_MISMATCH must close this chain:
+
+```text
+Reachable Trigger
+→ Authoritative Mechanism
+→ Expected Contract
+→ Failed / Missing Protection
+→ Wrong Reachable State
+→ Player-Visible Consequence
+```
+
+Then actively try to disprove the chain:
+
+```text
+suspected contradiction
+→ enumerate context-relevant Blocking Proofs
+→ inspect each authoritative protection surface
+→ if any protection blocks the exact path → SAFE
+→ otherwise continue causal proof
+```
+
+Context-relevant Blocking Proofs include, when applicable:
+
+- physical collision / barrier geometry;
+- role, permission, operator and platform capability;
+- gamerules / world settings;
+- active guard registration / subscription reachability;
+- scope / selector / ownership exclusions;
+- generation / reset / cleanup guards;
+- inventory / item acquisition restrictions;
+- client/server representation reconciliation;
+- dimension / teleport / containment enforcement.
+
+A proof of one intermediate condition is never enough by itself. Examples:
+
+```text
+mayfly=true
+≠ player can escape arena
+
+doMobSpawning=false
+≠ privileged player cannot manually spawn entities
+
+guard class exists
+≠ guard is active in production
+
+interaction event cancelled
+≠ every client representation has reconciled visually
+```
+
+Required internal receipt:
+
+```text
+Claim
+Trigger Proof
+Mechanism Proof
+Contract Proof
+Protection Surfaces Checked
+Blocking Proof Result
+Player Consequence Proof
+Final Result: SAFE | PROVEN | exact irreducible runtime fact
+```
+
+A finding cannot be PROVEN while a material Blocking Proof surface remains unchecked.
+
+---
+
+# 38. Physical Containment Proof
+
+### Routing
+
+This is a required refinement of **Path & Geometry Dependency Check** and **Multi-Arena Isolation Check** when a claim depends on player/NPC escape, arena boundaries, flight, collision or cross-arena reachability.
+
+Keep these concepts separate:
+
+```text
+simulation/loading bounds
+gameplay/intended bounds
+physical collision bounds
+session ownership bounds
+```
+
+Crossing one does not prove crossing another.
+
+For each claimed physical escape:
+
+```text
+reachable player start volume
+→ movement capabilities
+→ 3D traversable volume
+→ solid collision / minecraft:barrier / authored blockers
+→ exterior reachable?
+→ another arena reachable?
+→ another arena interaction volume reachable?
+```
+
+Rules:
+
+- model a player-sized traversable volume, not a single air voxel;
+- when flight is enabled, use 3D traversal;
+- treat `minecraft:barrier` and other collision-bearing blocks as blockers;
+- inspect ceiling, floor, sides and authored openings;
+- reconcile repeated arenas before generalizing one arena's result;
+- a path beyond loading bounds is **not** proof of physical escape;
+- a physical escape is **not** automatically a cross-arena breach;
+- cross-arena breach requires a reachable path into another arena or its interaction volume.
+
+Required outcomes per arena:
+
+```text
+CONTAINED
+PHYSICAL_ESCAPE_PROVEN
+CROSS_ARENA_REACHABLE
+EXACT_RUNTIME_IRREDUCIBLE
+```
+
+Regression rule:
+
+```text
+mayfly=true
++ no script position clamp
++ closed minecraft:barrier enclosure
+→ CONTAINED
+→ suppress arena-escape finding
+```
+
+---
+
+# 39. Player Capability & World-Baseline Closure
+
+### Routing
+
+This strengthens the existing **Player Capability Check**. Run it whenever gameplay uses Creative/Spectator, operator/Roommaster roles, admin tags, Education abilities, command privileges, developer roles or world-level protection.
+
+Build one capability matrix:
+
+```text
+Role / Platform Role
+→ Tags
+→ Game Mode
+→ Abilities
+→ Command Permission
+→ Build/Break Permission
+→ Item Acquisition
+→ Item Use / Entity Spawn
+→ Script Guard
+→ World Rule / Setting
+→ Intended Scope
+```
+
+Mandatory crosschecks:
+
+- ordinary player vs builder vs Roommaster/operator/admin;
+- script admin tag vs platform authority;
+- gameplay permission vs maintenance/developer permission;
+- build/break guard vs interaction/item-use guard;
+- spawn-egg/manual summon path vs natural-spawn gamerule;
+- world protection vs explicit admin bypass;
+- world-load baseline vs later privileged mutation.
+
+### Guard activation proof
+
+A declared protection is not a Blocking Proof until its runtime registration path is reachable:
+
+```text
+guard implementation exists
+→ imported / instantiated
+→ subscription/handler registered
+→ selected gameplay path reaches it
+```
+
+Dead or uninstantiated protection code must not be credited as active protection.
+
+### World-rule causality
+
+Do not attribute every entity-spawn observation to `doMobSpawning`.
+
+Distinguish:
+
+```text
+natural spawning
+spawn egg / item use
+script spawnEntity
+/summon or command
+structure-authored entity
+developer/setup tool
+```
+
+Each path has its own authority and blocker.
+
+---
+
+# 40. Client / Server Mutation Reconciliation
+
+### Routing
+
+This strengthens **Cross-Representation Consistency Check** when a player action is client-predicted but server-side code cancels or rewrites the mutation.
+
+High-risk actions include:
+
+- bucket/liquid placement and waterlogging;
+- block placement / replacement;
+- block breaking;
+- doors/trapdoors/interactive block state;
+- inventory use that mutates a world block;
+- rapid repeated interaction around a cancelled action.
+
+Build:
+
+```text
+Player Action
+→ Client-Predicted Representation
+→ Server Event / Guard
+→ Cancel / Rewrite
+→ Authoritative World State
+→ Client Reconciliation
+```
+
+Challenge:
+
+- acting client retains a ghost block/liquid/state;
+- only one client sees a mutation the server rejected;
+- waterlogged state appears locally on barrier or waterloggable blocks;
+- repeated cancelled actions accumulate visual residue;
+- reconnect/chunk refresh clears the client state, proving representation divergence.
+
+Static source may prove the cancel/rewrite path, but client visual reconciliation can remain one exact runtime-native fact. Do not claim a client desync solely from cancellation code.
+
+---
+
+# 41. Regression Rules from Build & Decode Runtime Feedback
+
+These are regression examples routed through the existing canonical checks, not permanent map-specific branches.
+
+### Closed-barrier false-positive prevention
+
+```text
+flight capability
+→ suspected escape
+→ Path & Geometry Dependency Check
+→ inspect minecraft:barrier enclosure
+→ closed collision volume
+→ SAFE
+```
+
+### Cancelled bucket / waterlogging desync
+
+```text
+water bucket interaction
+→ interaction guard cancels server mutation
+→ acting client retains water/waterlogged visual
+→ server / other clients do not
+→ Cross-Representation Consistency contradiction
+```
+
+### Roommaster / admin world mutation
+
+```text
+Roommaster/admin authority
+→ blanket build/interaction bypass
+→ protected arena block/entity mutation
+→ live arena integrity changes
+→ Player Capability Check contradiction
+```
+
+If entity spawning and arena destruction share the same permission bypass, retain one root cause instead of publishing duplicate issues.
+
+### Regression closure target
+
+```text
+supporting condition mistaken for consequence = 0
+unchecked material Blocking Proofs = 0
+declared-but-inactive guards credited as protection = 0
+duplicate findings from one causal root = 0
+```
+
