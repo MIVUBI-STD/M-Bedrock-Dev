@@ -1,37 +1,7 @@
 # Native World DB Evidence
 
-Artifact inspection now has an optional native LevelDB evidence lane.
+> Compatibility pointer. Canonical owner: [World Database Analysis](./world-db.md).
 
-## Flow
+This topic is consolidated into the canonical owner above.
 
-```text
-extracted working world
-→ db/ exists?
-→ dedicated temporary LevelDB snapshot
-→ bounded key/value metadata scan
-→ actor/chunk runtime summary
-→ cleanup snapshot
-```
-
-The main inspection does not fail when native LevelDB inspection fails.
-
-Instead the result records:
-
-- status = not-present | scanned | failed;
-- entries scanned;
-- truncation state;
-- actor and actor-digest record counts;
-- chunk-data record count;
-- BlockEntity records;
-- PendingTicks records;
-- RandomTicks records;
-- FinalizedState records;
-- SubChunk records;
-- observed dimensions;
-- unique observed chunk coordinates.
-
-## Safety boundary
-
-Values are not decoded merely because their key family is recognized.
-
-This lane provides native runtime-state evidence without inventing version-sensitive value semantics.
+This file remains temporarily so active references do not break. Do not add new normative guidance here.
