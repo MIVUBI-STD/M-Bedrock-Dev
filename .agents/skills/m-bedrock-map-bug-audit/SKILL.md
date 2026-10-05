@@ -117,10 +117,8 @@ Required references:
 - `references/bug-report-contract.md`
 - `references/user-input-translation-cases.md`
 - `../../../docs/03-analysis/gameplay-model-closure.md`
-- `../../../docs/03-analysis/gameplay-audit-blind-spots.md`
-- `../../../docs/03-analysis/cross-system-interaction-audit.md`
+- `../../../docs/03-analysis/bug-finding-coverage.md`
 - `../../../docs/03-analysis/hidden-gameplay-defect-analysis.md`
-- `../../../docs/03-analysis/audit-finalization-checklist.md`
 - `../../../docs/03-analysis/vital-gameplay-knowledge-closure.md`
 - `../../schemas/map-audit-output-v2.schema.json`
 
@@ -160,7 +158,7 @@ runSelectedMapAudit()
 
 - Discovery Closure is subordinate to DISCOVERY.
 - Gameplay Model Closure is subordinate to UNDERSTAND/MODEL.
-- Blind Spots and Cross-System documents are STRESS knowledge.
+- Bug-Finding Coverage is the single coverage owner across DISCOVERY → PROVE; its STRESS sections activate blind-spot and cross-system pressure without creating parallel workflows.
 - Scenario Closure and Counter-Proof belong to PROVE.
 - HTML/chat/JSON are REPORT projections only.
 
