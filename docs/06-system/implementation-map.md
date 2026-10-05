@@ -152,8 +152,6 @@ Use this before broad repository search.
 | Repository/source boundary verification | tooling/repository/ |
 | Stable project facts | CONTEXT.md |
 | GitHub execution | GITHUB_RULES.md |
-| Current continuation | docs/07-operations/next-action.md |
-| Current proof | docs/07-operations/current-validation.md |
 | Research | experiments/ |
 
 Use docs/06-system/architecture.md for enforceable dependency direction.
