@@ -140,3 +140,41 @@ no exception = intended targets changed
 8. What proves current arena membership?
 9. What target cardinality is expected?
 10. What happens when selector resolves zero or too many targets?
+
+## Typed command effects
+
+Command analysis separates tokenization, selector facts, execution context, command semantics, and downstream state effects.
+
+High-value effect families include:
+- function calls;
+- structure loads;
+- fill/setblock/clone;
+- teleport;
+- scoreboard reads/writes;
+- tag mutation;
+- nested modern `execute ... run`.
+
+Selectors are semantic reads. Score/tag filters contribute state dependencies even when they appear only inside selectors.
+
+For scoreboard operations:
+- target objectives may be read + written depending on operation;
+- source objectives are reads;
+- read-only operations must not be promoted into writes.
+
+Nested `execute ... run` preserves the outer context transformation and recursively analyzes the nested command so context and effects remain connected.
+
+Unsupported command syntax remains explicit unknown evidence rather than being guessed.
+
+## Combined reasoning rule
+
+A typed effect is incomplete without its execution context.
+
+```text
+typed command
++ executor / position / dimension
++ selector scope / cardinality
+→ effective read/write/mutation scope
+→ gameplay/state consequence
+```
+
+This combined view is the basis for cross-arena selector leakage, wrong-player targeting, wrong-dimension mutation, and broad state-scope analysis.
