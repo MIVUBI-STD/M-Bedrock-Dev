@@ -442,6 +442,64 @@ export const BUILTIN_TASK_CAPABILITIES:
       contexts: ALL_STATIC_CONTEXTS,
     },
     {
+      id: "domain.player-capability",
+      owner: "packages/orchestrator",
+      pathPrefixes: [
+        "packages/orchestrator/src/inspection/player-capability-surface-analysis.ts",
+        "packages/orchestrator/src/inspection/capability-exposure-stage.ts",
+      ],
+      dependsOn: [
+        "source.scripts.core",
+        "behavior.arena",
+      ],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
+      id: "domain.world-rule-authority",
+      owner: "packages/orchestrator",
+      pathPrefixes: [
+        "packages/orchestrator/src/inspection/world-rule-authority-analysis.ts",
+      ],
+      dependsOn: [
+        "source.scripts.core",
+      ],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
+      id: "domain.client-reconciliation",
+      owner: "packages/orchestrator",
+      pathPrefixes: [
+        "packages/orchestrator/src/inspection/client-mutation-reconciliation-analysis.ts",
+      ],
+      dependsOn: [
+        "source.scripts.core",
+      ],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
+      id: "domain.physical-containment",
+      owner: "packages/orchestrator",
+      pathPrefixes: [
+        "packages/orchestrator/src/arena/arena-voxel-proof.ts",
+      ],
+      dependsOn: [
+        "domain.spatial-authority",
+      ],
+      deterministic: true,
+      cacheable: true,
+      cost: "moderate",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
       id: "runtime.cross-version-differential-plan",
       owner: "packages/runtime-lab",
       pathPrefixes: [
@@ -596,6 +654,10 @@ export const BUILTIN_TASK_CAPABILITIES:
         "domain.combat",
         "domain.chunks",
         "domain.economy",
+        "domain.player-capability",
+        "domain.world-rule-authority",
+        "domain.client-reconciliation",
+        "domain.physical-containment",
       ],
       deterministic: true,
       cacheable: true,
