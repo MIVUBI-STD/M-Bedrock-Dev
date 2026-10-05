@@ -174,8 +174,9 @@
       "capabilityId": "domain.player-capability",
       "kind": "unit-contract",
       "paths": [
-        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts",
-        "engine/packages/diagnostic-reasoning/test/capability-guard-activation.test.ts"
+        "engine/packages/diagnostic-reasoning/test/capability-guard-activation.test.ts",
+        "engine/packages/orchestrator/test/inspection/capability-mutation-footprint-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
