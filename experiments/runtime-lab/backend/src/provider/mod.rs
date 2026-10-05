@@ -344,8 +344,7 @@ fn set_vmx_value(lines: &mut Vec<String>, key: &str, value: &str) {
 
 pub(crate) fn host_working_set_mb(vmx: &Path) -> Option<u64> {
     let target = vmx.to_string_lossy().to_ascii_lowercase();
-    let mut system = System::new_all();
-    system.refresh_processes();
+    let system = System::new_all();
 
     let bytes = system
         .processes()
