@@ -299,6 +299,56 @@
         "update-visual-regression",
         "wrong-root-cause"
       ]
+    },
+    {
+      "id": "feedback-policy.cancelled-predicted-mutation-reconcile",
+      "domain": "client-feedback",
+      "subject": "cancelled client-predicted world mutation",
+      "statement": "When a client-predicted world interaction is cancelled or rewritten by server-side protection, cancellation alone is not sufficient presentation proof. The acting client must converge back to authoritative world state, and one-client ghost blocks, liquids, waterlogged states, or interaction states must be treated as a client/server reconciliation defect.",
+      "classification": "engineering-contract",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-client-feedback-contract-v1"
+      ],
+      "capabilityTags": [
+        "client-prediction",
+        "reconciliation",
+        "world-interaction"
+      ],
+      "riskSurfaces": [
+        "ghost-water",
+        "waterlog-desync",
+        "client-only-world-state"
+      ]
+    },
+    {
+      "id": "feedback-policy.runtime-last-resort-for-native-reconcile",
+      "domain": "client-feedback",
+      "subject": "native client reconciliation proof",
+      "statement": "Static analysis may prove the server cancellation path, but when the deciding claim is whether the native client clears its predicted visual state, use one narrow multi-client/runtime verification rather than a broad gameplay playthrough.",
+      "classification": "engineering-contract",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-client-feedback-contract-v1"
+      ],
+      "capabilityTags": [
+        "runtime-last-resort",
+        "multi-client"
+      ],
+      "riskSurfaces": [
+        "over-testing",
+        "unproven-client-state"
+      ]
     }
   ],
   "relations": [
