@@ -54,6 +54,7 @@ import type { SpatialAuthorityCoverageReport, SpatialAuthorityCoverageRequiremen
 import type { WorldRuleAuthorityAnalysis } from "../inspection/world-rule-authority-analysis.js";
 import type { PlayerCapabilitySurfaceAnalysis } from "../inspection/player-capability-surface-analysis.js";
 import type { ClientMutationReconciliationAnalysis } from "../inspection/client-mutation-reconciliation-analysis.js";
+import type { CapabilityMutationFootprintAnalysis } from "../inspection/capability-mutation-footprint-analysis.js";
 import type { GameplayWorldModel } from "../gameplay-world-model.js";
 import type { GameplaySemanticModel } from "../gameplay-semantic-model.js";
 import type { MapEngineeringAssessment } from "../map-engineering-assessment.js";
@@ -145,6 +146,7 @@ export interface InspectDirectoryResult {
   worldRuleAuthority: WorldRuleAuthorityAnalysis;
   playerCapabilitySurfaces: PlayerCapabilitySurfaceAnalysis;
   clientMutationReconciliation: ClientMutationReconciliationAnalysis;
+  capabilityMutationFootprint: CapabilityMutationFootprintAnalysis;
   spatialAuthority?: SpatialAuthorityCoverageReport;
   inventoryLifecycle: InventoryLifecycleAnalysis;
   inventoryPolicy: InventoryContractAnalysis;
