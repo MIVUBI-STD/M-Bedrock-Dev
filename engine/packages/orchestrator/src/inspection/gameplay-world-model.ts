@@ -89,6 +89,9 @@ import type {
 import type {
   PlayerCapabilitySurfaceAnalysis,
 } from "./player-capability-surface-analysis.js";
+import type {
+  ClientMutationReconciliationAnalysis,
+} from "./client-mutation-reconciliation-analysis.js";
 import {
   discoverGameplaySurfaces,
   type GameplaySurfaceDiscoveryResult,
@@ -431,6 +434,13 @@ export interface GameplayWorldModel {
     commandSummonPaths: number;
     manualEntitySpawnPaths: number;
   };
+  clientReconciliation: {
+    predictedMutationCancellations: number;
+    liquidOrWaterlogCancellations: number;
+    blockPlaceCancellations: number;
+    blockBreakCancellations: number;
+    interactionCancellations: number;
+  };
   playerCapabilities: {
     gamemodeWrites: number;
     abilityWrites: number;
@@ -596,6 +606,7 @@ export interface GameplayWorldModelSource {
   inventoryRestoreOwnership?: InventoryRestoreOwnershipAnalysis;
   worldRuleAuthority?: WorldRuleAuthorityAnalysis;
   playerCapabilitySurfaces?: PlayerCapabilitySurfaceAnalysis;
+  clientMutationReconciliation?: ClientMutationReconciliationAnalysis;
   semanticIr: {
     stateSurfaces: number;
     stateOperations: number;
@@ -1887,6 +1898,18 @@ export function deriveGameplayWorldModel(
         source.worldRuleAuthority?.commandSummonPaths ?? 0,
       manualEntitySpawnPaths:
         source.worldRuleAuthority?.manualEntitySpawnPaths ?? 0,
+    },
+    clientReconciliation: {
+      predictedMutationCancellations:
+        source.clientMutationReconciliation?.predictedMutationCancellations ?? 0,
+      liquidOrWaterlogCancellations:
+        source.clientMutationReconciliation?.liquidOrWaterlogCancellations ?? 0,
+      blockPlaceCancellations:
+        source.clientMutationReconciliation?.blockPlaceCancellations ?? 0,
+      blockBreakCancellations:
+        source.clientMutationReconciliation?.blockBreakCancellations ?? 0,
+      interactionCancellations:
+        source.clientMutationReconciliation?.interactionCancellations ?? 0,
     },
     playerCapabilities: {
       gamemodeWrites:
