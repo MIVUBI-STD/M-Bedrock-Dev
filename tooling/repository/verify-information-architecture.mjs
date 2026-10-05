@@ -10,6 +10,7 @@ const requiredPlanning = [
   "planning/README.md",
   "planning/development.md",
   "planning/operations.md",
+  "planning/operations-audit-queue.json",
   "planning/projects.md",
 ];
 
@@ -18,7 +19,7 @@ for (const path of requiredPlanning) {
 }
 
 if (existsSync("planning")) {
-  const allowed = new Set(["README.md", "development.md", "operations.md", "projects.md"]);
+  const allowed = new Set(["README.md", "development.md", "operations.md", "operations-audit-queue.json", "projects.md"]);
   for (const entry of readdirSync("planning", { withFileTypes: true })) {
     if (entry.isDirectory()) {
       failures.push(
@@ -51,7 +52,7 @@ if (!/planning\//.test(workspaceAgents)) {
 const planningReadme = existsSync("planning/README.md")
   ? readFileSync("planning/README.md", "utf8")
   : "";
-for (const term of ["development.md", "operations.md", "projects.md", "workspace/"]) {
+for (const term of ["development.md", "operations.md", "operations-audit-queue.json", "projects.md", "workspace/"]) {
   if (!planningReadme.includes(term)) {
     failures.push("planning/README.md missing boundary/reference: " + term);
   }
