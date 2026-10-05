@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build & Decode v1.1.0 — Gameplay Audit Report</title>
+<style>
+:root{--bg:#0b0d10;--panel:#12161b;--panel2:#171c22;--line:#2a313a;--text:#eef2f6;--muted:#a9b2bd}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Inter,Segoe UI,Arial,sans-serif}.wrap{max-width:1380px;margin:0 auto;padding:32px}.hero{border:1px solid var(--line);background:linear-gradient(180deg,#151a20,#0f1318);border-radius:14px;padding:28px;margin-bottom:22px}h1{font-size:30px;margin:0 0 8px}h2{font-size:20px;margin:26px 0 10px}h3{font-size:15px;margin:0 0 8px}.muted{color:var(--muted)}.meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}.card{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:14px}.metric{font-size:24px;font-weight:700}table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line)}th,td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}th{background:var(--panel2);font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#cbd3dc}tr:last-child td{border-bottom:0}code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#e7edf5}.badge{display:inline-block;border:1px solid #485361;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700;white-space:nowrap}.major{border-color:#8b5c36}.minor{border-color:#52657c}.type{border-color:#56606b}.runtime{border-color:#946f3d}.finding{border-color:#835f54}.blocker{border-color:#9b4f4f}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.callout{border-left:3px solid #6e7885;background:#12161b;padding:14px 16px;margin:10px 0}ul{margin:5px 0 0 18px;padding:0}li{margin:3px 0}.footer{margin:28px 0 12px;color:var(--muted);font-size:12px}@media(max-width:900px){.meta,.grid2{grid-template-columns:1fr}.wrap{padding:18px}table{font-size:12px}th,td{padding:9px}}
+</style>
+</head>
+<body><div class="wrap">
+<section class="hero">
+<div class="muted">M-Bedrock-Dev • Audit-only • Selected artifact authority</div>
+<h1>Build &amp; Decode v1.1.0 — Gameplay Audit Report</h1>
+<div>Full gameplay knowledge mapping for the current Drive artifact. This report documents issues and unresolved proof gates only; <strong>no bug repair or gameplay modification was performed.</strong></div>
+<div class="meta">
+<div class="card"><div class="muted">Artifact</div><div class="metric">v1.1.0</div><div><code>1aBAM5H...PRmtd</code></div></div>
+<div class="card"><div class="muted">Proven findings</div><div class="metric">7</div><div>5 Major · 2 Minor</div></div>
+<div class="card"><div class="muted">Proven Blocker</div><div class="metric">0</div><div>5 blocker gates remain validation-only</div></div>
+<div class="card"><div class="muted">Vital closure</div><div class="metric">OPEN</div><div>Static knowledge closed; runtime/world proof remains</div></div>
+</div></section>
+
+<div class="callout"><strong>Current decision:</strong> deterministic/source-verifiable gameplay is mapped. The map is <strong>not yet eligible for a “fully understood” claim</strong> because 5 exact physical/runtime/deployment questions remain. These are not bugs until they fail their deciding proof.</div>
+
+<h2>1. Current issue list</h2>
+<table><thead><tr><th>Severity</th><th>Type</th><th>ID</th><th>Issue / impact</th></tr></thead><tbody>
+<tr><td><span class="badge major">Major</span></td><td><span class="badge type">BUG</span></td><td><code>BUG-BAD-DEPARTED-TEAM-WINNER</code></td><td><strong>Departed team can remain eligible to win</strong><br><span class="muted">Final standings use historical participant records after exit/expiry, so an inactive team can still win and persist result data.</span></td></tr>
+<tr><td><span class="badge major">Major</span></td><td><span class="badge type">BUG</span></td><td><code>BUG-BAD-DRAW-WIN-COUNTER</code></td><td><strong>Draw is persisted as Win</strong><br><span class="muted">UI reports Draw, but tied leaders are persisted as winners and increment lifetime wins/leaderboard tie-breaks.</span></td></tr>
+<tr><td><span class="badge major">Major</span></td><td><span class="badge type">BUG</span></td><td><code>BUG-BAD-TIME-BONUS-SCORING</code></td><td><strong>Time-bonus thresholds are wrong</strong><br><span class="muted">Authored bonus thresholds and scoring implementation diverge, directly altering player/team scores and possible winner order.</span></td></tr>
+<tr><td><span class="badge major">Major</span></td><td><span class="badge type">BUG</span></td><td><code>BUG-BAD-CREATIVE-ENTITY-RESIDUE</code></td><td><strong>Persistent Creative-built entities survive reset</strong><br><span class="muted">Builder mutation surface is larger than reset entity cleanup, allowing persistent entity residue across rounds/reuse.</span></td></tr>
+<tr><td><span class="badge major">Major</span></td><td><span class="badge type">BUG</span></td><td><code>BUG-BAD-EQUIPMENT-ROLE-LEAK</code></td><td><strong>Equipment/offhand is outside player reset owner</strong><br><span class="muted">Creative equipment can persist across role, lobby, reconnect, or replay transitions because only inventory container slots are cleared.</span></td></tr>
+<tr><td><span class="badge minor">Minor</span></td><td><span class="badge type">BUG</span></td><td><code>BUG-BAD-GUESS-EXIT-COOLDOWN</code></td><td><strong>Guess and Exit share cooldown</strong><br><span class="muted">Using Guess temporarily disables Exit to Lobby because both use the same cooldown category.</span></td></tr>
+<tr><td><span class="badge minor">Minor</span></td><td><span class="badge type">DESIGN_MISMATCH</span></td><td><code>BUG-BAD-DEBUG-STICK</code></td><td><strong>Developer coordinate picker is player-reachable</strong><br><span class="muted">Normal Creative builders can acquire a stick and invoke production debug behavior without admin gating.</span></td></tr>
+</tbody></table>
+
+<h2>2. Vital Gameplay Knowledge Closure</h2>
+<table><thead><tr><th>Domain</th><th>Status</th><th>Mechanics already understood</th><th>Findings</th><th>Remaining proof</th></tr></thead><tbody>
+<tr><td><strong>ENTRY_ADMISSION</strong><br><span class="muted">Tier 0</span></td><td><span class="badge runtime">RUNTIME_REQUIRED</span></td><td>Lobby → arena → team → Ready → countdown → start; 4 arenas; 8 players/arena; 2/team; minimum 2 teams; single-owner membership; deadline revalidation.</td><td>—</td><td>Confirm multiplayer in actual deployment.</td></tr>
+<tr><td><strong>GAME_STATE_PROGRESSION</strong><br><span class="muted">Tier 0</span></td><td><span class="badge finding">UNDERSTOOD_WITH_FINDING</span></td><td>Builder rotation, build/guess phases, timeout, all-correct transition, difficulty progression, terminal transition, generation guards.</td><td><code>BUG-BAD-GUESS-EXIT-COOLDOWN</code></td><td>—</td></tr>
+<tr><td><strong>MULTI_ARENA_ISOLATION</strong><br><span class="muted">Tier 0</span></td><td><span class="badge runtime">RUNTIME_REQUIRED</span></td><td>4 logical arenas, +384 X spacing, arena-scoped membership/match/ticking areas, serialized reset, stale-generation rejection, A1→A2 callback isolation.</td><td>—</td><td>Voxel equivalence; containment; 4-arena live concurrency; mixed-phase reload.</td></tr>
+<tr><td><strong>CONNECTION_RECOVERY</strong><br><span class="muted">Tier 0</span></td><td><span class="badge runtime">RUNTIME_REQUIRED</span></td><td>Disconnect lifecycle, grace, reconnect, expiry ordering, pause/continuation, migration guards.</td><td><code>BUG-BAD-DEPARTED-TEAM-WINNER</code></td><td>Mixed-phase 4-arena reload/rebind.</td></tr>
+<tr><td><strong>INVENTORY_PLAYER_CAPABILITY</strong><br><span class="muted">Tier 1</span></td><td><span class="badge finding">UNDERSTOOD_WITH_FINDING</span></td><td>Creative builder / Adventure guesser, inventory reset, custom items, Creative acquisition, developer-item reachability.</td><td><code>BUG-BAD-EQUIPMENT-ROLE-LEAK</code><br><code>BUG-BAD-DEBUG-STICK</code></td><td>—</td></tr>
+<tr><td><strong>WORLD_RESET_INTEGRITY</strong><br><span class="muted">Tier 1</span></td><td><span class="badge runtime">RUNTIME_REQUIRED</span></td><td>Plot reset, fill serialization, generation token, transient entity cleanup, arena-scoped reset coordinates.</td><td><code>BUG-BAD-CREATIVE-ENTITY-RESIDUE</code></td><td>Physical reset-footprint equivalence and containment.</td></tr>
+<tr><td><strong>SCORE_RESULT_INTEGRITY</strong><br><span class="muted">Tier 1</span></td><td><span class="badge finding">UNDERSTOOD_WITH_FINDING</span></td><td>Guess scoring, time bonus, builder contribution, team aggregation, final standings, result journal, wins/games/total score, leaderboard.</td><td><code>BUG-BAD-DEPARTED-TEAM-WINNER</code><br><code>BUG-BAD-DRAW-WIN-COUNTER</code><br><code>BUG-BAD-TIME-BONUS-SCORING</code></td><td>—</td></tr>
+<tr><td><strong>PLAYER_FACING_INFORMATION</strong><br><span class="muted">Tier 2</span></td><td><span class="badge finding">UNDERSTOOD_WITH_FINDING</span></td><td>Ready/team feedback, match summary, Draw presentation, leaderboard/personal stats, debug output.</td><td><code>BUG-BAD-DRAW-WIN-COUNTER</code><br><code>BUG-BAD-DEBUG-STICK</code></td><td>—</td></tr>
+</tbody></table>
+
+<h2>3. Multi-arena system</h2>
+<div class="grid2"><div class="card"><h3>Closed from deterministic evidence</h3><ul>
+<li>4 logical arenas with +384 X spacing.</li>
+<li>Single authoritative arena membership.</li>
+<li>Arena-scoped match identity and ticking-area naming.</li>
+<li>Worst-case named ticking areas: 5 total (1 lobby + 4 arenas).</li>
+<li>Generation-bound reset invalidates stale reset work.</li>
+<li>Shared fill serialization alone does not prove cross-arena corruption.</li>
+<li>Stale Arena 1 form callback is guarded from mutating a later Arena 2 session.</li>
+</ul></div><div class="card"><h3>Still needs deciding proof</h3><ul>
+<li>Physical Arena 2–4 voxel equivalence against Arena 1.</li>
+<li>Containment / mayfly / build escape.</li>
+<li>Four arenas at intended maximum occupancy.</li>
+<li>Four arenas recovering after mixed-phase reload.</li>
+</ul></div></div>
+
+<h2>4. Connection / recovery system</h2>
+<div class="grid2"><div class="card"><h3>Closed understanding</h3><ul>
+<li><code>playerLeave</code> routes into disconnect lifecycle.</li>
+<li>Offline grace preserves session ownership.</li>
+<li>Reconnect reconciliation follows expiry handling.</li>
+<li>Pause/continuation depends on required active-player/team state.</li>
+<li>Same-player arena migration is guarded against stale callbacks.</li>
+</ul></div><div class="card"><h3>Known issue</h3>
+<p><code>BUG-BAD-DEPARTED-TEAM-WINNER</code> is connection-adjacent, not a reconnect-core failure. Exit/expiry removes active membership correctly; final winner eligibility later switches to historical participant state.</p>
+</div></div>
+
+<h2>5. Blocker gates still open</h2>
+<table><thead><tr><th>ID</th><th>Risk</th><th>Exact deciding question</th></tr></thead><tbody>
+<tr><td><code>VAL-BAD-VOXEL-REPLICA</code></td><td><span class="badge blocker">Potential Blocker</span></td><td>Are Arena 2–4 physically equivalent to Arena 1 for plot, lobby, pads, walls, spawn/view locations and reset footprint?</td></tr>
+<tr><td><code>VAL-BAD-PHYSICAL-CONTAINMENT</code></td><td><span class="badge blocker">Potential Blocker</span></td><td>Can permitted movement, mayfly or building escape the intended arena/plot or reach another arena?</td></tr>
+<tr><td><code>VAL-BAD-FOUR-ARENA-LIVE</code></td><td><span class="badge blocker">Potential Blocker</span></td><td>Can all four arenas start, load, play, transition, reset and finish concurrently at intended max occupancy without stalls or cross-arena mutation?</td></tr>
+<tr><td><code>VAL-BAD-RELOAD-FOUR-PHASES</code></td><td><span class="badge blocker">Potential Blocker</span></td><td>After runtime/script reload with four arenas in different phases, does each restore only its own state?</td></tr>
+<tr><td><code>VAL-BAD-DEPLOYMENT-MULTIPLAYER</code></td><td><span class="badge blocker">Potential Blocker</span></td><td>Does actual deployment enable multiplayer despite MultiplayerGame=0 / MultiplayerGameIntent=0 in selected level.dat?</td></tr>
+</tbody></table>
+
+<h2>6. Important counter-proofs</h2>
+<div class="card"><ul>
+<li>No source-proven 2-arena concurrency cap like Defense/Attack.</li>
+<li>No proven duplicate active arena membership.</li>
+<li>No proven duplicate match identity on simultaneous starts.</li>
+<li>No proven cross-arena corruption caused solely by the shared fill queue.</li>
+<li>No proven stale Guess/Exit form mutation after moving to a new arena session.</li>
+<li>No proven generic rule that any offline player permanently blocks progression.</li>
+<li>No proven ordinary-player path to developer script-event authority.</li>
+</ul></div>
+
+<h2>7. Gameplay flow understood</h2>
+<div class="card"><code>Lobby → Arena Join → Team Assignment → Ready → Countdown → Loading → Match Start → Builder Selection → Build → Guess → Score → Round Transition → Builder Rotation → Difficulty Progression → Final Result → Persistence → Cleanup → Replay / Recovery</code></div>
+
+<h2>8. Audit boundary</h2>
+<div class="callout"><strong>Audit-only.</strong> No issue in this report was fixed. No map/script/world mutation was performed. Repair remains out of scope until gameplay mapping and validation closure are complete.</div>
+
+<div class="footer">Artifact SHA-256: <code>d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030</code><br>Generated from the canonical Build &amp; Decode v1.1.0 audit state.</div>
+</div></body></html>
