@@ -11,7 +11,7 @@
     "registryFingerprint": "ecfcbeb2",
     "proofRegistry": "engine/reliability/catalogs/capability-proof-bindings.json",
     "proofRegistryFingerprint": "263994b8",
-    "proofInventoryFingerprint": "1c6b783f"
+    "proofInventoryFingerprint": "ebbdf6c9"
   },
   "summary": {
     "taskCapabilities": 51,
@@ -301,8 +301,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 581,
-      "testFiles": 269,
+      "sourceFiles": 603,
+      "testFiles": 293,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -334,8 +334,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 581,
-      "testFiles": 269,
+      "sourceFiles": 603,
+      "testFiles": 293,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -368,7 +368,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 26,
-      "testFiles": 20,
+      "testFiles": 22,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/diagnostic-reasoning/test/audit-coverage.test.ts",
@@ -401,7 +401,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 26,
-      "testFiles": 20,
+      "testFiles": 22,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/diagnostic-reasoning/test/audit-coverage.test.ts",
@@ -433,8 +433,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 581,
-      "testFiles": 269,
+      "sourceFiles": 603,
+      "testFiles": 293,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -466,8 +466,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 581,
-      "testFiles": 269,
+      "sourceFiles": 603,
+      "testFiles": 293,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -499,8 +499,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 581,
-      "testFiles": 269,
+      "sourceFiles": 603,
+      "testFiles": 293,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -532,8 +532,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 581,
-      "testFiles": 269,
+      "sourceFiles": 603,
+      "testFiles": 293,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -565,8 +565,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 581,
-      "testFiles": 269,
+      "sourceFiles": 603,
+      "testFiles": 293,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -598,8 +598,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 581,
-      "testFiles": 269,
+      "sourceFiles": 603,
+      "testFiles": 293,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -631,8 +631,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 581,
-      "testFiles": 269,
+      "sourceFiles": 603,
+      "testFiles": 293,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -664,8 +664,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 581,
-      "testFiles": 269,
+      "sourceFiles": 603,
+      "testFiles": 293,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -759,8 +759,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 581,
-      "testFiles": 269,
+      "sourceFiles": 603,
+      "testFiles": 293,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -792,8 +792,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 581,
-      "testFiles": 269,
+      "sourceFiles": 603,
+      "testFiles": 293,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -825,15 +825,15 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 52,
-      "testFiles": 24,
+      "sourceFiles": 54,
+      "testFiles": 25,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/reliability-search/test/blindspot/blindspot-tasks.test.ts",
         "engine/packages/reliability-search/test/corpus/behavioral-pattern-library.test.ts",
         "engine/packages/reliability-search/test/coverage/coverage-quality-dashboard.test.ts",
         "engine/packages/reliability-search/test/coverage/runtime-coverage.test.ts",
-        "engine/packages/reliability-search/test/history/history-intelligence.test.ts"
+        "engine/packages/reliability-search/test/historical-regression-catalog.test.ts"
       ],
       "proofBinding": {
         "state": "bound",
@@ -858,15 +858,15 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 52,
-      "testFiles": 24,
+      "sourceFiles": 54,
+      "testFiles": 25,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/reliability-search/test/blindspot/blindspot-tasks.test.ts",
         "engine/packages/reliability-search/test/corpus/behavioral-pattern-library.test.ts",
         "engine/packages/reliability-search/test/coverage/coverage-quality-dashboard.test.ts",
         "engine/packages/reliability-search/test/coverage/runtime-coverage.test.ts",
-        "engine/packages/reliability-search/test/history/history-intelligence.test.ts"
+        "engine/packages/reliability-search/test/historical-regression-catalog.test.ts"
       ],
       "proofBinding": {
         "state": "bound",
@@ -891,15 +891,15 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 52,
-      "testFiles": 24,
+      "sourceFiles": 54,
+      "testFiles": 25,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/reliability-search/test/blindspot/blindspot-tasks.test.ts",
         "engine/packages/reliability-search/test/corpus/behavioral-pattern-library.test.ts",
         "engine/packages/reliability-search/test/coverage/coverage-quality-dashboard.test.ts",
         "engine/packages/reliability-search/test/coverage/runtime-coverage.test.ts",
-        "engine/packages/reliability-search/test/history/history-intelligence.test.ts"
+        "engine/packages/reliability-search/test/historical-regression-catalog.test.ts"
       ],
       "proofBinding": {
         "state": "bound",
@@ -924,15 +924,15 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 52,
-      "testFiles": 24,
+      "sourceFiles": 54,
+      "testFiles": 25,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/reliability-search/test/blindspot/blindspot-tasks.test.ts",
         "engine/packages/reliability-search/test/corpus/behavioral-pattern-library.test.ts",
         "engine/packages/reliability-search/test/coverage/coverage-quality-dashboard.test.ts",
         "engine/packages/reliability-search/test/coverage/runtime-coverage.test.ts",
-        "engine/packages/reliability-search/test/history/history-intelligence.test.ts"
+        "engine/packages/reliability-search/test/historical-regression-catalog.test.ts"
       ],
       "proofBinding": {
         "state": "bound",
@@ -957,8 +957,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 581,
-      "testFiles": 269,
+      "sourceFiles": 603,
+      "testFiles": 293,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -1181,8 +1181,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 45,
-      "testFiles": 12,
+      "sourceFiles": 46,
+      "testFiles": 13,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/project-model/test/contracts/arena-region-contract.test.ts",
