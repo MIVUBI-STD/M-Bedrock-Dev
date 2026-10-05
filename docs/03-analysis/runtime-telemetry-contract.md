@@ -604,3 +604,26 @@ external
 
 This origin is preserved into causal observations so continuity failures are
 applied only to the channel that actually produced the evidence.
+
+## Observability requirements
+
+Runtime evidence should carry enough context to explain why a transition occurred, not merely that it occurred.
+
+Material trace records should include, where applicable:
+
+```text
+tick
+operationId
+actor/entity
+player/session identity
+arena/session generation
+subsystem generation
+phase
+source
+evidence stage
+result
+```
+
+Missing operation/generation context lowers evidence quality. Ambiguous evidence must remain ambiguous rather than being reported as definite.
+
+Instrumentation must also avoid creating hot-path log spam or unattributed developer actions.
