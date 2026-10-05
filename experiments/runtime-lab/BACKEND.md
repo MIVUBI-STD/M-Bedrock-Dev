@@ -34,6 +34,7 @@ There is no second backend process and no Node runtime backend.
 doctor
 provision
 status
+reprovision <client>
 start <1-4>
 open <client>
 restart <client>
@@ -56,6 +57,12 @@ Mutating Runtime Lab operations are serialized with an OS-level file lock.
 Provisioning uses staging and promotion instead of cloning directly into final client directories.
 
 Provider commands are time-bounded and return their actual stderr/stdout on failure.
+
+Virtual clones receive a fixed V1 resource policy of 4 GB RAM and 2 vCPU. Multi-client boot is staggered to avoid unnecessary startup spikes.
+
+Stop is graceful-first: request soft guest shutdown, wait for the VM to leave the running set, then use hard stop only as a bounded recovery fallback.
+
+`reprovision` is destructive and only operates on a stopped virtual client. It discards that client's VM container and rebuilds it from the base VM.
 
 The base VM must exist and be powered off before linked-clone provisioning.
 
