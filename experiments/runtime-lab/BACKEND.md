@@ -6,91 +6,97 @@
 CLI now / Tauri later
         ↓
 RuntimeLab
-        ↓
-Resource Planner + Client Lifecycle
-        ↓
-Provider
-        ↓
+        ├── Lifecycle
+        ├── Resource Pressure
+        └── Identity Health
+                ↓
+             Provider
+                ↓
 VMware Workstation / VMware Fusion
 ```
 
 Rust owns runtime truth.
 
-## Identity
+## Emulator principles adopted
+
+### Immutable template + per-instance delta
+
+`Base` is not used as a player instance. Virtual instances are linked clones with their own writable state.
+
+### Stable guest ceiling
+
+Each Virtual has:
 
 ```text
-Native
-Base
-Virtual-01
-Virtual-02
-Virtual-03
+memory limit = 4096 MB
+vCPU         = 2
 ```
 
-Only Virtual instances are numbered. `start 1..3` and `resources 1..3` always refer to the number of Virtual instances, never total players.
+Runtime Lab does not resize running instances and no longer predicts a different `memsize` before each boot.
+
+### Host-pressure admission
+
+`resources.rs` owns only pressure evaluation:
+
+```text
+host total RAM
++ host available RAM
+→ NORMAL / PRESSURE / CRITICAL
+→ canStartVirtual
+```
+
+At CRITICAL pressure, inactive Virtual instances are not started. Runtime Lab never automatically kills or resizes an existing running instance.
+
+### Runtime telemetry
+
+A Virtual status may expose:
+
+```text
+memoryLimitMb
+hostWorkingSetMb
+```
+
+`hostWorkingSetMb` is best-effort process resident memory, not guest configured memory.
+
+### Warm state
+
+`suspend` is a first-class lifecycle state:
+
+```text
+RUNNING → SUSPENDED → start → RUNNING
+```
+
+This is separate from `STOPPED` and from the `QA_READY` clean checkpoint.
+
+### Instance identity
+
+Provider VMX identity is inspected from UUID and generated MAC data. Runtime health classifies each Virtual as `UNKNOWN`, `UNIQUE`, or `DUPLICATE`. Duplicate identity is never silently treated as healthy.
 
 ## Ownership
 
-- `runtime.rs` — application lifecycle and operation serialization.
-- `resources.rs` — adaptive RAM policy.
-- `client.rs` — runtime identities and presentation state.
-- `doctor.rs` — host/provider/base readiness and capacity.
-- `provider/` — VMware mechanics only.
+- `runtime.rs` — application lifecycle, pressure admission, identity health.
+- `resources.rs` — host-pressure policy only.
+- `client.rs` — public runtime identity/state contract.
+- `doctor.rs` — host/provider/Base readiness and capacity.
+- `provider/` — VMware mechanics and VMX inspection.
 - CLI — thin operator adapter.
 
-## Resource policy
-
-Provisioning owns clone creation and fixed CPU policy only.
-
-Boot owns RAM sizing:
-
-```text
-live available RAM
-→ reserve host/native headroom
-→ count requested stopped Virtual instances
-→ calculate fair allocation
-→ clamp floor/ceiling
-→ round to 512 MB
-→ write VMX
-→ boot sequentially
-```
-
-Current bounds:
-
-- one Virtual: 4–5 GB;
-- two Virtual: 4–4.5 GB each;
-- three Virtual: 4 GB each.
-
-Running instances are never resized.
-
-## Lifecycle
-
-```text
-doctor
-provision
-status
-resources <1-3>
-start <1-3>
-open <instance>
-stop [instance]
-restart <Virtual>
-set-ready <Virtual>
-reset <Virtual>
-reprovision <Virtual>
-```
-
-`reset` restores `QA_READY`; `restart` does not.
+No parallel state database exists.
 
 ## Reliability
 
 - OS-level mutation lock.
-- Transactional clone staging.
+- Transactional linked-clone staging.
+- Immutable Base requirement.
 - Provider command timeout.
-- Base must be stopped before clone creation.
-- Graceful shutdown before hard fallback.
-- Adaptive memory reapplied after snapshot restore.
-- Reprovision is destructive only for the selected stopped Virtual instance.
-- No parallel runtime-state database.
+- Sequential multi-instance boot.
+- Graceful stop with bounded hard fallback.
+- Suspend / fast-resume path.
+- Clean `QA_READY` reset path.
+- Selected-instance reprovision only.
+- Identity duplicate detection.
+- Actual host-pressure observation.
 
 ## Frontend boundary
 
-A future Svelte/Tauri layer must consume this Rust core and must not duplicate resource or provider policy.
+A future Svelte/Tauri layer must consume this Rust core. It must not duplicate lifecycle, pressure, identity, or provider policy.
