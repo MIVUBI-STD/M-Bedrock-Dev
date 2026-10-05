@@ -16,6 +16,7 @@ use std::{
 pub use fusion::VmwareFusionProvider;
 pub use workstation::VmwareWorkstationProvider;
 
+pub(crate) const READY_SNAPSHOT: &str = "QA_READY";
 const COMMAND_TIMEOUT: Duration = Duration::from_secs(45);
 
 pub trait Provider {
@@ -25,6 +26,9 @@ pub trait Provider {
     fn status(&self, client: ClientId) -> io::Result<ClientState>;
     fn start(&self, client: ClientId) -> io::Result<ClientState>;
     fn stop(&self, client: ClientId) -> io::Result<ClientState>;
+    fn restart(&self, client: ClientId) -> io::Result<ClientState>;
+    fn set_ready(&self, client: ClientId) -> io::Result<ClientState>;
+    fn has_ready(&self, client: ClientId) -> io::Result<bool>;
     fn reset(&self, client: ClientId) -> io::Result<ClientState>;
     fn open(&self, client: ClientId) -> io::Result<ClientState>;
     fn is_running_path(&self, vmx: &Path) -> io::Result<bool>;
@@ -238,4 +242,9 @@ pub(crate) fn listed_as_running(list_output: &str, vmx: &Path) -> bool {
         .lines()
         .map(str::trim)
         .any(|line| line.eq_ignore_ascii_case(&target))
+}
+
+
+pub(crate) fn snapshot_list_contains(list_output: &str, name: &str) -> bool {
+    list_output.lines().map(str::trim).any(|line| line == name)
 }
