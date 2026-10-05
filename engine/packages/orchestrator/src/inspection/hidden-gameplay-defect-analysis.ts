@@ -713,7 +713,8 @@ function auditScenarioPresetFromModel(
       input.world.worldRules.writes > 0 ||
       input.world.worldRules.manualEntitySpawnPaths > 0,
     hasCancelledWorldMutationSurface:
-      surfaceSignals.cancelledWorldMutation,
+      surfaceSignals.cancelledWorldMutation ||
+      input.world.clientReconciliation.predictedMutationCancellations > 0,
     hasSpatialContainmentSurface:
       surfaceSignals.spatialContainment,
   });
@@ -973,7 +974,8 @@ export function refreshHiddenGameplayDefectsForWorld(
         world.worldRules.writes > 0 ||
         world.worldRules.manualEntitySpawnPaths > 0,
       hasCancelledWorldMutationSurface:
-        refreshSurfaceSignals.cancelledWorldMutation,
+        refreshSurfaceSignals.cancelledWorldMutation ||
+        world.clientReconciliation.predictedMutationCancellations > 0,
       hasSpatialContainmentSurface:
         refreshSurfaceSignals.spatialContainment,
     });
