@@ -1,62 +1,70 @@
-import { loadLabConfig, loadScenario } from "./config/load-config.mjs";
+import os from "node:os";
 import { runDoctor } from "./doctor.mjs";
-import { evaluateProvisioningHealth } from "./health/evaluate-health.mjs";
-import { resolveRuntimeProvider } from "./providers/provider-registry.mjs";
-import { planScenario } from "./scenarios/plan-scenario.mjs";
+import { ClientRuntime } from "./client-runtime.mjs";
+import { createProviderForCurrentPlatform } from "./providers/provider.mjs";
+
+const DEFAULT_CLIENTS = [
+  { id: "MCE-01", runtime: "native" },
+  { id: "MCE-02", runtime: "virtual" },
+  { id: "MCE-03", runtime: "virtual" },
+  { id: "MCE-04", runtime: "virtual" }
+];
 
 export class RuntimeLabBackend {
+  constructor() {
+    this.clients = DEFAULT_CLIENTS;
+  }
+
   async doctor() {
     return runDoctor();
   }
 
   async status() {
-    const [config, doctorReport, provider] = await Promise.all([
-      loadLabConfig(),
-      runDoctor(),
-      resolveRuntimeProvider()
-    ]);
+    const doctor = await runDoctor();
+    const provider = await createProviderForCurrentPlatform();
+    const runtime = new ClientRuntime({ provider, clients: this.clients });
 
     return {
-      schemaVersion: 1,
       backend: "RuntimeLabBackend",
-      provisioning: evaluateProvisioningHealth({ doctorReport }),
-      provider: provider.selected,
-      clients: config.clients.map((client) => ({
-        id: client.id,
-        runtime: client.runtime,
-        profileId: client.profileId,
-        configuredProvider: client.provider,
-        lifecycle: "NOT_PROVISIONED"
-      }))
+      platform: os.platform(),
+      provider: provider?.id ?? null,
+      ready: doctor.readyForProvisioning,
+      clients: await runtime.status()
     };
   }
 
-  async planScenario(id) {
-    const [config, scenario] = await Promise.all([
-      loadLabConfig(),
-      loadScenario(id)
-    ]);
+  async start(count) {
+    if (!Number.isInteger(count) || count < 1 || count > 4) {
+      throw new Error("Client count must be between 1 and 4.");
+    }
 
-    return planScenario({ scenario, clients: config.clients });
+    const doctor = await runDoctor();
+    if (!doctor.readyForProvisioning) {
+      throw new Error("Runtime Lab host is not ready. Run doctor first.");
+    }
+
+    const provider = await createProviderForCurrentPlatform();
+    const runtime = new ClientRuntime({ provider, clients: this.clients });
+    return runtime.start(count);
   }
 
-  async provision() {
-    throw new Error("Provisioning is not implemented yet.");
+  async stop(clientId = null) {
+    const provider = await createProviderForCurrentPlatform();
+    const runtime = new ClientRuntime({ provider, clients: this.clients });
+    return runtime.stop(clientId);
   }
 
-  async start() {
-    throw new Error("Client start lifecycle is not implemented yet.");
+  async reset(clientId) {
+    if (!clientId) throw new Error("Client id is required.");
+    const provider = await createProviderForCurrentPlatform();
+    const runtime = new ClientRuntime({ provider, clients: this.clients });
+    return runtime.reset(clientId);
   }
 
-  async stop() {
-    throw new Error("Client stop lifecycle is not implemented yet.");
-  }
-
-  async reset() {
-    throw new Error("Client reset lifecycle is not implemented yet.");
-  }
-
-  async runScenario() {
-    throw new Error("Scenario execution is not implemented yet.");
+  async open(clientId) {
+    if (!clientId) throw new Error("Client id is required.");
+    const provider = await createProviderForCurrentPlatform();
+    const runtime = new ClientRuntime({ provider, clients: this.clients });
+    return runtime.open(clientId);
   }
 }
