@@ -20,6 +20,7 @@ pub struct DoctorReport {
     pub provider: Option<&'static str>,
     pub logical_cpus: usize,
     pub total_memory_gb: f64,
+    pub available_memory_gb: f64,
     pub max_recommended_clients: usize,
     pub base_vm_path: Option<String>,
     pub base_vm_present: bool,
@@ -61,6 +62,7 @@ pub fn doctor() -> DoctorReport {
     system.refresh_cpu();
     let logical_cpus = system.cpus().len();
     let total_memory_gb = system.total_memory() as f64 / 1024.0 / 1024.0 / 1024.0;
+    let available_memory_gb = system.available_memory() as f64 / 1024.0 / 1024.0 / 1024.0;
     let max_recommended_clients = recommended_by_memory(total_memory_gb)
         .min(recommended_by_cpu(logical_cpus));
 
@@ -100,6 +102,7 @@ pub fn doctor() -> DoctorReport {
         provider: provider.as_ref().map(|provider| provider.id()),
         logical_cpus,
         total_memory_gb,
+        available_memory_gb,
         max_recommended_clients,
         base_vm_path: base.map(|path| path.display().to_string()),
         base_vm_present,
