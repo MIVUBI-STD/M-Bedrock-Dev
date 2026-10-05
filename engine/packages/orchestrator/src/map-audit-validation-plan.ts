@@ -8,6 +8,10 @@ import type {
 
 export interface AuditValidationTestGroup {
   readonly key: string;
+  readonly verificationMode:
+    | "STATIC_PROOF_COMPLETION"
+    | "NARROW_RUNTIME_VERIFICATION";
+  readonly broadPlaythroughAllowed: false;
   readonly findingIds: readonly string[];
   readonly issueTypes: readonly GameplayReportIssueType[];
   readonly gameplayFlows: readonly GameplayIssueFlowStage[];
@@ -40,6 +44,14 @@ export function groupNeedValidationTests(
   return [...groups.entries()]
     .map(([key, items]) => ({
       key,
+      verificationMode:
+        items.some(
+          (item) =>
+            item.proofNavigation?.runtimeLastResort === true,
+        )
+          ? "NARROW_RUNTIME_VERIFICATION" as const
+          : "STATIC_PROOF_COMPLETION" as const,
+      broadPlaythroughAllowed: false as const,
       findingIds: [
         ...new Set(
           items.map((item) => item.causalLinkId),
@@ -60,7 +72,7 @@ export function groupNeedValidationTests(
           ? items[0]!.validationTest
           : "Use one shared setup for " +
             key +
-            ", then execute every exact finding assertion in order. Do not replace individual proof obligations with a broad manual test.",
+            ", then execute every exact finding assertion in order. Stop when each deciding assertion is resolved; do not expand this into a broad playthrough.",
       assertions: items
         .map((item) => ({
           findingId: item.causalLinkId,
