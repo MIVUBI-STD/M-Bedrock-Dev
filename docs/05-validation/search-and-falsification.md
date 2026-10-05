@@ -91,3 +91,29 @@ Minimize reproducible failures to the smallest sequence preserving the same fail
 ## STOP
 
 Stop search expansion when the relevant risk family has sufficient proof/counter-proof or when the remaining uncertainty is one bounded runtime claim. Do not keep fuzzing for reassurance.
+
+## Generative multiplayer and model testing
+
+For small session/multiplayer domains, generate action sequences against a deterministic expected state model before live Minecraft automation.
+
+Example lifecycle:
+
+```text
+lobby
+→ assigned
+→ starting
+→ playing
+→ completed
+→ reset / reassigned
+```
+
+Generated actions may include join, assign, start, progress, complete, disconnect, reconnect, and reset when those actions exist in the model.
+
+Property-based generation is useful only when backed by explicit invariants, such as:
+- one authoritative arena/session per player;
+- assignment and membership agree;
+- disconnected players do not retain active progress;
+- playing requires a valid connected assignment;
+- independent arenas remain independent.
+
+Generated/model failures are search evidence, not Minecraft runtime proof. Runtime adapters may later project observed state into the same invariant model.
