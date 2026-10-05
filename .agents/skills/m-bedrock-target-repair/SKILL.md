@@ -64,8 +64,8 @@ Detection weakness → separate `m-bedrock-detection-development` handoff.
 
 ## Canonical references
 
-- `../../../docs/01-product/flow.md`
-- `../../../docs/04-repair/README.md`
+- `../../../docs/product/flow.md`
+- `../../../docs/repair/README.md`
 
 ## STOP
 
