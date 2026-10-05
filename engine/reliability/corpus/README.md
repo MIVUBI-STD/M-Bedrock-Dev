@@ -3,9 +3,11 @@
 This directory owns frozen evaluation manifests for real-map and reduced regression evidence.
 
 ```text
-calibration.json   detector-development corpus; may inform implementation
-acceptance.json    blind/holdout corpus; must not inform detector changes before scoring
-regressions.json   minimized bug-specific regression cases
+calibration.json             detector-development corpus; may inform implementation
+acceptance.json              blind/holdout corpus; must not inform detector changes before scoring
+regressions.json             minimized bug-specific regression cases
+audit-detection-cases.json   frozen historical detection/recall pressure; never current-artifact proof
+gameplay-understanding.md    human-readable calibration corpus context and semantic baselines
 ```
 
 ## Rules
@@ -93,3 +95,22 @@ node .agents/skills/m-bedrock-detection-benchmark/scripts/regression-priority.mj
 node .agents/skills/m-bedrock-detection-benchmark/scripts/regression-priority.mjs runtime-sensitive
 node .agents/skills/m-bedrock-detection-benchmark/scripts/regression-priority.mjs repeated-across-maps
 ```
+
+## Corpus roles
+
+Not every corpus file has the same shape.
+
+```text
+calibration / acceptance / regressions
+→ machine benchmark manifests
+
+audit-detection-cases
+→ reusable frozen defect-family recall expectations
+
+gameplay-understanding
+→ human-readable calibration context and reviewed semantic baselines
+```
+
+All corpus content is evaluation/reference material. None of it is current map truth.
+
+Historical chronological results belong in `engine/reliability/history/`, not here.
