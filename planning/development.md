@@ -37,7 +37,7 @@ Migration rule:
 
 - Continue consolidating `docs/03-analysis` and `docs/06-system` only where files share the same owner, audience, and lifecycle; preserve genuinely distinct domains.
 
-- Bind the canonical bug-finding coverage model to machine-verifiable capability/coverage checks so new analyzers or reusable knowledge cannot become orphaned.
+- Run `npm run audit:knowledge-consumption`, close actionable knowledge without dedicated analyzer/proof bindings, then promote `verify:knowledge-consumption` into `verify:repository` once debt reaches zero.
 
 - Generate/query implementation ownership from machine-readable ownership where practical instead of maintaining large duplicated path maps.
 - Add repository architecture checks for misplaced operational data, stale references, and ambiguous naming.
