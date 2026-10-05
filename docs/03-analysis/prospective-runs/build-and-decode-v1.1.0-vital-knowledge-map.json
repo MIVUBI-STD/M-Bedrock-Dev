@@ -80,7 +80,9 @@
         "generation-bound stale reset rejection",
         "same-player A1 to A2 migration guards"
       ],
-      "findings": [],
+      "findings": [
+        "BUG-BAD-PHYSICAL-ARENA-ESCAPE"
+      ],
       "counterproven": [
         "logical arena bounds overlap",
         "duplicate arena membership",
@@ -88,12 +90,10 @@
         "stale A1 guess/exit callback mutating A2"
       ],
       "residue": [
-        "VAL-BAD-VOXEL-REPLICA",
-        "VAL-BAD-PHYSICAL-CONTAINMENT",
         "VAL-BAD-FOUR-ARENA-LIVE",
         "VAL-BAD-RELOAD-FOUR-PHASES"
       ],
-      "reason": "Logical isolation is closed, but physical replica equivalence and native four-arena concurrency/reload behavior remain runtime/world-data facts."
+      "reason": "Logical isolation is closed. Native voxel proof shows the active gameplay/loading volumes are equivalent across all four arenas, but physical containment is broken because mayfly-enabled players can leave their arena. Live four-arena concurrency and mixed-phase reload remain runtime-owned."
     },
     {
       "domain": "CONNECTION_RECOVERY",
@@ -146,7 +146,7 @@
     {
       "domain": "WORLD_RESET_INTEGRITY",
       "criticality": "TIER_1_GAME_INTEGRITY",
-      "status": "RUNTIME_REQUIRED",
+      "status": "UNDERSTOOD_WITH_FINDING",
       "understood": [
         "plot block reset footprint",
         "serialized fill ownership",
@@ -161,11 +161,8 @@
       "counterproven": [
         "shared reset queue alone causes cross-arena coordinate corruption"
       ],
-      "residue": [
-        "VAL-BAD-VOXEL-REPLICA",
-        "VAL-BAD-PHYSICAL-CONTAINMENT"
-      ],
-      "reason": "Reset ownership is understood and already exposes one persistent-entity gap; physical replica/reset footprint equivalence still requires world-data/runtime confirmation."
+      "residue": [],
+      "reason": "Reset ownership and physical replica footprint are now mapped. Gameplay/loading volumes are voxel-equivalent across replicas; lobby barrier differences are non-material to team-pad reachability/containment. Persistent-entity residue remains the explicit reset finding."
     },
     {
       "domain": "SCORE_RESULT_INTEGRITY",
@@ -222,7 +219,9 @@
         "WORLD_RESET_INTEGRITY"
       ],
       "blockerPotential": true,
-      "exactQuestion": "Are arenas 2-4 physically equivalent to arena 1 under the authored +384 X translation for plot, lobby, team pads, walls, spawn/view locations and reset footprint?"
+      "exactQuestion": "Are arenas 2-4 physically equivalent to arena 1 under the authored +384 X translation for plot, lobby, team pads, walls, spawn/view locations and reset footprint?",
+      "status": "CLOSED_BOUNDED_EQUIVALENCE",
+      "result": "Gameplay/loading region: 126,976 relative blocks per replica are equivalent when absent canonical air subchunks are interpreted as air; 0 material gameplay-volume mismatches. Lobby regions differ by 131/167/141 blocks, almost entirely barrier↔air, but no team-pad cell differs, every team pad remains reachable, and no walkable lobby escape was found."
     },
     {
       "id": "VAL-BAD-PHYSICAL-CONTAINMENT",
@@ -231,7 +230,9 @@
         "WORLD_RESET_INTEGRITY"
       ],
       "blockerPotential": true,
-      "exactQuestion": "Can permitted movement, mayfly or building escape the intended arena/plot, reach another arena, or interact with protected adjacent gameplay?"
+      "exactQuestion": "Can permitted movement, mayfly or building escape the intended arena/plot, reach another arena, or interact with protected adjacent gameplay?",
+      "status": "CLOSED_WITH_FINDING",
+      "result": "PROVEN as BUG-BAD-PHYSICAL-ARENA-ESCAPE. During playing, mayfly is granted to all participants and voxel traversal from builder/guesser spawns reaches outside the arena bounds on all four replicas."
     },
     {
       "id": "VAL-BAD-FOUR-ARENA-LIVE",
@@ -260,7 +261,7 @@
     }
   ],
   "issueSet": {
-    "total": 7,
+    "total": 8,
     "proven": [
       "BUG-BAD-CREATIVE-ENTITY-RESIDUE",
       "BUG-BAD-DEPARTED-TEAM-WINNER",
@@ -268,7 +269,8 @@
       "BUG-BAD-EQUIPMENT-ROLE-LEAK",
       "BUG-BAD-GUESS-EXIT-COOLDOWN",
       "BUG-BAD-TIME-BONUS-SCORING",
-      "BUG-BAD-DEBUG-STICK"
+      "BUG-BAD-DEBUG-STICK",
+      "BUG-BAD-PHYSICAL-ARENA-ESCAPE"
     ],
     "repairStatus": "OUT_OF_SCOPE_FOR_CURRENT_PHASE"
   },
@@ -277,9 +279,8 @@
     "vitalGameplayKnowledge": "OPEN",
     "openBecause": [
       "ENTRY_ADMISSION requires deployment multiplayer confirmation",
-      "MULTI_ARENA_ISOLATION requires physical/live/reload confirmation",
-      "CONNECTION_RECOVERY requires mixed-phase reload confirmation",
-      "WORLD_RESET_INTEGRITY requires physical replica/containment confirmation"
+      "MULTI_ARENA_ISOLATION still requires four-arena live concurrency and mixed-phase reload confirmation",
+      "CONNECTION_RECOVERY requires mixed-phase reload confirmation"
     ],
     "nextPhase": "MAPPING_AND_VALIDATION_ONLY",
     "repairAllowed": false
@@ -302,6 +303,70 @@
       "result": "ENVIRONMENT_BLOCKED",
       "reason": "The canonical native LevelDB dependency is not available in the current execution environment and installation did not complete within the bounded attempt. No alternate decoder was substituted.",
       "consequence": "Physical replica equivalence remains explicitly unresolved; no safe/equivalent claim was inferred from configuration alone."
+    },
+    "voxelProof": {
+      "source": "Selected artifact Bedrock LevelDB",
+      "gameplayLoadingVolume": {
+        "relativeBounds": {
+          "min": {
+            "x": -32,
+            "y": -15,
+            "z": -128
+          },
+          "max": {
+            "x": 31,
+            "y": 15,
+            "z": -65
+          }
+        },
+        "blocksPerReplica": 126976,
+        "replicas": [
+          {
+            "arena": "Arena 2",
+            "offsetX": 384,
+            "mismatches": 0
+          },
+          {
+            "arena": "Arena 3",
+            "offsetX": 768,
+            "mismatches": 0
+          },
+          {
+            "arena": "Arena 4",
+            "offsetX": 1152,
+            "mismatches": 0
+          }
+        ],
+        "note": "Six canonical y=0 subchunks are absent while corresponding replica subchunks are explicitly all-air; these are semantically equivalent air volumes."
+      },
+      "lobbyVolume": {
+        "comparedBlocksPerReplica": 21663,
+        "divergences": [
+          {
+            "arena": "Arena 2",
+            "mismatches": 131
+          },
+          {
+            "arena": "Arena 3",
+            "mismatches": 167
+          },
+          {
+            "arena": "Arena 4",
+            "mismatches": 141
+          }
+        ],
+        "classification": "NON_MATERIAL_TO_TEAM_ADMISSION_FROM_CURRENT_PROOF",
+        "evidence": [
+          "No mismatch intersects any configured team-pad volume.",
+          "All eight team pads remain reachable from lobby spawn in all four arenas.",
+          "No same-level walkable path exits configured lobbyBounds in any arena."
+        ]
+      },
+      "activeContainment": {
+        "result": "FAILED",
+        "findingId": "BUG-BAD-PHYSICAL-ARENA-ESCAPE",
+        "evidence": "3D two-block-high air traversal from both builder and guesser spawns reaches outside the authored loading bounds in Arena 1; voxel-equivalent gameplay volumes reproduce the same path in Arenas 2-4."
+      }
     }
   }
 }
