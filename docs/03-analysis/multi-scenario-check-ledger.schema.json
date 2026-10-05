@@ -138,6 +138,189 @@
         "string",
         "null"
       ]
+    },
+    "appliedChecks": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "Stage Transition State Check",
+          "Carried Objective Ownership Check",
+          "Shared World State Check",
+          "Offline Progression Check",
+          "Container & Economy Reset Check",
+          "Disconnect / Reconnect Check",
+          "Reload Recovery Check",
+          "Multiplayer Shared-State Check",
+          "Multi-Arena Isolation Check",
+          "Player Capability Check",
+          "State Snapshot Differential",
+          "Cross-Representation Consistency Check",
+          "Event Ordering & Duplicate Commit Check",
+          "Orphan State & Entity Check",
+          "Path & Geometry Dependency Check",
+          "Metamorphic Comparison Check"
+        ]
+      }
+    },
+    "stateSnapshot": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "boundary": {
+          "type": "string"
+        },
+        "before": {
+          "type": "object"
+        },
+        "expectedAfter": {
+          "type": "object"
+        },
+        "reachableAfter": {
+          "type": "object"
+        },
+        "deltas": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "representations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "concept": {
+            "type": "string"
+          },
+          "representation": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "consistent": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "eventOrdering": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "eventOrCommitTarget": {
+            "type": "string"
+          },
+          "producers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "subscribers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "guard": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "lifetimeObjects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string"
+          },
+          "creator": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "releasePath": {
+            "type": "string"
+          },
+          "ownerInvalidationBehavior": {
+            "type": "string"
+          },
+          "closed": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "geometryDependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "actor": {
+            "type": "string"
+          },
+          "routeOrVolume": {
+            "type": "string"
+          },
+          "obstructionOrMutation": {
+            "type": "string"
+          },
+          "capability": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "metamorphicComparison": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "baseline": {
+          "type": "string"
+        },
+        "comparison": {
+          "type": "string"
+        },
+        "sharedContract": {
+          "type": "string"
+        },
+        "allowedDifferences": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "materialDifferences": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "result": {
+          "type": "string"
+        }
+      }
     }
   },
   "rules": [
@@ -145,7 +328,9 @@
     "Pairwise coverage is default; use 3-way only when all dimensions converge on the same material contract.",
     "Pressure score orders work only; it never changes proof state or severity.",
     "IRREDUCIBLE_RUNTIME_QUESTION requires one exact unresolved deciding fact and is routed to the Runtime Test Queue.",
-    "A scenario may be dominance-pruned only when the covering scenario preserves every material condition and expected contract."
+    "A scenario may be dominance-pruned only when the covering scenario preserves every material condition and expected contract.",
+    "Use appliedChecks to record canonical check names; do not mint map-specific permanent check names.",
+    "State snapshots, representation inventories, lifetime objects, and metamorphic comparisons are evidence structures, not new report issue types."
   ],
   "familyDisplayNames": {
     "TRANSITION_RESIDUE": "Stage Transition State Check",
