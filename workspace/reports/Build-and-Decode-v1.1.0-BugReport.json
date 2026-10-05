@@ -5,7 +5,7 @@
     "mapVersion": "1.1.0",
     "drive": "https://drive.google.com/file/d/1aBAM5Hwu58klnGV1dtZZLffgJATPRmtd/view",
     "baseVersion": "Not recorded in audit evidence",
-    "testedVersion": "Full static/source production audit; current Drive artifact fingerprint verified; runtime not required for admitted findings"
+    "testedVersion": "Static/source audit + tester runtime feedback; current Drive artifact v1.1.0"
   },
   "repairBy": "developer",
   "bugs": [
@@ -250,46 +250,6 @@
       "issueType": "BUG"
     },
     {
-      "id": "BUG-BAD-PHYSICAL-ARENA-ESCAPE",
-      "fixed": false,
-      "severity": "major",
-      "category": "multiplayer-session",
-      "foundBy": "ai",
-      "title": "Players can fly out of their assigned arena during active gameplay",
-      "problem": "During the playing phase, every participant is granted mayfly=true. The selected artifact has no position-boundary enforcement for active players, and voxel-path analysis from both builder and guesser spawns finds a continuous two-block-high air path beyond the authored arena loading bounds in all four arenas. A player can therefore leave the physical arena while the session still treats them as a member of the original arena.",
-      "expected": "Players remain physically contained within the gameplay space owned by their assigned arena, or any allowed flight/movement outside that space is detected and reconciled before it can expose another arena or invalidate isolation.",
-      "observed": "Builder and guesser roles receive mayfly during playing, while the service only removes a player for dimension change, not for leaving arena bounds. Static voxel traversal reaches outside the loading envelope from both role spawns in Arena 1-4.",
-      "reproduction": [
-        "Start any Build & Decode arena and reach the active playing phase.",
-        "As either builder or guesser, use the granted flight ability.",
-        "Fly toward the open side/top of the gameplay structure until crossing outside the arena loading bounds.",
-        "Confirm the player remains a member of the original match and is not teleported back or removed for leaving the physical arena."
-      ],
-      "aiAnalysis": "GuessTheBuildManager.activateRound() grants mayfly=true to every online participant, and ArenaSessions.applyRole() does the same for reconnecting players while playing. ArenaService's active-session scan only reacts to missing players or dimension changes; there is no arena-position containment owner. Direct Bedrock LevelDB voxel analysis found a continuous two-block-high air path from builder and guesser spawns to coordinates outside the authored loading bounds for Arena 1, and the gameplay/loading volumes of Arenas 2-4 are voxel-equivalent to Arena 1, reproducing the same escape path.",
-      "relevantCode": [
-        {
-          "file": "behavior_packs/Build_Decode_BP/scripts/modules/guessthebuild/GuessTheBuildManager.js",
-          "reason": "activateRound() gives every participant mayfly=true during playing."
-        },
-        {
-          "file": "behavior_packs/Build_Decode_BP/scripts/modules/arena/ArenaSessions.js",
-          "reason": "Reconnect role application restores mayfly=true while playing."
-        },
-        {
-          "file": "behavior_packs/Build_Decode_BP/scripts/modules/arena/ArenaService.js",
-          "reason": "Active-session lifecycle checks missing players and dimension changes but does not enforce arena position bounds."
-        }
-      ],
-      "suggestedFix": "Either remove flight from roles that do not require it, physically contain the gameplay volume, or add one canonical arena-position enforcement owner that returns/departs players leaving their assigned arena. Preserve existing role movement that is intentionally required inside the build/guess space.",
-      "mustPreserve": [
-        "Arena-scoped membership and scoring.",
-        "Builder access to the authored plot.",
-        "Guesser viewing/interaction flow.",
-        "Four-arena logical isolation and reconnect recovery."
-      ],
-      "issueType": "BUG"
-    },
-    {
       "id": "BUG-BAD-TIME-BONUS-SCORING",
       "fixed": false,
       "severity": "major",
@@ -328,6 +288,82 @@
         "Persisted match/leaderboard result semantics."
       ],
       "issueType": "BUG"
+    },
+    {
+      "id": "BUG-BAD-WATERLOG-CLIENT-DESYNC",
+      "fixed": false,
+      "severity": "minor",
+      "category": "world-interaction",
+      "foundBy": "tester",
+      "proofState": "PROVEN_RUNTIME",
+      "issueType": "BUG",
+      "title": "Blocked water placement can leave client-only waterlogged residue",
+      "problem": "Blocked bucket use can leave water visually lodged in barrier or other waterloggable blocks for the acting player while server state remains unchanged.",
+      "expected": "A rejected water placement leaves no water or waterlogged visual on any client.",
+      "observed": "Tester runtime shows the acting player can retain water/waterlogged visuals after placement is rejected; other clients do not share the state.",
+      "reproduction": [
+        "Enter a Build & Decode building phase as the active builder.",
+        "Use a water bucket against a barrier or another waterloggable block.",
+        "Let the map reject the placement.",
+        "Confirm only the acting player still sees water or waterlogged residue."
+      ],
+      "aiAnalysis": "ArenaService treats buckets/water as dangerous and cancels the relevant interaction/item-use path for non-admin players. Runtime evidence shows the acting client can retain a predicted liquid/waterlogged representation after the server rejects the mutation. This is a client/server representation divergence, not a persistent shared-world water placement.",
+      "relevantCode": [
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/arena/ArenaService.js",
+          "reason": "DANGEROUS includes bucket/water and the before-event protection cancels restricted block interaction/item use."
+        }
+      ],
+      "suggestedFix": "Prevent restricted liquid use before placement prediction where possible, or force authoritative block/state reconciliation after cancellation so the acting client clears ghost water.",
+      "mustPreserve": [
+        "Normal allowed builder block placement inside the active plot.",
+        "Server-side protection against water and other restricted world mutations."
+      ]
+    },
+    {
+      "id": "BUG-BAD-ROOMMASTER-WORLD-GUARD",
+      "fixed": false,
+      "severity": "major",
+      "category": "player-capability",
+      "foundBy": "tester",
+      "proofState": "PROVEN_RUNTIME",
+      "issueType": "BUG",
+      "title": "Roommaster/admin bypass can modify protected arena world",
+      "problem": "A Roommaster with the map admin role bypasses build and dangerous-use guards, allowing protected arena blocks to be destroyed and restricted entities/items to be spawned or placed.",
+      "expected": "Roommaster/admin access should preserve live arena geometry unless an explicit maintenance mode authorizes world mutation.",
+      "observed": "Runtime testing shows Roommaster can destroy arena blocks and spawn entities; source bypasses build and interaction protection whenever isAdmin() is true.",
+      "reproduction": [
+        "Join as the Roommaster/admin role used for map operation.",
+        "Move to protected arena geometry outside the active builder plot.",
+        "Break a protected block or use a restricted spawn/item interaction.",
+        "Confirm the arena world changes despite normal arena protection."
+      ],
+      "aiAnalysis": "ArenaService.canBuild() immediately returns true for admins, protectInteraction() returns before all restrictions for admins, and the item-use danger guard only cancels non-admin sources. WorldData sets doMobSpawning=false, but that gamerule does not close admin/manual spawn paths. Arena destruction and manual entity spawning therefore share one causal root: blanket privileged world-mutation bypass.",
+      "relevantCode": [
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/arena/ArenaService.js",
+          "reason": "Admin users bypass canBuild(), interaction protection, and restricted item-use cancellation."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/permission/PermissionData.js",
+          "reason": "Defines the tag-based admin role consumed by the arena protection bypass."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/setup/WorldData.js",
+          "reason": "doMobSpawning is already false, so manual/admin spawn paths must be distinguished from natural spawning."
+        }
+      ],
+      "suggestedFix": "Replace the blanket admin world-mutation bypass with an explicit scoped maintenance mode; keep developer commands authorized while live arena geometry and restricted item use stay protected.",
+      "mustPreserve": [
+        "Authorized debug/reset commands for map operators.",
+        "Normal builder construction inside the assigned active plot.",
+        "Normal entity setup owned by the map."
+      ]
     }
-  ]
+  ],
+  "manualRuntimeEvidence": {
+    "lastUpdated": "2026-10-05",
+    "source": "tester runtime feedback + selected-artifact source cross-check",
+    "notes": "Physical arena escape was rejected after barrier containment was confirmed. Waterlogging client desync and Roommaster/admin world-mutation bypass were admitted. Entity spawning feedback is deduplicated into the Roommaster/admin bypass because doMobSpawning is already false and manual spawn paths share the permission root cause."
+  }
 }
