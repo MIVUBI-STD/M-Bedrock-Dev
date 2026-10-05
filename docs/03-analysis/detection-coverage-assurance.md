@@ -1935,6 +1935,8 @@ Do not continue searching after deterministic closure merely to increase evidenc
 ---
 
 
+Machine-readable scenario records must conform to `docs/03-analysis/multi-scenario-check-ledger.schema.json`. This is the single schema authority for multi-scenario records.
+
 ## Canonical scenario naming
 
 User prompts, tester wording, screenshots, and examples are **evidence/input**, not permanent subsystem names.
