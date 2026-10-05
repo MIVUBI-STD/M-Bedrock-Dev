@@ -28,4 +28,17 @@ describe("cross-check audit scenario routing", () => {
     expect(kinds.has("client-server-reconciliation")).toBe(false);
     expect(kinds.has("spatial-containment")).toBe(false);
   });
+  it("routes containment when the caller marks a flight-capable arena surface", () => {
+    const preset = buildGameplayAuditScenarioPreset({
+      hasSpatialContainmentSurface: true,
+      hasMultiArena: true,
+      arenaCount: 4,
+    });
+
+    expect(
+      preset.scenarios.some(
+        (scenario) => scenario.kind === "spatial-containment",
+      ),
+    ).toBe(true);
+  });
 });
