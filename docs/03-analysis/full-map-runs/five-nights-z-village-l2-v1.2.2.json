@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "runType": "FULL_PRODUCTION_REAUDIT",
+  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "target": {
+    "map": "Five Nights at Z Village Level 2",
+    "registryVersion": "1.2.2",
+    "currentWorldFileName": "Defense_Level_2_v1_2_0.mcworld",
+    "worldFileId": "1v-7t1gvcPoIxZuaexUnWKxUqtv-ezB8S",
+    "artifactFingerprint": "sha256:d515dcf21bc1665f41c0ae8d3b316721d1ef9ee4ba4ed0212ad7f0d36017d96b",
+    "worldFileFetched": true,
+    "worldFileSizeBytes": 6697857,
+    "namingDiscrepancyPreserved": true
+  },
+  "proofQueue": [
+    {
+      "id": "FNZ2-PQ-01",
+      "check": "Residency / Remote Simulation",
+      "state": "PROVING"
+    },
+    {
+      "id": "FNZ2-PQ-02",
+      "check": "Entity Spawn / Retry / Wave Accounting",
+      "state": "PROVING"
+    },
+    {
+      "id": "FNZ2-PQ-03",
+      "check": "Objective / Defense / Terminal Integrity",
+      "state": "PROVING"
+    },
+    {
+      "id": "FNZ2-PQ-04",
+      "check": "Combat / Death / Respawn / Reconnect",
+      "state": "PROVING"
+    },
+    {
+      "id": "FNZ2-PQ-05",
+      "check": "Participant Accounting",
+      "state": "PROVING"
+    },
+    {
+      "id": "FNZ2-PQ-06",
+      "check": "Inventory / Economy / Equipment Lifecycle",
+      "state": "PROVING"
+    },
+    {
+      "id": "FNZ2-PQ-07",
+      "check": "State-Agnostic Fresh-Session Reset",
+      "state": "PROVING"
+    },
+    {
+      "id": "FNZ2-PQ-08",
+      "check": "World / Objective Reset / Second Run",
+      "state": "PROVING"
+    },
+    {
+      "id": "FNZ2-PQ-09",
+      "check": "Connection / Active-Session Reload Recovery",
+      "state": "PROVING"
+    },
+    {
+      "id": "FNZ2-PQ-10",
+      "check": "Player Capability / Developer Exposure",
+      "state": "PROVING"
+    },
+    {
+      "id": "FNZ2-PQ-11",
+      "check": "Adversarial SKIP / RETAIN / RACE / ORPHAN / FORCE-FAIL",
+      "state": "PROVING"
+    }
+  ],
+  "coverageGates": {
+    "materialSurfaceRouting": "IN_PROGRESS",
+    "mutableResourceOwnership": "IN_PROGRESS",
+    "requiredCrosschecks": "IN_PROGRESS",
+    "materialScenarioAccounting": "IN_PROGRESS",
+    "playerControlledSurfaceAccounting": "IN_PROGRESS",
+    "genericNeedValidation": 0
+  },
+  "evidenceReceiptRequired": true
+}
