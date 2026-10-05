@@ -16,7 +16,7 @@ import type { RuntimeProbeTranscript } from "../../../project-model/src/index.js
 import { assertRuntimeProbeTranscriptArtifact } from "../runtime-probe-load.js";
 import { auditArenaNativeSpatialContent } from "../arena-native-extraction.js";
 import { openBedrockLevelDbSnapshot } from "../../../../adapters/leveldb/src/index.js";
-import { proveArenaVoxelEquivalence } from "../arena-voxel-proof.js";
+import { proveArenaBarrierEnclosure, proveArenaVoxelEquivalence } from "../arena-voxel-proof.js";
 import { proveArenaBlockEntityEquivalence } from "../arena-block-entity-proof.js";
 import { proveArenaStructureInstances } from "../arena-structure-instance-proof.js";
 import { proveArenaEntityPopulation } from "../arena-entity-population-proof.js";
@@ -182,6 +182,10 @@ export async function inspectArtifact(
       rigKnowledgeDomains.has("chunk-simulation");
     const rigRequiresEntityProof =
       rigKnowledgeDomains.has("entity-behavior");
+    const rigRequiresSpatialContainment =
+      result.hiddenGameplayDefects.auditScenarioPreset.scenarios.some(
+        (scenario) => scenario.kind === "spatial-containment",
+      );
     const rigRequiredProofLayers = [
       ...(rigRequiresArenaSpatial
         ? ["native-spatial" as const]
@@ -342,6 +346,7 @@ export async function inspectArtifact(
     }
 
     let arenaVoxelProof;
+    let arenaBarrierEnclosureProof;
     let arenaBlockEntityProof;
     let arenaActorPopulationProof;
     let persistedPackIdentity;
@@ -493,6 +498,21 @@ export async function inspectArtifact(
             await extractPersistedPackIdentities(reader);
 
           if (spatialLayout !== undefined) {
+            if (
+              effectiveRegionPlan !== undefined &&
+              (
+                fullArenaProofRequested ||
+                rigRequiresSpatialContainment
+              )
+            ) {
+              arenaBarrierEnclosureProof =
+                await proveArenaBarrierEnclosure(
+                  reader,
+                  spatialLayout,
+                  effectiveRegionPlan,
+                );
+            }
+
             if (
               proofExecution !== undefined &&
               arenaProofLayerEnabled(
@@ -763,6 +783,9 @@ export async function inspectArtifact(
       ...(arenaVoxelProof === undefined
         ? {}
         : { voxelProof: arenaVoxelProof }),
+      ...(arenaBarrierEnclosureProof === undefined
+        ? {}
+        : { barrierEnclosureProof: arenaBarrierEnclosureProof }),
       ...(arenaBlockEntityProof === undefined
         ? {}
         : {
