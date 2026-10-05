@@ -11,6 +11,7 @@ export interface PlayerCapabilitySurfaceAnalysis {
   creativeModeGrants: number;
   spectatorModeGrants: number;
   abilityWrites: number;
+  mayflyGrants: number;
   commandPermissionWrites: number;
   privilegedGuardReferences: number;
   privilegedBypassReturns: number;
@@ -101,6 +102,18 @@ export function analyzePlayerCapabilitySurfaces(
       0,
     );
 
+  const mayflyGrants =
+    parsed.reduce(
+      (sum, script) =>
+        sum +
+        script.commandLiterals.filter((command) =>
+          /^\/?ability\s+\S+\s+mayfly\s+true\b/i.test(
+            command.command.trim(),
+          )
+        ).length,
+      0,
+    );
+
   const commandPermissionWrites =
     parsed.reduce(
       (sum, script) =>
@@ -182,6 +195,7 @@ export function analyzePlayerCapabilitySurfaces(
     creativeModeGrants,
     spectatorModeGrants,
     abilityWrites,
+    mayflyGrants,
     commandPermissionWrites,
     privilegedGuardReferences,
     privilegedBypassReturns,
