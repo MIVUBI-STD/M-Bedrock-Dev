@@ -136,6 +136,21 @@ for (const path of operationsDocs) {
   }
 }
 
+const retiredAuthorityPaths = [
+  "docs/07-operations/current-validation.md",
+  "docs/07-operations/next-action.md",
+  "docs/07-operations/gameplay-understanding-corpus.md",
+  "docs/03-analysis/full-map-reaudit-queue.json",
+  "docs/03-analysis/runtime-test-queue.json",
+  "docs/03-analysis/regression-detection-corpus.json",
+  "docs/03-analysis/runtime-coverage-audit.md",
+];
+for (const path of retiredAuthorityPaths) {
+  if (existsSync(path)) {
+    failures.push("Retired authority path must not exist: " + path);
+  }
+}
+
 const validationReadme = existsSync("docs/05-validation/README.md")
   ? readFileSync("docs/05-validation/README.md", "utf8")
   : "";
