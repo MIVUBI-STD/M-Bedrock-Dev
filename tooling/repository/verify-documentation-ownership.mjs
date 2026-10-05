@@ -17,6 +17,12 @@ for (const path of tracked) {
   if (forbiddenAnalysisDataPatterns.some((pattern) => pattern.test(path))) {
     failures.push("Operational/history data must not live in docs/03-analysis: " + path);
   }
+  if (path.endsWith(".schema.json")) {
+    failures.push("Machine JSON must not live in docs: " + path);
+  }
+  if (path.endsWith(".json") && !path.startsWith("docs/examples/")) {
+    failures.push("Machine JSON must not live in docs except explicit examples: " + path);
+  }
 }
 
 const canonicalDocs = [
