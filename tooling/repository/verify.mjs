@@ -32,8 +32,6 @@ const required = [
   "docs/06-system/contract-registry.json",
   "docs/06-system/skill-routing.md",
   "docs/06-system/development-operations.md",
-  "docs/07-operations/current-validation.md",
-  "docs/07-operations/next-action.md",
   "DEV.cmd",
   "engine/README.md",
   "engine/ownership.json",
