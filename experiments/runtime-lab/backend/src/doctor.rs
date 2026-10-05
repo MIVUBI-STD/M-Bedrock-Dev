@@ -30,11 +30,11 @@ pub struct DoctorReport {
 }
 
 fn recommended_by_memory(total_gb: f64) -> usize {
-    if total_gb >= 32.0 {
+    if total_gb >= 24.0 {
         4
-    } else if total_gb >= 24.0 {
-        3
     } else if total_gb >= 16.0 {
+        3
+    } else if total_gb >= 12.0 {
         2
     } else {
         1
@@ -121,8 +121,9 @@ mod tests {
     #[test]
     fn memory_capacity_is_bounded() {
         assert_eq!(recommended_by_memory(64.0), 4);
-        assert_eq!(recommended_by_memory(24.0), 3);
-        assert_eq!(recommended_by_memory(16.0), 2);
+        assert_eq!(recommended_by_memory(24.0), 4);
+        assert_eq!(recommended_by_memory(16.0), 3);
+        assert_eq!(recommended_by_memory(12.0), 2);
         assert_eq!(recommended_by_memory(8.0), 1);
     }
 
