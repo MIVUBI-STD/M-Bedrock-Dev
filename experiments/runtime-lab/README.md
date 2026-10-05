@@ -125,7 +125,30 @@ cargo run --bin runtime-lab -- stop [MCE-01..04]
 
 The backend serializes mutating operations with an OS file lock, uses bounded provider commands, and does not maintain a second VM-state database.
 
-Virtual clients are normalized to 4 GB RAM and 2 vCPU during provisioning. Multi-client startup is intentionally staggered by 2 seconds to reduce simultaneous CPU/disk spikes.
+Virtual clients keep a fixed 2 vCPU policy, but RAM is no longer fixed at provisioning time.
+
+RAM is planned immediately before boot from live host headroom:
+
+```text
+1 virtual client  → up to 6 GB
+2 virtual clients → up to 5 GB each
+3 virtual clients → compact 4 GB each
+```
+
+These are ceilings, not reservations. The planner leaves host headroom, rounds in 512 MB steps, and refuses to start more stopped VMs than the current machine can support safely. Already-running VMs are not resized mid-session.
+
+Capacity guidance is intentionally more inclusive:
+
+```text
+<12 GB host RAM → 1 total client
+12 GB           → up to 2 total clients
+16 GB           → up to 3 total clients
+24+ GB          → up to 4 total clients
+```
+
+CPU limits can lower the recommendation further.
+
+Multi-client startup is staggered by 2 seconds to reduce simultaneous CPU/disk spikes.
 
 Shutdown is graceful-first. If a soft guest shutdown does not reach the stopped state within the bounded wait, the provider falls back to a hard power-off as recovery.
 
