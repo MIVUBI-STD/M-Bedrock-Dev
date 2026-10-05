@@ -31,6 +31,30 @@ export interface InventoryLifecycleRegionAssessment {
   status: InventoryLifecycleRegionStatus;
 }
 
+export interface InventoryLifecycleAnalysisOptions {
+  readonly requiresFullEquipmentReset?: boolean;
+}
+
+const FULL_PLAYER_EQUIPMENT_SLOTS = [
+  "Head",
+  "Chest",
+  "Legs",
+  "Feet",
+  "Offhand",
+] as const;
+
+function normalizeEquipmentSlot(
+  value: string,
+): string {
+  const trimmed = value.trim()
+    .replace(/^["']|["']$/g, "");
+  const tail = trimmed.split(".").at(-1) ?? trimmed;
+  return tail.length === 0
+    ? trimmed
+    : tail[0]!.toUpperCase() +
+      tail.slice(1).toLowerCase();
+}
+
 export interface InventoryLifecycleAnalysis {
   regions: number;
   resetCandidates: number;
@@ -118,7 +142,7 @@ function assessRegion(
       evidence.flatMap((item) =>
         item.kind === "equipment-clear-slot" &&
         item.slotExpression !== undefined
-          ? [item.slotExpression]
+          ? [normalizeEquipmentSlot(item.slotExpression)]
           : [],
       ),
     ),
@@ -171,20 +195,24 @@ function assessRegion(
 
 export function analyzeInventoryLifecycle(
   scripts: readonly ParsedScriptFile[],
+  options: InventoryLifecycleAnalysisOptions = {},
 ): InventoryLifecycleAnalysis {
   const allEvidence = scripts.flatMap(
     (script) =>
       script.inventoryLifecycleEvidence ?? [],
   );
   const knownEquipmentSlots = [
-    ...new Set(
-      allEvidence.flatMap((item) =>
+    ...new Set([
+      ...allEvidence.flatMap((item) =>
         item.kind === "equipment-set" &&
         item.slotExpression !== undefined
-          ? [item.slotExpression]
+          ? [normalizeEquipmentSlot(item.slotExpression)]
           : [],
       ),
-    ),
+      ...(options.requiresFullEquipmentReset
+        ? FULL_PLAYER_EQUIPMENT_SLOTS
+        : []),
+    ]),
   ].sort();
   const unresolvedEquipmentSlotEvidence =
     allEvidence.filter(
