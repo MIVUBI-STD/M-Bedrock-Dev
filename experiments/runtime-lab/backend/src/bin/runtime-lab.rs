@@ -36,6 +36,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let count = args.next().ok_or("virtual client count is required")?.parse::<usize>()?;
             print_json(&lab.start(count)?)?;
         }
+        "suspend" => {
+            let client = parse_client(&args.next().ok_or("client id is required")?)?;
+            print_json(&lab.suspend(client)?)?;
+        }
         "stop" => {
             let client = args.next().map(|value| parse_client(&value)).transpose()?;
             print_json(&lab.stop(client)?)?;
@@ -65,6 +69,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("  reprovision <Virtual-01..03>");
             println!("  start <1-3>");
             println!("  open <Native|Virtual-01..03>");
+            println!("  suspend <Virtual-01..03>");
             println!("  restart <Virtual-01..03>");
             println!("  set-ready <Virtual-01..03>");
             println!("  reset <Virtual-01..03>");
