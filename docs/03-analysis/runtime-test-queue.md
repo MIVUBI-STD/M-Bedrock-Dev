@@ -1,5 +1,7 @@
 # Runtime Test Queue
 
+> **Status: SYSTEM_REDUCTION_REQUIRED** — these probes are not assigned to the user. The audit system must reopen and reduce them first. Manual testing is allowed only after the Manual Test Last-Resort Gate proves one runtime-native deciding fact remains.
+
 > Minimal high-value runtime probes. These are **not** current BUG/NEED_VALIDATION findings.
 
 ## Policy
@@ -9,7 +11,7 @@
 - A clean runtime probe creates no issue.
 - A failure must go through source cross-check and the normal PROVE gate before publication.
 
-## Priority A
+## Priority A — system-side reduction backlog
 
 ### 1. Fall of the Pillager Level 2 — RTQ-FOP2-CUTSCENE-DISCONNECT
 
