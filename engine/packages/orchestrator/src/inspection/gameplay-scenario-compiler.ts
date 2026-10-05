@@ -390,6 +390,7 @@ function runtimeEdgeState(
   componentId: string,
   world: GameplayWorldModel,
   sourceLocators: readonly string[] = [],
+  scenarioLabel?: string,
 ): Pick<GameplayCausalLink, "status" | "reason"> {
   switch (componentId) {
     case "runtime:world-rules": {
@@ -432,6 +433,31 @@ function runtimeEdgeState(
       };
     }
     case "runtime:spatial": {
+      if (scenarioLabel === "spatial-containment") {
+        if (world.arenas.barrierContainment.status === "contained") {
+          return {
+            status: "PROVEN",
+            reason:
+              "Barrier-only exterior flood-fill cannot reach any authored arena volume in any replica. Physical barrier containment is established without treating loading bounds as collision bounds.",
+          };
+        }
+        if (
+          world.arenas.barrierContainment.status === "incomplete" ||
+          world.arenas.barrierContainment.status === "budget-exceeded" ||
+          world.arenas.barrierContainment.status === "not-run"
+        ) {
+          return {
+            status: "DETECTION_GAP",
+            reason:
+              "Physical containment proof is incomplete or unavailable; an arena-escape finding must not be promoted from movement capability or loading-bound evidence alone.",
+          };
+        }
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Barrier-only proof does not establish a closed enclosure. Other collision geometry must be checked before deciding whether physical escape is actually reachable.",
+        };
+      }
       if (world.spatial.authority.conflicts > 0) {
         return {
           status: "CONTRADICTED",
@@ -1521,6 +1547,7 @@ export function compileGameplayScenarioGraph(
           component.id,
           input.world,
           sourceLocators,
+          scenario.label,
         ),
       });
     }
