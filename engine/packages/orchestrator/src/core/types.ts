@@ -20,7 +20,7 @@ import type { GameplayIntentModel } from "../../../gameplay-intent/src/index.js"
 import type { SemanticIr } from "../../../semantic-ir/src/index.js";
 import type { ArenaRegionClassification, ArenaRegionPartitionResult, ArenaRegionPlan, ArenaReplicaDiscovery, ArenaSpatialLayout, ResolvedEffect } from "../../../../analyzers/topology/src/index.js";
 import type { ArenaNativeSpatialAudit } from "../arena-native-extraction.js";
-import type { ArenaVoxelProof } from "../arena-voxel-proof.js";
+import type { ArenaVoxelProof, ArenaBarrierEnclosureProof } from "../arena-voxel-proof.js";
 import type { ArenaBlockEntityProof } from "../arena-block-entity-proof.js";
 import type { ArenaStructureInstanceProof } from "../arena-structure-instance-proof.js";
 import type { ArenaEntityPopulationProof } from "../arena-entity-population-proof.js";
@@ -308,6 +308,7 @@ export interface InspectDirectoryResult {
     proofExecution?: ArenaProofExecutionPlan;
     nativeSpatial?: ArenaNativeSpatialAudit;
     voxelProof?: ArenaVoxelProof;
+    barrierEnclosureProof?: ArenaBarrierEnclosureProof;
     blockEntityProof?: ArenaBlockEntityProof;
     structureInstanceProof?: ArenaStructureInstanceProof;
     entityPopulationProof?: ArenaEntityPopulationProof;
