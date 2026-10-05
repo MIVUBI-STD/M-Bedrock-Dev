@@ -43,4 +43,5 @@ pub struct ClientStatus {
     pub native: bool,
     pub state: ClientState,
     pub ready_snapshot: Option<bool>,
+    pub memory_mb: Option<u64>,
 }
