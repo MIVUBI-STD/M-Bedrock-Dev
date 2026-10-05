@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "runType": "FULL_PRODUCTION_REAUDIT",
+  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "target": {
+    "map": "Fall of the Pillager Level 1",
+    "version": "1.1.0",
+    "worldFileId": "1K6ZDxz-gwGOmRU92dBZTkZNOkFZL3Y8d",
+    "artifactFingerprint": "sha256:6df1be2f50404a0b89c2fb08f4d90a4c02eb4d51123ff9c5e03e9860b99938b1",
+    "worldFileFetched": true,
+    "worldFileSizeBytes": 7653334
+  },
+  "proofQueue": [
+    {
+      "id": "FOP1-PQ-01",
+      "check": "Combat Friendly-Fire / Team Ownership",
+      "state": "PROVING"
+    },
+    {
+      "id": "FOP1-PQ-02",
+      "check": "Death / Knockdown / Revive / Self-Revive",
+      "state": "PROVING"
+    },
+    {
+      "id": "FOP1-PQ-03",
+      "check": "Reconnect × Knockdown / Respawn",
+      "state": "PROVING"
+    },
+    {
+      "id": "FOP1-PQ-04",
+      "check": "Inventory / Weapon / Kit Lifecycle",
+      "state": "PROVING"
+    },
+    {
+      "id": "FOP1-PQ-05",
+      "check": "Drop / Upgrade / Shop Transaction Integrity",
+      "state": "PROVING"
+    },
+    {
+      "id": "FOP1-PQ-06",
+      "check": "Participant / Team Progression Accounting",
+      "state": "PROVING"
+    },
+    {
+      "id": "FOP1-PQ-07",
+      "check": "Objective / Wave / Terminal Integrity",
+      "state": "PROVING"
+    },
+    {
+      "id": "FOP1-PQ-08",
+      "check": "State-Agnostic Fresh-Session Reset",
+      "state": "PROVING"
+    },
+    {
+      "id": "FOP1-PQ-09",
+      "check": "World / Entity Cleanup / Second Run",
+      "state": "PROVING"
+    },
+    {
+      "id": "FOP1-PQ-10",
+      "check": "Connection / Reload Recovery",
+      "state": "PROVING"
+    },
+    {
+      "id": "FOP1-PQ-11",
+      "check": "Player Capability / Developer Exposure",
+      "state": "PROVING"
+    },
+    {
+      "id": "FOP1-PQ-12",
+      "check": "Adversarial CROSS / RACE / DUPLICATE / RETAIN / REPLAY / ESCAPE / ORPHAN",
+      "state": "PROVING"
+    }
+  ],
+  "coverageGates": {
+    "materialSurfaceRouting": "IN_PROGRESS",
+    "mutableResourceOwnership": "IN_PROGRESS",
+    "requiredCrosschecks": "IN_PROGRESS",
+    "materialScenarioAccounting": "IN_PROGRESS",
+    "playerControlledSurfaceAccounting": "IN_PROGRESS",
+    "genericNeedValidation": 0
+  },
+  "evidenceReceiptRequired": true
+}
