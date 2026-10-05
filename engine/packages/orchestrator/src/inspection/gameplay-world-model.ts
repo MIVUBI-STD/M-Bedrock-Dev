@@ -92,6 +92,9 @@ import type {
 import type {
   ClientMutationReconciliationAnalysis,
 } from "./client-mutation-reconciliation-analysis.js";
+import type {
+  CapabilityMutationFootprintAnalysis,
+} from "./capability-mutation-footprint-analysis.js";
 import {
   discoverGameplaySurfaces,
   type GameplaySurfaceDiscoveryResult,
@@ -441,6 +444,26 @@ export interface GameplayWorldModel {
     blockBreakCancellations: number;
     interactionCancellations: number;
   };
+  capabilityMutationFootprint: {
+    broadCapabilityDetected: boolean;
+    covered: number;
+    partial: number;
+    unresolved: number;
+    surfaces: readonly {
+      surface:
+        | "inventory"
+        | "equipment"
+        | "gamemode"
+        | "player-capability"
+        | "world-mutation";
+      status:
+        | "covered"
+        | "partial"
+        | "unresolved";
+      requiredBecause: readonly string[];
+      reason: string;
+    }[];
+  };
   playerCapabilities: {
     gamemodeWrites: number;
     creativeModeGrants: number;
@@ -610,6 +633,7 @@ export interface GameplayWorldModelSource {
   worldRuleAuthority?: WorldRuleAuthorityAnalysis;
   playerCapabilitySurfaces?: PlayerCapabilitySurfaceAnalysis;
   clientMutationReconciliation?: ClientMutationReconciliationAnalysis;
+  capabilityMutationFootprint?: CapabilityMutationFootprintAnalysis;
   semanticIr: {
     stateSurfaces: number;
     stateOperations: number;
@@ -1901,6 +1925,23 @@ export function deriveGameplayWorldModel(
         source.worldRuleAuthority?.commandSummonPaths ?? 0,
       manualEntitySpawnPaths:
         source.worldRuleAuthority?.manualEntitySpawnPaths ?? 0,
+    },
+    capabilityMutationFootprint: {
+      broadCapabilityDetected:
+        source.capabilityMutationFootprint?.broadCapabilityDetected ?? false,
+      covered:
+        source.capabilityMutationFootprint?.covered ?? 0,
+      partial:
+        source.capabilityMutationFootprint?.partial ?? 0,
+      unresolved:
+        source.capabilityMutationFootprint?.unresolved ?? 0,
+      surfaces:
+        source.capabilityMutationFootprint?.surfaces.map((item) => ({
+          surface: item.surface,
+          status: item.status,
+          requiredBecause: [...item.requiredBecause],
+          reason: item.reason,
+        })) ?? [],
     },
     clientReconciliation: {
       predictedMutationCancellations:
