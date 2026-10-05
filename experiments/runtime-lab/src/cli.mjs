@@ -9,50 +9,62 @@ function usage() {
     "M-Bedrock Runtime Lab",
     "",
     "Usage:",
-    "  node experiments/runtime-lab/src/cli.mjs doctor [--json]",
-    "  node experiments/runtime-lab/src/cli.mjs status [--json]",
-    "  node experiments/runtime-lab/src/cli.mjs plan <scenario> [--json]",
+    "  lab doctor",
+    "  lab status",
+    "  lab start <1-4>",
+    "  lab open <MCE-01..04>",
+    "  lab reset <MCE-01..04>",
+    "  lab stop [MCE-01..04]",
     "",
-    "Backend lifecycle commands will be enabled only after their owners are implemented."
+    "Gameplay is controlled manually by the operator."
   ].join("\n");
 }
 
-function print(value, json) {
-  if (json) console.log(JSON.stringify(value, null, 2));
-  else console.log(JSON.stringify(value, null, 2));
+function print(value) {
+  console.log(JSON.stringify(value, null, 2));
 }
 
 async function main() {
-  const [, , command, ...args] = process.argv;
-  const json = args.includes("--json");
-  const positional = args.filter((arg) => arg !== "--json");
+  const [, , command, arg] = process.argv;
 
-  if (!command || command === "help" || command === "--help" || command === "-h") {
+  if (!command || ["help", "--help", "-h"].includes(command)) {
     console.log(usage());
     return;
   }
 
   if (command === "doctor") {
     const report = await backend.doctor();
-    console.log(json ? JSON.stringify(report, null, 2) : formatDoctorReport(report));
+    console.log(formatDoctorReport(report));
     if (!report.readyForProvisioning) process.exitCode = 1;
     return;
   }
 
   if (command === "status") {
-    print(await backend.status(), json);
+    print(await backend.status());
     return;
   }
 
-  if (command === "plan") {
-    const scenario = positional[0];
-    if (!scenario) throw new Error("Scenario id is required.");
-    print(await backend.planScenario(scenario), json);
+  if (command === "start") {
+    print(await backend.start(Number(arg)));
     return;
   }
 
-  console.error(`Unknown command: ${command}\n\n${usage()}`);
-  process.exitCode = 2;
+  if (command === "open") {
+    print(await backend.open(arg));
+    return;
+  }
+
+  if (command === "reset") {
+    print(await backend.reset(arg));
+    return;
+  }
+
+  if (command === "stop") {
+    print(await backend.stop(arg ?? null));
+    return;
+  }
+
+  throw new Error(`Unknown command: ${command}`);
 }
 
 main().catch((error) => {
