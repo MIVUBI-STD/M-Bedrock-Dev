@@ -62,7 +62,7 @@ repair an Approved Bug or approved design change
 
 Generic Product Development is not Detection Development. Use the normal development contract and the canonical implementation owner.
 
-Domain specialist routing is defined by `docs/06-system/skill-routing.md`.
+Domain specialist routing is defined by `docs/system/skill-routing.md`.
 
 ## Development contract
 
@@ -102,9 +102,9 @@ Detailed audit procedure, prompt confirmation, coverage, proof admission, issue 
 
 ```text
 .agents/skills/m-bedrock-map-bug-audit/SKILL.md
-docs/03-analysis/master-selected-map-audit-workflow.md
-docs/03-analysis/mandatory-audit-procedure.md
-docs/03-analysis/bug-finding-coverage.md
+docs/analysis/master-selected-map-audit-workflow.md
+docs/analysis/mandatory-audit-procedure.md
+docs/analysis/bug-finding-coverage.md
 ```
 
 Do not duplicate that procedure in root policy.
@@ -164,13 +164,13 @@ A domain specialist cannot override a denied action.
 ```text
 stable repository facts      → CONTEXT.md
 documentation routing        → docs/README.md
-repository naming            → docs/06-system/canonical-naming.md
-architecture                 → docs/06-system/architecture.md
-semantic authority           → docs/06-system/authority-model.md
-implementation routing       → docs/06-system/implementation-map.md
-development discipline       → docs/06-system/development-discipline.md
-developer operations         → docs/06-system/development-operations.md
-minimum-sufficient execution → docs/06-system/zero-waste-execution.md
+repository naming            → docs/system/canonical-naming.md
+architecture                 → docs/system/architecture.md
+semantic authority           → docs/system/authority-model.md
+implementation routing       → docs/system/implementation-map.md
+development discipline       → docs/system/development-discipline.md
+developer operations         → docs/system/development-operations.md
+minimum-sufficient execution → docs/system/zero-waste-execution.md
 
 current work intent           → planning/
 working/project continuity    → workspace/projects/
