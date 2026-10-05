@@ -1,6 +1,6 @@
 # Automated Validation Readiness
 
-> Compatibility pointer. Canonical owner: [Runtime Proof](../05-validation/runtime-proof.md).
+> Compatibility pointer. Canonical owner: [Runtime Proof](../validation/runtime-proof.md).
 
 Runtime validation strategy is consolidated into the canonical validation runtime-proof owner.
 
