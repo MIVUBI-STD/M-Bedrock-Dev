@@ -2290,3 +2290,28 @@ Audit closure now requires both:
 2. applicable Developer Note coverage closure.
 
 
+## Proof Escalation requirement
+
+The PROVE lane must enforce the `Proof Escalation Gate` owned by `detection-coverage-assurance.md`.
+
+Before any `NEED_VALIDATION` publication:
+
+```text
+exact missing claim
+→ targeted evidence search
+→ Blocking-Proof Exhaustion
+→ applicable deterministic substitutions
+→ cross-file causal closure
+→ re-run claim closure
+```
+
+Only one irreducible deciding runtime fact may remain.
+
+A first-pass proof failure, large source surface, callback/concurrency complexity, or tester convenience is not sufficient justification for `NEED_VALIDATION`.
+
+Audit closure targets:
+- unsupported PROVEN = 0;
+- generic NEED_VALIDATION = 0;
+- every retained NEED_VALIDATION has a complete Hard-Gate receipt.
+
+
