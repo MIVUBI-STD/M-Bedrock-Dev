@@ -28,6 +28,10 @@ import type {
 import type {
   AuditUserIntentEnvelope,
 } from "./map-audit-user-intent.js";
+import {
+  deriveMapAuditQualityGates,
+  type MapAuditQualityGates,
+} from "./map-audit-quality-gates.js";
 
 export interface MapAuditOutputV2Finding {
   readonly id: string;
@@ -169,6 +173,7 @@ export interface MapAuditOutputV2 {
   readonly validationTests:
     readonly AuditValidationTestGroup[];
   readonly honesty: AuditHonestyAssessment;
+  readonly qualityGates: MapAuditQualityGates;
   readonly fullMapReplica?: FullMapReplicaReceipt;
 }
 
@@ -441,6 +446,34 @@ export function projectMapAuditOutputV2(input: {
     }),
   );
 
+  const coverageDisposition =
+    closure.status === "CLOSED" &&
+    closure.unaccountedSurfaceIds.length === 0 &&
+    closure.stateModelComplete &&
+    closure.boundariesExtracted
+      ? "accounted" as const
+      : "incomplete" as const;
+  const allFindings = [
+    ...input.issueLanes.BUG,
+    ...input.issueLanes.DESIGN_MISMATCH,
+  ];
+  const qualityGates = deriveMapAuditQualityGates({
+    controlStatus: input.control.status,
+    coverageDisposition,
+    gameplayClosureStatus: closure.status,
+    honestyStatus: input.honesty.status,
+    findings: allFindings.map((finding) => ({
+      id: finding.causalLinkId,
+      status: finding.status,
+      informationMismatch:
+        finding.informationMismatch,
+    })),
+    auditObligationCount:
+      input.auditObligations.length,
+    validationTestCount:
+      input.validationTests.length,
+  });
+
   return {
     schemaVersion: 2,
     artifactId: input.identity.artifactId,
@@ -495,13 +528,7 @@ export function projectMapAuditOutputV2(input: {
           .sort(),
     },
     coverage: {
-      disposition:
-        closure.status === "CLOSED" &&
-        closure.unaccountedSurfaceIds.length === 0 &&
-        closure.stateModelComplete &&
-        closure.boundariesExtracted
-          ? "accounted"
-          : "incomplete",
+      disposition: coverageDisposition,
       records: coverageRecords,
     },
     gameplayClosure: {
@@ -537,6 +564,7 @@ export function projectMapAuditOutputV2(input: {
     validationTests:
       [...input.validationTests],
     honesty: input.honesty,
+    qualityGates,
     ...(input.fullMapReplica === undefined
       ? {}
       : {
