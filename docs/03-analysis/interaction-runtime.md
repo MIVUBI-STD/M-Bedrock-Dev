@@ -146,3 +146,25 @@ dialogue generation
 Revalidate the player/session/arena before dialogue-triggered side effects. Distinguish the executing NPC from the initiating player, and reject stale responses/commands after reset or generation change.
 
 Dialogue restored through structures must not create duplicate transaction paths or stale NPC ownership.
+
+## Input gesture lifecycle
+
+Input is modeled as a lifecycle rather than one event:
+
+```text
+IDLE
+→ STARTED / PRESSED
+→ HELD / CHARGING
+→ RELEASED / COMPLETED
+or CANCELLED
+```
+
+Gesture ownership should bind player/session generation, arena/session generation, item/action identity, gesture generation, and purpose.
+
+A release/stop event only completes a matching current gesture. Teleport/dimension changes, item replacement, disconnect, respawn, reset, and generation changes invalidate active gestures.
+
+Held input must not be treated as a one-shot press without edge detection, first-event semantics, debounce, or explicit idempotency.
+
+Cooldown presentation is not gameplay authority; eligibility must use the actual cooldown contract.
+
+Cross-device behavior should be expressed in semantic actions rather than keyboard/controller/touch-specific assumptions.
