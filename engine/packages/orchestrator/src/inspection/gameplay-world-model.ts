@@ -1180,19 +1180,26 @@ export function deriveGameplayWorldModel(
       source.playerCapabilitySurfaces.protectionDefinitions.length > 0
     );
   if (playerCapabilityEvidence) {
+    const capabilityResidual =
+      (source.capabilityMutationFootprint?.partial ?? 0) > 0 ||
+      (source.capabilityMutationFootprint?.unresolved ?? 0) > 0;
+    const inactiveProtection =
+      (source.playerCapabilitySurfaces?.inactiveProtectionDefinitions ?? 0) > 0;
     runtimeSurfaces.push({
       id: "runtime:player-capability",
       label: "Player capability and privileged-role authority",
       kind: "runtime-domain",
       status:
-        (source.playerCapabilitySurfaces?.inactiveProtectionDefinitions ?? 0) > 0
+        inactiveProtection || capabilityResidual
           ? "unknown"
           : "understood",
       material: true,
-      ...((source.playerCapabilitySurfaces?.inactiveProtectionDefinitions ?? 0) > 0
+      ...(inactiveProtection || capabilityResidual
         ? {
             reason:
-              "One or more protection classes are defined but not instantiated in the selected production script graph.",
+              inactiveProtection
+                ? "One or more protection classes are defined but not instantiated in the selected production script graph."
+                : "Broad player capability has partial or unresolved mutation/reset coverage.",
           }
         : {}),
       boundaries: [
@@ -1202,6 +1209,10 @@ export function deriveGameplayWorldModel(
           String(source.playerCapabilitySurfaces?.abilityWrites ?? 0),
         "privilegedBypassReturns=" +
           String(source.playerCapabilitySurfaces?.privilegedBypassReturns ?? 0),
+        "capabilityMutationPartial=" +
+          String(source.capabilityMutationFootprint?.partial ?? 0),
+        "capabilityMutationUnresolved=" +
+          String(source.capabilityMutationFootprint?.unresolved ?? 0),
       ],
     });
   }
