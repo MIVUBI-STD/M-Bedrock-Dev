@@ -612,6 +612,48 @@ function degradationFromWorld(
   return output;
 }
 
+function selectedArtifactSearchText(
+  intent: GameplayIntentModel,
+): string {
+  return [
+    ...intent.nodes.flatMap((node) => [
+      node.label,
+      node.description ?? "",
+    ]),
+    ...intent.invariants.map((item) => item.statement),
+    ...intent.evidence
+      .filter((item) =>
+        item.scope === undefined ||
+        item.scope === "selected-artifact"
+      )
+      .flatMap((item) => [
+        item.locator,
+        item.summary,
+      ]),
+  ].join("\n");
+}
+
+function scenarioSurfaceSignals(
+  intent: GameplayIntentModel,
+): {
+  privilegedCapability: boolean;
+  worldRule: boolean;
+  cancelledWorldMutation: boolean;
+  spatialContainment: boolean;
+} {
+  const text = selectedArtifactSearchText(intent);
+  return {
+    privilegedCapability:
+      /admin|roommaster|operator|permission|creative|spectator|developer|debug|gamemode|command permission/i.test(text),
+    worldRule:
+      /gamerule|doMobSpawning|doDaylightCycle|doWeatherCycle|keepInventory|difficulty|mob spawning|natural spawn/i.test(text),
+    cancelledWorldMutation:
+      /beforeEvents|before event|event\.cancel|cancelled interaction|cancelled item|bucket|waterlog|water bucket/i.test(text),
+    spatialContainment:
+      /barrier|arena boundary|containment|mayfly|flight|fly|physical arena|collision|outside arena/i.test(text),
+  };
+}
+
 function auditScenarioPresetFromModel(
   input: {
     readonly semanticIr: SemanticIr;
@@ -625,6 +667,8 @@ function auditScenarioPresetFromModel(
         relation.kind === "deferred" ||
         relation.guardEvidence === "unresolved",
     );
+  const surfaceSignals =
+    scenarioSurfaceSignals(input.intent);
 
   return buildGameplayAuditScenarioPreset({
     arenaCount: input.world.arenas.count,
@@ -657,6 +701,14 @@ function auditScenarioPresetFromModel(
         item.origin === "scoreboard" ||
         item.origin === "command"
       ),
+    hasPrivilegedCapabilitySurface:
+      surfaceSignals.privilegedCapability,
+    hasWorldRuleSurface:
+      surfaceSignals.worldRule,
+    hasCancelledWorldMutationSurface:
+      surfaceSignals.cancelledWorldMutation,
+    hasSpatialContainmentSurface:
+      surfaceSignals.spatialContainment,
   });
 }
 
@@ -838,6 +890,35 @@ export function refreshHiddenGameplayDefectsForWorld(
           world,
           existing.mechanicCompleteness,
         );
+  const refreshSurfaceSignals =
+    intent === undefined
+      ? {
+          privilegedCapability:
+            existing.auditScenarioPreset.scenarios.some(
+              (scenario) =>
+                scenario.kind ===
+                  "player-capability-integrity",
+            ),
+          worldRule:
+            existing.auditScenarioPreset.scenarios.some(
+              (scenario) =>
+                scenario.kind ===
+                  "world-rule-authority",
+            ),
+          cancelledWorldMutation:
+            existing.auditScenarioPreset.scenarios.some(
+              (scenario) =>
+                scenario.kind ===
+                  "client-server-reconciliation",
+            ),
+          spatialContainment:
+            existing.auditScenarioPreset.scenarios.some(
+              (scenario) =>
+                scenario.kind ===
+                  "spatial-containment",
+            ),
+        }
+      : scenarioSurfaceSignals(intent);
   const auditScenarioPreset =
     buildGameplayAuditScenarioPreset({
       arenaCount: world.arenas.count,
@@ -873,6 +954,14 @@ export function refreshHiddenGameplayDefectsForWorld(
           item.origin === "scoreboard" ||
           item.origin === "command"
         ) ?? false,
+      hasPrivilegedCapabilitySurface:
+        refreshSurfaceSignals.privilegedCapability,
+      hasWorldRuleSurface:
+        refreshSurfaceSignals.worldRule,
+      hasCancelledWorldMutationSurface:
+        refreshSurfaceSignals.cancelledWorldMutation,
+      hasSpatialContainmentSurface:
+        refreshSurfaceSignals.spatialContainment,
     });
 
   const scenarioGraph =
