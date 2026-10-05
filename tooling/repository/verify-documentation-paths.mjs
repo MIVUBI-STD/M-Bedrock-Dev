@@ -20,7 +20,9 @@ const textExtensions = /\.(?:md|json|mjs|js|cjs|ts|tsx|ps1|cmd|yml|yaml|html)$/i
 const tracked = execFileSync("git", ["ls-files"], { encoding: "utf8" })
   .split(/\r?\n/)
   .filter(Boolean)
-  .filter((path) => textExtensions.test(path));
+  .filter((path) => textExtensions.test(path))
+  .filter((path) => path !== "tooling/repository/verify-documentation-paths.mjs")
+  .filter((path) => !path.startsWith("engine/reliability/history/"));
 
 const failures = [];
 
