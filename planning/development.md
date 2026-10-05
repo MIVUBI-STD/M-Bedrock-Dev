@@ -8,9 +8,32 @@ Current and future work that improves M-Bedrock-Dev itself.
 - Consolidate bug-finding coverage and validation documentation into canonical owners while compatibility pointers protect active references.
 - Keep structural ownership/naming/coverage verifiers aligned with each consolidation step.
 
+## Documentation path migration
+
+Final semantic directory names:
+
+```text
+docs/01-product/    → docs/product/
+docs/02-artifacts/  → docs/artifacts/
+docs/03-analysis/   → docs/analysis/
+docs/04-repair/     → docs/repair/
+docs/05-validation/ → docs/validation/
+docs/06-system/     → docs/system/
+docs/examples/      → docs/examples/   (unchanged)
+```
+
+Migration rule:
+
+1. keep current numbered paths while the repository is active;
+2. use `npm run verify:docs-migration-ready` to find remaining hard-coded numbered-path references;
+3. update references to the semantic target names;
+4. perform one atomic directory migration;
+5. make the migration-readiness rule a permanent no-numbered-path guard;
+6. do not keep duplicate compatibility directory trees after the migration.
+
 ## Backlog
 
-- Migrate numbered documentation directories to clear semantic names only after internal references are clean; do this as one controlled path migration, not piecemeal aliases.
+- Complete documentation path migration only when the migration-readiness checker reports no uncontrolled numbered-path references.
 
 - Continue consolidating `docs/03-analysis` and `docs/06-system` only where files share the same owner, audience, and lifecycle; preserve genuinely distinct domains.
 
