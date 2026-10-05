@@ -295,6 +295,18 @@ function runtimeComponents(
     });
   }
   if (
+    world.clientReconciliation.predictedMutationCancellations > 0
+  ) {
+    output.push({
+      id: "runtime:client-reconciliation",
+      label: "Client/server world-mutation reconciliation",
+      kind: "runtime-domain",
+      technicalRole: "Client-predicted world actions cancelled by server-side before-event protection.",
+      gameplayPurpose: "Ensure a rejected world mutation converges to the same authoritative state on the acting client and other clients.",
+      evidenceIds: ["runtime:client-reconciliation"],
+    });
+  }
+  if (
     world.spatial.resolvedScriptEffects > 0 ||
     world.spatial.structurePlacements > 0 ||
     world.spatial.authority.configured
@@ -430,6 +442,22 @@ function runtimeEdgeState(
         status: "PROVEN",
         reason:
           "Detected player capability mutations have no inactive protection definition or unresolved privileged bypass signal.",
+      };
+    }
+    case "runtime:client-reconciliation": {
+      if (
+        world.clientReconciliation.predictedMutationCancellations > 0
+      ) {
+        return {
+          status: "RUNTIME_BLOCKED",
+          reason:
+            "Server-side cancellation of a client-predicted world mutation is source-proven, but actual client visual reconciliation is native runtime behavior. One narrow multi-client comparison is required; broad manual playthrough is not.",
+        };
+      }
+      return {
+        status: "PROVEN",
+        reason:
+          "No client-predicted world-mutation cancellation surface was detected for this scenario.",
       };
     }
     case "runtime:spatial": {
@@ -1196,6 +1224,7 @@ export function compileGameplayScenarioGraph(
       case "client-server-reconciliation":
         addIntentKinds("policy", "state", "spatial-region");
         addRuntime(
+          "runtime:client-reconciliation",
           "runtime:spatial",
           "runtime:inventory",
         );
@@ -1391,6 +1420,7 @@ export function compileGameplayScenarioGraph(
     "runtime:economy": "economy-reward",
     "runtime:world-rules": "platform-constraints",
     "runtime:player-capability": "platform-constraints",
+    "runtime:client-reconciliation": "platform-constraints",
     "runtime:spatial": "spatial-authority",
   };
 
