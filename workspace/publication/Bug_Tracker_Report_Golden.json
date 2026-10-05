@@ -1,15 +1,15 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "reportTitle": "Bug Tracker Report",
   "sourceDataset": "workspace/reports/approved-publication-dataset.json",
+  "developerNoteAuthority": "workspace/reports/Dev-Notes.json",
   "summary": {
     "registeredMaps": 22,
-    "mapsWithIssues": 10,
-    "mapsWithoutPublishedIssues": 12,
-    "issues": 22,
+    "gameplayDesignFindings": 22,
     "bugs": 17,
     "designMismatches": 5,
-    "needsVerify": 0,
+    "devNotes": 2,
+    "totalActionableItems": 24,
     "severity": {
       "blocker": 4,
       "major": 15,
@@ -25,7 +25,8 @@
       "worldFileId": "1eSlTNBhoWslPs8xUlxsK0FVEkBe3uGz1",
       "worldFileName": "Aftershock v1.0.4.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "attack-challenge",
@@ -123,7 +124,8 @@
             "Arena isolation and existing queue feedback must remain intact."
           ]
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "beach-bedwars",
@@ -133,7 +135,8 @@
       "worldFileId": "1JNNZpRPj6IYE3nMgOC01p-9P-Ct8pSWC",
       "worldFileName": "Beach Bedwars v1.1.0.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "blitzbuild",
@@ -143,7 +146,22 @@
       "worldFileId": "1Z8HrS3UhVRj4r-WAi1wtpqs900xYy7QE",
       "worldFileName": "BlitzBuild-v1.0.2.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": [
+        {
+          "id": "DEV-BLZ-VERSION-NAME",
+          "projectId": "blitzbuild",
+          "type": "DEV_NOTE",
+          "title": "Version Name Is Inconsistent",
+          "problem": "The project registry identifies Builder's Memory / BlitzBuild as version 1.0.3, while the selected current World File is named BlitzBuild-v1.0.2.mcworld.",
+          "action": "Align the release version across the project registry and delivered World File naming so developers and testers can identify the current build reliably.",
+          "evidence": {
+            "registryVersion": "1.0.3",
+            "worldFileName": "BlitzBuild-v1.0.2.mcworld"
+          },
+          "severity": null
+        }
+      ]
     },
     {
       "projectId": "build-and-decode",
@@ -187,7 +205,8 @@
           ],
           "issueType": "DESIGN_MISMATCH"
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "clockwork-vault",
@@ -197,7 +216,8 @@
       "worldFileId": "1bET36z9mdi3-GYEdHrbKet5QLPZpMq87",
       "worldFileName": "The Clockwork Vault v1.0.1.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "composite-challenge",
@@ -358,7 +378,8 @@
             "Existing floor repair around legitimate active-arena players must continue."
           ]
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "dark-crystal",
@@ -368,7 +389,8 @@
       "worldFileId": "1ELPTLlxFiyLhd0Wv3PHnnXO2PD9VHyJq",
       "worldFileName": "Dark Crystal v1.0.0.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "defense-challenge",
@@ -527,7 +549,8 @@
             "Per-arena simulation coverage and isolation must remain correct."
           ]
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "fall-of-the-pillager-l1",
@@ -572,7 +595,8 @@
             "Players in unrelated sessions must remain isolated by the existing session ownership model."
           ]
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "fall-of-the-pillager-l2",
@@ -582,7 +606,8 @@
       "worldFileId": "1m9JnjTHqUP39OWQVpmWGpmetUTx6Vqaa",
       "worldFileName": "Fall of the Pillager Level 2 v2.2.2.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "five-nights-z-village-l1",
@@ -622,7 +647,8 @@
           ],
           "issueType": "BUG"
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "five-nights-z-village-l2",
@@ -632,7 +658,22 @@
       "worldFileId": "1v-7t1gvcPoIxZuaexUnWKxUqtv-ezB8S",
       "worldFileName": "Defense_Level_2_v1_2_0.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": [
+        {
+          "id": "DEV-FNZ2-VERSION-NAME",
+          "projectId": "five-nights-z-village-l2",
+          "type": "DEV_NOTE",
+          "title": "Version Name Is Inconsistent",
+          "problem": "The project registry identifies Five Nights at Z Village Level 2 as version 1.2.2, while the selected current World File is named Defense_Level_2_v1_2_0.mcworld.",
+          "action": "Align the delivered World File name with the current release version and map identity so developers and testers can identify the correct build reliably.",
+          "evidence": {
+            "registryVersion": "1.2.2",
+            "worldFileName": "Defense_Level_2_v1_2_0.mcworld"
+          },
+          "severity": null
+        }
+      ]
     },
     {
       "projectId": "manhunt",
@@ -676,7 +717,8 @@
             "Arena 6 join/session identity must remain distinct while only divergent world content is restored."
           ]
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "marathon-test-of-tactics-l2",
@@ -686,7 +728,8 @@
       "worldFileId": "1WyB9P4kjirf-ft34Fcq2q6jR4wRkjqX8",
       "worldFileName": "Marathon Test of Tactics v2.2.0.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "mysteries-biomes-l1",
@@ -696,7 +739,8 @@
       "worldFileId": "1jgOHXyLfV0qcbYYPCTPwoXrSS-NCacqQ",
       "worldFileName": "Mysteries of Biomes v1.0.4.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "mysteries-biomes-l2",
@@ -706,7 +750,8 @@
       "worldFileId": "1pk4tqSJNY9UkHeSW94PeXaQjGdSTdeIE",
       "worldFileName": "Mysteries of Biomes v2.1.1.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "orb-illusioner-l1",
@@ -716,7 +761,8 @@
       "worldFileId": "1hU8Mvg8Ty1uB2C-MlDjaon-YqEf3Rffo",
       "worldFileName": "Orb of the Illusioner Level 1 v1.2.1.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "orb-illusioner-l2",
@@ -785,7 +831,8 @@
           ],
           "issueType": "BUG"
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "raid-arena-classic",
@@ -795,7 +842,8 @@
       "worldFileId": "1kkqaqb9FQIkAzorCNzVe8vyHgoFoHJWu",
       "worldFileName": "Raid Arena Classic v1.1.0.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "the-circuit",
@@ -835,7 +883,8 @@
             "Normal stick crafting and legitimate gameplay resources must remain unchanged."
           ]
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "the-gauntlet",
@@ -908,7 +957,8 @@
             "Authorized developer skip/retry workflows may remain available through the existing permission owner."
           ]
         }
-      ]
+      ],
+      "devNotes": []
     }
   ],
   "games": [
@@ -926,7 +976,8 @@
             "worldFile": "https://drive.google.com/file/d/1eSlTNBhoWslPs8xUlxsK0FVEkBe3uGz1/view",
             "worldFilename": "Aftershock v1.0.4.mcworld"
           },
-          "issues": []
+          "issues": [],
+          "devNotes": []
         }
       ]
     },
@@ -947,20 +998,20 @@
           "issues": [
             {
               "id": "BUG-ATK-PRELOAD-INVENTORY",
-              "type": "BUG",
-              "severity": "MAJOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "major",
+              "category": "player-state",
+              "foundBy": "ai",
               "title": "Reconnect during preload can bypass the fresh-session inventory wipe",
-              "issue": "A player can disconnect before the preload wipe and reconnect after it, carrying ordinary stale items into the new Attack session.",
+              "problem": "A player can disconnect before the preload wipe and reconnect after it, carrying ordinary stale items into the new Attack session.",
+              "expected": "Every participant entering a fresh Attack session receives the same full inventory reset regardless of reconnect timing.",
+              "observed": "The wipe only targets players online at the preload callback, while reconnect and the first buy-phase loadout do not remove ordinary stale items.",
               "reproduction": [
                 "Carry a recognizable ordinary item before starting an Attack match.",
                 "Disconnect before the preload inventory-clear callback runs.",
                 "Reconnect after that callback while the session is still preloading.",
                 "Confirm the stale item remains when the match reaches the initial buy phase."
               ],
-              "observed": "The wipe only targets players online at the preload callback, while reconnect and the first buy-phase loadout do not remove ordinary stale items.",
-              "expected": "Every participant entering a fresh Attack session receives the same full inventory reset regardless of reconnect timing.",
-              "resolution": "Track the fresh-session inventory reset per player and replay the full clear on reconnect before preload or buy-phase continuation.",
               "aiAnalysis": "Attack performs its full wipe only over players online when preload reaches the clear callback. The preloading reconnect path does not replay that boundary, and the initial buy-phase loadout uses partial managed-item cleanup rather than a full inventory clear.",
               "relevantCode": [
                 {
@@ -968,27 +1019,28 @@
                   "reason": "Owns Attack preload clearing, reconnect recovery, and loadout cleanup behavior."
                 }
               ],
+              "suggestedFix": "Track the fresh-session inventory reset per player and replay the full clear on reconnect before preload or buy-phase continuation.",
               "mustPreserve": [
                 "Normal kit-managed item cleanup must retain its current mid-session behavior."
               ],
-              "testerNotes": ""
+              "issueType": "BUG"
             },
             {
               "id": "BUG-ATK-RESPAWN-RECONNECT",
-              "type": "BUG",
-              "severity": "MAJOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "major",
+              "category": "player-state",
+              "foundBy": "ai",
               "title": "Reconnect bypasses an active combat respawn countdown",
-              "issue": "A player can disconnect during the death countdown and reconnect back into active Attack gameplay before the intended respawn delay finishes.",
+              "problem": "A player can disconnect during the death countdown and reconnect back into active Attack gameplay before the intended respawn delay finishes.",
+              "expected": "A reconnecting player with a pending respawn stays in spectator/death state until the existing countdown ends.",
+              "observed": "CombatTracker restores the countdown, then GameManager restores survival, loadout, and gameplay position about five ticks later.",
               "reproduction": [
                 "Start an Attack match and die during active combat.",
                 "Disconnect while the respawn countdown is running.",
                 "Reconnect before the countdown expires.",
                 "Confirm the player returns to active gameplay before the original countdown finishes."
               ],
-              "observed": "CombatTracker restores the countdown, then GameManager restores survival, loadout, and gameplay position about five ticks later.",
-              "expected": "A reconnecting player with a pending respawn stays in spectator/death state until the existing countdown ends.",
-              "resolution": "Make GameManager defer to the existing pending-respawn owner before restoring survival, loadout, or gameplay position.",
               "aiAnalysis": "CombatTracker correctly owns pending respawns and restores spectator state on reconnect. GameManager independently restores active-session state shortly afterward without checking that pending respawn, overwriting the correct death lifecycle.",
               "relevantCode": [
                 {
@@ -996,27 +1048,29 @@
                   "reason": "Contains pending respawn ownership and active-session reconnect recovery."
                 }
               ],
+              "suggestedFix": "Make GameManager defer to the existing pending-respawn owner before restoring survival, loadout, or gameplay position.",
               "mustPreserve": [
                 "Normal reconnect outside a pending respawn must continue restoring the active session."
               ],
-              "testerNotes": ""
+              "issueType": "BUG"
             },
             {
               "id": "DM-ATK-ARENA-CAPACITY",
-              "type": "DESIGN_MISMATCH",
-              "severity": "MAJOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "major",
+              "category": "multiplayer-session",
+              "foundBy": "ai",
+              "issueType": "DESIGN_MISMATCH",
               "title": "Six playable arenas expose only two concurrent sessions",
-              "issue": "Attack presents six playable arena surfaces, but only two can run at once; additional ready groups must queue despite having their own arena.",
+              "problem": "Attack presents six playable arena surfaces, but only two can run at once; additional ready groups must queue despite having their own arena.",
+              "expected": "Presented independent arena capacity matches delivered concurrency, or the lower limit is explicitly authored as the player-facing capability.",
+              "observed": "Six arenas accept parties, but MAX_CONCURRENT_ARENAS limits active ticking-area leases to two and queues the third session.",
               "reproduction": [
                 "Prepare valid parties in 3 different Attack arenas.",
                 "Start the first 2 arenas so both hold active arena leases.",
                 "Ready and start the third arena.",
                 "Confirm the third group is queued even though its own visible arena is otherwise available."
               ],
-              "observed": "Six arenas accept parties, but MAX_CONCURRENT_ARENAS limits active ticking-area leases to two and queues the third session.",
-              "expected": "Presented independent arena capacity matches delivered concurrency, or the lower limit is explicitly authored as the player-facing capability.",
-              "resolution": "Reduce per-arena residency cost or use another proven simulation strategy so visible arena capacity can run concurrently; keep queueing as overflow handling.",
               "aiAnalysis": "The selected artifact exposes six independent arena/join surfaces while runtime admission hard-caps arena ticking leases at two. The queue is a mitigation path, not evidence that the six visible arenas were authored to mean only two concurrent sessions.",
               "relevantCode": [
                 {
@@ -1024,12 +1078,13 @@
                   "reason": "Defines the six Attack arena surfaces, MAX_CONCURRENT_ARENAS, ticking-area lease admission, and queue feedback."
                 }
               ],
+              "suggestedFix": "Reduce per-arena residency cost or use another proven simulation strategy so visible arena capacity can run concurrently; keep queueing as overflow handling.",
               "mustPreserve": [
                 "Arena isolation and existing queue feedback must remain intact."
-              ],
-              "testerNotes": ""
+              ]
             }
-          ]
+          ],
+          "devNotes": []
         }
       ]
     },
@@ -1047,7 +1102,8 @@
             "worldFile": "https://drive.google.com/file/d/1JNNZpRPj6IYE3nMgOC01p-9P-Ct8pSWC/view",
             "worldFilename": "Beach Bedwars v1.1.0.mcworld"
           },
-          "issues": []
+          "issues": [],
+          "devNotes": []
         }
       ]
     },
@@ -1065,7 +1121,22 @@
             "worldFile": "https://drive.google.com/file/d/1Z8HrS3UhVRj4r-WAi1wtpqs900xYy7QE/view",
             "worldFilename": "BlitzBuild-v1.0.2.mcworld"
           },
-          "issues": []
+          "issues": [],
+          "devNotes": [
+            {
+              "id": "DEV-BLZ-VERSION-NAME",
+              "projectId": "blitzbuild",
+              "type": "DEV_NOTE",
+              "title": "Version Name Is Inconsistent",
+              "problem": "The project registry identifies Builder's Memory / BlitzBuild as version 1.0.3, while the selected current World File is named BlitzBuild-v1.0.2.mcworld.",
+              "action": "Align the release version across the project registry and delivered World File naming so developers and testers can identify the current build reliably.",
+              "evidence": {
+                "registryVersion": "1.0.3",
+                "worldFileName": "BlitzBuild-v1.0.2.mcworld"
+              },
+              "severity": null
+            }
+          ]
         }
       ]
     },
@@ -1086,20 +1157,20 @@
           "issues": [
             {
               "id": "BUG-BAD-DEBUG-STICK",
-              "type": "DESIGN_MISMATCH",
-              "severity": "MINOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "minor",
+              "category": "ui-feedback",
+              "foundBy": "ai",
               "title": "Temporary coordinate picker is reachable by normal Creative builders",
-              "issue": "A normal builder can hold a stick and trigger production debug tooling, cancelling block interaction and exposing coordinate JSON unrelated to gameplay.",
+              "problem": "A normal builder can hold a stick and trigger production debug tooling, cancelling block interaction and exposing coordinate JSON unrelated to gameplay.",
+              "expected": "Temporary coordinate tooling is removed from production or restricted to developer/admin users.",
+              "observed": "Any builder holding a normal stick can trigger the imported coordinate picker without an admin requirement.",
               "reproduction": [
                 "Enter a Build & Decode building phase as the active Creative builder.",
                 "Obtain and hold a normal Minecraft stick.",
                 "Interact with a block.",
                 "Confirm normal interaction is cancelled and coordinate/debug output is shown."
               ],
-              "observed": "Any builder holding a normal stick can trigger the imported coordinate picker without an admin requirement.",
-              "expected": "Temporary coordinate tooling is removed from production or restricted to developer/admin users.",
-              "resolution": "Remove the debug-stick import from production or gate the existing tool behind the current developer/admin permission owner.",
               "aiAnalysis": "Production main.js imports the temporary debug-stick module. That module subscribes directly to block interaction, explicitly requires no admin tag, and the arena interaction guard lets stick interactions pass through.",
               "relevantCode": [
                 {
@@ -1111,12 +1182,14 @@
                   "reason": "Implements the non-admin stick coordinate picker and debug output."
                 }
               ],
+              "suggestedFix": "Remove the debug-stick import from production or gate the existing tool behind the current developer/admin permission owner.",
               "mustPreserve": [
                 "Normal gameplay stick behavior must remain available when the developer tool is disabled."
               ],
-              "testerNotes": ""
+              "issueType": "DESIGN_MISMATCH"
             }
-          ]
+          ],
+          "devNotes": []
         }
       ]
     },
@@ -1134,7 +1207,8 @@
             "worldFile": "https://drive.google.com/file/d/1bET36z9mdi3-GYEdHrbKet5QLPZpMq87/view",
             "worldFilename": "The Clockwork Vault v1.0.1.mcworld"
           },
-          "issues": []
+          "issues": [],
+          "devNotes": []
         }
       ]
     },
@@ -1155,20 +1229,20 @@
           "issues": [
             {
               "id": "BUG-CMP-TICKING-AREAS",
-              "type": "BUG",
-              "severity": "BLOCKER",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "blocker",
+              "category": "performance-stability",
+              "foundBy": "ai",
               "title": "Arena-specific ticking areas are declared but never created",
-              "issue": "Started arenas never create their declared simulation regions, so distant spawning, pathing, and wave progression depend on player-loaded chunks.",
+              "problem": "Started arenas never create their declared simulation regions, so distant spawning, pathing, and wave progression depend on player-loaded chunks.",
+              "expected": "Each started arena activates its required simulation regions before gameplay depends on remote chunks.",
+              "observed": "Only lobby and permission ticking areas are created; the configured per-arena ticking areas are never materialized.",
               "reproduction": [
                 "Start a Composite Challenge arena and progress to gameplay that spawns or moves entities far from players.",
                 "Keep players away from the remote spawn or pathing region.",
                 "Continue until the game depends on that distant simulation region.",
                 "Confirm remote spawning, pathing, or wave progression can stop because the arena region is not kept ticking."
               ],
-              "observed": "Only lobby and permission ticking areas are created; the configured per-arena ticking areas are never materialized.",
-              "expected": "Each started arena activates its required simulation regions before gameplay depends on remote chunks.",
-              "resolution": "Create and release the selected arena's declared simulation regions through the existing residency owner before gameplay uses remote chunks.",
               "aiAnalysis": "Arena configuration defines and offsets per-arena ticking regions, but the only runtime tickingarea-add owner consumes WorldData entries for lobby and permission. No second creation path or persisted arena ticking-area names were found in the selected artifact.",
               "relevantCode": [
                 {
@@ -1180,27 +1254,28 @@
                   "reason": "Contains the only runtime tickingarea-add owner and only applies lobby/permission regions."
                 }
               ],
+              "suggestedFix": "Create and release the selected arena's declared simulation regions through the existing residency owner before gameplay uses remote chunks.",
               "mustPreserve": [
                 "Lobby and permission ticking areas must keep their existing lifecycle."
               ],
-              "testerNotes": ""
+              "issueType": "BUG"
             },
             {
               "id": "BUG-CMP-ASYNC-RESET",
-              "type": "BUG",
-              "severity": "BLOCKER",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "blocker",
+              "category": "world-interaction",
+              "foundBy": "ai",
               "title": "Arena can restart while its asynchronous world reset is still running",
-              "issue": "The arena is marked idle before its multi-tick world reset finishes, so a new session can start while old reset work is still changing the map.",
+              "problem": "The arena is marked idle before its multi-tick world reset finishes, so a new session can start while old reset work is still changing the map.",
+              "expected": "The arena remains unavailable until its reset finishes, or start admission is blocked by the existing reset lock.",
+              "observed": "resetGame starts reset work without awaiting it, then publishes idle state while the reset continues over later ticks.",
               "reproduction": [
                 "Run a Composite arena and change blocks covered by the arena reset.",
                 "End or reset the match.",
                 "Start the same arena again before reset processing finishes.",
                 "Confirm blocks can continue changing underneath the new session during setup or gameplay."
               ],
-              "observed": "resetGame starts reset work without awaiting it, then publishes idle state while the reset continues over later ticks.",
-              "expected": "The arena remains unavailable until its reset finishes, or start admission is blocked by the existing reset lock.",
-              "resolution": "Keep the arena unavailable until the existing reset Promise settles, or include the existing reset-in-progress lock in canonical start admission.",
               "aiAnalysis": "ResetMapService performs a chunked multi-tick reset, but resetGame discards its Promise and saves the default idle session immediately. Start validation does not consult ResetMapService's reset-in-progress state, so the same arena can be admitted again before mutation ends.",
               "relevantCode": [
                 {
@@ -1208,28 +1283,29 @@
                   "reason": "Contains ResetMapService, resetGame, idle publication, and start admission logic."
                 }
               ],
+              "suggestedFix": "Keep the arena unavailable until the existing reset Promise settles, or include the existing reset-in-progress lock in canonical start admission.",
               "mustPreserve": [
                 "Arena resets must remain bounded and non-blocking across ticks.",
                 "One arena reset must not block unrelated arenas."
               ],
-              "testerNotes": ""
+              "issueType": "BUG"
             },
             {
               "id": "BUG-CMP-PRELOAD-INVENTORY",
-              "type": "BUG",
-              "severity": "MAJOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "major",
+              "category": "player-state",
+              "foundBy": "ai",
               "title": "Reconnect during preload can carry stale inventory into a fresh session",
-              "issue": "A player who misses the online-only preload wipe can reconnect and retain ordinary stale items when Composite enters the new session.",
+              "problem": "A player who misses the online-only preload wipe can reconnect and retain ordinary stale items when Composite enters the new session.",
+              "expected": "Every player entering a fresh Composite session receives the same full inventory reset regardless of reconnect timing.",
+              "observed": "The preload clear only covers online arena players, and later reconnect plus partial loadout refresh does not replay the missed full wipe.",
               "reproduction": [
                 "Carry a recognizable non-session item before starting a Composite arena.",
                 "Disconnect before the preload inventory clear runs.",
                 "Reconnect after the clear while the session is still preloading.",
                 "Confirm the stale item remains when preparation or gameplay begins."
               ],
-              "observed": "The preload clear only covers online arena players, and later reconnect plus partial loadout refresh does not replay the missed full wipe.",
-              "expected": "Every player entering a fresh Composite session receives the same full inventory reset regardless of reconnect timing.",
-              "resolution": "Make the fresh-session inventory reset a per-player invariant and reconcile any missed full clear before reconnecting players continue.",
               "aiAnalysis": "The full inventory clear iterates only players online at preload time. Reconnect during preloading restores state and position without clearing inventory, while preparation applies loadouts with clearAllSlots disabled.",
               "relevantCode": [
                 {
@@ -1237,27 +1313,29 @@
                   "reason": "Owns preload inventory clearing, reconnect handling, and preparation loadout application."
                 }
               ],
+              "suggestedFix": "Make the fresh-session inventory reset a per-player invariant and reconcile any missed full clear before reconnecting players continue.",
               "mustPreserve": [
                 "Normal mid-session loadout refresh must retain its existing scoped cleanup behavior."
               ],
-              "testerNotes": ""
+              "issueType": "BUG"
             },
             {
               "id": "BUG-CMP-CROSS-ARENA-FLAG",
-              "type": "BUG",
-              "severity": "MAJOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "major",
+              "category": "multiplayer-session",
+              "foundBy": "ai",
+              "issueType": "BUG",
               "title": "Cleanup in one arena can invalidate another arena's flag carrier",
-              "issue": "Ending or resetting one Composite arena can remove another arena's active carrier marker, causing its flag objective to drop or reset unexpectedly.",
+              "problem": "Ending or resetting one Composite arena can remove another arena's active carrier marker, causing its flag objective to drop or reset unexpectedly.",
+              "expected": "Per-arena cleanup changes only the flag carrier state owned by that arena.",
+              "observed": "Flag cleanup receives one arena ID but removes the shared carrier tag from every online player in the world.",
               "reproduction": [
                 "Run Composite Attack concurrently in Arena A and Arena B.",
                 "In Arena B, take the red flag and remain alive as its active carrier.",
                 "Complete, retry, or reset Arena A so its flag cleanup runs.",
                 "Confirm Arena B drops or returns its flag even though its carrier did not die or disconnect."
               ],
-              "observed": "Flag cleanup receives one arena ID but removes the shared carrier tag from every online player in the world.",
-              "expected": "Per-arena cleanup changes only the flag carrier state owned by that arena.",
-              "resolution": "Scope carrier-tag cleanup to the carrier owned by the target arena, or make the carrier tag arena-specific while keeping flagStates as the authority.",
               "aiAnalysis": "Carrier identity is split between arena-local flagStates and the global ctf_composite_attack_flag_carrier tag. FlagService.cleanup(arenaId) removes that tag from all world players, so Arena A cleanup invalidates Arena B's otherwise-valid carrier.",
               "relevantCode": [
                 {
@@ -1265,27 +1343,28 @@
                   "reason": "Contains Composite Attack flag state, shared carrier tag validation, per-arena transitions, and world-wide cleanup."
                 }
               ],
+              "suggestedFix": "Scope carrier-tag cleanup to the carrier owned by the target arena, or make the carrier tag arena-specific while keeping flagStates as the authority.",
               "mustPreserve": [
                 "Flag death/disconnect recovery must remain per-arena."
-              ],
-              "testerNotes": ""
+              ]
             },
             {
               "id": "BUG-CMP-CROSS-ARENA-FLOOR",
-              "type": "BUG",
-              "severity": "MINOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "minor",
+              "category": "world-interaction",
+              "foundBy": "ai",
+              "issueType": "BUG",
               "title": "Arena floor maintenance mutates blocks around unrelated players",
-              "issue": "An active Composite arena can convert dirt around lobby or other-arena players because its maintenance command targets every player in the world.",
+              "problem": "An active Composite arena can convert dirt around lobby or other-arena players because its maintenance command targets every player in the world.",
+              "expected": "Periodic arena floor maintenance affects only players and world space owned by that active arena.",
+              "observed": "Each active arena runs a grass-path fill as @a, so the mutation executes around players outside the arena too.",
               "reproduction": [
                 "Keep Player A outside the active Composite arena while standing near dirt.",
                 "Start gameplay in Arena B.",
                 "Wait for the periodic floor-maintenance interval.",
                 "Confirm dirt around Player A changes to grass path despite Player A not belonging to Arena B."
               ],
-              "observed": "Each active arena runs a grass-path fill as @a, so the mutation executes around players outside the arena too.",
-              "expected": "Periodic arena floor maintenance affects only players and world space owned by that active arena.",
-              "resolution": "Execute floor maintenance only for the canonical online-player set of the active arena instead of global @a.",
               "aiAnalysis": "Defense and Attack maintenance loops are entered per active arena, but the fill command executes as global @a. The command therefore escapes arena ownership and mutates nearby world state around unrelated players.",
               "relevantCode": [
                 {
@@ -1293,12 +1372,13 @@
                   "reason": "Contains the per-arena maintenance loop and global execute as @a fill command."
                 }
               ],
+              "suggestedFix": "Execute floor maintenance only for the canonical online-player set of the active arena instead of global @a.",
               "mustPreserve": [
                 "Existing floor repair around legitimate active-arena players must continue."
-              ],
-              "testerNotes": ""
+              ]
             }
-          ]
+          ],
+          "devNotes": []
         }
       ]
     },
@@ -1316,7 +1396,8 @@
             "worldFile": "https://drive.google.com/file/d/1ELPTLlxFiyLhd0Wv3PHnnXO2PD9VHyJq/view",
             "worldFilename": "Dark Crystal v1.0.0.mcworld"
           },
-          "issues": []
+          "issues": [],
+          "devNotes": []
         }
       ]
     },
@@ -1337,20 +1418,20 @@
           "issues": [
             {
               "id": "BUG-DEF-LEASE-RESET",
-              "type": "BUG",
-              "severity": "BLOCKER",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "blocker",
+              "category": "multiplayer-session",
+              "foundBy": "ai",
               "title": "Arena reset can remove ticking areas from a newly started run",
-              "issue": "The same arena can restart before its prior async reset finishes, allowing old cleanup to remove ticking areas from the new match and break simulation.",
+              "problem": "The same arena can restart before its prior async reset finishes, allowing old cleanup to remove ticking areas from the new match and break simulation.",
+              "expected": "An arena becomes reusable only after reset completes, and old cleanup cannot release resources owned by a newer run.",
+              "observed": "A new run can reuse the arena before reset finishes, then the old reset releases the ticking-area lease used by the new run.",
               "reproduction": [
                 "Start a Defense match in an arena.",
                 "End or reset the match so the arena begins its map reset.",
                 "Start a new match in the same arena before reset work finishes.",
                 "Confirm the new match loses its arena ticking areas and gameplay simulation can stop."
               ],
-              "observed": "A new run can reuse the arena before reset finishes, then the old reset releases the ticking-area lease used by the new run.",
-              "expected": "An arena becomes reusable only after reset completes, and old cleanup cannot release resources owned by a newer run.",
-              "resolution": "Keep the arena unavailable until reset completes, or generation-bind ticking-area lease release so old cleanup cannot release a newer run's lease.",
               "aiAnalysis": "Arena/session cleanup exposes the arena as reusable before asynchronous reset completion. The next run can reuse the existing ticking-area lease, while the previous run's delayed cleanup still owns a release path and removes that lease underneath the new run.",
               "relevantCode": [
                 {
@@ -1358,28 +1439,29 @@
                   "reason": "Owns Defense arena reset, session reuse, and ticking-area lease lifecycle."
                 }
               ],
+              "suggestedFix": "Keep the arena unavailable until reset completes, or generation-bind ticking-area lease release so old cleanup cannot release a newer run's lease.",
               "mustPreserve": [
                 "Existing arena queue and concurrency policy must keep working.",
                 "Cleanup from one arena must not affect another active arena."
               ],
-              "testerNotes": ""
+              "issueType": "BUG"
             },
             {
               "id": "BUG-DEF-WAVE-RETRY",
-              "type": "BUG",
-              "severity": "BLOCKER",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "blocker",
+              "category": "game-flow",
+              "foundBy": "ai",
               "title": "Delayed wave can clear before failed spawn retries finish",
-              "issue": "A delayed enemy group can be counted as cleared when its first spawn attempt fails, letting the wave advance before the queued retry spawns its enemies.",
+              "problem": "A delayed enemy group can be counted as cleared when its first spawn attempt fails, letting the wave advance before the queued retry spawns its enemies.",
+              "expected": "A wave remains active while any required enemy spawn is still pending retry.",
+              "observed": "Pending group count can reach zero with no live hostiles, so wave-clear logic can run before retry-spawned enemies appear.",
               "reproduction": [
                 "Reach Defense Level 15, Wave 3.",
                 "Trigger the delayed enemy group while its spawn chunk is not ready.",
                 "Let the first spawn attempt fail and queue its retry.",
                 "Confirm the wave can advance as cleared before the delayed enemies actually spawn."
               ],
-              "observed": "Pending group count can reach zero with no live hostiles, so wave-clear logic can run before retry-spawned enemies appear.",
-              "expected": "A wave remains active while any required enemy spawn is still pending retry.",
-              "resolution": "Keep delayed groups pending until spawn retries resolve, and block wave-clear reconciliation while required enemy spawns remain outstanding.",
               "aiAnalysis": "WaveScheduler removes the delayed group from pending accounting immediately after the first spawn attempt, while EntityLoader may still own retries. Hostile-clearance reconciliation then sees zero live tagged enemies and can complete the wave even though required spawns remain outstanding.",
               "relevantCode": [
                 {
@@ -1387,28 +1469,29 @@
                   "reason": "Contains delayed wave scheduling, spawn retry ownership, hostile accounting, and wave-clear reconciliation."
                 }
               ],
+              "suggestedFix": "Keep delayed groups pending until spawn retries resolve, and block wave-clear reconciliation while required enemy spawns remain outstanding.",
               "mustPreserve": [
                 "Normal successful spawn groups must keep their current wave timing.",
                 "Retry logic must remain bounded and arena-scoped."
               ],
-              "testerNotes": ""
+              "issueType": "BUG"
             },
             {
               "id": "BUG-DEF-RESPAWN-RECONNECT",
-              "type": "BUG",
-              "severity": "MAJOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "major",
+              "category": "player-state",
+              "foundBy": "ai",
               "title": "Reconnect bypasses an active combat respawn countdown",
-              "issue": "A player can disconnect during the death countdown and reconnect back into active gameplay before the intended respawn delay finishes.",
+              "problem": "A player can disconnect during the death countdown and reconnect back into active gameplay before the intended respawn delay finishes.",
+              "expected": "A reconnecting player with a pending respawn stays in spectator/death state until the existing countdown ends.",
+              "observed": "Combat recovery restores spectator state, then a second reconnect path restores survival, loadout, and gameplay position about five ticks later.",
               "reproduction": [
                 "Start a Defense match and die during active combat.",
                 "Disconnect while the respawn countdown is still running.",
                 "Reconnect before the countdown expires.",
                 "Confirm the player returns to active gameplay before the original respawn delay finishes."
               ],
-              "observed": "Combat recovery restores spectator state, then a second reconnect path restores survival, loadout, and gameplay position about five ticks later.",
-              "expected": "A reconnecting player with a pending respawn stays in spectator/death state until the existing countdown ends.",
-              "resolution": "Guard active-session reconnect recovery with the existing pending-respawn state so CombatTracker remains the sole owner until the death timer resolves.",
               "aiAnalysis": "CombatTracker owns pending respawn state and correctly restores spectator/countdown on reconnect. GameManager independently handles the same reconnect and later restores active gameplay without consulting that pending-respawn owner.",
               "relevantCode": [
                 {
@@ -1416,28 +1499,29 @@
                   "reason": "Contains CombatTracker pending respawn handling and GameManager reconnect recovery."
                 }
               ],
+              "suggestedFix": "Guard active-session reconnect recovery with the existing pending-respawn state so CombatTracker remains the sole owner until the death timer resolves.",
               "mustPreserve": [
                 "Normal reconnect outside a death countdown must still restore the active session.",
                 "Existing respawn timing must remain unchanged."
               ],
-              "testerNotes": ""
+              "issueType": "BUG"
             },
             {
               "id": "BUG-DEF-PRELOAD-INVENTORY",
-              "type": "BUG",
-              "severity": "MAJOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "major",
+              "category": "player-state",
+              "foundBy": "ai",
               "title": "Reconnect during preload can carry stale inventory into a new match",
-              "issue": "A player who disconnects before the fresh-session inventory wipe can reconnect after it and keep ordinary stale items into the new Defense session.",
+              "problem": "A player who disconnects before the fresh-session inventory wipe can reconnect after it and keep ordinary stale items into the new Defense session.",
+              "expected": "Every player entering a fresh Defense session passes the same full inventory reset regardless of reconnect timing.",
+              "observed": "The preload wipe only affects online players, and reconnect plus later loadout refresh does not clear ordinary items outside managed loadout state.",
               "reproduction": [
                 "Carry a recognizable non-session item in an inventory slot.",
                 "Start a Defense match, then disconnect before the preload inventory wipe runs.",
                 "Reconnect after the wipe while the session is still preloading.",
                 "Confirm the stale item remains when the new match reaches buy or gameplay phase."
               ],
-              "observed": "The preload wipe only affects online players, and reconnect plus later loadout refresh does not clear ordinary items outside managed loadout state.",
-              "expected": "Every player entering a fresh Defense session passes the same full inventory reset regardless of reconnect timing.",
-              "resolution": "Record the fresh-session inventory reset per player and enforce the missed full clear on reconnect before buy or gameplay continuation.",
               "aiAnalysis": "The fresh-session wipe is implemented as a batch action over players online at one preload tick rather than a per-player session invariant. Reconnect during preload does not reconcile the missed full clear, and later loadout refresh uses a partial managed-item cleanup.",
               "relevantCode": [
                 {
@@ -1445,27 +1529,29 @@
                   "reason": "Owns preload inventory clearing, reconnect handling, and later loadout application."
                 }
               ],
+              "suggestedFix": "Record the fresh-session inventory reset per player and enforce the missed full clear on reconnect before buy or gameplay continuation.",
               "mustPreserve": [
                 "Mid-session loadout refresh must not erase unrelated state unless the fresh-session boundary requires it."
               ],
-              "testerNotes": ""
+              "issueType": "BUG"
             },
             {
               "id": "DM-DEF-ARENA-CAPACITY",
-              "type": "DESIGN_MISMATCH",
-              "severity": "MAJOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "major",
+              "category": "multiplayer-session",
+              "foundBy": "ai",
+              "issueType": "DESIGN_MISMATCH",
               "title": "Six playable arenas expose only two concurrent sessions",
-              "issue": "Defense presents six playable arena surfaces, but only two can run at once; additional ready groups must queue despite having their own arena.",
+              "problem": "Defense presents six playable arena surfaces, but only two can run at once; additional ready groups must queue despite having their own arena.",
+              "expected": "Presented independent arena capacity matches delivered concurrency, or the lower limit is explicitly authored as the player-facing capability.",
+              "observed": "Six arenas accept parties, but MAX_CONCURRENT_ARENAS limits active ticking-area leases to two and queues later sessions.",
               "reproduction": [
                 "Prepare valid parties in 3 different Defense arenas.",
                 "Start the first 2 arenas so both hold active arena leases.",
                 "Ready and start the third arena.",
                 "Confirm the third group is queued even though its own visible arena is otherwise available."
               ],
-              "observed": "Six arenas accept parties, but MAX_CONCURRENT_ARENAS limits active ticking-area leases to two and queues later sessions.",
-              "expected": "Presented independent arena capacity matches delivered concurrency, or the lower limit is explicitly authored as the player-facing capability.",
-              "resolution": "Use a proven residency strategy that supports the presented arena concurrency, or change the authored player-facing capacity to match the actual supported limit.",
               "aiAnalysis": "Defense exposes six arena/join surfaces, while runtime admission allows only two held arena leases. Each active arena uses three residency regions. Queueing explains the implementation constraint but does not erase the delivered-capacity mismatch.",
               "relevantCode": [
                 {
@@ -1473,12 +1559,13 @@
                   "reason": "Owns Defense arena configuration, two-lease concurrency policy, residency resources, and queue admission."
                 }
               ],
+              "suggestedFix": "Use a proven residency strategy that supports the presented arena concurrency, or change the authored player-facing capacity to match the actual supported limit.",
               "mustPreserve": [
                 "Per-arena simulation coverage and isolation must remain correct."
-              ],
-              "testerNotes": ""
+              ]
             }
-          ]
+          ],
+          "devNotes": []
         }
       ]
     },
@@ -1499,20 +1586,21 @@
           "issues": [
             {
               "id": "FOP1-NEW-001",
-              "type": "BUG",
-              "severity": "MAJOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "major",
+              "category": "combat-team-ownership",
+              "foundBy": "ai",
+              "issueType": "BUG",
               "title": "Co-op players can damage each other during normal combat",
-              "issue": "Players assigned to the same cooperative offense session can damage one another with normal combat, allowing teammate attacks to feed the knockdown/death lifecycle.",
+              "problem": "Players assigned to the same cooperative offense session can damage one another with normal combat, allowing teammate attacks to feed the knockdown/death lifecycle.",
+              "expected": "Members of the same cooperative arena/session cannot damage one another unless friendly fire is explicitly authored as a gameplay mechanic.",
+              "observed": "The selected player entity retains normal attack/damage behavior and no same-session friendly-fire cancellation is installed. The custom damage lifecycle handles fatal/knockdown behavior but does not reject damage sourced from another member of the same session.",
               "reproduction": [
                 "Join the same Fall of the Pillager Level 1 arena with at least 2 players.",
                 "Start normal active gameplay.",
                 "Have Player A attack Player B with the normal combat weapon.",
                 "Confirm Player B receives damage and can be pushed into the knockdown/death lifecycle by the teammate."
               ],
-              "observed": "The selected player entity retains normal attack/damage behavior and no same-session friendly-fire cancellation is installed. The custom damage lifecycle handles fatal/knockdown behavior but does not reject damage sourced from another member of the same session.",
-              "expected": "Members of the same cooperative arena/session cannot damage one another unless friendly fire is explicitly authored as a gameplay mechanic.",
-              "resolution": "Reject player-sourced damage when attacker and victim are members of the same cooperative arena/session, while preserving hostile NPC damage and the existing knockdown/revive lifecycle.",
               "aiAnalysis": "Session/team ownership exists, but the selected artifact does not install a teammate-source exclusion at the damage boundary. Because the ordinary player attack path remains reachable, same-session player damage can feed the map's custom knockdown/revive/death accounting.",
               "relevantCode": [
                 {
@@ -1524,13 +1612,14 @@
                   "reason": "Owns session/team and custom combat lifecycle logic; no same-session friendly-fire cancellation is installed."
                 }
               ],
+              "suggestedFix": "Reject player-sourced damage when attacker and victim are members of the same cooperative arena/session, while preserving hostile NPC damage and the existing knockdown/revive lifecycle.",
               "mustPreserve": [
                 "Hostile NPC damage must continue to enter the normal knockdown/revive/death lifecycle.",
                 "Players in unrelated sessions must remain isolated by the existing session ownership model."
-              ],
-              "testerNotes": ""
+              ]
             }
-          ]
+          ],
+          "devNotes": []
         },
         {
           "level": "2",
@@ -1543,7 +1632,8 @@
             "worldFile": "https://drive.google.com/file/d/1m9JnjTHqUP39OWQVpmWGpmetUTx6Vqaa/view",
             "worldFilename": "Fall of the Pillager Level 2 v2.2.2.mcworld"
           },
-          "issues": []
+          "issues": [],
+          "devNotes": []
         }
       ]
     },
@@ -1564,20 +1654,20 @@
           "issues": [
             {
               "id": "BUG-FNZ1-CINEMATIC-COINS",
-              "type": "BUG",
-              "severity": "MAJOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "major",
+              "category": "score-reward",
+              "foundBy": "ai",
               "title": "Reconnect during cinematic can carry stale coins into a fresh session",
-              "issue": "A player who misses the cinematic inventory reset can reconnect and keep old coin currency, giving the new match an incorrect starting economy.",
+              "problem": "A player who misses the cinematic inventory reset can reconnect and keep old coin currency, giving the new match an incorrect starting economy.",
+              "expected": "Every new-session participant has stale inventory and currency cleared regardless of disconnect or reconnect timing.",
+              "observed": "The cinematic clear only affects online players, and later kit reconciliation intentionally preserves daigon:coin.",
               "reproduction": [
                 "Have a party member carry one or more daigon:coin items before starting a new session.",
                 "Start the arena and disconnect that player while arena loading is still running.",
                 "Reconnect after loading completes while the intro cinematic is active.",
                 "Confirm the old coin stack is still available when gameplay begins."
               ],
-              "observed": "The cinematic clear only affects online players, and later kit reconciliation intentionally preserves daigon:coin.",
-              "expected": "Every new-session participant has stale inventory and currency cleared regardless of disconnect or reconnect timing.",
-              "resolution": "Track completion of the fresh-session reset per participant and replay it on reconnect before cinematic or gameplay continuation.",
               "aiAnalysis": "Arena loading hands only currently online players to prepareCinematicPlayers, where the full clear occurs. A reconnect during the cinematic misses that reset. Gameplay later reapplies the kit, but its inventory cleanup deliberately excludes daigon:coin, so stale currency survives.",
               "relevantCode": [
                 {
@@ -1585,12 +1675,14 @@
                   "reason": "Contain ArenaLoading completion, cinematic player reset, reconnect reconciliation, and kit cleanup that preserves coins."
                 }
               ],
+              "suggestedFix": "Track completion of the fresh-session reset per participant and replay it on reconnect before cinematic or gameplay continuation.",
               "mustPreserve": [
                 "Normal mid-session kit reapplication may continue preserving coins when no fresh-session reset is required."
               ],
-              "testerNotes": ""
+              "issueType": "BUG"
             }
-          ]
+          ],
+          "devNotes": []
         },
         {
           "level": "2",
@@ -1603,7 +1695,22 @@
             "worldFile": "https://drive.google.com/file/d/1v-7t1gvcPoIxZuaexUnWKxUqtv-ezB8S/view",
             "worldFilename": "Defense_Level_2_v1_2_0.mcworld"
           },
-          "issues": []
+          "issues": [],
+          "devNotes": [
+            {
+              "id": "DEV-FNZ2-VERSION-NAME",
+              "projectId": "five-nights-z-village-l2",
+              "type": "DEV_NOTE",
+              "title": "Version Name Is Inconsistent",
+              "problem": "The project registry identifies Five Nights at Z Village Level 2 as version 1.2.2, while the selected current World File is named Defense_Level_2_v1_2_0.mcworld.",
+              "action": "Align the delivered World File name with the current release version and map identity so developers and testers can identify the correct build reliably.",
+              "evidence": {
+                "registryVersion": "1.2.2",
+                "worldFileName": "Defense_Level_2_v1_2_0.mcworld"
+              },
+              "severity": null
+            }
+          ]
         }
       ]
     },
@@ -1624,20 +1731,21 @@
           "issues": [
             {
               "id": "DM-MAN-ARENA6-REPLICA",
-              "type": "DESIGN_MISMATCH",
-              "severity": "MAJOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "major",
+              "category": "world-interaction",
+              "foundBy": "ai",
+              "issueType": "DESIGN_MISMATCH",
               "title": "Arena 6 is materially incomplete compared with the authored replica",
-              "issue": "Arena 6 is presented as a normal playable Manhunt arena but contains a substantial missing-geometry region compared with the canonical translated arena.",
+              "problem": "Arena 6 is presented as a normal playable Manhunt arena but contains a substantial missing-geometry region compared with the canonical translated arena.",
+              "expected": "Arena 6 contains the same gameplay world structure as the canonical arena after the authored translation, aside from bounded intentional differences.",
+              "observed": "Native voxel proof finds about 5.62% sampled mismatches in Arena 6, concentrated where thousands of canonical structure blocks are missing as air.",
               "reproduction": [
                 "Enter or inspect Manhunt Arena 1 and Arena 6.",
                 "Compare the corresponding far-side arena region using the authored Arena 6 translation.",
                 "Move through the area corresponding roughly to the canonical Z -340 through -220 region.",
                 "Confirm substantial geometry present in the canonical arena is missing in Arena 6."
               ],
-              "observed": "Native voxel proof finds about 5.62% sampled mismatches in Arena 6, concentrated where thousands of canonical structure blocks are missing as air.",
-              "expected": "Arena 6 contains the same gameplay world structure as the canonical arena after the authored translation, aside from bounded intentional differences.",
-              "resolution": "Restore Arena 6 from the canonical arena using the authored translation, then rerun voxel and block-entity replica proof before release.",
               "aiAnalysis": "Selected source config authors Arena 6 as the sixth translated replica, but native LevelDB voxel comparison shows 6,207 sampled mismatches, dominated by canonical stone/wool/tuff/concrete blocks becoming air. Other replicas remain near-zero mismatch.",
               "relevantCode": [
                 {
@@ -1649,12 +1757,13 @@
                   "reason": "Shows the concentrated Arena 6 geometry deficit relative to the canonical translated arena."
                 }
               ],
+              "suggestedFix": "Restore Arena 6 from the canonical arena using the authored translation, then rerun voxel and block-entity replica proof before release.",
               "mustPreserve": [
                 "Arena 6 join/session identity must remain distinct while only divergent world content is restored."
-              ],
-              "testerNotes": ""
+              ]
             }
-          ]
+          ],
+          "devNotes": []
         }
       ]
     },
@@ -1672,7 +1781,8 @@
             "worldFile": "https://drive.google.com/file/d/1WyB9P4kjirf-ft34Fcq2q6jR4wRkjqX8/view",
             "worldFilename": "Marathon Test of Tactics v2.2.0.mcworld"
           },
-          "issues": []
+          "issues": [],
+          "devNotes": []
         }
       ]
     },
@@ -1690,7 +1800,8 @@
             "worldFile": "https://drive.google.com/file/d/1jgOHXyLfV0qcbYYPCTPwoXrSS-NCacqQ/view",
             "worldFilename": "Mysteries of Biomes v1.0.4.mcworld"
           },
-          "issues": []
+          "issues": [],
+          "devNotes": []
         },
         {
           "level": "2",
@@ -1703,7 +1814,8 @@
             "worldFile": "https://drive.google.com/file/d/1pk4tqSJNY9UkHeSW94PeXaQjGdSTdeIE/view",
             "worldFilename": "Mysteries of Biomes v2.1.1.mcworld"
           },
-          "issues": []
+          "issues": [],
+          "devNotes": []
         }
       ]
     },
@@ -1721,7 +1833,8 @@
             "worldFile": "https://drive.google.com/file/d/1hU8Mvg8Ty1uB2C-MlDjaon-YqEf3Rffo/view",
             "worldFilename": "Orb of the Illusioner Level 1 v1.2.1.mcworld"
           },
-          "issues": []
+          "issues": [],
+          "devNotes": []
         },
         {
           "level": "2",
@@ -1737,20 +1850,20 @@
           "issues": [
             {
               "id": "BUG-ORB2-UPGRADE-MATERIAL",
-              "type": "BUG",
-              "severity": "MAJOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "major",
+              "category": "score-reward",
+              "foundBy": "ai",
               "title": "Weapon and armor upgrades consume coins then fail",
-              "issue": "Normal weapon or armor upgrades deduct coins and then fail before delivering the upgrade, leaving players with lost currency.",
+              "problem": "Normal weapon or armor upgrades deduct coins and then fail before delivering the upgrade, leaving players with lost currency.",
+              "expected": "A valid upgrade delivers the requested item tier, and any failed delivery leaves the player's coin balance unchanged.",
+              "observed": "Coins are consumed before code references an undefined material identifier, causing the upgrade to fail without refund.",
               "reproduction": [
                 "Enter an Orb L2 session and obtain enough coins for a valid weapon or armor upgrade.",
                 "Open the normal upgrade UI and buy the next available tier.",
                 "Wait for the purchase result.",
                 "Confirm the upgrade fails while the spent coins remain deducted."
               ],
-              "observed": "Coins are consumed before code references an undefined material identifier, causing the upgrade to fail without refund.",
-              "expected": "A valid upgrade delivers the requested item tier, and any failed delivery leaves the player's coin balance unchanged.",
-              "resolution": "Derive and validate the target material before charging coins, then make delivery atomic or refund currency on any post-charge failure.",
               "aiAnalysis": "UpgradeManager validates the tier and coin cost, consumes coins, then passes an undeclared material identifier into weapon or armor replacement. The resulting ReferenceError is caught as an upgrade failure, but the already consumed currency is not refunded.",
               "relevantCode": [
                 {
@@ -1758,27 +1871,28 @@
                   "reason": "Owns weapon/armor upgrade validation, coin consumption, item replacement, and tier persistence."
                 }
               ],
+              "suggestedFix": "Derive and validate the target material before charging coins, then make delivery atomic or refund currency on any post-charge failure.",
               "mustPreserve": [
                 "Existing tier progression and affordability rules must remain unchanged."
               ],
-              "testerNotes": ""
+              "issueType": "BUG"
             },
             {
               "id": "BUG-ORB2-RELOAD-BARRICADES",
-              "type": "BUG",
-              "severity": "MAJOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "major",
+              "category": "game-flow",
+              "foundBy": "ai",
               "title": "Active-game reload recovery aborts the arena",
-              "issue": "Reloading an active Orb L2 game triggers a recovery error that resets the arena and returns players to the lobby instead of resuming the session.",
+              "problem": "Reloading an active Orb L2 game triggers a recovery error that resets the arena and returns players to the lobby instead of resuming the session.",
+              "expected": "A persisted active game resumes and reconciles its stage barricades without terminating the arena.",
+              "observed": "Scheduled reload validation references undefined selectedBarricades, throws, and sends the active arena into internal-error recovery.",
               "reproduction": [
                 "Start Orb of the Illusioner Level 2 and reach active Offense gameplay.",
                 "Restart the world while the active match is still in progress.",
                 "Rejoin after the world finishes loading and wait a few seconds for recovery.",
                 "Confirm the arena resets and players return to the lobby instead of the match resuming."
               ],
-              "observed": "Scheduled reload validation references undefined selectedBarricades, throws, and sends the active arena into internal-error recovery.",
-              "expected": "A persisted active game resumes and reconciles its stage barricades without terminating the arena.",
-              "resolution": "Make reload validation iterate the stage's configured barricades or pass the intended set explicitly through the existing recovery owner.",
               "aiAnalysis": "The reload path schedules validateBarricadeStates after restoration. That method references selectedBarricades even though the identifier exists only as a parameter elsewhere. The resulting ReferenceError is classified as an arena recovery failure, causing disposal/reset.",
               "relevantCode": [
                 {
@@ -1786,12 +1900,14 @@
                   "reason": "Owns active-game resume, barricade validation, scheduler error handling, and arena recovery."
                 }
               ],
+              "suggestedFix": "Make reload validation iterate the stage's configured barricades or pass the intended set explicitly through the existing recovery owner.",
               "mustPreserve": [
                 "Existing persisted-session resume timing and arena cleanup ownership must remain intact."
               ],
-              "testerNotes": ""
+              "issueType": "BUG"
             }
-          ]
+          ],
+          "devNotes": []
         }
       ]
     },
@@ -1809,7 +1925,8 @@
             "worldFile": "https://drive.google.com/file/d/1kkqaqb9FQIkAzorCNzVe8vyHgoFoHJWu/view",
             "worldFilename": "Raid Arena Classic v1.1.0.mcworld"
           },
-          "issues": []
+          "issues": [],
+          "devNotes": []
         }
       ]
     },
@@ -1830,20 +1947,21 @@
           "issues": [
             {
               "id": "DM-CIR-DEBUG-STICK",
-              "type": "DESIGN_MISMATCH",
-              "severity": "MINOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "minor",
+              "category": "ui-feedback",
+              "foundBy": "ai",
+              "issueType": "DESIGN_MISMATCH",
               "title": "Normal gameplay resources expose the production DebugStick",
-              "issue": "Ordinary Circuit players can craft a stick from normal gameplay planks and trigger production coordinate-debug output without developer permission.",
+              "problem": "Ordinary Circuit players can craft a stick from normal gameplay planks and trigger production coordinate-debug output without developer permission.",
+              "expected": "Production debug interactions are disabled for ordinary players or gated by the existing developer permission owner.",
+              "observed": "DebugStickService is initialized in release and handles normal sticks; Circuit supplies oak planks in Survival, making the trigger craftable.",
               "reproduction": [
                 "Start a Circuit round that grants the normal block resources.",
                 "Use 2 supplied oak planks to craft sticks.",
                 "Hold or use a stick as a normal non-developer player.",
                 "Confirm DebugStick coordinate-selection output appears."
               ],
-              "observed": "DebugStickService is initialized in release and handles normal sticks; Circuit supplies oak planks in Survival, making the trigger craftable.",
-              "expected": "Production debug interactions are disabled for ordinary players or gated by the existing developer permission owner.",
-              "resolution": "Remove DebugStick from the release bootstrap or gate its stick interaction through the existing developer permission owner.",
               "aiAnalysis": "The production bootstrap initializes DebugStickService and its item-use path has no developer/admin gate. Circuit supplies oak planks as starting/shop resources and active gameplay uses Survival, so vanilla crafting closes the trigger reachability path.",
               "relevantCode": [
                 {
@@ -1851,12 +1969,13 @@
                   "reason": "Contains production DebugStick initialization, stick item-use handling, normal plank grants/shop resources, and Survival gameplay mode."
                 }
               ],
+              "suggestedFix": "Remove DebugStick from the release bootstrap or gate its stick interaction through the existing developer permission owner.",
               "mustPreserve": [
                 "Normal stick crafting and legitimate gameplay resources must remain unchanged."
-              ],
-              "testerNotes": ""
+              ]
             }
-          ]
+          ],
+          "devNotes": []
         }
       ]
     },
@@ -1877,20 +1996,20 @@
           "issues": [
             {
               "id": "BUG-GNT-DISCONNECT-GATE",
-              "type": "BUG",
-              "severity": "MAJOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "major",
+              "category": "multiplayer-session",
+              "foundBy": "ai",
               "title": "Co-op progression can ignore a disconnected required party member",
-              "issue": "All-player progression checks can drop an offline locked member, allowing the remaining player to advance cooperative gates without the full party.",
+              "problem": "All-player progression checks can drop an offline locked member, allowing the remaining player to advance cooperative gates without the full party.",
+              "expected": "Progression gates requiring the locked party wait for every required member, or pause while one is disconnected.",
+              "observed": "The shared all-player predicate filters the locked roster to currently present players before evaluating completion.",
               "reproduction": [
                 "Start The Gauntlet with at least 2 players and reach an all-player progression gate such as Level 9.",
                 "Disconnect one required party member before the group completes the gate.",
                 "Move the remaining online player into the required completion area within the disconnect recovery window.",
                 "Confirm the level advances even though the disconnected required member never completed the gate."
               ],
-              "observed": "The shared all-player predicate filters the locked roster to currently present players before evaluating completion.",
-              "expected": "Progression gates requiring the locked party wait for every required member, or pause while one is disconnected.",
-              "resolution": "Evaluate required cooperative gates against the locked run roster, or pause those gates whenever a required member is disconnected.",
               "aiAnalysis": "The run persists the original locked playerIds, but the shared positional helper removes missing players before evaluating every(). Started-party recovery keeps a partially disconnected run alive for several minutes, creating a window where cooperative gates evaluate only the remaining online subset.",
               "relevantCode": [
                 {
@@ -1898,27 +2017,29 @@
                   "reason": "Contains the shared all-player positional predicate, locked run roster, and disconnected-member recovery window."
                 }
               ],
+              "suggestedFix": "Evaluate required cooperative gates against the locked run roster, or pause those gates whenever a required member is disconnected.",
               "mustPreserve": [
                 "Exit-vote logic that intentionally uses only online players must keep its separate semantics."
               ],
-              "testerNotes": ""
+              "issueType": "BUG"
             },
             {
               "id": "BUG-GNT-DEV-SKIP",
-              "type": "BUG",
-              "severity": "MAJOR",
-              "verification": "VERIFIED",
+              "fixed": false,
+              "severity": "major",
+              "category": "game-flow",
+              "foundBy": "ai",
+              "issueType": "BUG",
               "title": "Ordinary players can craft the developer level-skip item",
-              "issue": "A normal player can craft a stick from authored level resources and use the release-enabled developer control to skip the current level for the arena.",
+              "problem": "A normal player can craft a stick from authored level resources and use the release-enabled developer control to skip the current level for the arena.",
+              "expected": "Level-skip controls are disabled in release or require the existing developer permission before changing progression.",
+              "observed": "The stick-triggered skip is enabled without a permission check, and authored Survival resources provide planks that can be crafted into sticks.",
               "reproduction": [
                 "Reach Gauntlet Level 13 as a normal non-developer player.",
                 "Take oak or dark-oak planks from the authored resource barrels.",
                 "Craft a normal Minecraft stick.",
                 "Use the stick and confirm the current level is skipped for the arena."
               ],
-              "observed": "The stick-triggered skip is enabled without a permission check, and authored Survival resources provide planks that can be crafted into sticks.",
-              "expected": "Level-skip controls are disabled in release or require the existing developer permission before changing progression.",
-              "resolution": "Disable item-triggered developer skip/retry controls in release or gate them through the existing developer-permission owner.",
               "aiAnalysis": "The release enables devSkipLevel on minecraft:stick and the itemUse path executes the skip without developer authorization. The selected structure/resource flow provides planks to Survival players, closing the ordinary-player acquisition path.",
               "relevantCode": [
                 {
@@ -1930,12 +2051,13 @@
                   "reason": "Provides authored plank resources that ordinary Survival players can craft into the trigger stick."
                 }
               ],
+              "suggestedFix": "Disable item-triggered developer skip/retry controls in release or gate them through the existing developer-permission owner.",
               "mustPreserve": [
                 "Authorized developer skip/retry workflows may remain available through the existing permission owner."
-              ],
-              "testerNotes": ""
+              ]
             }
-          ]
+          ],
+          "devNotes": []
         }
       ]
     }
