@@ -10,32 +10,22 @@ Current and future work that improves M-Bedrock-Dev itself.
 
 ## Documentation path migration
 
-Final semantic directory names:
+Completed on branch `Local`:
 
 ```text
-docs/01-product/    → docs/product/
-docs/02-artifacts/  → docs/artifacts/
-docs/03-analysis/   → docs/analysis/
-docs/04-repair/     → docs/repair/
-docs/05-validation/ → docs/validation/
-docs/06-system/     → docs/system/
-docs/examples/      → docs/examples/   (unchanged)
+docs/product/
+docs/artifacts/
+docs/analysis/
+docs/repair/
+docs/validation/
+docs/system/
 ```
 
-Migration rule:
-
-1. keep current numbered paths while the repository is active;
-2. use `npm run verify:docs-migration-ready` to find remaining hard-coded numbered-path references;
-3. update references to the semantic target names;
-4. perform one atomic directory migration;
-5. make the migration-readiness rule a permanent no-numbered-path guard;
-6. do not keep duplicate compatibility directory trees after the migration.
+Retired numbered documentation paths are permanently rejected by repository verification.
 
 ## Backlog
 
-- Complete documentation path migration only when the migration-readiness checker reports no uncontrolled numbered-path references.
-
-- Continue consolidating `docs/03-analysis` and `docs/06-system` only where files share the same owner, audience, and lifecycle; preserve genuinely distinct domains.
+- Continue consolidating `docs/analysis` and `docs/system` only where files share the same owner, audience, and lifecycle; preserve genuinely distinct domains.
 
 - Run `npm run audit:knowledge-consumption`, close actionable knowledge without dedicated analyzer/proof bindings, then promote `verify:knowledge-consumption` into `verify:repository` once debt reaches zero.
 
