@@ -61,6 +61,8 @@ describe("post repair verification", () => {
     expect(result.differentialPass).toBe(true);
     expect(result.releaseReady).toBe(false);
     expect(result.closureRequired).toBe(true);
+    expect(result.verificationReadiness.status)
+      .toBe("VERIFIED_FIXED");
   });
 
   it("fails when repair introduces a new major diagnostic", () => {
@@ -83,6 +85,8 @@ describe("post repair verification", () => {
 
     expect(result.status).toBe("fail");
     expect(result.releaseReady).toBe(false);
+    expect(result.verificationReadiness.status)
+      .toBe("REGRESSION_FOUND");
   });
 
   it("keeps progressive after-proof partial when before used full proof", () => {
@@ -109,5 +113,7 @@ describe("post repair verification", () => {
     expect(
       result.followUps.join(" "),
     ).toMatch(/full arena proof/i);
+    expect(result.verificationReadiness.status)
+      .toBe("CONFIRMATION_REQUIRED");
   });
 });
