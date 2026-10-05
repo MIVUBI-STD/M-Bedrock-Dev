@@ -3106,3 +3106,89 @@ declared-but-inactive guards credited as protection = 0
 duplicate findings from one causal root = 0
 ```
 
+---
+
+# 42. Broad Capability Mutation Differential
+
+### Trigger
+
+A player role receives a broad capability whose mutation surface is larger than one script-owned state container.
+
+Examples:
+
+```text
+Creative
+Spectator
+mayfly
+worldbuilder
+operator / Roommaster
+developer maintenance authority
+```
+
+Do not audit only the capability toggle. Expand the reachable mutation footprint:
+
+```text
+Capability
+→ inventory
+→ equipment / offhand
+→ world blocks / liquids
+→ dropped items
+→ block-created / manually spawned entities
+→ movement / physical reach
+→ interaction / command surfaces
+```
+
+Then compare:
+
+```text
+reachable mutation footprint
+- prevention footprint
+- reset / cleanup footprint
+= residual obligations
+```
+
+Rules:
+
+- inventory-container clear does not prove equipment reset;
+- a spawn-egg denylist does not prove block-created entities are impossible;
+- a plot block reset does not prove persistent entities were removed;
+- disabling mayfly does not prove the player never crossed a boundary while it was enabled;
+- admin/Roommaster authorization does not prove unrestricted live-world mutation is intended.
+
+Every material residual must resolve as:
+- blocked by exact proof;
+- restored by exact cleanup;
+- harmless by selected-artifact contract;
+- contradiction;
+- or one exact irreducible runtime fact.
+
+---
+
+# 43. Derived Publication Freshness Gate
+
+Canonical issue state and derived publication must never diverge silently.
+
+Required publication chain:
+
+```text
+canonical Bug Report V2
++ approved publication dataset
++ project registry
+→ render
+→ validate
+→ fingerprint source state
+→ publication PASS
+```
+
+Any canonical issue add/remove/change invalidates prior HTML/JSON publication until regenerated.
+
+Required behavior:
+
+- stale derived output must not remain marked PASS;
+- old report HTML must not live in the canonical Bug Report V2 directory;
+- rendered counts are calculated from current data, never copied from documentation;
+- publication validation records current expected counts and source-state identity;
+- rejected false positives must disappear from regenerated HTML rather than being marked fixed.
+
+This is publication integrity, not a second report authority.
+
