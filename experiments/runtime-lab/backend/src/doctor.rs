@@ -74,9 +74,8 @@ pub fn doctor() -> DoctorReport {
         _ => None,
     };
 
-    let clients = ClientId::ALL
+    let clients = ClientId::VIRTUAL
         .into_iter()
-        .filter(|client| !client.is_native())
         .map(|client| {
             let state = provider.as_ref().and_then(|provider| provider.status(client).ok());
             let provisioned = state.is_some_and(|state| state != ClientState::NotProvisioned);
