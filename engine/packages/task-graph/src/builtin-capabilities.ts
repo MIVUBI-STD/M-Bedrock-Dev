@@ -446,6 +446,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       owner: "packages/orchestrator",
       pathPrefixes: [
         "packages/orchestrator/src/inspection/player-capability-surface-analysis.ts",
+        "packages/orchestrator/src/inspection/capability-mutation-footprint-analysis.ts",
         "packages/orchestrator/src/inspection/capability-exposure-stage.ts",
       ],
       dependsOn: [
