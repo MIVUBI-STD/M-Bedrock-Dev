@@ -1,63 +1,58 @@
 # Runtime Lab Backend
 
-The backend is the only authority for Runtime Lab execution state.
+Runtime Lab V1 is a manual multi-client launcher for Minecraft Education.
 
-## Canonical flow
+## Goal
 
 ```text
-operator command
-→ RuntimeLabBackend
-→ config + scenario planning
-→ host health gate
-→ provider registry
-→ provider adapter
-→ client lifecycle
-→ runtime evidence
+one PC
+→ start 1–4 isolated Minecraft Education clients
+→ keep them responsive
+→ let the operator control every player manually
+→ open / reset / stop individual clients
 ```
 
-There is no second scheduler, device manager, provider selector, or scenario runner.
+## Canonical backend path
+
+```text
+CLI now / UI later
+        ↓
+RuntimeLabBackend
+        ↓
+ClientRuntime
+        ↓
+Provider
+        ↓
+VMware Workstation on Windows
+VMware Fusion on macOS
+```
+
+There is no scenario runner, test planner, role assignment, bot movement, or automated gameplay in V1.
 
 ## Ownership
 
-```text
-src/runtime-lab-backend.mjs     application backend owner
-src/cli.mjs                     thin operator command boundary
-src/config/                     config loading/validation
-src/scenarios/                  scenario intent → execution plan
-src/health/                     environment/runtime health decisions
-src/providers/                  provider discovery + provider adapters
-config/                         declarative product defaults
-runtime/                        local generated/runtime state; never Git authority
-```
+- `runtime-lab-backend.mjs` — one application-level backend surface.
+- `client-runtime.mjs` — one owner for client lifecycle.
+- `doctor.mjs` — host readiness check.
+- `providers/provider.mjs` — platform provider selection.
+- provider-specific files — hypervisor mechanics only.
+- `cli.mjs` — thin operator boundary.
 
-Provider adapters own hypervisor mechanics only. They do not own scenario policy, health truth, evidence classification, or user-facing workflow.
-
-## User-facing contract
-
-The user should not need to know which provider command is required.
+## Commands
 
 ```text
 lab doctor
 lab status
-lab provision
-lab start <count>
-lab stop
-lab reset [client]
-lab run <scenario>
+lab start <1-4>
+lab open <client>
+lab reset <client>
+lab stop [client]
 ```
 
-Commands not yet implemented must fail explicitly rather than simulate success.
+No runtime action may pretend to succeed when the backing VM/client has not been provisioned.
 
 ## Frontend boundary
 
-A future frontend must call the same backend contract. It must not invoke VMware, Fusion, Parallels, or VirtualBox directly.
+Frontend is intentionally deferred.
 
-```text
-future UI
-   ↓
-RuntimeLabBackend
-   ↓
-same execution path used by CLI
-```
-
-Frontend work starts only after backend lifecycle, scenario planning, reset semantics, and health gates are stable.
+When frontend work begins, it must call `RuntimeLabBackend` and must not implement provider or lifecycle logic itself.
