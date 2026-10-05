@@ -33,6 +33,8 @@ const canonicalDocs = [
   "docs/06-system/architecture.md",
   "docs/06-system/skill-routing.md",
   "docs/06-system/zero-waste-execution.md",
+  "docs/04-repair/transactions.md",
+  "docs/04-repair/repair-planning.md",
   "docs/05-validation/runtime-proof.md",
   "docs/05-validation/search-and-falsification.md",
   "docs/05-validation/retest-and-regression.md",
@@ -113,6 +115,11 @@ const compatibilityPointers = [
   "docs/06-system/orchestration.md",
   "docs/06-system/skill-contract.md",
   "docs/06-system/context-efficiency.md",
+  "docs/04-repair/application.md",
+  "docs/04-repair/filesystem-safety.md",
+  "docs/04-repair/orchestrated-planning.md",
+  "docs/04-repair/topology-planning.md",
+  "docs/04-repair/typed-effects.md",
 ];
 
 for (const path of compatibilityPointers) {
@@ -149,6 +156,10 @@ for (const path of retiredAuthorityPaths) {
   if (existsSync(path)) {
     failures.push("Retired authority path must not exist: " + path);
   }
+}
+
+if (existsSync("docs/04-reporting")) {
+  failures.push("Retired duplicate docs domain must not exist: docs/04-reporting");
 }
 
 const validationReadme = existsSync("docs/05-validation/README.md")
