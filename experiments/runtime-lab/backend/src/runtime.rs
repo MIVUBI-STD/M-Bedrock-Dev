@@ -3,11 +3,11 @@ use crate::{
     doctor::{doctor, DoctorReport},
     provider::{current_platform_provider, runtime_root},
 };
+use fs2::FileExt;
 use serde::Serialize;
 use std::{
-    fs::{self, OpenOptions},
+    fs::{self, File, OpenOptions},
     io,
-    path::PathBuf,
 };
 
 #[derive(Debug, Default)]
@@ -21,7 +21,7 @@ pub struct RuntimeStatus {
 }
 
 struct OperationLock {
-    path: PathBuf,
+    file: File,
 }
 
 impl OperationLock {
@@ -29,29 +29,30 @@ impl OperationLock {
         let root = runtime_root()?;
         fs::create_dir_all(&root)?;
         let path = root.join(".operation.lock");
-
-        OpenOptions::new()
+        let file = OpenOptions::new()
+            .read(true)
             .write(true)
-            .create_new(true)
-            .open(&path)
-            .map_err(|error| {
-                if error.kind() == io::ErrorKind::AlreadyExists {
-                    io::Error::new(
-                        io::ErrorKind::WouldBlock,
-                        "another Runtime Lab operation is already running",
-                    )
-                } else {
-                    error
-                }
-            })?;
+            .create(true)
+            .open(path)?;
 
-        Ok(Self { path })
+        file.try_lock_exclusive().map_err(|error| {
+            if error.kind() == io::ErrorKind::WouldBlock {
+                io::Error::new(
+                    io::ErrorKind::WouldBlock,
+                    "another Runtime Lab operation is already running",
+                )
+            } else {
+                error
+            }
+        })?;
+
+        Ok(Self { file })
     }
 }
 
 impl Drop for OperationLock {
     fn drop(&mut self) {
-        let _ = fs::remove_file(&self.path);
+        let _ = self.file.unlock();
     }
 }
 
