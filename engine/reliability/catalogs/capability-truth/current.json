@@ -8,7 +8,7 @@
       "engine/packages/analysis-planner/src/domain-capabilities.ts",
       "engine/packages/analysis-planner/src/arena-capabilities.ts"
     ],
-    "registryFingerprint": "0db3800f",
+    "registryFingerprint": "fa5ede27",
     "proofRegistry": "engine/reliability/catalogs/capability-proof-bindings.json",
     "proofRegistryFingerprint": "54d9f4c4",
     "proofInventoryFingerprint": "ebbdf6c9"
@@ -20,7 +20,7 @@
     "runtimeOnly": 4,
     "proofBound": 55,
     "proofUnbound": 0,
-    "analysisCapabilities": 31,
+    "analysisCapabilities": 35,
     "ownerHasTests": 55
   },
   "taskCapabilities": [
@@ -2061,6 +2061,25 @@
       ]
     },
     {
+      "id": "client-mutation-reconciliation",
+      "evidenceLevel": "semantic",
+      "cost": "cheap",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "client-server",
+        "before-event",
+        "interaction-cancel",
+        "waterlogging",
+        "prediction"
+      ]
+    },
+    {
       "id": "combat-lifecycle-contract",
       "evidenceLevel": "semantic",
       "cost": "moderate",
@@ -2240,6 +2259,46 @@
       ]
     },
     {
+      "id": "physical-containment-proof",
+      "evidenceLevel": "semantic",
+      "cost": "moderate",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "arena",
+        "barrier",
+        "collision",
+        "geometry",
+        "containment",
+        "flight"
+      ]
+    },
+    {
+      "id": "player-capability-authority",
+      "evidenceLevel": "semantic",
+      "cost": "cheap",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "permission",
+        "operator",
+        "roommaster",
+        "gamemode",
+        "ability",
+        "guard-activation"
+      ]
+    },
+    {
       "id": "release-identity-consistency",
       "evidenceLevel": "static",
       "cost": "cheap",
@@ -2386,6 +2445,24 @@
         "permission",
         "region",
         "build"
+      ]
+    },
+    {
+      "id": "world-rule-authority",
+      "evidenceLevel": "semantic",
+      "cost": "cheap",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "gamerule",
+        "world-setting",
+        "entity-spawn",
+        "authority"
       ]
     }
   ]
