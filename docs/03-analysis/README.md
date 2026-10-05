@@ -81,10 +81,8 @@ Use this order:
 Load only when the canonical procedure activates the concern:
 
 - [Gameplay Model Closure](./gameplay-model-closure.md) — UNDERSTAND closure semantics.
-- [Gameplay Audit Blind Spots](./gameplay-audit-blind-spots.md) — mandatory blind-spot knowledge used by MODEL/STRESS.
-- [Cross-System Interaction Audit](./cross-system-interaction-audit.md) — cross-system evidence questions used by STRESS.
+- [Bug-Finding Coverage System](./bug-finding-coverage.md) — canonical coverage accounting, blind spots, cross-system stress, proof conservation, and anti-suppression gate.
 - [Audit Execution Flow](./audit-execution-flow.md) — reader-facing player-flow projection only.
-- [Audit Finalization Checklist](./audit-finalization-checklist.md) — final review projection only.
 - [Map Audit Report V2](./map-audit-report-v2-schema.md) — **Complete Bug Report**; human-facing full finding set across `PROVEN` and `NEED_VALIDATION`, with separate `BUG` and `DESIGN_MISMATCH` lanes.
 - [Approved Bug Report V2](./gameplay-bug-report-v2.md) — downstream persisted approved `PROVEN BUG` ledger only.
 
