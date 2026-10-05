@@ -1,3 +1,27 @@
+## 2026-10-05 — causal crosscheck and knowledge-loop hardening
+
+Source-reviewed on `Local` after Build & Decode runtime feedback exposed false-positive and cross-system blind spots.
+
+Current source contract:
+
+- causal admission now requires trigger → authoritative mechanism → failed/missing protection → wrong reachable state → player-visible consequence;
+- counter-proof dimensions include geometry, capability/permission, world-rule authority, guard activation, and client/server representation;
+- physical escape claims can invoke LevelDB-backed barrier enclosure proof; loading/gameplay bounds are not treated as collision proof;
+- player capability analysis distinguishes Creative/Spectator/mayfly/permission/admin surfaces and tracks inactive protection definitions;
+- broad capability mutation footprint compares inventory, equipment, gamemode, temporary abilities, and privileged world-mutation coverage against cleanup/protection;
+- world-rule authority distinguishes natural mob spawning from command/script/manual entity creation;
+- client-predicted world mutation cancellation routes to a narrow runtime reconciliation question rather than broad manual playthrough;
+- pre-report candidate grouping uses structural root-cause identity so one technical cause can consolidate multiple player-visible symptoms;
+- new knowledge facts are bound to concrete detector and proof paths through `engine/reliability/catalogs/knowledge-detector-bindings.json`;
+- canonical audit role, spatial-bound, proof, and runtime-verification terminology is explicitly documented and machine-checked;
+- Capability Truth now registers 55 task capabilities, all 55 proof-bound, with the new player-capability, world-rule-authority, client-reconciliation, and physical-containment owners;
+- negative regression coverage records that loading-bound crossing is not physical escape proof, inactive guards are not Blocking Proof, and `doMobSpawning=false` is not proof against manual spawn paths;
+- derived publication was regenerated from the approved dataset and current publication validation is PASS for 34 findings / 29 BUG / 5 DESIGN_MISMATCH / 5 Developer Notes.
+
+Proof ceiling: **REMOTE GITHUB SOURCE REVIEW / EXECUTABLE SPECIFICATIONS COMMITTED**. No local `npm run verify:ready`, TypeScript build, Vitest execution, or Minecraft runtime session was executed in this pass. Runtime feedback supplied by the tester is recorded separately from source-only proof.
+
+---
+
 ## 2026-10-03 — HTML report zero-waste cleanup
 
 Source-verified on `Local`:
