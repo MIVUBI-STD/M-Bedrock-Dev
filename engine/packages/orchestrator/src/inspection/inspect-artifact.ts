@@ -828,6 +828,10 @@ export async function inspectArtifact(
           result.inventoryPolicy,
         inventoryRestoreOwnership:
           result.inventoryRestoreOwnership,
+        worldRuleAuthority:
+          result.worldRuleAuthority,
+        playerCapabilitySurfaces:
+          result.playerCapabilitySurfaces,
         semanticIr: {
           stateSurfaces:
             result.semanticIr.stateSurfaces,
