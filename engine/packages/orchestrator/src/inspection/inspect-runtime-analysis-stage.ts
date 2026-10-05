@@ -53,6 +53,9 @@ import {
 import {
   analyzeClientMutationReconciliation,
 } from "./client-mutation-reconciliation-analysis.js";
+import {
+  analyzeCapabilityMutationFootprint,
+} from "./capability-mutation-footprint-analysis.js";
 
 export interface InspectionRuntimeAnalysisInput {
   target: InspectTargetProfile;
@@ -285,6 +288,18 @@ export function analyzeInspectionRuntimeState(
     analyzeInventoryRestoreOwnership(
       scriptsFor("inventory-state"),
     );
+  const capabilityMutationFootprint =
+    analyzeCapabilityMutationFootprint({
+      playerCapabilities:
+        playerCapabilitySurfaces,
+      arenaCleanup:
+        arenaCleanupSurfaces,
+      inventory:
+        inventoryLifecycle,
+      ...(spatialAuthority === undefined
+        ? {}
+        : { spatialAuthority }),
+    });
   const combatLifecycle =
     analyzeCombatLifecycle(
       scriptsFor("combat-lifecycle"),
@@ -527,6 +542,7 @@ export function analyzeInspectionRuntimeState(
     inventoryLifecycle,
     inventoryPolicy,
     inventoryRestoreOwnership,
+    capabilityMutationFootprint,
     combatLifecycle,
     chunkLifecycle,
     persistenceSource,
