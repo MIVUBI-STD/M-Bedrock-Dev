@@ -16,6 +16,7 @@
     "bugs",
     "designMismatches",
     "honesty",
+    "qualityGates",
     "validationTests",
     "control",
     "auditObligations"
@@ -1864,6 +1865,90 @@
         },
         "additionalProperties": false
       }
+    },
+    "qualityGates": {
+      "type": "object",
+      "required": [
+        "informationIntegrity",
+        "zeroFinding"
+      ],
+      "properties": {
+        "informationIntegrity": {
+          "type": "object",
+          "required": [
+            "policy",
+            "status",
+            "findingIds",
+            "unresolvedFindingIds",
+            "reasons"
+          ],
+          "properties": {
+            "policy": {
+              "const": "canonical-information-integrity-projection"
+            },
+            "status": {
+              "enum": [
+                "CLOSED_CLEAR",
+                "CLOSED_WITH_FINDINGS",
+                "BLOCKED"
+              ]
+            },
+            "findingIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true
+            },
+            "unresolvedFindingIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true
+            },
+            "reasons": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "zeroFinding": {
+          "type": "object",
+          "required": [
+            "policy",
+            "status",
+            "reasons"
+          ],
+          "properties": {
+            "policy": {
+              "const": "closed-audit-zero-finding"
+            },
+            "status": {
+              "enum": [
+                "ELIGIBLE",
+                "NOT_ELIGIBLE",
+                "NOT_APPLICABLE"
+              ]
+            },
+            "reasons": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": true
