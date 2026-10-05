@@ -22,6 +22,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match command.as_str() {
         "doctor" => print_json(&lab.doctor())?,
+        "provision" => print_json(&lab.provision()?)?,
         "status" => print_json(&lab.status()?)?,
         "start" => {
             let count = args.next().ok_or("client count is required")?.parse::<usize>()?;
@@ -42,6 +43,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         _ => {
             println!("M-Bedrock Runtime Lab");
             println!("  doctor");
+            println!("  provision");
             println!("  status");
             println!("  start <1-4>");
             println!("  open <MCE-01..04>");
