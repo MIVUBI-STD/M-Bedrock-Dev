@@ -2349,3 +2349,57 @@ Audit metrics must preserve:
 
 The engine must maximize PROVEN through stronger evidence and proof, never through reduced proof requirements.
 
+
+## Aggressive Multi-Scenario requirement
+
+The STRESS lane must execute the aggressive scenario model defined in `detection-coverage-assurance.md`.
+
+When applicable, the following scenario families are mandatory:
+
+```text
+Transition Residue
+Objective Custody
+World Mutation Compatibility
+Offline Progression
+Container / Economy Carryover
+Disconnect / Reconnect at lifecycle boundaries
+Reload / Bootstrap recovery
+Shared-state multi-player interleavings
+Multi-arena resource / cleanup interleavings
+Capability acquisition → privileged activation
+```
+
+The engine must be aggressive in scenario generation and conservative in publication.
+
+Before STRESS closes:
+
+```text
+all material adjacent stage handoffs
+→ mutation/reset differential
+
+all carried/owned objectives
+→ custody-state interruption matrix
+
+all reused physical gameplay space
+→ previous mutation × next-stage dependency compatibility
+
+all player-independent timers/cinematics
+→ offline progression differential
+
+all gameplay containers/economy stores
+→ provenance + carryover differential
+```
+
+Pairwise interaction coverage is the default. Generate a higher-order scenario only when three or more dimensions converge on the same state, resource, owner, geometry, or transition.
+
+The audit must not ask the tester to broadly play through the map. Manual runtime work is reduced to exact irreducible questions after deterministic simulation.
+
+Closure target:
+
+```text
+Unaccounted Material Interleavings = 0
+Generic Runtime Questions = 0
+Generic NEED_VALIDATION = 0
+Unsupported PROVEN = 0
+```
+
