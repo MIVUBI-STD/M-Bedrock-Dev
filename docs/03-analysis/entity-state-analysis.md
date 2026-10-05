@@ -37,3 +37,76 @@ A finding includes the exact state/group/event context where the documented prer
 This is possible-state analysis, not exact runtime state reconstruction.
 
 Randomize/sequence/filter semantics and event timing are parsed conservatively. Runtime evidence remains necessary to prove which state was active during a real gameplay failure.
+
+## Semantic capability analysis
+
+Entity state analysis also owns static semantic capability reasoning across attack, targeting, navigation, sensors, and internal event reachability.
+
+### Attack and sensor semantics
+
+Recognized attack families include melee, delayed/melee-box, ranged, and fire-at-target behavior. Prerequisite reasoning is state-specific; for example a ranged behavior may require a shooter capability, while melee behavior may require an attack/damage capability.
+
+Sensors are modeled as conditional event emitters:
+
+```text
+sensor condition
+→ event
+→ component-group transition
+→ resulting entity state/capabilities
+```
+
+Static analysis proves configuration/reachability structure, not that a runtime condition became true.
+
+### Target acquisition
+
+Targeting analysis extracts configured entity target groups, family filters, distance limits, visibility/reachability constraints, reselection behavior, and reevaluation settings.
+
+A movement/navigation goal without a valid target provider must not be mistaken for a pure pathfinding problem.
+
+### Navigation capability
+
+Navigation capabilities are derived from the active candidate state's navigation component, including door/path/water/swim/walk/climb/fly-related capabilities where present.
+
+Variant identity and individual path flags remain separate evidence.
+
+A behavior prerequisite is checked against the actual candidate state, not merely against component names found somewhere in the file.
+
+### Entity event reachability
+
+Internal event graphs validate:
+
+```text
+sensor/event root
+→ defined entity event
+→ nested trigger event
+→ component-group add/remove
+```
+
+Undefined events or groups are strong structural contradictions. A defined event that is not reachable from known internal roots is informational only because external commands, animation controllers, scripts, spawn logic, or engine behavior may still trigger it.
+
+### Knowledge relations
+
+Entity semantic reasoning may use relations such as:
+
+```text
+requires
+requires-any
+produces
+activates
+deactivates
+gates
+supersedes
+delayed-until-tick
+runtime-built-in
+```
+
+These relations constrain known prerequisites/capabilities. They do not turn possible-state analysis into exact runtime reconstruction.
+
+## Boundary
+
+This owner remains static and conservative:
+
+- component groups are not merged unless a reachable state transition supports the combination;
+- runtime identifiers may imply engine-owned behavior not visible in JSON;
+- randomize/sequence/filter timing remains conservative;
+- actual active runtime state still requires runtime evidence when source proof cannot decide it.
