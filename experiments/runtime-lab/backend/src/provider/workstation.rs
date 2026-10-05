@@ -1,5 +1,5 @@
 use super::{
-    base_vmx_path, client_vmx_path, command_output, ensure_parent, listed_as_running,
+    apply_client_resource_policy, base_vmx_path, client_vmx_path, command_output, ensure_parent, listed_as_running,
     promote_staging_vm, remove_vm_container, snapshot_list_contains, staging_client_vmx_path,
     wait_for_state, Provider, READY_SNAPSHOT,
 };
@@ -109,6 +109,11 @@ impl Provider for VmwareWorkstationProvider {
         );
 
         if let Err(error) = clone_result {
+            remove_vm_container(&staging);
+            return Err(error);
+        }
+
+        if let Err(error) = apply_client_resource_policy(&staging) {
             remove_vm_container(&staging);
             return Err(error);
         }
