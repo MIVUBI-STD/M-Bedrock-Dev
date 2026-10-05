@@ -19,5 +19,7 @@ Do not duplicate the workspace tree in this file.
 - Project evidence, patches, state, and generated outputs remain separated by their canonical workspace owners.
 - Derived indexes/caches are not source authority.
 - Private user artifacts remain ignored and must not be committed.
-- `workspace/reports/` is the only tracked canonical current bug-report handoff surface unless its ownership contract is deliberately changed.
+- `workspace/reports/` is the only tracked canonical current Bug Report V2 handoff surface.
+- `workspace/developer-notes.json` owns current Developer Notes and must not be merged into Bug Report V2 state.
+- `workspace/publication/` contains derived publication output only; it must never be read back as canonical report/project state.
 - Planning/todo intent does not belong in `workspace/`; repository planning belongs in `planning/`.
