@@ -56,8 +56,8 @@ live available RAM
 
 Current bounds:
 
-- one Virtual: 4–6 GB;
-- two Virtual: 4–5 GB each;
+- one Virtual: 4–5 GB;
+- two Virtual: 4–4.5 GB each;
 - three Virtual: 4 GB each.
 
 Running instances are never resized.
