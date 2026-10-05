@@ -116,6 +116,9 @@ None of these documents may authorize continuation independently of the Mandator
 - [Compatibility](./compatibility.md)
 - [Education](./education.md)
 
+### Gameplay capacity and concurrency
+- [Capacity and Concurrency](./capacity-concurrency.md) — presented vs deliverable capacity, throughput bottlenecks, queue behavior, and concurrency boundaries.
+
 ### Runtime gameplay knowledge
 Runtime documents describe evidence requirements only; knowledge presence is not proof and does not create a workflow.
 
