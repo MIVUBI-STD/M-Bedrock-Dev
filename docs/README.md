@@ -4,7 +4,7 @@ Single entry point for human and AI documentation discovery.
 
 > Repository work planning is intentionally separate from documentation. Use `../planning/` for development, operations, and project continuation intent. Use `workspace/` for working artifacts and execution data.
 
-> The numeric prefixes are a temporary physical compatibility layout, not workflow order or authority priority. Semantic ownership is determined by the domain and canonical owner documents. Rename/migration is deferred until internal references are clean enough for one controlled path migration.
+> Documentation domains use semantic names. Directory names describe ownership domains, not workflow order or authority priority.
 
 ## Load rule
 
@@ -31,7 +31,7 @@ Which specialist procedure?    → system/skill-routing.md
 How do we build/test/deliver?  → system/development-operations.md
 ```
 
-## Current physical domains
+## Documentation domains
 
 ```text
 docs/
