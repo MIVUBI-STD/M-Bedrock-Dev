@@ -431,6 +431,22 @@ function runtimeEdgeState(
             "Protection code is defined but not instantiated; inactive protection cannot be credited as a blocking guard.",
         };
       }
+      if (
+        world.capabilityMutationFootprint.partial > 0 ||
+        world.capabilityMutationFootprint.unresolved > 0
+      ) {
+        const residual = world.capabilityMutationFootprint.surfaces
+          .filter((item) => item.status !== "covered")
+          .map((item) => item.surface + "=" + item.status)
+          .join(", ");
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Broad player capability has unresolved mutation/reset footprint: " +
+            residual +
+            ". Resolve these exact residuals before treating the role as safely contained.",
+        };
+      }
       if (world.playerCapabilities.privilegedBypassReturns > 0) {
         return {
           status: "DETECTION_GAP",
@@ -441,7 +457,7 @@ function runtimeEdgeState(
       return {
         status: "PROVEN",
         reason:
-          "Detected player capability mutations have no inactive protection definition or unresolved privileged bypass signal.",
+          "Detected player capability mutations have complete discovered reset/protection coverage and no inactive protection definition or unresolved privileged bypass signal.",
       };
     }
     case "runtime:client-reconciliation": {
