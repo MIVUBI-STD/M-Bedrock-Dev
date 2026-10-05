@@ -1,6 +1,6 @@
 # Regression Audit Execution
 
-> Compatibility pointer. Canonical owner: [Retest and Regression](../05-validation/retest-and-regression.md).
+> Compatibility pointer. Canonical owner: [Retest and Regression](../validation/retest-and-regression.md).
 
 Independent regression execution, miss classification, and recall-quality metrics are consolidated into the canonical retest/regression guide.
 
