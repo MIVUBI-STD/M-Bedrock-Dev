@@ -168,3 +168,56 @@ active lane
 - `deny`: stop that action; do not switch lanes implicitly.
 
 A domain specialist cannot override a denied lane permission.
+
+## Work-lane contract
+
+Every work-lane skill must expose the same control structure:
+
+1. Purpose
+2. Entry criteria
+3. Allowed actions
+4. Forbidden actions
+5. lane-specific procedure
+6. Output contract
+7. Handoff
+8. STOP
+
+Canonical work-lane names:
+
+```text
+Map Bug Audit
+Detection Development
+Detection Benchmark
+Target Repair
+```
+
+Product Development is not Detection Development. Generic repository/product feature work uses the normal development execution contract and canonical semantic owner.
+
+### Domain specialist contract
+
+Domain specialists may use a smaller procedure, but must declare:
+- role = domain specialist;
+- lane boundary;
+- owned decision/result;
+- no implicit expansion of mutation or execution authority.
+
+### No implicit lane switching
+
+```text
+Map Bug Audit
+  detection gap
+    → handoff record
+    → stop that claim
+
+Detection Development
+  capability complete
+    → benchmark handoff
+    → stop development
+
+Detection Benchmark
+  pass/fail
+    → report/handoff
+    → stop benchmark
+```
+
+A handoff is data. It is not permission to continue automatically into another lane.
