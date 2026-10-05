@@ -1,18 +1,7 @@
 # Regression Fixtures
 
-Regression fixtures should reduce real defects to the smallest reproducible form.
+> Compatibility pointer. Canonical owner: [Retest and Regression](./retest-and-regression.md).
 
-The first fixture models repeated arena-like fill effects with one translation outlier. Its purpose is to prove the source-level chain:
+Regression fixtures, history-driven prioritization, per-map retest planning, portfolio retest, and campaign-history boundaries are consolidated into the canonical retest/regression guide.
 
-```text
-typed command
-→ resolved effect
-→ expected translation
-→ outlier
-→ patch transaction
-→ working-copy mutation
-→ reparse
-→ translation match
-```
-
-The fixture is intentionally not a full mcworld. Archive transport is a separate concern.
+This file remains temporarily so active references do not break during documentation consolidation. Do not add new normative guidance here.
