@@ -49,7 +49,7 @@ broad scans          0
 
 Open more only for a concrete unresolved question. Truncation or partial output is incomplete evidence, not proof of absence.
 
-Use `docs/06-system/implementation-map.md` before broad search for a known subsystem.
+Use `docs/system/implementation-map.md` before broad search for a known subsystem.
 
 ## 4. DIAGNOSE THE FIRST WRONG OWNER
 
