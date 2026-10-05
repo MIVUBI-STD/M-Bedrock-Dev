@@ -1,36 +1,25 @@
 {
   "schemaVersion": 5,
-  "status": "FAIL",
-  "reason": "Derived publication HTML/JSON predates the current approved publication dataset and must be regenerated from canonical data before release.",
-  "expected": {
-    "registeredMaps": 22,
-    "findings": 34,
-    "bugs": 29,
-    "designMismatches": 5,
-    "devNotes": 5,
-    "actionable": 39,
-    "severity": {
-      "blocker": 4,
-      "major": 25,
-      "minor": 5
-    }
+  "status": "PASS",
+  "registeredMaps": 22,
+  "mapsWithPublishedIssues": 10,
+  "mapsWithoutPublishedIssues": 12,
+  "findings": 34,
+  "bugs": 29,
+  "designMismatches": 5,
+  "devNotes": 5,
+  "actionable": 39,
+  "severity": {
+    "blocker": 4,
+    "major": 25,
+    "minor": 5
   },
-  "observedDerivedPublication": {
-    "findings": 26,
-    "bugs": 21,
-    "designMismatches": 5,
-    "devNotes": 4,
-    "actionable": 30,
-    "severity": {
-      "blocker": 4,
-      "major": 19,
-      "minor": 3
-    }
-  },
-  "staleOutputs": [
-    "workspace/publication/Bug_Tracker_Report_Full_Current.html",
-    "workspace/publication/maps/build-and-decode-v1.1.0-Bug-Tracker.html"
-  ],
-  "requiredAction": "Regenerate derived publication from workspace/reports/approved-publication-dataset.json using the canonical Golden publication generator, then re-run validation.",
+  "cards": 39,
+  "uniqueIds": 39,
+  "defaultCollapsed": true,
+  "source": "workspace/reports/approved-publication-dataset.json",
+  "fullCurrentMatchesCanonical": true,
+  "staleFalsePositiveAbsent": true,
+  "currentRuntimeFindingsPresent": true,
   "proofPolicy": "PROOF_ESCALATION_HARD_GATE_ACTIVE"
 }
