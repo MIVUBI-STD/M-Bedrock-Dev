@@ -20,7 +20,10 @@ const confidences = stringRegistry("KNOWLEDGE_CONFIDENCES");
 const editions = stringRegistry("KNOWLEDGE_EDITIONS");
 const diagnosticSeverities = stringRegistry("KNOWLEDGE_DIAGNOSTIC_SEVERITIES");
 
-const directory = "engine/knowledge";
+const knowledgeDirectory = "engine/knowledge";
+const engineeringDirectory = "engine/contracts/engineering/catalogs";
+const engineeringOwnershipPath = "engine/contracts/engineering/ownership.json";
+
 function catalogFiles(root) {
   return readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
     const path = join(root, entry.name);
@@ -30,7 +33,55 @@ function catalogFiles(root) {
       : [];
   }).sort();
 }
-const files = catalogFiles(directory);
+const knowledgeFiles = catalogFiles(knowledgeDirectory);
+const engineeringFiles = catalogFiles(engineeringDirectory);
+const files = [...knowledgeFiles, ...engineeringFiles].sort();
+
+const engineeringOwnership = JSON.parse(
+  readFileSync(engineeringOwnershipPath, "utf8"),
+);
+if (engineeringOwnership.schemaVersion !== 1 || !engineeringOwnership.groups) {
+  throw new Error("Invalid engineering contract ownership registry.");
+}
+
+const declaredEngineeringFiles = [];
+for (const [group, config] of Object.entries(engineeringOwnership.groups)) {
+  if (!config || !Array.isArray(config.files)) {
+    throw new Error(`Engineering ownership group ${group} requires files[].`);
+  }
+  for (const name of config.files) {
+    if (typeof name !== "string" || !name.endsWith("-contract.json")) {
+      throw new Error(`Engineering ownership group ${group} has invalid file: ${name}`);
+    }
+    declaredEngineeringFiles.push(name);
+  }
+}
+
+const duplicateEngineeringOwner = declaredEngineeringFiles.find(
+  (name, index) => declaredEngineeringFiles.indexOf(name) !== index,
+);
+if (duplicateEngineeringOwner) {
+  throw new Error(
+    `Engineering contract assigned to multiple ownership groups: ${duplicateEngineeringOwner}`,
+  );
+}
+
+const physicalEngineeringFiles = engineeringFiles
+  .map((path) => path.split("/").at(-1))
+  .sort();
+const declaredSorted = [...declaredEngineeringFiles].sort();
+
+if (JSON.stringify(physicalEngineeringFiles) !== JSON.stringify(declaredSorted)) {
+  const declared = new Set(declaredSorted);
+  const physical = new Set(physicalEngineeringFiles);
+  const unowned = physicalEngineeringFiles.filter((name) => !declared.has(name));
+  const missing = declaredSorted.filter((name) => !physical.has(name));
+  throw new Error(
+    "Engineering contract ownership mismatch." +
+      (unowned.length ? " Unowned: " + unowned.join(", ") + "." : "") +
+      (missing.length ? " Missing: " + missing.join(", ") + "." : ""),
+  );
+}
 
 const sourceIdsGlobal = new Map();
 const factIdsGlobal = new Map();
@@ -38,7 +89,10 @@ const relationIdsGlobal = new Map();
 
 function validUrl(source) {
   if (typeof source.url !== "string") return false;
-  if (source.authority === "project-policy") {
+  if (
+    source.authority === "project-policy" ||
+    source.authority === "engineering-contract"
+  ) {
     return source.url.startsWith("project://") || source.url.startsWith("https://");
   }
   return source.url.startsWith("https://");
@@ -69,6 +123,7 @@ function validateApplicability(path, id, applicability) {
 
 for (const path of files) {
   const catalog = JSON.parse(readFileSync(path, "utf8"));
+  const isEngineeringContract = path.startsWith(engineeringDirectory + "/");
   if (catalog.schemaVersion !== 1) throw new Error(`${path}: schemaVersion must be 1`);
   if (!Array.isArray(catalog.sources)) throw new Error(`${path}: sources must be an array`);
   if (!Array.isArray(catalog.facts)) throw new Error(`${path}: facts must be an array`);
@@ -85,6 +140,11 @@ for (const path of files) {
       !confidences.has(source.confidence)
     ) {
       throw new Error(`${path}: invalid source ${source.id ?? "<missing>"}`);
+    }
+    if (isEngineeringContract && source.authority !== "engineering-contract") {
+      throw new Error(
+        `${path}: engineering contract source ${source.id} must use authority engineering-contract`,
+      );
     }
     if (sources.has(source.id)) throw new Error(`${path}: duplicate source ${source.id}`);
     sources.add(source.id);
@@ -117,6 +177,14 @@ for (const path of files) {
     }
     if (!fact.subject || !fact.statement) {
       throw new Error(`${path}: fact ${fact.id} lacks subject/statement`);
+    }
+    if (
+      isEngineeringContract &&
+      fact.classification !== "engineering-contract"
+    ) {
+      throw new Error(
+        `${path}: engineering contract fact ${fact.id} must use classification engineering-contract`,
+      );
     }
     if (fact.classification !== undefined && !classifications.has(fact.classification)) {
       throw new Error(
@@ -343,5 +411,5 @@ for (const [id, factPath] of factIdsGlobal) {
 }
 
 console.log(
-  `Knowledge catalog verification passed (${files.length} catalogs, ${factIdsGlobal.size} facts, ${relationIdsGlobal.size} relations).`,
+  `Knowledge/engineering catalog verification passed (${knowledgeFiles.length} platform catalogs, ${engineeringFiles.length} engineering catalogs, ${factIdsGlobal.size} facts, ${relationIdsGlobal.size} relations).`,
 );
