@@ -1,18 +1,18 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "status": "PASS",
   "registeredMaps": 22,
-  "gameplayDesignFindings": 22,
+  "findings": 22,
   "bugs": 17,
   "designMismatches": 5,
   "devNotes": 2,
-  "totalActionableItems": 24,
+  "actionable": 24,
   "severity": {
     "blocker": 4,
     "major": 15,
     "minor": 3
   },
-  "renderedCards": 24,
+  "cards": 24,
   "uniqueIds": 24,
   "devNoteCards": 2,
   "worldLinks": 22,
@@ -20,5 +20,11 @@
   "defaultCollapsed": true,
   "exportJson": true,
   "exportHtml": true,
-  "developerNoteCoverage": "CLOSED_22_OF_22_MAPS_396_CATEGORY_ROUTES"
+  "testerNotes": 22,
+  "devNoteTextareas": 2,
+  "attachments": 24,
+  "contextIncluded": true,
+  "proofEscalationIncluded": true,
+  "developerNoteCoverage": "CLOSED_22_OF_22_MAPS_396_CATEGORY_ROUTES",
+  "proofPolicy": "PROOF_ESCALATION_HARD_GATE_ACTIVE"
 }
