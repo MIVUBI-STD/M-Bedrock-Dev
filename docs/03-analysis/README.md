@@ -94,20 +94,20 @@ None of these documents may authorize continuation independently of the Mandator
 - [Project model](./project-model.md)
 - [Dependency graph](./dependency-graph.md)
 - [State scope](./state-scope.md)
-- [Topology](./topology.md)
+- [Topology](./topology.md) — coordinate resolution, translated-region candidates, conservative outliers, and bounded native chunk correlation.
 - [Executable reasoning architecture](./executable-reasoning-architecture.md)
 
 ### Authored source semantics
 - [Content discovery](./content-discovery.md)
 - [Command effects](./command-effects.md)
 - [Dialogue scene graph](./dialogue-scene-graph.md)
-- [Entity state analysis](./entity-state-analysis.md)
+- [Entity state analysis](./entity-state-analysis.md) — possible-state modeling plus attack, sensor, targeting, navigation, event-reachability, and prerequisite knowledge.
 - [Script API](./script-api.md)
 
 ### Native world and structure evidence
 - [World DB](./world-db.md)
 - [World DB native evidence](./world-db-native-evidence.md)
-- [mcstructure](./mcstructure.md)
+- [mcstructure](./mcstructure.md) — normalized structures, embedded runtime commands, load correlation, command-chain topology, and placement transforms.
 - [Structure load correlation](./structure-load-correlation.md)
 - [Native world differential](./native-world-differential.md)
 
