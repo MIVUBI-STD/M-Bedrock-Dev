@@ -139,6 +139,17 @@ Review the audit in the same order the player experiences the game:
 - [ ] The audit honesty gate reports PASS; any missing visible residue blocks READY_FOR_REVIEW.
 - [ ] Only concrete blocking counter-proof may remove a material candidate from the visible finding set.
 
+## Final quality projections
+
+- [ ] Information Integrity projection is not BLOCKED before publication.
+- [ ] Every player-facing information contradiction remains represented exactly once in the canonical BUG or DESIGN_MISMATCH lanes.
+- [ ] Information Integrity does not create a duplicate issue list or alternate audit authority.
+- [ ] When the canonical finding count is zero, Zero-Finding assessment is ELIGIBLE before describing the audit as a closed zero-finding result.
+- [ ] Zero-Finding ELIGIBLE requires accounted coverage, CLOSED gameplay closure, PASS honesty, zero Audit Obligations, and zero remaining validation groups.
+- [ ] Zero-Finding wording remains bounded to the selected artifact and closed audit coverage; it is never phrased as a universal "bug-free" guarantee.
+- [ ] After a repair, Fix Verification Readiness is VERIFIED_FIXED before treating the original issue as closed; NOT_FIXED, REGRESSION_FOUND, and CONFIRMATION_REQUIRED remain open states.
+- [ ] Fix Verification Readiness reuses canonical post-repair differential/preservation proof and is not a second repair pipeline.
+
 ## Report output
 
 - [ ] Proposed Issue Set review resolved: approved / rejected / needs-discussion.
