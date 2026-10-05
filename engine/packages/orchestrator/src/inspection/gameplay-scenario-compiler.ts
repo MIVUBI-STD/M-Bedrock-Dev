@@ -265,6 +265,49 @@ function runtimeComponents(
       evidenceIds: ["runtime:economy"],
     });
   }
+  if (
+    world.worldRules.writes > 0 ||
+    world.worldRules.manualEntitySpawnPaths > 0
+  ) {
+    output.push({
+      id: "runtime:world-rules",
+      label: "World-rule and environment authority",
+      kind: "runtime-domain",
+      technicalRole: "Gamerule writers and manual entity-spawn mechanisms.",
+      gameplayPurpose: "Attribute world behavior to the exact governing rule or spawn mechanism instead of conflating natural and privileged/manual paths.",
+      evidenceIds: ["runtime:environment"],
+    });
+  }
+  if (
+    world.playerCapabilities.gamemodeWrites > 0 ||
+    world.playerCapabilities.abilityWrites > 0 ||
+    world.playerCapabilities.commandPermissionWrites > 0 ||
+    world.playerCapabilities.privilegedGuardReferences > 0 ||
+    world.playerCapabilities.protectionDefinitions > 0
+  ) {
+    output.push({
+      id: "runtime:player-capability",
+      label: "Player capability and privileged-role authority",
+      kind: "runtime-domain",
+      technicalRole: "Gamemode, ability, command permission, privileged guards and protection activation.",
+      gameplayPurpose: "Keep Builder, Roommaster/operator and developer privileges scoped to their intended gameplay and maintenance responsibilities.",
+      evidenceIds: ["runtime:player-capability"],
+    });
+  }
+  if (
+    world.spatial.resolvedScriptEffects > 0 ||
+    world.spatial.structurePlacements > 0 ||
+    world.spatial.authority.configured
+  ) {
+    output.push({
+      id: "runtime:spatial",
+      label: "Spatial authority and collision/world interaction",
+      kind: "runtime-domain",
+      technicalRole: "World-space mutation, interaction ownership and physical/spatial constraints.",
+      gameplayPurpose: "Ensure player and world interactions remain inside the intended physical and authority boundaries.",
+      evidenceIds: ["runtime:spatial"],
+    });
+  }
   return output;
 }
 
@@ -349,6 +392,70 @@ function runtimeEdgeState(
   sourceLocators: readonly string[] = [],
 ): Pick<GameplayCausalLink, "status" | "reason"> {
   switch (componentId) {
+    case "runtime:world-rules": {
+      if (world.worldRules.conflicts > 0) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "The same gamerule has multiple selected-artifact values; lifecycle/order intent must be resolved before treating either value as the effective world baseline.",
+        };
+      }
+      return {
+        status: "PROVEN",
+        reason:
+          "World-rule writers are internally non-conflicting. Natural mob spawning is " +
+          world.worldRules.naturalMobSpawning +
+          ", while " +
+          String(world.worldRules.manualEntitySpawnPaths) +
+          " manual/script spawn path(s) are tracked separately.",
+      };
+    }
+    case "runtime:player-capability": {
+      if (world.playerCapabilities.inactiveProtectionDefinitions > 0) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Protection code is defined but not instantiated; inactive protection cannot be credited as a blocking guard.",
+        };
+      }
+      if (world.playerCapabilities.privilegedBypassReturns > 0) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Privileged/admin early-return bypasses exist and require exact scope/impact proof before they can be classified safe or defective.",
+        };
+      }
+      return {
+        status: "PROVEN",
+        reason:
+          "Detected player capability mutations have no inactive protection definition or unresolved privileged bypass signal.",
+      };
+    }
+    case "runtime:spatial": {
+      if (world.spatial.authority.conflicts > 0) {
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Spatial authority rules conflict for one or more selected-artifact interactions.",
+        };
+      }
+      if (
+        world.spatial.authority.uncovered > 0 ||
+        world.spatial.authority.unknownRegions > 0 ||
+        world.spatial.unresolvedScriptMutations > 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Spatial authority or world-mutation coverage remains incomplete.",
+        };
+      }
+      return {
+        status: "PROVEN",
+        reason:
+          "Spatial mutation and authority coverage has no unresolved contradiction for the mapped dependency.",
+      };
+    }
     case "runtime:arena-replica-integrity": {
       if (world.arenas.replicaIntegrity.diverged > 0) {
         return {
@@ -1045,6 +1152,36 @@ export function compileGameplayScenarioGraph(
           "runtime:persistence",
         );
         break;
+      case "player-capability-integrity":
+        addIntentKinds("policy", "role", "state", "lifecycle");
+        addRuntime(
+          "runtime:player-capability",
+          "runtime:arena",
+          "runtime:inventory",
+        );
+        break;
+      case "world-rule-authority":
+        addIntentKinds("policy", "state", "lifecycle");
+        addRuntime(
+          "runtime:world-rules",
+          "runtime:entities",
+        );
+        break;
+      case "client-server-reconciliation":
+        addIntentKinds("policy", "state", "spatial-region");
+        addRuntime(
+          "runtime:spatial",
+          "runtime:inventory",
+        );
+        break;
+      case "spatial-containment":
+        addIntentKinds("spatial-region", "policy", "state");
+        addRuntime(
+          "runtime:spatial",
+          "runtime:arena",
+          "runtime:structures",
+        );
+        break;
       case "repeated-run":
         addIntentKinds("lifecycle", "phase", "state", "outcome");
         addRuntime(
@@ -1226,6 +1363,9 @@ export function compileGameplayScenarioGraph(
     "runtime:persistence": "persistence-recovery",
     "runtime:structures": "world-structure",
     "runtime:economy": "economy-reward",
+    "runtime:world-rules": "platform-constraints",
+    "runtime:player-capability": "platform-constraints",
+    "runtime:spatial": "spatial-authority",
   };
 
   for (const component of runtime) {
