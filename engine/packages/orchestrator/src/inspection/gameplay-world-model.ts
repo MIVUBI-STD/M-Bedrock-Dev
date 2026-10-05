@@ -446,6 +446,7 @@ export interface GameplayWorldModel {
     creativeModeGrants: number;
     spectatorModeGrants: number;
     abilityWrites: number;
+    mayflyGrants: number;
     commandPermissionWrites: number;
     privilegedGuardReferences: number;
     privilegedBypassReturns: number;
@@ -1922,6 +1923,8 @@ export function deriveGameplayWorldModel(
         source.playerCapabilitySurfaces?.spectatorModeGrants ?? 0,
       abilityWrites:
         source.playerCapabilitySurfaces?.abilityWrites ?? 0,
+      mayflyGrants:
+        source.playerCapabilitySurfaces?.mayflyGrants ?? 0,
       commandPermissionWrites:
         source.playerCapabilitySurfaces?.commandPermissionWrites ?? 0,
       privilegedGuardReferences:
