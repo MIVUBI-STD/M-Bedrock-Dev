@@ -6,6 +6,8 @@ Cross-project work that operates the existing system without changing its produc
 
 Machine-readable audit/revalidation queue: `operations-audit-queue.json`.
 
+Current audit queue authority is the JSON queue itself; this Markdown file explains scope and operating policy without duplicating queue entries.
+
 - Preserve ongoing map-audit work while repository information architecture is reorganized.
 - Avoid broad path moves until references and active workflows have a migration map.
 
