@@ -2249,3 +2249,44 @@ Add capability only when one of these is true:
 3. a proven regression demonstrates that current procedure systematically misses a material defect class.
 
 The target is the **minimum complete procedure**, not maximum checklist size.
+---
+
+# Developer Note Integration
+
+Developer Notes are part of the canonical audit/report flow, not a parallel scanner.
+
+Authority:
+- `docs/03-analysis/developer-note-coverage.md`
+
+After gameplay/design proof and before final report publication, route the existing Coverage Ledger through the applicable Developer Note categories.
+
+Canonical flow:
+
+```text
+Selected Artifact
+→ UNDERSTAND
+→ MODEL
+→ STRESS
+→ PROVE
+→ BUG / DESIGN_MISMATCH closure
+→ Developer Note Extraction from the same evidence ledger
+→ Developer Note Admission Gate
+→ Root-Cause Deduplication
+→ REPORT
+```
+
+Rules:
+- BUG and DESIGN_MISMATCH always take precedence when player-visible or authored-capability contradiction is proven.
+- DEV NOTE is only for concrete, actionable engineering/release conditions that remain after gameplay-finding deduplication.
+- DEV NOTE must never be used to hide missing gameplay proof or generic NEED_VALIDATION.
+- Every applicable Developer Note category must close as SAFE, DEV NOTE, already represented by BUG/DESIGN_MISMATCH, or exact unresolved evidence.
+- Generic refactor/cleanup/optimization/test/logging advice is forbidden unless tied to a concrete selected-artifact condition.
+- Developer Note titles must be plain and immediately understandable to a developer.
+- Developer Notes do not receive gameplay severity and do not inflate BUG/DESIGN_MISMATCH totals.
+- Complete HTML/JSON publication exports include Developer Notes separately.
+
+Audit closure now requires both:
+1. gameplay/design coverage closure; and
+2. applicable Developer Note coverage closure.
+
+
