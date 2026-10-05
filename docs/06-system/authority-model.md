@@ -44,3 +44,21 @@ They may be used only for an explicitly requested comparison/history task.
 - runtime observation does not redefine expected behavior;
 - external Minecraft knowledge may explain engine capability, but not map-specific gameplay intent;
 - canonical terminology is defined in `canonical-naming.md`.
+
+## Platform knowledge authority
+
+Machine-readable Minecraft platform/runtime facts are owned by the engine knowledge layer.
+
+```text
+engine/packages/knowledge
+→ knowledge contracts, validation, effective-profile selection
+
+engine/knowledge/
+→ descriptive platform facts + provenance
+```
+
+Platform knowledge does not own Game Design, project engineering policy, current runtime observations, or validation/release state.
+
+Durable platform facts require provenance and bounded applicability such as edition, Minecraft version, format version, experiment state, or Script API module/version.
+
+Analyzers consume knowledge rather than duplicating platform semantics. UNKNOWN is preferable to inventing unsupported behavior.
