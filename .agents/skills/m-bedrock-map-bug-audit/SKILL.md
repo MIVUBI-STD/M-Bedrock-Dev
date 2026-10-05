@@ -18,7 +18,7 @@ Do not use older versions, Development/Source, old QA/Bug Reports, Technical Doc
 
 ## User prompt intake
 
-Before starting the selected-map audit, translate the user's wording through `../../../docs/03-analysis/user-input-translation-contract.md`.
+Before starting the selected-map audit, translate the user's wording through `../../../docs/analysis/user-input-translation-contract.md`.
 
 The user prompt is **search guidance, not gameplay authority**.
 
@@ -82,7 +82,7 @@ Do not ask multiple rounds when one compact confirmation is sufficient.
 
 Bug discovery cannot start before the selected world is reconstructed.
 
-The canonical base procedure is `../../../docs/03-analysis/mandatory-audit-procedure.md`. Production audit is one linear sequence:
+The canonical base procedure is `../../../docs/analysis/mandatory-audit-procedure.md`. Production audit is one linear sequence:
 
 ```text
 TARGET → DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE → REPORT
@@ -110,16 +110,16 @@ Selected Map Version
 
 Required references:
 
-- `../../../docs/03-analysis/mandatory-audit-procedure.md`
+- `../../../docs/analysis/mandatory-audit-procedure.md`
 - `references/game-design-contract.md`
 - `references/gameplay-flow-contract.md`
 - `references/multi-arena-contract.md`
 - `references/bug-report-contract.md`
 - `references/user-input-translation-cases.md`
-- `../../../docs/03-analysis/gameplay-model-closure.md`
-- `../../../docs/03-analysis/bug-finding-coverage.md`
-- `../../../docs/03-analysis/hidden-gameplay-defect-analysis.md`
-- `../../../docs/03-analysis/vital-gameplay-knowledge-closure.md`
+- `../../../docs/analysis/gameplay-model-closure.md`
+- `../../../docs/analysis/bug-finding-coverage.md`
+- `../../../docs/analysis/hidden-gameplay-defect-analysis.md`
+- `../../../docs/analysis/vital-gameplay-knowledge-closure.md`
 - `../../schemas/map-audit-output-v2.schema.json`
 
 
@@ -524,7 +524,7 @@ Production AI report candidates must reference one or more `CONFIRMED_DEFECT_REA
 
 After canonical REPORT projection, inspect `qualityGates.vitalGameplay`. This is a read-only projection of the same SelectedMapAuditRun, not another workflow.
 
-The projection must cover exactly the eight vital domains defined in `../../../docs/03-analysis/vital-gameplay-knowledge-closure.md`. Never convert a blocked domain into SAFE because no finding was detected. `RUNTIME_REQUIRED`, `DETECTION_GAP`, or unrouted material residue means the map is not yet fully understood even when existing findings are already reportable.
+The projection must cover exactly the eight vital domains defined in `../../../docs/analysis/vital-gameplay-knowledge-closure.md`. Never convert a blocked domain into SAFE because no finding was detected. `RUNTIME_REQUIRED`, `DETECTION_GAP`, or unrouted material residue means the map is not yet fully understood even when existing findings are already reportable.
 
 Prioritize Tier 0 vital domains when searching for Blocker impact: entry/admission, core progression, multi-arena isolation, and connection/recovery.
 
