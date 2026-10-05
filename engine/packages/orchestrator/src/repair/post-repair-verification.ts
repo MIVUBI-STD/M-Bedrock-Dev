@@ -12,6 +12,24 @@ export type PostRepairVerificationStatus =
   | "partial"
   | "fail";
 
+export type FixVerificationReadinessStatus =
+  | "VERIFIED_FIXED"
+  | "NOT_FIXED"
+  | "REGRESSION_FOUND"
+  | "CONFIRMATION_REQUIRED";
+
+export interface FixVerificationReceipt {
+  readonly policy: "post-repair-readiness-projection";
+  readonly status: FixVerificationReadinessStatus;
+  readonly beforeFingerprint: string;
+  readonly afterFingerprint: string;
+  readonly targetDiagnosticsRemaining:
+    readonly DiagnosticFinding["code"][];
+  readonly regressionCount: number;
+  readonly followUpCount: number;
+  readonly reasons: readonly string[];
+}
+
 export interface PostRepairVerificationInput {
   before: InspectArtifactResult;
   after: InspectArtifactResult;
@@ -42,6 +60,7 @@ export interface PostRepairVerificationReport {
   proofReuse: ArenaProofReuseReport;
   validationObligations:
     PostRepairValidationObligations;
+  verificationReadiness: FixVerificationReceipt;
 }
 
 function sourceKey(
@@ -381,6 +400,37 @@ export function verifyPostRepairOutcome(
           ? "partial"
           : "pass";
 
+  const verificationReadinessStatus:
+    FixVerificationReadinessStatus =
+      remaining.length > 0
+        ? "NOT_FIXED"
+        : regressions.length > 0
+          ? "REGRESSION_FOUND"
+          : status === "pass"
+            ? "VERIFIED_FIXED"
+            : "CONFIRMATION_REQUIRED";
+  const verificationReadiness: FixVerificationReceipt = {
+    policy: "post-repair-readiness-projection",
+    status: verificationReadinessStatus,
+    beforeFingerprint:
+      input.before.fingerprint,
+    afterFingerprint:
+      input.after.fingerprint,
+    targetDiagnosticsRemaining:
+      [...remaining],
+    regressionCount: regressions.length,
+    followUpCount: followUps.length,
+    reasons:
+      verificationReadinessStatus === "VERIFIED_FIXED"
+        ? [
+            "Target diagnostics are removed, no regression is detected, and no follow-up verification remains.",
+          ]
+        : [
+            ...regressions,
+            ...followUps,
+          ],
+  };
+
   return {
     schemaVersion: 1,
     status,
@@ -404,5 +454,6 @@ export function verifyPostRepairOutcome(
     improvements,
     proofReuse,
     validationObligations,
+    verificationReadiness,
   };
 }
