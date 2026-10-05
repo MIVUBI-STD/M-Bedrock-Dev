@@ -96,3 +96,38 @@ Canonical outputs:
 - `workspace/publication/Bug_Tracker_Report_Golden.json`
 
 The JSON output is the complete report/context export, not a reduced summary.
+
+
+## Developer Note publication contract
+
+Developer Note authority:
+- `workspace/reports/Dev-Notes.json`
+- admission/coverage authority: `docs/03-analysis/developer-note-coverage.md`
+
+Developer Notes are rendered as a third, separate report section:
+
+```text
+BUGS
+DESIGN MISMATCHES
+DEV NOTES
+```
+
+Each DEV NOTE must include:
+- ID;
+- plain-language title;
+- category metadata;
+- concrete problem/condition;
+- developer impact or engineering consequence;
+- affected scope;
+- evidence;
+- actionable correction.
+
+Rules:
+- DEV NOTE has no gameplay severity.
+- DEV NOTE does not increase BUG, DESIGN_MISMATCH, or gameplay severity totals.
+- summary separately shows Developer Notes and Total Actionable Items.
+- DEV NOTE state, tester/developer notes, and attachments must survive JSON and HTML Snapshot export.
+- a DEV NOTE promoted to BUG/DESIGN_MISMATCH must be removed from the DEV NOTE authority to prevent duplicate root causes.
+- publication must fail on duplicate IDs across BUG, DESIGN_MISMATCH, and DEV NOTE.
+
+
