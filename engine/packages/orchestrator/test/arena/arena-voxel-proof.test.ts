@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { BedrockLevelDbReader } from "../../../../adapters/leveldb/src/index.js";
 import { comp, int, string, writeUncompressed, type NBT } from "prismarine-nbt";
-import { proveArenaVoxelEquivalence } from "../../src/arena/arena-voxel-proof.js";
+import { proveArenaBarrierContainment, proveArenaVoxelEquivalence } from "../../src/arena/arena-voxel-proof.js";
 
 function singleBlockSubchunk(name: string): Uint8Array {
   const palette = writeUncompressed(
@@ -76,6 +76,83 @@ describe("arena voxel proof", () => {
         evidenceCandidates: 3,
       },
       { marginBlocks: 0, maxBlocks: 1 },
+    );
+
+    expect(result.status).toBe("incomplete");
+  });
+  it("proves a closed barrier shell blocks flight-style 3D traversal", async () => {
+    const db = new Map<string, Uint8Array>();
+    for (let chunkX = -1; chunkX <= 1; chunkX += 1) {
+      for (let chunkZ = -1; chunkZ <= 1; chunkZ += 1) {
+        for (let subY = -1; subY <= 1; subY += 1) {
+          const interior = chunkX === 0 && chunkZ === 0 && subY === 0;
+          db.set(
+            key(chunkX, chunkZ, subY),
+            singleBlockSubchunk(interior ? "minecraft:air" : "minecraft:barrier"),
+          );
+        }
+      }
+    }
+
+    const result = await proveArenaBarrierContainment(
+      reader(db),
+      {
+        searchVolume: {
+          min: { x: -16, y: -16, z: -16 },
+          max: { x: 31, y: 31, z: 31 },
+        },
+        starts: [{ x: 8, y: 2, z: 8 }],
+        maxVisitedPositions: 20_000,
+      },
+    );
+
+    expect(result.status).toBe("contained");
+    expect(result.escapePosition).toBeUndefined();
+  });
+
+  it("does not call an open barrier shell contained", async () => {
+    const db = new Map<string, Uint8Array>();
+    for (let chunkX = -1; chunkX <= 1; chunkX += 1) {
+      for (let chunkZ = -1; chunkZ <= 1; chunkZ += 1) {
+        for (let subY = -1; subY <= 1; subY += 1) {
+          const interior = chunkX === 0 && chunkZ === 0 && subY === 0;
+          const opening = chunkX === 1 && chunkZ === 0 && subY === 0;
+          db.set(
+            key(chunkX, chunkZ, subY),
+            singleBlockSubchunk(
+              interior || opening ? "minecraft:air" : "minecraft:barrier",
+            ),
+          );
+        }
+      }
+    }
+
+    const result = await proveArenaBarrierContainment(
+      reader(db),
+      {
+        searchVolume: {
+          min: { x: -16, y: -16, z: -16 },
+          max: { x: 31, y: 31, z: 31 },
+        },
+        starts: [{ x: 8, y: 2, z: 8 }],
+        maxVisitedPositions: 40_000,
+      },
+    );
+
+    expect(result.status).toBe("escape-reachable");
+    expect(result.escapePosition).toBeDefined();
+  });
+
+  it("fails closed when barrier containment evidence is incomplete", async () => {
+    const result = await proveArenaBarrierContainment(
+      reader(new Map()),
+      {
+        searchVolume: {
+          min: { x: -2, y: -2, z: -2 },
+          max: { x: 2, y: 3, z: 2 },
+        },
+        starts: [{ x: 0, y: 0, z: 0 }],
+      },
     );
 
     expect(result.status).toBe("incomplete");
