@@ -3,26 +3,37 @@ use serde::Serialize;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ClientId {
-    Mce01,
-    Mce02,
-    Mce03,
-    Mce04,
+    Native,
+    Virtual01,
+    Virtual02,
+    Virtual03,
 }
 
 impl ClientId {
-    pub const ALL: [Self; 4] = [Self::Mce01, Self::Mce02, Self::Mce03, Self::Mce04];
+    pub const ALL: [Self; 4] = [
+        Self::Native,
+        Self::Virtual01,
+        Self::Virtual02,
+        Self::Virtual03,
+    ];
+
+    pub const VIRTUAL: [Self; 3] = [
+        Self::Virtual01,
+        Self::Virtual02,
+        Self::Virtual03,
+    ];
 
     pub fn as_str(self) -> &'static str {
         match self {
-            Self::Mce01 => "MCE-01",
-            Self::Mce02 => "MCE-02",
-            Self::Mce03 => "MCE-03",
-            Self::Mce04 => "MCE-04",
+            Self::Native => "Native",
+            Self::Virtual01 => "Virtual-01",
+            Self::Virtual02 => "Virtual-02",
+            Self::Virtual03 => "Virtual-03",
         }
     }
 
     pub fn is_native(self) -> bool {
-        self == Self::Mce01
+        self == Self::Native
     }
 }
 
