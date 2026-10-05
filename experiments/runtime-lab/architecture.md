@@ -2,66 +2,74 @@
 
 ## Product boundary
 
-Runtime Lab V1 is a local multi-client launcher for Minecraft Education.
+Runtime Lab is a local, interactive multi-instance environment for Minecraft Education. Player input remains manual. Runtime Lab manages the environment around the player.
 
-The system manages client instances. Gameplay remains manually controlled by the operator.
-
-## Architecture
-
-```text
-Rust backend core
-        ↓
-thin Tauri commands     later
-        ↓
-Svelte frontend         later
-```
-
-Current backend path:
+## Backend
 
 ```text
 RuntimeLab
-   ↓
-Client
-   ↓
+├── Lifecycle
+│   ├── provision
+│   ├── start / resume
+│   ├── suspend
+│   ├── stop
+│   ├── restart
+│   ├── reset
+│   └── reprovision
+├── Resource Pressure
+├── Runtime Telemetry
+└── Identity Health
+        ↓
 Provider
-   ↓
-VMware Workstation / VMware Fusion
+├── VMware Workstation
+└── VMware Fusion
 ```
 
-## Platform model
+## Instance model
 
 ```text
-Windows
-├── MCE-01 native
-├── MCE-02 VMware Workstation
-├── MCE-03 VMware Workstation
-└── MCE-04 VMware Workstation
-
-macOS
-├── MCE-01 native
-├── MCE-02 VMware Fusion
-├── MCE-03 VMware Fusion
-└── MCE-04 VMware Fusion
+Native
+Base
+├── Virtual-01
+├── Virtual-02
+└── Virtual-03
 ```
 
-## V1 responsibilities
+Base is immutable during normal operation. Virtual instances use linked-copy state.
 
-Backend owns:
+## Memory model
 
-- host/provider readiness;
-- client identity;
-- client lifecycle;
-- start/stop/reset/open behavior;
-- provisioning state when implemented.
+Virtual guest ceiling:
 
-Backend does not own:
+```text
+4096 MB
+```
 
-- gameplay scenarios;
-- bot/player automation;
-- scripted movement;
-- test-case planning;
-- frontend presentation.
+Runtime Lab does not equate this ceiling with actual host physical use. Host memory pressure is observed independently. Running-instance working set is reported when process mapping is available.
 
-## Frontend rule
+## State model
 
-The future Tauri/Svelte layer must remain thin and call the same Rust `RuntimeLab` core. It must never invoke hypervisor commands directly.
+```text
+NOT_PROVISIONED
+STOPPED
+SUSPENDED
+RUNNING
+ERROR
+
+Native:
+MANUAL
+```
+
+`QA_READY` is a checkpoint, not a lifecycle state.
+
+## Future desktop shell
+
+```text
+Svelte
+  ↓
+thin Tauri commands
+  ↓
+same RuntimeLab Rust core
+```
+
+Frontend must not invoke VMware or implement resource policy directly.
