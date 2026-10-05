@@ -68,3 +68,28 @@ When applicable, audit:
 - feature parity assumptions imported from retail Bedrock.
 
 These runtime/profile facts support compatibility analysis; they do not independently prove gameplay failure.
+
+## NPC, dialogue, and Code Builder capability
+
+Education-specific analysis also covers NPC dialogue execution context and Code Builder / Agent capability.
+
+For NPC dialogue:
+
+```text
+@s         → executing NPC in NPC-scene command context
+@initiator → player who initiated the dialogue
+```
+
+These identities are not interchangeable in multiplayer logic.
+
+A hidden NPC used for forced dialogue still depends on valid runtime existence and residency.
+
+Code Builder / Agent capability is scoped to the Education target profile. Do not infer it for retail Bedrock merely because scripts or commands exist.
+
+## Education permission blocks
+
+Static structure analysis recognizes Education permission blocks such as allow, deny, and border blocks.
+
+Their presence is compatibility/capability evidence and must be checked against the target Education feature profile.
+
+Presence alone is not spatial proof. Reconstructing permission volumes or explaining build/traversal behavior requires world-coordinate and runtime/spatial evidence.
