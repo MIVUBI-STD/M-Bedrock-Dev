@@ -22,9 +22,45 @@ function identity(record) {
     .slice(0, 20);
 }
 
+const allowedArchiveDirectories = new Set(["audit-runs", "repository-operations"]);
+const directEntries = readdirSync(directory, { withFileTypes: true });
+
+for (const entry of directEntries) {
+  if (entry.isDirectory() && !allowedArchiveDirectories.has(entry.name)) {
+    throw new Error(`Unexpected reliability history directory: ${entry.name}`);
+  }
+}
+
+function verifyArchiveTree(root) {
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    const path = join(root, entry.name);
+    if (entry.isDirectory()) {
+      verifyArchiveTree(path);
+      continue;
+    }
+    if (!entry.isFile()) continue;
+    if (!/\.(?:json|md)$/.test(entry.name)) {
+      throw new Error(`Unsupported archived history file type: ${path}`);
+    }
+    if (entry.name.endsWith(".json")) {
+      try {
+        JSON.parse(readFileSync(path, "utf8"));
+      } catch {
+        throw new Error(`Invalid JSON in archived reliability history: ${path}`);
+      }
+    }
+  }
+}
+
+for (const archiveDir of allowedArchiveDirectories) {
+  const path = join(directory, archiveDir);
+  if (existsSync(path)) verifyArchiveTree(path);
+}
+
 const seen = new Set();
-for (const name of readdirSync(directory)) {
-  if (!name.endsWith(".json")) continue;
+for (const entry of directEntries) {
+  if (!entry.isFile() || !entry.name.endsWith(".json")) continue;
+  const name = entry.name;
   const record = JSON.parse(readFileSync(join(directory, name), "utf8"));
   if (record.schemaVersion !== 1 || !record.campaignId || !record.createdAt) {
     throw new Error(`Invalid campaign history record: ${name}`);
