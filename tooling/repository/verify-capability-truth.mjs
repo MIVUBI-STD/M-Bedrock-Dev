@@ -91,6 +91,32 @@ if(registryPaths.length<2 || registryPaths.some((p)=>!existsSync(p))){
     errors.push("Capability Truth Index is stale; regenerate after owner source/test inventory changes.");
   }
 }
+const backlogPath="engine/reliability/catalogs/capability-truth/proof-binding-backlog.md";
+if(!existsSync(backlogPath)){
+  errors.push("Capability proof-binding backlog is missing.");
+}else{
+  const backlog=readFileSync(backlogPath,"utf8");
+  const unbound=(data.taskCapabilities??[])
+    .filter((item)=>item.proofBinding?.state!=="bound")
+    .map((item)=>item.id)
+    .sort();
+  const headings=[...backlog.matchAll(/^##\s+(.+)$/gm)]
+    .map((match)=>match[1].trim())
+    .sort();
+  if(unbound.length===0){
+    if(!/No unbound capabilities\./.test(backlog) || headings.length>0){
+      errors.push("Capability proof-binding backlog is stale; current Capability Truth has no unbound capabilities.");
+    }
+  }else{
+    if(
+      headings.length!==unbound.length ||
+      headings.some((id,index)=>id!==unbound[index])
+    ){
+      errors.push("Capability proof-binding backlog is stale; regenerate from current Capability Truth.");
+    }
+  }
+}
+
 if(data.schemaVersion!==1) errors.push("schemaVersion must be 1");
 if(!Array.isArray(data.taskCapabilities)||data.taskCapabilities.length===0) errors.push("taskCapabilities must be non-empty");
 if(!Array.isArray(data.analysisCapabilities)||data.analysisCapabilities.length===0) errors.push("analysisCapabilities must be non-empty");
