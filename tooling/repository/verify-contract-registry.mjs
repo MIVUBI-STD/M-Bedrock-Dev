@@ -19,7 +19,7 @@ function canonicalJson(value) {
   return JSON.stringify(value);
 }
 
-const path = "docs/06-system/contract-registry.json";
+const path = "engine/contracts/contract-registry.json";
 if (!existsSync(path)) {
   console.error("Missing canonical contract registry: " + path);
   process.exit(1);

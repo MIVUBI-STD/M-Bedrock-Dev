@@ -29,7 +29,7 @@ const required = [
   "docs/06-system/development-discipline.md",
   "docs/06-system/implementation-map.md",
   "docs/06-system/canonical-naming.md",
-  "docs/06-system/contract-registry.json",
+  "engine/contracts/contract-registry.json",
   "docs/06-system/skill-routing.md",
   "docs/06-system/development-operations.md",
   "DEV.cmd",
