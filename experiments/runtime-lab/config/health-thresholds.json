@@ -1,0 +1,13 @@
+{
+  "recommendedLogicalCpus": 8,
+  "recommendedHostMemoryGb": 32,
+  "minimumInteractiveFps": 24,
+  "targetInteractiveFps": 30,
+  "policy": {
+    "providerMissing": "FAIL",
+    "unsupportedPlatform": "FAIL",
+    "hostMemory16To31Gb": "WARN",
+    "virtualizationUnproven": "UNKNOWN",
+    "graphicsAccelerationUnproven": "UNKNOWN"
+  }
+}
