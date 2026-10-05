@@ -17,7 +17,12 @@ export type CounterProofSearchDimension =
   | "generation"
   | "scope"
   | "cleanup"
-  | "exclusion";
+  | "exclusion"
+  | "geometry"
+  | "capability"
+  | "world-rule"
+  | "activation"
+  | "representation";
 
 export interface CounterProofDimensionReceipt {
   readonly dimension: CounterProofSearchDimension;
@@ -138,6 +143,48 @@ function requiredCounterProofDimensions(
     required.add("generation");
     required.add("cleanup");
   }
+
+  const scenarioText = [
+    scenario?.label ?? "",
+    scenario?.gameplayStage ?? "",
+    scenario?.purpose ?? "",
+    link.purpose,
+    link.reason,
+  ].join(" ");
+
+  if (
+    /escape|boundary|contain|flight|fly|path|travers|spatial|geometry|barrier|collision/i.test(
+      scenarioText,
+    )
+  ) {
+    required.add("geometry");
+  }
+
+  if (
+    /admin|roommaster|operator|permission|creative|spectator|capabilit|privileg|spawn.?egg|manual.?spawn/i.test(
+      scenarioText,
+    )
+  ) {
+    required.add("capability");
+    required.add("activation");
+  }
+
+  if (
+    /gamerule|natural.?spawn|mob.?spawn|weather|daylight|world.?setting/i.test(
+      scenarioText,
+    )
+  ) {
+    required.add("world-rule");
+  }
+
+  if (
+    /client|visual|waterlog|prediction|desync|ghost|render|reconcil/i.test(
+      scenarioText,
+    )
+  ) {
+    required.add("representation");
+  }
+
   return [...required].sort();
 }
 
