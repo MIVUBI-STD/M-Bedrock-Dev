@@ -1,8 +1,62 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "reportTitle": "Bug Tracker Report",
   "sourceDataset": "workspace/reports/approved-publication-dataset.json",
   "developerNoteAuthority": "workspace/reports/Dev-Notes.json",
+  "reportContext": {
+    "projectRegistry": "workspace/project-registry.json",
+    "canonicalAuditProcedure": "docs/03-analysis/mandatory-audit-procedure.md",
+    "detectionCoverage": "docs/03-analysis/detection-coverage-assurance.md",
+    "developerNoteCoverage": "docs/03-analysis/developer-note-coverage.md",
+    "developerNoteCoverageSummary": {
+      "schemaVersion": 1,
+      "status": "DEVELOPER_NOTE_COVERAGE_CLOSED",
+      "registeredMaps": 22,
+      "categoriesPerMap": 18,
+      "totalCategoryRoutes": 396,
+      "batches": [
+        "batch-01.json",
+        "batch-02.json",
+        "batch-03.json"
+      ],
+      "publishedDevNotes": 2,
+      "devNoteIds": [
+        "DEV-BLZ-VERSION-NAME",
+        "DEV-FNZ2-VERSION-NAME"
+      ],
+      "newNotesFromExtractionBeyondKnownMetadata": 0,
+      "dedupPolicy": "Concrete engineering conditions already proven as BUG or DESIGN_MISMATCH remain in the stronger gameplay classification and are not duplicated as DEV NOTE.",
+      "closure": {
+        "unaccountedMaps": 0,
+        "unaccountedApplicableCategories": 0,
+        "genericAdvicePublished": 0,
+        "gameplayFindingsDowngradedToDevNote": 0
+      },
+      "interpretation": "The comprehensive 18-domain extraction pass does not justify additional Developer Notes from the preserved selected-artifact evidence. This is evidence-bounded closure, not a claim that future artifacts cannot introduce new engineering notes."
+    },
+    "proofEscalationReceiptSchema": "docs/03-analysis/proof-escalation-receipt.schema.json",
+    "proofEscalationPolicy": {
+      "goal": "maximize justified PROVEN; minimize irreducible NEED_VALIDATION; unsupported PROVEN = 0; generic NEED_VALIDATION = 0",
+      "hardGateFields": [
+        "contradictionId",
+        "missingClaim",
+        "targetedSearchPerformed",
+        "applicableBlockersChecked",
+        "substitutionMethodsAttempted",
+        "staticEvidenceExhausted",
+        "coverageLedgerClosed",
+        "blockingProofExhausted",
+        "deterministicSubstitutesExhausted",
+        "crossFileCausalSlice",
+        "remainingDecidingFact",
+        "whyArtifactCannotDecide",
+        "minimalRuntimeScenario",
+        "observableResultA",
+        "observableResultB",
+        "outcome"
+      ]
+    }
+  },
   "summary": {
     "registeredMaps": 22,
     "gameplayDesignFindings": 22,
