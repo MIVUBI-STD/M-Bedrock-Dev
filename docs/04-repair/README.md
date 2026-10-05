@@ -13,6 +13,11 @@ Owns:
 
 Approved Bug and a Repair Contract precede bug mutation. Original artifacts remain immutable.
 
+## Canonical detail owners
+
+- [Repair Transactions](./transactions.md) — PatchTransaction semantics, authorized application boundary, filesystem safety, atomic writes, and rollback.
+- [Repair Planning](./repair-planning.md) — deterministic proposal derivation, typed repair inputs, topology transforms, and the no-preauthorization boundary.
+
 
 ## Real execution closure
 
