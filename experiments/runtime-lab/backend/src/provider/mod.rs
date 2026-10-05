@@ -292,3 +292,25 @@ fn set_vmx_value(lines: &mut Vec<String>, key: &str, value: &str) {
         lines.push(format!("{key} = \"{value}\""));
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::{listed_as_running, snapshot_list_contains};
+
+    #[test]
+    fn detects_running_vm_from_vmrun_list() {
+        let output = "Total running VMs: 1\nC:\\Lab\\MCE-02\\MCE-02.vmx\n";
+        assert!(listed_as_running(
+            output,
+            std::path::Path::new(r"C:\Lab\MCE-02\MCE-02.vmx")
+        ));
+    }
+
+    #[test]
+    fn ready_snapshot_match_is_exact() {
+        let output = "Total snapshots: 2\nQA_READY\nBefore Update\n";
+        assert!(snapshot_list_contains(output, "QA_READY"));
+        assert!(!snapshot_list_contains(output, "QA"));
+    }
+}
