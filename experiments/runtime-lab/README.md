@@ -14,22 +14,9 @@ thin Tauri commands    ← later
 Svelte frontend        ← later
 ```
 
-The backend core is the only runtime authority. The future Tauri/Svelte application must call this same core and must not duplicate provider or lifecycle logic.
+The Rust backend is the only runtime authority. Gameplay remains manually controlled by the operator.
 
-## V1 purpose
-
-The system manages the test environment. The player remains manually controlled.
-
-```text
-start clients
-→ open Minecraft Education
-→ operator plays/tests manually
-→ reset or stop clients as needed
-```
-
-Runtime Lab does not automate gameplay and does not decide what gameplay test should be performed.
-
-## Clients
+## Client model
 
 ```text
 MCE-01  native host client
@@ -38,7 +25,7 @@ MCE-03  virtual client
 MCE-04  virtual client
 ```
 
-Virtual clients target low graphics and 1280×720 so resources are spent on responsive gameplay rather than visual fidelity.
+Virtual clients are intended to run Minecraft Education at low graphics / 1280×720 for responsive gameplay rather than visual fidelity.
 
 ## Platform target
 
@@ -47,7 +34,35 @@ Windows → VMware Workstation
 macOS   → VMware Fusion
 ```
 
-Other hypervisors are not part of V1.
+V1 intentionally has no alternate provider registry.
+
+## Base VM
+
+Runtime Lab uses one local base VM and creates three linked clones.
+
+Windows base:
+
+```text
+%LOCALAPPDATA%\M-Bedrock\RuntimeLab\base\MCE-BASE\MCE-BASE.vmx
+```
+
+macOS base:
+
+```text
+~/Library/Application Support/M-Bedrock/RuntimeLab/base/MCE-BASE.vmwarevm/MCE-BASE.vmx
+```
+
+The base VM must be powered off before provisioning.
+
+Runtime Lab manages clones under the same RuntimeLab data directory:
+
+```text
+MCE-02
+MCE-03
+MCE-04
+```
+
+No VM disk or local runtime state is committed to Git.
 
 ## Current backend
 
@@ -69,12 +84,13 @@ backend/
     └── runtime.rs
 ```
 
-## Current command surface
+## Command surface
 
 From `experiments/runtime-lab/backend`:
 
 ```text
 cargo run --bin runtime-lab -- doctor
+cargo run --bin runtime-lab -- provision
 cargo run --bin runtime-lab -- status
 cargo run --bin runtime-lab -- start <1-4>
 cargo run --bin runtime-lab -- open <MCE-01..04>
@@ -82,6 +98,15 @@ cargo run --bin runtime-lab -- reset <MCE-02..04>
 cargo run --bin runtime-lab -- stop [MCE-01..04]
 ```
 
-Provider lifecycle operations are being implemented progressively. Unsupported operations must fail explicitly.
+### Meaning
 
-Frontend work is intentionally deferred until the Rust backend lifecycle is proven stable.
+- `doctor` checks provider + base VM readiness.
+- `provision` creates MCE-02..04 as linked clones.
+- `start` powers on the requested client count; MCE-01 remains the native/manual client.
+- `open` opens the VM in the VMware UI.
+- `reset` performs a VM restart; it does not restore a snapshot.
+- `stop` performs a soft VM stop.
+
+Snapshot restore, gameplay automation and scenarios are intentionally outside V1.
+
+Frontend work remains deferred until this Rust lifecycle is proven stable.
