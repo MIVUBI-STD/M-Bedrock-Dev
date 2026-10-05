@@ -65,6 +65,45 @@ CLEANUP_REPLAY
 RECOVERY
 ```
 
+## Canonical role names
+
+Use these names when the role distinction is material:
+
+| Canonical role | Meaning |
+| --- | --- |
+| `Player` | ordinary gameplay participant |
+| `Builder` | gameplay role intentionally granted build capability |
+| `Roommaster / Operator` | operational role that can control a live session but is not automatically unrestricted world-maintenance authority |
+| `Developer / Maintenance` | explicitly authorized engineering/maintenance role for destructive or diagnostic operations |
+
+Do not silently use `admin`, `host`, `master`, `room master`, `operator-admin`, or similar labels as interchangeable public concepts. Source-native identifiers such as `admin` may remain in technical evidence, but the audit must map them to one canonical role concept.
+
+## Canonical spatial-bound names
+
+Keep these concepts distinct:
+
+| Canonical term | Meaning |
+| --- | --- |
+| `Loading Bounds` | area used by loading/preload logic |
+| `Simulation Bounds` | area whose simulation/residency is required |
+| `Gameplay Bounds` | authored intended play region |
+| `Physical Collision Bounds` | actual collision enclosure such as barrier/wall/floor/ceiling |
+| `Session Ownership Bounds` | area/state ownership belonging to one arena/session |
+
+Never infer one bound from another. In particular, crossing `Loading Bounds` or `Gameplay Bounds` is not proof of crossing `Physical Collision Bounds`.
+
+## Canonical protection/proof names
+
+Use:
+
+- `Blocking Proof` — evidence that prevents the exact suspected causal path.
+- `Counter-Proof Search` — bounded search for applicable Blocking Proof.
+- `Runtime Verification` — final narrow runtime check for an irreducible native-behavior question.
+- `Guard Activation` — proof that protection is defined, registered/instantiated, and reachable in production.
+- `Physical Containment Proof` — collision/geometry proof for escape or cross-arena reachability.
+
+Do not introduce alternate public names such as `safety proof`, `anti-proof`, `runtime check list`, `possible bug`, or `bug candidate`.
+
 ## Full-map naming
 
 Use:
