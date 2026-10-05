@@ -141,6 +141,12 @@ Review the audit in the same order the player experiences the game:
 
 ## Final quality projections
 
+- [ ] Vital Gameplay Knowledge Closure contains exactly the eight canonical vital domains.
+- [ ] Every applicable vital domain is terminal as UNDERSTOOD_PROVEN_SAFE, UNDERSTOOD_WITH_FINDING, or NOT_APPLICABLE before the audit is described as fully understood.
+- [ ] No RUNTIME_REQUIRED or DETECTION_GAP vital domain is hidden behind a generic PASS/checked label.
+- [ ] Tier 0 domains — entry/admission, progression, multi-arena isolation, and connection/recovery — have explicit ownership, interruption, recovery, boundary, and concurrency dispositions.
+- [ ] Vital Closure is a projection only; it does not create a second finding lane, state machine, report authority, or manual audit path.
+- [ ] Any unrouted material residue keeps Vital Gameplay Knowledge Closure OPEN.
 - [ ] Information Integrity projection is not BLOCKED before publication.
 - [ ] Every player-facing information contradiction remains represented exactly once in the canonical BUG or DESIGN_MISMATCH lanes.
 - [ ] Information Integrity does not create a duplicate issue list or alternate audit authority.
