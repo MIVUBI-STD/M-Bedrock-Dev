@@ -1,6 +1,6 @@
 use super::{
     apply_client_policy, base_vmx_path, client_vmx_path, command_output, ensure_parent, has_suspend_state,
-    host_working_set_mb, listed_as_running, read_vmx_memory,
+    host_working_set_mb, listed_as_running, read_vmx_memory, read_vmx_value,
     promote_staging_vm, remove_vm_container, snapshot_list_contains, staging_client_vmx_path,
     wait_for_state, MemoryMode, Provider, READY_SNAPSHOT,
 };
@@ -165,6 +165,21 @@ impl Provider for VmwareWorkstationProvider {
     fn host_working_set_mb(&self, client: ClientId) -> io::Result<Option<u64>> {
         let vmx = self.require_client(client)?;
         Ok(host_working_set_mb(&vmx))
+    }
+
+    fn identity_key(&self, client: ClientId) -> io::Result<Option<String>> {
+        let vmx = self.require_client(client)?;
+        let uuid = read_vmx_value(&vmx, "uuid.bios")?;
+        let mac = read_vmx_value(&vmx, "ethernet0.generatedAddress")?;
+
+        Ok(match (uuid, mac) {
+            (None, None) => None,
+            (uuid, mac) => Some(format!(
+                "{}|{}",
+                uuid.unwrap_or_default(),
+                mac.unwrap_or_default()
+            )),
+        })
     }
 
     fn start(&self, client: ClientId) -> io::Result<ClientState> {
