@@ -148,6 +148,23 @@ Approved BUG or approved design change
 → mutation
 → targeted verification
 → preservation verification
+→ Fix Verification Readiness
 ```
+
+Fix Verification Readiness is a projection of the existing post-repair differential and preservation proof. It does not create a second repair workflow. Its terminal statuses are `VERIFIED_FIXED`, `NOT_FIXED`, `REGRESSION_FOUND`, or `CONFIRMATION_REQUIRED`.
+
+## Final quality projections
+
+After canonical REPORT projection, two final assessments make result interpretation explicit without adding another audit path:
+
+```text
+closed canonical audit
+→ Information Integrity projection
+→ Zero-Finding assessment when findings = 0
+```
+
+Information Integrity crosschecks the canonical finding lanes for player-facing information contradictions. It may be `CLOSED_CLEAR`, `CLOSED_WITH_FINDINGS`, or `BLOCKED`; findings remain normal `BUG | DESIGN_MISMATCH` items and are never duplicated into a new issue lane.
+
+Zero-Finding assessment applies only when both issue lanes are empty. `ELIGIBLE` requires closed canonical coverage, CLOSED gameplay closure, PASS honesty, zero Audit Obligations, and zero remaining validation groups. Otherwise the result is `NOT_ELIGIBLE`. This is an absence-confidence statement, never a claim that the map is universally bug-free.
 
 A new map version restarts TARGET and Discovery. Prior findings are regression/calibration evidence only.
