@@ -1,3 +1,12 @@
+import {
+  deriveVitalGameplayClosure,
+  type VitalGameplayClosure,
+  type VitalGameplayFindingInput,
+} from "./map-audit-vital-closure.js";
+import type {
+  AuditObligation,
+} from "./map-audit-obligations.js";
+
 export type InformationIntegrityStatus =
   | "CLOSED_CLEAR"
   | "CLOSED_WITH_FINDINGS"
@@ -8,10 +17,9 @@ export type ZeroFindingStatus =
   | "NOT_ELIGIBLE"
   | "NOT_APPLICABLE";
 
-export interface MapAuditQualityFinding {
-  readonly id: string;
+export interface MapAuditQualityFinding
+  extends VitalGameplayFindingInput {
   readonly status: "PROVEN" | "NEED_VALIDATION";
-  readonly informationMismatch: boolean;
 }
 
 export interface MapAuditQualityGateInput {
@@ -22,6 +30,8 @@ export interface MapAuditQualityGateInput {
   readonly findings: readonly MapAuditQualityFinding[];
   readonly auditObligationCount: number;
   readonly validationTestCount: number;
+  readonly auditObligations?: readonly AuditObligation[];
+  readonly multiArenaDetected?: boolean;
 }
 
 export interface InformationIntegrityAssessment {
@@ -41,6 +51,7 @@ export interface ZeroFindingAssessment {
 export interface MapAuditQualityGates {
   readonly informationIntegrity: InformationIntegrityAssessment;
   readonly zeroFinding: ZeroFindingAssessment;
+  readonly vitalGameplay: VitalGameplayClosure;
 }
 
 export function deriveMapAuditQualityGates(
@@ -143,6 +154,15 @@ export function deriveMapAuditQualityGates(
     }
   }
 
+  const vitalGameplay = deriveVitalGameplayClosure({
+    controlStatus: input.controlStatus,
+    multiArenaDetected:
+      input.multiArenaDetected ?? false,
+    findings: input.findings,
+    auditObligations:
+      input.auditObligations ?? [],
+  });
+
   return {
     informationIntegrity,
     zeroFinding: {
@@ -150,5 +170,6 @@ export function deriveMapAuditQualityGates(
       status: zeroFindingStatus,
       reasons: zeroFindingReasons,
     },
+    vitalGameplay,
   };
 }
