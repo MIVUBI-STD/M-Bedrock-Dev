@@ -44,4 +44,29 @@ describe("world rule authority analysis", () => {
     expect(result.naturalMobSpawning).toBe("conflicted");
     expect(result.conflicts[0]?.rule).toBe("domobspawning");
   });
+  it("detects direct GameRules property assignments", () => {
+    const text = [
+      "function setup(world) {",
+      "  const rules = world.getGameRules();",
+      "  rules.doMobSpawning = false;",
+      "}",
+    ].join("\n");
+    const script = parseScriptFile(
+      "main",
+      text,
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result = analyzeWorldRuleAuthority([
+      { parsed: script, text },
+    ]);
+
+    expect(result.naturalMobSpawning).toBe("disabled");
+    expect(result.writes.some(
+      (item) => item.rule.toLowerCase() === "domobspawning",
+    )).toBe(true);
+  });
 });
