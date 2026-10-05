@@ -21,37 +21,18 @@ Use the lowest-cost evidence that can falsify a claim. Never promote source/stat
 - [Source mutation detection](./source-mutation-detection.md)
 - [Invariant revalidation](./invariant-revalidation.md)
 
-## Runtime validation
+## Runtime proof
 
-- [Active runtime diagnosis](./active-runtime-diagnosis.md)
-- [Runtime control](./runtime-control.md)
-- [Runtime observation](./runtime-observation.md)
-- [Runtime laboratory](./runtime-laboratory.md)
-- [Live harness](./live-harness.md)
-- [Live regression runner](./live-regression-runner.md)
-- [Bedrock runtime probes](./bedrock-runtime-probes.md)
-- [Bedrock runtime telemetry](./bedrock-runtime-telemetry.md)
-- [Bedrock state observation](./bedrock-state-observation.md)
+- [Runtime Proof](./runtime-proof.md) — canonical runtime diagnosis, control, observation, probes, telemetry, experiments, harness, and runtime-last policy.
 
 ## Search and falsification
 
-- [Bounded state exploration](./bounded-state-exploration.md)
-- [Concurrency perturbation](./concurrency-perturbation.md)
-- [Dynamic invariant mining](./dynamic-invariant-mining.md)
-- [Invariant mining advanced](./invariant-mining-advanced.md)
-- [Mutation testing](./mutation-testing.md)
-- [Script and graph mutation](./script-and-graph-mutation.md)
-- [Reliability search](./reliability-search.md)
-- [Runtime search feedback](./runtime-search-feedback.md)
+- [Search and Falsification](./search-and-falsification.md) — canonical bounded exploration, concurrency pressure, invariant challenge, mutation testing, semantic search, minimization, and runtime feedback.
 
-## Regression, retest, and portfolio
+## Retest and regression
 
-- [Regression](./regression.md)
-- [Retest planning](./retest-planning.md)
-- [Portfolio retest](./portfolio-retest.md)
-- [Campaign history and minimization](./campaign-history-and-minimization.md)
-- [History-driven search](./history-driven-search.md)
-- [Blindspot portfolio](./blindspot-portfolio.md)
+- [Retest and Regression](./retest-and-regression.md) — canonical regression asset ownership, history-driven prioritization, map retest, and portfolio retest.
+- [Blindspot portfolio](./blindspot-portfolio.md) — retained only where it adds distinct portfolio-level coverage semantics.
 
 ## Reliability and update evidence
 
