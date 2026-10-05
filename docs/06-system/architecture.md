@@ -94,3 +94,38 @@ Reliability Search owns bounded state/schedule exploration.
 Runtime Lab owns controlled empirical experiments.
 
 No layer may silently promote its own representation into another proof authority.
+
+## Orchestration boundary
+
+The orchestrator composes semantic owners; it must not duplicate parser, graph, diagnostics, archive, compatibility, or domain-analysis semantics.
+
+Canonical direction:
+
+```text
+artifact / source representation
+→ adapters + analyzers
+→ semantic/project models
+→ gameplay understanding / diagnosis
+→ repair / validation owners
+→ orchestrator composition
+→ app / report projection
+```
+
+Low-level owners remain authoritative for their domain semantics. Orchestration owns sequencing, composition, continuation, and cross-owner coordination only.
+
+## Integrated analysis rule
+
+Cross-domain analysis is built by composing evidence from existing owners rather than creating another all-purpose analyzer.
+
+Examples include:
+- manifest + script dependency compatibility;
+- selector/state scope + arena ownership;
+- structure/world evidence + gameplay topology;
+- entity/navigation + chunk/simulation readiness;
+- inventory/economy + lifecycle ownership.
+
+A cross-domain rule may correlate evidence, but it does not take ownership away from the contributing analyzers.
+
+## Conservative inference
+
+Topology, runtime behavior, cross-domain state, and platform capability must remain evidence-bounded. Repeated patterns, parser success, or nearby healthy code do not by themselves prove gameplay correctness.
