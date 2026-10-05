@@ -103,7 +103,7 @@ Google Drive is the approved human-facing storage for map binaries, source-devel
 Canonical guidance:
 
 ```text
-docs/06-system/drive-storage.md
+docs/system/drive-storage.md
 ```
 
 Tracked root pointer:
