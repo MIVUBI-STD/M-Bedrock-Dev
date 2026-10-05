@@ -162,3 +162,5 @@ current approved Game Design
 ```
 
 Source-derived intent is implementation evidence, not Map Game Design authority. Inspection may derive repair proposals, but production PatchTransaction/mutation authority starts only after approval and preservation binding.
+
+Vital Gameplay Knowledge Closure is a final read-only projection of the canonical selected-map audit. It covers exactly eight vital domains and fails open on RUNTIME_REQUIRED, DETECTION_GAP, or unrouted material residue. It does not introduce a new command, state machine, finding lane, or proof owner.
