@@ -49,6 +49,31 @@ if (!/planning\//.test(workspaceAgents)) {
   failures.push("workspace/AGENTS.md must route planning intent to planning/.");
 }
 
+if (!existsSync("workspace/developer-notes.json")) {
+  failures.push("Missing canonical Developer Note ledger: workspace/developer-notes.json");
+}
+
+if (existsSync("workspace/reports")) {
+  const allowedReportFiles = new Set(["README.md", "AGENTS.md"]);
+  for (const entry of readdirSync("workspace/reports", { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      failures.push("workspace/reports must remain a flat canonical Bug Report V2 store: " + entry.name);
+      continue;
+    }
+    if (allowedReportFiles.has(entry.name)) continue;
+    if (!/-BugReport\.json$/.test(entry.name)) {
+      failures.push("Non-BugReport artifact must not live in workspace/reports: " + entry.name);
+    }
+  }
+}
+
+if (existsSync("workspace/reports/approved-publication-dataset.json")) {
+  failures.push("Derived publication dataset must not live in workspace/reports.");
+}
+if (!existsSync("workspace/publication/source-dataset.json")) {
+  failures.push("Missing derived publication source dataset: workspace/publication/source-dataset.json");
+}
+
 const planningReadme = existsSync("planning/README.md")
   ? readFileSync("planning/README.md", "utf8")
   : "";
