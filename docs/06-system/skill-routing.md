@@ -147,7 +147,7 @@ make bug finding smarter/more accurate
 → Detection Development
 ```
 
-Read `skill-contract.md` for the mandatory lane structure.
+The mandatory work-lane structure is defined in this document.
 
 
 ## Permission preflight
