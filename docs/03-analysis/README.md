@@ -122,8 +122,8 @@ None of these documents may authorize continuation independently of the Mandator
 ### Runtime gameplay knowledge
 Runtime documents describe evidence requirements only; knowledge presence is not proof and does not create a workflow.
 
-- arena/session: [arena cleanup](./arena-cleanup-runtime.md), [round integrity](./round-integrity-runtime.md), [player session](./player-session-runtime.md)
-- player lifecycle: [player life](./player-life-runtime.md), [inventory](./inventory-runtime.md), [interaction](./interaction-runtime.md), [effects](./effects-runtime.md)
+- arena/session: [arena cleanup](./arena-cleanup-runtime.md), [round integrity](./round-integrity-runtime.md)
+- player lifecycle: [player lifecycle](./player-lifecycle.md), [inventory](./inventory-runtime.md), [interaction](./interaction-runtime.md), [effects](./effects-runtime.md)
 - entities/combat: [entity navigation](./entity-runtime-navigation.md), [entity population](./entity-population-runtime.md), [combat](./combat-runtime.md)
 - world/chunks: [chunk loading](./chunk-runtime-loading.md), [world state](./world-state-runtime.md), [world mutation](./world-mutation-runtime.md), [spatial containment](./spatial-containment-runtime.md)
 - execution/order: [event ordering](./event-ordering-runtime.md), [persistence/recovery](./persistence-recovery-runtime.md), [state authority](./state-authority-runtime.md)
@@ -132,4 +132,4 @@ Runtime documents describe evidence requirements only; knowledge presence is not
 
 ## Placement rule
 
-A new analysis document is not a new audit stage. Durable semantics belong here; current proof belongs in `docs/07-operations/`; production execution order remains owned by the Mandatory Audit Procedure.
+A new analysis document is not a new audit stage. Durable semantics belong here. Historical runs belong in `engine/reliability/history/`; active work intent belongs in `planning/`; working/project execution data belongs in `workspace/`. Production execution order remains owned by the Mandatory Audit Procedure.
