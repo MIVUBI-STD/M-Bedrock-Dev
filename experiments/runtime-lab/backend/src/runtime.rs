@@ -87,7 +87,7 @@ impl RuntimeLab {
         })?;
 
         let mut result = Vec::with_capacity(3);
-        for client in ClientId::ALL.into_iter().filter(|client| !client.is_native()) {
+        for client in ClientId::VIRTUAL.into_iter() {
             let state = provider.provision(client)?;
             result.push(ClientStatus {
                 id: client.as_str(),
@@ -214,7 +214,7 @@ impl RuntimeLab {
 
         let mut stopped_virtual_clients = 0;
         let mut running_virtual_clients = 0;
-        for client in ClientId::ALL.into_iter().skip(1).take(virtual_clients) {
+        for client in ClientId::VIRTUAL.into_iter().take(virtual_clients) {
             match provider.status(client)? {
                 ClientState::Stopped => stopped_virtual_clients += 1,
                 ClientState::Running => running_virtual_clients += 1,
@@ -282,9 +282,8 @@ impl RuntimeLab {
         }
 
         let provider_ref = provider.as_ref();
-        let virtual_targets: Vec<ClientId> = ClientId::ALL
+        let virtual_targets: Vec<ClientId> = ClientId::VIRTUAL
             .into_iter()
-            .skip(1)
             .take(virtual_clients)
             .collect();
 
@@ -324,7 +323,7 @@ impl RuntimeLab {
 
         let mut result = Vec::with_capacity(count);
         result.push(ClientStatus {
-            id: ClientId::Mce01.as_str(),
+            id: ClientId::Native.as_str(),
             native: true,
             state: ClientState::Manual,
             ready_snapshot: None,
@@ -359,9 +358,7 @@ impl RuntimeLab {
 
         let targets: Vec<ClientId> = match client {
             Some(client) => vec![client],
-            None => ClientId::ALL
-                .into_iter()
-                .filter(|client| !client.is_native())
+            None => ClientId::VIRTUAL.into_iter()
                 .collect(),
         };
 
