@@ -115,6 +115,14 @@
       "executionContext": "REMOTE_GITHUB"
     },
     {
+      "capabilityId": "domain.client-reconciliation",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/inspection/client-mutation-reconciliation-analysis.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
       "capabilityId": "domain.combat",
       "kind": "unit-contract",
       "paths": [
@@ -155,10 +163,35 @@
       "executionContext": "REMOTE_GITHUB"
     },
     {
+      "capabilityId": "domain.physical-containment",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/arena/arena-voxel-proof.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "domain.player-capability",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts",
+        "engine/packages/diagnostic-reasoning/test/capability-guard-activation.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
       "capabilityId": "domain.spatial-authority",
       "kind": "unit-contract",
       "paths": [
         "engine/packages/orchestrator/test/inspection/spatial-authority-analysis.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "domain.world-rule-authority",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/inspection/world-rule-authority-analysis.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
