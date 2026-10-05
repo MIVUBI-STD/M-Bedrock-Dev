@@ -1112,6 +1112,21 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     );
   }
 
+  for (const kind of [
+    "player-capability-integrity",
+    "world-rule-authority",
+    "client-server-reconciliation",
+    "spatial-containment",
+  ] as const) {
+    if (
+      hidden.auditScenarioPreset.scenarios.some(
+        (scenario) => scenario.kind === kind,
+      )
+    ) {
+      requiredCrossSystemScenarioLabels.add(kind);
+    }
+  }
+
   const crossSystemScenarios = graph.scenarios.filter(
     (scenario) =>
       requiredCrossSystemScenarioLabels.has(
