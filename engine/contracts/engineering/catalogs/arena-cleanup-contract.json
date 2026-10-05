@@ -299,6 +299,59 @@
         "accumulative-leak",
         "nth-run-regression"
       ]
+    },
+    {
+      "id": "cleanup-policy.capability-mutation-footprint",
+      "domain": "arena-cleanup",
+      "subject": "broad player capability cleanup",
+      "statement": "When a gameplay role receives broad mutation capability such as Creative, mayfly, worldbuilder, operator, or maintenance authority, derive the full reachable mutation footprint first and compare it against prevention and reset coverage. Cleanup is complete only when every material reachable mutation is blocked, restored, or intentionally preserved.",
+      "classification": "engineering-contract",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-contract-v1"
+      ],
+      "capabilityTags": [
+        "creative",
+        "mutation-footprint",
+        "cleanup-differential"
+      ],
+      "riskSurfaces": [
+        "entity-residue",
+        "equipment-leak",
+        "world-residue",
+        "privilege-residue"
+      ]
+    },
+    {
+      "id": "cleanup-policy.inventory-clear-not-equipment-proof",
+      "domain": "arena-cleanup",
+      "subject": "creative player normal form",
+      "statement": "A main inventory clear is not proof of full player reset when the role can mutate equipment/offhand or other capability surfaces. Inventory, equipment, gamemode, abilities, and world/entity mutations must be reconciled independently.",
+      "classification": "engineering-contract",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-contract-v1"
+      ],
+      "capabilityTags": [
+        "inventory",
+        "equipment",
+        "player-normal-form"
+      ],
+      "riskSurfaces": [
+        "equipment-leak",
+        "creative-residue",
+        "partial-reset"
+      ]
     }
   ],
   "relations": [
