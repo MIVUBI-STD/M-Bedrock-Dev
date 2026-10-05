@@ -48,7 +48,7 @@ raw user request
 
 Low-level analyzers, specialist audit documents, Work Session projections, and Bug Report tooling are subordinate. They may provide evidence or presentation, but they cannot authorize stage completion independently.
 
-Production output rule: `SelectedMapAuditRun` is internal control-plane authority. The operator-facing output of `audit` is exactly one `Map Audit Output V2`, which carries control state, audit context, causal finding lanes, Audit Obligations, proof guidance, validation plan, honesty, and replica context.
+Production output rule: `SelectedMapAuditRun` is internal control-plane authority. The operator-facing output of `audit` is exactly one `Map Audit Output V2`, which carries control state, audit context, causal finding lanes, Audit Obligations, proof guidance, validation plan, honesty, replica context, and the read-only Vital Gameplay Knowledge Closure projection.
 
 Detection honesty rule: risks, detection gaps, model gaps, unresolved runtime dependencies, incomplete counter-proof, and unclassified replica differences remain `Audit Obligation` work. They do not enter `BUG | DESIGN_MISMATCH` until selected-artifact causal analysis establishes a player-visible contradiction.
 
@@ -59,6 +59,8 @@ Pre-testing confirmation rule: the user does not need to know symptoms. Before p
 Operator work order: `docs/03-analysis/master-selected-map-audit-workflow.md`.
 
 Executable checkpoint authority: `docs/03-analysis/mandatory-audit-procedure.md`.
+
+Vital-knowledge projection: `docs/03-analysis/vital-gameplay-knowledge-closure.md`. It does not introduce a second audit path or authority.
 
 ## Project continuity and publication
 
