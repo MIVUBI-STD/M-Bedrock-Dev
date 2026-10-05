@@ -1,0 +1,52 @@
+name: Runtime Lab Backend
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - Experimental
+    paths:
+      - "experiments/runtime-lab/backend/**"
+      - ".github/workflows/runtime-lab.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runtime-lab-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rust-backend:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - macos-latest
+
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: experiments/runtime-lab/backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install Rust 1.77.2
+        shell: bash
+        run: |
+          rustup toolchain install 1.77.2 --profile minimal --component rustfmt
+          rustup override set 1.77.2
+
+      - name: Format
+        run: cargo fmt --check
+
+      - name: Check
+        run: cargo check --all-targets
+
+      - name: Test
+        run: cargo test --all-targets
