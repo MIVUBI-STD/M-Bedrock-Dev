@@ -2718,4 +2718,83 @@ Unaccounted Lifetime Owners = 0
 Generic NEED_VALIDATION = 0
 Unsupported PROVEN = 0
 ```
+---
+
+# 36. Runtime Queue Reduction
+
+### Purpose
+
+Prevent the Runtime Test Queue from becoming a substitute for analysis.
+
+Every runtime candidate must first pass a system-side reduction loop:
+
+```text
+runtime candidate
+→ re-open exact unresolved claim
+→ inspect fresh selected artifact if current evidence is insufficient
+→ targeted causal slice
+→ applicable state/representation/event/lifetime/geometry checks
+→ deterministic substitution
+→ analogous implementation comparison
+→ Blocking-Proof Exhaustion
+→ re-run claim closure
+```
+
+Allowed outcomes:
+
+```text
+PROVEN
+SAFE
+DEFERRED_RUNTIME_IRREDUCIBLE
+```
+
+Do not preserve a runtime item merely because runtime would be faster or easier.
+
+## 36.1 Evidence freshness rule
+
+If a runtime candidate was created from a preserved-evidence replay rather than fresh selected-artifact inspection, it is not yet eligible for human testing.
+
+It must first be marked:
+
+```text
+SYSTEM_REOPEN_REQUIRED
+```
+
+and the system must inspect the current selected artifact for the exact unresolved surface.
+
+Only after fresh evidence fails to decide the claim may it become:
+
+```text
+DEFERRED_RUNTIME_IRREDUCIBLE
+```
+
+## 36.2 Cross-map comparison rule
+
+Analogous maps may be used to:
+- identify expected ownership/cleanup patterns;
+- discover missing handlers;
+- prioritize likely failure surfaces;
+- derive additional targeted searches.
+
+Analogous maps may not prove the current map safe or broken by themselves.
+
+## 36.3 Manual handoff rule
+
+A human-facing runtime request requires a complete last-resort receipt:
+
+```text
+Queue Item
+Selected Artifact Fingerprint
+Exact Missing Claim
+Fresh Artifact Inspection Complete
+Deterministic Methods Attempted
+Relevant Blocking Proofs Checked
+Why Static Evidence Cannot Decide
+One Minimal Runtime Scenario
+Observable A
+Observable B
+Decision Produced by A/B
+```
+
+Without this receipt, keep the work inside the system.
 
