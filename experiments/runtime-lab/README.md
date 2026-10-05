@@ -74,8 +74,8 @@ RAM is intentionally not fixed during provisioning.
 RAM is calculated from live host headroom immediately before a stopped virtual client is booted.
 
 ```text
-1 virtual → 4–6 GB
-2 virtual → 4–5 GB each
+1 virtual → 4–5 GB
+2 virtual → 4–4.5 GB each
 3 virtual → 4 GB each
 ```
 
