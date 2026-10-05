@@ -347,6 +347,56 @@
         "semantic-owner-present",
         "explicit-invariant"
       ]
+    },
+    {
+      "id": "reg_build_decode_1_1_0_bug_bad_waterlog_client_desync",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_build_decode_1_1_0_bug_bad_waterlog_client_desync",
+      "artifactFile": "Build & Decode v1.1.0.mcworld",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "runtime-sensitive",
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_build_decode_1_1_0_bug_bad_roommaster_world_guard",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_build_decode_1_1_0_bug_bad_roommaster_world_guard",
+      "artifactFile": "Build & Decode v1.1.0.mcworld",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_build_decode_1_1_0_closed_barrier_blocks_escape_claim",
+      "status": "candidate",
+      "sourceRef": "workspace/reports/Build-and-Decode-v1.1.0-BugReport.json#manualRuntimeEvidence",
+      "artifactFile": "Build & Decode v1.1.0.mcworld",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "negative",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ],
+      "expectation": "Closed minecraft:barrier enclosure blocks the physical escape claim even when mayfly is enabled and no script position clamp exists."
     }
   ],
   "policy": {
