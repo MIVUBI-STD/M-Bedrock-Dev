@@ -92,4 +92,65 @@ describe("arena cleanup surface analysis", () => {
       coverageRatio: 0,
     });
   });
+  it("tracks equipment and temporary player capabilities as cleanup obligations", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function start(player, equipment) {",
+        "  equipment.setEquipment('Chest', new ItemStack('minecraft:elytra'));",
+        "  player.runCommand('ability @s mayfly true');",
+        "}",
+        "function endGame(player, equipment) {",
+        "  equipment.setEquipment('Chest', undefined);",
+        "  player.runCommand('ability @s mayfly false');",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result = analyzeArenaCleanupSurfaces([script]);
+    const surfaces = result.ledger?.obligations ?? [];
+
+    expect(
+      surfaces.some(
+        (item) =>
+          item.surface === "equipment" &&
+          item.status !== "missing",
+      ),
+    ).toBe(true);
+    expect(
+      surfaces.some(
+        (item) =>
+          item.surface === "player-capability" &&
+          item.key.includes("mayfly") &&
+          item.status === "complete",
+      ),
+    ).toBe(true);
+  });
+
+  it("flags temporary equipment without cleanup as missing", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function start(equipment) {",
+        "  equipment.setEquipment('Chest', new ItemStack('minecraft:elytra'));",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result = analyzeArenaCleanupSurfaces([script]);
+
+    expect(
+      result.ledger?.obligations.find(
+        (item) => item.surface === "equipment",
+      )?.status,
+    ).toBe("missing");
+  });
 });
