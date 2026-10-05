@@ -177,3 +177,32 @@ Review:
 - legality of mutation in the event/execution phase.
 
 A hazard is not automatically a separate bug family; classify the player-visible failure under the affected gameplay contract and preserve world-mutation/hazard evidence as a contributing domain.
+
+## Interactive world object state
+
+Critical interactive objects are more than block type. Relevant state may include:
+
+```text
+dimension/location
+block type
+permutation/state
+components
+container contents
+automation coupling
+arena/session generation
+```
+
+A reset/structure restore must re-acquire the object and verify the full required state rather than assuming the block type proves correctness.
+
+Containers have a separate lifecycle:
+
+```text
+block exists
+→ inventory component exists
+→ container valid
+→ contents match expected baseline
+```
+
+Door/gate/trapdoor/powered state may affect player and entity routes. Reward containers must reconcile with economy/idempotency so restoration cannot recreate already-consumed rewards.
+
+World-object mutation can invalidate automation/topology assumptions and must therefore trigger the appropriate downstream revalidation.
