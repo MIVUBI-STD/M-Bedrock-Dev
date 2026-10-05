@@ -1,5 +1,6 @@
 use super::{
-    base_vmx_path, client_vmx_path, command_output, ensure_parent, listed_as_running, Provider,
+    base_vmx_path, client_vmx_path, command_output, ensure_parent, listed_as_running,
+    promote_staging_vm, remove_vm_container, staging_client_vmx_path, Provider,
 };
 use crate::client::{ClientId, ClientState};
 use std::{io, path::Path, process::Command};
@@ -41,6 +42,10 @@ impl Provider for VmwareFusionProvider {
         self.vmrun().is_file()
     }
 
+    fn is_running_path(&self, vmx: &Path) -> io::Result<bool> {
+        self.running(vmx)
+    }
+
     fn provision(&self, client: ClientId) -> io::Result<ClientState> {
         let target = client_vmx_path(client)?;
         if target.is_file() {
@@ -54,21 +59,40 @@ impl Provider for VmwareFusionProvider {
                 format!("base VM is missing: {}", base.display()),
             ));
         }
+        if self.running(&base)? {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "base VM must be powered off before provisioning",
+            ));
+        }
 
-        ensure_parent(&target)?;
+        let staging = staging_client_vmx_path(client)?;
+        remove_vm_container(&staging);
+        ensure_parent(&staging)?;
+
         let clone_name = format!("-cloneName={}", client.as_str());
-        command_output(
+        let clone_result = command_output(
             self.vmrun(),
             [
                 "-T",
                 "fusion",
                 "clone",
                 base.to_string_lossy().as_ref(),
-                target.to_string_lossy().as_ref(),
+                staging.to_string_lossy().as_ref(),
                 "linked",
                 clone_name.as_str(),
             ],
-        )?;
+        );
+
+        if let Err(error) = clone_result {
+            remove_vm_container(&staging);
+            return Err(error);
+        }
+
+        if let Err(error) = promote_staging_vm(&staging, &target) {
+            remove_vm_container(&staging);
+            return Err(error);
+        }
 
         Ok(ClientState::Stopped)
     }
@@ -93,13 +117,7 @@ impl Provider for VmwareFusionProvider {
 
         command_output(
             self.vmrun(),
-            [
-                "-T",
-                "fusion",
-                "start",
-                vmx.to_string_lossy().as_ref(),
-                "gui",
-            ],
+            ["-T", "fusion", "start", vmx.to_string_lossy().as_ref(), "gui"],
         )?;
         Ok(ClientState::Ready)
     }
@@ -112,13 +130,7 @@ impl Provider for VmwareFusionProvider {
 
         command_output(
             self.vmrun(),
-            [
-                "-T",
-                "fusion",
-                "stop",
-                vmx.to_string_lossy().as_ref(),
-                "soft",
-            ],
+            ["-T", "fusion", "stop", vmx.to_string_lossy().as_ref(), "soft"],
         )?;
         Ok(ClientState::Stopped)
     }
@@ -134,13 +146,7 @@ impl Provider for VmwareFusionProvider {
 
         command_output(
             self.vmrun(),
-            [
-                "-T",
-                "fusion",
-                "reset",
-                vmx.to_string_lossy().as_ref(),
-                "soft",
-            ],
+            ["-T", "fusion", "reset", vmx.to_string_lossy().as_ref(), "soft"],
         )?;
         Ok(ClientState::Ready)
     }
