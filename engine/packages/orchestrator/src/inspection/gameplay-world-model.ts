@@ -83,6 +83,12 @@ import type {
 import type {
   PersistenceSourceAnalysis,
 } from "../persistence-source-analysis.js";
+import type {
+  WorldRuleAuthorityAnalysis,
+} from "./world-rule-authority-analysis.js";
+import type {
+  PlayerCapabilitySurfaceAnalysis,
+} from "./player-capability-surface-analysis.js";
 import {
   discoverGameplaySurfaces,
   type GameplaySurfaceDiscoveryResult,
@@ -401,6 +407,27 @@ export interface GameplayWorldModel {
       ownerCallbackRegions: readonly string[];
     }[];
   };
+  worldRules: {
+    writes: number;
+    conflicts: number;
+    naturalMobSpawning:
+      | "disabled"
+      | "enabled"
+      | "conflicted"
+      | "unresolved";
+    scriptSpawnEntityPaths: number;
+    commandSummonPaths: number;
+    manualEntitySpawnPaths: number;
+  };
+  playerCapabilities: {
+    gamemodeWrites: number;
+    abilityWrites: number;
+    commandPermissionWrites: number;
+    privilegedGuardReferences: number;
+    privilegedBypassReturns: number;
+    protectionDefinitions: number;
+    inactiveProtectionDefinitions: number;
+  };
   state: {
     semanticSurfaces: number;
     semanticOperations: number;
@@ -554,6 +581,8 @@ export interface GameplayWorldModelSource {
   inventoryLifecycle?: InventoryLifecycleAnalysis;
   inventoryPolicy?: InventoryContractAnalysis;
   inventoryRestoreOwnership?: InventoryRestoreOwnershipAnalysis;
+  worldRuleAuthority?: WorldRuleAuthorityAnalysis;
+  playerCapabilitySurfaces?: PlayerCapabilitySurfaceAnalysis;
   semanticIr: {
     stateSurfaces: number;
     stateOperations: number;
@@ -1052,15 +1081,77 @@ export function deriveGameplayWorldModel(
         "Player UI/form behavior is present, but menu reachability, state transitions, and delivery semantics are not fully owned by a production analyzer.",
     });
   }
-  if (source.unsupportedSurfaceSignals?.environment) {
+  const environmentEvidence =
+    (source.worldRuleAuthority?.writes.length ?? 0) > 0 ||
+    source.unsupportedSurfaceSignals?.environment === true;
+  if (environmentEvidence) {
+    const environmentUnresolved =
+      source.worldRuleAuthority === undefined ||
+      source.worldRuleAuthority.conflicts.length > 0;
     runtimeSurfaces.push({
       id: "runtime:environment",
       label: "Environment and gamerule contract",
       kind: "runtime-domain",
-      status: "unknown",
+      status:
+        environmentUnresolved
+          ? "unknown"
+          : "understood",
       material: true,
-      reason:
-        "Environment/gamerule mutations are present, but selected-artifact time, weather, difficulty, gamemode, and gamerule intent are not fully semantically reconciled.",
+      ...(environmentUnresolved
+        ? {
+            reason:
+              source.worldRuleAuthority === undefined
+                ? "Environment/gamerule mutations are present without a complete world-rule authority analysis."
+                : "Conflicting gamerule writers remain unresolved.",
+          }
+        : {}),
+      boundaries:
+        source.worldRuleAuthority === undefined
+          ? []
+          : [
+              "worldRuleWrites=" +
+                String(source.worldRuleAuthority.writes.length),
+              "manualEntitySpawnPaths=" +
+                String(source.worldRuleAuthority.manualEntitySpawnPaths),
+              "naturalMobSpawning=" +
+                source.worldRuleAuthority.naturalMobSpawning,
+            ],
+    });
+  }
+
+  const playerCapabilityEvidence =
+    source.playerCapabilitySurfaces !== undefined &&
+    (
+      source.playerCapabilitySurfaces.gamemodeWrites > 0 ||
+      source.playerCapabilitySurfaces.abilityWrites > 0 ||
+      source.playerCapabilitySurfaces.commandPermissionWrites > 0 ||
+      source.playerCapabilitySurfaces.privilegedGuardReferences > 0 ||
+      source.playerCapabilitySurfaces.protectionDefinitions.length > 0
+    );
+  if (playerCapabilityEvidence) {
+    runtimeSurfaces.push({
+      id: "runtime:player-capability",
+      label: "Player capability and privileged-role authority",
+      kind: "runtime-domain",
+      status:
+        (source.playerCapabilitySurfaces?.inactiveProtectionDefinitions ?? 0) > 0
+          ? "unknown"
+          : "understood",
+      material: true,
+      ...((source.playerCapabilitySurfaces?.inactiveProtectionDefinitions ?? 0) > 0
+        ? {
+            reason:
+              "One or more protection classes are defined but not instantiated in the selected production script graph.",
+          }
+        : {}),
+      boundaries: [
+        "gamemodeWrites=" +
+          String(source.playerCapabilitySurfaces?.gamemodeWrites ?? 0),
+        "abilityWrites=" +
+          String(source.playerCapabilitySurfaces?.abilityWrites ?? 0),
+        "privilegedBypassReturns=" +
+          String(source.playerCapabilitySurfaces?.privilegedBypassReturns ?? 0),
+      ],
     });
   }
   if (
@@ -1151,8 +1242,8 @@ export function deriveGameplayWorldModel(
       source.unsupportedSurfaceSignals?.teleport,
     uiFormEvidence:
       source.unsupportedSurfaceSignals?.uiForm,
-    environmentEvidence:
-      source.unsupportedSurfaceSignals?.environment,
+    environmentEvidence,
+    playerCapabilityEvidence,
     asyncCommandTransactionEvidence:
       source.unsupportedSurfaceSignals
         ?.asyncCommandTransaction,
@@ -1749,6 +1840,36 @@ export function deriveGameplayWorldModel(
           itemIdentifier: item.itemIdentifier,
           ownerCallbackRegions: [...item.ownerCallbackRegions],
         })) ?? [],
+    },
+    worldRules: {
+      writes:
+        source.worldRuleAuthority?.writes.length ?? 0,
+      conflicts:
+        source.worldRuleAuthority?.conflicts.length ?? 0,
+      naturalMobSpawning:
+        source.worldRuleAuthority?.naturalMobSpawning ?? "unresolved",
+      scriptSpawnEntityPaths:
+        source.worldRuleAuthority?.scriptSpawnEntityPaths ?? 0,
+      commandSummonPaths:
+        source.worldRuleAuthority?.commandSummonPaths ?? 0,
+      manualEntitySpawnPaths:
+        source.worldRuleAuthority?.manualEntitySpawnPaths ?? 0,
+    },
+    playerCapabilities: {
+      gamemodeWrites:
+        source.playerCapabilitySurfaces?.gamemodeWrites ?? 0,
+      abilityWrites:
+        source.playerCapabilitySurfaces?.abilityWrites ?? 0,
+      commandPermissionWrites:
+        source.playerCapabilitySurfaces?.commandPermissionWrites ?? 0,
+      privilegedGuardReferences:
+        source.playerCapabilitySurfaces?.privilegedGuardReferences ?? 0,
+      privilegedBypassReturns:
+        source.playerCapabilitySurfaces?.privilegedBypassReturns ?? 0,
+      protectionDefinitions:
+        source.playerCapabilitySurfaces?.protectionDefinitions.length ?? 0,
+      inactiveProtectionDefinitions:
+        source.playerCapabilitySurfaces?.inactiveProtectionDefinitions ?? 0,
     },
     state: {
       semanticSurfaces:
