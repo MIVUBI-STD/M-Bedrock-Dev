@@ -1934,7 +1934,61 @@ Stop escalation when:
 Do not continue searching after deterministic closure merely to increase evidence volume.
 ---
 
-# 21. Aggressive Transition Simulation
+
+## Canonical scenario naming
+
+User prompts, tester wording, screenshots, and examples are **evidence/input**, not permanent subsystem names.
+
+Use one stable naming layer in reports and workflow:
+
+```text
+Stage Transition State Check
+Carried Objective Ownership Check
+Shared World State Check
+Offline Progression Check
+Container & Economy Reset Check
+Disconnect / Reconnect Check
+Reload Recovery Check
+Multiplayer Shared-State Check
+Multi-Arena Isolation Check
+Player Capability Check
+```
+
+Naming rules:
+
+- Name the check after the concrete gameplay/system behavior being verified.
+- Prefer plain terms a developer or tester can understand without knowing the audit framework.
+- Do not create a new family name from one tester example.
+- Do not use dramatic labels such as "aggressive", "chaos", "random", or "stress attack" as report-facing taxonomy.
+- A new example must map into an existing check whenever the underlying state/ownership problem is the same.
+- One root cause keeps one canonical name even if discovered through several scenarios.
+- Internal machine IDs may remain uppercase/stable for compatibility, but display names must use the canonical names above.
+
+Examples:
+
+```text
+"chest Station 3 masih isi di Station 4"
+→ Stage Transition State Check
+→ Container & Economy Reset Check
+
+"flag hilang setelah carrier disconnect"
+→ Carried Objective Ownership Check
+→ Disconnect / Reconnect Check
+
+"spruce gate tertinggal dan NPC tidak bisa lewat"
+→ Shared World State Check
+→ Stage Transition State Check
+
+"cutscene jalan terus saat player offline"
+→ Offline Progression Check
+→ Disconnect / Reconnect Check
+```
+
+Do not create separate permanent families named after Station 3, Station 4, spruce, flag, or cinematic. Those are scenario evidence, not architecture.
+
+---
+
+# 21. Stage Transition State Check
 
 ### Purpose
 
@@ -2005,7 +2059,7 @@ Do not request runtime merely because the transition is asynchronous; use tempor
 
 ---
 
-# 22. Objective Custody Simulation
+# 22. Carried Objective Ownership Check
 
 ### Trigger
 
@@ -2076,7 +2130,7 @@ When another map in the same family contains explicit disconnect custody cleanup
 
 ---
 
-# 23. World Mutation Compatibility Simulation
+# 23. Shared World State Check
 
 ### Purpose
 
@@ -2124,7 +2178,7 @@ This family is mandatory when sequential stages reuse physical space.
 
 ---
 
-# 24. Offline-Progression Simulation
+# 24. Offline Progression Check
 
 ### Trigger
 
@@ -2162,7 +2216,7 @@ A timer continuing while a player is offline is not automatically a bug. It beco
 
 ---
 
-# 25. Container & Economy Carryover Simulation
+# 25. Container & Economy Reset Check
 
 ### Trigger
 
@@ -2213,7 +2267,7 @@ Challenge:
 
 ---
 
-# 26. Aggressive Scenario Synthesis
+# 26. Scenario Prioritization
 
 ### Principle
 
@@ -2302,7 +2356,7 @@ This prevents Cartesian explosion while still targeting rare interaction defects
 
 ---
 
-# 27. Minimal Runtime Verification Selection
+# 27. Runtime Test Queue
 
 After all deterministic simulation/proof:
 
@@ -2336,7 +2390,7 @@ Do not output broad instructions such as "play the map and look for issues."
 
 ---
 
-# 28. Simulation Stop Rule
+# 28. Scenario Closure Rule
 
 A map simulation closes only when:
 
