@@ -264,7 +264,7 @@ impl RuntimeLab {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 format!(
-                    "requested {count} clients but this host is recommended for at most {}",
+                    "requested {count} virtual clients but this host is recommended for at most {}",
                     host.max_recommended_virtual_clients
                 ),
             ));
