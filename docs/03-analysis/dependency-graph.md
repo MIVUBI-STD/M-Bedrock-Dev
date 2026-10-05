@@ -55,3 +55,18 @@ The initial graph supports:
 A changed semantic node invalidates itself and reverse dependents, not the entire project.
 
 More precise analyzer-level invalidation can be added later, but unrelated graph branches should remain reusable.
+
+## Dialogue scene graph
+
+NPC dialogue scenes are executable semantic content when they contain open/close/button commands.
+
+Dialogue-scene commands enter the same dependency graph and may:
+- call functions;
+- load structures;
+- read/write scoreboards;
+- add/remove tags;
+- reference another dialogue scene.
+
+Scene references remain resolved/unresolved/ambiguous like other graph edges.
+
+The initiating player identity is distinct from the executing NPC context. Multiplayer/session validity is handled by interaction/player-lifecycle analysis rather than by the graph itself.
