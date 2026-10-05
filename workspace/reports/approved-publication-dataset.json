@@ -442,7 +442,6 @@
           "severity": "minor",
           "category": "world-interaction",
           "foundBy": "tester",
-          "proofState": "PROVEN_RUNTIME",
           "issueType": "BUG",
           "title": "Blocked water placement can leave client-only waterlogged residue",
           "problem": "Blocked bucket use can leave water visually lodged in barrier or other waterloggable blocks for the acting player while server state remains unchanged.",
@@ -471,9 +470,8 @@
           "id": "BUG-BAD-ROOMMASTER-WORLD-GUARD",
           "fixed": false,
           "severity": "major",
-          "category": "player-capability",
+          "category": "world-interaction",
           "foundBy": "tester",
-          "proofState": "PROVEN_RUNTIME",
           "issueType": "BUG",
           "title": "Roommaster/admin bypass can modify protected arena world",
           "problem": "A Roommaster with the map admin role bypasses build and dangerous-use guards, allowing protected arena blocks to be destroyed and restricted entities/items to be spawned or placed.",
@@ -1448,5 +1446,5 @@
     "admissionRule": "DEV_NOTE requires concrete evidence, clear developer value, an actionable correction, and must not be speculative."
   },
   "lastUpdated": "2026-10-05",
-  "updateNote": "Build & Decode runtime feedback and causal counter-proof integrated; inactive AntiCheatManager recorded as Developer Note."
+  "updateNote": "Build & Decode runtime feedback integrated; strict Bug Report V2 fields preserved."
 }
