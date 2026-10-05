@@ -1,6 +1,7 @@
 export * from "./map-audit-admission.js";
 export * from "./map-audit-pipeline.js";
 export * from "./map-audit-output-v2.js";
+export * from "./map-audit-quality-gates.js";
 export * from "./map-audit-user-intent.js";
 export * from "./core/index.js";
 export * from "./arena/index.js";
