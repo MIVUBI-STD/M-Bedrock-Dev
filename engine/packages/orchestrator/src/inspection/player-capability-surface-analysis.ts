@@ -8,6 +8,8 @@ export interface PlayerCapabilityProtectionDefinition {
 
 export interface PlayerCapabilitySurfaceAnalysis {
   gamemodeWrites: number;
+  creativeModeGrants: number;
+  spectatorModeGrants: number;
   abilityWrites: number;
   commandPermissionWrites: number;
   privilegedGuardReferences: number;
@@ -47,6 +49,44 @@ export function analyzePlayerCapabilitySurfaces(
         ).length +
         script.commandLiterals.filter((command) =>
           /^\/?gamemode\b/i.test(command.command.trim())
+        ).length,
+      0,
+    );
+
+  const creativeModeGrants =
+    parsed.reduce(
+      (sum, script) =>
+        sum +
+        script.methodCalls.filter(
+          (call) =>
+            call.method === "setGameMode" &&
+            /creative/i.test(
+              call.argumentTexts?.[0] ?? "",
+            ),
+        ).length +
+        script.commandLiterals.filter((command) =>
+          /^\/?gamemode\s+creative\b/i.test(
+            command.command.trim(),
+          )
+        ).length,
+      0,
+    );
+
+  const spectatorModeGrants =
+    parsed.reduce(
+      (sum, script) =>
+        sum +
+        script.methodCalls.filter(
+          (call) =>
+            call.method === "setGameMode" &&
+            /spectator/i.test(
+              call.argumentTexts?.[0] ?? "",
+            ),
+        ).length +
+        script.commandLiterals.filter((command) =>
+          /^\/?gamemode\s+spectator\b/i.test(
+            command.command.trim(),
+          )
         ).length,
       0,
     );
@@ -139,6 +179,8 @@ export function analyzePlayerCapabilitySurfaces(
 
   return {
     gamemodeWrites,
+    creativeModeGrants,
+    spectatorModeGrants,
     abilityWrites,
     commandPermissionWrites,
     privilegedGuardReferences,
