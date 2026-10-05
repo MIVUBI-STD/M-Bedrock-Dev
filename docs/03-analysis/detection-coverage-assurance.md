@@ -1700,3 +1700,237 @@ First ask whether the symptom should already be detected by:
 - existing routed integrity checks.
 
 Add a new detection mechanism only when a real defect demonstrates a structural blindspot that these mechanisms cannot represent.
+---
+
+# Proof Escalation Gate
+
+## Purpose
+
+Maximize justified `PROVEN` findings before permitting `NEED_VALIDATION`, without lowering the Evidence Receipt standard or creating unsupported certainty.
+
+This is a gate inside the existing PROVE lane. It is not a second audit workflow and it does not add a new finding taxonomy.
+
+## Canonical escalation loop
+
+```text
+Contradiction
+→ Claim-Based Proof
+→ identify exact missing claim
+→ targeted evidence search
+→ Blocking-Proof Exhaustion
+→ deterministic Proof Substitution
+→ Formal Absence / Temporal / Quantitative / Referential proof as applicable
+→ cross-file causal slice
+→ re-run claim closure
+   ├─ all claims closed → PROVEN
+   ├─ contradiction blocked → SAFE
+   └─ one irreducible deciding fact remains → NEED_VALIDATION receipt
+```
+
+A failed first proof attempt is never sufficient reason for `NEED_VALIDATION`.
+
+## 1. Exact Missing-Claim Rule
+
+Before escalation, reduce uncertainty to explicit claim(s):
+
+```text
+REACHABILITY
+CONTRACT
+CONTRADICTION
+PLAYER_CONSEQUENCE
+AFFECTED_SCOPE
+BLOCKING_PROOF_CLEARED
+```
+
+Do not use:
+- “needs testing”;
+- “runtime dependent”;
+- “uncertain”;
+- “cannot confirm”;
+
+without identifying the exact deciding fact.
+
+If multiple vague areas remain, continue audit/model work. Do not publish `NEED_VALIDATION`.
+
+## 2. Blocking-Proof Exhaustion
+
+Before claiming a contradiction, and before giving up to runtime, enumerate applicable blockers:
+
+```text
+permission / role guard
+owner / arena / team scope guard
+generation / revision guard
+state prerequisite
+idempotency / once-only guard
+cleanup / cancellation
+retry / compensation / refund
+alternate authoritative handler
+reconnect reconciliation
+reload/bootstrap reconciliation
+resource admission / lease guard
+entity/item/reference existence guard
+world/geometry boundary
+terminal-state guard
+native/API behavior already fixed by documented semantics
+```
+
+For each blocker record:
+
+```text
+Blocker
+Applicable?
+Evidence
+Blocks contradiction? YES / NO
+Reason
+```
+
+`BLOCKING_PROOF_CLEARED` may close only when every applicable blocker is accounted.
+
+## 3. Cross-File Causal Closure
+
+Do not stop at file boundaries.
+
+Build the smallest complete slice:
+
+```text
+Player/Runtime Trigger
+→ Entry Handler
+→ State/Resource Owner
+→ Writer / Deferred Writer
+→ Reader / Transition
+→ Player-Visible Consequence
+```
+
+Follow imports, calls, shared keys/tags/objectives, entity events, structure/function references, callbacks, subscriptions, and persisted identifiers when material.
+
+Stop only at an authoritative owner, exact blocking proof, unreachable branch, or grounded consequence.
+
+## 4. Deterministic Substitution Exhaustion
+
+Before runtime verification, attempt every applicable substitute that decides the same claim.
+
+Priority:
+
+```text
+source control-flow proof
+state/lifecycle differential
+ownership + generation proof
+referential integrity proof
+formal absence proof
+quantitative/capacity arithmetic
+mutation footprint - restore footprint
+replica/geometry proof
+transaction/commit graph
+terminal idempotency graph
+temporal event ordering
+player-capability acquisition graph
+```
+
+Do not request runtime merely because runtime would be easier.
+
+## 5. Formal Absence Strengthening
+
+An absence claim is publishable only after:
+
+```text
+required capability/guard
+→ possible authoritative owners enumerated
+→ applicable implementation surfaces enumerated
+→ direct + indirect/dynamic references reconciled
+→ create/write/guard/release paths searched
+→ Coverage Ledger confirms no material owner omitted
+→ absence closed
+```
+
+A keyword miss is not absence proof.
+
+## 6. Contradiction Escalation Receipt
+
+Every contradiction that does not close on first pass keeps an internal receipt:
+
+```text
+Contradiction ID
+Missing Claim
+Targeted Search Performed
+Applicable Blockers Checked
+Substitution Methods Attempted
+Cross-File Slice Closed?
+Remaining Deciding Fact
+Outcome: PROVEN / SAFE / NEED_VALIDATION
+```
+
+This receipt prevents repeated generic uncertainty and makes later engine improvement measurable.
+
+## 7. NEED_VALIDATION Hard Gate
+
+`NEED_VALIDATION` is allowed only when all fields below are present:
+
+```text
+Static Evidence Exhausted: YES
+Coverage Ledger Closed: YES
+Blocking-Proof Exhaustion: YES
+Deterministic Substitutes Exhausted: YES
+Cross-File Causal Slice: CLOSED to the irreducible boundary
+Exact Missing Claim: <one deciding claim>
+Exact Missing Fact: <one fact source cannot decide>
+Why Artifact Cannot Decide It: <specific reason>
+Minimal Runtime Scenario: <one narrow scenario>
+Observable Result A: <promotes/blocks contradiction>
+Observable Result B: <promotes/blocks contradiction>
+```
+
+If any field is missing, return to PROVE.
+
+## 8. Runtime-Irreducible Boundary
+
+Legitimate examples include a deciding fact that depends on:
+- native engine scheduling/order not represented by selected-artifact evidence;
+- platform/runtime behavior with no authoritative static semantic available;
+- actual performance threshold where source establishes load but not whether runtime crosses the failure threshold;
+- nondeterministic external/native behavior not controlled or specified by the artifact.
+
+Not legitimate:
+- source is large;
+- evidence spans multiple files;
+- search is inconvenient;
+- behavior uses callbacks;
+- concurrency exists;
+- no obvious guard was found;
+- tester could confirm it faster.
+
+## 9. Proof Yield Metrics
+
+Track per audit:
+
+```text
+Contradictions entering PROVE
+Closed PROVEN
+Closed SAFE
+Entered escalation
+Promoted to PROVEN after escalation
+Closed SAFE after escalation
+Irreducible NEED_VALIDATION
+Unsupported PROVEN = 0
+Generic NEED_VALIDATION = 0
+```
+
+Primary quality target:
+
+```text
+maximize justified PROVEN
+minimize irreducible NEED_VALIDATION
+keep unsupported PROVEN at zero
+```
+
+Do not optimize the metric by lowering proof standards or suppressing honest irreducible runtime questions.
+
+## 10. Stop Rule
+
+Stop escalation when:
+- all required claims are proven;
+- an exact blocker disproves the contradiction;
+- or the Hard Gate proves one irreducible runtime fact remains.
+
+Do not continue searching after deterministic closure merely to increase evidence volume.
+
+
