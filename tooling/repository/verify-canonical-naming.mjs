@@ -41,13 +41,13 @@ const publicNamingFiles=[
 ];
 
 const forbiddenPublicAliases=[
-  {pattern:/\bpossible[_ -]?bug\b/i,canonical:"Audit Obligation / NEED_VALIDATION / PROVEN"},
-  {pattern:/\bbug[_ -]?candidate\b/i,canonical:"Audit Obligation or internal candidate only"},
-  {pattern:/\bunproven[_ -]?issue\b/i,canonical:"NEED_VALIDATION"},
-  {pattern:/\bruntime[_ -]?checklist\b/i,canonical:"Runtime Verification / validationTest"},
-  {pattern:/\banti[_ -]?proof\b/i,canonical:"Blocking Proof / Counter-Proof Search"},
-  {pattern:/\bphysical[_ -]?loading[_ -]?bounds?\b/i,canonical:"Physical Collision Bounds or Loading Bounds"},
-  {pattern:/\bsession[_ -]?physical[_ -]?bounds?\b/i,canonical:"Session Ownership Bounds or Physical Collision Bounds"}
+  {pattern:/\bpossible[_-]bug\b/i,canonical:"Audit Obligation / NEED_VALIDATION / PROVEN"},
+  {pattern:/\bbug[_-]candidate\b/i,canonical:"Audit Obligation or internal candidate only"},
+  {pattern:/\bunproven[_-]issue\b/i,canonical:"NEED_VALIDATION"},
+  {pattern:/\bruntime[_-]checklist\b/i,canonical:"Runtime Verification / validationTest"},
+  {pattern:/\banti[_-]proof\b/i,canonical:"Blocking Proof / Counter-Proof Search"},
+  {pattern:/\bphysical[_-]loading[_-]bounds?\b/i,canonical:"Physical Collision Bounds or Loading Bounds"},
+  {pattern:/\bsession[_-]physical[_-]bounds?\b/i,canonical:"Session Ownership Bounds or Physical Collision Bounds"}
 ];
 
 for(const path of publicNamingFiles){
