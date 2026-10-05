@@ -44,6 +44,12 @@ import { createDiagnostic } from "../../../diagnostics/src/index.js";
 import {
   derivePreflightKnowledgeDemand,
 } from "./preflight-knowledge-demand.js";
+import {
+  analyzeWorldRuleAuthority,
+} from "./world-rule-authority-analysis.js";
+import {
+  analyzePlayerCapabilitySurfaces,
+} from "./player-capability-surface-analysis.js";
 
 export interface InspectionRuntimeAnalysisInput {
   target: InspectTargetProfile;
@@ -158,6 +164,17 @@ export function analyzeInspectionRuntimeState(
 
   const parsedScriptModels =
     input.parsedScripts.map((item) => item.parsed);
+  const worldRuleAuthority =
+    analyzeWorldRuleAuthority(parsedScriptModels);
+  const playerCapabilitySurfaces =
+    analyzePlayerCapabilitySurfaces(
+      input.parsedScripts.map((item) => ({
+        parsed: item.parsed,
+        ...(item.text === undefined
+          ? {}
+          : { text: item.text }),
+      })),
+    );
   const preflightKnowledgeDemand =
     derivePreflightKnowledgeDemand({
       intent: input.gameplayIntent,
@@ -468,6 +485,8 @@ export function analyzeInspectionRuntimeState(
     parsedFunctionModels,
     parsedStructureSummaries,
     preflightKnowledgeDemand,
+    worldRuleAuthority,
+    playerCapabilitySurfaces,
     entityAiStack,
     routeNavigationEnvironment,
     structureRuntime,
