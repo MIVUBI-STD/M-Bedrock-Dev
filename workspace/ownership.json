@@ -19,6 +19,12 @@
       "entries": [
         "drive-root.json"
       ]
+    },
+    "publication": {
+      "purpose": "Derived human-facing publication artifacts. Never canonical current issue/report state.",
+      "entries": [
+        "publication"
+      ]
     }
   }
 }
