@@ -121,6 +121,7 @@ Required references:
 - `../../../docs/03-analysis/cross-system-interaction-audit.md`
 - `../../../docs/03-analysis/hidden-gameplay-defect-analysis.md`
 - `../../../docs/03-analysis/audit-finalization-checklist.md`
+- `../../../docs/03-analysis/vital-gameplay-knowledge-closure.md`
 - `../../schemas/map-audit-output-v2.schema.json`
 
 
@@ -521,6 +522,14 @@ Production AI report candidates must reference one or more `CONFIRMED_DEFECT_REA
 - detection gap → `m-bedrock-detection-development`
 - approved repair → `m-bedrock-target-repair`
 
+## Vital Gameplay Knowledge Closure
+
+After canonical REPORT projection, inspect `qualityGates.vitalGameplay`. This is a read-only projection of the same SelectedMapAuditRun, not another workflow.
+
+The projection must cover exactly the eight vital domains defined in `../../../docs/03-analysis/vital-gameplay-knowledge-closure.md`. Never convert a blocked domain into SAFE because no finding was detected. `RUNTIME_REQUIRED`, `DETECTION_GAP`, or unrouted material residue means the map is not yet fully understood even when existing findings are already reportable.
+
+Prioritize Tier 0 vital domains when searching for Blocker impact: entry/admission, core progression, multi-arena isolation, and connection/recovery.
+
 ## STOP
 
 The audit may stop only when:
@@ -544,6 +553,8 @@ The audit may stop only when:
 ✓ Runtime proof residue is narrow and explicitly justified
 ✓ Detection gaps name the missing engine capability
 ✓ Proposed Issue Set contains confirmed defects only
+✓ Vital Gameplay Closure has no hidden/unrouted material residue
+✓ Any RUNTIME_REQUIRED or DETECTION_GAP vital domain is explicitly retained rather than called safe
 ✓ Production report is generated only after chat approval
 ```
 
