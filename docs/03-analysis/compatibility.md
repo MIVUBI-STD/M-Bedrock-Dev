@@ -60,3 +60,46 @@ Add capability rules when:
 2. current authoritative evidence exists;
 3. edition/version/track applicability can be stated explicitly;
 4. a regression test protects the decision.
+
+## Effective runtime profile
+
+Compatibility analysis must resolve the effective runtime profile before interpreting version-sensitive behavior:
+
+```text
+edition
+Minecraft version
+manifest format
+pack UUID/version graph
+module UUID/version graph
+min_engine_version
+script dependency versions
+capabilities
+enabled experiments
+```
+
+Unknown values remain unknown. Never assume latest stable.
+
+## Update/runtime differential
+
+When behavior changes after an update:
+
+```text
+last-known-good runtime profile
+vs
+current target runtime profile
+→ diff engine / modules / experiments / manifest / edition
+→ classify compatibility risk
+→ only then attribute remaining contradiction to map logic
+```
+
+Validate script symbols against the module version declared by the pack, not only current documentation.
+
+Pack dependency analysis includes UUID uniqueness, dependency existence/version alignment, script module presence, and entrypoint coherence.
+
+Experiments are part of runtime identity:
+
+```text
+same files + different experiment profile = different effective runtime
+```
+
+Edition-sensitive evidence must remain explicitly scoped to Bedrock, Education, or shared behavior.
