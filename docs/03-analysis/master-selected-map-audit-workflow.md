@@ -717,6 +717,11 @@ Counter-Proof must cover applicable dimensions:
 - owner
 - generation
 - cleanup
+- physical collision / barrier / geometry when reachability is spatial
+- role / permission / operator / admin capability when authority matters
+- gamerule / world-setting baseline when world behavior is claimed
+- guard activation / registration so dead protection code is not credited
+- client/server representation when a predicted mutation is cancelled or rewritten
 
 Nearby healthy code is not counter-proof.
 
@@ -730,8 +735,10 @@ Universal minimum:
 
 ~~~
 grounded scenario
++ reachable trigger
++ authoritative mechanism
++ failed / missing protection
 + grounded contradiction
-+ explicit trigger
 + player-visible consequence
 + Expected / Actual
 + affected scope
