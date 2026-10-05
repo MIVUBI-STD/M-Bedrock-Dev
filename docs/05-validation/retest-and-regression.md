@@ -183,3 +183,18 @@ Benchmarking must distinguish:
 A NEED_VALIDATION production result is not automatically a false negative. Compare against the frozen evidence ceiling and expected public status.
 
 Benchmark quality must reward recall/precision/proof quality without gaming PROVEN rate by weakening evidence requirements.
+
+## Invariant revalidation
+
+Invariant evidence must distinguish:
+- raw observation count;
+- semantic-state diversity;
+- semantic coverage diversity;
+- map diversity;
+- Minecraft version applicability.
+
+Repeated traces from one state/map are not equivalent to independent supporting evidence.
+
+Update deltas that overlap an invariant's domains/capabilities create bounded revalidation work. Removed behavior, tightened validation, and material behavior changes receive the highest revalidation priority.
+
+Promotion/trust remains conservative: no known-good counterexample, sufficient support/diversity, appropriate cross-map evidence, current-version applicability, and no unresolved mutation-survivor challenge.
