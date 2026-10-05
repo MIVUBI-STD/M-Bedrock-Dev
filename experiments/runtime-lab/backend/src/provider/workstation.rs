@@ -114,7 +114,7 @@ impl Provider for VmwareWorkstationProvider {
             return Err(error);
         }
 
-        if let Err(error) = apply_client_resource_policy(&staging) {
+        if let Err(error) = apply_client_cpu_policy(&staging) {
             remove_vm_container(&staging);
             return Err(error);
         }
