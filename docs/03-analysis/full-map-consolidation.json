@@ -7,12 +7,12 @@
     "remaining": 0
   },
   "canonicalIssueSet": {
-    "total": 26,
+    "total": 27,
     "counts": {
-      "BUG": 21,
+      "BUG": 22,
       "DESIGN_MISMATCH": 5,
       "blocker": 4,
-      "major": 19,
+      "major": 20,
       "minor": 3
     },
     "issues": [
@@ -169,6 +169,12 @@
       {
         "projectId": "the-circuit",
         "id": "BUG-CIR-CINEMATIC-DISCONNECT-ADVANCE",
+        "type": "BUG",
+        "severity": "major"
+      },
+      {
+        "projectId": "build-and-decode",
+        "id": "BUG-BAD-TIME-BONUS-SCORING",
         "type": "BUG",
         "severity": "major"
       }
