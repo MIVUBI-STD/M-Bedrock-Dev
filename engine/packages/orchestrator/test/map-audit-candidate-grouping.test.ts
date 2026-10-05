@@ -89,4 +89,43 @@ describe("map audit candidate grouping", () => {
       ],
     });
   });
+  it("consolidates different symptoms when they share one structural root cause", () => {
+    const graphWithSecondSymptom: GameplayScenarioGraph = {
+      ...graph,
+      causalLinks: [
+        ...graph.causalLinks,
+        {
+          ...graph.causalLinks[0]!,
+          id: "link:wave-second-symptom",
+          scenarioId: "scenario:wave-second",
+          reason: "The same chunk authority failure also causes entity-state drift.",
+        },
+      ],
+    };
+
+    const second: ReadyAuditIssueProjection = {
+      ...issue,
+      causalLinkId: "link:wave-second-symptom",
+      scenarioId: "scenario:wave-second",
+      failureDomain: "entity-ai-combat",
+      gameplayConsequence:
+        "Remote actors can become stale while the same simulation owner is missing.",
+    };
+
+    const groups =
+      groupReadyAuditIssuesForCandidateCoverage(
+        graphWithSecondSymptom,
+        [issue, second],
+      );
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0]?.causalLinkIds).toEqual([
+      "link:wave",
+      "link:wave-second-symptom",
+    ]);
+    expect(groups[0]?.failureDomains).toEqual([
+      "entity-ai-combat",
+      "progression-wave-objective",
+    ]);
+  });
 });
