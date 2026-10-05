@@ -7,6 +7,7 @@ workspace/
 ├─ projects/<project-id>/  ignored working continuity for each project
 ├─ project-registry.json   tracked compact current-project registry
 ├─ reports/                tracked canonical Bug Report V2 state
+├─ publication/            derived human-facing publication artifacts
 ├─ drive-root.json         tracked Google Drive root binding
 └─ ownership.json          workspace ownership contract
 ```
@@ -73,6 +74,14 @@ Detailed evidence and execution state stay inside the ignored project workspace.
 `workspace/reports/` stores only repository-tracked canonical Bug Report V2 current state for audited map versions.
 
 It is the persisted bug-report authority. Generated HTML/PDF or project diagnostics belong in project `output/` or `evidence/` and are derived/non-canonical.
+
+## Publication outputs
+
+`workspace/publication/` contains generated human-facing publication bundles such as standalone HTML/JSON validation snapshots.
+
+These files are derived outputs. They do not become canonical issue state and must remain reproducible from canonical report/project inputs.
+
+Intermediate publication aggregates may exist only as generated build inputs and must be clearly marked non-authoritative. Do not read publication output back into canonical Bug Report state.
 
 ## Audit authority
 
