@@ -101,40 +101,6 @@ const compatibilityPointers = [
   "docs/analysis/project-model.md",
   "docs/analysis/forward-ground-truth-intake.md",
   "docs/analysis/command-effects.md",
-  "docs/validation/active-runtime-diagnosis.md",
-  "docs/validation/runtime-control.md",
-  "docs/validation/runtime-observation.md",
-  "docs/validation/runtime-laboratory.md",
-  "docs/validation/live-harness.md",
-  "docs/validation/live-regression-runner.md",
-  "docs/validation/bedrock-runtime-probes.md",
-  "docs/validation/bedrock-runtime-telemetry.md",
-  "docs/validation/bedrock-state-observation.md",
-  "docs/validation/bounded-state-exploration.md",
-  "docs/validation/concurrency-perturbation.md",
-  "docs/validation/dynamic-invariant-mining.md",
-  "docs/validation/invariant-mining-advanced.md",
-  "docs/validation/mutation-testing.md",
-  "docs/validation/script-and-graph-mutation.md",
-  "docs/validation/reliability-search.md",
-  "docs/validation/runtime-search-feedback.md",
-  "docs/validation/regression.md",
-  "docs/validation/retest-planning.md",
-  "docs/validation/portfolio-retest.md",
-  "docs/validation/campaign-history-and-minimization.md",
-  "docs/validation/history-driven-search.md",
-  "docs/validation/reliability-strategy.md",
-  "docs/validation/reliability-catalogs.md",
-  "docs/validation/map-fingerprint.md",
-  "docs/validation/update-intelligence.md",
-  "docs/validation/version-aware-native-correlation.md",
-  "docs/validation/blindspot-portfolio.md",
-  "docs/validation/map-audit-benchmark-quality.md",
-  "docs/validation/generative-multiplayer.md",
-  "docs/validation/regression-session-report.md",
-  "docs/validation/bedrock-runtime-emitter.md",
-  "docs/validation/source-mutation-detection.md",
-  "docs/validation/invariant-revalidation.md",
 ];
 
 for (const path of compatibilityPointers) {
@@ -187,6 +153,46 @@ for (const path of retiredAuthorityPaths) {
 
 if (existsSync("docs/04-reporting")) {
   failures.push("Retired duplicate docs domain must not exist: docs/04-reporting");
+}
+
+  : "";
+for (const owner of [
+  "runtime-proof.md",
+  "search-and-falsification.md",
+  "retest-and-regression.md",
+]) {
+  if (!validationReadme.includes(owner)) {
+  }
+}
+
+const allowedValidationFiles = new Set([
+  "docs/validation/README.md",
+  "docs/validation/package-proof.md",
+  "docs/validation/repair-validation.md",
+  "docs/validation/runtime-proof.md",
+  "docs/validation/search-and-falsification.md",
+  "docs/validation/retest-and-regression.md",
+]);
+
+for (const path of tracked.filter((item) => item.startsWith("docs/validation/"))) {
+  if (!allowedValidationFiles.has(path)) {
+    failures.push("Unexpected validation documentation owner: " + path);
+  }
+}
+
+const allowedValidationFiles = new Set([
+  "docs/validation/README.md",
+  "docs/validation/package-proof.md",
+  "docs/validation/repair-validation.md",
+  "docs/validation/runtime-proof.md",
+  "docs/validation/search-and-falsification.md",
+  "docs/validation/retest-and-regression.md",
+]);
+
+for (const path of tracked.filter((item) => item.startsWith("docs/validation/"))) {
+  if (!allowedValidationFiles.has(path)) {
+    failures.push("Unexpected validation documentation owner: " + path);
+  }
 }
 
 const validationReadme = existsSync("docs/validation/README.md")
