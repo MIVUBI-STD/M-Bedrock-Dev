@@ -69,4 +69,32 @@ describe("world rule authority analysis", () => {
       (item) => item.rule.toLowerCase() === "domobspawning",
     )).toBe(true);
   });
+  it("detects data-driven gamerule object values and stored summon commands", () => {
+    const text = [
+      "const WorldData = {",
+      "  gamerule: { doMobSpawning: false, pvp: false },",
+      "  summon: ['/summon minecraft:zombie 0 0 0'],",
+      "};",
+      "function apply(world) {",
+      "  for (const [rule, value] of Object.entries(WorldData.gamerule)) {",
+      "    world.gameRules[rule] = value;",
+      "  }",
+      "}",
+    ].join("\n");
+    const script = parseScriptFile(
+      "main",
+      text,
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result = analyzeWorldRuleAuthority([
+      { parsed: script, text },
+    ]);
+
+    expect(result.naturalMobSpawning).toBe("disabled");
+    expect(result.commandSummonPaths).toBeGreaterThan(0);
+  });
 });
