@@ -42,6 +42,12 @@ Input Lock × Respawn
 Spectator × Interaction
 Effects × Respawn
 Effects × Cleanup
+Player Capability × Permission/Admin Bypass
+Player Capability × Gamerules / World Settings
+Roommaster/Operator × Arena Protection
+Client Prediction × Cancelled World Mutation
+Waterlogging/Liquid Use × Interaction Guard
+Physical Boundary × Barrier/Collision Geometry
 ```
 
 ## Mandatory crosscheck dimensions
@@ -80,6 +86,9 @@ For each relevant intersection ask:
 5. Can the combination duplicate, skip, or reorder a transition?
 6. Can the combination leak state into another player/arena/round?
 7. What happens on failure, retry, disconnect, reload, or cleanup?
+8. Is the protection actually active in production, or merely implemented but unregistered/uninstantiated?
+9. Does a physical/world-level Blocking Proof invalidate the suspected software-level path?
+10. Can client-predicted state diverge from the server when the action is cancelled or rewritten?
 
 ## Output
 
