@@ -10,7 +10,11 @@ export type ArenaCleanupSurfaceKind =
   | "tag"
   | "effect"
   | "scoreboard"
-  | "input-permission";
+  | "input-permission"
+  | "inventory"
+  | "equipment"
+  | "gamemode"
+  | "player-capability";
 
 export type ArenaCleanupEvidencePrecision =
   | "exact"
@@ -229,9 +233,73 @@ function extractMutations(
     });
   }
 
+  for (const evidence of script.inventoryLifecycleEvidence ?? []) {
+    const region = normalizedRegion(evidence.executionRegion);
+    if (evidence.kind === "item-grant") {
+      output.push({
+        scriptId: script.identifier,
+        region,
+        surface: "inventory",
+        key: evidence.subjectExpression,
+        action: "acquire",
+        precision: "surface-level",
+      });
+    } else if (
+      evidence.kind === "inventory-clear-all" ||
+      evidence.kind === "inventory-clear-slot"
+    ) {
+      output.push({
+        scriptId: script.identifier,
+        region,
+        surface: "inventory",
+        key: evidence.subjectExpression,
+        action: "release",
+        precision: "surface-level",
+      });
+    } else if (evidence.kind === "equipment-set") {
+      output.push({
+        scriptId: script.identifier,
+        region,
+        surface: "equipment",
+        key: evidence.subjectExpression,
+        action: "acquire",
+        precision: "surface-level",
+      });
+    } else if (evidence.kind === "equipment-clear-slot") {
+      output.push({
+        scriptId: script.identifier,
+        region,
+        surface: "equipment",
+        key: evidence.subjectExpression,
+        action: "release",
+        precision: "surface-level",
+      });
+    }
+  }
+
   for (const call of script.methodCalls) {
     const region = normalizedRegion(call.executionRegion);
     const method = call.method;
+
+    if (method === "setGameMode") {
+      const gameMode = call.argumentTexts?.[0]?.toLowerCase() ?? "";
+      const action =
+        /creative|spectator/.test(gameMode)
+          ? "acquire" as const
+          : /survival|adventure/.test(gameMode)
+            ? "release" as const
+            : undefined;
+      if (action !== undefined) {
+        output.push({
+          scriptId: script.identifier,
+          region,
+          surface: "gamemode",
+          key: call.receiverHint ?? call.receiverType,
+          action,
+          precision: "surface-level",
+        });
+      }
+    }
 
     const pair:
       | {
@@ -268,6 +336,41 @@ function extractMutations(
       });
     }
   }
+  for (const command of script.commandLiterals) {
+    const region = normalizedRegion(command.executionRegion);
+    const text = command.command.trim();
+
+    const gameMode = /^gamemode\s+(creative|spectator|survival|adventure)\b(?:\s+(.+))?/i.exec(text);
+    if (gameMode) {
+      output.push({
+        scriptId: script.identifier,
+        region,
+        surface: "gamemode",
+        key: (gameMode[2]?.trim() || command.receiverHint || "player"),
+        action:
+          /creative|spectator/i.test(gameMode[1]!)
+            ? "acquire"
+            : "release",
+        precision: "surface-level",
+      });
+    }
+
+    const ability = /^ability\s+(\S+)\s+(mayfly|worldbuilder|mute)\s+(true|false)\b/i.exec(text);
+    if (ability) {
+      output.push({
+        scriptId: script.identifier,
+        region,
+        surface: "player-capability",
+        key: ability[1] + ":" + ability[2].toLowerCase(),
+        action:
+          ability[3].toLowerCase() === "true"
+            ? "acquire"
+            : "release",
+        precision: "exact",
+      });
+    }
+  }
+
 
 
   return output;
