@@ -48,6 +48,14 @@ pub enum ClientState {
     Error,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum IdentityState {
+    Unknown,
+    Unique,
+    Duplicate,
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClientStatus {
@@ -57,4 +65,5 @@ pub struct ClientStatus {
     pub ready_snapshot: Option<bool>,
     pub memory_limit_mb: Option<u64>,
     pub host_working_set_mb: Option<u64>,
+    pub identity: Option<IdentityState>,
 }
