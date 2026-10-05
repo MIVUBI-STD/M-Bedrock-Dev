@@ -233,6 +233,14 @@ for (const path of files) {
       );
     }
     if (
+      isEngineeringContract &&
+      relation.classification !== "engineering-contract"
+    ) {
+      throw new Error(
+        `${path}: engineering contract relation ${relation.id} must use classification engineering-contract`,
+      );
+    }
+    if (
       relation.classification !== undefined &&
       !classifications.has(relation.classification)
     ) {
