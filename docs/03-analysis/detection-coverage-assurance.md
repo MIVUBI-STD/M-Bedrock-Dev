@@ -1932,6 +1932,428 @@ Stop escalation when:
 - or the Hard Gate proves one irreducible runtime fact remains.
 
 Do not continue searching after deterministic closure merely to increase evidence volume.
+---
 
+# 21. Aggressive Transition Simulation
 
+### Purpose
+
+Increase issue yield at gameplay boundaries where ordinary happy-path testing is weakest.
+
+For every adjacent material stage pair:
+
+```text
+Stage N exit
+→ handoff / transition
+→ Stage N+1 entry
+```
+
+build a transition differential for every mutable state class touched by either stage:
+
+```text
+inventory / equipment
+container contents
+currency / score
+tags / dynamic properties
+entities / riders / objectives
+world blocks / structures
+leases / residency
+timers / callbacks / subscriptions
+position / game mode / capability
+participant / arena ownership
+UI / player-facing state
+```
+
+Required equation:
+
+```text
+Previous-stage mutation footprint
+- guaranteed handoff/reset/consume footprint
+= residual candidate footprint
+```
+
+Every material residual must resolve as:
+- intentionally carried with evidence;
+- cleared before next-stage dependency;
+- harmless to next-stage contract;
+- or contradiction.
+
+This check is mandatory for authored station/level/round transitions and repeated-run transitions.
+
+## 21.1 Transition interruption pressure
+
+At every material handoff, generate only applicable interruption points:
+
+```text
+before cleanup
+during cleanup
+after cleanup / before next setup
+during next setup
+after setup / before control returns
+```
+
+Stress with:
+- player disconnect/reconnect;
+- owner/leader disconnect;
+- last required participant disconnect;
+- reload/bootstrap;
+- retry/restart;
+- simultaneous completion trigger;
+- old deferred work committing after transition.
+
+Do not request runtime merely because the transition is asynchronous; use temporal proof when ordering is source-grounded.
+
+---
+
+# 22. Objective Custody Simulation
+
+### Trigger
+
+Any carried, owned, captured, escorted, possessed, reserved, or player-attached objective exists.
+
+Examples:
+- flag;
+- key;
+- orb;
+- carried entity/rider;
+- unique quest item;
+- capture token;
+- reserved role/object.
+
+Build an explicit custody state machine:
+
+```text
+AT_BASE / AVAILABLE
+→ ACQUIRED
+→ CARRIED_BY_VALID_OWNER
+→ DROPPED / RETURNING
+→ COMMITTED
+→ RESET
+```
+
+Generate applicable events from every custody state:
+
+```text
+death
+disconnect
+reconnect
+teleport
+dimension/arena move
+round end
+timeout
+retry
+reset
+reload
+owner reassignment
+carrier entity/rider loss
+```
+
+Required exclusivity invariant:
+
+```text
+exactly one authoritative custody state
++ exactly one valid owner when carried
++ visual/world representation agrees with authoritative state
+```
+
+Automatically challenge impossible combinations such as:
+
+```text
+carrier id exists
++ carrier offline
++ base objective absent
++ dropped objective absent
+```
+
+or:
+
+```text
+objective committed
++ carrier still owns objective
+```
+
+When another map in the same family contains explicit disconnect custody cleanup, use it as a cross-implementation prompt, never as proof for the current artifact.
+
+---
+
+# 23. World Mutation Compatibility Simulation
+
+### Purpose
+
+Find cross-stage blockers and residues that are difficult to notice from isolated service review.
+
+For every material world mutation, build:
+
+```text
+writer stage
+→ changed block/structure/volume
+→ restore/open/close owner
+→ next consumers of the same geometry
+→ consumer capabilities
+```
+
+Generate cross-stage compatibility checks:
+
+```text
+previous stage places/restores block X
+× next stage route/objective intersects X
+× next actor must pass/break/use X
+× next actor's allowed interaction set
+```
+
+Challenge:
+- gate restored but never reopened;
+- temporary wall survives;
+- block type is outside NPC break allowlist;
+- structure load overwrites next-stage setup;
+- water/lava/solid collision survives into a movement route;
+- stale container/block entity survives structure replacement;
+- reset footprint is smaller than mutation footprint.
+
+Preferred proof:
+
+```text
+world mutation owner
++ geometry/coordinate overlap
++ next-stage route/dependency
++ interaction capability
++ absence of intervening remover/opener
+```
+
+This family is mandatory when sequential stages reuse physical space.
+
+---
+
+# 24. Offline-Progression Simulation
+
+### Trigger
+
+Timers, cinematics, countdowns, deferred callbacks, scheduler jobs, or state machines can continue independently of a player's online presence.
+
+For each required participant or owner:
+
+```text
+online at state entry
+→ disconnect
+→ state/timer continues?
+→ completion event may fire?
+→ downstream gameplay may start?
+→ reconnect reconstruction
+```
+
+Required questions:
+- Is online/eligible membership checked on every transition or only on entry?
+- Can a completion event fire for an absent required owner?
+- Can NPCs, waves, objectives, shops, or world mutation initialize while no player is present?
+- Does reconnect resume the interrupted state or merely restore the newest state?
+- Are downstream services initialized with the assumptions normally established by the missing player transition?
+
+Generate boundaries:
+- cinematic;
+- countdown;
+- preload;
+- build/preparation;
+- wave transition;
+- objective handoff;
+- terminal delay;
+- cleanup/reset.
+
+A timer continuing while a player is offline is not automatically a bug. It becomes a contradiction when a required gameplay contract is advanced without the owner/participant state required by the next stage.
+
+---
+
+# 25. Container & Economy Carryover Simulation
+
+### Trigger
+
+A map uses world containers, inventories, shops, currency, kits, rewards, or stage-specific resources.
+
+Build a resource provenance ledger:
+
+```text
+resource
+→ granted/deposited by
+→ storage location
+→ permitted stage(s)
+→ consumed by
+→ cleared by
+→ persistence boundary
+```
+
+Required comparisons:
+
+```text
+stage N resources
+× stage N+1 allowed resources
+
+fresh run
+× retry
+× second run
+× reconnect
+× reload
+```
+
+For containers:
+
+```text
+every authored gameplay container
+→ all writers
+→ all clear/reset owners
+→ structure replacement behavior
+→ next-stage dependency
+```
+
+Challenge:
+- stale resources bypass economy;
+- duplicated resources survive retry;
+- container reset happens before a later structure restore repopulates it;
+- container clear targets wrong coordinates/replica;
+- per-player economy resets but world container does not;
+- successful purchase and inventory/container commit disagree.
+
+---
+
+# 26. Aggressive Scenario Synthesis
+
+### Principle
+
+Be aggressive in **scenario generation**, conservative in **finding publication**.
+
+Generate a scenario when any of these pressure multipliers coexist:
+
+```text
+lifecycle boundary
++ mutable state
+
+disconnect/reload
++ pending state
+
+stage transition
++ shared geometry/container
+
+objective custody
++ owner disappearance
+
+deferred work
++ generation change
+
+global selector/shared tag
++ arena-local owner
+
+transaction
++ failure/rollback path
+
+player-obtainable capability
++ privileged handler
+
+world mutation
++ next-stage route
+
+multiple writers
++ one clear/reset owner
+```
+
+Do not require a historical bug signature.
+
+## 26.1 Risk-weighted priority
+
+Assign internal pressure only for execution order:
+
+```text
++3 transition/handoff owns mutable state
++3 disconnect/reload can occur
++3 shared/global resource crosses local ownership
++3 previous mutation can survive into next stage
++2 deferred callback/retry exists
++2 world geometry is reused
++2 transaction consumes player value
++2 objective has single-owner custody
++2 multiple writers/clearers exist
++1 UI/state representation can desync
+```
+
+Higher pressure means audit first. It does **not** increase proof confidence or severity.
+
+## 26.2 Higher-order scenarios
+
+Pairwise coverage remains default.
+
+Escalate to 3-way scenarios only when the same resource/contract is shared by all three dimensions, e.g.:
+
+```text
+disconnect
+× cinematic completion
+× NPC path initialization
+
+arena reset
+× old deferred cleanup
+× new arena reuse
+
+flag carrier disconnect
+× round timeout
+× reconnect
+
+container residue
+× stage transition
+× economy initialization
+```
+
+This prevents Cartesian explosion while still targeting rare interaction defects.
+
+---
+
+# 27. Minimal Runtime Verification Selection
+
+After all deterministic simulation/proof:
+
+```text
+PROVEN
+→ publish
+
+SAFE
+→ no manual test needed
+
+IRREDUCIBLE_RUNTIME_QUESTION
+→ rank by player impact × reachability × uncertainty
+→ emit smallest reproducer
+```
+
+The runtime queue must contain only questions whose deciding fact cannot be resolved from the selected artifact.
+
+For every queued test:
+
+```text
+Scenario ID
+Exact unresolved claim
+Minimal starting state
+Minimal actions
+Expected observable A
+Expected observable B
+What A/B proves
+```
+
+Do not output broad instructions such as "play the map and look for issues."
+
+---
+
+# 28. Simulation Stop Rule
+
+A map simulation closes only when:
+
+```text
+material stage transitions accounted
++ material disconnect/reload boundaries accounted
++ objective custody paths accounted when applicable
++ world mutation compatibility accounted when applicable
++ container/economy carryover accounted when applicable
++ high-pressure higher-order scenarios resolved
++ unaccounted material interleavings = 0
+```
+
+Closure does not claim the Bedrock runtime is defect-free.
+
+It claims the selected-artifact deterministic scenario space has been aggressively reduced to:
+- PROVEN;
+- SAFE;
+- or exact irreducible runtime questions.
 
