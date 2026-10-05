@@ -5,10 +5,12 @@ Current and future work that improves M-Bedrock-Dev itself.
 ## Active
 
 - Repository information-architecture consolidation: reduce duplicate documentation authority, clarify naming, and separate durable docs from operational data.
-- Consolidate bug-finding coverage into one canonical owner while compatibility pointers protect active references.
+- Consolidate bug-finding coverage and validation documentation into canonical owners while compatibility pointers protect active references.
 - Add structural enforcement only after the target repository layout is agreed and migrated safely.
 
 ## Backlog
+
+- Continue consolidating `docs/03-analysis` and `docs/06-system` only where files share the same owner, audience, and lifecycle; preserve genuinely distinct domains.
 
 - Bind the canonical bug-finding coverage model to machine-verifiable capability/coverage checks so new analyzers or reusable knowledge cannot become orphaned.
 
