@@ -13,8 +13,8 @@ pub struct MemoryPlan {
 fn preferred_memory_mb(virtual_clients: usize) -> u64 {
     match virtual_clients {
         0 => 0,
-        1 => 6144,
-        2 => 5120,
+        1 => 5120,
+        2 => 4608,
         _ => 4096,
     }
 }
@@ -63,7 +63,7 @@ mod tests {
     #[test]
     fn one_virtual_client_can_use_more_memory() {
         let plan = plan_memory(12 * 1024, 1, 1).unwrap();
-        assert_eq!(plan.memory_per_stopped_vm_mb, 6144);
+        assert_eq!(plan.memory_per_stopped_vm_mb, 5120);
     }
 
     #[test]
@@ -74,7 +74,7 @@ mod tests {
 
     #[test]
     fn planner_uses_intermediate_512mb_steps() {
-        let plan = plan_memory(13 * 1024, 2, 2).unwrap();
+        let plan = plan_memory(14 * 1024, 2, 2).unwrap();
         assert_eq!(plan.memory_per_stopped_vm_mb, 4608);
     }
 
