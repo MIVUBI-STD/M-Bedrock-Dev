@@ -15,6 +15,63 @@ arena role
 
 Do not collapse them into one concept like admin=true.
 
+## Role capability matrix
+
+When privileged or gameplay roles exist, build one matrix instead of treating `admin=true` as sufficient authority:
+
+```text
+Normal Player
+Builder
+Roommaster / Operator
+Developer / Maintenance
+```
+
+For each role reconcile:
+
+```text
+player permission level
+command permission level
+gamemode
+input permissions
+mayfly / worldbuilder abilities
+build / break
+item use
+manual entity spawn
+developer command access
+cross-arena mutation
+```
+
+A privileged bypass is not automatically a gameplay bug, but it is never safe merely because the caller is an admin. The bypass must be scoped to the intended maintenance capability and checked against live-arena protection.
+
+## Protection activation
+
+Protection code counts only when the selected production artifact proves:
+
+```text
+definition
+→ import / reference
+→ instantiation
+→ event subscription / registration
+→ reachable gameplay path
+```
+
+A class that exists but is never instantiated is not a Blocking Proof.
+
+## Gamerule versus privileged action
+
+For entity creation, distinguish the mechanism before assigning a cause:
+
+```text
+natural spawning        → doMobSpawning
+spawn egg / item use    → item + permission / interaction guard
+/summon                 → command permission
+script spawnEntity()    → script authority
+structure entity        → structure load policy
+developer/setup spawn   → maintenance capability
+```
+
+A correct `doMobSpawning=false` setting does not prove that Roommaster/operator/manual spawn paths are blocked.
+
 ## Developer access
 
 Developer/admin capability should be explicit and auditable.
