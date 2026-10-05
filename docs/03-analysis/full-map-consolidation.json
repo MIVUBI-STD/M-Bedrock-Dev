@@ -7,12 +7,12 @@
     "remaining": 0
   },
   "canonicalIssueSet": {
-    "total": 22,
+    "total": 26,
     "counts": {
-      "BUG": 17,
+      "BUG": 21,
       "DESIGN_MISMATCH": 5,
       "blocker": 4,
-      "major": 15,
+      "major": 19,
       "minor": 3
     },
     "issues": [
@@ -147,6 +147,30 @@
         "id": "FOP1-NEW-001",
         "type": "BUG",
         "severity": "major"
+      },
+      {
+        "projectId": "the-circuit",
+        "id": "BUG-CIR-ST4-CHEST-RESET",
+        "type": "BUG",
+        "severity": "major"
+      },
+      {
+        "projectId": "the-circuit",
+        "id": "BUG-CIR-ST4-SPRUCE-GATE",
+        "type": "BUG",
+        "severity": "major"
+      },
+      {
+        "projectId": "the-circuit",
+        "id": "BUG-CIR-CAPTURE-FLAG-DISCONNECT",
+        "type": "BUG",
+        "severity": "major"
+      },
+      {
+        "projectId": "the-circuit",
+        "id": "BUG-CIR-CINEMATIC-DISCONNECT-ADVANCE",
+        "type": "BUG",
+        "severity": "major"
       }
     ]
   },
@@ -184,6 +208,32 @@
     "duplicateRootCause": "No duplicate issue IDs in consolidated set.",
     "staleFindings": "Do not import historical issues that current selected artifact no longer proves.",
     "zeroFindingMeaning": "No source-proven finding; not a runtime bug-free claim.",
-    "nextPublication": "Reconcile canonical Bug Report V2 per affected map, then regenerate Golden Bug Tracker HTML + JSON from approved issue authority."
-  }
+    "nextPublication": "Canonical reports and publication dataset include post-reaudit manual runtime evidence; regenerate Golden Bug Tracker HTML + JSON."
+  },
+  "postReauditManualRuntimeFindings": [
+    {
+      "projectId": "the-circuit",
+      "id": "BUG-CIR-ST4-CHEST-RESET",
+      "type": "BUG",
+      "severity": "major"
+    },
+    {
+      "projectId": "the-circuit",
+      "id": "BUG-CIR-ST4-SPRUCE-GATE",
+      "type": "BUG",
+      "severity": "major"
+    },
+    {
+      "projectId": "the-circuit",
+      "id": "BUG-CIR-CAPTURE-FLAG-DISCONNECT",
+      "type": "BUG",
+      "severity": "major"
+    },
+    {
+      "projectId": "the-circuit",
+      "id": "BUG-CIR-CINEMATIC-DISCONNECT-ADVANCE",
+      "type": "BUG",
+      "severity": "major"
+    }
+  ]
 }
