@@ -10,6 +10,43 @@
   "repairBy": "developer",
   "bugs": [
     {
+      "id": "BUG-BAD-CREATIVE-ENTITY-RESIDUE",
+      "fixed": false,
+      "severity": "major",
+      "category": "world-interaction",
+      "foundBy": "ai",
+      "title": "Creative-built entities can survive plot reset into later rounds",
+      "problem": "The active builder is intentionally placed in Creative and can construct vanilla block-created entities such as an Iron Golem inside the plot. Plot cleanup resets blocks with fill air and removes only a narrow tagged transient allowlist (items, XP orbs and selected projectiles). Non-transient player-created entities are not part of the cleanup footprint, so they can survive round reset and arena reuse.",
+      "expected": "All gameplay-significant mutations that an ordinary builder can create inside the authored plot must either be prevented or included in the arena reset baseline before the next round/session becomes active.",
+      "observed": "The builder can create an Iron Golem from ordinary Creative blocks. The reset removes the construction blocks but the entity is not matched by the cleanup allowlist and therefore can remain in the arena after the round.",
+      "reproduction": [
+        "Enter an active round as the builder in Creative mode.",
+        "Inside the active build plot, place four iron blocks in a T shape and add a carved pumpkin to create an Iron Golem.",
+        "Allow the round to end and the normal plot reset to run.",
+        "Start the next round or reuse the same arena.",
+        "Confirm the plot blocks are reset but the created Iron Golem can remain because it is outside the cleanup entity allowlist."
+      ],
+      "aiAnalysis": "ArenaService gives the builder Creative mode and protects specific dangerous items, including spawn eggs, but ordinary iron blocks and carved pumpkin remain valid build materials. The cleanup path resets plot blocks and only removes arena/match-tagged minecraft:item, minecraft:xp_orb, minecraft:arrow, minecraft:snowball and minecraft:egg entities. Player-created persistent entities such as minecraft:iron_golem are not included, so the mutation footprint is larger than the reset footprint.",
+      "relevantCode": [
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/arena/ArenaService.js",
+          "reason": "Builder role enters Creative mode; clean/reset logic clears plot blocks but only removes a narrow transient entity allowlist."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/guessthebuild/GuessTheBuildManager.js",
+          "reason": "Round setup/role flow authorizes the active builder to construct inside the plot before cleanup."
+        }
+      ],
+      "suggestedFix": "Make reset ownership match the complete builder capability surface. Prefer removing/cleaning all non-authored entities inside the current arena/plot generation, or explicitly prevent vanilla entity-construction patterns if those entities are not part of gameplay. Keep cleanup arena- and generation-scoped.",
+      "mustPreserve": [
+        "Normal Creative building with allowed blocks.",
+        "Arena isolation between the four replicas.",
+        "Authored map entities and presentation entities outside the reset ownership scope.",
+        "Generation-token protection against stale cleanup."
+      ],
+      "issueType": "BUG"
+    },
+    {
       "id": "BUG-BAD-DEBUG-STICK",
       "fixed": false,
       "severity": "minor",
@@ -133,6 +170,43 @@
         "Total score and games-played accounting.",
         "Exact-once match result journal.",
         "Leaderboard deterministic ordering."
+      ],
+      "issueType": "BUG"
+    },
+    {
+      "id": "BUG-BAD-EQUIPMENT-ROLE-LEAK",
+      "fixed": false,
+      "severity": "major",
+      "category": "player-state",
+      "foundBy": "ai",
+      "title": "Creative equipment can persist across role changes, exit and replay",
+      "problem": "The builder is placed in Creative mode, but the canonical player reset helper clears only the inventory container. It never clears the separate equippable slots such as armor/offhand. A builder can therefore equip Creative-obtained gear and carry it into a later Adventure guesser role, lobby state, reconnect recovery or subsequent session.",
+      "expected": "Role/session cleanup must restore the complete managed player state, including equipment/offhand acquired during Creative builder access, before the player becomes a guesser, returns to lobby or starts another session.",
+      "observed": "clearInventory() removes inventory container slots only. No gameplay cleanup path clears minecraft:equippable slots, while builder Creative access allows equipment acquisition and use.",
+      "reproduction": [
+        "Enter an active round as the builder in Creative mode.",
+        "Equip a Creative-obtained armor/chest/offhand item, for example an Elytra or shield.",
+        "Finish the round so the player becomes a guesser, or use Exit to Lobby and then join another session.",
+        "Observe the normal inventory cleanup/role transition.",
+        "Confirm the equipped item is not owned by clearInventory() and can remain equipped across the transition."
+      ],
+      "aiAnalysis": "ArenaService.clearInventory() only accesses the minecraft:inventory component container and clears its slots. Repository-wide gameplay paths do not clear minecraft:equippable equipment slots. Because the authored builder role grants ordinary Creative catalog access, equipment state is a reachable mutable resource and must be part of reset/recovery ownership.",
+      "relevantCode": [
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/arena/ArenaService.js",
+          "reason": "Defines clearInventory() using only minecraft:inventory and invokes it for role setup, departure and recovery transitions."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/guessthebuild/GuessTheBuildManager.js",
+          "reason": "Switches builder/guesser roles and Creative/Adventure state across rounds while relying on the shared inventory cleanup."
+        }
+      ],
+      "suggestedFix": "Extend the canonical player-state reset owner to clear managed equipment/offhand slots through the equippable component in addition to the inventory container. Keep one reset helper rather than adding role-specific cleanup paths.",
+      "mustPreserve": [
+        "Normal role rotation between builder and guesser.",
+        "Pre-game/lobby inventory restoration policy.",
+        "Reconnect recovery semantics.",
+        "Intentional map-owned equipment if any is later introduced."
       ],
       "issueType": "BUG"
     },
