@@ -1,14 +1,7 @@
-# Script API Return-Contract Intelligence
+# Script API Return Contracts
 
-Return-contract analysis covers API symbols whose result becomes optional while the symbol remains available.
+> Compatibility pointer. Canonical owner: [Script API Static Analysis](./script-api.md).
 
-Current 1.18.0 rules include:
+Return-contract and bounded guard analysis are consolidated into the canonical Script API document.
 
-- `Entity.getComponent`;
-- `Block.getComponent`;
-- `ItemStack.getComponent`;
-- `BlockPermutation.getState`.
-
-The analyzer classifies direct and assigned result use, including `dereferenced`, `optional-dereferenced`, `guarded-assigned`, and `unguarded-assigned`.
-
-Bounded local guards are recognized for structurally obvious positive checks and early-exit checks. Reassignment ends the proof. Arbitrary interprocedural/closure flow stays unknown rather than being guessed.
+This file remains temporarily so active references do not break. Do not add new normative guidance here.
