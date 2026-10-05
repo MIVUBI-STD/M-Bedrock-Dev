@@ -1,0 +1,7 @@
+{
+  "id": "multiplayer-basic",
+  "requiredClients": 2,
+  "mode": "interactive",
+  "description": "Two-client interactive baseline for join, replication, interaction and reconnect preparation.",
+  "roleSlots": ["PRIMARY", "SECONDARY"]
+}
