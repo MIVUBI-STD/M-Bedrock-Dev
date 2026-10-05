@@ -39,6 +39,7 @@ pub trait Provider {
     fn reprovision(&self, client: ClientId) -> io::Result<ClientState>;
     fn memory_limit_mb(&self, client: ClientId) -> io::Result<u64>;
     fn host_working_set_mb(&self, client: ClientId) -> io::Result<Option<u64>>;
+    fn identity_key(&self, client: ClientId) -> io::Result<Option<String>>;
     fn status(&self, client: ClientId) -> io::Result<ClientState>;
     fn start(&self, client: ClientId) -> io::Result<ClientState>;
     fn suspend(&self, client: ClientId) -> io::Result<ClientState>;
@@ -314,22 +315,22 @@ pub(crate) fn apply_client_policy(vmx: &Path) -> io::Result<()> {
     fs::write(vmx, output)
 }
 
-pub(crate) fn read_vmx_memory(vmx: &Path) -> io::Result<u64> {
+pub(crate) fn read_vmx_value(vmx: &Path, key: &str) -> io::Result<Option<String>> {
     let source = fs::read_to_string(vmx)?;
-    for line in source.lines() {
+    let prefix = format!("{key} =");
+    Ok(source.lines().find_map(|line| {
         let trimmed = line.trim();
-        if let Some(value) = trimmed.strip_prefix("memsize =") {
-            return value
-                .trim()
-                .trim_matches('"')
-                .parse::<u64>()
-                .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "invalid memsize in VMX"));
-        }
-    }
-    Err(io::Error::new(
-        io::ErrorKind::InvalidData,
-        "memsize is missing from VMX",
-    ))
+        trimmed.strip_prefix(&prefix).map(|value| {
+            value.trim().trim_matches('"').to_string()
+        })
+    }))
+}
+
+pub(crate) fn read_vmx_memory(vmx: &Path) -> io::Result<u64> {
+    read_vmx_value(vmx, "memsize")?
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "memsize is missing from VMX"))?
+        .parse::<u64>()
+        .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "invalid memsize in VMX"))
 }
 
 fn set_vmx_value(lines: &mut Vec<String>, key: &str, value: &str) {
