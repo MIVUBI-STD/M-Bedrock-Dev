@@ -6,12 +6,14 @@
       "knowledgeId": "permissions-policy.role-capability-matrix",
       "consumer": "player-capability-surface-analysis",
       "analyzerPaths": [
-        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts",
-        "engine/packages/orchestrator/src/inspection/hidden-gameplay-defect-analysis.ts"
+        "engine/packages/orchestrator/src/inspection/capability-mutation-footprint-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/hidden-gameplay-defect-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts"
       ],
       "proofPaths": [
-        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts",
-        "engine/packages/diagnostic-reasoning/test/crosscheck-scenario-routing.test.ts"
+        "engine/packages/diagnostic-reasoning/test/crosscheck-scenario-routing.test.ts",
+        "engine/packages/orchestrator/test/inspection/capability-mutation-footprint-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
       ]
     },
     {
@@ -64,10 +66,12 @@
       "consumer": "arena-cleanup-surface-analysis",
       "analyzerPaths": [
         "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/capability-mutation-footprint-analysis.ts",
         "engine/packages/orchestrator/src/inspection/inventory-lifecycle-analysis.ts"
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/capability-mutation-footprint-analysis.test.ts",
         "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
       ]
     },
@@ -108,9 +112,11 @@
       "knowledgeId": "permissions.role-surfaces-independent",
       "consumer": "player-capability-surface-analysis",
       "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/capability-mutation-footprint-analysis.ts",
         "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts"
       ],
       "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/capability-mutation-footprint-analysis.test.ts",
         "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
       ]
     }
