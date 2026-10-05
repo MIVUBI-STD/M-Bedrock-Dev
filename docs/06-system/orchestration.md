@@ -1,21 +1,7 @@
 # Project Orchestration
 
-The first orchestration path is deliberately small:
+> Compatibility pointer. Canonical owner: [Architecture](./architecture.md).
 
-```text
-artifact fingerprint
-→ archive inventory
-→ archive safety validation
-→ extract source
-→ copy to working
-→ filesystem inventory
-→ pack discovery
-→ manifest analysis
-→ function/structure nodes
-→ reference graph
-→ diagnostics
-```
+Orchestration boundaries and dependency direction are now owned by the canonical architecture document.
 
-The orchestrator composes owners. It must not duplicate parsing, graph, diagnostics or archive policy.
-
-The initial CLI is a thin consumer of this path and prints machine-readable JSON.
+This file remains temporarily so active references do not break. Do not add new normative guidance here.
