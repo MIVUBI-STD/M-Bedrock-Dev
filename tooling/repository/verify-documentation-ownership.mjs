@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 const failures = [];
 
 const { execFileSync } = await import("node:child_process");
-const tracked = execFileSync("git", ["ls-files", "docs/03-analysis"], { encoding: "utf8" })
+const tracked = execFileSync("git", ["ls-files", "docs"], { encoding: "utf8" })
   .split(/\r?\n/)
   .filter(Boolean);
 const forbiddenAnalysisDataPatterns = [
@@ -138,9 +138,7 @@ for (const path of compatibilityPointers) {
 
 const operationsDocs = tracked.filter((path) => path.startsWith("docs/07-operations/"));
 for (const path of operationsDocs) {
-  if (path !== "docs/07-operations/README.md") {
-    failures.push("docs/07-operations may only retain README.md compatibility routing: " + path);
-  }
+  failures.push("Retired docs operations domain must not exist: " + path);
 }
 
 const retiredAuthorityPaths = [
