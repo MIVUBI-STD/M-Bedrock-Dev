@@ -702,9 +702,16 @@ function auditScenarioPresetFromModel(
         item.origin === "command"
       ),
     hasPrivilegedCapabilitySurface:
-      surfaceSignals.privilegedCapability,
+      surfaceSignals.privilegedCapability ||
+      input.world.playerCapabilities.gamemodeWrites > 0 ||
+      input.world.playerCapabilities.abilityWrites > 0 ||
+      input.world.playerCapabilities.commandPermissionWrites > 0 ||
+      input.world.playerCapabilities.privilegedGuardReferences > 0 ||
+      input.world.playerCapabilities.protectionDefinitions > 0,
     hasWorldRuleSurface:
-      surfaceSignals.worldRule,
+      surfaceSignals.worldRule ||
+      input.world.worldRules.writes > 0 ||
+      input.world.worldRules.manualEntitySpawnPaths > 0,
     hasCancelledWorldMutationSurface:
       surfaceSignals.cancelledWorldMutation,
     hasSpatialContainmentSurface:
@@ -955,9 +962,16 @@ export function refreshHiddenGameplayDefectsForWorld(
           item.origin === "command"
         ) ?? false,
       hasPrivilegedCapabilitySurface:
-        refreshSurfaceSignals.privilegedCapability,
+        refreshSurfaceSignals.privilegedCapability ||
+        world.playerCapabilities.gamemodeWrites > 0 ||
+        world.playerCapabilities.abilityWrites > 0 ||
+        world.playerCapabilities.commandPermissionWrites > 0 ||
+        world.playerCapabilities.privilegedGuardReferences > 0 ||
+        world.playerCapabilities.protectionDefinitions > 0,
       hasWorldRuleSurface:
-        refreshSurfaceSignals.worldRule,
+        refreshSurfaceSignals.worldRule ||
+        world.worldRules.writes > 0 ||
+        world.worldRules.manualEntitySpawnPaths > 0,
       hasCancelledWorldMutationSurface:
         refreshSurfaceSignals.cancelledWorldMutation,
       hasSpatialContainmentSurface:
