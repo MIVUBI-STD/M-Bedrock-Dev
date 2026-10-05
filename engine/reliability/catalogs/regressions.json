@@ -1627,6 +1627,233 @@
       ],
       "expected": "Roommaster/admin access preserves live arena geometry unless explicit maintenance mode authorizes world mutation.",
       "observed": "Roommaster can destroy protected arena blocks and use restricted spawn/item paths because admin bypasses the arena guards."
+    },
+    {
+      "id": "reg_build_decode_1_1_0_bug_bad_creative_entity_residue",
+      "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_creative_entity_residue",
+      "title": "Creative-built entities can survive plot reset into later rounds",
+      "issueType": "BUG",
+      "domain": "world",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "build-and-decode",
+        "reportPath": "workspace/reports/Build-and-Decode-v1.1.0-BugReport.json",
+        "map": "Build & Decode",
+        "mapVersion": "1.1.0",
+        "bugId": "BUG-BAD-CREATIVE-ENTITY-RESIDUE",
+        "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_creative_entity_residue",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "major",
+        "world-interaction"
+      ],
+      "capabilityTags": [
+        "world-mutation",
+        "spatial"
+      ],
+      "reproduction": [
+        "Enter an active round as the builder in Creative mode.",
+        "Inside the active build plot, place four iron blocks in a T shape and add a carved pumpkin to create an Iron Golem.",
+        "Allow the round to end and the normal plot reset to run.",
+        "Start the next round or reuse the same arena.",
+        "Confirm the plot blocks are reset but the created Iron Golem can remain because it is outside the cleanup entity allowlist."
+      ],
+      "expected": "All gameplay-significant mutations that an ordinary builder can create inside the authored plot must either be prevented or included in the arena reset baseline before the next round/session becomes active.",
+      "observed": "The builder can create an Iron Golem from ordinary Creative blocks. The reset removes the construction blocks but the entity is not matched by the cleanup allowlist and therefore can remain in the arena after the round."
+    },
+    {
+      "id": "reg_build_decode_1_1_0_bug_bad_departed_team_winner",
+      "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_departed_team_winner",
+      "title": "A fully departed team can remain eligible to win the match",
+      "issueType": "BUG",
+      "domain": "multiplayer",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "build-and-decode",
+        "reportPath": "workspace/reports/Build-and-Decode-v1.1.0-BugReport.json",
+        "map": "Build & Decode",
+        "mapVersion": "1.1.0",
+        "bugId": "BUG-BAD-DEPARTED-TEAM-WINNER",
+        "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_departed_team_winner",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "major",
+        "multiplayer-session"
+      ],
+      "capabilityTags": [
+        "multiplayer",
+        "arena-lifecycle"
+      ],
+      "reproduction": [
+        "Start a team match with at least three active teams.",
+        "Let Team A obtain the highest score.",
+        "Have every Team A player use Exit to Lobby, or allow them to expire after disconnect, while at least two other teams remain active.",
+        "Allow the remaining teams to complete the match without surpassing Team A's score.",
+        "Observe that Team A remains in final standings and can be declared/persisted as the winner even though it has no active members."
+      ],
+      "expected": "A team with no active eligible members after explicit exit or expiry must not remain eligible for the final winner set. Historical contribution may be retained for audit/statistics only if it is explicitly separated from final winner eligibility.",
+      "observed": "depart()/expire() remove players from state.members but leave state.players/playerTeams after the match has started. teamStandings() enumerates Object.keys(state.players), and resultFields() derives winnerTeamIds/winnerIds from that historical roster."
+    },
+    {
+      "id": "reg_build_decode_1_1_0_bug_bad_draw_win_counter",
+      "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_draw_win_counter",
+      "title": "Drawn teams are persisted as Wins",
+      "issueType": "BUG",
+      "domain": "economy",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "build-and-decode",
+        "reportPath": "workspace/reports/Build-and-Decode-v1.1.0-BugReport.json",
+        "map": "Build & Decode",
+        "mapVersion": "1.1.0",
+        "bugId": "BUG-BAD-DRAW-WIN-COUNTER",
+        "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_draw_win_counter",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "major",
+        "score-reward"
+      ],
+      "capabilityTags": [
+        "economy",
+        "reward"
+      ],
+      "reproduction": [
+        "Start a normal team match with at least two teams.",
+        "Finish the match with two or more teams tied for the highest score.",
+        "Confirm the match summary/result UI displays Draw.",
+        "Open the leaderboard/personal stats after the result is committed.",
+        "Confirm players on every tied top team received an additional Win."
+      ],
+      "expected": "A Draw should preserve the draw result and completed-match/score accounting without incrementing the persistent Win counter for every tied team, unless the product intentionally defines a draw as a win everywhere.",
+      "observed": "The result presentation says Draw while all tied leading teams are written as winners and each tied player gains +1 Win. Persistent Wins can then affect leaderboard ordering."
+    },
+    {
+      "id": "reg_build_decode_1_1_0_bug_bad_equipment_role_leak",
+      "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_equipment_role_leak",
+      "title": "Creative equipment can persist across role changes, exit and replay",
+      "issueType": "BUG",
+      "domain": "state",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "build-and-decode",
+        "reportPath": "workspace/reports/Build-and-Decode-v1.1.0-BugReport.json",
+        "map": "Build & Decode",
+        "mapVersion": "1.1.0",
+        "bugId": "BUG-BAD-EQUIPMENT-ROLE-LEAK",
+        "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_equipment_role_leak",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "major",
+        "player-state"
+      ],
+      "capabilityTags": [
+        "state",
+        "inventory",
+        "persistence"
+      ],
+      "reproduction": [
+        "Enter an active round as the builder in Creative mode.",
+        "Equip a Creative-obtained armor/chest/offhand item, for example an Elytra or shield.",
+        "Finish the round so the player becomes a guesser, or use Exit to Lobby and then join another session.",
+        "Observe the normal inventory cleanup/role transition.",
+        "Confirm the equipped item is not owned by clearInventory() and can remain equipped across the transition."
+      ],
+      "expected": "Role/session cleanup must restore the complete managed player state, including equipment/offhand acquired during Creative builder access, before the player becomes a guesser, returns to lobby or starts another session.",
+      "observed": "clearInventory() removes inventory container slots only. No gameplay cleanup path clears minecraft:equippable slots, while builder Creative access allows equipment acquisition and use."
+    },
+    {
+      "id": "reg_build_decode_1_1_0_bug_bad_guess_exit_cooldown",
+      "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_guess_exit_cooldown",
+      "title": "Guess action temporarily disables Exit to Lobby",
+      "issueType": "BUG",
+      "domain": "state",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "build-and-decode",
+        "reportPath": "workspace/reports/Build-and-Decode-v1.1.0-BugReport.json",
+        "map": "Build & Decode",
+        "mapVersion": "1.1.0",
+        "bugId": "BUG-BAD-GUESS-EXIT-COOLDOWN",
+        "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_guess_exit_cooldown",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "minor",
+        "game-flow"
+      ],
+      "capabilityTags": [
+        "gameplay-state",
+        "lifecycle"
+      ],
+      "reproduction": [
+        "Enter an active guessing phase with both Guess and Exit to Lobby items available.",
+        "Use the Guess item.",
+        "Immediately switch to Exit to Lobby and attempt to use it within two seconds.",
+        "Confirm Exit remains on the shared cooldown instead of being independently usable."
+      ],
+      "expected": "Guess anti-spam cooldown should not disable the player's independent Exit to Lobby control.",
+      "observed": "Both builddecode:guess and builddecode:exit_game use cooldown category wind_charge for two seconds, so activating one temporarily cools down the other."
+    },
+    {
+      "id": "reg_build_decode_1_1_0_bug_bad_time_bonus_scoring",
+      "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_time_bonus_scoring",
+      "title": "Time bonus thresholds do not match the authored scoring table",
+      "issueType": "BUG",
+      "domain": "economy",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "build-and-decode",
+        "reportPath": "workspace/reports/Build-and-Decode-v1.1.0-BugReport.json",
+        "map": "Build & Decode",
+        "mapVersion": "1.1.0",
+        "bugId": "BUG-BAD-TIME-BONUS-SCORING",
+        "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_time_bonus_scoring",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "major",
+        "score-reward"
+      ],
+      "capabilityTags": [
+        "economy",
+        "reward"
+      ],
+      "reproduction": [
+        "Start a normal Build & Decode match and reach an active guessing round.",
+        "Make a correct guess within 8 seconds and compare the awarded time bonus with the Points.timebonus table.",
+        "Repeat with a correct guess at 16-25 seconds and at 31-50 seconds.",
+        "Confirm the effective bonuses are +5, +2, and 0 instead of +10, +3, and +1."
+      ],
+      "expected": "Time bonuses follow the selected artifact's Points.timebonus table: +10 through 8s, +5 through 10s, +4 through 15s, +3 through 25s, +2 through 30s, +1 through 50s, then 0.",
+      "observed": "The scoring function gives +5 instead of +10 through 8s, +2 instead of +3 from 16-25s, and 0 instead of +1 from 31-50s. These points feed player/team scores and can change standings and persisted leaderboard results."
     }
   ]
 }
