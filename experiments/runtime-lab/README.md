@@ -36,7 +36,7 @@ macOS   → VMware Fusion
 
 V1 intentionally has no alternate provider registry.
 
-## Base VM
+## Base VM and provisioning
 
 Runtime Lab uses one local base VM and creates three linked clones.
 
@@ -54,35 +54,45 @@ macOS base:
 
 The base VM must be powered off before provisioning.
 
-Runtime Lab manages clones under the same RuntimeLab data directory:
+Provisioning is transactional:
 
 ```text
-MCE-02
-MCE-03
-MCE-04
+MCE-BASE
+→ clone into staging
+→ verify staged VMX exists
+→ promote atomically into MCE-02 / MCE-03 / MCE-04
 ```
 
-No VM disk or local runtime state is committed to Git.
+Failed staging output is discarded and existing clients are not replaced.
 
-## Current backend
+## QA-ready lifecycle
+
+After provisioning, each virtual client is configured manually:
 
 ```text
-backend/
-├── Cargo.toml
-├── src/
-│   ├── lib.rs
-│   ├── runtime.rs
-│   ├── client.rs
-│   ├── doctor.rs
-│   ├── provider/
-│   │   ├── mod.rs
-│   │   ├── workstation.rs
-│   │   └── fusion.rs
-│   └── bin/
-│       └── runtime-lab.rs
-└── tests/
-    └── runtime.rs
+start client
+→ install / verify Minecraft Education
+→ sign in with that client's test account
+→ configure low graphics
+→ stop client
+→ set-ready
 ```
+
+`set-ready` creates one VMware snapshot named `QA_READY`.
+
+After that:
+
+```text
+restart
+= reboot current VM state
+
+reset
+= stop if needed
+→ revert to QA_READY
+→ start VM
+```
+
+VMware snapshots represent a stored VM/guest state, and reverting discards changes made after that snapshot. The backend therefore exposes reset as an explicit destructive clean-state action. citeturn616526search5turn616526search7
 
 ## Command surface
 
@@ -94,19 +104,25 @@ cargo run --bin runtime-lab -- provision
 cargo run --bin runtime-lab -- status
 cargo run --bin runtime-lab -- start <1-4>
 cargo run --bin runtime-lab -- open <MCE-01..04>
+cargo run --bin runtime-lab -- restart <MCE-02..04>
+cargo run --bin runtime-lab -- set-ready <MCE-02..04>
 cargo run --bin runtime-lab -- reset <MCE-02..04>
 cargo run --bin runtime-lab -- stop [MCE-01..04]
 ```
 
 ### Meaning
 
-- `doctor` checks provider + base VM readiness.
+- `doctor` checks provider, base VM and per-client QA-ready state.
 - `provision` creates MCE-02..04 as linked clones.
-- `start` powers on the requested client count; MCE-01 remains the native/manual client.
-- `open` opens the VM in the VMware UI.
-- `reset` performs a VM restart; it does not restore a snapshot.
+- `start` powers on the requested client count; MCE-01 remains native/manual.
+- `open` opens the VM in VMware.
+- `restart` reboots the current VM state.
+- `set-ready` records the stopped client as its clean QA baseline.
+- `reset` restores `QA_READY` and starts the client.
 - `stop` performs a soft VM stop.
 
-Snapshot restore, gameplay automation and scenarios are intentionally outside V1.
+The backend serializes mutating operations with an OS file lock, uses bounded provider commands, and does not maintain a second VM-state database.
+
+Gameplay automation, scenarios and bot control are outside V1.
 
 Frontend work remains deferred until this Rust lifecycle is proven stable.
