@@ -7,6 +7,7 @@ const canonicalDocs = [
   "docs/03-analysis/capacity-concurrency.md",
   "docs/03-analysis/compatibility.md",
   "docs/03-analysis/education.md",
+  "docs/06-system/architecture.md",
   "docs/05-validation/runtime-proof.md",
   "docs/05-validation/search-and-falsification.md",
   "docs/05-validation/retest-and-regression.md",
@@ -47,6 +48,8 @@ const compatibilityPointers = [
   "docs/05-validation/portfolio-retest.md",
   "docs/05-validation/campaign-history-and-minimization.md",
   "docs/05-validation/history-driven-search.md",
+  "docs/06-system/integrated-analysis.md",
+  "docs/06-system/orchestration.md",
 ];
 
 for (const path of compatibilityPointers) {
