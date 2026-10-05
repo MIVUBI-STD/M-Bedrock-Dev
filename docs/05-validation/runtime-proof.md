@@ -131,3 +131,30 @@ Never report proof above the available context.
 ## STOP
 
 Runtime proof is complete when the exact unresolved claim is decided or reduced to one explicit irreducible question with bounded reproduction/observation instructions.
+
+## Runtime evidence emitter
+
+Runtime capture should remain a thin adapter that reads only configured evidence surfaces such as active players, tags, scoreboard state, current tick, and selected entity evidence.
+
+Capture failures become explicit runtime-capture issues or unknown evidence. The emitter never decides gameplay correctness.
+
+Project/runtime version identity must be supplied explicitly rather than guessed from captured state.
+
+## Regression session result
+
+A runtime regression session should account separately for:
+- requested control actions;
+- execution acknowledgements and timing;
+- runtime observations;
+- expected-model comparison.
+
+Useful verdicts:
+
+```text
+pass
+runtime-divergence
+control-failure
+incomplete-evidence
+```
+
+A gameplay divergence is trustworthy only when the intended control action was actually executed within its required timing window. Missing or late control evidence must not be conflated with game behavior.
