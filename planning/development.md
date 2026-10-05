@@ -2,15 +2,21 @@
 
 Current and future work that improves M-Bedrock-Dev itself.
 
-## Active
+## Completed repository consolidation
 
-- Repository information-architecture consolidation: reduce duplicate documentation authority, clarify naming, and separate durable docs from operational data.
-- Consolidate bug-finding coverage and validation documentation into canonical owners while compatibility pointers protect active references.
-- Keep structural ownership/naming/coverage verifiers aligned with each consolidation step.
+- semantic documentation domains established;
+- numbered documentation paths retired;
+- planning separated from workspace;
+- current/historical operational state removed from docs;
+- historical audit evidence moved to reliability history;
+- reusable evaluation data moved to reliability corpus;
+- bug-finding coverage consolidated into one canonical owner;
+- validation consolidated into canonical proof/search/retest owners;
+- repair consolidated into transaction and planning owners;
+- analysis compatibility pointers removed after their content was absorbed;
+- repository/documentation/path/coverage verifiers aligned with the final structure.
 
-## Documentation path migration
-
-Completed on branch `Local`:
+Canonical documentation domains:
 
 ```text
 docs/product/
@@ -21,17 +27,15 @@ docs/validation/
 docs/system/
 ```
 
-Retired numbered documentation paths are permanently rejected by repository verification.
+## Active
+
+- Run knowledge-consumption audit and close actionable reusable knowledge that lacks a dedicated analyzer/proof binding.
+- Continue reducing manually maintained implementation ownership only where machine-readable ownership can replace it safely.
 
 ## Backlog
 
-- Continue consolidating `docs/analysis` and `docs/system` only where files share the same owner, audience, and lifecycle; preserve genuinely distinct domains.
-
-- Run `npm run audit:knowledge-consumption`, close actionable knowledge without dedicated analyzer/proof bindings, then promote `verify:knowledge-consumption` into `verify:repository` once debt reaches zero.
-
-- Generate/query implementation ownership from machine-readable ownership where practical instead of maintaining large duplicated path maps.
-- Add repository architecture checks for misplaced operational data, stale references, and ambiguous naming.
-- Review runtime/model abstractions for unique ownership and remove representational layers that do not enforce a distinct invariant.
+- Promote strict knowledge-consumption verification into the main repository gate when current debt reaches zero.
+- Review runtime/model abstractions for unique state/invariant ownership and remove representational layers that do not enforce a distinct responsibility.
 
 ## Rule
 
