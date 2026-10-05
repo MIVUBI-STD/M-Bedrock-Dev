@@ -855,6 +855,8 @@ export async function inspectArtifact(
           result.worldRuleAuthority,
         playerCapabilitySurfaces:
           result.playerCapabilitySurfaces,
+        clientMutationReconciliation:
+          result.clientMutationReconciliation,
         semanticIr: {
           stateSurfaces:
             result.semanticIr.stateSurfaces,
