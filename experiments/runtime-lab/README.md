@@ -2,6 +2,20 @@
 
 Experimental backend for running multiple interactive Minecraft Education clients on one physical computer.
 
+## Architecture
+
+Runtime Lab follows the same desktop architecture pattern used across MIVUBI tools:
+
+```text
+Rust backend core      ← current phase
+        ↓
+thin Tauri commands    ← later
+        ↓
+Svelte frontend        ← later
+```
+
+The backend core is the only runtime authority. The future Tauri/Svelte application must call this same core and must not duplicate provider or lifecycle logic.
+
 ## V1 purpose
 
 The system manages the test environment. The player remains manually controlled.
@@ -35,31 +49,39 @@ macOS   → VMware Fusion
 
 Other hypervisors are not part of V1.
 
-## Backend
+## Current backend
 
 ```text
-CLI now / UI later
-        ↓
-RuntimeLabBackend
-        ↓
-ClientRuntime
-        ↓
-Provider
+backend/
+├── Cargo.toml
+├── src/
+│   ├── lib.rs
+│   ├── runtime.rs
+│   ├── client.rs
+│   ├── doctor.rs
+│   ├── provider/
+│   │   ├── mod.rs
+│   │   ├── workstation.rs
+│   │   └── fusion.rs
+│   └── bin/
+│       └── runtime-lab.rs
+└── tests/
+    └── runtime.rs
 ```
 
-The backend stays small on purpose. There are no scenario definitions, external client profiles, provider registry, automated roles, or bot controls.
+## Current command surface
 
-## Current commands
+From `experiments/runtime-lab/backend`:
 
 ```text
-lab doctor
-lab status
-lab start <1-4>
-lab open <client>
-lab reset <client>
-lab stop [client]
+cargo run --bin runtime-lab -- doctor
+cargo run --bin runtime-lab -- status
+cargo run --bin runtime-lab -- start <1-4>
+cargo run --bin runtime-lab -- open <MCE-01..04>
+cargo run --bin runtime-lab -- reset <MCE-02..04>
+cargo run --bin runtime-lab -- stop [MCE-01..04]
 ```
 
 Provider lifecycle operations are being implemented progressively. Unsupported operations must fail explicitly.
 
-Frontend work is deferred until the backend lifecycle is proven stable.
+Frontend work is intentionally deferred until the Rust backend lifecycle is proven stable.
