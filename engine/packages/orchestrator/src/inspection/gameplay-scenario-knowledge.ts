@@ -673,6 +673,27 @@ export function requiredKnowledgeDomainsForPreset(
       addIfApplicable("economy-reward");
       addIfApplicable("arena-lifecycle");
       break;
+    case "player-capability-integrity":
+      addIfApplicable("arena-lifecycle");
+      addIfApplicable("spatial-authority");
+      add(domains, "platform-constraints");
+      break;
+    case "world-rule-authority":
+      add(domains, "platform-constraints");
+      addIfApplicable("entity-behavior");
+      addIfApplicable("world-structure");
+      break;
+    case "client-server-reconciliation":
+      add(domains, "platform-constraints");
+      addIfApplicable("spatial-authority");
+      addIfApplicable("world-structure");
+      break;
+    case "spatial-containment":
+      addIfApplicable("spatial-authority");
+      addIfApplicable("world-structure");
+      addIfApplicable("arena-lifecycle");
+      add(domains, "platform-constraints");
+      break;
     case "repeated-run":
       addIfApplicable("arena-lifecycle");
       addIfApplicable("world-structure");
