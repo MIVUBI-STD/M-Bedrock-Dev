@@ -9,6 +9,7 @@ fn native_client_open_is_manual_without_provider() {
     assert_eq!(status.id, "MCE-01");
     assert!(status.native);
     assert_eq!(status.ready_snapshot, None);
+    assert_eq!(status.memory_mb, None);
 }
 
 #[test]
