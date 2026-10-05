@@ -171,4 +171,4 @@ DEV.cmd finalize-local
 
 Start at `docs/README.md`. Read selectively by domain.
 
-Historical audits, superseded architecture, abandoned experiments, and obsolete continuation belong in Git history or `experiments/`, not as parallel current-state authorities.
+Historical audit/run evidence belongs in `engine/reliability/history/`; reusable evaluation material belongs in `engine/reliability/corpus/`; abandoned research belongs in `experiments/`; superseded architecture remains in Git history. None of these are parallel current-state authorities.
