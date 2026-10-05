@@ -857,6 +857,8 @@ export async function inspectArtifact(
           result.playerCapabilitySurfaces,
         clientMutationReconciliation:
           result.clientMutationReconciliation,
+        capabilityMutationFootprint:
+          result.capabilityMutationFootprint,
         semanticIr: {
           stateSurfaces:
             result.semanticIr.stateSurfaces,
