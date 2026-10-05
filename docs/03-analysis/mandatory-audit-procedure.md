@@ -2440,3 +2440,51 @@ Routing rules:
 
 Before REPORT, every applicable routed check must resolve to SAFE, PROVEN, one exact irreducible runtime question, or a documented Audit Obligation. No applicable check may disappear because another issue was already found in the same map.
 
+
+## Manual Test Last-Resort Gate
+
+Manual testing is never the default continuation of an audit.
+
+The system must first exhaust the available deterministic work:
+
+```text
+source / package inspection
+→ state and ownership modeling
+→ multi-scenario checks
+→ cross-file causal tracing
+→ Blocking-Proof Exhaustion
+→ deterministic proof substitution
+→ cross-map implementation comparison
+→ selected-artifact re-open when evidence is stale/incomplete
+→ PROVEN / SAFE / exact runtime-irreducible fact
+```
+
+A Runtime Test Queue item is therefore a **deferred verification obligation**, not an assignment to the tester.
+
+Before an item may be handed to a human tester, all of the following must be true:
+
+```text
+Fresh selected artifact inspected: YES
+Relevant source/pack surfaces traced: YES
+State Snapshot Differential exhausted: YES
+Cross-Representation Consistency exhausted: YES
+Event Ordering / Duplicate Commit exhausted: YES
+Orphan State / Entity lifetime exhausted: YES
+Path / Geometry Dependency exhausted when applicable: YES
+Metamorphic Comparison exhausted when applicable: YES
+Proof Escalation Hard Gate passed: YES
+Exactly one runtime-native deciding fact remains: YES
+```
+
+If any answer is NO, return the item to system analysis.
+
+Operational target:
+
+```text
+manual tests requested from user = minimum practical count
+broad playthrough requests = 0
+generic "please test this map" requests = 0
+```
+
+The user should only receive a manual test request when the system can no longer reduce the uncertainty from the selected artifact and the test is necessary to decide one material claim.
+
