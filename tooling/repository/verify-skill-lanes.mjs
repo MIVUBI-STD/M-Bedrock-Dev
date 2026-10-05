@@ -27,7 +27,7 @@ if(existsSync(".agents/skills/m-bedrock-development-brief/SKILL.md")){
   failures.push("Legacy ambiguous skill m-bedrock-development-brief is forbidden; use m-bedrock-cross-owner-routing.");
 }
 
-const routing=readFileSync("docs/06-system/skill-routing.md","utf8");
+const routing=readFileSync("docs/system/skill-routing.md","utf8");
 for(const phrase of [
   "Operational Map Audit",
   "Detection Development",
