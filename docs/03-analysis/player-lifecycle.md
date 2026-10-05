@@ -1,0 +1,181 @@
+# Player Lifecycle
+
+## Purpose
+
+Canonical analysis contract for player identity, connection, participation, death/downed/respawn, reconnect, and deferred-work ownership.
+
+Minecraft runtime identity, project session identity, arena membership, participation, and life state are separate lifecycles. Treating them as one timeless player object causes stale callbacks, reconnect leaks, duplicate transitions, and revive/respawn corruption.
+
+## Identity model
+
+Keep these independent:
+
+```text
+logical player identity
+≠ current Player runtime reference
+≠ connectionGeneration
+≠ arena membership
+≠ arenaGeneration
+≠ participationGeneration
+≠ lifeGeneration
+```
+
+Recommended correlation envelope:
+
+```text
+playerKey
+connectionGeneration
+arenaId?
+arenaGeneration?
+participationGeneration?
+lifeGeneration?
+```
+
+Every deferred callback or transaction captures the relevant envelope and revalidates it before mutation.
+
+## Session lifecycle
+
+```text
+ABSENT
+→ CONNECTED_UNINITIALIZED
+→ RECONCILING
+→ LOBBY_READY
+→ ARENA_ASSIGNED
+→ ACTIVE
+   ├→ DOWNED
+   ├→ DEAD
+   ├→ SPECTATOR
+   ├→ TRANSITIONING
+   └→ DISCONNECTED
+```
+
+Reconnect always creates a new connection generation.
+
+Respawn is not reconnect. Reconnect is not resume. Persisted state is not current-session authority.
+
+## Life lifecycle
+
+Project life-state may differ from Minecraft engine state:
+
+```text
+ACTIVE
+→ DOWNED
+→ BEING_REVIVED
+   ├→ REVIVED
+   └→ DEAD_CONFIRMED
+→ RESPAWNING
+→ ACTIVE / ELIMINATED
+```
+
+Do not collapse:
+- low-health threshold;
+- health zero;
+- entity death event;
+- respawn event
+
+into one proof signal.
+
+## Reconnect reconciliation
+
+Durable facts may be restored by policy. Transient state must be reconciled, including:
+- ready state;
+- downed/revive ownership;
+- forms/UI;
+- pending teleports;
+- spectator/loader duties;
+- countdown participation;
+- timers and callbacks;
+- cached runtime references;
+- pending async work.
+
+Old-generation callbacks must never mutate the new connection/session.
+
+## Respawn reconciliation
+
+Define reset/preserve behavior explicitly for:
+- life state;
+- health/max-health;
+- gamemode;
+- inventory/equipment;
+- effects;
+- input permissions;
+- tags/scoreboard mirrors;
+- dynamic properties;
+- pending teleports;
+- revive ownership;
+- timers;
+- arena membership.
+
+Only one restore owner may apply a given life-generation recovery to avoid duplicate kit/state restoration.
+
+## Revive ownership
+
+A valid revive transaction requires, when applicable:
+
+```text
+target is DOWNED
+reviver exists
+reviver != target
+same arena/session generation
+reviver connected and ACTIVE
+interaction still valid
+revive generation current
+target still eligible at completion
+```
+
+Invalidate revive on death, disconnect, respawn, arena/participation generation change, invalid interaction, or competing terminal transition.
+
+## Arena/session transaction rule
+
+Events request evaluation; they do not each own transitions.
+
+```text
+WAITING
+→ COUNTDOWN
+→ SETUP
+→ ACTIVE
+→ FINALIZING
+→ COMPLETE
+```
+
+Each transition has one accepted owner per generation. Terminal side effects must be idempotent.
+
+## High-value failure modes
+
+- ghost-ready state after disconnect;
+- stale reconnect continuation;
+- duplicate countdown/start;
+- cross-arena selector leakage;
+- respawn state contamination;
+- self-revive or multiple revive owners;
+- revive completion after death/disconnect;
+- stale runtime reference;
+- persisted state used as current-session authority;
+- duplicate terminal side effects;
+- dead/respawning players counted active/ready.
+
+## Required review
+
+For each player-sensitive subsystem ask:
+
+1. Which identity layer owns this state?
+2. What invalidates it?
+3. What changes on disconnect?
+4. What changes on respawn?
+5. What may reconnect restore?
+6. What generation owns deferred work?
+7. Can multiple actors request the same transition?
+8. Is terminal/recovery commit idempotent?
+9. Is arena/session scope explicit?
+10. Can a stale mirror or runtime reference masquerade as authority?
+
+## Coverage integration
+
+Player Lifecycle feeds:
+- `CONNECTION_RECOVERY`;
+- `ENTRY_ADMISSION`;
+- `GAME_STATE_PROGRESSION`;
+- `INVENTORY_PLAYER_CAPABILITY` when restore/reset affects player state;
+- cross-system checks for reconnect × inventory, reconnect × death/respawn, retry/recovery, terminal collision, and deferred ownership.
+
+It remains subordinate to the canonical selected-map audit and [Bug-Finding Coverage](./bug-finding-coverage.md).
