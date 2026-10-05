@@ -1,19 +1,7 @@
 # Minecraft Education Runtime Integrity
 
-Education is not treated as a synonym for retail Bedrock.
+> Compatibility pointer. Canonical owner: [Minecraft Education Capability Analysis](./education.md).
 
-Track:
-- exact Education version/build
-- host vs Dedicated Server
-- Code Builder / Agent capability
-- classroom/admin controls
-- multiplayer scale assumptions
-- feature parity gaps with Bedrock
+Education runtime identity, Agent/Code Builder, classroom/admin controls, dedicated-server context, scale assumptions, and Bedrock parity are consolidated into the canonical Education document.
 
-Diagnostics:
-- EDU_RUNTIME_PROFILE_INCOMPLETE
-- EDU_BEDROCK_PARITY_ASSUMED
-- EDU_AGENT_MUTATION_UNSCOPED
-- EDU_AGENT_CAN_MODIFY_PROTECTED_ARENA
-- EDU_CLASSROOM_GLOBAL_CHANGE_UNATTRIBUTED
-- EDU_DEDICATED_SERVER_SCALE_UNMODELED
+This file remains temporarily so active references do not break. Do not add new normative guidance here.
