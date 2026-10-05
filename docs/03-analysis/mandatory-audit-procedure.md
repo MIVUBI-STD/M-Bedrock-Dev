@@ -227,7 +227,25 @@ Every contradiction reaching PROVE must be challenged from all context-relevant 
 - exclusion;
 - ownership for shared or multiplayer resources;
 - generation/revision for deferred, retry, reconnect, reload, or reuse paths;
-- cleanup/release for terminal and replay paths.
+- cleanup/release for terminal and replay paths;
+- physical collision / barrier / geometry when reachability depends on space;
+- role, permission, operator/Roommaster, admin tag and platform capability when authority matters;
+- gamerule / world-setting baseline when world behavior is part of the claim;
+- guard activation / registration so dead or uninstantiated protection is never credited;
+- client/server representation when a predicted world mutation is cancelled or rewritten.
+
+Every proposed finding must preserve a causal chain:
+
+```text
+reachable trigger
+→ authoritative mechanism
+→ expected contract
+→ failed/missing protection
+→ wrong reachable state
+→ player-visible consequence
+```
+
+Before confirmation, actively search for a Blocking Proof that breaks the chain. A supporting condition such as `mayfly=true`, a loading-bound crossing, `doMobSpawning=false`, or the presence of a guard class is not by itself proof of the final consequence.
 
 Technical root cause and player-visible consequence are recorded separately. A valid technical constraint may explain the root cause while the reduced/misleading gameplay capability remains a reportable issue.
 
