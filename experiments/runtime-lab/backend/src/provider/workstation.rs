@@ -1,5 +1,6 @@
 use super::{
-    base_vmx_path, client_vmx_path, command_output, ensure_parent, listed_as_running, Provider,
+    base_vmx_path, client_vmx_path, command_output, ensure_parent, listed_as_running,
+    promote_staging_vm, remove_vm_container, staging_client_vmx_path, Provider,
 };
 use crate::client::{ClientId, ClientState};
 use std::{
@@ -23,17 +24,11 @@ pub struct VmwareWorkstationProvider;
 
 impl VmwareWorkstationProvider {
     fn vmrun(&self) -> Option<&'static Path> {
-        VMRUN_CANDIDATES
-            .iter()
-            .map(Path::new)
-            .find(|path| path.is_file())
+        VMRUN_CANDIDATES.iter().map(Path::new).find(|path| path.is_file())
     }
 
     fn gui(&self) -> Option<&'static Path> {
-        GUI_CANDIDATES
-            .iter()
-            .map(Path::new)
-            .find(|path| path.is_file())
+        GUI_CANDIDATES.iter().map(Path::new).find(|path| path.is_file())
     }
 
     fn require_vmrun(&self) -> io::Result<&'static Path> {
@@ -69,6 +64,10 @@ impl Provider for VmwareWorkstationProvider {
         self.vmrun().is_some()
     }
 
+    fn is_running_path(&self, vmx: &Path) -> io::Result<bool> {
+        self.running(vmx)
+    }
+
     fn provision(&self, client: ClientId) -> io::Result<ClientState> {
         let target = client_vmx_path(client)?;
         if target.is_file() {
@@ -82,21 +81,40 @@ impl Provider for VmwareWorkstationProvider {
                 format!("base VM is missing: {}", base.display()),
             ));
         }
+        if self.running(&base)? {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "base VM must be powered off before provisioning",
+            ));
+        }
 
-        ensure_parent(&target)?;
+        let staging = staging_client_vmx_path(client)?;
+        remove_vm_container(&staging);
+        ensure_parent(&staging)?;
+
         let clone_name = format!("-cloneName={}", client.as_str());
-        command_output(
+        let clone_result = command_output(
             self.require_vmrun()?,
             [
                 "-T",
                 "ws",
                 "clone",
                 base.to_string_lossy().as_ref(),
-                target.to_string_lossy().as_ref(),
+                staging.to_string_lossy().as_ref(),
                 "linked",
                 clone_name.as_str(),
             ],
-        )?;
+        );
+
+        if let Err(error) = clone_result {
+            remove_vm_container(&staging);
+            return Err(error);
+        }
+
+        if let Err(error) = promote_staging_vm(&staging, &target) {
+            remove_vm_container(&staging);
+            return Err(error);
+        }
 
         Ok(ClientState::Stopped)
     }
