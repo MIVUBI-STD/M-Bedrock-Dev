@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "title": "Aggressive Scenario Ledger",
+  "purpose": "Machine-readable bounded scenario synthesis for deterministic virtual-testing pressure. Aggressive generation, conservative publication.",
+  "required": [
+    "scenarioId",
+    "projectId",
+    "family",
+    "initialState",
+    "events",
+    "sharedMaterialDependency",
+    "expectedInvariant",
+    "result"
+  ],
+  "properties": {
+    "scenarioId": {
+      "type": "string"
+    },
+    "projectId": {
+      "type": "string"
+    },
+    "family": {
+      "enum": [
+        "TRANSITION_RESIDUE",
+        "OBJECTIVE_CUSTODY",
+        "WORLD_MUTATION_COMPATIBILITY",
+        "OFFLINE_PROGRESSION",
+        "CONTAINER_ECONOMY_CARRYOVER",
+        "DISCONNECT_RECONNECT",
+        "RELOAD_RECOVERY",
+        "MULTIPLAYER_INTERLEAVING",
+        "MULTIARENA_INTERLEAVING",
+        "CAPABILITY_ABUSE"
+      ]
+    },
+    "pressureScore": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "pressureReasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "initialState": {
+      "type": "string"
+    },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "sharedMaterialDependency": {
+      "type": "string"
+    },
+    "expectedInvariant": {
+      "type": "string"
+    },
+    "mutableResources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "owners": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "writers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "clearers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "deferredWriters": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "blockingProof": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "proofMethods": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "result": {
+      "enum": [
+        "SAFE",
+        "CONTRADICTION",
+        "IRREDUCIBLE_RUNTIME_QUESTION"
+      ]
+    },
+    "findingId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "exactRuntimeQuestion": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observableA": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observableB": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "coveredByScenarioId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "rules": [
+    "Do not generate Cartesian products. A scenario requires a shared state/resource/owner/geometry/transition.",
+    "Pairwise coverage is default; use 3-way only when all dimensions converge on the same material contract.",
+    "Pressure score orders work only; it never changes proof state or severity.",
+    "IRREDUCIBLE_RUNTIME_QUESTION requires one exact unresolved deciding fact.",
+    "A scenario may be dominance-pruned only when the covering scenario preserves every material condition and expected contract."
+  ]
+}
