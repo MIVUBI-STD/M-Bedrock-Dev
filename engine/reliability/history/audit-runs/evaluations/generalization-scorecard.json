@@ -83,7 +83,7 @@
   "interpretation": {
     "positive": "All eight sealed historical issues are now representable and detected after targeted repairs without adding new issue taxonomy families.",
     "limitation": "Initial blind recall across these six unseen maps was 0/8. Therefore the engine is improving through regression-guided generalization, but current evidence does not justify claiming universal first-pass recall.",
-    "nextAcceptanceGoal": "Completed by five frozen-engine prospective zero-finding runs recorded in docs/03-analysis/primary-pipeline-acceptance-2026-10-05.json. Historical recall is still not claimed because those runs have no independent ground truth yet.",
+    "nextAcceptanceGoal": "Completed by five frozen-engine prospective zero-finding runs recorded in engine/reliability/history/audit-runs/evaluations/primary-pipeline-acceptance-2026-10-05.json. Historical recall is still not claimed because those runs have no independent ground truth yet.",
     "acceptanceStatus": "PRIMARY_PIPELINE_ACCEPTED_WITH_BOUNDED_CLAIMS"
   }
 }

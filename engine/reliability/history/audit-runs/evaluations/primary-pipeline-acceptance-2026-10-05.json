@@ -70,7 +70,7 @@
     }
   ],
   "runtimeReduction": {
-    "source": "docs/03-analysis/runtime-queue-reduction/summary.json",
+    "source": "engine/reliability/history/audit-runs/runtime-queue-reduction/summary.json",
     "priorityAItems": 8,
     "closedSafe": 8,
     "deferredRuntimeIrreducible": 0,
