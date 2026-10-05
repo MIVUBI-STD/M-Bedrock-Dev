@@ -206,3 +206,25 @@ Runtime-only residue belongs to Gameplay Scenario Closure, not Gameplay Model Cl
 - A mechanic name is not proof that its effect is implemented.
 - Physical availability is not proof of concurrent playability.
 - Unknown must never be converted into Designed Behavior without grounding.
+
+## Game-design closure checklist
+
+Before MODEL/STRESS may rely on the reconstructed gameplay contract, the selected artifact must account for:
+
+- gameplay surfaces;
+- objective;
+- win and lose conditions;
+- player-flow stages;
+- state transitions;
+- failure/retry/recovery transitions;
+- reset and preserve rules;
+- progression/level rules;
+- enemy/content contracts;
+- multiplayer rules;
+- multi-arena rules where applicable;
+- capacity/concurrency/queue semantics where applicable;
+- material boundaries;
+- player-visible expectations;
+- high-risk coexisting systems.
+
+This is a closure condition, not an independent manual checklist. Unknown material items keep Gameplay Model Closure open.
