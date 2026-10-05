@@ -34,6 +34,7 @@ There is no second backend process and no Node runtime backend.
 doctor
 provision
 status
+resources <1-4>
 reprovision <client>
 start <1-4>
 open <client>
@@ -78,7 +79,7 @@ Current V1 memory bounds:
 - 2 virtual clients: 4–5 GB each;
 - 3 virtual clients: 4 GB each.
 
-Running VMs are never resized in place. Provisioning does not own RAM sizing.
+Running VMs are never resized in place. Provisioning does not own RAM sizing. `resources <1-4>` exposes the same planner used by `start`, so a future UI can preview the allocation without duplicating policy.
 
 Multi-client boot remains staggered to avoid unnecessary startup spikes.
 
