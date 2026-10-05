@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "status": "READY_FOR_SYSTEM_REDUCTION",
+  "userManualTestingRequiredNow": false,
+  "sourceQueue": "docs/03-analysis/runtime-test-queue.json",
+  "totalPriorityA": 8,
+  "humanEligibleNow": 0,
+  "workflow": [
+    "reopen exact unresolved claim",
+    "fresh selected-artifact inspection",
+    "canonical multi-scenario checks",
+    "cross-file causal tracing",
+    "deterministic proof substitution",
+    "Blocking-Proof Exhaustion",
+    "Claim-Based Proof rerun",
+    "PROVEN / SAFE / DEFERRED_RUNTIME_IRREDUCIBLE"
+  ],
+  "closureTarget": {
+    "broadPlaythroughRequests": 0,
+    "genericRuntimeRequests": 0,
+    "genericNeedValidation": 0,
+    "unsupportedProven": 0,
+    "manualTests": "minimum practical count"
+  },
+  "note": "Current runtime queue came from evidence-backed prioritization, but no item is eligible for user handoff until the system performs the fresh-artifact reduction pass."
+}
