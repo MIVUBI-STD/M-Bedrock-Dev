@@ -33,7 +33,7 @@ pub trait Provider {
     fn restart(&self, client: ClientId) -> io::Result<ClientState>;
     fn set_ready(&self, client: ClientId) -> io::Result<ClientState>;
     fn has_ready(&self, client: ClientId) -> io::Result<bool>;
-    fn reset(&self, client: ClientId) -> io::Result<ClientState>;
+    fn reset(&self, client: ClientId, memory_mb: u64) -> io::Result<ClientState>;
     fn open(&self, client: ClientId) -> io::Result<ClientState>;
     fn is_running_path(&self, vmx: &Path) -> io::Result<bool>;
 }
