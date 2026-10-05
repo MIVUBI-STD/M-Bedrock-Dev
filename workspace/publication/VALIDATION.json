@@ -1,28 +1,36 @@
 {
-  "schemaVersion": 4,
-  "status": "PASS",
-  "registeredMaps": 22,
-  "findings": 26,
-  "bugs": 21,
-  "designMismatches": 5,
-  "devNotes": 4,
-  "actionable": 30,
-  "severity": {
-    "blocker": 4,
-    "major": 19,
-    "minor": 3
+  "schemaVersion": 5,
+  "status": "FAIL",
+  "reason": "Derived publication HTML/JSON predates the current approved publication dataset and must be regenerated from canonical data before release.",
+  "expected": {
+    "registeredMaps": 22,
+    "findings": 34,
+    "bugs": 29,
+    "designMismatches": 5,
+    "devNotes": 5,
+    "actionable": 39,
+    "severity": {
+      "blocker": 4,
+      "major": 25,
+      "minor": 5
+    }
   },
-  "cards": 30,
-  "uniqueIds": 30,
-  "circuitFindingCards": 7,
-  "devNoteCards": 4,
-  "testerNotes": 26,
-  "attachments": 30,
-  "worldLinks": 22,
-  "folderLinks": 22,
-  "defaultCollapsed": true,
-  "manualEvidenceLinked": true,
-  "similarCrosscheckLinked": true,
-  "developerNoteCoverage": "STATIC_CLOSED_22_OF_22_MAPS_396_CATEGORY_ROUTES_PLUS_POST_CLOSURE_MANUAL_EVIDENCE",
+  "observedDerivedPublication": {
+    "findings": 26,
+    "bugs": 21,
+    "designMismatches": 5,
+    "devNotes": 4,
+    "actionable": 30,
+    "severity": {
+      "blocker": 4,
+      "major": 19,
+      "minor": 3
+    }
+  },
+  "staleOutputs": [
+    "workspace/publication/Bug_Tracker_Report_Full_Current.html",
+    "workspace/publication/maps/build-and-decode-v1.1.0-Bug-Tracker.html"
+  ],
+  "requiredAction": "Regenerate derived publication from workspace/reports/approved-publication-dataset.json using the canonical Golden publication generator, then re-run validation.",
   "proofPolicy": "PROOF_ESCALATION_HARD_GATE_ACTIVE"
 }
