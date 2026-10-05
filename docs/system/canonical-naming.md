@@ -141,4 +141,4 @@ These names are deliberately non-interchangeable. Source-native identifiers such
 
 Detailed audit status, role, proof, and bound naming is owned by:
 
-`docs/03-analysis/map-audit-naming-contract.md`
+`docs/analysis/map-audit-naming-contract.md`
