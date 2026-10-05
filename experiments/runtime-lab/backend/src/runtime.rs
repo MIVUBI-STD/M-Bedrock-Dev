@@ -1,10 +1,14 @@
 use crate::{
     client::{ClientId, ClientState, ClientStatus},
     doctor::{doctor, DoctorReport},
-    provider::current_platform_provider,
+    provider::{current_platform_provider, runtime_root},
 };
 use serde::Serialize;
-use std::io;
+use std::{
+    fs::{self, OpenOptions},
+    io,
+    path::PathBuf,
+};
 
 #[derive(Debug, Default)]
 pub struct RuntimeLab;
@@ -16,12 +20,48 @@ pub struct RuntimeStatus {
     pub clients: Vec<ClientStatus>,
 }
 
+struct OperationLock {
+    path: PathBuf,
+}
+
+impl OperationLock {
+    fn acquire() -> io::Result<Self> {
+        let root = runtime_root()?;
+        fs::create_dir_all(&root)?;
+        let path = root.join(".operation.lock");
+
+        OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&path)
+            .map_err(|error| {
+                if error.kind() == io::ErrorKind::AlreadyExists {
+                    io::Error::new(
+                        io::ErrorKind::WouldBlock,
+                        "another Runtime Lab operation is already running",
+                    )
+                } else {
+                    error
+                }
+            })?;
+
+        Ok(Self { path })
+    }
+}
+
+impl Drop for OperationLock {
+    fn drop(&mut self) {
+        let _ = fs::remove_file(&self.path);
+    }
+}
+
 impl RuntimeLab {
     pub fn doctor(&self) -> DoctorReport {
         doctor()
     }
 
     pub fn provision(&self) -> io::Result<Vec<ClientStatus>> {
+        let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
@@ -71,6 +111,7 @@ impl RuntimeLab {
             ));
         }
 
+        let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider();
         if count > 1 && provider.is_none() {
             return Err(io::Error::new(
@@ -101,6 +142,7 @@ impl RuntimeLab {
     }
 
     pub fn stop(&self, client: Option<ClientId>) -> io::Result<Vec<ClientStatus>> {
+        let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
@@ -142,6 +184,7 @@ impl RuntimeLab {
             ));
         }
 
+        let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
