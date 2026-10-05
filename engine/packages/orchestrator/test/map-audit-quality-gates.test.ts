@@ -40,6 +40,11 @@ describe("map audit quality gates", () => {
           id: "DM-INFO-001",
           status: "PROVEN",
           informationMismatch: true,
+          failureDomain: "ui-feedback-information",
+          contributingDomains: [
+            "ui-feedback-information",
+          ],
+          gameplayFlow: "TERMINAL",
         },
       ],
     });
@@ -51,5 +56,12 @@ describe("map audit quality gates", () => {
       "DM-INFO-001",
     ]);
     expect(result.zeroFinding.status).toBe("NOT_APPLICABLE");
+    expect(result.vitalGameplay.status).toBe("CLOSED");
+    expect(
+      result.vitalGameplay.domains.find(
+        (item) =>
+          item.domain === "PLAYER_FACING_INFORMATION",
+      )?.status,
+    ).toBe("UNDERSTOOD_WITH_FINDING");
   });
 });
