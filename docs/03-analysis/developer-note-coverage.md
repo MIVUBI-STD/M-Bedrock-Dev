@@ -295,6 +295,16 @@ Exact unresolved evidence, if any
 
 A map's Developer Note pass closes only when every applicable category is accounted.
 
+## Canonical ledger
+
+Current Developer Note state is persisted separately from Bug Report V2 at:
+
+```text
+workspace/developer-notes.json
+```
+
+Do not store Developer Notes inside `workspace/reports/` or use them as gameplay issue authority.
+
 ## Report Contract
 
 Developer Notes:
@@ -341,4 +351,3 @@ Reject a note when its action is merely:
 - document better;
 
 unless the selected artifact proves a concrete condition and the action names the exact owner/surface that must change.
-
