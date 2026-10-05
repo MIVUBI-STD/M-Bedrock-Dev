@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "title": "Multi-Scenario Check Ledger",
+  "purpose": "Machine-readable bounded scenario coverage for deterministic virtual testing. Maximize relevant scenario coverage while keeping publication proof-gated.",
+  "required": [
+    "scenarioId",
+    "projectId",
+    "family",
+    "initialState",
+    "events",
+    "sharedMaterialDependency",
+    "expectedInvariant",
+    "result"
+  ],
+  "properties": {
+    "scenarioId": {
+      "type": "string"
+    },
+    "projectId": {
+      "type": "string"
+    },
+    "family": {
+      "enum": [
+        "TRANSITION_RESIDUE",
+        "OBJECTIVE_CUSTODY",
+        "WORLD_MUTATION_COMPATIBILITY",
+        "OFFLINE_PROGRESSION",
+        "CONTAINER_ECONOMY_CARRYOVER",
+        "DISCONNECT_RECONNECT",
+        "RELOAD_RECOVERY",
+        "MULTIPLAYER_INTERLEAVING",
+        "MULTIARENA_INTERLEAVING",
+        "CAPABILITY_ABUSE"
+      ],
+      "description": "Stable internal family ID. Use canonical display names from familyDisplayNames; do not create ad-hoc family names from tester wording."
+    },
+    "pressureScore": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "pressureReasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "initialState": {
+      "type": "string"
+    },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "sharedMaterialDependency": {
+      "type": "string"
+    },
+    "expectedInvariant": {
+      "type": "string"
+    },
+    "mutableResources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "owners": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "writers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "clearers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "deferredWriters": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "blockingProof": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "proofMethods": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "result": {
+      "enum": [
+        "SAFE",
+        "CONTRADICTION",
+        "IRREDUCIBLE_RUNTIME_QUESTION"
+      ]
+    },
+    "findingId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "exactRuntimeQuestion": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observableA": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observableB": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "coveredByScenarioId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "rules": [
+    "Do not generate Cartesian products. A scenario requires a shared state/resource/owner/geometry/transition.",
+    "Pairwise coverage is default; use 3-way only when all dimensions converge on the same material contract.",
+    "Pressure score orders work only; it never changes proof state or severity.",
+    "IRREDUCIBLE_RUNTIME_QUESTION requires one exact unresolved deciding fact and is routed to the Runtime Test Queue.",
+    "A scenario may be dominance-pruned only when the covering scenario preserves every material condition and expected contract."
+  ],
+  "familyDisplayNames": {
+    "TRANSITION_RESIDUE": "Stage Transition State Check",
+    "OBJECTIVE_CUSTODY": "Carried Objective Ownership Check",
+    "WORLD_MUTATION_COMPATIBILITY": "Shared World State Check",
+    "OFFLINE_PROGRESSION": "Offline Progression Check",
+    "CONTAINER_ECONOMY_CARRYOVER": "Container & Economy Reset Check",
+    "DISCONNECT_RECONNECT": "Disconnect / Reconnect Check",
+    "RELOAD_RECOVERY": "Reload Recovery Check",
+    "MULTIPLAYER_INTERLEAVING": "Multiplayer Shared-State Check",
+    "MULTIARENA_INTERLEAVING": "Multi-Arena Isolation Check",
+    "CAPABILITY_ABUSE": "Player Capability Check"
+  },
+  "namingRules": [
+    "Tester and user wording is evidence input, not permanent taxonomy.",
+    "Map-specific nouns such as station number, spruce, flag, chest, or cinematic belong in scenario evidence, not family names.",
+    "Use one canonical display name per family.",
+    "Do not create a new family when an existing family already represents the same state, ownership, transition, or capability contract."
+  ]
+}
