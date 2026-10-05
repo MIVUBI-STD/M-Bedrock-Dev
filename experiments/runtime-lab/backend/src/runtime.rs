@@ -137,12 +137,26 @@ impl RuntimeLab {
             ));
         }
 
-        let capacity = doctor().max_recommended_clients;
+        let host = doctor();
+        let capacity = host.max_recommended_clients;
         if count > capacity {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 format!(
                     "requested {count} clients but this host is recommended for at most {capacity}"
+                ),
+            ));
+        }
+
+        let virtual_clients = count.saturating_sub(1);
+        let required_available_gb = 6.0 + virtual_clients as f64 * 4.0;
+        if host.available_memory_gb < required_available_gb {
+            return Err(io::Error::new(
+                io::ErrorKind::OutOfMemory,
+                format!(
+                    "not enough available memory for {count} clients: {:.1} GB available, {:.1} GB required",
+                    host.available_memory_gb,
+                    required_available_gb
                 ),
             ));
         }
