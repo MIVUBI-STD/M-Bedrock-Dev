@@ -198,3 +198,30 @@ Repeated traces from one state/map are not equivalent to independent supporting 
 Update deltas that overlap an invariant's domains/capabilities create bounded revalidation work. Removed behavior, tightened validation, and material behavior changes receive the highest revalidation priority.
 
 Promotion/trust remains conservative: no known-good counterexample, sufficient support/diversity, appropriate cross-map evidence, current-version applicability, and no unresolved mutation-survivor challenge.
+
+## Forward ground-truth intake
+
+Future tester/client-confirmed defects may be used to evaluate and improve a frozen engine only through a preserved frozen comparison.
+
+For every prospective snapshot retain:
+- exact artifact fingerprint;
+- engine/audit revision;
+- independent finding set;
+- coverage/proof state.
+
+When later ground truth arrives, never rewrite the frozen result.
+
+Classify each confirmed issue against the frozen snapshot as:
+
+```text
+DETECTED
+PARTIALLY_DETECTED
+MISSED
+NOT_COMPARABLE
+```
+
+Only independently confirmed defects participate in recall scoring. Unconfirmed reports remain validation candidates.
+
+For misses/partial detection, record the earliest failing owner/stage and apply the smallest general mechanism repair. Then rerun affected regression cases plus at least one unrelated control to detect false-positive expansion.
+
+Historical/future user reports remain evidence for detector evaluation; they never become current-artifact proof automatically.
