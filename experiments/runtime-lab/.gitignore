@@ -1,0 +1,10 @@
+runtime/
+images/
+captures/
+*.vmdk
+*.vmem
+*.vmss
+*.vmsn
+*.vhd
+*.vhdx
+*.pvm
