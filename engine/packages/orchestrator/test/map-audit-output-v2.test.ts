@@ -126,6 +126,7 @@ describe("Map Audit Output V2 projection", () => {
         ambiguities: [],
         blockingAmbiguities: [],
       },
+      auditObligations: [],
       validationTests: [{
         key: "scenario:1:runtime",
         findingIds: ["link:unresolved"],
@@ -178,5 +179,9 @@ describe("Map Audit Output V2 projection", () => {
       .toBe(
         "user-input-is-search-guidance-not-gameplay-authority",
       );
+    expect(report.qualityGates.informationIntegrity.status)
+      .toBe("CLOSED_CLEAR");
+    expect(report.qualityGates.zeroFinding.status)
+      .toBe("NOT_APPLICABLE");
   });
 });
