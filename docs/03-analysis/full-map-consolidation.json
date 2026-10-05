@@ -7,12 +7,12 @@
     "remaining": 0
   },
   "canonicalIssueSet": {
-    "total": 30,
+    "total": 32,
     "counts": {
-      "BUG": 25,
+      "BUG": 27,
       "DESIGN_MISMATCH": 5,
       "blocker": 4,
-      "major": 22,
+      "major": 24,
       "minor": 4
     },
     "issues": [
@@ -195,6 +195,18 @@
         "id": "BUG-BAD-GUESS-EXIT-COOLDOWN",
         "type": "BUG",
         "severity": "minor"
+      },
+      {
+        "projectId": "build-and-decode",
+        "id": "BUG-BAD-CREATIVE-ENTITY-RESIDUE",
+        "type": "BUG",
+        "severity": "major"
+      },
+      {
+        "projectId": "build-and-decode",
+        "id": "BUG-BAD-EQUIPMENT-ROLE-LEAK",
+        "type": "BUG",
+        "severity": "major"
       }
     ]
   },
