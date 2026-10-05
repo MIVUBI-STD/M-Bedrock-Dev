@@ -1,32 +1,66 @@
 # Runtime Lab Backend
 
-Runtime Lab V1 is a manual multi-client launcher for Minecraft Education.
-
 ## Canonical architecture
 
 ```text
-CLI now / Tauri commands later
-            ↓
-        RuntimeLab
-            ↓
-          Client
-            ↓
-         Provider
-            ↓
+CLI now / Tauri later
+        ↓
+RuntimeLab
+        ↓
+Resource Planner + Client Lifecycle
+        ↓
+Provider
+        ↓
 VMware Workstation / VMware Fusion
 ```
 
-Rust owns runtime truth. VMware/filesystem state is observed directly; there is no parallel runtime-state database.
+Rust owns runtime truth.
+
+## Identity
+
+```text
+Native
+Base
+Virtual-01
+Virtual-02
+Virtual-03
+```
+
+Only Virtual instances are numbered. `start 1..3` and `resources 1..3` always refer to the number of Virtual instances, never total players.
 
 ## Ownership
 
-- `backend/src/runtime.rs` — single application backend owner and operation serialization.
-- `backend/src/client.rs` — client identity and lifecycle presentation state.
-- `backend/src/doctor.rs` — host/base/client readiness projection.
-- `backend/src/provider/` — VMware mechanics only.
-- `backend/src/bin/runtime-lab.rs` — thin development/operator CLI.
+- `runtime.rs` — application lifecycle and operation serialization.
+- `resources.rs` — adaptive RAM policy.
+- `client.rs` — runtime identities and presentation state.
+- `doctor.rs` — host/provider/base readiness and capacity.
+- `provider/` — VMware mechanics only.
+- CLI — thin operator adapter.
 
-There is no second backend process and no Node runtime backend.
+## Resource policy
+
+Provisioning owns clone creation and fixed CPU policy only.
+
+Boot owns RAM sizing:
+
+```text
+live available RAM
+→ reserve host/native headroom
+→ count requested stopped Virtual instances
+→ calculate fair allocation
+→ clamp floor/ceiling
+→ round to 512 MB
+→ write VMX
+→ boot sequentially
+```
+
+Current bounds:
+
+- one Virtual: 4–6 GB;
+- two Virtual: 4–5 GB each;
+- three Virtual: 4 GB each.
+
+Running instances are never resized.
 
 ## Lifecycle
 
@@ -34,85 +68,29 @@ There is no second backend process and no Node runtime backend.
 doctor
 provision
 status
-resources <1-4>
-reprovision <client>
-start <1-4>
-open <client>
-restart <client>
-set-ready <client>
-reset <client>
-stop [client]
+resources <1-3>
+start <1-3>
+open <instance>
+stop [instance]
+restart <Virtual>
+set-ready <Virtual>
+reset <Virtual>
+reprovision <Virtual>
 ```
 
-`restart` and `reset` are intentionally different:
-
-- restart = reboot current VM state;
-- reset = revert to the client's `QA_READY` snapshot and start it.
-
-`set-ready` requires the client to be stopped and refuses to overwrite an existing `QA_READY` snapshot.
+`reset` restores `QA_READY`; `restart` does not.
 
 ## Reliability
 
-Mutating Runtime Lab operations are serialized with an OS-level file lock.
-
-Provisioning uses staging and promotion instead of cloning directly into final client directories.
-
-Provider commands are time-bounded and return their actual stderr/stdout on failure.
-
-Virtual clones receive a fixed 2 vCPU policy, while RAM is assigned adaptively at boot.
-
-The resource planner owns RAM allocation:
-
-```text
-available host RAM
-→ reserve host headroom
-→ count only requested virtual clients that are still stopped
-→ apply per-VM floor/ceiling
-→ round to 512 MB
-→ write VMX memory
-→ boot sequentially
-```
-
-Current V1 memory bounds:
-
-- 1 virtual client: 4–6 GB;
-- 2 virtual clients: 4–5 GB each;
-- 3 virtual clients: 4 GB each.
-
-Running VMs are never resized in place. Provisioning does not own RAM sizing. `resources <1-4>` exposes the same planner used by `start`, so a future UI can preview the allocation without duplicating policy.
-
-Multi-client boot remains staggered to avoid unnecessary startup spikes.
-
-Stop is graceful-first: request soft guest shutdown, wait for the VM to leave the running set, then use hard stop only as a bounded recovery fallback.
-
-`reprovision` is destructive and only operates on a stopped virtual client. It discards that client's VM container and rebuilds it from the base VM.
-
-The base VM must exist and be powered off before linked-clone provisioning.
-
-## Non-goals
-
-V1 does not include:
-
-- scenario planning;
-- role assignment;
-- bot control;
-- automated movement/gameplay;
-- generic provider registry;
-- external configuration framework;
-- frontend logic.
+- OS-level mutation lock.
+- Transactional clone staging.
+- Provider command timeout.
+- Base must be stopped before clone creation.
+- Graceful shutdown before hard fallback.
+- Adaptive memory reapplied after snapshot restore.
+- Reprovision is destructive only for the selected stopped Virtual instance.
+- No parallel runtime-state database.
 
 ## Frontend boundary
 
-Frontend work begins only after lifecycle and provisioning are stable.
-
-When that phase starts:
-
-```text
-Svelte
-  ↓
-thin Tauri command
-  ↓
-RuntimeLab Rust core
-```
-
-No VMware/Fusion command or lifecycle state may be reimplemented in the frontend.
+A future Svelte/Tauri layer must consume this Rust core and must not duplicate resource or provider policy.
