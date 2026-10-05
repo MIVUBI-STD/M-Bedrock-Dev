@@ -21,7 +21,7 @@ pub struct DoctorReport {
     pub logical_cpus: usize,
     pub total_memory_gb: f64,
     pub available_memory_gb: f64,
-    pub max_recommended_clients: usize,
+    pub max_recommended_virtual_clients: usize,
     pub base_vm_path: Option<String>,
     pub base_vm_present: bool,
     pub base_vm_stopped: Option<bool>,
@@ -31,25 +31,25 @@ pub struct DoctorReport {
 
 fn recommended_by_memory(total_gb: f64) -> usize {
     if total_gb >= 24.0 {
-        4
-    } else if total_gb >= 16.0 {
         3
-    } else if total_gb >= 12.0 {
+    } else if total_gb >= 16.0 {
         2
-    } else {
+    } else if total_gb >= 12.0 {
         1
+    } else {
+        0
     }
 }
 
 fn recommended_by_cpu(logical_cpus: usize) -> usize {
     if logical_cpus >= 8 {
-        4
-    } else if logical_cpus >= 6 {
         3
-    } else if logical_cpus >= 4 {
+    } else if logical_cpus >= 6 {
         2
-    } else {
+    } else if logical_cpus >= 4 {
         1
+    } else {
+        0
     }
 }
 
@@ -63,7 +63,7 @@ pub fn doctor() -> DoctorReport {
     let logical_cpus = system.cpus().len();
     let total_memory_gb = system.total_memory() as f64 / 1024.0 / 1024.0 / 1024.0;
     let available_memory_gb = system.available_memory() as f64 / 1024.0 / 1024.0 / 1024.0;
-    let max_recommended_clients = recommended_by_memory(total_memory_gb)
+    let max_recommended_virtual_clients = recommended_by_memory(total_memory_gb)
         .min(recommended_by_cpu(logical_cpus));
 
     let base_vm_present = base.as_ref().is_some_and(|path| path.is_file());
@@ -103,7 +103,7 @@ pub fn doctor() -> DoctorReport {
         logical_cpus,
         total_memory_gb,
         available_memory_gb,
-        max_recommended_clients,
+        max_recommended_virtual_clients,
         base_vm_path: base.map(|path| path.display().to_string()),
         base_vm_present,
         base_vm_stopped,
@@ -120,18 +120,18 @@ mod tests {
 
     #[test]
     fn memory_capacity_is_bounded() {
-        assert_eq!(recommended_by_memory(64.0), 4);
-        assert_eq!(recommended_by_memory(24.0), 4);
-        assert_eq!(recommended_by_memory(16.0), 3);
-        assert_eq!(recommended_by_memory(12.0), 2);
-        assert_eq!(recommended_by_memory(8.0), 1);
+        assert_eq!(recommended_by_memory(64.0), 3);
+        assert_eq!(recommended_by_memory(24.0), 3);
+        assert_eq!(recommended_by_memory(16.0), 2);
+        assert_eq!(recommended_by_memory(12.0), 1);
+        assert_eq!(recommended_by_memory(8.0), 0);
     }
 
     #[test]
     fn cpu_capacity_is_bounded() {
-        assert_eq!(recommended_by_cpu(16), 4);
-        assert_eq!(recommended_by_cpu(6), 3);
-        assert_eq!(recommended_by_cpu(4), 2);
-        assert_eq!(recommended_by_cpu(2), 1);
+        assert_eq!(recommended_by_cpu(16), 3);
+        assert_eq!(recommended_by_cpu(6), 2);
+        assert_eq!(recommended_by_cpu(4), 1);
+        assert_eq!(recommended_by_cpu(2), 0);
     }
 }
