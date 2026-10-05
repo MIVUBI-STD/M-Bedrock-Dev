@@ -196,6 +196,18 @@ export interface GameplayWorldModel {
       skippedLayers: readonly string[];
     };
     proof?: ArenaProofConclusionReport["conclusion"];
+    barrierContainment: {
+      status:
+        | "contained"
+        | "open-or-unproven"
+        | "incomplete"
+        | "budget-exceeded"
+        | "not-run";
+      contained: number;
+      openOrUnproven: number;
+      incomplete: number;
+      budgetExceeded: number;
+    };
     replicaIntegrity: {
       complete: number;
       bounded: number;
@@ -565,6 +577,7 @@ export interface GameplayWorldModelSource {
       ArenaRepeatedRunValidationPlan;
     proofExecution?: ArenaProofExecutionPlan;
     proofConclusion?: ArenaProofConclusionReport;
+    barrierEnclosureProof?: import("../arena-voxel-proof.js").ArenaBarrierEnclosureProof;
     replicaProofQuality?:
       readonly ArenaReplicaProofQuality[];
     entitySpawnEvidence?: readonly unknown[];
@@ -1485,6 +1498,26 @@ export function deriveGameplayWorldModel(
             proof:
               source.arena.proofConclusion.conclusion,
           }),
+      barrierContainment: {
+        status:
+          source.arena.barrierEnclosureProof?.status ?? "not-run",
+        contained:
+          source.arena.barrierEnclosureProof?.arenas.filter(
+            (item) => item.status === "contained",
+          ).length ?? 0,
+        openOrUnproven:
+          source.arena.barrierEnclosureProof?.arenas.filter(
+            (item) => item.status === "open-or-unproven",
+          ).length ?? 0,
+        incomplete:
+          source.arena.barrierEnclosureProof?.arenas.filter(
+            (item) => item.status === "incomplete",
+          ).length ?? 0,
+        budgetExceeded:
+          source.arena.barrierEnclosureProof?.arenas.filter(
+            (item) => item.status === "budget-exceeded",
+          ).length ?? 0,
+      },
       replicaIntegrity: {
         complete:
           replicaProof.filter(
