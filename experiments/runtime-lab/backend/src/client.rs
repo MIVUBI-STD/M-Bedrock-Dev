@@ -32,7 +32,6 @@ pub enum ClientState {
     Manual,
     NotProvisioned,
     Stopped,
-    Starting,
     Ready,
     Error,
 }
@@ -43,4 +42,5 @@ pub struct ClientStatus {
     pub id: &'static str,
     pub native: bool,
     pub state: ClientState,
+    pub ready_snapshot: Option<bool>,
 }
