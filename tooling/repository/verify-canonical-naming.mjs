@@ -31,6 +31,35 @@ const canonicalDocs=[
   "docs/06-system/canonical-naming.md"
 ];
 
+
+const publicNamingFiles=[
+  "docs/03-analysis/map-audit-naming-contract.md",
+  "docs/03-analysis/master-selected-map-audit-workflow.md",
+  "docs/03-analysis/mandatory-audit-procedure.md",
+  "workspace/reports/README.md",
+  "engine/packages/bug-report/PREVIEW.md",
+  "engine/packages/bug-report/COPY.md"
+];
+
+const forbiddenPublicAliases=[
+  {pattern:/\bpossible[_ -]?bug\b/i,canonical:"Audit Obligation / NEED_VALIDATION / PROVEN"},
+  {pattern:/\bbug[_ -]?candidate\b/i,canonical:"Audit Obligation or internal candidate only"},
+  {pattern:/\bunproven[_ -]?issue\b/i,canonical:"NEED_VALIDATION"},
+  {pattern:/\bruntime[_ -]?checklist\b/i,canonical:"Runtime Verification / validationTest"},
+  {pattern:/\banti[_ -]?proof\b/i,canonical:"Blocking Proof / Counter-Proof Search"},
+  {pattern:/\bphysical[_ -]?loading[_ -]?bounds?\b/i,canonical:"Physical Collision Bounds or Loading Bounds"},
+  {pattern:/\bsession[_ -]?physical[_ -]?bounds?\b/i,canonical:"Session Ownership Bounds or Physical Collision Bounds"}
+];
+
+for(const path of publicNamingFiles){
+  const text=readFileSync(path,"utf8");
+  for(const alias of forbiddenPublicAliases){
+    if(alias.pattern.test(text)){
+      failures.push(path+": ambiguous public naming; use "+alias.canonical);
+    }
+  }
+}
+
 for(const path of canonicalDocs){
   const text=readFileSync(path,"utf8");
   if(/machine-readable Bedrock\/Education facts and policy/.test(text)){
