@@ -1,12 +1,12 @@
 import { existsSync, readFileSync } from "node:fs";
 
 const failures = [];
-const canonical = "docs/03-analysis/bug-finding-coverage.md";
+const canonical = "docs/analysis/bug-finding-coverage.md";
 const compatibility = [
-  "docs/03-analysis/detection-coverage-assurance.md",
-  "docs/03-analysis/gameplay-audit-blind-spots.md",
-  "docs/03-analysis/cross-system-interaction-audit.md",
-  "docs/03-analysis/audit-finalization-checklist.md",
+  "docs/analysis/detection-coverage-assurance.md",
+  "docs/analysis/gameplay-audit-blind-spots.md",
+  "docs/analysis/cross-system-interaction-audit.md",
+  "docs/analysis/audit-finalization-checklist.md",
 ];
 
 if (!existsSync(canonical)) {
@@ -57,8 +57,8 @@ for (const path of compatibility) {
 }
 
 const routes = [
-  "docs/03-analysis/README.md",
-  "docs/03-analysis/master-selected-map-audit-workflow.md",
+  "docs/analysis/README.md",
+  "docs/analysis/master-selected-map-audit-workflow.md",
   ".agents/skills/m-bedrock-map-bug-audit/SKILL.md",
 ];
 for (const path of routes) {
