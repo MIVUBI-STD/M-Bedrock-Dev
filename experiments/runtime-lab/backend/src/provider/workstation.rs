@@ -1,8 +1,8 @@
 use super::{
-    apply_client_cpu_policy, base_vmx_path, client_vmx_path, command_output, ensure_parent, listed_as_running,
-    read_vmx_memory, set_vmx_memory,
+    apply_client_policy, base_vmx_path, client_vmx_path, command_output, ensure_parent, has_suspend_state,
+    host_working_set_mb, listed_as_running, read_vmx_memory,
     promote_staging_vm, remove_vm_container, snapshot_list_contains, staging_client_vmx_path,
-    wait_for_state, Provider, READY_SNAPSHOT,
+    wait_for_state, MemoryMode, Provider, READY_SNAPSHOT,
 };
 use crate::client::{ClientId, ClientState};
 use std::{
@@ -63,6 +63,10 @@ impl Provider for VmwareWorkstationProvider {
         "vmware-workstation"
     }
 
+    fn memory_mode(&self) -> MemoryMode {
+        MemoryMode::Ceiling
+    }
+
     fn detect(&self) -> bool {
         self.vmrun().is_some()
     }
@@ -114,7 +118,7 @@ impl Provider for VmwareWorkstationProvider {
             return Err(error);
         }
 
-        if let Err(error) = apply_client_cpu_policy(&staging) {
+        if let Err(error) = apply_client_policy(&staging) {
             remove_vm_container(&staging);
             return Err(error);
         }
@@ -134,6 +138,8 @@ impl Provider for VmwareWorkstationProvider {
         }
         Ok(if self.running(&vmx)? {
             ClientState::Running
+        } else if has_suspend_state(&vmx) {
+            ClientState::Suspended
         } else {
             ClientState::Stopped
         })
@@ -151,20 +157,14 @@ impl Provider for VmwareWorkstationProvider {
         self.provision(client)
     }
 
-    fn configure_memory(&self, client: ClientId, memory_mb: u64) -> io::Result<()> {
-        let vmx = self.require_client(client)?;
-        if self.running(&vmx)? {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                format!("{} must be stopped before changing memory", client.as_str()),
-            ));
-        }
-        set_vmx_memory(&vmx, memory_mb)
-    }
-
-    fn memory_mb(&self, client: ClientId) -> io::Result<u64> {
+    fn memory_limit_mb(&self, client: ClientId) -> io::Result<u64> {
         let vmx = self.require_client(client)?;
         read_vmx_memory(&vmx)
+    }
+
+    fn host_working_set_mb(&self, client: ClientId) -> io::Result<Option<u64>> {
+        let vmx = self.require_client(client)?;
+        Ok(host_working_set_mb(&vmx))
     }
 
     fn start(&self, client: ClientId) -> io::Result<ClientState> {
@@ -181,10 +181,36 @@ impl Provider for VmwareWorkstationProvider {
         Ok(ClientState::Running)
     }
 
+    fn suspend(&self, client: ClientId) -> io::Result<ClientState> {
+        let vmx = self.require_client(client)?;
+        if !self.running(&vmx)? {
+            return Ok(if has_suspend_state(&vmx) {
+                ClientState::Suspended
+            } else {
+                ClientState::Stopped
+            });
+        }
+
+        command_output(
+            self.require_vmrun()?,
+            ["-T", "ws", "suspend", vmx.to_string_lossy().as_ref(), "soft"],
+        )?;
+        wait_for_state(|| self.running(&vmx), false, Duration::from_secs(15))?;
+        Ok(ClientState::Suspended)
+    }
+
     fn stop(&self, client: ClientId) -> io::Result<ClientState> {
         let vmx = self.require_client(client)?;
         if !self.running(&vmx)? {
-            return Ok(ClientState::Stopped);
+            if has_suspend_state(&vmx) {
+                command_output(
+                    self.require_vmrun()?,
+                    ["-T", "ws", "start", vmx.to_string_lossy().as_ref(), "nogui"],
+                )?;
+                wait_for_state(|| self.running(&vmx), true, Duration::from_secs(15))?;
+            } else {
+                return Ok(ClientState::Stopped);
+            }
         }
 
         command_output(
@@ -251,7 +277,7 @@ impl Provider for VmwareWorkstationProvider {
         Ok(ClientState::Stopped)
     }
 
-    fn reset(&self, client: ClientId, memory_mb: u64) -> io::Result<ClientState> {
+    fn reset(&self, client: ClientId) -> io::Result<ClientState> {
         let vmx = self.require_client(client)?;
         if !self.has_ready(client)? {
             return Err(io::Error::new(
@@ -268,7 +294,6 @@ impl Provider for VmwareWorkstationProvider {
             self.require_vmrun()?,
             ["-T", "ws", "revertToSnapshot", vmx.to_string_lossy().as_ref(), READY_SNAPSHOT],
         )?;
-        set_vmx_memory(&vmx, memory_mb)?;
         command_output(
             self.require_vmrun()?,
             ["-T", "ws", "start", vmx.to_string_lossy().as_ref(), "gui"],
