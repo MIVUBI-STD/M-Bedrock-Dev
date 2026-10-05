@@ -2,6 +2,8 @@
 
 Single entry point for human and AI documentation discovery.
 
+> Repository work planning is intentionally separate from documentation. Use `../planning/` for development, operations, and project continuation intent. Use `workspace/` for working artifacts and execution data.
+
 ## Load rule
 
 Resolve the task domain first, then load only the smallest canonical set.
@@ -49,7 +51,7 @@ docs/
 2. Read the selected domain owner.
 3. Load exactly one specialist when its procedure materially helps.
 4. Add another specialist only after semantic ownership changes.
-5. Operations docs are current-state context, not durable design authority.
+5. Do not add new planning/todo intent to docs; use `planning/`. Existing `07-operations/` is transitional current-state compatibility only until migrated.
 6. Evidence/history is opt-in; do not broad-scan for reassurance.
 7. Git history owns superseded architecture and rationale.
 
