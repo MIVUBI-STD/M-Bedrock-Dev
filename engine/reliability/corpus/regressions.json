@@ -397,6 +397,57 @@
         "explicit-invariant"
       ],
       "expectation": "Closed minecraft:barrier enclosure blocks the physical escape claim even when mayfly is enabled and no script position clamp exists."
+    },
+    {
+      "id": "reg_build_decode_1_1_0_loading_bounds_not_escape_proof",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/history/2026-10-05-build-decode-v1.1.0-runtime-feedback.json#systemLessons",
+      "artifactFile": "Build & Decode v1.1.0.mcworld",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "negative",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ],
+      "expectation": "Crossing authored loading/gameplay analysis bounds must not be promoted to physical escape without actual collision-enclosure proof."
+    },
+    {
+      "id": "reg_build_decode_1_1_0_inactive_guard_not_blocking_proof",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/history/2026-10-05-build-decode-v1.1.0-runtime-feedback.json#systemLessons",
+      "artifactFile": "Build & Decode v1.1.0.mcworld",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "negative",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ],
+      "expectation": "A protection class that exists but is not instantiated/registered must not suppress a finding as Blocking Proof."
+    },
+    {
+      "id": "reg_build_decode_1_1_0_domobspawning_not_manual_spawn_proof",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/history/2026-10-05-build-decode-v1.1.0-runtime-feedback.json#systemLessons",
+      "artifactFile": "Build & Decode v1.1.0.mcworld",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "negative",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ],
+      "expectation": "doMobSpawning=false must not be treated as proof that spawn eggs, /summon, script spawnEntity, structure entities, or privileged manual spawn paths are blocked."
     }
   ],
   "policy": {
