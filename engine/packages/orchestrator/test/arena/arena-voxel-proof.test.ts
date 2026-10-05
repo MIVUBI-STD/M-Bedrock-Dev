@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { BedrockLevelDbReader } from "../../../../adapters/leveldb/src/index.js";
 import { comp, int, string, writeUncompressed, type NBT } from "prismarine-nbt";
-import { proveArenaBarrierContainment, proveArenaVoxelEquivalence } from "../../src/arena/arena-voxel-proof.js";
+import { proveArenaBarrierContainment, proveArenaBarrierEnclosure, proveArenaVoxelEquivalence } from "../../src/arena/arena-voxel-proof.js";
 
 function singleBlockSubchunk(name: string): Uint8Array {
   const palette = writeUncompressed(
@@ -152,6 +152,88 @@ describe("arena voxel proof", () => {
           max: { x: 2, y: 3, z: 2 },
         },
         starts: [{ x: 0, y: 0, z: 0 }],
+      },
+    );
+
+    expect(result.status).toBe("incomplete");
+  });
+  it("marks barrier enclosure open-or-unproven when exterior reaches authored volume", async () => {
+    const db = new Map<string, Uint8Array>();
+    for (let chunkX = -1; chunkX <= 1; chunkX += 1) {
+      for (let chunkZ = -1; chunkZ <= 1; chunkZ += 1) {
+        for (let subY = -1; subY <= 1; subY += 1) {
+          db.set(
+            key(chunkX, chunkZ, subY),
+            singleBlockSubchunk("minecraft:air"),
+          );
+        }
+      }
+    }
+
+    const result = await proveArenaBarrierEnclosure(
+      reader(db),
+      {
+        basis: "topology",
+        canonical: {
+          arenaId: "arena-1",
+          anchor: { x: 0, y: 0, z: 0 },
+        },
+        replicas: [],
+        offsets: [],
+        confidence: "high",
+      },
+      {
+        volumes: [{
+          min: { x: 0, y: 0, z: 0 },
+          max: { x: 1, y: 2, z: 1 },
+          evidenceCandidateIds: ["fixture"],
+        }],
+        boundingBox: {
+          min: { x: 0, y: 0, z: 0 },
+          max: { x: 1, y: 2, z: 1 },
+        },
+        totalBlocks: 12,
+        evidenceCandidates: 1,
+        mergeGapBlocks: 0,
+        confidence: "high",
+      },
+      {
+        searchMarginBlocks: 4,
+        maxVisitedPositionsPerArena: 10_000,
+      },
+    );
+
+    expect(result.status).toBe("open-or-unproven");
+    expect(result.arenas[0]?.reachedTargetPosition).toBeDefined();
+  });
+
+  it("fails closed when exterior barrier evidence is unavailable", async () => {
+    const result = await proveArenaBarrierEnclosure(
+      reader(new Map()),
+      {
+        basis: "topology",
+        canonical: {
+          arenaId: "arena-1",
+          anchor: { x: 0, y: 0, z: 0 },
+        },
+        replicas: [],
+        offsets: [],
+        confidence: "high",
+      },
+      {
+        volumes: [{
+          min: { x: 0, y: 0, z: 0 },
+          max: { x: 1, y: 2, z: 1 },
+          evidenceCandidateIds: ["fixture"],
+        }],
+        boundingBox: {
+          min: { x: 0, y: 0, z: 0 },
+          max: { x: 1, y: 2, z: 1 },
+        },
+        totalBlocks: 12,
+        evidenceCandidates: 1,
+        mergeGapBlocks: 0,
+        confidence: "high",
       },
     );
 
