@@ -102,13 +102,13 @@ const LEGACY_REPORT_SCHEMA_PATH =
 const ISSUE_PROJECTION_PATH =
   "engine/packages/orchestrator/src/map-audit-issue-projection.ts";
 const PROCEDURE_DOC_PATH =
-  "docs/03-analysis/mandatory-audit-procedure.md";
+  "docs/analysis/mandatory-audit-procedure.md";
 const ADMISSION_PATH =
   "engine/packages/orchestrator/src/map-audit-admission.ts";
 const PROCEDURE_SUPPORT_PATH =
   "engine/packages/orchestrator/src/inspection/mandatory-audit-support.ts";
 const ROUTING_DOC_PATH =
-  "docs/03-analysis/map-audit-routing.md";
+  "docs/analysis/map-audit-routing.md";
 
 function requireText(path, fragments) {
   const source = readFileSync(path, "utf8");
