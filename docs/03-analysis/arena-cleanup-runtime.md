@@ -38,6 +38,32 @@ Before cleanup, stop accepting gameplay input and invalidate the ending arenaGen
 
 Each arena should explicitly own gameplay entities, projectiles, dropped items, inventory/equipment state, effects, tags, scoreboard mirrors, transient dynamic properties, modified world geometry, timers, forms, input locks, teleport/recovery callbacks, AI monitors, objective state, and spectator/cutscene state.
 
+## Capability-to-cleanup differential
+
+When a role temporarily gains a broad capability such as Creative, Spectator, mayfly, worldbuilder, equipment access, or unrestricted item acquisition, cleanup coverage must start from what that capability can mutate.
+
+Use:
+
+```text
+reachable mutation footprint
+- guaranteed reset / cleanup footprint
+= residual mutation obligations
+```
+
+Applicable mutation classes include:
+
+- inventory;
+- armor/offhand/equipment;
+- dropped items;
+- block-created entities;
+- spawned entities;
+- temporary abilities such as mayfly/worldbuilder;
+- gamemode;
+- effects/tags/input locks;
+- world blocks/liquids where the role can mutate them.
+
+A narrow cleanup helper such as inventory-container clear is not proof of complete player reset when the granted capability can mutate equipment or world/entity state outside that container.
+
 ## Player normal form
 
 After leaving an arena, player state should converge to a declared baseline: correct lobby location and gamemode, no arena input locks, no stale spectator state, inventory according to lobby policy, no stale ready/downed/revive state, no arena-owned effects, no old forms/timers, and no arena membership.
