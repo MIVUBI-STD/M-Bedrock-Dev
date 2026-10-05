@@ -66,8 +66,9 @@
     "logicalOverlap": "COUNTERPROVEN",
     "ownershipIsolation": "CLOSED",
     "staleAsyncCrossArenaMutation": "COUNTERPROVEN",
-    "physicalVoxelEquivalence": "VALIDATION_REQUIRED",
-    "fullLiveConcurrency": "VALIDATION_REQUIRED"
+    "physicalVoxelEquivalence": "CLOSED_BOUNDED_EQUIVALENCE",
+    "fullLiveConcurrency": "VALIDATION_REQUIRED",
+    "physicalContainment": "FAILED_PROVEN_FINDING"
   },
   "provenFindings": [
     "BUG-BAD-CREATIVE-ENTITY-RESIDUE",
@@ -76,7 +77,8 @@
     "BUG-BAD-EQUIPMENT-ROLE-LEAK",
     "BUG-BAD-GUESS-EXIT-COOLDOWN",
     "BUG-BAD-TIME-BONUS-SCORING",
-    "BUG-BAD-DEBUG-STICK"
+    "BUG-BAD-DEBUG-STICK",
+    "BUG-BAD-PHYSICAL-ARENA-ESCAPE"
   ],
   "rejectedOrCounterproven": [
     "duplicate multi-arena membership",
@@ -87,14 +89,6 @@
     "unpermissioned developer script-event reachable by ordinary player"
   ],
   "targetedValidation": [
-    {
-      "id": "VAL-BAD-VOXEL-REPLICA",
-      "question": "Are arenas 2-4 physically equivalent to arena 1 under the authored +384 X translation for plot, lobby, pads, walls, spawn/view locations and reset footprint?"
-    },
-    {
-      "id": "VAL-BAD-PHYSICAL-CONTAINMENT",
-      "question": "Can permitted movement, mayfly or building leave the intended arena/plot or reach another arena?"
-    },
     {
       "id": "VAL-BAD-FOUR-ARENA-LIVE",
       "question": "Can all four arenas start, play, transition, reset and finish concurrently at intended maximum occupancy without stalls or cross-arena mutation?"
@@ -108,5 +102,5 @@
       "question": "Does the actual deployment enable multiplayer? The selected level.dat stores MultiplayerGame=0, so host/server override must be confirmed."
     }
   ],
-  "conclusion": "All deterministic selected-artifact source paths and cross-system scenarios are closed. Seven issues are proven. Remaining uncertainty is bounded to five physical/runtime/deployment questions rather than generic manual playthrough."
+  "conclusion": "All deterministic selected-artifact source paths and cross-system scenarios are closed. Eight issues are proven. Voxel replica and physical containment are now resolved: active gameplay volumes are equivalent across four arenas, while mayfly-enabled physical arena escape is a proven Major bug. Remaining uncertainty is bounded to live four-arena concurrency, mixed-phase reload, and deployment multiplayer."
 }
