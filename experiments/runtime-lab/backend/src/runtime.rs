@@ -21,6 +21,22 @@ impl RuntimeLab {
         doctor()
     }
 
+    pub fn provision(&self) -> io::Result<Vec<ClientStatus>> {
+        let provider = current_platform_provider().ok_or_else(|| {
+            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+        })?;
+
+        let mut result = Vec::with_capacity(3);
+        for client in ClientId::ALL.into_iter().filter(|client| !client.is_native()) {
+            result.push(ClientStatus {
+                id: client.as_str(),
+                native: false,
+                state: provider.provision(client)?,
+            });
+        }
+        Ok(result)
+    }
+
     pub fn status(&self) -> io::Result<RuntimeStatus> {
         let provider = current_platform_provider();
         let mut clients = Vec::with_capacity(ClientId::ALL.len());
@@ -125,9 +141,11 @@ impl RuntimeLab {
                 "native client cannot be VM-reset",
             ));
         }
+
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
+
         Ok(ClientStatus {
             id: client.as_str(),
             native: false,
@@ -143,9 +161,11 @@ impl RuntimeLab {
                 state: ClientState::Manual,
             });
         }
+
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
+
         Ok(ClientStatus {
             id: client.as_str(),
             native: false,
