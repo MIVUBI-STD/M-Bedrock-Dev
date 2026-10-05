@@ -9,7 +9,7 @@
   },
   "scripts": {
     "check": "npm run verify:full",
-    "verify:repository": "node tooling/repository/verify.mjs && npm run verify:ownership && npm run verify:capability-truth && npm run verify:authority && npm run verify:naming && npm run verify:skills && npm run verify:skill-evals && npm run verify:permissions && npm run verify:audit-entrypoint && npm run audit:skills && npm run verify:modules && npm run verify:dependencies && node tooling/repository/verify-boundaries.mjs && node tooling/repository/verify-contract-registry.mjs && node tooling/repository/verify-reliability-catalogs.mjs && node tooling/repository/verify-reliability-history.mjs && node tooling/repository/verify-knowledge-catalogs.mjs",
+    "verify:repository": "node tooling/repository/verify.mjs && npm run verify:ownership && npm run verify:capability-truth && npm run verify:authority && npm run verify:naming && npm run verify:skills && npm run verify:skill-evals && npm run verify:permissions && npm run verify:audit-entrypoint && npm run audit:skills && npm run verify:modules && npm run verify:dependencies && node tooling/repository/verify-boundaries.mjs && node tooling/repository/verify-contract-registry.mjs && node tooling/repository/verify-reliability-catalogs.mjs && node tooling/repository/verify-reliability-history.mjs && node tooling/repository/verify-knowledge-catalogs.mjs && npm run verify:knowledge-bindings",
     "verify:boundaries": "node tooling/repository/verify-boundaries.mjs",
     "verify:source": "npm run typecheck && npm run bug-report-ui:build && npm test",
     "verify:full": "npm run verify:repository && npm run verify:source",
@@ -37,7 +37,8 @@
     "score:agent-eval": "node tooling/repository/score-agent-eval.mjs",
     "generate:proof-backlog": "node tooling/repository/generate-capability-proof-backlog.mjs",
     "bug-report-html": "tsx tooling/bug-report-documents/render.ts",
-    "verify:audit-entrypoint": "node tooling/repository/verify-selected-map-audit-entrypoint.mjs"
+    "verify:audit-entrypoint": "node tooling/repository/verify-selected-map-audit-entrypoint.mjs",
+    "verify:knowledge-bindings": "node tooling/repository/verify-knowledge-detector-bindings.mjs"
   },
   "dependencies": {
     "@8crafter/leveldb-zlib": "1.6.0",
