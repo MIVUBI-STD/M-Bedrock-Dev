@@ -1,0 +1,33 @@
+{
+  "schema": "m-bedrock-dev-notes/v1",
+  "description": "Concrete, actionable development/release notes that are useful to developers but are not gameplay BUG or DESIGN_MISMATCH findings.",
+  "notes": [
+    {
+      "id": "DEV-BLZ-VERSION-NAME",
+      "projectId": "blitzbuild",
+      "type": "DEV_NOTE",
+      "title": "Version Name Is Inconsistent",
+      "problem": "The project registry identifies Builder's Memory / BlitzBuild as version 1.0.3, while the selected current World File is named BlitzBuild-v1.0.2.mcworld.",
+      "action": "Align the release version across the project registry and delivered World File naming so developers and testers can identify the current build reliably.",
+      "evidence": {
+        "registryVersion": "1.0.3",
+        "worldFileName": "BlitzBuild-v1.0.2.mcworld"
+      },
+      "severity": null
+    },
+    {
+      "id": "DEV-FNZ2-VERSION-NAME",
+      "projectId": "five-nights-z-village-l2",
+      "type": "DEV_NOTE",
+      "title": "Version Name Is Inconsistent",
+      "problem": "The project registry identifies Five Nights at Z Village Level 2 as version 1.2.2, while the selected current World File is named Defense_Level_2_v1_2_0.mcworld.",
+      "action": "Align the delivered World File name with the current release version and map identity so developers and testers can identify the correct build reliably.",
+      "evidence": {
+        "registryVersion": "1.2.2",
+        "worldFileName": "Defense_Level_2_v1_2_0.mcworld"
+      },
+      "severity": null
+    }
+  ],
+  "admissionRule": "DEV_NOTE requires concrete evidence, clear developer value, an actionable correction, and must not be speculative."
+}
