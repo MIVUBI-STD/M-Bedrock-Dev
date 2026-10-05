@@ -43,6 +43,7 @@ pub enum ClientState {
     Manual,
     NotProvisioned,
     Stopped,
+    Suspended,
     Running,
     Error,
 }
@@ -54,5 +55,6 @@ pub struct ClientStatus {
     pub native: bool,
     pub state: ClientState,
     pub ready_snapshot: Option<bool>,
-    pub memory_mb: Option<u64>,
+    pub memory_limit_mb: Option<u64>,
+    pub host_working_set_mb: Option<u64>,
 }
