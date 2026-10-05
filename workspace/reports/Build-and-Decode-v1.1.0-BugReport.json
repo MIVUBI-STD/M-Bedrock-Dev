@@ -250,6 +250,46 @@
       "issueType": "BUG"
     },
     {
+      "id": "BUG-BAD-PHYSICAL-ARENA-ESCAPE",
+      "fixed": false,
+      "severity": "major",
+      "category": "multiplayer-session",
+      "foundBy": "ai",
+      "title": "Players can fly out of their assigned arena during active gameplay",
+      "problem": "During the playing phase, every participant is granted mayfly=true. The selected artifact has no position-boundary enforcement for active players, and voxel-path analysis from both builder and guesser spawns finds a continuous two-block-high air path beyond the authored arena loading bounds in all four arenas. A player can therefore leave the physical arena while the session still treats them as a member of the original arena.",
+      "expected": "Players remain physically contained within the gameplay space owned by their assigned arena, or any allowed flight/movement outside that space is detected and reconciled before it can expose another arena or invalidate isolation.",
+      "observed": "Builder and guesser roles receive mayfly during playing, while the service only removes a player for dimension change, not for leaving arena bounds. Static voxel traversal reaches outside the loading envelope from both role spawns in Arena 1-4.",
+      "reproduction": [
+        "Start any Build & Decode arena and reach the active playing phase.",
+        "As either builder or guesser, use the granted flight ability.",
+        "Fly toward the open side/top of the gameplay structure until crossing outside the arena loading bounds.",
+        "Confirm the player remains a member of the original match and is not teleported back or removed for leaving the physical arena."
+      ],
+      "aiAnalysis": "GuessTheBuildManager.activateRound() grants mayfly=true to every online participant, and ArenaSessions.applyRole() does the same for reconnecting players while playing. ArenaService's active-session scan only reacts to missing players or dimension changes; there is no arena-position containment owner. Direct Bedrock LevelDB voxel analysis found a continuous two-block-high air path from builder and guesser spawns to coordinates outside the authored loading bounds for Arena 1, and the gameplay/loading volumes of Arenas 2-4 are voxel-equivalent to Arena 1, reproducing the same escape path.",
+      "relevantCode": [
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/guessthebuild/GuessTheBuildManager.js",
+          "reason": "activateRound() gives every participant mayfly=true during playing."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/arena/ArenaSessions.js",
+          "reason": "Reconnect role application restores mayfly=true while playing."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/arena/ArenaService.js",
+          "reason": "Active-session lifecycle checks missing players and dimension changes but does not enforce arena position bounds."
+        }
+      ],
+      "suggestedFix": "Either remove flight from roles that do not require it, physically contain the gameplay volume, or add one canonical arena-position enforcement owner that returns/departs players leaving their assigned arena. Preserve existing role movement that is intentionally required inside the build/guess space.",
+      "mustPreserve": [
+        "Arena-scoped membership and scoring.",
+        "Builder access to the authored plot.",
+        "Guesser viewing/interaction flow.",
+        "Four-arena logical isolation and reconnect recovery."
+      ],
+      "issueType": "BUG"
+    },
+    {
       "id": "BUG-BAD-TIME-BONUS-SCORING",
       "fixed": false,
       "severity": "major",
