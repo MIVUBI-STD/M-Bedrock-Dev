@@ -102,6 +102,7 @@ From `experiments/runtime-lab/backend`:
 cargo run --bin runtime-lab -- doctor
 cargo run --bin runtime-lab -- provision
 cargo run --bin runtime-lab -- status
+cargo run --bin runtime-lab -- resources <1-4>
 cargo run --bin runtime-lab -- reprovision <MCE-02..04>
 cargo run --bin runtime-lab -- start <1-4>
 cargo run --bin runtime-lab -- open <MCE-01..04>
@@ -113,7 +114,8 @@ cargo run --bin runtime-lab -- stop [MCE-01..04]
 
 ### Meaning
 
-- `doctor` checks provider, base VM and per-client QA-ready state.
+- `doctor` checks provider, base VM, host capacity and per-client QA-ready state.
+- `resources` previews the live RAM plan without starting any VM.
 - `provision` creates MCE-02..04 as linked clones.
 - `reprovision` replaces one stopped virtual client from the immutable base and clears its previous QA state.
 - `start` powers on the requested client count; MCE-01 remains native/manual.
