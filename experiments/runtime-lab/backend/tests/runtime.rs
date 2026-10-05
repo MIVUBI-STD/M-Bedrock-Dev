@@ -25,6 +25,13 @@ fn native_client_cannot_use_vm_clean_state_actions() {
     let lab = RuntimeLab;
 
     assert_eq!(
+        lab.suspend(ClientId::Native)
+            .expect_err("native suspend must be external/manual")
+            .kind(),
+        std::io::ErrorKind::InvalidInput
+    );
+
+    assert_eq!(
         lab.restart(ClientId::Native)
             .expect_err("native restart must be external/manual")
             .kind(),
