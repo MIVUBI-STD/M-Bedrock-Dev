@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "status": "DEVELOPER_NOTE_COVERAGE_CLOSED",
+  "registeredMaps": 22,
+  "categoriesPerMap": 18,
+  "totalCategoryRoutes": 396,
+  "batches": [
+    "batch-01.json",
+    "batch-02.json",
+    "batch-03.json"
+  ],
+  "publishedDevNotes": 2,
+  "devNoteIds": [
+    "DEV-BLZ-VERSION-NAME",
+    "DEV-FNZ2-VERSION-NAME"
+  ],
+  "newNotesFromExtractionBeyondKnownMetadata": 0,
+  "dedupPolicy": "Concrete engineering conditions already proven as BUG or DESIGN_MISMATCH remain in the stronger gameplay classification and are not duplicated as DEV NOTE.",
+  "closure": {
+    "unaccountedMaps": 0,
+    "unaccountedApplicableCategories": 0,
+    "genericAdvicePublished": 0,
+    "gameplayFindingsDowngradedToDevNote": 0
+  },
+  "interpretation": "The comprehensive 18-domain extraction pass does not justify additional Developer Notes from the preserved selected-artifact evidence. This is evidence-bounded closure, not a claim that future artifacts cannot introduce new engineering notes."
+}
