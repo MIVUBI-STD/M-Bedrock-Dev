@@ -1,5 +1,5 @@
 import os from "node:os";
-import { discoverProviders, selectPreferredProvider } from "./providers/provider-discovery.mjs";
+import { createProviderForCurrentPlatform } from "./providers/provider.mjs";
 
 const GIB = 1024 ** 3;
 
@@ -18,8 +18,7 @@ export async function runDoctor() {
   const totalMemoryGb = os.totalmem() / GIB;
   const freeMemoryGb = os.freemem() / GIB;
   const cpuCount = os.cpus().length;
-  const providers = await discoverProviders();
-  const preferredProvider = selectPreferredProvider(providers);
+  const provider = await createProviderForCurrentPlatform();
 
   const checks = {
     platform: {
@@ -28,27 +27,20 @@ export async function runDoctor() {
     },
     cpu: {
       status: status(cpuCount >= 8, "WARN"),
-      logicalCpus: cpuCount,
-      recommendedMinimum: 8
+      logicalCpus: cpuCount
     },
     memory: {
       status: status(totalMemoryGb >= 32, totalMemoryGb >= 16 ? "WARN" : "FAIL"),
       totalGb: Number(totalMemoryGb.toFixed(1)),
-      freeGb: Number(freeMemoryGb.toFixed(1)),
-      recommendedMinimumGb: 32
+      freeGb: Number(freeMemoryGb.toFixed(1))
     },
     virtualization: {
-      status: "UNKNOWN",
-      reason: "Portable host virtualization capability probe is not implemented yet."
+      status: provider ? "PASS" : "FAIL",
+      provider: provider?.id ?? null
     },
     graphics: {
       status: "UNKNOWN",
-      reason: "GPU acceleration must be validated by an interactive client probe."
-    },
-    provider: {
-      status: preferredProvider ? "PASS" : "FAIL",
-      selected: preferredProvider?.id ?? null,
-      detected: providers
+      reason: "Interactive Minecraft rendering is validated only during client runtime testing."
     }
   };
 
@@ -57,16 +49,15 @@ export async function runDoctor() {
     .map(([name]) => name);
 
   return {
-    schemaVersion: 1,
-    command: "doctor",
     platform,
     host: {
       hostname: os.hostname(),
       release: os.release(),
       architecture: os.arch()
     },
+    provider: provider?.id ?? null,
     checks,
-    readyForProvisioning: blocking.length === 0 && preferredProvider !== null,
+    readyForProvisioning: blocking.length === 0,
     blocking
   };
 }
@@ -76,15 +67,14 @@ export function formatDoctorReport(report) {
     "M-Bedrock Runtime Lab",
     "",
     `Platform             ${report.platform}`,
-    `Provider             ${report.checks.provider.selected ?? "none"}`,
-    `Provider Status      ${report.checks.provider.status}`,
+    `Provider             ${report.provider ?? "none"}`,
     "",
-    `CPU                   ${report.checks.cpu.status} (${report.checks.cpu.logicalCpus} logical CPUs)`,
-    `Memory                ${report.checks.memory.status} (${report.checks.memory.totalGb} GB total / ${report.checks.memory.freeGb} GB free)`,
-    `Virtualization        ${report.checks.virtualization.status}`,
-    `Graphics              ${report.checks.graphics.status}`,
+    `CPU                  ${report.checks.cpu.status} (${report.checks.cpu.logicalCpus} logical CPUs)`,
+    `Memory               ${report.checks.memory.status} (${report.checks.memory.totalGb} GB total / ${report.checks.memory.freeGb} GB free)`,
+    `Virtualization       ${report.checks.virtualization.status}`,
+    `Graphics             ${report.checks.graphics.status}`,
     "",
-    `Runtime Lab           ${report.readyForProvisioning ? "READY FOR PROVISIONING" : "NOT READY"}`
+    `Runtime Lab          ${report.readyForProvisioning ? "READY FOR PROVISIONING" : "NOT READY"}`
   ];
 
   if (report.blocking.length > 0) {
