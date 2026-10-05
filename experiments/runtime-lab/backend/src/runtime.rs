@@ -8,6 +8,8 @@ use serde::Serialize;
 use std::{
     fs::{self, File, OpenOptions},
     io,
+    thread,
+    time::Duration,
 };
 
 #[derive(Debug, Default)]
@@ -80,6 +82,20 @@ impl RuntimeLab {
         Ok(result)
     }
 
+    pub fn reprovision(&self, client: ClientId) -> io::Result<ClientStatus> {
+        if client.is_native() {
+            return Err(io::Error::new(io::ErrorKind::InvalidInput, "native client cannot be reprovisioned"));
+        }
+        let _lock = OperationLock::acquire()?;
+        let provider = current_platform_provider().ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable"))?;
+        Ok(ClientStatus {
+            id: client.as_str(),
+            native: false,
+            state: provider.reprovision(client)?,
+            ready_snapshot: Some(false),
+        })
+    }
+
     pub fn status(&self) -> io::Result<RuntimeStatus> {
         let provider = current_platform_provider();
         let mut clients = Vec::with_capacity(ClientId::ALL.len());
@@ -149,6 +165,10 @@ impl RuntimeLab {
                 state: provider.start(client)?,
                 ready_snapshot: Some(provider.has_ready(client).unwrap_or(false)),
             });
+
+            if client != ClientId::Mce04 {
+                thread::sleep(Duration::from_secs(2));
+            }
         }
 
         Ok(result)
