@@ -17,6 +17,8 @@ pub use fusion::VmwareFusionProvider;
 pub use workstation::VmwareWorkstationProvider;
 
 pub(crate) const READY_SNAPSHOT: &str = "QA_READY";
+pub(crate) const CLIENT_MEMORY_MB: &str = "4096";
+pub(crate) const CLIENT_VCPUS: &str = "2";
 const COMMAND_TIMEOUT: Duration = Duration::from_secs(45);
 
 pub trait Provider {
@@ -267,4 +269,26 @@ where
 
 pub(crate) fn snapshot_list_contains(list_output: &str, name: &str) -> bool {
     list_output.lines().map(str::trim).any(|line| line == name)
+}
+
+
+pub(crate) fn apply_client_resource_policy(vmx: &Path) -> io::Result<()> {
+    let source = fs::read_to_string(vmx)?;
+    let mut lines: Vec<String> = source.lines().map(ToOwned::to_owned).collect();
+
+    set_vmx_value(&mut lines, "memsize", CLIENT_MEMORY_MB);
+    set_vmx_value(&mut lines, "numvcpus", CLIENT_VCPUS);
+
+    let mut output = lines.join("\n");
+    output.push('\n');
+    fs::write(vmx, output)
+}
+
+fn set_vmx_value(lines: &mut Vec<String>, key: &str, value: &str) {
+    let prefix = format!("{key} =");
+    if let Some(line) = lines.iter_mut().find(|line| line.trim_start().starts_with(&prefix)) {
+        *line = format!("{key} = \"{value}\"");
+    } else {
+        lines.push(format!("{key} = \"{value}\""));
+    }
 }
