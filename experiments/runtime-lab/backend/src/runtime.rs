@@ -26,7 +26,7 @@ pub struct RuntimeStatus {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourcePlanView {
-    pub requested_clients: usize,
+    pub requested_virtual_clients: usize,
     pub virtual_clients: usize,
     pub stopped_virtual_clients: usize,
     pub running_virtual_clients: usize,
@@ -177,28 +177,28 @@ impl RuntimeLab {
     }
 
     pub fn resources(&self, count: usize) -> io::Result<ResourcePlanView> {
-        if !(1..=4).contains(&count) {
+        if !(1..=3).contains(&count) {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "client count must be between 1 and 4",
+                "virtual client count must be between 1 and 3",
             ));
         }
 
         let host = doctor();
-        if count > host.max_recommended_clients {
+        if count > host.max_recommended_virtual_clients {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 format!(
-                    "requested {count} clients but this host is recommended for at most {}",
-                    host.max_recommended_clients
+                    "requested {count} virtual clients but this host is recommended for at most {}",
+                    host.max_recommended_virtual_clients
                 ),
             ));
         }
 
-        let virtual_clients = count.saturating_sub(1);
+        let virtual_clients = count;
         if virtual_clients == 0 {
             return Ok(ResourcePlanView {
-                requested_clients: count,
+                requested_virtual_clients: count,
                 virtual_clients: 0,
                 stopped_virtual_clients: 0,
                 running_virtual_clients: 0,
@@ -241,7 +241,7 @@ impl RuntimeLab {
         )?;
 
         Ok(ResourcePlanView {
-            requested_clients: count,
+            requested_virtual_clients: count,
             virtual_clients,
             stopped_virtual_clients,
             running_virtual_clients,
@@ -252,27 +252,27 @@ impl RuntimeLab {
     }
 
     pub fn start(&self, count: usize) -> io::Result<Vec<ClientStatus>> {
-        if !(1..=4).contains(&count) {
+        if !(1..=3).contains(&count) {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "client count must be between 1 and 4",
+                "virtual client count must be between 1 and 3",
             ));
         }
 
         let host = doctor();
-        if count > host.max_recommended_clients {
+        if count > host.max_recommended_virtual_clients {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 format!(
                     "requested {count} clients but this host is recommended for at most {}",
-                    host.max_recommended_clients
+                    host.max_recommended_virtual_clients
                 ),
             ));
         }
 
         let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider();
-        let virtual_clients = count.saturating_sub(1);
+        let virtual_clients = count;
 
         if virtual_clients > 0 && provider.is_none() {
             return Err(io::Error::new(
@@ -322,13 +322,6 @@ impl RuntimeLab {
         }
 
         let mut result = Vec::with_capacity(count);
-        result.push(ClientStatus {
-            id: ClientId::Native.as_str(),
-            native: true,
-            state: ClientState::Manual,
-            ready_snapshot: None,
-            memory_mb: None,
-        });
 
         if let Some(provider) = provider_ref {
             for (index, client) in virtual_targets.into_iter().enumerate() {
