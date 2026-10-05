@@ -7,12 +7,12 @@
     "remaining": 0
   },
   "canonicalIssueSet": {
-    "total": 32,
+    "total": 33,
     "counts": {
-      "BUG": 27,
+      "BUG": 28,
       "DESIGN_MISMATCH": 5,
       "blocker": 4,
-      "major": 24,
+      "major": 25,
       "minor": 4
     },
     "issues": [
@@ -205,6 +205,12 @@
       {
         "projectId": "build-and-decode",
         "id": "BUG-BAD-EQUIPMENT-ROLE-LEAK",
+        "type": "BUG",
+        "severity": "major"
+      },
+      {
+        "projectId": "build-and-decode",
+        "id": "BUG-BAD-PHYSICAL-ARENA-ESCAPE",
         "type": "BUG",
         "severity": "major"
       }
