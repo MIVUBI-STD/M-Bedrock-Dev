@@ -2,11 +2,29 @@ import { existsSync, readFileSync } from "node:fs";
 
 const failures = [];
 
+const { execFileSync } = await import("node:child_process");
+const tracked = execFileSync("git", ["ls-files", "docs/03-analysis"], { encoding: "utf8" })
+  .split(/\r?\n/)
+  .filter(Boolean);
+const forbiddenAnalysisDataPatterns = [
+  /\/.*-runs\//,
+  /\/.*queue.*\.json$/i,
+  /\/.*scorecard.*\.json$/i,
+  /\/.*acceptance.*\.json$/i,
+  /\/.*audit-\d{4}-\d{2}-\d{2}\.json$/i,
+];
+for (const path of tracked) {
+  if (forbiddenAnalysisDataPatterns.some((pattern) => pattern.test(path))) {
+    failures.push("Operational/history data must not live in docs/03-analysis: " + path);
+  }
+}
+
 const canonicalDocs = [
   "docs/03-analysis/bug-finding-coverage.md",
   "docs/03-analysis/capacity-concurrency.md",
   "docs/03-analysis/compatibility.md",
   "docs/03-analysis/education.md",
+  "docs/03-analysis/player-lifecycle.md",
   "docs/06-system/architecture.md",
   "docs/05-validation/runtime-proof.md",
   "docs/05-validation/search-and-falsification.md",
@@ -26,6 +44,8 @@ const compatibilityPointers = [
   "docs/03-analysis/capacity-concurrency-audit-checklist.md",
   "docs/03-analysis/compatibility-runtime.md",
   "docs/03-analysis/education-runtime.md",
+  "docs/03-analysis/player-session-runtime.md",
+  "docs/03-analysis/player-life-runtime.md",
   "docs/05-validation/active-runtime-diagnosis.md",
   "docs/05-validation/runtime-control.md",
   "docs/05-validation/runtime-observation.md",
