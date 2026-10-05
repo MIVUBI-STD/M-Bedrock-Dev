@@ -62,3 +62,50 @@ Campaign history records what was executed and what coverage/failures were obser
 ## STOP
 
 Retest planning is complete when affected artifacts/domains have explicit bounded priorities and evidence lanes. Current defect classification remains owned by the current selected-artifact audit.
+
+## Independent regression audit
+
+When validating detector recall against historical defects, keep the current selected artifact independent from the historical answer.
+
+Use:
+
+```text
+selected artifact
+→ canonical audit flow
+→ independent finding set
+→ only then compare with historical regression expectations
+```
+
+Historical bug IDs, titles, reproduction steps, and root-cause conclusions must not seed the independent pass.
+
+When a historical regression is missed, classify the earliest failing mechanism:
+
+```text
+DISCOVERY_MISS
+ROUTING_MISS
+CROSSCHECK_MISS
+MODEL_MISS
+SCENARIO_MISS
+ADVERSARIAL_MISS
+PROOF_MISS
+DEDUP_MISS
+REPORT_MISS
+```
+
+Fix the earliest owner that failed instead of adding another taxonomy layer.
+
+Useful quality metrics include:
+- material surface routing;
+- mutable-resource ownership;
+- applicable-check routing;
+- required-crosscheck generation;
+- scenario accounting;
+- player-controlled-surface accounting;
+- regression detected/expected;
+- PROVEN vs NEED_VALIDATION;
+- generic NEED_VALIDATION count;
+- false positives;
+- duplicate root causes;
+- unaccounted material residue.
+
+Regression acceptance must remain honest. Never force recall to 100% by copying historical answers.
