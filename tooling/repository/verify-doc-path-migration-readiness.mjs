@@ -19,6 +19,7 @@ const tracked = execFileSync("git", ["ls-files"], { encoding: "utf8" })
 
 const ignore = new Set([
   "tooling/repository/verify-doc-path-migration-readiness.mjs",
+  "planning/development.md",
 ]);
 
 const references = [];
