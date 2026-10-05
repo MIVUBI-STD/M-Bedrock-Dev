@@ -508,7 +508,24 @@
           ]
         }
       ],
-      "devNotes": []
+      "devNotes": [
+        {
+          "id": "DEV-BAD-ANTICHEAT-INACTIVE",
+          "projectId": "build-and-decode",
+          "type": "DEV_NOTE",
+          "title": "Anti-Cheat Protection Is Not Registered in Production",
+          "problem": "AntiCheatManager defines Creative/Spectator correction for non-admin players, but production main.js never imports or instantiates it, so those subscriptions are inactive.",
+          "action": "Either register AntiCheatManager from the production bootstrap if the protection is required, or remove the dead module and ensure active arena guards own the intended capability policy.",
+          "evidence": {
+            "source": [
+              "behavior_packs/Build_Decode_BP/scripts/modules/anticheat/AntiCheatManager.js",
+              "behavior_packs/Build_Decode_BP/scripts/main.js"
+            ],
+            "finding": "AntiCheatManager subscribes to playerGameModeChange/playerSpawn, but main.js creates ArenaService, SetupManager, WorldManager, EventCommandManager, HologramManager and WelcomeManager only."
+          },
+          "severity": null
+        }
+      ]
     },
     {
       "projectId": "clockwork-vault",
@@ -1422,8 +1439,8 @@
     "blocker": 4,
     "major": 25,
     "minor": 5,
-    "devNotes": 4,
-    "totalActionableItems": 38
+    "devNotes": 5,
+    "totalActionableItems": 39
   },
   "devNotePolicy": {
     "label": "DEV NOTE",
@@ -1431,5 +1448,5 @@
     "admissionRule": "DEV_NOTE requires concrete evidence, clear developer value, an actionable correction, and must not be speculative."
   },
   "lastUpdated": "2026-10-05",
-  "updateNote": "Build & Decode runtime feedback integrated with causal counter-proof: closed barrier escape false positive removed; waterlogging client desync and Roommaster/admin world-mutation bypass added."
+  "updateNote": "Build & Decode runtime feedback and causal counter-proof integrated; inactive AntiCheatManager recorded as Developer Note."
 }
