@@ -1,21 +1,17 @@
-# Operations
+# Operations (Compatibility)
 
-This directory owns **current continuation** and **current proof state only**.
+This directory no longer owns current repository state.
 
-- `next-action.md` — the minimum current continuation.
-- `current-validation.md` — a compact snapshot of what is currently proven, partially proven, unproven, and the active proof ceiling.
-- `gameplay-understanding-corpus.md` — current corpus continuity where still operationally relevant.
+Canonical ownership is now:
 
-## Snapshot rule
+```text
+current/future work intent  → planning/
+working project data        → workspace/
+historical execution proof  → engine/reliability/history/
+reusable evaluation corpus  → engine/reliability/corpus/
+durable procedures          → docs/
+```
 
-Operations files are replace-in-place current state, not append-only journals.
+Do not add new current-state, queue, validation snapshot, or chronological history files here.
 
-Do not accumulate:
-
-- chronological CI/run logs;
-- old implementation milestones;
-- superseded architecture summaries;
-- date-stamped audit reports;
-- proof-of-proof history.
-
-When a proof or continuation fact becomes stale, replace or remove it. Git history and `engine/reliability/history/` own historical execution evidence. Durable architecture belongs in `docs/06-system/`.
+This compatibility directory may be removed after all external references have migrated.
