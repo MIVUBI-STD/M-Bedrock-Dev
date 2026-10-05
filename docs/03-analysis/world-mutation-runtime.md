@@ -163,3 +163,17 @@ Recovery must never belong to an obsolete generation.
 8. Can the old generation still execute recovery?
 9. Is animation/integrity changing completion semantics?
 10. What compensating action exists for partial failure?
+
+## Environmental hazards
+
+World-mutation reasoning also covers gameplay-significant environmental hazards such as explosions, liquid interaction, damage-over-time sources, damage sensors, and destructive hazard effects.
+
+Review:
+- arena/session scope of destructive effects;
+- block/world mutation footprint;
+- stale delayed damage ownership;
+- hidden immunity or sensor state;
+- reset/restore of hazard-created world state;
+- legality of mutation in the event/execution phase.
+
+A hazard is not automatically a separate bug family; classify the player-visible failure under the affected gameplay contract and preserve world-mutation/hazard evidence as a contributing domain.
