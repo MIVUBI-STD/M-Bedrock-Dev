@@ -22,10 +22,10 @@ The backend is ready for frontend work only after the target machine completes t
 doctor
 → base VM present + stopped
 → provision
-→ MCE-02 starts and is manually playable
-→ configure MCE-02 and set-ready
-→ reset MCE-02 and confirm QA_READY recovery
-→ repeat readiness for MCE-03 / MCE-04
+→ Virtual-01 starts and is manually playable
+→ configure Virtual-01 and set-ready
+→ reset Virtual-01 and confirm QA_READY recovery
+→ repeat readiness for Virtual-02 / Virtual-03
 → start 4
 → manually control all four players
 → verify acceptable responsiveness
