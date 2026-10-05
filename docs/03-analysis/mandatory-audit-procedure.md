@@ -2352,6 +2352,8 @@ The engine must maximize PROVEN through stronger evidence and proof, never throu
 
 ## Multi-Scenario Check requirement
 
+Machine-readable scenario records must conform to `docs/03-analysis/multi-scenario-check-ledger.schema.json`. This is the single schema authority for multi-scenario records.
+
 The STRESS lane must execute the canonical multi-scenario checks defined in `detection-coverage-assurance.md`.
 
 When applicable, use only these canonical check names:
