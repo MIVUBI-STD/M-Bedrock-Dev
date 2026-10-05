@@ -41,6 +41,7 @@ describe("vital gameplay closure", () => {
       multiArenaDetected: true,
       findings: [{
         id: "BUG-RESULT",
+        status: "PROVEN",
         failureDomain: "persistence-recovery",
         contributingDomains: ["state-ownership"],
         gameplayFlow: "TERMINAL",
@@ -97,6 +98,30 @@ describe("vital gameplay closure", () => {
           item.domain === "MULTI_ARENA_ISOLATION",
       )?.status,
     ).toBe("RUNTIME_REQUIRED");
+  });
+
+  it("keeps unresolved findings open even when they are visible", () => {
+    const result = deriveVitalGameplayClosure({
+      controlStatus: "READY_FOR_REVIEW",
+      multiArenaDetected: false,
+      findings: [{
+        id: "NV-RESULT",
+        status: "NEED_VALIDATION",
+        failureDomain: "persistence-recovery",
+        contributingDomains: [],
+        gameplayFlow: "TERMINAL",
+        informationMismatch: false,
+      }],
+      auditObligations: [],
+    });
+
+    expect(result.status).toBe("OPEN");
+    expect(
+      result.domains.find(
+        (item) =>
+          item.domain === "SCORE_RESULT_INTEGRITY",
+      )?.status,
+    ).toBe("DETECTION_GAP");
   });
 
   it("never labels blocked canonical audits safe by absence", () => {
