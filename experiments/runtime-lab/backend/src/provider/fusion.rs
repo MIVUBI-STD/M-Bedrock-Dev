@@ -1,5 +1,6 @@
 use super::{
-    apply_client_resource_policy, base_vmx_path, client_vmx_path, command_output, ensure_parent, listed_as_running,
+    apply_client_cpu_policy, base_vmx_path, client_vmx_path, command_output, ensure_parent, listed_as_running,
+    read_vmx_memory, set_vmx_memory,
     promote_staging_vm, remove_vm_container, snapshot_list_contains, staging_client_vmx_path,
     wait_for_state, Provider, READY_SNAPSHOT,
 };
@@ -125,6 +126,22 @@ impl Provider for VmwareFusionProvider {
         }
         remove_vm_container(&vmx);
         self.provision(client)
+    }
+
+    fn configure_memory(&self, client: ClientId, memory_mb: u64) -> io::Result<()> {
+        let vmx = self.require_client(client)?;
+        if self.running(&vmx)? {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!("{} must be stopped before changing memory", client.as_str()),
+            ));
+        }
+        set_vmx_memory(&vmx, memory_mb)
+    }
+
+    fn memory_mb(&self, client: ClientId) -> io::Result<u64> {
+        let vmx = self.require_client(client)?;
+        read_vmx_memory(&vmx)
     }
 
     fn start(&self, client: ClientId) -> io::Result<ClientState> {
