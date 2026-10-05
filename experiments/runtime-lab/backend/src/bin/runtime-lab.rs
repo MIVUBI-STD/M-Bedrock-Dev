@@ -2,10 +2,10 @@ use m_bedrock_runtime_lab_core::{client::ClientId, RuntimeLab};
 
 fn parse_client(value: &str) -> Result<ClientId, String> {
     match value {
-        "MCE-01" => Ok(ClientId::Mce01),
-        "MCE-02" => Ok(ClientId::Mce02),
-        "MCE-03" => Ok(ClientId::Mce03),
-        "MCE-04" => Ok(ClientId::Mce04),
+        "Native" => Ok(ClientId::Native),
+        "Virtual-01" => Ok(ClientId::Virtual01),
+        "Virtual-02" => Ok(ClientId::Virtual02),
+        "Virtual-03" => Ok(ClientId::Virtual03),
         _ => Err(format!("unknown client: {value}")),
     }
 }
@@ -62,13 +62,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("  provision");
             println!("  status");
             println!("  resources <1-4>");
-            println!("  reprovision <MCE-02..04>");
+            println!("  reprovision <Virtual-01..03>");
             println!("  start <1-4>");
-            println!("  open <MCE-01..04>");
-            println!("  restart <MCE-02..04>");
-            println!("  set-ready <MCE-02..04>");
-            println!("  reset <MCE-02..04>");
-            println!("  stop [MCE-01..04]");
+            println!("  open <Native|Virtual-01..03>");
+            println!("  restart <Virtual-01..03>");
+            println!("  set-ready <Virtual-01..03>");
+            println!("  reset <Virtual-01..03>");
+            println!("  stop [Native|Virtual-01..03]");
         }
     }
 
