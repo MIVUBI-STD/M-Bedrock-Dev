@@ -163,9 +163,7 @@ If identity is ambiguous, stop publication.
 
 ## Detection coverage authority
 
-`detection-coverage-assurance.md` owns the coverage-accounting mechanism used across DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE.
-
-Its Coverage Ledger and Coverage Completeness Gate ensure every material discovered surface is routed, checked, and closed. Its regression corpus is search pressure only and never current-artifact proof.
+`bug-finding-coverage.md` owns coverage accounting across DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE. It consolidates surface accounting, blind-spot pressure, cross-system interaction, proof conservation, and the anti-suppression gate. Historical regression data remains search pressure only and never current-artifact proof.
 
 This is part of the same canonical audit flow, not a second workflow.
 
@@ -494,7 +492,7 @@ Stress only applicable systems.
 
 For applicable player-controlled surfaces, STRESS also asks how ordinary reachable actions can intentionally pressure or violate the authored gameplay contract.
 
-Use the Adversarial Player Abuse Model from `detection-coverage-assurance.md`.
+Use the Adversarial Player Abuse Model from `bug-finding-coverage.md`.
 
 Focus on bounded gameplay-integrity goals such as:
 - skip required progression;
