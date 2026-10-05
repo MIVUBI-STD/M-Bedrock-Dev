@@ -5,7 +5,7 @@
     "mapVersion": "1.1.0",
     "drive": "https://drive.google.com/file/d/1aBAM5Hwu58klnGV1dtZZLffgJATPRmtd/view",
     "baseVersion": "Not recorded in audit evidence",
-    "testedVersion": "Static source audit only; runtime not executed"
+    "testedVersion": "Static source audit; current Drive artifact fingerprint verified; runtime not required for admitted findings"
   },
   "repairBy": "developer",
   "bugs": [
@@ -41,6 +41,46 @@
         "Normal gameplay stick behavior must remain available when the developer tool is disabled."
       ],
       "issueType": "DESIGN_MISMATCH"
+    },
+    {
+      "id": "BUG-BAD-TIME-BONUS-SCORING",
+      "fixed": false,
+      "severity": "major",
+      "category": "score-reward",
+      "foundBy": "ai",
+      "title": "Time bonus thresholds do not match the authored scoring table",
+      "problem": "Correct guesses receive the wrong time bonus for several elapsed-time ranges. The authored scoring table defines 8/10/15/25/30/50-second thresholds, while the scoring function checks 5/10/15/20/30 and never checks 8, 25, or 50.",
+      "expected": "Time bonuses follow the selected artifact's Points.timebonus table: +10 through 8s, +5 through 10s, +4 through 15s, +3 through 25s, +2 through 30s, +1 through 50s, then 0.",
+      "observed": "The scoring function gives +5 instead of +10 through 8s, +2 instead of +3 from 16-25s, and 0 instead of +1 from 31-50s. These points feed player/team scores and can change standings and persisted leaderboard results.",
+      "reproduction": [
+        "Start a normal Build & Decode match and reach an active guessing round.",
+        "Make a correct guess within 8 seconds and compare the awarded time bonus with the Points.timebonus table.",
+        "Repeat with a correct guess at 16-25 seconds and at 31-50 seconds.",
+        "Confirm the effective bonuses are +5, +2, and 0 instead of +10, +3, and +1."
+      ],
+      "aiAnalysis": "GuessTheBuildData.js defines the authored timebonus thresholds as 8, 10, 15, 25, 30, and 50 seconds. GuessRules.getTimeBonus() instead iterates [5, 10, 15, 20, 30]. Missing keys are skipped, so the next lower configured reward or default is returned. The defect is deterministic from source and does not require runtime proof.",
+      "relevantCode": [
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/guessthebuild/GuessTheBuildData.js",
+          "reason": "Lines 17-24 define the authored time-bonus thresholds and reward values."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/guessthebuild/GuessRules.js",
+          "reason": "Lines 103-110 use a different threshold list when calculating the bonus."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/guessthebuild/GuessTheBuildManager.js",
+          "reason": "The returned time bonus is added directly to correct-guess points and persisted into player/team scoring."
+        }
+      ],
+      "suggestedFix": "Use the canonical thresholds from Points.timebonus (or derive/sort the numeric keys) instead of maintaining a second hard-coded threshold list.",
+      "mustPreserve": [
+        "Existing first/second/third/other guesser base points.",
+        "Builder contribution scoring.",
+        "Team and individual score conservation.",
+        "Persisted match/leaderboard result semantics."
+      ],
+      "issueType": "BUG"
     }
   ]
 }
