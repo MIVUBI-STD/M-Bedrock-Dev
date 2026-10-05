@@ -631,3 +631,398 @@ export async function proveArenaBarrierContainment(
       "The supplied blocking block set encloses every reachable player-sized 1x2 traversal from the supplied starts. Because all other blocks were treated as passable, this is conservative physical blocking proof.",
   };
 }
+
+
+export type ArenaBarrierEnclosureArenaStatus =
+  | "contained"
+  | "open-or-unproven"
+  | "incomplete"
+  | "budget-exceeded";
+
+export interface ArenaBarrierEnclosureArenaProof {
+  arenaId: string;
+  status: ArenaBarrierEnclosureArenaStatus;
+  visitedExteriorPositions: number;
+  unresolvedPositions: number;
+  targetVolumes: number;
+  searchVolume: {
+    min: ArenaVector3;
+    max: ArenaVector3;
+  };
+  reachedTargetPosition?: ArenaVector3;
+  statement: string;
+}
+
+export interface ArenaBarrierEnclosureProof {
+  status:
+    | "contained"
+    | "open-or-unproven"
+    | "incomplete"
+    | "budget-exceeded";
+  blockerNames: readonly string[];
+  arenas: readonly ArenaBarrierEnclosureArenaProof[];
+}
+
+export interface ArenaBarrierEnclosureOptions {
+  dimensionId?: number;
+  searchMarginBlocks?: number;
+  maxVisitedPositionsPerArena?: number;
+  blockerNames?: readonly string[];
+}
+
+function translatedVolume(
+  volume: { min: ArenaVector3; max: ArenaVector3 },
+  offset: Translation3,
+): { min: ArenaVector3; max: ArenaVector3 } {
+  return {
+    min: translated(volume.min, offset),
+    max: translated(volume.max, offset),
+  };
+}
+
+function volumesEnvelope(
+  volumes: readonly { min: ArenaVector3; max: ArenaVector3 }[],
+  margin: number,
+): { min: ArenaVector3; max: ArenaVector3 } {
+  return {
+    min: {
+      x: Math.min(...volumes.map((item) => item.min.x)) - margin,
+      y: Math.min(...volumes.map((item) => item.min.y)) - margin,
+      z: Math.min(...volumes.map((item) => item.min.z)) - margin,
+    },
+    max: {
+      x: Math.max(...volumes.map((item) => item.max.x)) + margin,
+      y: Math.max(...volumes.map((item) => item.max.y)) + margin,
+      z: Math.max(...volumes.map((item) => item.max.z)) + margin,
+    },
+  };
+}
+
+function pointInsideAnyVolume(
+  point: ArenaVector3,
+  volumes: readonly { min: ArenaVector3; max: ArenaVector3 }[],
+): boolean {
+  return volumes.some((volume) =>
+    point.x >= volume.min.x &&
+    point.x <= volume.max.x &&
+    point.y >= volume.min.y &&
+    point.y <= volume.max.y &&
+    point.z >= volume.min.z &&
+    point.z <= volume.max.z
+  );
+}
+
+function boundaryFeetPositions(
+  volume: { min: ArenaVector3; max: ArenaVector3 },
+): ArenaVector3[] {
+  const output = new Map<string, ArenaVector3>();
+  const add = (point: ArenaVector3) => {
+    output.set(pointKey(point), point);
+  };
+  const maxFeetY = volume.max.y - 1;
+
+  for (let y = volume.min.y; y <= maxFeetY; y += 1) {
+    for (let z = volume.min.z; z <= volume.max.z; z += 1) {
+      add({ x: volume.min.x, y, z });
+      add({ x: volume.max.x, y, z });
+    }
+    for (let x = volume.min.x; x <= volume.max.x; x += 1) {
+      add({ x, y, z: volume.min.z });
+      add({ x, y, z: volume.max.z });
+    }
+  }
+
+  for (let x = volume.min.x; x <= volume.max.x; x += 1) {
+    for (let z = volume.min.z; z <= volume.max.z; z += 1) {
+      add({ x, y: volume.min.y, z });
+      add({ x, y: maxFeetY, z });
+    }
+  }
+
+  return [...output.values()];
+}
+
+/**
+ * Conservative barrier-only enclosure proof.
+ *
+ * It flood-fills from the outside of an expanded arena envelope toward all
+ * authored arena volumes. Every non-barrier block is treated as passable. If
+ * the exterior still cannot reach any authored arena volume, minecraft:barrier
+ * alone is sufficient blocking proof. If the exterior can reach a target, the
+ * result is only open-or-unproven: other collision geometry may still contain
+ * the player and must be considered before publishing an escape finding.
+ *
+ * This avoids inventing a player spawn and prevents loading/topology bounds
+ * from being misused as physical collision bounds.
+ */
+export async function proveArenaBarrierEnclosure(
+  reader: BedrockLevelDbReader,
+  layout: ArenaSpatialLayoutSource,
+  regionPlan: ArenaRegionPlan,
+  options: ArenaBarrierEnclosureOptions = {},
+): Promise<ArenaBarrierEnclosureProof> {
+  const dimensionId = options.dimensionId ?? 0;
+  const margin = options.searchMarginBlocks ?? 12;
+  const maxVisited =
+    options.maxVisitedPositionsPerArena ?? 250_000;
+  const blockerNames = [
+    ...new Set(options.blockerNames ?? ["minecraft:barrier"]),
+  ].sort();
+  const blockers = new Set(blockerNames);
+  const cache = new Map<string, Promise<CachedSubChunk>>();
+
+  const load = (
+    chunkX: number,
+    chunkZ: number,
+    subChunkY: number,
+  ): Promise<CachedSubChunk> => {
+    const key = `${dimensionId}:${chunkX}:${chunkZ}:${subChunkY}`;
+    const existing = cache.get(key);
+    if (existing) return existing;
+    const promise = (async (): Promise<CachedSubChunk> => {
+      const bytes = await reader.get(
+        subChunkKey(chunkX, chunkZ, subChunkY, dimensionId),
+      );
+      if (!bytes) return { status: "missing" };
+      try {
+        return {
+          status: "present",
+          decoded: await decodeBedrockSubChunk(bytes),
+        };
+      } catch (error) {
+        if (error instanceof UnsupportedSubChunkFormatError) {
+          return { status: "unsupported" };
+        }
+        return { status: "invalid" };
+      }
+    })();
+    cache.set(key, promise);
+    return promise;
+  };
+
+  const blockNameAt = async (
+    point: ArenaVector3,
+  ): Promise<string | undefined> => {
+    const loaded = await load(
+      floorDiv(point.x, 16),
+      floorDiv(point.z, 16),
+      floorDiv(point.y, 16),
+    );
+    if (loaded.status !== "present" || !loaded.decoded) {
+      return undefined;
+    }
+    return blockAt(
+      loaded.decoded,
+      mod(point.x, 16),
+      mod(point.y, 16),
+      mod(point.z, 16),
+      0,
+    )?.name;
+  };
+
+  const arenaOffsets: readonly {
+    arenaId: string;
+    offset: Translation3;
+  }[] = [
+    {
+      arenaId: layout.canonical.arenaId,
+      offset: { x: 0, y: 0, z: 0 },
+    },
+    ...layout.replicas.map((replica, index) => ({
+      arenaId: replica.arenaId,
+      offset:
+        layout.offsets[index] ??
+        {
+          x: replica.anchor.x - layout.canonical.anchor.x,
+          y: replica.anchor.y - layout.canonical.anchor.y,
+          z: replica.anchor.z - layout.canonical.anchor.z,
+        },
+    })),
+  ];
+
+  const arenas: ArenaBarrierEnclosureArenaProof[] = [];
+
+  for (const arena of arenaOffsets) {
+    const targetVolumes = regionPlan.volumes.map((volume) =>
+      translatedVolume(volume, arena.offset)
+    );
+    const searchVolume =
+      volumesEnvelope(targetVolumes, margin);
+    let unresolvedPositions = 0;
+
+    const canOccupy = async (
+      feet: ArenaVector3,
+    ): Promise<boolean | undefined> => {
+      const head = {
+        x: feet.x,
+        y: feet.y + 1,
+        z: feet.z,
+      };
+      if (
+        !inVolume(feet, searchVolume) ||
+        !inVolume(head, searchVolume)
+      ) {
+        return false;
+      }
+      const [feetName, headName] = await Promise.all([
+        blockNameAt(feet),
+        blockNameAt(head),
+      ]);
+      if (feetName === undefined || headName === undefined) {
+        unresolvedPositions += 1;
+        return undefined;
+      }
+      return (
+        !blockers.has(feetName) &&
+        !blockers.has(headName)
+      );
+    };
+
+    const queue: ArenaVector3[] = [];
+    const visited = new Set<string>();
+    let incomplete = false;
+
+    for (const point of boundaryFeetPositions(searchVolume)) {
+      const occupiable = await canOccupy(point);
+      if (occupiable === undefined) {
+        incomplete = true;
+        break;
+      }
+      if (!occupiable) continue;
+      const key = pointKey(point);
+      if (visited.has(key)) continue;
+      visited.add(key);
+      queue.push(point);
+    }
+
+    if (incomplete || queue.length === 0) {
+      arenas.push({
+        arenaId: arena.arenaId,
+        status: "incomplete",
+        visitedExteriorPositions: visited.size,
+        unresolvedPositions,
+        targetVolumes: targetVolumes.length,
+        searchVolume,
+        statement:
+          queue.length === 0 && !incomplete
+            ? "Barrier enclosure proof has no grounded exterior traversal start on the expanded search boundary."
+            : "Barrier enclosure proof is incomplete because required world DB block evidence is unavailable.",
+      });
+      continue;
+    }
+
+    const deltas: readonly ArenaVector3[] = [
+      { x: 1, y: 0, z: 0 },
+      { x: -1, y: 0, z: 0 },
+      { x: 0, y: 1, z: 0 },
+      { x: 0, y: -1, z: 0 },
+      { x: 0, y: 0, z: 1 },
+      { x: 0, y: 0, z: -1 },
+    ];
+
+    let reachedTarget: ArenaVector3 | undefined;
+    let budgetExceeded = false;
+
+    for (let cursor = 0; cursor < queue.length; cursor += 1) {
+      if (visited.size > maxVisited) {
+        budgetExceeded = true;
+        break;
+      }
+      const current = queue[cursor]!;
+      const head = {
+        x: current.x,
+        y: current.y + 1,
+        z: current.z,
+      };
+      if (
+        pointInsideAnyVolume(current, targetVolumes) ||
+        pointInsideAnyVolume(head, targetVolumes)
+      ) {
+        reachedTarget = current;
+        break;
+      }
+
+      for (const delta of deltas) {
+        const next = {
+          x: current.x + delta.x,
+          y: current.y + delta.y,
+          z: current.z + delta.z,
+        };
+        if (!inVolume(next, searchVolume)) continue;
+        const key = pointKey(next);
+        if (visited.has(key)) continue;
+        const occupiable = await canOccupy(next);
+        if (occupiable === undefined) {
+          incomplete = true;
+          break;
+        }
+        if (!occupiable) continue;
+        visited.add(key);
+        queue.push(next);
+      }
+      if (incomplete) break;
+    }
+
+    if (incomplete) {
+      arenas.push({
+        arenaId: arena.arenaId,
+        status: "incomplete",
+        visitedExteriorPositions: visited.size,
+        unresolvedPositions,
+        targetVolumes: targetVolumes.length,
+        searchVolume,
+        statement:
+          "Barrier enclosure proof is incomplete because required world DB block evidence is unavailable.",
+      });
+    } else if (budgetExceeded) {
+      arenas.push({
+        arenaId: arena.arenaId,
+        status: "budget-exceeded",
+        visitedExteriorPositions: visited.size,
+        unresolvedPositions,
+        targetVolumes: targetVolumes.length,
+        searchVolume,
+        statement:
+          "Barrier enclosure proof exceeded its bounded exterior flood-fill budget before closure.",
+      });
+    } else if (reachedTarget !== undefined) {
+      arenas.push({
+        arenaId: arena.arenaId,
+        status: "open-or-unproven",
+        visitedExteriorPositions: visited.size,
+        unresolvedPositions,
+        targetVolumes: targetVolumes.length,
+        searchVolume,
+        reachedTargetPosition: reachedTarget,
+        statement:
+          "Exterior traversal reaches an authored arena volume without crossing the supplied barrier set. This does not prove physical escape because other solid collision geometry may still block player traversal.",
+      });
+    } else {
+      arenas.push({
+        arenaId: arena.arenaId,
+        status: "contained",
+        visitedExteriorPositions: visited.size,
+        unresolvedPositions,
+        targetVolumes: targetVolumes.length,
+        searchVolume,
+        statement:
+          "Exterior traversal cannot reach any authored arena volume when only the supplied barrier set is treated as solid. The barrier enclosure is therefore sufficient physical blocking proof.",
+      });
+    }
+  }
+
+  const status =
+    arenas.some((item) => item.status === "open-or-unproven")
+      ? "open-or-unproven" as const
+      : arenas.some((item) => item.status === "budget-exceeded")
+        ? "budget-exceeded" as const
+        : arenas.some((item) => item.status === "incomplete")
+          ? "incomplete" as const
+          : "contained" as const;
+
+  return {
+    status,
+    blockerNames,
+    arenas,
+  };
+}
