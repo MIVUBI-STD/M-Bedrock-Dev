@@ -1,0 +1,7 @@
+{
+  "id": "multi-arena-4p",
+  "requiredClients": 4,
+  "mode": "interactive",
+  "description": "Four interactive clients for concurrent arena assignment, simultaneous starts and cross-arena isolation.",
+  "roleSlots": ["PLAYER_A", "PLAYER_B", "PLAYER_C", "PLAYER_D"]
+}
