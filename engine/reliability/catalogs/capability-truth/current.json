@@ -8,20 +8,20 @@
       "engine/packages/analysis-planner/src/domain-capabilities.ts",
       "engine/packages/analysis-planner/src/arena-capabilities.ts"
     ],
-    "registryFingerprint": "ecfcbeb2",
+    "registryFingerprint": "0db3800f",
     "proofRegistry": "engine/reliability/catalogs/capability-proof-bindings.json",
-    "proofRegistryFingerprint": "263994b8",
+    "proofRegistryFingerprint": "54d9f4c4",
     "proofInventoryFingerprint": "ebbdf6c9"
   },
   "summary": {
-    "taskCapabilities": 51,
+    "taskCapabilities": 55,
     "implementationPresent": 0,
     "declaredOnly": 0,
     "runtimeOnly": 4,
-    "proofBound": 51,
+    "proofBound": 55,
     "proofUnbound": 0,
     "analysisCapabilities": 31,
-    "ownerHasTests": 51
+    "ownerHasTests": 55
   },
   "taskCapabilities": [
     {
@@ -487,6 +487,39 @@
       "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
+      "id": "domain.client-reconciliation",
+      "owner": "packages/orchestrator",
+      "status": "owner-has-tests",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 603,
+      "testFiles": 293,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
+        "engine/packages/orchestrator/test/arena-generation-telemetry.test.ts",
+        "engine/packages/orchestrator/test/arena-repair-source-coverage.test.ts",
+        "engine/packages/orchestrator/test/arena-repair-strategy-source.test.ts",
+        "engine/packages/orchestrator/test/arena-start-ownership-guard-realizer.test.ts"
+      ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/orchestrator/test/inspection/client-mutation-reconciliation-analysis.test.ts"
+        ]
+      },
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
+    },
+    {
       "id": "domain.combat",
       "owner": "packages/orchestrator",
       "status": "owner-has-tests",
@@ -652,6 +685,73 @@
       "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
+      "id": "domain.physical-containment",
+      "owner": "packages/orchestrator",
+      "status": "owner-has-tests",
+      "deterministic": true,
+      "cost": "moderate",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 603,
+      "testFiles": 293,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
+        "engine/packages/orchestrator/test/arena-generation-telemetry.test.ts",
+        "engine/packages/orchestrator/test/arena-repair-source-coverage.test.ts",
+        "engine/packages/orchestrator/test/arena-repair-strategy-source.test.ts",
+        "engine/packages/orchestrator/test/arena-start-ownership-guard-realizer.test.ts"
+      ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/orchestrator/test/arena/arena-voxel-proof.test.ts"
+        ]
+      },
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
+    },
+    {
+      "id": "domain.player-capability",
+      "owner": "packages/orchestrator",
+      "status": "owner-has-tests",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 603,
+      "testFiles": 293,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
+        "engine/packages/orchestrator/test/arena-generation-telemetry.test.ts",
+        "engine/packages/orchestrator/test/arena-repair-source-coverage.test.ts",
+        "engine/packages/orchestrator/test/arena-repair-strategy-source.test.ts",
+        "engine/packages/orchestrator/test/arena-start-ownership-guard-realizer.test.ts"
+      ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/diagnostic-reasoning/test/capability-guard-activation.test.ts",
+          "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
+        ]
+      },
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
+    },
+    {
       "id": "domain.spatial-authority",
       "owner": "packages/orchestrator",
       "status": "owner-has-tests",
@@ -680,6 +780,39 @@
         "executionContext": "REMOTE_GITHUB",
         "paths": [
           "engine/packages/orchestrator/test/inspection/spatial-authority-analysis.test.ts"
+        ]
+      },
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
+    },
+    {
+      "id": "domain.world-rule-authority",
+      "owner": "packages/orchestrator",
+      "status": "owner-has-tests",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 603,
+      "testFiles": 293,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
+        "engine/packages/orchestrator/test/arena-generation-telemetry.test.ts",
+        "engine/packages/orchestrator/test/arena-repair-source-coverage.test.ts",
+        "engine/packages/orchestrator/test/arena-repair-strategy-source.test.ts",
+        "engine/packages/orchestrator/test/arena-start-ownership-guard-realizer.test.ts"
+      ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/orchestrator/test/inspection/world-rule-authority-analysis.test.ts"
         ]
       },
       "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
