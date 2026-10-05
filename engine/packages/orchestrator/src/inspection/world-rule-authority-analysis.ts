@@ -66,7 +66,7 @@ export function analyzeWorldRuleAuthority(
 
     const text = item.text ?? "";
     const propertyPattern =
-      /\b(doMobSpawning|doDaylightCycle|doWeatherCycle|keepInventory|mobGriefing|naturalRegeneration|pvp)\s*=\s*(true|false|-?\d+)\b/gi;
+      /\b(doMobSpawning|doDaylightCycle|doWeatherCycle|keepInventory|mobGriefing|naturalRegeneration|pvp|sendCommandFeedback|fallDamage|showTags)\s*(?:=|:)\s*(true|false|-?\d+)\b/gi;
     for (const match of text.matchAll(propertyPattern)) {
       writes.push({
         scriptId: script.identifier,
@@ -127,7 +127,7 @@ export function analyzeWorldRuleAuthority(
       ).length,
     0,
   );
-  const commandSummonPaths = parsedScripts.reduce(
+  const parsedCommandSummonPaths = parsedScripts.reduce(
     (sum, script) =>
       sum +
       script.commandLiterals.filter((command) =>
@@ -135,6 +135,21 @@ export function analyzeWorldRuleAuthority(
       ).length,
     0,
   );
+  const rawSummonPaths = normalizedScripts.reduce(
+    (sum, item) =>
+      sum +
+      (
+        item.text?.match(
+          /["'`]\/?summon\s+[^"'\`\r\n]+["'`]/gi,
+        )?.length ?? 0
+      ),
+    0,
+  );
+  const commandSummonPaths =
+    Math.max(
+      parsedCommandSummonPaths,
+      rawSummonPaths,
+    );
 
   return {
     writes: writes.sort((a, b) =>
