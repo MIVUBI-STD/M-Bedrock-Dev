@@ -63,4 +63,4 @@ Use the lowest-cost evidence that can falsify a claim. Never promote source/stat
 
 ## Placement rule
 
-This directory owns durable validation methods and proof contracts. Do not store date-stamped production proof reports, one-off migration exposure reports, or chronological run logs here. Current proof state belongs in `docs/07-operations/current-validation.md`; historical evidence belongs in Git history or `engine/reliability/history/`.
+This directory owns durable validation methods and proof contracts. Do not store date-stamped production proof reports, planning, one-off migration exposure reports, or chronological run logs here. New current execution/proof state must be owned by the canonical workspace/runtime state and rendered as a projection when needed. `docs/07-operations/` remains transitional compatibility during migration and must not gain new state authority. Historical evidence belongs in Git history or `engine/reliability/history/`.
