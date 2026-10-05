@@ -443,6 +443,8 @@ export interface GameplayWorldModel {
   };
   playerCapabilities: {
     gamemodeWrites: number;
+    creativeModeGrants: number;
+    spectatorModeGrants: number;
     abilityWrites: number;
     commandPermissionWrites: number;
     privilegedGuardReferences: number;
@@ -1914,6 +1916,10 @@ export function deriveGameplayWorldModel(
     playerCapabilities: {
       gamemodeWrites:
         source.playerCapabilitySurfaces?.gamemodeWrites ?? 0,
+      creativeModeGrants:
+        source.playerCapabilitySurfaces?.creativeModeGrants ?? 0,
+      spectatorModeGrants:
+        source.playerCapabilitySurfaces?.spectatorModeGrants ?? 0,
       abilityWrites:
         source.playerCapabilitySurfaces?.abilityWrites ?? 0,
       commandPermissionWrites:
