@@ -1546,6 +1546,87 @@
       ],
       "expected": "Progression gates requiring the locked party wait for every required member, or pause while one is disconnected.",
       "observed": "The shared all-player predicate filters the locked roster to currently present players before evaluating completion."
+    },
+    {
+      "id": "reg_build_decode_1_1_0_bug_bad_waterlog_client_desync",
+      "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_waterlog_client_desync",
+      "title": "Blocked water placement can leave client-only waterlogged residue",
+      "issueType": "BUG",
+      "domain": "world",
+      "discoveredBy": "tester-runtime",
+      "provenance": {
+        "source": "Canonical Bug Report V2 + tester runtime evidence",
+        "projectId": "build-and-decode",
+        "reportPath": "workspace/reports/Build-and-Decode-v1.1.0-BugReport.json",
+        "map": "Build & Decode",
+        "mapVersion": "1.1.0",
+        "bugId": "BUG-BAD-WATERLOG-CLIENT-DESYNC",
+        "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_waterlog_client_desync",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "minor",
+        "client-server",
+        "waterlogging",
+        "world-interaction"
+      ],
+      "capabilityTags": [
+        "world-mutation",
+        "ui-state",
+        "spatial"
+      ],
+      "reproduction": [
+        "Enter a Build & Decode building phase as the active builder.",
+        "Use a water bucket against a barrier or another waterloggable block.",
+        "Let the map reject the placement.",
+        "Confirm only the acting player still sees water or waterlogged residue."
+      ],
+      "expected": "A rejected water placement leaves no water or waterlogged visual on any client.",
+      "observed": "The acting player can retain a water/waterlogged visual after server rejection while other clients do not share the state."
+    },
+    {
+      "id": "reg_build_decode_1_1_0_bug_bad_roommaster_world_guard",
+      "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_roommaster_world_guard",
+      "title": "Roommaster/admin bypass can modify protected arena world",
+      "issueType": "BUG",
+      "domain": "world",
+      "discoveredBy": "tester-runtime",
+      "provenance": {
+        "source": "Canonical Bug Report V2 + tester runtime evidence",
+        "projectId": "build-and-decode",
+        "reportPath": "workspace/reports/Build-and-Decode-v1.1.0-BugReport.json",
+        "map": "Build & Decode",
+        "mapVersion": "1.1.0",
+        "bugId": "BUG-BAD-ROOMMASTER-WORLD-GUARD",
+        "canonicalIssueId": "reg_build_decode_1_1_0_bug_bad_roommaster_world_guard",
+        "issueType": "BUG",
+        "artifactFingerprint": "sha256:d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030"
+      },
+      "triggerTags": [
+        "bug",
+        "gameplay",
+        "major",
+        "roommaster",
+        "admin",
+        "permission",
+        "world-interaction"
+      ],
+      "capabilityTags": [
+        "world-mutation",
+        "gameplay-state",
+        "spatial"
+      ],
+      "reproduction": [
+        "Join as the Roommaster/admin role used for map operation.",
+        "Move to protected arena geometry outside the active builder plot.",
+        "Break a protected block or use a restricted spawn/item interaction.",
+        "Confirm the arena world changes despite normal arena protection."
+      ],
+      "expected": "Roommaster/admin access preserves live arena geometry unless explicit maintenance mode authorizes world mutation.",
+      "observed": "Roommaster can destroy protected arena blocks and use restricted spawn/item paths because admin bypasses the arena guards."
     }
   ]
 }
