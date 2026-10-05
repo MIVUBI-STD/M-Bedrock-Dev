@@ -22,6 +22,16 @@ export interface CapabilityExposureInput {
     | "not-required"
     | "unknown";
   readonly triggerPresent: boolean;
+  /**
+   * Whether the protection that is being credited as authorization is actually
+   * active in the selected production artifact. A declared guard that is never
+   * imported, instantiated or subscribed must not be treated as enforced.
+   */
+  readonly guardActivation?:
+    | "active"
+    | "inactive"
+    | "unknown"
+    | "not-required";
   readonly prerequisitePaths?: readonly GameplayReachabilityPath[];
   readonly playerImpact:
     | "progression"
@@ -106,11 +116,42 @@ export function assessCapabilityExposure(
     input.authorization ===
     "required-and-enforced"
   ) {
-    reasons.push("Required authorization is enforced before the capability can execute.");
+    const activation = input.guardActivation ?? "unknown";
+    if (activation === "active" || activation === "not-required") {
+      reasons.push("Required authorization is enforced by an active production guard.");
+      return {
+        capabilityId: input.capabilityId,
+        capabilityLabel: input.capabilityLabel,
+        status: "guarded",
+        prerequisiteReachability,
+        impact: input.playerImpact,
+        reasons,
+        evidenceIds,
+      };
+    }
+
+    if (activation === "inactive") {
+      reasons.push("Authorization logic exists but its production guard is inactive, so it cannot be credited as protection.");
+      return {
+        capabilityId: input.capabilityId,
+        capabilityLabel: input.capabilityLabel,
+        status:
+          prerequisiteReachability === "reachable" ||
+          prerequisiteReachability === "not-required"
+            ? "exposed"
+            : "potentially-exposed",
+        prerequisiteReachability,
+        impact: input.playerImpact,
+        reasons,
+        evidenceIds,
+      };
+    }
+
+    reasons.push("Authorization logic exists, but production guard activation is unproven.");
     return {
       capabilityId: input.capabilityId,
       capabilityLabel: input.capabilityLabel,
-      status: "guarded",
+      status: "potentially-exposed",
       prerequisiteReachability,
       impact: input.playerImpact,
       reasons,
