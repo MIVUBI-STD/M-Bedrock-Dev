@@ -1,6 +1,7 @@
 use super::{
     base_vmx_path, client_vmx_path, command_output, ensure_parent, listed_as_running,
-    promote_staging_vm, remove_vm_container, staging_client_vmx_path, Provider,
+    promote_staging_vm, remove_vm_container, snapshot_list_contains, staging_client_vmx_path,
+    Provider, READY_SNAPSHOT,
 };
 use crate::client::{ClientId, ClientState};
 use std::{io, path::Path, process::Command};
@@ -135,7 +136,7 @@ impl Provider for VmwareFusionProvider {
         Ok(ClientState::Stopped)
     }
 
-    fn reset(&self, client: ClientId) -> io::Result<ClientState> {
+    fn restart(&self, client: ClientId) -> io::Result<ClientState> {
         let vmx = self.require_client(client)?;
         if !self.running(&vmx)? {
             return Err(io::Error::new(
@@ -147,6 +148,64 @@ impl Provider for VmwareFusionProvider {
         command_output(
             self.vmrun(),
             ["-T", "fusion", "reset", vmx.to_string_lossy().as_ref(), "soft"],
+        )?;
+        Ok(ClientState::Ready)
+    }
+
+    fn has_ready(&self, client: ClientId) -> io::Result<bool> {
+        let vmx = self.require_client(client)?;
+        let output = command_output(
+            self.vmrun(),
+            ["-T", "fusion", "listSnapshots", vmx.to_string_lossy().as_ref()],
+        )?;
+        Ok(snapshot_list_contains(&output, READY_SNAPSHOT))
+    }
+
+    fn set_ready(&self, client: ClientId) -> io::Result<ClientState> {
+        let vmx = self.require_client(client)?;
+        if self.running(&vmx)? {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!("{} must be stopped before setting QA_READY", client.as_str()),
+            ));
+        }
+        if self.has_ready(client)? {
+            return Err(io::Error::new(
+                io::ErrorKind::AlreadyExists,
+                format!("{} already has QA_READY", client.as_str()),
+            ));
+        }
+
+        command_output(
+            self.vmrun(),
+            ["-T", "fusion", "snapshot", vmx.to_string_lossy().as_ref(), READY_SNAPSHOT],
+        )?;
+        Ok(ClientState::Stopped)
+    }
+
+    fn reset(&self, client: ClientId) -> io::Result<ClientState> {
+        let vmx = self.require_client(client)?;
+        if !self.has_ready(client)? {
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                format!("{} has no QA_READY snapshot", client.as_str()),
+            ));
+        }
+
+        if self.running(&vmx)? {
+            command_output(
+                self.vmrun(),
+                ["-T", "fusion", "stop", vmx.to_string_lossy().as_ref(), "soft"],
+            )?;
+        }
+
+        command_output(
+            self.vmrun(),
+            ["-T", "fusion", "revertToSnapshot", vmx.to_string_lossy().as_ref(), READY_SNAPSHOT],
+        )?;
+        command_output(
+            self.vmrun(),
+            ["-T", "fusion", "start", vmx.to_string_lossy().as_ref(), "gui"],
         )?;
         Ok(ClientState::Ready)
     }
