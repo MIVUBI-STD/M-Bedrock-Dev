@@ -1,7 +1,11 @@
 mod fusion;
 mod workstation;
 
-use crate::client::{ClientId, ClientState};
+use crate::{
+    client::{ClientId, ClientState},
+    resources::VIRTUAL_MEMORY_LIMIT_MB,
+};
+use serde::Serialize;
 use std::{
     env,
     ffi::OsStr,
@@ -12,6 +16,7 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
+use sysinfo::System;
 
 pub use fusion::VmwareFusionProvider;
 pub use workstation::VmwareWorkstationProvider;
@@ -20,20 +25,28 @@ pub(crate) const READY_SNAPSHOT: &str = "QA_READY";
 pub(crate) const CLIENT_VCPUS: &str = "2";
 const COMMAND_TIMEOUT: Duration = Duration::from_secs(45);
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum MemoryMode {
+    Ceiling,
+}
+
 pub trait Provider {
     fn id(&self) -> &'static str;
+    fn memory_mode(&self) -> MemoryMode;
     fn detect(&self) -> bool;
     fn provision(&self, client: ClientId) -> io::Result<ClientState>;
     fn reprovision(&self, client: ClientId) -> io::Result<ClientState>;
-    fn configure_memory(&self, client: ClientId, memory_mb: u64) -> io::Result<()>;
-    fn memory_mb(&self, client: ClientId) -> io::Result<u64>;
+    fn memory_limit_mb(&self, client: ClientId) -> io::Result<u64>;
+    fn host_working_set_mb(&self, client: ClientId) -> io::Result<Option<u64>>;
     fn status(&self, client: ClientId) -> io::Result<ClientState>;
     fn start(&self, client: ClientId) -> io::Result<ClientState>;
+    fn suspend(&self, client: ClientId) -> io::Result<ClientState>;
     fn stop(&self, client: ClientId) -> io::Result<ClientState>;
     fn restart(&self, client: ClientId) -> io::Result<ClientState>;
     fn set_ready(&self, client: ClientId) -> io::Result<ClientState>;
     fn has_ready(&self, client: ClientId) -> io::Result<bool>;
-    fn reset(&self, client: ClientId, memory_mb: u64) -> io::Result<ClientState>;
+    fn reset(&self, client: ClientId) -> io::Result<ClientState>;
     fn open(&self, client: ClientId) -> io::Result<ClientState>;
     fn is_running_path(&self, vmx: &Path) -> io::Result<bool>;
 }
@@ -93,10 +106,7 @@ pub(crate) fn base_vmx_path() -> io::Result<PathBuf> {
 
     #[cfg(target_os = "macos")]
     {
-        return Ok(root
-            .join("base")
-            .join("Base.vmwarevm")
-            .join("Base.vmx"));
+        return Ok(root.join("base").join("Base.vmwarevm").join("Base.vmx"));
     }
 
     #[allow(unreachable_code)]
@@ -248,6 +258,22 @@ pub(crate) fn listed_as_running(list_output: &str, vmx: &Path) -> bool {
         .any(|line| line.eq_ignore_ascii_case(&target))
 }
 
+pub(crate) fn has_suspend_state(vmx: &Path) -> bool {
+    let Ok(container) = vm_container(vmx) else {
+        return false;
+    };
+    let Ok(entries) = fs::read_dir(container) else {
+        return false;
+    };
+
+    entries.flatten().any(|entry| {
+        entry
+            .path()
+            .extension()
+            .and_then(OsStr::to_str)
+            .is_some_and(|extension| extension.eq_ignore_ascii_case("vmss"))
+    })
+}
 
 pub(crate) fn wait_for_state<F>(mut predicate: F, expected: bool, timeout: Duration) -> io::Result<()>
 where
@@ -272,22 +298,17 @@ pub(crate) fn snapshot_list_contains(list_output: &str, name: &str) -> bool {
     list_output.lines().map(str::trim).any(|line| line == name)
 }
 
-
-pub(crate) fn apply_client_cpu_policy(vmx: &Path) -> io::Result<()> {
+pub(crate) fn apply_client_policy(vmx: &Path) -> io::Result<()> {
     let source = fs::read_to_string(vmx)?;
     let mut lines: Vec<String> = source.lines().map(ToOwned::to_owned).collect();
 
     set_vmx_value(&mut lines, "numvcpus", CLIENT_VCPUS);
+    set_vmx_value(
+        &mut lines,
+        "memsize",
+        &VIRTUAL_MEMORY_LIMIT_MB.to_string(),
+    );
 
-    let mut output = lines.join("\n");
-    output.push('\n');
-    fs::write(vmx, output)
-}
-
-pub(crate) fn set_vmx_memory(vmx: &Path, memory_mb: u64) -> io::Result<()> {
-    let source = fs::read_to_string(vmx)?;
-    let mut lines: Vec<String> = source.lines().map(ToOwned::to_owned).collect();
-    set_vmx_value(&mut lines, "memsize", &memory_mb.to_string());
     let mut output = lines.join("\n");
     output.push('\n');
     fs::write(vmx, output)
@@ -320,6 +341,25 @@ fn set_vmx_value(lines: &mut Vec<String>, key: &str, value: &str) {
     }
 }
 
+pub(crate) fn host_working_set_mb(vmx: &Path) -> Option<u64> {
+    let target = vmx.to_string_lossy().to_ascii_lowercase();
+    let mut system = System::new_all();
+    system.refresh_processes();
+
+    let bytes = system
+        .processes()
+        .values()
+        .filter(|process| {
+            process
+                .cmd()
+                .iter()
+                .any(|arg| arg.to_string_lossy().to_ascii_lowercase().contains(&target))
+        })
+        .map(|process| process.memory())
+        .sum::<u64>();
+
+    (bytes > 0).then_some(bytes / 1024 / 1024)
+}
 
 #[cfg(test)]
 mod tests {
