@@ -301,6 +301,7 @@ export function buildInspectionResult(
     scriptSafeConfig,
     worldRuleAuthority,
     playerCapabilitySurfaces,
+    clientMutationReconciliation,
     inventoryLifecycle,
     arenaLifecycle,
     arenaCleanupSurfaces,
@@ -417,6 +418,7 @@ export function buildInspectionResult(
     inventoryRestoreOwnership,
     worldRuleAuthority,
     playerCapabilitySurfaces,
+    clientMutationReconciliation,
     combatLifecycle,
     combatRuntime:
       combatRuntimeTelemetry,
@@ -641,6 +643,7 @@ export function buildInspectionResult(
     scriptSpatial,
     worldRuleAuthority,
     playerCapabilitySurfaces,
+    clientMutationReconciliation,
     ...(spatialAuthority === undefined
       ? {}
       : { spatialAuthority }),
