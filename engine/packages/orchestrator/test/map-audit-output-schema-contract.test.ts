@@ -13,9 +13,29 @@ describe("Map Audit Output V2 naming contract", () => {
     expect(schema.required).toEqual(
       expect.arrayContaining([
         "honesty",
+        "qualityGates",
         "validationTests",
       ]),
     );
+  });
+
+  it("keeps final quality projections bounded and non-authoritative", () => {
+    expect(
+      schema.properties.qualityGates.properties
+        .informationIntegrity.properties.status.enum,
+    ).toEqual([
+      "CLOSED_CLEAR",
+      "CLOSED_WITH_FINDINGS",
+      "BLOCKED",
+    ]);
+    expect(
+      schema.properties.qualityGates.properties
+        .zeroFinding.properties.status.enum,
+    ).toEqual([
+      "ELIGIBLE",
+      "NOT_ELIGIBLE",
+      "NOT_APPLICABLE",
+    ]);
   });
 
   it("keeps NEED_VALIDATION naming aligned with source contracts", () => {
