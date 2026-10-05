@@ -302,8 +302,8 @@ current user requirement
 → nearest AGENTS.md
 → selected specialist procedure
 → selected canonical docs owner
-→ current operations only when material
-→ history / Experimental evidence
+→ current planning/workspace only when material
+→ reliability history / experiments only when needed
 ```
 
 ## Canonical owners
@@ -318,9 +318,10 @@ analysis semantics       → docs/03-analysis/
 repair semantics         → docs/04-repair/
 validation semantics     → docs/05-validation/
 system ownership         → docs/06-system/
-current continuation     → docs/07-operations/next-action.md
-current proof            → docs/07-operations/current-validation.md
+current work intent      → planning/
 local artifact continuity→ workspace/
+historical proof         → engine/reliability/history/
+reusable evaluation     → engine/reliability/corpus/
 research                 → experiments/
 ```
 
