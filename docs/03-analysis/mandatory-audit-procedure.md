@@ -2350,26 +2350,34 @@ Audit metrics must preserve:
 The engine must maximize PROVEN through stronger evidence and proof, never through reduced proof requirements.
 
 
-## Aggressive Multi-Scenario requirement
+## Multi-Scenario Check requirement
 
-The STRESS lane must execute the aggressive scenario model defined in `detection-coverage-assurance.md`.
+The STRESS lane must execute the canonical multi-scenario checks defined in `detection-coverage-assurance.md`.
 
-When applicable, the following scenario families are mandatory:
+When applicable, use only these canonical check names:
 
 ```text
-Transition Residue
-Objective Custody
-World Mutation Compatibility
-Offline Progression
-Container / Economy Carryover
-Disconnect / Reconnect at lifecycle boundaries
-Reload / Bootstrap recovery
-Shared-state multi-player interleavings
-Multi-arena resource / cleanup interleavings
-Capability acquisition → privileged activation
+Stage Transition State Check
+Carried Objective Ownership Check
+Shared World State Check
+Offline Progression Check
+Container & Economy Reset Check
+Disconnect / Reconnect Check
+Reload Recovery Check
+Multiplayer Shared-State Check
+Multi-Arena Isolation Check
+Player Capability Check
 ```
 
-The engine must be aggressive in scenario generation and conservative in publication.
+The engine should maximize relevant scenario coverage while remaining conservative in publication.
+
+
+Naming discipline:
+- tester/user examples are mapped into the canonical checks above;
+- examples must not create new permanent workflow branches;
+- one issue keeps one root-cause name and one canonical flow;
+- report-facing names must remain plain and developer-readable;
+- machine IDs may remain stable for compatibility.
 
 Before STRESS closes:
 
