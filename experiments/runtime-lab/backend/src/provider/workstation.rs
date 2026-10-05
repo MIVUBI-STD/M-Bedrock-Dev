@@ -1,13 +1,14 @@
 use super::{
     base_vmx_path, client_vmx_path, command_output, ensure_parent, listed_as_running,
     promote_staging_vm, remove_vm_container, snapshot_list_contains, staging_client_vmx_path,
-    Provider, READY_SNAPSHOT,
+    wait_for_state, Provider, READY_SNAPSHOT,
 };
 use crate::client::{ClientId, ClientState};
 use std::{
     io,
     path::{Path, PathBuf},
     process::Command,
+    time::Duration,
 };
 
 const VMRUN_CANDIDATES: [&str; 2] = [
@@ -126,23 +127,36 @@ impl Provider for VmwareWorkstationProvider {
             return Ok(ClientState::NotProvisioned);
         }
         Ok(if self.running(&vmx)? {
-            ClientState::Ready
+            ClientState::Running
         } else {
             ClientState::Stopped
         })
     }
 
+    fn reprovision(&self, client: ClientId) -> io::Result<ClientState> {
+        let vmx = client_vmx_path(client)?;
+        if vmx.is_file() && self.running(&vmx)? {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!("{} must be stopped before reprovision", client.as_str()),
+            ));
+        }
+        remove_vm_container(&vmx);
+        self.provision(client)
+    }
+
     fn start(&self, client: ClientId) -> io::Result<ClientState> {
         let vmx = self.require_client(client)?;
         if self.running(&vmx)? {
-            return Ok(ClientState::Ready);
+            return Ok(ClientState::Running);
         }
 
         command_output(
             self.require_vmrun()?,
             ["-T", "ws", "start", vmx.to_string_lossy().as_ref(), "gui"],
         )?;
-        Ok(ClientState::Ready)
+        wait_for_state(|| self.running(&vmx), true, Duration::from_secs(15))?;
+        Ok(ClientState::Running)
     }
 
     fn stop(&self, client: ClientId) -> io::Result<ClientState> {
@@ -155,6 +169,15 @@ impl Provider for VmwareWorkstationProvider {
             self.require_vmrun()?,
             ["-T", "ws", "stop", vmx.to_string_lossy().as_ref(), "soft"],
         )?;
+
+        if wait_for_state(|| self.running(&vmx), false, Duration::from_secs(12)).is_err() {
+            command_output(
+                self.require_vmrun()?,
+                ["-T", "ws", "stop", vmx.to_string_lossy().as_ref(), "hard"],
+            )?;
+            wait_for_state(|| self.running(&vmx), false, Duration::from_secs(5))?;
+        }
+
         Ok(ClientState::Stopped)
     }
 
@@ -171,7 +194,8 @@ impl Provider for VmwareWorkstationProvider {
             self.require_vmrun()?,
             ["-T", "ws", "reset", vmx.to_string_lossy().as_ref(), "soft"],
         )?;
-        Ok(ClientState::Ready)
+        wait_for_state(|| self.running(&vmx), true, Duration::from_secs(15))?;
+        Ok(ClientState::Running)
     }
 
     fn has_ready(&self, client: ClientId) -> io::Result<bool> {
@@ -215,10 +239,7 @@ impl Provider for VmwareWorkstationProvider {
         }
 
         if self.running(&vmx)? {
-            command_output(
-                self.require_vmrun()?,
-                ["-T", "ws", "stop", vmx.to_string_lossy().as_ref(), "soft"],
-            )?;
+            self.stop(client)?;
         }
 
         command_output(
@@ -229,7 +250,8 @@ impl Provider for VmwareWorkstationProvider {
             self.require_vmrun()?,
             ["-T", "ws", "start", vmx.to_string_lossy().as_ref(), "gui"],
         )?;
-        Ok(ClientState::Ready)
+        wait_for_state(|| self.running(&vmx), true, Duration::from_secs(15))?;
+        Ok(ClientState::Running)
     }
 
     fn open(&self, client: ClientId) -> io::Result<ClientState> {
