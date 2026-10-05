@@ -384,7 +384,7 @@
     {
       "id": "reg_build_decode_1_1_0_closed_barrier_blocks_escape_claim",
       "status": "candidate",
-      "sourceRef": "workspace/reports/Build-and-Decode-v1.1.0-BugReport.json#manualRuntimeEvidence",
+      "sourceRef": "engine/reliability/history/2026-10-05-build-decode-v1.1.0-runtime-feedback.json#closed-barrier-enclosure",
       "artifactFile": "Build & Decode v1.1.0.mcworld",
       "readiness": {
         "minimizedFixture": "missing",
