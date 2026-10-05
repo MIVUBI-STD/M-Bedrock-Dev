@@ -22,3 +22,15 @@ A record should include:
 - optional minimized reproduction metadata.
 
 History is longitudinal evidence, not semantic source authority.
+
+## Audit execution history
+
+Selected-map audit execution records are grouped under:
+
+```text
+history/audit-runs/
+```
+
+This includes full-map, unseen, regression, prospective, manual, post-upgrade, runtime-reduction, artifact-inventory, and evaluation snapshots.
+
+Historical runs are evidence/history only. They do not define current gameplay truth, current planning, or current report state.
