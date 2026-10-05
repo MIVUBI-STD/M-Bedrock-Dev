@@ -137,6 +137,16 @@ impl RuntimeLab {
             ));
         }
 
+        let capacity = doctor().max_recommended_clients;
+        if count > capacity {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!(
+                    "requested {count} clients but this host is recommended for at most {capacity}"
+                ),
+            ));
+        }
+
         let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider();
         if count > 1 && provider.is_none() {
