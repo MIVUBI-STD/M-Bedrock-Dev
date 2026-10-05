@@ -4,6 +4,8 @@ Cross-project work that operates the existing system without changing its produc
 
 ## Active
 
+Machine-readable audit/revalidation queue: `operations-audit-queue.json`.
+
 - Preserve ongoing map-audit work while repository information architecture is reorganized.
 - Avoid broad path moves until references and active workflows have a migration map.
 
