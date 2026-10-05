@@ -58,7 +58,29 @@ Provisioning uses staging and promotion instead of cloning directly into final c
 
 Provider commands are time-bounded and return their actual stderr/stdout on failure.
 
-Virtual clones receive a fixed V1 resource policy of 4 GB RAM and 2 vCPU. Multi-client boot is staggered to avoid unnecessary startup spikes.
+Virtual clones receive a fixed 2 vCPU policy, while RAM is assigned adaptively at boot.
+
+The resource planner owns RAM allocation:
+
+```text
+available host RAM
+→ reserve host headroom
+→ count only requested virtual clients that are still stopped
+→ apply per-VM floor/ceiling
+→ round to 512 MB
+→ write VMX memory
+→ boot sequentially
+```
+
+Current V1 memory bounds:
+
+- 1 virtual client: 4–6 GB;
+- 2 virtual clients: 4–5 GB each;
+- 3 virtual clients: 4 GB each.
+
+Running VMs are never resized in place. Provisioning does not own RAM sizing.
+
+Multi-client boot remains staggered to avoid unnecessary startup spikes.
 
 Stop is graceful-first: request soft guest shutdown, wait for the VM to leave the running set, then use hard stop only as a bounded recovery fallback.
 
