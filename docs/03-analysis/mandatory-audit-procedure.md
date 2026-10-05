@@ -2413,3 +2413,30 @@ Generic NEED_VALIDATION = 0
 Unsupported PROVEN = 0
 ```
 
+
+## High-yield state and geometry checks
+
+The MODEL/STRESS lanes must route the following checks whenever their trigger exists:
+
+```text
+State Snapshot Differential
+Cross-Representation Consistency Check
+Event Ordering & Duplicate Commit Check
+Orphan State & Entity Check
+Path & Geometry Dependency Check
+Metamorphic Comparison Check
+```
+
+They are not separate workflows.
+
+Routing rules:
+
+- lifecycle boundary with material state → State Snapshot Differential;
+- one gameplay concept stored in multiple representations → Cross-Representation Consistency Check;
+- multiple producers/subscribers target the same consequence → Event Ordering & Duplicate Commit Check;
+- created/reserved mutable object has a lifecycle owner → Orphan State & Entity Check;
+- progression depends on traversal/physical route/interaction volume → Path & Geometry Dependency Check;
+- two cases should preserve the same gameplay invariant → Metamorphic Comparison Check.
+
+Before REPORT, every applicable routed check must resolve to SAFE, PROVEN, one exact irreducible runtime question, or a documented Audit Obligation. No applicable check may disappear because another issue was already found in the same map.
+
