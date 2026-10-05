@@ -240,7 +240,22 @@
         "MULTI_ARENA_ISOLATION"
       ],
       "blockerPotential": true,
-      "exactQuestion": "Can all four arenas start, load, play, transition, reset and finish concurrently at intended maximum occupancy without stalls, command failure or cross-arena mutation?"
+      "exactQuestion": "Can all four arenas start, load, play, transition, reset and finish concurrently at intended maximum occupancy without stalls, command failure or cross-arena mutation?",
+      "staticReduction": {
+        "configuredArenas": 4,
+        "namedArenaTickingAreas": 4,
+        "lobbyTickingAreas": 1,
+        "worstCaseNamedTickingAreas": 5,
+        "perArenaLoadingChunksApprox": 16,
+        "plotResetBlocksPerArena": 74431,
+        "fillLayersPerBatch": 3,
+        "fillBatchesPerArena": 11,
+        "worstCaseFourArenaFillBatches": 44,
+        "queueModel": "single FIFO fill queue; each task is arena/generation-bound",
+        "staticDisposition": "NO_LOGICAL_OR_RESOURCE_CAP_BLOCKER_FOUND"
+      },
+      "status": "RUNTIME_REQUIRED_PERFORMANCE_ONLY",
+      "result": "Static ownership/capacity closure is complete. Remaining proof is limited to native Bedrock command/scheduler behavior under four concurrent sessions; no hidden source-level two-arena cap or cross-arena ownership defect remains."
     },
     {
       "id": "VAL-BAD-RELOAD-FOUR-PHASES",
@@ -249,7 +264,31 @@
         "CONNECTION_RECOVERY"
       ],
       "blockerPotential": true,
-      "exactQuestion": "After runtime/script reload with four arenas in different phases, does each restore only its own membership, roles, ticking area, plot state, timer and result ownership?"
+      "exactQuestion": "After runtime/script reload with four arenas in different phases, does each restore only its own membership, roles, ticking area, plot state, timer and result ownership?",
+      "staticReduction": {
+        "safeRestorablePhases": [
+          "playing",
+          "round_countdown",
+          "round_end",
+          "round_selection",
+          "suspended"
+        ],
+        "cleanupOwnedPhases": [
+          "preparing",
+          "resetting",
+          "match_end"
+        ],
+        "restorePolicy": "restorable sessions return as suspended, preserve arena/match ownership, then reconcile online players before resume",
+        "cleanupPolicy": "interrupted preparation/reset/result phases are resumed through cleanup or cancellation rather than resumed in-place",
+        "conflictGuards": [
+          "duplicate persisted membership rejected",
+          "recovery intent must match arena/match",
+          "generation increment invalidates stale continuations"
+        ],
+        "staticDisposition": "NO_CROSS_ARENA_RELOAD_CONTRADICTION_FOUND"
+      },
+      "status": "RUNTIME_REQUIRED_REBIND_ONLY",
+      "result": "Static reload ownership is closed. Remaining proof is only the native reload/rebind execution with multiple arenas in different phases; source does not expose a cross-arena state owner."
     },
     {
       "id": "VAL-BAD-DEPLOYMENT-MULTIPLAYER",
@@ -257,7 +296,20 @@
         "ENTRY_ADMISSION"
       ],
       "blockerPotential": true,
-      "exactQuestion": "Does the actual deployment enable multiplayer despite MultiplayerGame=0 and MultiplayerGameIntent=0 in the selected level.dat?"
+      "exactQuestion": "Does the actual deployment enable multiplayer despite MultiplayerGame=0 and MultiplayerGameIntent=0 in the selected level.dat?",
+      "staticReduction": {
+        "selectedArtifactLevelDat": {
+          "MultiplayerGame": 0,
+          "MultiplayerGameIntent": 0,
+          "LANBroadcast": 0,
+          "LANBroadcastIntent": 1,
+          "educationFeaturesEnabled": 1
+        },
+        "repoDeploymentProfileFound": false,
+        "staticDisposition": "DEPLOYMENT_CONFIGURATION_NOT_GROUNDED_IN_REPO"
+      },
+      "status": "DEPLOYMENT_CONFIRMATION_REQUIRED",
+      "result": "The selected package itself stores multiplayer disabled, and no Build & Decode deployment/runtime profile is present in the repo to prove an override. This remains a release/deployment gate, not a gameplay bug until actual hosting behavior is known."
     }
   ],
   "issueSet": {
@@ -279,8 +331,8 @@
     "vitalGameplayKnowledge": "OPEN",
     "openBecause": [
       "ENTRY_ADMISSION requires deployment multiplayer confirmation",
-      "MULTI_ARENA_ISOLATION requires four-arena live concurrency and mixed-phase reload confirmation",
-      "CONNECTION_RECOVERY requires mixed-phase reload confirmation"
+      "MULTI_ARENA_ISOLATION requires one live four-arena performance confirmation and one mixed-phase runtime reload confirmation",
+      "CONNECTION_RECOVERY shares the mixed-phase runtime reload confirmation"
     ],
     "nextPhase": "MAPPING_AND_VALIDATION_ONLY",
     "repairAllowed": false
