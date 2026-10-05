@@ -129,3 +129,22 @@ A cross-domain rule may correlate evidence, but it does not take ownership away 
 ## Conservative inference
 
 Topology, runtime behavior, cross-domain state, and platform capability must remain evidence-bounded. Repeated patterns, parser success, or nearby healthy code do not by themselves prove gameplay correctness.
+
+## Normalized project model
+
+The normalized project model is the boundary between physical files and semantic analysis:
+
+```text
+artifact graph
+→ file inventory
+→ normalized components
+→ semantic dependency graph
+```
+
+These layers are separate authorities.
+
+Extracted files remain source truth. Normalized components and semantic graphs are derived/rebuildable truth and must remain traceable through source references.
+
+Component identity should be stable across workspace relocation and based on semantic scope + identifier rather than absolute paths.
+
+The project-model package may organize internal contracts, evidence, runtime normalization, and session continuity into subgroups, but those groups do not become separate semantic authorities.
