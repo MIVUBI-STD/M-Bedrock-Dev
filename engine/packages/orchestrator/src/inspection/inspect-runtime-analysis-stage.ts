@@ -50,6 +50,9 @@ import {
 import {
   analyzePlayerCapabilitySurfaces,
 } from "./player-capability-surface-analysis.js";
+import {
+  analyzeClientMutationReconciliation,
+} from "./client-mutation-reconciliation-analysis.js";
 
 export interface InspectionRuntimeAnalysisInput {
   target: InspectTargetProfile;
@@ -168,6 +171,15 @@ export function analyzeInspectionRuntimeState(
     analyzeWorldRuleAuthority(parsedScriptModels);
   const playerCapabilitySurfaces =
     analyzePlayerCapabilitySurfaces(
+      input.parsedScripts.map((item) => ({
+        parsed: item.parsed,
+        ...(item.text === undefined
+          ? {}
+          : { text: item.text }),
+      })),
+    );
+  const clientMutationReconciliation =
+    analyzeClientMutationReconciliation(
       input.parsedScripts.map((item) => ({
         parsed: item.parsed,
         ...(item.text === undefined
