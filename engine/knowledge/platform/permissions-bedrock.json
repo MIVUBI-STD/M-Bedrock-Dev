@@ -203,6 +203,33 @@
         "dev-access",
         "production-exposure"
       ]
+    },
+    {
+      "id": "permissions.role-surfaces-independent",
+      "domain": "permissions",
+      "subject": "player authority surfaces",
+      "statement": "Player permission level, command permission level, gamemode, and input permissions are distinct platform/runtime surfaces. A map-specific admin or Roommaster tag cannot by itself establish the effective capabilities granted by those separate surfaces.",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-perm-player-level",
+        "ms-perm-command-level",
+        "ms-perm-gamemode",
+        "ms-perm-input"
+      ],
+      "capabilityTags": [
+        "role-matrix",
+        "authority"
+      ],
+      "riskSurfaces": [
+        "role-confusion",
+        "partial-privilege-audit"
+      ]
     }
   ],
   "relations": [
