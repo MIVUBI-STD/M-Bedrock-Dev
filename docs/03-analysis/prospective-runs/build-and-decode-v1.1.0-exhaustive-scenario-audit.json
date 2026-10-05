@@ -102,5 +102,5 @@
       "question": "Does the actual deployment enable multiplayer? The selected level.dat stores MultiplayerGame=0, so host/server override must be confirmed."
     }
   ],
-  "conclusion": "All deterministic selected-artifact source paths and cross-system scenarios are closed. Eight issues are proven. Voxel replica and physical containment are now resolved: active gameplay volumes are equivalent across four arenas, while mayfly-enabled physical arena escape is a proven Major bug. Remaining uncertainty is bounded to live four-arena concurrency, mixed-phase reload, and deployment multiplayer."
+  "conclusion": "All deterministic selected-artifact source paths and cross-system scenarios are closed. Eight issues are proven. Voxel replica and physical containment are resolved: active gameplay volumes are equivalent across all four arenas, while active players can leave their physical arena. Remaining uncertainty is bounded to live four-arena concurrency, mixed-phase reload, and deployment multiplayer."
 }
