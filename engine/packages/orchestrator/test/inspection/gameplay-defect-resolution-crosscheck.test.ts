@@ -60,6 +60,11 @@ function resolution(
     | "scope"
     | "cleanup"
     | "exclusion"
+    | "geometry"
+    | "capability"
+    | "world-rule"
+    | "activation"
+    | "representation"
   )[],
 ) {
   return {
@@ -206,6 +211,89 @@ describe("gameplay defect resolution crosscheck depth", () => {
     );
     expect(result.confirmedDefectReadyIds).toEqual([
       "link:arena-capacity",
+    ]);
+  });
+  it("requires geometry counter-proof for physical escape claims", () => {
+    const spatialGraph: GameplayScenarioGraph = {
+      ...graph,
+      scenarios: [{
+        ...graph.scenarios[0]!,
+        id: "preset:physical-escape",
+        label: "arena-physical-escape",
+        purpose: "Validate whether a flying player can cross the arena barrier boundary.",
+        causalLinkIds: ["link:physical-escape"],
+      }],
+      causalLinks: [{
+        ...graph.causalLinks[0]!,
+        id: "link:physical-escape",
+        scenarioId: "preset:physical-escape",
+        purpose: "Player remains physically contained by arena collision geometry.",
+        reason: "mayfly is enabled and no script position clamp was found.",
+      }],
+    };
+
+    const result = assessGameplayDefectResolutionGate(spatialGraph);
+
+    expect(result.status).toBe("BLOCKED");
+    expect(result.counterProofSearchRequiredIds).toEqual([
+      "link:physical-escape",
+    ]);
+    expect(
+      result.resolutions[0]?.counterProofSearch?.searchedDimensions,
+    ).not.toContain("geometry");
+  });
+
+  it("requires capability, activation and world-rule counter-proof for privileged spawn claims", () => {
+    const capabilityGraph: GameplayScenarioGraph = {
+      ...graph,
+      scenarios: [{
+        ...graph.scenarios[0]!,
+        id: "preset:roommaster-spawn",
+        label: "roommaster-manual-spawn",
+        purpose: "Validate Roommaster/admin manual entity spawning under world gamerules.",
+        causalLinkIds: ["link:roommaster-spawn"],
+      }],
+      causalLinks: [{
+        ...graph.causalLinks[0]!,
+        id: "link:roommaster-spawn",
+        scenarioId: "preset:roommaster-spawn",
+        purpose: "Protected live arena rejects unauthorized entity spawning.",
+        reason: "Admin permission bypass may allow manual spawn while doMobSpawning is false.",
+      }],
+    };
+
+    const result = assessGameplayDefectResolutionGate(capabilityGraph);
+
+    expect(result.status).toBe("BLOCKED");
+    expect(result.counterProofSearchRequiredIds).toEqual([
+      "link:roommaster-spawn",
+    ]);
+  });
+
+  it("requires representation counter-proof for client-only visual mutation claims", () => {
+    const representationGraph: GameplayScenarioGraph = {
+      ...graph,
+      scenarios: [{
+        ...graph.scenarios[0]!,
+        id: "preset:waterlog-desync",
+        label: "client-waterlog-desync",
+        purpose: "Validate client/server reconciliation after cancelled water placement.",
+        causalLinkIds: ["link:waterlog-desync"],
+      }],
+      causalLinks: [{
+        ...graph.causalLinks[0]!,
+        id: "link:waterlog-desync",
+        scenarioId: "preset:waterlog-desync",
+        purpose: "Cancelled world mutation reconciles to the authoritative server state.",
+        reason: "Acting client may retain a waterlogged ghost visual.",
+      }],
+    };
+
+    const result = assessGameplayDefectResolutionGate(representationGraph);
+
+    expect(result.status).toBe("BLOCKED");
+    expect(result.counterProofSearchRequiredIds).toEqual([
+      "link:waterlog-desync",
     ]);
   });
 });
