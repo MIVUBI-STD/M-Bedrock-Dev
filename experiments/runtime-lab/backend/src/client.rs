@@ -32,7 +32,7 @@ pub enum ClientState {
     Manual,
     NotProvisioned,
     Stopped,
-    Ready,
+    Running,
     Error,
 }
 
