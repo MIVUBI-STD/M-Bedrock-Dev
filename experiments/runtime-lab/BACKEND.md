@@ -2,57 +2,71 @@
 
 Runtime Lab V1 is a manual multi-client launcher for Minecraft Education.
 
-## Goal
+## Canonical architecture
 
 ```text
-one PC
-→ start 1–4 isolated Minecraft Education clients
-→ keep them responsive
-→ let the operator control every player manually
-→ open / reset / stop individual clients
+CLI now / Tauri commands later
+            ↓
+        RuntimeLab
+            ↓
+          Client
+            ↓
+         Provider
+            ↓
+VMware Workstation / VMware Fusion
 ```
 
-## Canonical backend path
+Rust owns runtime truth.
 
-```text
-CLI now / UI later
-        ↓
-RuntimeLabBackend
-        ↓
-ClientRuntime
-        ↓
-Provider
-        ↓
-VMware Workstation on Windows
-VMware Fusion on macOS
-```
-
-There is no scenario runner, test planner, role assignment, bot movement, or automated gameplay in V1.
+The future Svelte UI will be presentation only. Tauri commands will remain thin adapters over the same `RuntimeLab` core.
 
 ## Ownership
 
-- `runtime-lab-backend.mjs` — one application-level backend surface.
-- `client-runtime.mjs` — one owner for client lifecycle.
-- `doctor.mjs` — host readiness check.
-- `providers/provider.mjs` — platform provider selection.
-- provider-specific files — hypervisor mechanics only.
-- `cli.mjs` — thin operator boundary.
+- `backend/src/runtime.rs` — single application backend owner.
+- `backend/src/client.rs` — client identity and lifecycle state.
+- `backend/src/doctor.rs` — host/provider readiness.
+- `backend/src/provider/` — provider mechanics only.
+- `backend/src/bin/runtime-lab.rs` — thin development/operator CLI.
 
-## Commands
+There is no second backend process and no Node runtime backend.
+
+## V1 commands
 
 ```text
-lab doctor
-lab status
-lab start <1-4>
-lab open <client>
-lab reset <client>
-lab stop [client]
+doctor
+status
+start <1-4>
+open <client>
+reset <client>
+stop [client]
 ```
 
-No runtime action may pretend to succeed when the backing VM/client has not been provisioned.
+Gameplay remains manually controlled by the operator.
+
+## Non-goals
+
+V1 does not include:
+
+- scenario planning;
+- role assignment;
+- bot control;
+- automated movement/gameplay;
+- generic provider registry;
+- external configuration framework;
+- frontend logic.
 
 ## Frontend boundary
 
-Frontend is intentionally deferred.
+Frontend work begins only after lifecycle and provisioning are stable.
 
-When frontend work begins, it must call `RuntimeLabBackend` and must not implement provider or lifecycle logic itself.
+When that phase starts:
+
+```text
+Svelte
+  ↓
+thin Tauri command
+  ↓
+RuntimeLab Rust core
+```
+
+No VMware/Fusion command or lifecycle state may be reimplemented in the frontend.
