@@ -1,33 +1,7 @@
 # Entity Event Reachability
 
-Entity transition analysis now validates the internal sensor/event graph.
+> Compatibility pointer. Canonical owner: [Entity State Analysis](./entity-state-analysis.md).
 
-Strong diagnostics:
+This topic is consolidated into the canonical owner above. Existing implementation paths and evidence semantics remain unchanged.
 
-- sensor references an undefined event;
-- event trigger references an undefined event;
-- event add/remove references an undefined component group.
-
-Conservative informational diagnostic:
-
-- a defined event is not reachable from configured sensor/event roots.
-
-The latter is intentionally not treated as a defect because Bedrock events may also be triggered externally by commands, animation controllers, scripts, spawn logic, or engine-owned behavior.
-
-## Reachability
-
-```text
-sensor event
-→ defined entity event
-→ trigger event
-→ trigger event
-→ ...
-```
-
-Only defined internal edges are traversed.
-
-This gives a reliable answer to:
-
-> Is the state transition chain internally well-formed?
-
-without pretending static analysis can prove every possible runtime entry point.
+This file remains temporarily so active references do not break. Do not add new normative guidance here.
