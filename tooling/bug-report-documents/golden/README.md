@@ -7,6 +7,8 @@ This directory freezes the approved Bug Tracker presentation so future reports r
 - `GOLDEN-UI.md` — normative visual, hierarchy, state, source-card, level, export, and prompt-leak contract.
 - `golden-ui-contract.json` — machine-readable locked UI tokens/behavior.
 - `empty-workspace.json` — zero-data starting state. It intentionally contains no map issues, tester notes, fixed state, or attachments.
+- `legacy-source-locked.html` — recovered historical visual reference only; contains legacy report data and is never used as the next report's filled-data template.
+- `legacy-source-recovery.md` — provenance and usage boundary for the recovered legacy source.
 
 ## Required generation flow
 
