@@ -26,15 +26,15 @@ const canonicalDocs=[
   "CONTEXT.md",
   "engine/README.md",
   "engine/AGENTS.md",
-  "docs/06-system/authority-model.md",
-  "docs/06-system/implementation-map.md",
-  "docs/06-system/canonical-naming.md"
+  "docs/system/authority-model.md",
+  "docs/system/implementation-map.md",
+  "docs/system/canonical-naming.md"
 ];
 
 
 const publicNamingFiles=[
-  "docs/03-analysis/master-selected-map-audit-workflow.md",
-  "docs/03-analysis/mandatory-audit-procedure.md",
+  "docs/analysis/master-selected-map-audit-workflow.md",
+  "docs/analysis/mandatory-audit-procedure.md",
   "workspace/reports/README.md",
   "engine/packages/bug-report/PREVIEW.md",
   "engine/packages/bug-report/COPY.md"
