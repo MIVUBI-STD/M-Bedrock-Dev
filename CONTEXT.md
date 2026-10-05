@@ -1,8 +1,8 @@
 # M-Bedrock-Dev Stable Context
 
-Last verified stable design facts: 2026-09-30
+Last verified stable design facts: 2026-10-05
 
-This file owns stable product and architecture facts only.
+This file contains only stable repository/product facts. It does not own current work, current proof state, implementation-path detail, or project execution state.
 
 ## Product
 
@@ -20,146 +20,112 @@ Inspect
 → Report
 ```
 
-The same deterministic core must support CLI, CI, future MCP, future desktop tooling, and direct library use.
+The deterministic core is shared by CLI, CI, future integrations, and direct library use.
 
-## Repository authority
+## Branch authority
 
 ```text
-Local = active development / source authority
-main  = stable / release authority
+Local → active development / source authority
+main  → stable / release authority
 ```
 
-## Architecture
+## Repository domains
+
+```text
+apps/          user-facing executable/UI surfaces
+engine/        product implementation and executable semantics
+docs/          durable human-facing documentation
+planning/      development / operations / project work intent
+workspace/     working artifacts, project continuity, and current report handoff
+experiments/   bounded non-authoritative research
+tooling/       repository/build/developer verification tooling
+.agents/       bounded agent procedures, permissions, routing, and evals
+```
+
+Historical execution evidence belongs in `engine/reliability/history/`.
+Reusable evaluation material belongs in `engine/reliability/corpus/`.
+
+## Stable architecture
 
 ```text
 Artifact
-→ safe ingest/archive boundary
-→ physical file inventory
+→ safe ingest / archive boundary
 → normalized project model
-→ semantic dependency graph
-→ gameplay intent reconstruction
-→ analyzers / diagnostics
-→ patch transaction
-→ working-copy mutation
+→ semantic / gameplay understanding
+→ diagnosis
+→ authorized transactional mutation
 → validation
-→ deterministic package output
-→ evidence report
+→ deterministic output
+→ report / evidence projection
 ```
 
-Repository execution planning is a separate control-plane concern:
-
-```text
-changed paths / explicit target
-→ task-graph affected closure
-→ valid reuse filtering
-→ minimum required execution
-→ existing semantic owners
-```
-
-The Task Graph never upgrades semantic or runtime proof and never owns Minecraft behavior.
-
-## Repository organization
-
-```text
-DEV.cmd        sole repository-level developer entrypoint
-apps/          user-facing surfaces only
-engine/packages/      reusable deterministic engine/control-plane owners
-engine/adapters/      external/source format adapters
-engine/analyzers/     semantic derivation and diagnostics
-engine/rules/         versioned Bedrock/Education rules
-engine/schemas/       structural/internal schemas
-engine/fixtures/      minimized reproducible evidence
-engine/design/        Game Design schema/compiler system
-engine/knowledge/     Minecraft platform/runtime facts
-engine/contracts/     Engineering Contracts
-engine/reliability/   repository-owned reliability catalogs/history data
-engine/runtime/       bounded runtime proof harness content
-docs/          durable human-facing documentation
-tooling/       repository-owned developer/build control plane
-planning/      development/operations/project work intent
-workspace/     project working/saved continuity + Map Game Design + tracked report handoff
-experiments/   bounded research only
-```
-
-The root is reserved for repository policy, version/toolchain authority, command entrypoints, and canonical documentation entrypoints.
+Repository task planning is a separate control-plane concern. It may select affected work and reuse valid results, but it never upgrades semantic/runtime proof or owns Minecraft behavior.
 
 ## Engineering invariants
 
 - one semantic owner per responsibility;
 - one primary execution path per behavior;
 - one persisted fact has one authority;
-- source artifacts are immutable;
-- working-copy mutation is transactional and preconditioned;
+- original source artifacts are immutable;
+- mutations are explicit, transactional, and preconditioned;
 - analyzers are read-only;
 - unknown content is preserved;
-- compatibility is a versioned capability concern;
-- Bedrock and Education share one core with explicit edition-specific rules;
-- artifact graph, repository task graph, and Minecraft semantic graph remain separate authorities;
-- source/static/package/live proof remain separate;
-- regression fixtures protect material recurring behavior;
-- deletion/reuse/native capability precede new abstractions;
-- unknown Task Graph ownership falls back conservatively instead of silently skipping work;
-- Task Graph wildcard ownership is limited to one trailing prefix wildcard; no generic glob semantics;
-- domain-specific source changes invalidate only their owned domain plus explicit dependents; core parser/model changes expand conservatively;
-- proposal-only repair coverage is distinct from missing deterministic realizer coverage;
-- AI Context Compiler may consume a valid repository task plan to compress domain context, but unmatched ownership keeps context conservative;
-- no background subsystem or persistent registry without a concrete repeated need.
+- compatibility/version applicability is explicit;
+- Bedrock and Education share one core with edition-specific rules;
+- artifact graph, repository task graph, and Minecraft semantic graph remain separate;
+- source/static/package/runtime proof levels remain separate;
+- historical reliability evidence is search pressure, not current-artifact truth;
+- derived projections do not become second state authorities;
+- deletion/reuse of an existing owner precedes adding a new abstraction;
+- no persistent registry, manager, cache, or state store without a concrete repeated need.
+
+## Selected-map audit invariant
+
+Production audit has one selected artifact and one ordered flow:
+
+```text
+runSelectedMapAudit()
+→ TARGET
+→ DISCOVERY
+→ UNDERSTAND
+→ MODEL
+→ STRESS
+→ PROVE
+→ REPORT
+```
+
+The selected current map artifact is the sole current gameplay authority.
+
+Historical reports, older versions, reliability data, user symptoms, and external references may raise search pressure but cannot independently define current Expected/Actual behavior or prove a current defect.
+
+Unresolved work remains explicit as Audit Obligations or bounded runtime proof requirements. Vital Gameplay Knowledge Closure is a read-only projection and never a second workflow or finding owner.
 
 ## Toolchain
 
-Canonical supported policy lives in `toolchain.json`.
+Canonical toolchain policy lives in `toolchain.json`.
 
-Current initial implementation lane:
-
-```text
-Windows 10/11 x64 primary developer target
-Node.js 24 LTS (developer/build pinned to 24.21.0)
-npm 11.19.0 + committed lockfile authority; installs use npm ci
-TypeScript strict mode
-Vitest
-PowerShell 7-compatible repository tooling
-```
-
-Rust, Python, databases, desktop frameworks, and MCP infrastructure are not mandatory dependencies until a proven requirement owns them.
-
-## Semantic and control-plane owners
+Root developer entrypoint:
 
 ```text
-artifact identity/fingerprint      → engine/packages/artifact
-archive safety/transport           → engine/packages/archive
-normalized project state           → engine/packages/project-model
-Minecraft dependency graph         → engine/packages/graph
-repository affected execution      → engine/packages/task-graph
-diagnostic contracts               → engine/packages/diagnostics
-repair transactions                → engine/packages/repair
-cross-owner composition            → engine/packages/orchestrator
-Bedrock content parsing            → engine/analyzers/*
-format adaptation                  → engine/adapters/*
-compatibility/version rules       → engine/rules/* + engine/packages/compatibility
-interface presentation             → apps/*
+DEV.cmd
 ```
 
-## Current phase
-
-Repository foundation, domain-intelligence layers, repair routing, first-pass gameplay discovery/closure, risk-directed diagnosis, reachability/capability exposure, contradiction consolidation, and production bug-report presentation are implemented. The active operational lane is real-map usage and calibration against selected current map artifacts; new framework work should be driven only by proven Detection Gaps or repeated production bottlenecks.
-
-Implementation ownership: `docs/06-system/implementation-map.md`.
-
-## Gameplay bug workflow invariant
+## Canonical routing
 
 ```text
-current approved Game Design
-→ scoped Gameplay Contract
-→ design readiness
-→ actual behavior contradiction
-→ candidate admission
-→ Proposed Bug Set
-→ chat-approved bug
-→ Repair Contract
-→ mutation
-→ defect + preservation verification
+documentation router        → docs/README.md
+repository/domain naming    → docs/06-system/canonical-naming.md
+architecture                → docs/06-system/architecture.md
+semantic authority          → docs/06-system/authority-model.md
+implementation ownership    → docs/06-system/implementation-map.md
+development discipline      → docs/06-system/development-discipline.md
+developer operations        → docs/06-system/development-operations.md
+skill routing               → docs/06-system/skill-routing.md
+minimum-sufficient execution→ docs/06-system/zero-waste-execution.md
+current work intent         → planning/
+working/project state       → workspace/
+historical evidence         → engine/reliability/history/
+research                    → experiments/
 ```
 
-Source-derived intent is implementation evidence, not Map Game Design authority. Inspection may derive repair proposals, but production PatchTransaction/mutation authority starts only after approval and preservation binding.
-
-Vital Gameplay Knowledge Closure is a final read-only projection of the canonical selected-map audit. It covers exactly eight vital domains and fails open on RUNTIME_REQUIRED, DETECTION_GAP, or unrouted material residue. It does not introduce a new command, state machine, finding lane, or proof owner.
+If a detail is owned elsewhere, link to that owner rather than duplicating it here.
