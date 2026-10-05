@@ -1,8 +1,8 @@
 use crate::{
     client::{ClientId, ClientState, ClientStatus},
     doctor::{doctor, DoctorReport},
-    provider::{current_platform_provider, runtime_root},
-    resources::{plan_memory, HOST_RUNTIME_HEADROOM_MB},
+    provider::{current_platform_provider, runtime_root, MemoryMode, Provider},
+    resources::{evaluate_pressure, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
 };
 use fs2::FileExt;
 use serde::Serialize;
@@ -20,19 +20,21 @@ pub struct RuntimeLab;
 #[serde(rename_all = "camelCase")]
 pub struct RuntimeStatus {
     pub provider: Option<&'static str>,
+    pub memory_mode: Option<MemoryMode>,
+    pub pressure: HostPressure,
     pub clients: Vec<ClientStatus>,
 }
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ResourcePlanView {
+pub struct ResourceView {
     pub requested_virtual_clients: usize,
-    pub virtual_clients: usize,
-    pub stopped_virtual_clients: usize,
     pub running_virtual_clients: usize,
-    pub available_memory_mb: u64,
-    pub host_headroom_mb: u64,
-    pub memory_per_stopped_vm_mb: u64,
+    pub suspended_virtual_clients: usize,
+    pub stopped_virtual_clients: usize,
+    pub memory_mode: MemoryMode,
+    pub virtual_memory_limit_mb: u64,
+    pub pressure: HostPressure,
 }
 
 struct OperationLock {
@@ -71,8 +73,34 @@ impl Drop for OperationLock {
     }
 }
 
-fn available_memory_mb(report: &DoctorReport) -> u64 {
-    (report.available_memory_gb * 1024.0).floor().max(0.0) as u64
+fn pressure(report: &DoctorReport) -> HostPressure {
+    evaluate_pressure(
+        (report.total_memory_gb * 1024.0).floor().max(0.0) as u64,
+        (report.available_memory_gb * 1024.0).floor().max(0.0) as u64,
+    )
+}
+
+fn client_status(provider: &dyn Provider, client: ClientId) -> io::Result<ClientStatus> {
+    let state = provider.status(client)?;
+    if state == ClientState::NotProvisioned {
+        return Ok(ClientStatus {
+            id: client.as_str(),
+            native: false,
+            state,
+            ready_snapshot: Some(false),
+            memory_limit_mb: None,
+            host_working_set_mb: None,
+        });
+    }
+
+    Ok(ClientStatus {
+        id: client.as_str(),
+        native: false,
+        state,
+        ready_snapshot: Some(provider.has_ready(client).unwrap_or(false)),
+        memory_limit_mb: provider.memory_limit_mb(client).ok(),
+        host_working_set_mb: provider.host_working_set_mb(client).ok().flatten(),
+    })
 }
 
 impl RuntimeLab {
@@ -87,15 +115,9 @@ impl RuntimeLab {
         })?;
 
         let mut result = Vec::with_capacity(3);
-        for client in ClientId::VIRTUAL.into_iter() {
-            let state = provider.provision(client)?;
-            result.push(ClientStatus {
-                id: client.as_str(),
-                native: false,
-                state,
-                ready_snapshot: Some(provider.has_ready(client).unwrap_or(false)),
-                memory_mb: provider.memory_mb(client).ok(),
-            });
+        for client in ClientId::VIRTUAL {
+            provider.provision(client)?;
+            result.push(client_status(provider.as_ref(), client)?);
         }
         Ok(result)
     }
@@ -104,7 +126,7 @@ impl RuntimeLab {
         if client.is_native() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "native client cannot be reprovisioned",
+                "Native cannot be reprovisioned",
             ));
         }
 
@@ -113,70 +135,50 @@ impl RuntimeLab {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
 
-        let state = provider.reprovision(client)?;
-        Ok(ClientStatus {
-            id: client.as_str(),
-            native: false,
-            state,
-            ready_snapshot: Some(false),
-            memory_mb: provider.memory_mb(client).ok(),
-        })
+        provider.reprovision(client)?;
+        client_status(provider.as_ref(), client)
     }
 
     pub fn status(&self) -> io::Result<RuntimeStatus> {
+        let host = doctor();
         let provider = current_platform_provider();
         let mut clients = Vec::with_capacity(ClientId::ALL.len());
 
-        for client in ClientId::ALL {
-            if client.is_native() {
-                clients.push(ClientStatus {
-                    id: client.as_str(),
-                    native: true,
-                    state: ClientState::Manual,
-                    ready_snapshot: None,
-                    memory_mb: None,
-                });
-                continue;
+        clients.push(ClientStatus {
+            id: ClientId::Native.as_str(),
+            native: true,
+            state: ClientState::Manual,
+            ready_snapshot: None,
+            memory_limit_mb: None,
+            host_working_set_mb: None,
+        });
+
+        if let Some(provider) = provider.as_ref() {
+            for client in ClientId::VIRTUAL {
+                clients.push(client_status(provider.as_ref(), client)?);
             }
-
-            if let Some(provider) = provider.as_ref() {
-                let state = provider.status(client)?;
-                let ready_snapshot = if state == ClientState::NotProvisioned {
-                    false
-                } else {
-                    provider.has_ready(client).unwrap_or(false)
-                };
-                let memory_mb = if state == ClientState::NotProvisioned {
-                    None
-                } else {
-                    provider.memory_mb(client).ok()
-                };
-
-                clients.push(ClientStatus {
-                    id: client.as_str(),
-                    native: false,
-                    state,
-                    ready_snapshot: Some(ready_snapshot),
-                    memory_mb,
-                });
-            } else {
+        } else {
+            for client in ClientId::VIRTUAL {
                 clients.push(ClientStatus {
                     id: client.as_str(),
                     native: false,
                     state: ClientState::Error,
                     ready_snapshot: Some(false),
-                    memory_mb: None,
+                    memory_limit_mb: None,
+                    host_working_set_mb: None,
                 });
             }
         }
 
         Ok(RuntimeStatus {
             provider: provider.as_ref().map(|provider| provider.id()),
+            memory_mode: provider.as_ref().map(|provider| provider.memory_mode()),
+            pressure: pressure(&host),
             clients,
         })
     }
 
-    pub fn resources(&self, count: usize) -> io::Result<ResourcePlanView> {
+    pub fn resources(&self, count: usize) -> io::Result<ResourceView> {
         if !(1..=3).contains(&count) {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -195,29 +197,19 @@ impl RuntimeLab {
             ));
         }
 
-        let virtual_clients = count;
-        if virtual_clients == 0 {
-            return Ok(ResourcePlanView {
-                requested_virtual_clients: count,
-                virtual_clients: 0,
-                stopped_virtual_clients: 0,
-                running_virtual_clients: 0,
-                available_memory_mb: available_memory_mb(&host),
-                host_headroom_mb: HOST_RUNTIME_HEADROOM_MB,
-                memory_per_stopped_vm_mb: 0,
-            });
-        }
-
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
 
-        let mut stopped_virtual_clients = 0;
-        let mut running_virtual_clients = 0;
-        for client in ClientId::VIRTUAL.into_iter().take(virtual_clients) {
+        let mut running = 0;
+        let mut suspended = 0;
+        let mut stopped = 0;
+
+        for client in ClientId::VIRTUAL.into_iter().take(count) {
             match provider.status(client)? {
-                ClientState::Stopped => stopped_virtual_clients += 1,
-                ClientState::Running => running_virtual_clients += 1,
+                ClientState::Running => running += 1,
+                ClientState::Suspended => suspended += 1,
+                ClientState::Stopped => stopped += 1,
                 ClientState::NotProvisioned => {
                     return Err(io::Error::new(
                         io::ErrorKind::NotFound,
@@ -227,120 +219,71 @@ impl RuntimeLab {
                 _ => {
                     return Err(io::Error::new(
                         io::ErrorKind::Other,
-                        format!("{} is not in a plannable state", client.as_str()),
+                        format!("{} is not in a resource-manageable state", client.as_str()),
                     ));
                 }
             }
         }
 
-        let available_memory_mb = available_memory_mb(&host);
-        let plan = plan_memory(
-            available_memory_mb,
-            virtual_clients,
-            stopped_virtual_clients,
-        )?;
-
-        Ok(ResourcePlanView {
+        Ok(ResourceView {
             requested_virtual_clients: count,
-            virtual_clients,
-            stopped_virtual_clients,
-            running_virtual_clients,
-            available_memory_mb,
-            host_headroom_mb: HOST_RUNTIME_HEADROOM_MB,
-            memory_per_stopped_vm_mb: plan.memory_per_stopped_vm_mb,
+            running_virtual_clients: running,
+            suspended_virtual_clients: suspended,
+            stopped_virtual_clients: stopped,
+            memory_mode: provider.memory_mode(),
+            virtual_memory_limit_mb: VIRTUAL_MEMORY_LIMIT_MB,
+            pressure: pressure(&host),
         })
     }
 
     pub fn start(&self, count: usize) -> io::Result<Vec<ClientStatus>> {
-        if !(1..=3).contains(&count) {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "virtual client count must be between 1 and 3",
-            ));
-        }
+        let resources = self.resources(count)?;
+        let inactive = resources.suspended_virtual_clients + resources.stopped_virtual_clients;
 
-        let host = doctor();
-        if count > host.max_recommended_virtual_clients {
+        if inactive > 0 && !resources.pressure.can_start_virtual {
             return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
+                io::ErrorKind::Other,
                 format!(
-                    "requested {count} virtual clients but this host is recommended for at most {}",
-                    host.max_recommended_virtual_clients
+                    "host memory pressure is {:?}; suspend another Virtual or free host memory before starting more instances",
+                    resources.pressure.level
                 ),
             ));
         }
 
         let _lock = OperationLock::acquire()?;
-        let provider = current_platform_provider();
-        let virtual_clients = count;
+        let provider = current_platform_provider().ok_or_else(|| {
+            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+        })?;
 
-        if virtual_clients > 0 && provider.is_none() {
-            return Err(io::Error::new(
-                io::ErrorKind::NotFound,
-                "virtualization provider is unavailable",
-            ));
-        }
-
-        let provider_ref = provider.as_ref();
-        let virtual_targets: Vec<ClientId> = ClientId::VIRTUAL
-            .into_iter()
-            .take(virtual_clients)
-            .collect();
-
-        let mut stopped_targets = Vec::new();
-        if let Some(provider) = provider_ref {
-            for client in &virtual_targets {
-                match provider.status(*client)? {
-                    ClientState::NotProvisioned => {
-                        return Err(io::Error::new(
-                            io::ErrorKind::NotFound,
-                            format!("{} is not provisioned", client.as_str()),
-                        ));
-                    }
-                    ClientState::Stopped => stopped_targets.push(*client),
-                    ClientState::Running => {}
-                    _ => {
-                        return Err(io::Error::new(
-                            io::ErrorKind::Other,
-                            format!("{} is not in a startable state", client.as_str()),
-                        ));
-                    }
-                }
-            }
-        }
-
-        if let Some(provider) = provider_ref {
-            let plan = plan_memory(
-                available_memory_mb(&host),
-                virtual_clients,
-                stopped_targets.len(),
-            )?;
-
-            for client in &stopped_targets {
-                provider.configure_memory(*client, plan.memory_per_stopped_vm_mb)?;
-            }
-        }
-
+        let targets: Vec<ClientId> = ClientId::VIRTUAL.into_iter().take(count).collect();
         let mut result = Vec::with_capacity(count);
 
-        if let Some(provider) = provider_ref {
-            for (index, client) in virtual_targets.into_iter().enumerate() {
-                let state = provider.start(client)?;
-                result.push(ClientStatus {
-                    id: client.as_str(),
-                    native: false,
-                    state,
-                    ready_snapshot: Some(provider.has_ready(client).unwrap_or(false)),
-                    memory_mb: provider.memory_mb(client).ok(),
-                });
+        for (index, client) in targets.into_iter().enumerate() {
+            provider.start(client)?;
+            result.push(client_status(provider.as_ref(), client)?);
 
-                if index + 1 < virtual_clients {
-                    thread::sleep(Duration::from_secs(2));
-                }
+            if index + 1 < count {
+                thread::sleep(Duration::from_secs(2));
             }
         }
 
         Ok(result)
+    }
+
+    pub fn suspend(&self, client: ClientId) -> io::Result<ClientStatus> {
+        if client.is_native() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Native cannot be suspended by Runtime Lab",
+            ));
+        }
+
+        let _lock = OperationLock::acquire()?;
+        let provider = current_platform_provider().ok_or_else(|| {
+            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+        })?;
+        provider.suspend(client)?;
+        client_status(provider.as_ref(), client)
     }
 
     pub fn stop(&self, client: Option<ClientId>) -> io::Result<Vec<ClientStatus>> {
@@ -350,33 +293,25 @@ impl RuntimeLab {
         })?;
 
         let targets: Vec<ClientId> = match client {
+            Some(client) if client.is_native() => {
+                return Ok(vec![ClientStatus {
+                    id: ClientId::Native.as_str(),
+                    native: true,
+                    state: ClientState::Manual,
+                    ready_snapshot: None,
+                    memory_limit_mb: None,
+                    host_working_set_mb: None,
+                }]);
+            }
             Some(client) => vec![client],
-            None => ClientId::VIRTUAL.into_iter()
-                .collect(),
+            None => ClientId::VIRTUAL.to_vec(),
         };
 
         let mut result = Vec::with_capacity(targets.len());
         for client in targets {
-            if client.is_native() {
-                result.push(ClientStatus {
-                    id: client.as_str(),
-                    native: true,
-                    state: ClientState::Manual,
-                    ready_snapshot: None,
-                    memory_mb: None,
-                });
-                continue;
-            }
-
-            result.push(ClientStatus {
-                id: client.as_str(),
-                native: false,
-                state: provider.stop(client)?,
-                ready_snapshot: Some(provider.has_ready(client).unwrap_or(false)),
-                memory_mb: provider.memory_mb(client).ok(),
-            });
+            provider.stop(client)?;
+            result.push(client_status(provider.as_ref(), client)?);
         }
-
         Ok(result)
     }
 
@@ -384,7 +319,7 @@ impl RuntimeLab {
         if client.is_native() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "native client cannot be VM-restarted",
+                "Native cannot be VM-restarted",
             ));
         }
 
@@ -392,21 +327,15 @@ impl RuntimeLab {
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
-
-        Ok(ClientStatus {
-            id: client.as_str(),
-            native: false,
-            state: provider.restart(client)?,
-            ready_snapshot: Some(provider.has_ready(client).unwrap_or(false)),
-            memory_mb: provider.memory_mb(client).ok(),
-        })
+        provider.restart(client)?;
+        client_status(provider.as_ref(), client)
     }
 
     pub fn set_ready(&self, client: ClientId) -> io::Result<ClientStatus> {
         if client.is_native() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "native client does not use QA_READY snapshots",
+                "Native does not use QA_READY snapshots",
             ));
         }
 
@@ -414,21 +343,15 @@ impl RuntimeLab {
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
-
-        Ok(ClientStatus {
-            id: client.as_str(),
-            native: false,
-            state: provider.set_ready(client)?,
-            ready_snapshot: Some(true),
-            memory_mb: provider.memory_mb(client).ok(),
-        })
+        provider.set_ready(client)?;
+        client_status(provider.as_ref(), client)
     }
 
     pub fn reset(&self, client: ClientId) -> io::Result<ClientStatus> {
         if client.is_native() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "native client does not use VM clean-state reset",
+                "Native does not use VM clean-state reset",
             ));
         }
 
@@ -436,38 +359,26 @@ impl RuntimeLab {
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
-
-        let memory_mb = provider.memory_mb(client)?;
-        Ok(ClientStatus {
-            id: client.as_str(),
-            native: false,
-            state: provider.reset(client, memory_mb)?,
-            ready_snapshot: Some(true),
-            memory_mb: Some(memory_mb),
-        })
+        provider.reset(client)?;
+        client_status(provider.as_ref(), client)
     }
 
     pub fn open(&self, client: ClientId) -> io::Result<ClientStatus> {
         if client.is_native() {
             return Ok(ClientStatus {
-                id: client.as_str(),
+                id: ClientId::Native.as_str(),
                 native: true,
                 state: ClientState::Manual,
                 ready_snapshot: None,
-                memory_mb: None,
+                memory_limit_mb: None,
+                host_working_set_mb: None,
             });
         }
 
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
-
-        Ok(ClientStatus {
-            id: client.as_str(),
-            native: false,
-            state: provider.open(client)?,
-            ready_snapshot: Some(provider.has_ready(client).unwrap_or(false)),
-            memory_mb: provider.memory_mb(client).ok(),
-        })
+        provider.open(client)?;
+        client_status(provider.as_ref(), client)
     }
 }
