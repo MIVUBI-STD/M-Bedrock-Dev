@@ -1,24 +1,25 @@
 import { existsSync, readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 
 const failures = [];
-
-const { execFileSync } = await import("node:child_process");
 const tracked = execFileSync("git", ["ls-files", "docs"], { encoding: "utf8" })
   .split(/\r?\n/)
   .filter(Boolean);
-const forbiddenAnalysisDataPatterns = [
+
+const forbiddenDataPatterns = [
   /\/.*-runs\//,
   /\/.*queue.*\.json$/i,
   /\/.*scorecard.*\.json$/i,
   /\/.*acceptance.*\.json$/i,
   /\/.*audit-\d{4}-\d{2}-\d{2}\.json$/i,
 ];
+
 for (const path of tracked) {
-  if (forbiddenAnalysisDataPatterns.some((pattern) => pattern.test(path))) {
-    failures.push("Operational/history data must not live in docs/03-analysis: " + path);
+  if (forbiddenDataPatterns.some((pattern) => pattern.test(path))) {
+    failures.push("Operational/history data must not live in docs: " + path);
   }
   if (path.endsWith(".schema.json")) {
-    failures.push("Machine JSON must not live in docs: " + path);
+    failures.push("Machine JSON schema must not live in docs: " + path);
   }
   if (path.endsWith(".json") && !path.startsWith("docs/examples/")) {
     failures.push("Machine JSON must not live in docs except explicit examples: " + path);
@@ -36,18 +37,22 @@ const canonicalDocs = [
   "docs/analysis/mcstructure.md",
   "docs/analysis/topology.md",
   "docs/analysis/world-db.md",
-  "docs/system/architecture.md",
-  "docs/system/skill-routing.md",
-  "docs/system/zero-waste-execution.md",
   "docs/repair/transactions.md",
   "docs/repair/repair-planning.md",
   "docs/validation/runtime-proof.md",
   "docs/validation/search-and-falsification.md",
   "docs/validation/retest-and-regression.md",
+  "docs/system/architecture.md",
+  "docs/system/authority-model.md",
+  "docs/system/canonical-naming.md",
+  "docs/system/skill-routing.md",
+  "docs/system/zero-waste-execution.md",
 ];
 
 for (const path of canonicalDocs) {
-  if (!existsSync(path)) failures.push("Missing canonical documentation owner: " + path);
+  if (!existsSync(path)) {
+    failures.push("Missing canonical documentation owner: " + path);
+  }
 }
 
 const compatibilityPointers = [
@@ -105,7 +110,7 @@ const compatibilityPointers = [
 
 for (const path of compatibilityPointers) {
   if (!existsSync(path)) {
-    failures.push("Missing compatibility pointer during migration: " + path);
+    failures.push("Missing analysis compatibility pointer during migration: " + path);
     continue;
   }
   const text = readFileSync(path, "utf8");
@@ -117,9 +122,40 @@ for (const path of compatibilityPointers) {
   }
 }
 
-const operationsDocs = tracked.filter((path) => path.startsWith("docs/07-operations/"));
-for (const path of operationsDocs) {
-  failures.push("Retired docs operations domain must not exist: " + path);
+const allowedValidationFiles = new Set([
+  "docs/validation/README.md",
+  "docs/validation/package-proof.md",
+  "docs/validation/repair-validation.md",
+  "docs/validation/runtime-proof.md",
+  "docs/validation/search-and-falsification.md",
+  "docs/validation/retest-and-regression.md",
+]);
+
+for (const path of tracked.filter((item) => item.startsWith("docs/validation/"))) {
+  if (!allowedValidationFiles.has(path)) {
+    failures.push("Unexpected validation documentation owner: " + path);
+  }
+}
+
+const allowedRepairFiles = new Set([
+  "docs/repair/README.md",
+  "docs/repair/transactions.md",
+  "docs/repair/repair-planning.md",
+]);
+
+for (const path of tracked.filter((item) => item.startsWith("docs/repair/"))) {
+  if (!allowedRepairFiles.has(path)) {
+    failures.push("Unexpected repair documentation owner: " + path);
+  }
+}
+
+for (const prefix of [
+  "docs/07-operations/",
+  "docs/04-reporting/",
+]) {
+  for (const path of tracked.filter((item) => item.startsWith(prefix))) {
+    failures.push("Retired documentation domain must not exist: " + path);
+  }
 }
 
 const retiredAuthorityPaths = [
@@ -127,14 +163,6 @@ const retiredAuthorityPaths = [
   "docs/system/orchestration.md",
   "docs/system/skill-contract.md",
   "docs/system/context-efficiency.md",
-  "docs/repair/application.md",
-  "docs/repair/filesystem-safety.md",
-  "docs/repair/orchestrated-planning.md",
-  "docs/repair/topology-planning.md",
-  "docs/repair/typed-effects.md",
-  "docs/07-operations/current-validation.md",
-  "docs/07-operations/next-action.md",
-  "docs/07-operations/gameplay-understanding-corpus.md",
   "docs/analysis/full-map-reaudit-queue.json",
   "docs/analysis/runtime-test-queue.json",
   "docs/analysis/regression-detection-corpus.json",
@@ -145,59 +173,17 @@ const retiredAuthorityPaths = [
   "docs/analysis/multi-scenario-check-ledger.schema.json",
   "docs/system/contract-registry.json",
 ];
+
 for (const path of retiredAuthorityPaths) {
   if (existsSync(path)) {
     failures.push("Retired authority path must not exist: " + path);
   }
 }
 
-if (existsSync("docs/04-reporting")) {
-  failures.push("Retired duplicate docs domain must not exist: docs/04-reporting");
-}
-
-  : "";
-for (const owner of [
-  "runtime-proof.md",
-  "search-and-falsification.md",
-  "retest-and-regression.md",
-]) {
-  if (!validationReadme.includes(owner)) {
-  }
-}
-
-const allowedValidationFiles = new Set([
-  "docs/validation/README.md",
-  "docs/validation/package-proof.md",
-  "docs/validation/repair-validation.md",
-  "docs/validation/runtime-proof.md",
-  "docs/validation/search-and-falsification.md",
-  "docs/validation/retest-and-regression.md",
-]);
-
-for (const path of tracked.filter((item) => item.startsWith("docs/validation/"))) {
-  if (!allowedValidationFiles.has(path)) {
-    failures.push("Unexpected validation documentation owner: " + path);
-  }
-}
-
-const allowedValidationFiles = new Set([
-  "docs/validation/README.md",
-  "docs/validation/package-proof.md",
-  "docs/validation/repair-validation.md",
-  "docs/validation/runtime-proof.md",
-  "docs/validation/search-and-falsification.md",
-  "docs/validation/retest-and-regression.md",
-]);
-
-for (const path of tracked.filter((item) => item.startsWith("docs/validation/"))) {
-  if (!allowedValidationFiles.has(path)) {
-    failures.push("Unexpected validation documentation owner: " + path);
-  }
-}
-
 const validationReadme = existsSync("docs/validation/README.md")
   ? readFileSync("docs/validation/README.md", "utf8")
   : "";
+
 for (const owner of [
   "runtime-proof.md",
   "search-and-falsification.md",
@@ -211,6 +197,7 @@ for (const owner of [
 const analysisReadme = existsSync("docs/analysis/README.md")
   ? readFileSync("docs/analysis/README.md", "utf8")
   : "";
+
 if (!analysisReadme.includes("bug-finding-coverage.md")) {
   failures.push("docs/analysis/README.md must route to canonical bug-finding coverage.");
 }
