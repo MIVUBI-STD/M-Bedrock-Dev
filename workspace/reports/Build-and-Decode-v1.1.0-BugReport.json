@@ -5,7 +5,7 @@
     "mapVersion": "1.1.0",
     "drive": "https://drive.google.com/file/d/1aBAM5Hwu58klnGV1dtZZLffgJATPRmtd/view",
     "baseVersion": "Not recorded in audit evidence",
-    "testedVersion": "Static source audit; current Drive artifact fingerprint verified; runtime not required for admitted findings"
+    "testedVersion": "Full static/source production audit; current Drive artifact fingerprint verified; runtime not required for admitted findings"
   },
   "repairBy": "developer",
   "bugs": [
@@ -41,6 +41,139 @@
         "Normal gameplay stick behavior must remain available when the developer tool is disabled."
       ],
       "issueType": "DESIGN_MISMATCH"
+    },
+    {
+      "id": "BUG-BAD-DEPARTED-TEAM-WINNER",
+      "fixed": false,
+      "severity": "major",
+      "category": "multiplayer-session",
+      "foundBy": "ai",
+      "title": "A fully departed team can remain eligible to win the match",
+      "problem": "After a match has started, Exit to Lobby and offline-expiry remove players from the active members roster but preserve their player/team records for resumability/history. Final team standings are then built from all historical state.players records rather than the active/eligible members roster. In a match with three or more teams, one team can fully leave after scoring, the remaining teams can continue, and the departed team can still be declared the winner and persisted into leaderboard results.",
+      "expected": "A team with no active eligible members after explicit exit or expiry must not remain eligible for the final winner set. Historical contribution may be retained for audit/statistics only if it is explicitly separated from final winner eligibility.",
+      "observed": "depart()/expire() remove players from state.members but leave state.players/playerTeams after the match has started. teamStandings() enumerates Object.keys(state.players), and resultFields() derives winnerTeamIds/winnerIds from that historical roster.",
+      "reproduction": [
+        "Start a team match with at least three active teams.",
+        "Let Team A obtain the highest score.",
+        "Have every Team A player use Exit to Lobby, or allow them to expire after disconnect, while at least two other teams remain active.",
+        "Allow the remaining teams to complete the match without surpassing Team A's score.",
+        "Observe that Team A remains in final standings and can be declared/persisted as the winner even though it has no active members."
+      ],
+      "aiAnalysis": "Active-session continuation correctly uses state.members and requires at least two active teams, but final-result eligibility switches ownership to the historical state.players ledger. TeamRules.teamStandings(state) explicitly calls activeTeamIds(state, Object.keys(state.players)) and also derives each team's member list from Object.keys(state.players). GuessTheBuildManager.resultFields() then builds winner IDs from those standings, and MatchResults persists them. The contradiction is deterministic from source.",
+      "relevantCode": [
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/arena/ArenaService.js",
+          "reason": "depart() removes the player from state.members but, after the match has started, intentionally retains state.players/playerTeams."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/arena/ArenaSessions.js",
+          "reason": "expire() removes expired players from state.members but retains their historical player/team records while allowing play to continue if two active teams remain."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/arena/TeamRules.js",
+          "reason": "teamStandings() derives final teams and members from Object.keys(state.players), not the active eligible state.members roster."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/guessthebuild/GuessTheBuildManager.js",
+          "reason": "resultFields() derives winnerTeamIds and winnerIds directly from teamStandings()."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/arena/MatchResults.js",
+          "reason": "Completed results persist the derived winner IDs and lifetime stats."
+        }
+      ],
+      "suggestedFix": "Separate historical participant/contribution records from final-result eligibility. Derive winner-eligible teams from the authoritative active/eligible roster at terminal commit, while preserving historical score data only according to the intended forfeit policy.",
+      "mustPreserve": [
+        "Reconnect/resumability history for temporarily offline players.",
+        "Previously earned contribution data according to the intended forfeit policy.",
+        "Minimum-two-active-team continuation behavior.",
+        "Exact-once result persistence and leaderboard accounting."
+      ],
+      "issueType": "BUG"
+    },
+    {
+      "id": "BUG-BAD-DRAW-WIN-COUNTER",
+      "fixed": false,
+      "severity": "major",
+      "category": "score-reward",
+      "foundBy": "ai",
+      "title": "Drawn teams are persisted as Wins",
+      "problem": "The match UI explicitly classifies equal top scores as a Draw, but resultFields() places every tied leading team into winnerTeamIds/winnerIds. MatchResults then increments each tied player's persistent wins counter. That wins field is displayed to players and is also used as a global leaderboard tie-breaker.",
+      "expected": "A Draw should preserve the draw result and completed-match/score accounting without incrementing the persistent Win counter for every tied team, unless the product intentionally defines a draw as a win everywhere.",
+      "observed": "The result presentation says Draw while all tied leading teams are written as winners and each tied player gains +1 Win. Persistent Wins can then affect leaderboard ordering.",
+      "reproduction": [
+        "Start a normal team match with at least two teams.",
+        "Finish the match with two or more teams tied for the highest score.",
+        "Confirm the match summary/result UI displays Draw.",
+        "Open the leaderboard/personal stats after the result is committed.",
+        "Confirm players on every tied top team received an additional Win."
+      ],
+      "aiAnalysis": "GuessTheBuildManager.matchSummary() uses the explicit Draw presentation whenever multiple teams share the top score. The same manager's resultFields() nevertheless classifies all top-scoring teams as winnerTeamIds and all of their members as winnerIds. MatchResults._apply() increments wins for any player in winnerIds. LeaderboardService then sorts equal totalScore entries by wins, so the semantic mismatch can alter persistent ranking.",
+      "relevantCode": [
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/guessthebuild/GuessTheBuildManager.js",
+          "reason": "Displays Draw for multiple leaders but also returns every tied leader as a winner."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/arena/MatchResults.js",
+          "reason": "Increments persistent wins for every player in winnerIds on completed matches."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/leaderboard/LeaderboardService.js",
+          "reason": "Exposes wins and uses wins as the second global ranking sort key after totalScore."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/scripts/modules/leaderboard/LeaderboardMenus.js",
+          "reason": "Player-facing result and personal-stat surfaces distinguish Draw from Wins."
+        }
+      ],
+      "suggestedFix": "Represent terminal outcome semantics explicitly: when multiple top teams tie, persist a draw with no winner IDs (or a separate tiedTeamIds field) and do not increment wins. Keep total score and games played accounting unchanged.",
+      "mustPreserve": [
+        "Player-facing Draw presentation.",
+        "Total score and games-played accounting.",
+        "Exact-once match result journal.",
+        "Leaderboard deterministic ordering."
+      ],
+      "issueType": "BUG"
+    },
+    {
+      "id": "BUG-BAD-GUESS-EXIT-COOLDOWN",
+      "fixed": false,
+      "severity": "minor",
+      "category": "game-flow",
+      "foundBy": "ai",
+      "title": "Guess action temporarily disables Exit to Lobby",
+      "problem": "The Guess item and Exit to Lobby item share the same minecraft:cooldown category and both use a two-second cooldown. Bedrock applies cooldowns by category, so using Guess also places Exit on cooldown even though leaving the match is a separate control.",
+      "expected": "Guess anti-spam cooldown should not disable the player's independent Exit to Lobby control.",
+      "observed": "Both builddecode:guess and builddecode:exit_game use cooldown category wind_charge for two seconds, so activating one temporarily cools down the other.",
+      "reproduction": [
+        "Enter an active guessing phase with both Guess and Exit to Lobby items available.",
+        "Use the Guess item.",
+        "Immediately switch to Exit to Lobby and attempt to use it within two seconds.",
+        "Confirm Exit remains on the shared cooldown instead of being independently usable."
+      ],
+      "aiAnalysis": "The item definitions independently assign the same minecraft:cooldown category, wind_charge, to Guess, Exit to Lobby, and the lobby selector item. Bedrock cooldown semantics apply to every item sharing a category. This is a deterministic cross-item configuration collision rather than a form/UI timing issue.",
+      "relevantCode": [
+        {
+          "file": "behavior_packs/Build_Decode_BP/items/guess.json",
+          "reason": "Defines minecraft:cooldown category wind_charge with duration 2."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/items/exit_game.json",
+          "reason": "Defines the same minecraft:cooldown category wind_charge with duration 2."
+        },
+        {
+          "file": "behavior_packs/Build_Decode_BP/items/lobby.json",
+          "reason": "Also reuses wind_charge, confirming the category is not scoped to Guess."
+        }
+      ],
+      "suggestedFix": "Give Guess and Exit distinct map-owned cooldown categories (for example builddecode_guess and builddecode_exit), or remove the Exit cooldown if it has no independent need. Do not share a generic vanilla category across unrelated controls.",
+      "mustPreserve": [
+        "Guess anti-spam protection.",
+        "Exit confirmation flow.",
+        "Lobby navigation behavior."
+      ],
+      "issueType": "BUG"
     },
     {
       "id": "BUG-BAD-TIME-BONUS-SCORING",
