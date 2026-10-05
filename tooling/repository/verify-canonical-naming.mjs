@@ -33,7 +33,6 @@ const canonicalDocs=[
 
 
 const publicNamingFiles=[
-  "docs/03-analysis/map-audit-naming-contract.md",
   "docs/03-analysis/master-selected-map-audit-workflow.md",
   "docs/03-analysis/mandatory-audit-procedure.md",
   "workspace/reports/README.md",
