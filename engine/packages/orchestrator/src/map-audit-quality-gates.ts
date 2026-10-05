@@ -18,9 +18,7 @@ export type ZeroFindingStatus =
   | "NOT_APPLICABLE";
 
 export interface MapAuditQualityFinding
-  extends VitalGameplayFindingInput {
-  readonly status: "PROVEN" | "NEED_VALIDATION";
-}
+  extends VitalGameplayFindingInput {}
 
 export interface MapAuditQualityGateInput {
   readonly controlStatus: "READY_FOR_REVIEW" | "BLOCKED";
