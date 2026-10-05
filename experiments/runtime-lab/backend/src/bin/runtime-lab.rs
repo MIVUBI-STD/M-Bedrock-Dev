@@ -24,6 +24,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "doctor" => print_json(&lab.doctor())?,
         "provision" => print_json(&lab.provision()?)?,
         "status" => print_json(&lab.status()?)?,
+        "reprovision" => {
+            let client = parse_client(&args.next().ok_or("client id is required")?)?;
+            print_json(&lab.reprovision(client)?)?;
+        }
         "start" => {
             let count = args.next().ok_or("client count is required")?.parse::<usize>()?;
             print_json(&lab.start(count)?)?;
@@ -53,6 +57,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("  doctor");
             println!("  provision");
             println!("  status");
+            println!("  reprovision <MCE-02..04>");
             println!("  start <1-4>");
             println!("  open <MCE-01..04>");
             println!("  restart <MCE-02..04>");
