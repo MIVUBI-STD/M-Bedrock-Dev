@@ -23,6 +23,7 @@ Examples:
 - reusable failure pattern knowledge;
 - evidence-backed per-map engineering knowledge;
 - capability proof bindings;
+- knowledge → detector/proof coverage bindings (`catalogs/knowledge-detector-bindings.json`);
 - coverage state;
 - map fingerprints;
 - Minecraft update intelligence.
@@ -63,6 +64,9 @@ historical bug knowledge
 
 reusable failure abstractions
   → catalogs/failure-patterns.json
+
+knowledge-consumption coverage
+  → catalogs/knowledge-detector-bindings.json
 
 per-map engineering knowledge
   → catalogs/map-knowledge/
