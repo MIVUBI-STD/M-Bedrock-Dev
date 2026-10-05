@@ -122,4 +122,37 @@ describe("inventory lifecycle analysis", () => {
       status: "missing-writeback",
     });
   });
+  it("does not treat inventory-only reset as complete when Creative access can mutate equipment", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function reset(container) {",
+        "  container.clearAll();",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const normal = analyzeInventoryLifecycle([script]);
+    const creative = analyzeInventoryLifecycle(
+      [script],
+      { requiresFullEquipmentReset: true },
+    );
+
+    expect(normal.completeResets).toBe(1);
+    expect(creative.completeResets).toBe(0);
+    expect(creative.partialResets).toBe(1);
+    expect(creative.knownEquipmentSlots).toEqual(
+      expect.arrayContaining([
+        "Head",
+        "Chest",
+        "Legs",
+        "Feet",
+        "Offhand",
+      ]),
+    );
+  });
 });
