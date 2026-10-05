@@ -8,10 +8,10 @@
       "engine/packages/analysis-planner/src/domain-capabilities.ts",
       "engine/packages/analysis-planner/src/arena-capabilities.ts"
     ],
-    "registryFingerprint": "fa5ede27",
+    "registryFingerprint": "69306b3a",
     "proofRegistry": "engine/reliability/catalogs/capability-proof-bindings.json",
-    "proofRegistryFingerprint": "54d9f4c4",
-    "proofInventoryFingerprint": "c1abf8ed"
+    "proofRegistryFingerprint": "d821e092",
+    "proofInventoryFingerprint": "40b638fb"
   },
   "summary": {
     "taskCapabilities": 55,
@@ -301,8 +301,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 603,
-      "testFiles": 294,
+      "sourceFiles": 604,
+      "testFiles": 295,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -334,8 +334,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 603,
-      "testFiles": 294,
+      "sourceFiles": 604,
+      "testFiles": 295,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -433,8 +433,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 603,
-      "testFiles": 294,
+      "sourceFiles": 604,
+      "testFiles": 295,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -466,8 +466,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 603,
-      "testFiles": 294,
+      "sourceFiles": 604,
+      "testFiles": 295,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -499,8 +499,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 603,
-      "testFiles": 294,
+      "sourceFiles": 604,
+      "testFiles": 295,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -532,8 +532,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 603,
-      "testFiles": 294,
+      "sourceFiles": 604,
+      "testFiles": 295,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -565,8 +565,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 603,
-      "testFiles": 294,
+      "sourceFiles": 604,
+      "testFiles": 295,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -598,8 +598,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 603,
-      "testFiles": 294,
+      "sourceFiles": 604,
+      "testFiles": 295,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -631,8 +631,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 603,
-      "testFiles": 294,
+      "sourceFiles": 604,
+      "testFiles": 295,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -664,8 +664,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 603,
-      "testFiles": 294,
+      "sourceFiles": 604,
+      "testFiles": 295,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -697,8 +697,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 603,
-      "testFiles": 294,
+      "sourceFiles": 604,
+      "testFiles": 295,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -730,8 +730,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 603,
-      "testFiles": 294,
+      "sourceFiles": 604,
+      "testFiles": 295,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -746,6 +746,7 @@
         "executionContext": "REMOTE_GITHUB",
         "paths": [
           "engine/packages/diagnostic-reasoning/test/capability-guard-activation.test.ts",
+          "engine/packages/orchestrator/test/inspection/capability-mutation-footprint-analysis.test.ts",
           "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
         ]
       },
@@ -764,8 +765,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 603,
-      "testFiles": 294,
+      "sourceFiles": 604,
+      "testFiles": 295,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -797,8 +798,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 603,
-      "testFiles": 294,
+      "sourceFiles": 604,
+      "testFiles": 295,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -892,8 +893,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 603,
-      "testFiles": 294,
+      "sourceFiles": 604,
+      "testFiles": 295,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -925,8 +926,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 603,
-      "testFiles": 294,
+      "sourceFiles": 604,
+      "testFiles": 295,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -1090,8 +1091,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 603,
-      "testFiles": 294,
+      "sourceFiles": 604,
+      "testFiles": 295,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
