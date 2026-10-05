@@ -283,5 +283,25 @@
     ],
     "nextPhase": "MAPPING_AND_VALIDATION_ONLY",
     "repairAllowed": false
+  },
+  "validationEvidence": {
+    "artifactLevelDat": {
+      "levelName": "Build & Decode v1.1.0",
+      "gameType": 1,
+      "educationFeaturesEnabled": 1,
+      "multiplayerGame": 0,
+      "multiplayerGameIntent": 0,
+      "lanBroadcast": 0,
+      "lanBroadcastIntent": 1,
+      "serverChunkTickRange": 10,
+      "interpretation": "The selected package itself stores multiplayer disabled. Actual server/host deployment may override this, so this remains a deployment validation gate rather than a proven gameplay bug."
+    },
+    "voxelProofAttempt": {
+      "canonicalMechanism": "engine/packages/orchestrator/src/arena/arena-voxel-proof.ts using the Bedrock LevelDB adapter",
+      "dependency": "@8crafter/leveldb-zlib",
+      "result": "ENVIRONMENT_BLOCKED",
+      "reason": "The canonical native LevelDB dependency is not available in the current execution environment and installation did not complete within the bounded attempt. No alternate decoder was substituted.",
+      "consequence": "Physical replica equivalence remains explicitly unresolved; no safe/equivalent claim was inferred from configuration alone."
+    }
   }
 }
