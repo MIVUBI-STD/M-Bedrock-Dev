@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "READY",
+  "status": "SYSTEM_REDUCTION_REQUIRED",
   "purpose": "Minimal high-value runtime probes for behavior that static/source proof cannot fully emulate. These are not NEED_VALIDATION findings and do not change canonical report counts unless runtime evidence reveals a contradiction.",
   "policy": {
     "broadPlaythroughForbidden": true,
@@ -31,7 +31,17 @@
       "observableA": "The cutscene/transition resumes or reconciles cleanly and the next gameplay phase behaves normally.",
       "observableB": "The phase advanced while offline and one or more gameplay systems are missing, stale, blocked, duplicated, or desynchronized.",
       "whyHighValue": "Circuit exposed a real offline-transition defect. FOP2 has an explicit cutscene/session-admission lifecycle and reconnect handling, so this is a direct high-value cross-map probe.",
-      "runtimeOnlyReason": "Native timing plus the final in-game reconstruction/interaction outcome is best checked in runtime even though source closure found no contradiction."
+      "runtimeOnlyReason": "Native timing plus the final in-game reconstruction/interaction outcome is best checked in runtime even though source closure found no contradiction.",
+      "queueState": "SYSTEM_REOPEN_REQUIRED",
+      "humanTestingEligible": false,
+      "reductionRequirement": [
+        "Inspect the fresh selected artifact for the exact unresolved surface.",
+        "Run applicable canonical multi-scenario checks.",
+        "Attempt deterministic proof substitution and Blocking-Proof Exhaustion.",
+        "Use analogous-map implementation comparison only as search guidance.",
+        "Re-run Claim-Based Proof.",
+        "Escalate to human runtime only if one runtime-native deciding fact remains."
+      ]
     },
     {
       "id": "RTQ-BBW-OBJECTIVE-RESPAWN-RACE",
@@ -54,7 +64,17 @@
       "observableA": "Bed state, player elimination, respawn permission, and UI all agree.",
       "observableB": "Player respawns when no longer eligible, is eliminated while still eligible, or objective/UI state disagrees with the actual lifecycle.",
       "whyHighValue": "This combines objective terminal state, death/respawn and reconnect—three material Bedwars systems already identified by the audit.",
-      "runtimeOnlyReason": "The selected artifact had no source-proven race, but real event ordering and native death/disconnect timing can expose a mismatch."
+      "runtimeOnlyReason": "The selected artifact had no source-proven race, but real event ordering and native death/disconnect timing can expose a mismatch.",
+      "queueState": "SYSTEM_REOPEN_REQUIRED",
+      "humanTestingEligible": false,
+      "reductionRequirement": [
+        "Inspect the fresh selected artifact for the exact unresolved surface.",
+        "Run applicable canonical multi-scenario checks.",
+        "Attempt deterministic proof substitution and Blocking-Proof Exhaustion.",
+        "Use analogous-map implementation comparison only as search guidance.",
+        "Re-run Claim-Based Proof.",
+        "Escalate to human runtime only if one runtime-native deciding fact remains."
+      ]
     },
     {
       "id": "RTQ-RAID-KIT-RECONNECT",
@@ -77,7 +97,17 @@
       "observableA": "Exactly one valid kit is present and all kit/equipment state matches the authoritative selection.",
       "observableB": "Old and new kit items coexist, required equipment is missing, or UI/selection state disagrees with inventory/equipment.",
       "whyHighValue": "The map has explicit kit/loadout, combat, reconnect and fresh-session state surfaces but no runtime ground truth yet.",
-      "runtimeOnlyReason": "Static proof closed without a contradiction; the probe targets native inventory timing and actual reconnect sequencing."
+      "runtimeOnlyReason": "Static proof closed without a contradiction; the probe targets native inventory timing and actual reconnect sequencing.",
+      "queueState": "SYSTEM_REOPEN_REQUIRED",
+      "humanTestingEligible": false,
+      "reductionRequirement": [
+        "Inspect the fresh selected artifact for the exact unresolved surface.",
+        "Run applicable canonical multi-scenario checks.",
+        "Attempt deterministic proof substitution and Blocking-Proof Exhaustion.",
+        "Use analogous-map implementation comparison only as search guidance.",
+        "Re-run Claim-Based Proof.",
+        "Escalate to human runtime only if one runtime-native deciding fact remains."
+      ]
     },
     {
       "id": "RTQ-FNZ2-REMOTE-WAVE-PROGRESS",
@@ -100,7 +130,17 @@
       "observableA": "Enemies remain active, reach/engage the objective, and wave completion accounting progresses normally.",
       "observableB": "Enemies freeze/despawn/stall outside simulation range or wave progression blocks while the player stays in the intended play area.",
       "whyHighValue": "The map materially depends on residency, remote simulation and wave accounting. Native simulation behavior is one of the highest-value runtime-only surfaces.",
-      "runtimeOnlyReason": "Source coverage found no contradiction, but actual Bedrock simulation distance/residency behavior is engine-native."
+      "runtimeOnlyReason": "Source coverage found no contradiction, but actual Bedrock simulation distance/residency behavior is engine-native.",
+      "queueState": "SYSTEM_REOPEN_REQUIRED",
+      "humanTestingEligible": false,
+      "reductionRequirement": [
+        "Inspect the fresh selected artifact for the exact unresolved surface.",
+        "Run applicable canonical multi-scenario checks.",
+        "Attempt deterministic proof substitution and Blocking-Proof Exhaustion.",
+        "Use analogous-map implementation comparison only as search guidance.",
+        "Re-run Claim-Based Proof.",
+        "Escalate to human runtime only if one runtime-native deciding fact remains."
+      ]
     },
     {
       "id": "RTQ-ORB1-UPGRADE-RECONNECT",
@@ -123,7 +163,17 @@
       "observableA": "Currency and upgraded equipment commit exactly once and all representations agree.",
       "observableB": "Currency is deducted without the item, upgrade duplicates, old equipment remains alongside new equipment, or UI/tier state disagrees.",
       "whyHighValue": "Orb L2 already demonstrated a real transactional upgrade defect. Orb L1 has equivalent economy/equipment surfaces but no source-proven issue.",
-      "runtimeOnlyReason": "This is a metamorphic cross-level probe aimed at native interruption timing, not an asserted L1 bug."
+      "runtimeOnlyReason": "This is a metamorphic cross-level probe aimed at native interruption timing, not an asserted L1 bug.",
+      "queueState": "SYSTEM_REOPEN_REQUIRED",
+      "humanTestingEligible": false,
+      "reductionRequirement": [
+        "Inspect the fresh selected artifact for the exact unresolved surface.",
+        "Run applicable canonical multi-scenario checks.",
+        "Attempt deterministic proof substitution and Blocking-Proof Exhaustion.",
+        "Use analogous-map implementation comparison only as search guidance.",
+        "Re-run Claim-Based Proof.",
+        "Escalate to human runtime only if one runtime-native deciding fact remains."
+      ]
     },
     {
       "id": "RTQ-CLOCKWORK-KEY-RELOAD",
@@ -146,7 +196,17 @@
       "observableA": "The item/mechanism and progression state reconstruct to one coherent state and the puzzle remains completable.",
       "observableB": "Item exists but mechanism resets, mechanism remains active but item/progression resets, or the puzzle becomes duplicated/stuck.",
       "whyHighValue": "Clockwork Vault explicitly combines key/item lifecycle, entity/mechanism state, world mutation and active-session reload.",
-      "runtimeOnlyReason": "Static closure found no contradiction; actual world/entity restoration order is valuable to verify once in runtime."
+      "runtimeOnlyReason": "Static closure found no contradiction; actual world/entity restoration order is valuable to verify once in runtime.",
+      "queueState": "SYSTEM_REOPEN_REQUIRED",
+      "humanTestingEligible": false,
+      "reductionRequirement": [
+        "Inspect the fresh selected artifact for the exact unresolved surface.",
+        "Run applicable canonical multi-scenario checks.",
+        "Attempt deterministic proof substitution and Blocking-Proof Exhaustion.",
+        "Use analogous-map implementation comparison only as search guidance.",
+        "Re-run Claim-Based Proof.",
+        "Escalate to human runtime only if one runtime-native deciding fact remains."
+      ]
     },
     {
       "id": "RTQ-MTT2-ROUND-TRANSITION-RECONNECT",
@@ -169,7 +229,17 @@
       "observableA": "Only intended cross-round state survives; next-round loadout and progression are correct.",
       "observableB": "Old loadout/resources remain, required new state is missing, reward/score commits twice, or the player is not correctly assigned to the new round.",
       "whyHighValue": "The map has explicit round transitions, loadout, score/reward, reconnect and repeated-run state but no runtime ground truth.",
-      "runtimeOnlyReason": "The test stresses a real transition boundary whose final timing/interaction is runtime-specific."
+      "runtimeOnlyReason": "The test stresses a real transition boundary whose final timing/interaction is runtime-specific.",
+      "queueState": "SYSTEM_REOPEN_REQUIRED",
+      "humanTestingEligible": false,
+      "reductionRequirement": [
+        "Inspect the fresh selected artifact for the exact unresolved surface.",
+        "Run applicable canonical multi-scenario checks.",
+        "Attempt deterministic proof substitution and Blocking-Proof Exhaustion.",
+        "Use analogous-map implementation comparison only as search guidance.",
+        "Re-run Claim-Based Proof.",
+        "Escalate to human runtime only if one runtime-native deciding fact remains."
+      ]
     },
     {
       "id": "RTQ-AFTERSHOCK-SECOND-RUN-WORLD",
@@ -192,7 +262,17 @@
       "observableA": "Second-run world, entities, objectives and player state match the authored fresh baseline.",
       "observableB": "A world mutation/entity/objective from run 1 survives or a required run-2 state is missing/duplicated.",
       "whyHighValue": "Aftershock contains explicit world mutation/reset, entity lifecycle, reconnect and reload surfaces and currently has only a prospective zero-finding snapshot.",
-      "runtimeOnlyReason": "Second-run world persistence is a high-yield native-runtime probe after static reset proof closes."
+      "runtimeOnlyReason": "Second-run world persistence is a high-yield native-runtime probe after static reset proof closes.",
+      "queueState": "SYSTEM_REOPEN_REQUIRED",
+      "humanTestingEligible": false,
+      "reductionRequirement": [
+        "Inspect the fresh selected artifact for the exact unresolved surface.",
+        "Run applicable canonical multi-scenario checks.",
+        "Attempt deterministic proof substitution and Blocking-Proof Exhaustion.",
+        "Use analogous-map implementation comparison only as search guidance.",
+        "Re-run Claim-Based Proof.",
+        "Escalate to human runtime only if one runtime-native deciding fact remains."
+      ]
     }
   ],
   "priorityB": [
@@ -201,20 +281,30 @@
       "projectId": "mysteries-biomes-l2",
       "map": "Mysteries of Biomes Level 2",
       "exactQuestion": "Does reload during a stage transition preserve exactly one valid objective/progression state?",
-      "reason": "Stage progression + spatial/world mutation + reload recovery are all material surfaces."
+      "reason": "Stage progression + spatial/world mutation + reload recovery are all material surfaces.",
+      "queueState": "DEFERRED",
+      "humanTestingEligible": false
     },
     {
       "id": "RTQ-FOP1-FRIENDLY-FIRE-FIX-VERIFY",
       "projectId": "fall-of-the-pillager-l1",
       "map": "Fall of the Pillager Level 1",
       "exactQuestion": "After developer fix, can one cooperative player still damage another?",
-      "reason": "Regression verification only; current canonical artifact already has a PROVEN friendly-fire bug."
+      "reason": "Regression verification only; current canonical artifact already has a PROVEN friendly-fire bug.",
+      "queueState": "DEFERRED",
+      "humanTestingEligible": false
     }
   ],
-  "executionRule": "Run Priority A in order. Stop expanding manual coverage when repeated probes are clean unless new runtime evidence creates a new generalized regression family.",
+  "executionRule": "Do not ask the user to execute Priority A yet. The audit system must reduce each item first. Human runtime testing is a last-resort handoff only.",
   "resultHandling": {
     "clean": "Record PASS only; do not create a DEV NOTE merely because runtime was tested.",
     "contradiction": "Record exact observation, then source-crosscheck before publishing.",
     "ambiguous": "Capture exact state and observable; do not use generic NEED_VALIDATION."
+  },
+  "operatorPolicy": {
+    "userManualTestingRequiredNow": false,
+    "defaultOwner": "audit-system",
+    "manualTestingRule": "Only hand off after fresh selected-artifact inspection and a complete Manual Test Last-Resort receipt.",
+    "broadPlaythroughForbidden": true
   }
 }
