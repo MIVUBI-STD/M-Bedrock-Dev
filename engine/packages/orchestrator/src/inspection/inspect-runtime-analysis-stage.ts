@@ -264,6 +264,10 @@ export function analyzeInspectionRuntimeState(
   const inventoryLifecycle =
     analyzeInventoryLifecycle(
       scriptsFor("inventory-state"),
+      {
+        requiresFullEquipmentReset:
+          playerCapabilitySurfaces.creativeModeGrants > 0,
+      },
     );
   const inventoryPolicy =
     analyzeInventoryContract(
