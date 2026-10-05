@@ -17,7 +17,6 @@ pub use fusion::VmwareFusionProvider;
 pub use workstation::VmwareWorkstationProvider;
 
 pub(crate) const READY_SNAPSHOT: &str = "QA_READY";
-pub(crate) const CLIENT_MEMORY_MB: &str = "4096";
 pub(crate) const CLIENT_VCPUS: &str = "2";
 const COMMAND_TIMEOUT: Duration = Duration::from_secs(45);
 
@@ -26,6 +25,8 @@ pub trait Provider {
     fn detect(&self) -> bool;
     fn provision(&self, client: ClientId) -> io::Result<ClientState>;
     fn reprovision(&self, client: ClientId) -> io::Result<ClientState>;
+    fn configure_memory(&self, client: ClientId, memory_mb: u64) -> io::Result<()>;
+    fn memory_mb(&self, client: ClientId) -> io::Result<u64>;
     fn status(&self, client: ClientId) -> io::Result<ClientState>;
     fn start(&self, client: ClientId) -> io::Result<ClientState>;
     fn stop(&self, client: ClientId) -> io::Result<ClientState>;
@@ -272,16 +273,42 @@ pub(crate) fn snapshot_list_contains(list_output: &str, name: &str) -> bool {
 }
 
 
-pub(crate) fn apply_client_resource_policy(vmx: &Path) -> io::Result<()> {
+pub(crate) fn apply_client_cpu_policy(vmx: &Path) -> io::Result<()> {
     let source = fs::read_to_string(vmx)?;
     let mut lines: Vec<String> = source.lines().map(ToOwned::to_owned).collect();
 
-    set_vmx_value(&mut lines, "memsize", CLIENT_MEMORY_MB);
     set_vmx_value(&mut lines, "numvcpus", CLIENT_VCPUS);
 
     let mut output = lines.join("\n");
     output.push('\n');
     fs::write(vmx, output)
+}
+
+pub(crate) fn set_vmx_memory(vmx: &Path, memory_mb: u64) -> io::Result<()> {
+    let source = fs::read_to_string(vmx)?;
+    let mut lines: Vec<String> = source.lines().map(ToOwned::to_owned).collect();
+    set_vmx_value(&mut lines, "memsize", &memory_mb.to_string());
+    let mut output = lines.join("\n");
+    output.push('\n');
+    fs::write(vmx, output)
+}
+
+pub(crate) fn read_vmx_memory(vmx: &Path) -> io::Result<u64> {
+    let source = fs::read_to_string(vmx)?;
+    for line in source.lines() {
+        let trimmed = line.trim();
+        if let Some(value) = trimmed.strip_prefix("memsize =") {
+            return value
+                .trim()
+                .trim_matches('"')
+                .parse::<u64>()
+                .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "invalid memsize in VMX"));
+        }
+    }
+    Err(io::Error::new(
+        io::ErrorKind::InvalidData,
+        "memsize is missing from VMX",
+    ))
 }
 
 fn set_vmx_value(lines: &mut Vec<String>, key: &str, value: &str) {
