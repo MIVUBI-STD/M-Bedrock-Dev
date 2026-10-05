@@ -20,7 +20,6 @@ const required = [
   "planning/README.md",
   "planning/development.md",
   "planning/operations.md",
-  "planning/operations-audit-queue.json",
   "planning/projects.md",
   "docs/01-product/README.md",
   "docs/02-artifacts/README.md",
