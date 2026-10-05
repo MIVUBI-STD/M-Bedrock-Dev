@@ -1,15 +1,7 @@
 # Environmental Hazard Integrity
 
-## Covered surfaces
+> Compatibility pointer. Canonical owner: [World Mutation Runtime](./world-mutation-runtime.md).
 
-Explosion, lava/water contact, damage-over-time, damage sensors, destructive world hazards.
+Environmental hazard scope and mutation/reset concerns are consolidated into the canonical world-mutation owner.
 
-## Analyzer diagnostics
-
-- ENV_HAZARD_CONTRACT_MISSING
-- ENV_EXPLOSION_CROSS_ARENA
-- ENV_EXPLOSION_BLOCK_MUTATION_UNSCOPED
-- ENV_STALE_DAMAGE_OVER_TIME
-- ENV_DAMAGE_SENSOR_HIDDEN_IMMUNITY
-- ENV_HAZARD_WORLD_RESTORE_UNVERIFIED
-- ENV_BEFORE_EVENT_ILLEGAL_MUTATION
+This file remains temporarily so active references do not break. Do not add new normative guidance here.

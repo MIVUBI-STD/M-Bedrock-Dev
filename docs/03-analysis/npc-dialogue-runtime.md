@@ -1,19 +1,7 @@
-# NPC and Dialogue Lifecycle Integrity
+# NPC and Dialogue Lifecycle
 
-## Core problem
+> Compatibility pointer. Canonical owner: [Interaction Lifecycle](./interaction-runtime.md).
 
-NPC dialogue is both UI and command automation.
+This topic is consolidated into the canonical interaction lifecycle owner.
 
-## Required model
-
-NPC identity + player session + scene + arena generation + dialogue generation.
-
-## Analyzer diagnostics
-
-- NPC_DIALOGUE_SESSION_OWNER_MISSING
-- NPC_DIALOGUE_STALE_RESPONSE
-- NPC_DIALOGUE_CROSS_ARENA_TARGET
-- NPC_DIALOGUE_COMMAND_SCOPE_UNSAFE
-- NPC_DIALOGUE_DUPLICATE_TRANSACTION_PATH
-- NPC_STRUCTURE_RESTORE_DUPLICATE
-- NPC_DIALOGUE_RESET_NOT_INVALIDATED
+This file remains temporarily so active references do not break. Do not add new normative guidance here.
