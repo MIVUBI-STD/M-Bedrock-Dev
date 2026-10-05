@@ -128,3 +128,21 @@ An interaction event proves that a player interacted with a target. It does not 
 8. Does respawn/reset restore input correctly?
 9. Is a held interaction interpreted as repeated actions?
 10. Are actor and target revalidated before commit?
+
+## NPC dialogue lifecycle
+
+NPC dialogue combines UI, actor identity, command context, and deferred player interaction.
+
+Required ownership includes:
+
+```text
+NPC identity
+player/session identity
+scene
+arena/session generation
+dialogue generation
+```
+
+Revalidate the player/session/arena before dialogue-triggered side effects. Distinguish the executing NPC from the initiating player, and reject stale responses/commands after reset or generation change.
+
+Dialogue restored through structures must not create duplicate transaction paths or stale NPC ownership.
