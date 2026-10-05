@@ -17,7 +17,7 @@
   "cards": 39,
   "uniqueIds": 39,
   "defaultCollapsed": true,
-  "source": "workspace/reports/approved-publication-dataset.json",
+  "source": "workspace/publication/source-dataset.json",
   "fullCurrentMatchesCanonical": true,
   "staleFalsePositiveAbsent": true,
   "currentRuntimeFindingsPresent": true,
