@@ -135,15 +135,6 @@ const compatibilityPointers = [
   "docs/validation/bedrock-runtime-emitter.md",
   "docs/validation/source-mutation-detection.md",
   "docs/validation/invariant-revalidation.md",
-  "docs/system/integrated-analysis.md",
-  "docs/system/orchestration.md",
-  "docs/system/skill-contract.md",
-  "docs/system/context-efficiency.md",
-  "docs/repair/application.md",
-  "docs/repair/filesystem-safety.md",
-  "docs/repair/orchestrated-planning.md",
-  "docs/repair/topology-planning.md",
-  "docs/repair/typed-effects.md",
 ];
 
 for (const path of compatibilityPointers) {
@@ -166,6 +157,15 @@ for (const path of operationsDocs) {
 }
 
 const retiredAuthorityPaths = [
+  "docs/system/integrated-analysis.md",
+  "docs/system/orchestration.md",
+  "docs/system/skill-contract.md",
+  "docs/system/context-efficiency.md",
+  "docs/repair/application.md",
+  "docs/repair/filesystem-safety.md",
+  "docs/repair/orchestrated-planning.md",
+  "docs/repair/topology-planning.md",
+  "docs/repair/typed-effects.md",
   "docs/07-operations/current-validation.md",
   "docs/07-operations/next-action.md",
   "docs/07-operations/gameplay-understanding-corpus.md",
