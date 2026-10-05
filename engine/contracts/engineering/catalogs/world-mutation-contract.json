@@ -280,6 +280,56 @@
         "early-start",
         "partial-world-state"
       ]
+    },
+    {
+      "id": "world-policy.logical-bounds-not-collision-proof",
+      "domain": "world-mutation",
+      "subject": "physical containment",
+      "statement": "Loading, simulation, gameplay, and ownership bounds are not physical collision bounds. Escape or cross-arena reachability must be proven against actual collision geometry such as minecraft:barrier, walls, floor, ceiling, and other blockers before a physical-escape finding is admitted.",
+      "classification": "engineering-contract",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-contract-v1"
+      ],
+      "capabilityTags": [
+        "physical-containment",
+        "barrier",
+        "geometry"
+      ],
+      "riskSurfaces": [
+        "false-escape-positive",
+        "cross-arena-misclassification"
+      ]
+    },
+    {
+      "id": "world-policy.spawn-causality-separation",
+      "domain": "world-mutation",
+      "subject": "entity creation causality",
+      "statement": "Observed entity creation must be attributed to its actual mechanism: natural spawning, spawn egg/item use, command summon, script spawnEntity, structure restoration, or setup/developer tooling. A natural-spawn gamerule is not proof that manual or privileged spawn paths are blocked.",
+      "classification": "engineering-contract",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-contract-v1"
+      ],
+      "capabilityTags": [
+        "entity-spawn",
+        "gamerule",
+        "causal-attribution"
+      ],
+      "riskSurfaces": [
+        "wrong-root-cause",
+        "manual-spawn-bypass"
+      ]
     }
   ],
   "relations": [
