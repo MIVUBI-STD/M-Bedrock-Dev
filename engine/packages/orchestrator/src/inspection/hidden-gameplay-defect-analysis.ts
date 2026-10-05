@@ -716,7 +716,14 @@ function auditScenarioPresetFromModel(
       surfaceSignals.cancelledWorldMutation ||
       input.world.clientReconciliation.predictedMutationCancellations > 0,
     hasSpatialContainmentSurface:
-      surfaceSignals.spatialContainment,
+      surfaceSignals.spatialContainment ||
+      (
+        input.world.arenas.detected &&
+        (
+          input.world.playerCapabilities.mayflyGrants > 0 ||
+          input.world.playerCapabilities.creativeModeGrants > 0
+        )
+      ),
   });
 }
 
@@ -977,7 +984,14 @@ export function refreshHiddenGameplayDefectsForWorld(
         refreshSurfaceSignals.cancelledWorldMutation ||
         world.clientReconciliation.predictedMutationCancellations > 0,
       hasSpatialContainmentSurface:
-        refreshSurfaceSignals.spatialContainment,
+        refreshSurfaceSignals.spatialContainment ||
+        (
+          world.arenas.detected &&
+          (
+            world.playerCapabilities.mayflyGrants > 0 ||
+            world.playerCapabilities.creativeModeGrants > 0
+          )
+        ),
     });
 
   const scenarioGraph =
