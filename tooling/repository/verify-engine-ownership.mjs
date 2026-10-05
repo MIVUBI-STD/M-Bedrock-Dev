@@ -11,22 +11,28 @@ const ignoredDirectories = new Set(["node_modules", "dist", "coverage"]);
 const failures = [];
 
 const DOMAIN_REGISTRIES = [
-  { root: "apps", registry: "apps/ownership.json", ignored: new Set([]) },
-  { root: "tooling", registry: "tooling/ownership.json", ignored: new Set([]) },
-  { root: "workspace", registry: "workspace/ownership.json", ignored: new Set([]) },
+  { root: "apps", registry: "apps/ownership.json", ignored: new Set([]), includeFiles: false },
+  { root: "tooling", registry: "tooling/ownership.json", ignored: new Set([]), includeFiles: false },
+  {
+    root: "workspace",
+    registry: "workspace/ownership.json",
+    ignored: new Set(["README.md", "AGENTS.md", "ownership.json"]),
+    includeFiles: true,
+  },
 ];
 
 for (const domain of DOMAIN_REGISTRIES) {
   const registry = JSON.parse(readFileSync(domain.registry, "utf8"));
   const physical = readdirSync(domain.root, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && !domain.ignored.has(entry.name))
+    .filter((entry) => !domain.ignored.has(entry.name))
+    .filter((entry) => entry.isDirectory() || (domain.includeFiles && entry.isFile()))
     .map((entry) => entry.name)
     .sort();
   const assigned = Object.values(registry.groups ?? {})
     .flatMap((group) => Array.isArray(group.entries) ? group.entries : [])
     .sort();
   if (JSON.stringify(physical) !== JSON.stringify(assigned)) {
-    failures.push(domain.registry + ": must assign every direct child directory exactly once");
+    failures.push(domain.registry + ": must assign every owned direct child exactly once");
   }
 }
 
