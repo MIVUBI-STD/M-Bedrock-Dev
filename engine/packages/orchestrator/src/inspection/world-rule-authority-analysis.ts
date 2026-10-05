@@ -15,6 +15,13 @@ export interface WorldRuleConflict {
   writerRegions: readonly string[];
 }
 
+export type WorldRuleScriptInput =
+  | ParsedScriptFile
+  | {
+      parsed: ParsedScriptFile;
+      text?: string;
+    };
+
 export interface WorldRuleAuthorityAnalysis {
   writes: readonly WorldRuleWrite[];
   conflicts: readonly WorldRuleConflict[];
@@ -33,11 +40,17 @@ function normalized(command: string): string {
 }
 
 export function analyzeWorldRuleAuthority(
-  scripts: readonly ParsedScriptFile[],
+  scripts: readonly WorldRuleScriptInput[],
 ): WorldRuleAuthorityAnalysis {
   const writes: WorldRuleWrite[] = [];
+  const normalizedScripts = scripts.map((item) =>
+    "parsed" in item
+      ? item
+      : { parsed: item, text: undefined }
+  );
 
-  for (const script of scripts) {
+  for (const item of normalizedScripts) {
+    const script = item.parsed;
     for (const command of script.commandLiterals) {
       const text = normalized(command.command);
       const match = /^gamerule\s+(\S+)\s+(\S+)/i.exec(text);
@@ -48,6 +61,19 @@ export function analyzeWorldRuleAuthority(
         rule: match[1]!,
         value: match[2]!,
         source: command.source,
+      });
+    }
+
+    const text = item.text ?? "";
+    const propertyPattern =
+      /\b(doMobSpawning|doDaylightCycle|doWeatherCycle|keepInventory|mobGriefing|naturalRegeneration|pvp)\s*=\s*(true|false|-?\d+)\b/gi;
+    for (const match of text.matchAll(propertyPattern)) {
+      writes.push({
+        scriptId: script.identifier,
+        executionRegion: "module-or-runtime-property-write",
+        rule: match[1]!,
+        value: match[2]!,
+        source: script.source,
       });
     }
   }
@@ -90,7 +116,10 @@ export function analyzeWorldRuleAuthority(
             ? "enabled" as const
             : "unresolved" as const;
 
-  const scriptSpawnEntityPaths = scripts.reduce(
+  const parsedScripts = normalizedScripts.map(
+    (item) => item.parsed,
+  );
+  const scriptSpawnEntityPaths = parsedScripts.reduce(
     (sum, script) =>
       sum +
       script.methodCalls.filter(
@@ -98,7 +127,7 @@ export function analyzeWorldRuleAuthority(
       ).length,
     0,
   );
-  const commandSummonPaths = scripts.reduce(
+  const commandSummonPaths = parsedScripts.reduce(
     (sum, script) =>
       sum +
       script.commandLiterals.filter((command) =>
