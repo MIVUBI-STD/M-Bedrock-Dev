@@ -93,7 +93,7 @@ A benchmark failure is evidence for investigation, not permission to broaden the
 
 For selected-map audit evaluation, also apply:
 
-`docs/05-validation/retest-and-regression.md`
+`docs/validation/retest-and-regression.md`
 
 This preserves the distinction between detector correctness and proof maturity: NEED_VALIDATION is acceptable only when the frozen expectation explicitly permits unresolved proof at the configured evidence ceiling.
 
