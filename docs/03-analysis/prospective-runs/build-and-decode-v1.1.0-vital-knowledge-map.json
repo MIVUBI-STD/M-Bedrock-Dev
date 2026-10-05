@@ -93,7 +93,7 @@
         "VAL-BAD-FOUR-ARENA-LIVE",
         "VAL-BAD-RELOAD-FOUR-PHASES"
       ],
-      "reason": "Logical isolation is closed. Native voxel proof shows the active gameplay/loading volumes are equivalent across all four arenas, but physical containment is broken because mayfly-enabled players can leave their arena. Live four-arena concurrency and mixed-phase reload remain runtime-owned."
+      "reason": "Logical isolation is closed. Voxel proof confirms equivalent active gameplay volumes across all four arenas. Physical containment fails because active players can leave their arena while remaining in their original session. Live four-arena concurrency and mixed-phase reload remain runtime-owned."
     },
     {
       "domain": "CONNECTION_RECOVERY",
@@ -162,7 +162,7 @@
         "shared reset queue alone causes cross-arena coordinate corruption"
       ],
       "residue": [],
-      "reason": "Reset ownership and physical replica footprint are now mapped. Gameplay/loading volumes are voxel-equivalent across replicas; lobby barrier differences are non-material to team-pad reachability/containment. Persistent-entity residue remains the explicit reset finding."
+      "reason": "Reset ownership and physical replica footprint are mapped. Active gameplay volumes are equivalent across replicas; lobby barrier differences are not currently gameplay-material to team admission. Persistent-entity residue remains the explicit reset finding."
     },
     {
       "domain": "SCORE_RESULT_INTEGRITY",
@@ -221,7 +221,7 @@
       "blockerPotential": true,
       "exactQuestion": "Are arenas 2-4 physically equivalent to arena 1 under the authored +384 X translation for plot, lobby, team pads, walls, spawn/view locations and reset footprint?",
       "status": "CLOSED_BOUNDED_EQUIVALENCE",
-      "result": "Gameplay/loading region: 126,976 relative blocks per replica are equivalent when absent canonical air subchunks are interpreted as air; 0 material gameplay-volume mismatches. Lobby regions differ by 131/167/141 blocks, almost entirely barrier↔air, but no team-pad cell differs, every team pad remains reachable, and no walkable lobby escape was found."
+      "result": "Active gameplay/loading geometry is equivalent across Arena 1-4. Lobby volumes differ slightly, mainly barrier/air placement, but no configured team-pad cell differs, every team pad remains reachable, and no same-level walkable lobby escape was found."
     },
     {
       "id": "VAL-BAD-PHYSICAL-CONTAINMENT",
@@ -232,7 +232,7 @@
       "blockerPotential": true,
       "exactQuestion": "Can permitted movement, mayfly or building escape the intended arena/plot, reach another arena, or interact with protected adjacent gameplay?",
       "status": "CLOSED_WITH_FINDING",
-      "result": "PROVEN as BUG-BAD-PHYSICAL-ARENA-ESCAPE. During playing, mayfly is granted to all participants and voxel traversal from builder/guesser spawns reaches outside the arena bounds on all four replicas."
+      "result": "Resolved as BUG-BAD-PHYSICAL-ARENA-ESCAPE. During playing, all participants receive mayfly and 3D voxel traversal from builder/guesser spawns reaches outside the arena bounds in all four arenas."
     },
     {
       "id": "VAL-BAD-FOUR-ARENA-LIVE",
@@ -279,7 +279,7 @@
     "vitalGameplayKnowledge": "OPEN",
     "openBecause": [
       "ENTRY_ADMISSION requires deployment multiplayer confirmation",
-      "MULTI_ARENA_ISOLATION still requires four-arena live concurrency and mixed-phase reload confirmation",
+      "MULTI_ARENA_ISOLATION requires four-arena live concurrency and mixed-phase reload confirmation",
       "CONNECTION_RECOVERY requires mixed-phase reload confirmation"
     ],
     "nextPhase": "MAPPING_AND_VALIDATION_ONLY",
@@ -306,7 +306,7 @@
     },
     "voxelProof": {
       "source": "Selected artifact Bedrock LevelDB",
-      "gameplayLoadingVolume": {
+      "activeGameplayReplica": {
         "relativeBounds": {
           "min": {
             "x": -32,
@@ -320,52 +320,32 @@
           }
         },
         "blocksPerReplica": 126976,
-        "replicas": [
-          {
-            "arena": "Arena 2",
-            "offsetX": 384,
-            "mismatches": 0
-          },
-          {
-            "arena": "Arena 3",
-            "offsetX": 768,
-            "mismatches": 0
-          },
-          {
-            "arena": "Arena 4",
-            "offsetX": 1152,
-            "mismatches": 0
-          }
-        ],
-        "note": "Six canonical y=0 subchunks are absent while corresponding replica subchunks are explicitly all-air; these are semantically equivalent air volumes."
+        "result": "EQUIVALENT",
+        "mismatchCounts": {
+          "Arena 2": 0,
+          "Arena 3": 0,
+          "Arena 4": 0
+        },
+        "note": "Six Arena 1 y=0 subchunks are absent while corresponding replica subchunks are explicitly all-air, so the missing storage represents equivalent air volume."
       },
-      "lobbyVolume": {
-        "comparedBlocksPerReplica": 21663,
-        "divergences": [
-          {
-            "arena": "Arena 2",
-            "mismatches": 131
-          },
-          {
-            "arena": "Arena 3",
-            "mismatches": 167
-          },
-          {
-            "arena": "Arena 4",
-            "mismatches": 141
-          }
-        ],
-        "classification": "NON_MATERIAL_TO_TEAM_ADMISSION_FROM_CURRENT_PROOF",
-        "evidence": [
-          "No mismatch intersects any configured team-pad volume.",
-          "All eight team pads remain reachable from lobby spawn in all four arenas.",
-          "No same-level walkable path exits configured lobbyBounds in any arena."
+      "lobbyReplica": {
+        "result": "NON_MATERIAL_DIVERGENCE_FROM_CURRENT_PROOF",
+        "mismatchCounts": {
+          "Arena 2": 131,
+          "Arena 3": 167,
+          "Arena 4": 141
+        },
+        "notes": [
+          "Differences are overwhelmingly barrier versus air.",
+          "No mismatch intersects configured team-pad volumes.",
+          "All eight team pads remain reachable from lobby spawn in every arena.",
+          "No same-level walkable path leaves lobbyBounds."
         ]
       },
       "activeContainment": {
-        "result": "FAILED",
+        "result": "FAILED_PROVEN_FINDING",
         "findingId": "BUG-BAD-PHYSICAL-ARENA-ESCAPE",
-        "evidence": "3D two-block-high air traversal from both builder and guesser spawns reaches outside the authored loading bounds in Arena 1; voxel-equivalent gameplay volumes reproduce the same path in Arenas 2-4."
+        "note": "Two-block-high 3D air traversal reaches beyond arena gameplay bounds from both builder and guesser spawns in Arena 1-4."
       }
     }
   }
