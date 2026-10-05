@@ -228,7 +228,7 @@ impl Provider for VmwareFusionProvider {
         Ok(ClientState::Stopped)
     }
 
-    fn reset(&self, client: ClientId) -> io::Result<ClientState> {
+    fn reset(&self, client: ClientId, memory_mb: u64) -> io::Result<ClientState> {
         let vmx = self.require_client(client)?;
         if !self.has_ready(client)? {
             return Err(io::Error::new(
@@ -245,6 +245,7 @@ impl Provider for VmwareFusionProvider {
             self.vmrun(),
             ["-T", "fusion", "revertToSnapshot", vmx.to_string_lossy().as_ref(), READY_SNAPSHOT],
         )?;
+        set_vmx_memory(&vmx, memory_mb)?;
         command_output(
             self.vmrun(),
             ["-T", "fusion", "start", vmx.to_string_lossy().as_ref(), "gui"],
