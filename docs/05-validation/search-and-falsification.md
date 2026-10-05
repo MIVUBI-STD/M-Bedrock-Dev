@@ -117,3 +117,27 @@ Property-based generation is useful only when backed by explicit invariants, suc
 - independent arenas remain independent.
 
 Generated/model failures are search evidence, not Minecraft runtime proof. Runtime adapters may later project observed state into the same invariant model.
+
+## Source mutation detection
+
+Source mutants must be evaluated through the same production analyzers used by normal inspection. The search/mutation layer generates the mutant; it does not become a second parser or diagnostic owner.
+
+Examples:
+
+```text
+selector broadening
+→ command/state-scope analysis
+→ newly broadened mutation scope?
+
+reference redirect
+→ reference graph
+→ newly unresolved target?
+
+coordinate shift
+→ topology comparison
+→ newly introduced spatial outlier?
+```
+
+A mutation survives when the existing analyzer stack cannot distinguish it from baseline under the available evidence. Survival is useful detector-gap evidence; do not force a kill.
+
+Pre-existing findings do not count as detecting a mutant unless the mutation introduces the relevant new evidence.
