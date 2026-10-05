@@ -150,3 +150,21 @@ do not vote/majority-select values
 8. What happens on round reset?
 9. Is a UI/display field read back into gameplay control flow?
 10. If two surfaces disagree, which one wins and why?
+
+## State-scope derivation
+
+State scope is derived from typed reads/writes, including scoreboard objectives, tags, selector filters, and other registered state surfaces.
+
+Broad selectors such as unfiltered all-player/all-entity writes are cross-scope risk evidence, not automatic proof of a multiplayer bug.
+
+Filtered selectors also require ownership evidence; a filter is not automatically safe merely because it is narrower.
+
+State-scope analysis feeds authority/isolation reasoning:
+
+```text
+typed read/write
+→ selector / owner scope
+→ logical state authority
+→ mirror / mutation relation
+→ isolation contradiction or safe disposition
+```
