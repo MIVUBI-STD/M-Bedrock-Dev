@@ -1643,7 +1643,30 @@ Do not create separate checks for coins, tags, properties, or inventory. They ar
 
 ---
 
-# 36. Architecture Freeze Rule
+# 36. Vital Gameplay Knowledge Closure
+
+Vital gameplay closure is the final coverage projection over the canonical audit. It is defined in `vital-gameplay-knowledge-closure.md` and exists to prevent a clean-looking report from hiding an unknown critical mechanic.
+
+It projects exactly eight domains:
+
+```text
+ENTRY_ADMISSION
+GAME_STATE_PROGRESSION
+MULTI_ARENA_ISOLATION
+CONNECTION_RECOVERY
+INVENTORY_PLAYER_CAPABILITY
+WORLD_RESET_INTEGRITY
+SCORE_RESULT_INTEGRITY
+PLAYER_FACING_INFORMATION
+```
+
+Every applicable domain is pressured across happy path, failure path, disconnect/recovery, reuse/second run, concurrent interleaving, and boundary/capacity dimensions using the existing Scenario Coverage Gate and reduction rules. Do not create parallel scenarios solely for the projection.
+
+A domain may be labeled safe only after canonical closure. Runtime-owned facts remain RUNTIME_REQUIRED; unresolved semantics/capabilities remain DETECTION_GAP. Findings remain canonical BUG/DESIGN_MISMATCH findings and are only referenced by ID.
+
+The overall projection remains OPEN while any vital domain is RUNTIME_REQUIRED or DETECTION_GAP, or while material residue cannot be routed safely.
+
+# 37. Architecture Freeze Rule
 
 The detection architecture is considered structurally complete after sections 1–17.
 
