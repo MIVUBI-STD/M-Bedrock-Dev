@@ -1870,7 +1870,8 @@
       "type": "object",
       "required": [
         "informationIntegrity",
-        "zeroFinding"
+        "zeroFinding",
+        "vitalGameplay"
       ],
       "properties": {
         "informationIntegrity": {
@@ -1939,6 +1940,150 @@
             },
             "reasons": {
               "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "vitalGameplay": {
+          "type": "object",
+          "required": [
+            "policy",
+            "status",
+            "domains",
+            "unroutedResidueIds",
+            "reasons"
+          ],
+          "properties": {
+            "policy": {
+              "const": "vital-gameplay-knowledge-closure"
+            },
+            "status": {
+              "enum": [
+                "CLOSED",
+                "OPEN"
+              ]
+            },
+            "domains": {
+              "type": "array",
+              "minItems": 8,
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "required": [
+                  "domain",
+                  "criticality",
+                  "status",
+                  "invariants",
+                  "scenarioDimensions",
+                  "findingIds",
+                  "runtimeResidueIds",
+                  "detectionGapIds",
+                  "reasons"
+                ],
+                "properties": {
+                  "domain": {
+                    "enum": [
+                      "ENTRY_ADMISSION",
+                      "GAME_STATE_PROGRESSION",
+                      "MULTI_ARENA_ISOLATION",
+                      "CONNECTION_RECOVERY",
+                      "INVENTORY_PLAYER_CAPABILITY",
+                      "WORLD_RESET_INTEGRITY",
+                      "SCORE_RESULT_INTEGRITY",
+                      "PLAYER_FACING_INFORMATION"
+                    ]
+                  },
+                  "criticality": {
+                    "enum": [
+                      "TIER_0_GAME_KILLING",
+                      "TIER_1_GAME_INTEGRITY",
+                      "TIER_2_PLAYER_EXPERIENCE"
+                    ]
+                  },
+                  "status": {
+                    "enum": [
+                      "UNDERSTOOD_PROVEN_SAFE",
+                      "UNDERSTOOD_WITH_FINDING",
+                      "RUNTIME_REQUIRED",
+                      "DETECTION_GAP",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "invariants": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "scenarioDimensions": {
+                    "type": "array",
+                    "minItems": 6,
+                    "maxItems": 6,
+                    "uniqueItems": true,
+                    "items": {
+                      "enum": [
+                        "HAPPY_PATH",
+                        "FAILURE_PATH",
+                        "DISCONNECT_RECOVERY",
+                        "REUSE_SECOND_RUN",
+                        "CONCURRENT_INTERLEAVING",
+                        "BOUNDARY_CAPACITY"
+                      ]
+                    }
+                  },
+                  "findingIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uniqueItems": true
+                  },
+                  "runtimeResidueIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uniqueItems": true
+                  },
+                  "detectionGapIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uniqueItems": true
+                  },
+                  "reasons": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "unroutedResidueIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true
+            },
+            "reasons": {
+              "type": "array",
+              "minItems": 1,
               "items": {
                 "type": "string",
                 "minLength": 1
