@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "runType": "FULL_PRODUCTION_REAUDIT",
+  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "target": {
+    "map": "Orb of the Illusioner Level 1",
+    "version": "1.2.1",
+    "worldFileId": "1hU8Mvg8Ty1uB2C-MlDjaon-YqEf3Rffo",
+    "artifactFingerprint": "sha256:7557e129a7cc148d1a610fac7a65f90a240debdcca7fbec989414f9c43274444",
+    "worldFileFetched": true,
+    "worldFileSizeBytes": 13625674
+  },
+  "proofQueue": [
+    {
+      "id": "ORB1-PQ-01",
+      "check": "Combat / Team Ownership / Friendly Fire",
+      "state": "PROVING"
+    },
+    {
+      "id": "ORB1-PQ-02",
+      "check": "Death / Knockdown / Revive / Respawn / Reconnect",
+      "state": "PROVING"
+    },
+    {
+      "id": "ORB1-PQ-03",
+      "check": "Participant / Team Accounting",
+      "state": "PROVING"
+    },
+    {
+      "id": "ORB1-PQ-04",
+      "check": "Inventory / Equipment / Upgrade Lifecycle",
+      "state": "PROVING"
+    },
+    {
+      "id": "ORB1-PQ-05",
+      "check": "Transaction / Economy / Referential Integrity",
+      "state": "PROVING"
+    },
+    {
+      "id": "ORB1-PQ-06",
+      "check": "Progression / Objective / Terminal Integrity",
+      "state": "PROVING"
+    },
+    {
+      "id": "ORB1-PQ-07",
+      "check": "State-Agnostic Fresh-Session Reset",
+      "state": "PROVING"
+    },
+    {
+      "id": "ORB1-PQ-08",
+      "check": "World / Entity Cleanup / Second Run",
+      "state": "PROVING"
+    },
+    {
+      "id": "ORB1-PQ-09",
+      "check": "Connection / Active-Session Reload Recovery",
+      "state": "PROVING"
+    },
+    {
+      "id": "ORB1-PQ-10",
+      "check": "Player Capability / Developer Exposure",
+      "state": "PROVING"
+    },
+    {
+      "id": "ORB1-PQ-11",
+      "check": "Adversarial CROSS / RACE / DUPLICATE / RETAIN / REPLAY / ESCAPE / ORPHAN",
+      "state": "PROVING"
+    }
+  ],
+  "coverageGates": {
+    "materialSurfaceRouting": "IN_PROGRESS",
+    "mutableResourceOwnership": "IN_PROGRESS",
+    "requiredCrosschecks": "IN_PROGRESS",
+    "materialScenarioAccounting": "IN_PROGRESS",
+    "playerControlledSurfaceAccounting": "IN_PROGRESS",
+    "genericNeedValidation": 0
+  },
+  "evidenceReceiptRequired": true
+}
