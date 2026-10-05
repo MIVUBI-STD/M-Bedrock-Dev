@@ -25,6 +25,7 @@ const canonicalDocs = [
   "docs/03-analysis/compatibility.md",
   "docs/03-analysis/education.md",
   "docs/03-analysis/player-lifecycle.md",
+  "docs/03-analysis/script-api.md",
   "docs/06-system/architecture.md",
   "docs/05-validation/runtime-proof.md",
   "docs/05-validation/search-and-falsification.md",
@@ -46,6 +47,14 @@ const compatibilityPointers = [
   "docs/03-analysis/education-runtime.md",
   "docs/03-analysis/player-session-runtime.md",
   "docs/03-analysis/player-life-runtime.md",
+  "docs/03-analysis/script-api-lifecycle.md",
+  "docs/03-analysis/script-api-return-contracts.md",
+  "docs/03-analysis/script-api-signature-migrations.md",
+  "docs/03-analysis/script-api-static-compatibility.md",
+  "docs/03-analysis/script-api-usage-inventory.md",
+  "docs/03-analysis/script-api-version-matrix.md",
+  "docs/03-analysis/script-event-symbol-matrix.md",
+  "docs/03-analysis/script-method-symbol-matrix.md",
   "docs/05-validation/active-runtime-diagnosis.md",
   "docs/05-validation/runtime-control.md",
   "docs/05-validation/runtime-observation.md",
@@ -83,6 +92,13 @@ for (const path of compatibilityPointers) {
   }
   if (text.length > 1600) {
     failures.push(path + " is growing back into a parallel documentation authority.");
+  }
+}
+
+const operationsDocs = tracked.filter((path) => path.startsWith("docs/07-operations/"));
+for (const path of operationsDocs) {
+  if (path !== "docs/07-operations/README.md") {
+    failures.push("docs/07-operations may only retain README.md compatibility routing: " + path);
   }
 }
 
