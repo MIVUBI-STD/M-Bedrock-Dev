@@ -32,7 +32,7 @@ Do not manually edit generated publication output and feed it back into canonica
 
 ## Intermediate dataset
 
-`source-dataset.json` is the current derived publication aggregate used by the existing publication bundle. It is generated from canonical report/project/developer-note inputs and is not a report authority.
+`publication-dataset.json` is the current derived publication aggregate used by the existing publication bundle. It is generated from canonical report/project/developer-note inputs and is not a report authority.
 
 
 If a publication dataset/aggregate is retained, treat it as generated build input only. It must not become a second live report database.

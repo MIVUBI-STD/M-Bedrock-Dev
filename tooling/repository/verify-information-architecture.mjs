@@ -69,8 +69,8 @@ if (existsSync("workspace/reports")) {
 if (existsSync("workspace/reports/approved-publication-dataset.json")) {
   failures.push("Derived publication dataset must not live in workspace/reports.");
 }
-if (!existsSync("workspace/publication/source-dataset.json")) {
-  failures.push("Missing derived publication source dataset: workspace/publication/source-dataset.json");
+if (!existsSync("workspace/publication/publication-dataset.json")) {
+  failures.push("Missing derived publication source dataset: workspace/publication/publication-dataset.json");
 }
 
 const planningReadme = existsSync("planning/README.md")

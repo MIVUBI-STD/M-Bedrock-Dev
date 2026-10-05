@@ -1,6 +1,6 @@
 {
   "schema": "m-bedrock-approved-publication/v1",
-  "generatedFrom": "workspace/publication/source-dataset.json",
+  "generatedFrom": "workspace/publication/publication-dataset.json",
   "maps": [
     {
       "projectId": "aftershock",
