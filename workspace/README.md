@@ -7,6 +7,7 @@ workspace/
 ├─ projects/<project-id>/  ignored working continuity for each project
 ├─ project-registry.json   tracked compact current-project registry
 ├─ reports/                tracked canonical Bug Report V2 state
+├─ developer-notes.json    tracked current Developer Note ledger
 ├─ publication/            derived human-facing publication artifacts
 ├─ drive-root.json         tracked Google Drive root binding
 └─ ownership.json          workspace ownership contract
@@ -74,6 +75,12 @@ Detailed evidence and execution state stay inside the ignored project workspace.
 `workspace/reports/` stores only repository-tracked canonical Bug Report V2 current state for audited map versions.
 
 It is the persisted bug-report authority. Generated HTML/PDF or project diagnostics belong in project `output/` or `evidence/` and are derived/non-canonical.
+
+## Developer Notes
+
+`workspace/developer-notes.json` is the current cross-project Developer Note ledger.
+
+Developer Notes are concrete engineering/release actions that are not gameplay BUG or DESIGN_MISMATCH findings. They must not be stored in `workspace/reports/` and must not inflate gameplay issue totals.
 
 ## Publication outputs
 
