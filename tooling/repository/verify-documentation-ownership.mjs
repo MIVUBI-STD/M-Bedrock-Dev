@@ -31,6 +31,8 @@ const canonicalDocs = [
   "docs/03-analysis/topology.md",
   "docs/03-analysis/world-db.md",
   "docs/06-system/architecture.md",
+  "docs/06-system/skill-routing.md",
+  "docs/06-system/zero-waste-execution.md",
   "docs/05-validation/runtime-proof.md",
   "docs/05-validation/search-and-falsification.md",
   "docs/05-validation/retest-and-regression.md",
@@ -76,6 +78,15 @@ const compatibilityPointers = [
   "docs/03-analysis/world-db-native-evidence.md",
   "docs/03-analysis/native-world-differential.md",
   "docs/03-analysis/leveldb-keyspace.md",
+  "docs/03-analysis/game-design-audit-checklist.md",
+  "docs/03-analysis/observability-runtime.md",
+  "docs/03-analysis/npc-dialogue-runtime.md",
+  "docs/03-analysis/environment-hazards-runtime.md",
+  "docs/03-analysis/validation-runtime.md",
+  "docs/03-analysis/map-audit-routing.md",
+  "docs/03-analysis/regression-audit-execution.md",
+  "docs/03-analysis/input-gesture-runtime.md",
+  "docs/03-analysis/interactive-blocks-runtime.md",
   "docs/05-validation/active-runtime-diagnosis.md",
   "docs/05-validation/runtime-control.md",
   "docs/05-validation/runtime-observation.md",
@@ -100,6 +111,8 @@ const compatibilityPointers = [
   "docs/05-validation/history-driven-search.md",
   "docs/06-system/integrated-analysis.md",
   "docs/06-system/orchestration.md",
+  "docs/06-system/skill-contract.md",
+  "docs/06-system/context-efficiency.md",
 ];
 
 for (const path of compatibilityPointers) {
