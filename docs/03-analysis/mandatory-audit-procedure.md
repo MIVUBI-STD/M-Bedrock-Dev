@@ -2388,7 +2388,7 @@ The engine must maximize PROVEN through stronger evidence and proof, never throu
 
 ## Multi-Scenario Check requirement
 
-Machine-readable scenario records must conform to `docs/03-analysis/multi-scenario-check-ledger.schema.json`. This is the single schema authority for multi-scenario records.
+Machine-readable scenario records must conform to `.agents/schemas/multi-scenario-check-ledger.schema.json`. This is the single schema authority for multi-scenario records.
 
 The STRESS lane must execute the canonical multi-scenario checks defined in `detection-coverage-assurance.md`.
 
@@ -2523,4 +2523,3 @@ generic "please test this map" requests = 0
 ```
 
 The user should only receive a manual test request when the system can no longer reduce the uncertainty from the selected artifact and the test is necessary to decide one material claim.
-
