@@ -72,3 +72,37 @@ No provider is production authority.
 6. Evidence bridge — synchronized capture and audit-bound evidence handoff.
 
 Promotion to production owners is allowed only for small, proven, reusable pieces.
+
+
+## Current executable surface
+
+Phase 2 introduces a host/provider readiness probe:
+
+```bash
+node experiments/runtime-lab/src/cli.mjs doctor
+node experiments/runtime-lab/src/cli.mjs doctor --json
+```
+
+`doctor` currently verifies:
+
+- supported host platform;
+- logical CPU and host memory against lab recommendations;
+- installed runtime-provider command surfaces;
+- provider preference selection.
+
+It deliberately reports virtualization capability and GPU acceleration as `UNKNOWN` until dedicated probes can establish them. `READY FOR PROVISIONING` means the host has no known provisioning blocker; it does not mean Minecraft runtime proof is already valid.
+
+### Provider preference
+
+```text
+Windows
+VMware Workstation
+→ VirtualBox fallback
+
+macOS
+VMware Fusion
+→ Parallels
+→ VirtualBox fallback
+```
+
+Provider choice remains replaceable and does not leak into scenario definitions.
