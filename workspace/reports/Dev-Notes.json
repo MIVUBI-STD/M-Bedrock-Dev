@@ -53,6 +53,22 @@
         "finding": "LastStandPathObstructionService._tickBreaking only triggers entity.playAnimation(); _completeBreak later sets the target block to air. No target-block progress feedback is emitted."
       },
       "severity": null
+    },
+    {
+      "id": "DEV-BAD-ANTICHEAT-INACTIVE",
+      "projectId": "build-and-decode",
+      "type": "DEV_NOTE",
+      "title": "Anti-Cheat Protection Is Not Registered in Production",
+      "problem": "AntiCheatManager defines Creative/Spectator correction for non-admin players, but production main.js never imports or instantiates it, so those subscriptions are inactive.",
+      "action": "Either register AntiCheatManager from the production bootstrap if the protection is required, or remove the dead module and ensure active arena guards own the intended capability policy.",
+      "evidence": {
+        "source": [
+          "behavior_packs/Build_Decode_BP/scripts/modules/anticheat/AntiCheatManager.js",
+          "behavior_packs/Build_Decode_BP/scripts/main.js"
+        ],
+        "finding": "AntiCheatManager subscribes to playerGameModeChange/playerSpawn, but main.js creates ArenaService, SetupManager, WorldManager, EventCommandManager, HologramManager and WelcomeManager only."
+      },
+      "severity": null
     }
   ],
   "admissionRule": "DEV_NOTE requires concrete evidence, clear developer value, an actionable correction, and must not be speculative."
