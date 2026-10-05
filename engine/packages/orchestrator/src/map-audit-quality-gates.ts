@@ -17,8 +17,8 @@ export type ZeroFindingStatus =
   | "NOT_ELIGIBLE"
   | "NOT_APPLICABLE";
 
-export interface MapAuditQualityFinding
-  extends VitalGameplayFindingInput {}
+export type MapAuditQualityFinding =
+  VitalGameplayFindingInput;
 
 export interface MapAuditQualityGateInput {
   readonly controlStatus: "READY_FOR_REVIEW" | "BLOCKED";
