@@ -2412,4 +2412,310 @@ It claims the selected-artifact deterministic scenario space has been aggressive
 - PROVEN;
 - SAFE;
 - or exact irreducible runtime questions.
+---
+
+# 29. State Snapshot Differential
+
+### Purpose
+
+Detect retained, lost, duplicated, or conflicting state at lifecycle boundaries without requiring full runtime playthrough.
+
+For every material boundary, capture the authoritative state domains immediately before and after the transition:
+
+```text
+player/session ownership
+arena/team/role assignment
+inventory/equipment
+currency/score
+tags/dynamic properties
+entities/objectives
+containers
+world blocks/structures
+timers/callbacks/subscriptions
+residency/resources
+position/game mode/capabilities
+player-facing UI state
+```
+
+Compare:
+
+```text
+Expected Post-State
+vs
+Actual Reachable Post-State
+```
+
+Automatically challenge:
+- state retained when the next lifecycle requires a fresh baseline;
+- state lost when continuity is required;
+- state duplicated across two owners;
+- old-generation state coexisting with new-generation state;
+- one representation resetting while another survives;
+- cleanup occurring before a later writer restores stale state.
+
+Required output:
+
+```text
+Boundary
+State Domain
+Before
+Expected After
+Reachable After
+Owner
+Writer/Clearer
+Result
+```
+
+A snapshot differential is not a literal runtime memory dump. It is a deterministic state-accounting model derived from selected-artifact evidence.
+
+---
+
+# 30. Cross-Representation Consistency Check
+
+### Trigger
+
+One gameplay concept is represented in more than one place.
+
+Common representations:
+
+```text
+in-memory state
+scoreboard
+tag/property
+entity/rider
+inventory item
+world block/container
+UI/HUD
+persistent storage
+```
+
+For each concept build:
+
+```text
+Authoritative Concept
+→ representations
+→ writer for each representation
+→ clearer/resetter
+→ reconciliation path
+```
+
+Required invariant:
+
+```text
+all material representations agree with the authoritative gameplay state
+```
+
+Challenge:
+- logical owner exists but entity/visual is missing;
+- UI says active while session is terminal;
+- scoreboard says carried while carrier is absent;
+- item remains after ownership was cleared;
+- world object resets but persistent state does not;
+- one arena's cleanup clears a shared representation used by another arena.
+
+Use the authoritative owner to decide which representation is wrong. Do not treat UI or entity presence as authority by default.
+
+---
+
+# 31. Event Ordering & Duplicate Commit Check
+
+### Purpose
+
+Find defects caused by multiple producers, subscribers, terminal paths, or delayed callbacks targeting the same gameplay consequence.
+
+Build an event graph:
+
+```text
+Event / Commit Target
+→ Producers
+→ Subscribers
+→ Side Effects
+→ Idempotency / generation guards
+→ Cleanup / cancellation
+```
+
+Mandatory checks when multiple paths target the same consequence:
+
+```text
+death × disconnect
+objective complete × timeout
+terminal trigger × terminal trigger
+retry callback × cleanup
+old deferred callback × new generation
+reward commit × reconnect restore
+reset completion × new-session start
+```
+
+Challenge:
+- same reward/terminal effect can commit twice;
+- cleanup can run twice with destructive second effect;
+- stale callback commits after owner invalidation;
+- two events race to mutate the same state without one authoritative guard;
+- a subscriber remains active after its lifecycle ended.
+
+Prefer source-grounded temporal/idempotency proof before runtime.
+
+---
+
+# 32. Orphan State & Entity Check
+
+### Trigger
+
+A gameplay system creates or reserves a mutable object.
+
+Applicable objects include:
+
+```text
+entity
+objective
+timer
+callback
+subscription
+tag/property
+role/team assignment
+arena reservation
+queue entry
+ticking/residency resource
+temporary structure/block
+carried visual/rider
+```
+
+For every created object require:
+
+```text
+Creator
+Owner
+Valid Lifetime
+Release / Destroy Path
+Owner-Invalidation Behavior
+Replay / Reload Behavior
+```
+
+Challenge:
+- owner disappears but object survives;
+- object disappears but authoritative state still references it;
+- timer/subscription survives reset;
+- reservation survives terminal state;
+- entity survives while session generation changes;
+- cleanup path exists only for death but not disconnect;
+- release path is unreachable from one valid lifecycle exit.
+
+This check complements the Mutable-State Reverse Index; it focuses specifically on lifetime closure.
+
+---
+
+# 33. Path & Geometry Dependency Check
+
+### Trigger
+
+Player/NPC progression depends on physical traversal, line-of-sight, interaction reach, or a shared world route.
+
+Build:
+
+```text
+Actor Spawn / Entry
+→ Required Route or Interaction Volume
+→ Choke Points / Gates
+→ Target / Objective
+```
+
+Intersect with:
+
+```text
+temporary blocks
+doors/gates
+structure loads
+water/lava
+arena boundaries
+barriers
+reset footprints
+unloaded / non-resident regions
+break/use allowlists
+teleports
+```
+
+Challenge:
+- previous-stage block survives into required route;
+- actor cannot break/use the blocking material;
+- reset closes a gate after next stage starts;
+- structure load overwrites an open route;
+- path crosses unloaded/non-resident geometry required for AI progression;
+- equivalent arenas have divergent route topology;
+- teleport destination is obstructed or outside authored play volume.
+
+Path proof must connect geometry to a required gameplay dependency; a strange block alone is not a bug.
+
+---
+
+# 34. Metamorphic Comparison Check
+
+### Purpose
+
+Find unknown defect signatures by comparing cases that should preserve the same gameplay invariant.
+
+Applicable comparisons:
+
+```text
+Arena 1 vs equivalent Arena N
+Player A vs Player B under same role
+first run vs second run
+fresh start vs retry
+uninterrupted vs reconnect
+normal completion vs timeout completion
+level/station variants sharing the same contract
+baseline replica vs translated replica
+```
+
+For each comparison define:
+
+```text
+Shared Contract
+Allowed Differences
+Observed/Reachable Differences
+Material State/Geometry Delta
+Gameplay Consequence
+```
+
+A difference is suspicious only when it violates the shared contract after allowed authored variation is removed.
+
+This check should be used to discover **new** contradictions, not only known regression signatures.
+
+### Metamorphic stop rule
+
+Do not compare everything with everything.
+
+Generate a comparison only when the two cases share:
+- the same gameplay role/contract;
+- equivalent lifecycle intent;
+- repeated/translated geometry;
+- or an explicit alternate path to the same postcondition.
+
+---
+
+# 35. Extended Coverage Closure
+
+Before REPORT, in addition to existing coverage gates, verify when applicable:
+
+```text
+State Snapshot Differential accounted
+Cross-Representation Consistency accounted
+Event Ordering / Duplicate Commit accounted
+Orphan State / Entity lifetime accounted
+Path / Geometry Dependency accounted
+Metamorphic comparisons accounted
+```
+
+These checks do not create a parallel audit lane. They are routed through MODEL/STRESS and feed the existing PROVE gate.
+
+Closure targets remain:
+
+```text
+Unaccounted Material Surfaces = 0
+Unaccounted Mutable Resources = 0
+Unaccounted Material Interleavings = 0
+Unaccounted Representations = 0
+Unaccounted Lifetime Owners = 0
+Generic NEED_VALIDATION = 0
+Unsupported PROVEN = 0
+```
 
