@@ -19,10 +19,10 @@ The Rust backend is the only runtime authority. Gameplay remains manually contro
 ## Client model
 
 ```text
-MCE-01  native host client
-MCE-02  virtual client
-MCE-03  virtual client
-MCE-04  virtual client
+Native  native host client
+Virtual-01  virtual client
+Virtual-02  virtual client
+Virtual-03  virtual client
 ```
 
 Virtual clients are intended to run Minecraft Education at low graphics / 1280×720 for responsive gameplay rather than visual fidelity.
@@ -43,13 +43,13 @@ Runtime Lab uses one local base VM and creates three linked clones.
 Windows base:
 
 ```text
-%LOCALAPPDATA%\M-Bedrock\RuntimeLab\base\MCE-BASE\MCE-BASE.vmx
+%LOCALAPPDATA%\M-Bedrock\RuntimeLab\base\Base\Base.vmx
 ```
 
 macOS base:
 
 ```text
-~/Library/Application Support/M-Bedrock/RuntimeLab/base/MCE-BASE.vmwarevm/MCE-BASE.vmx
+~/Library/Application Support/M-Bedrock/RuntimeLab/base/Base.vmwarevm/Base.vmx
 ```
 
 The base VM must be powered off before provisioning.
@@ -57,10 +57,10 @@ The base VM must be powered off before provisioning.
 Provisioning is transactional:
 
 ```text
-MCE-BASE
+Base
 → clone into staging
 → verify staged VMX exists
-→ promote atomically into MCE-02 / MCE-03 / MCE-04
+→ promote atomically into Virtual-01 / Virtual-02 / Virtual-03
 ```
 
 Failed staging output is discarded and existing clients are not replaced.
@@ -103,22 +103,22 @@ cargo run --bin runtime-lab -- doctor
 cargo run --bin runtime-lab -- provision
 cargo run --bin runtime-lab -- status
 cargo run --bin runtime-lab -- resources <1-4>
-cargo run --bin runtime-lab -- reprovision <MCE-02..04>
+cargo run --bin runtime-lab -- reprovision <Virtual-01..04>
 cargo run --bin runtime-lab -- start <1-4>
-cargo run --bin runtime-lab -- open <MCE-01..04>
-cargo run --bin runtime-lab -- restart <MCE-02..04>
-cargo run --bin runtime-lab -- set-ready <MCE-02..04>
-cargo run --bin runtime-lab -- reset <MCE-02..04>
-cargo run --bin runtime-lab -- stop [MCE-01..04]
+cargo run --bin runtime-lab -- open <Native..04>
+cargo run --bin runtime-lab -- restart <Virtual-01..04>
+cargo run --bin runtime-lab -- set-ready <Virtual-01..04>
+cargo run --bin runtime-lab -- reset <Virtual-01..04>
+cargo run --bin runtime-lab -- stop [Native..04]
 ```
 
 ### Meaning
 
 - `doctor` checks provider, base VM, host capacity and per-client QA-ready state.
 - `resources` previews the live RAM plan without starting any VM.
-- `provision` creates MCE-02..04 as linked clones.
+- `provision` creates Virtual-01..04 as linked clones.
 - `reprovision` replaces one stopped virtual client from the immutable base and clears its previous QA state.
-- `start` powers on the requested client count; MCE-01 remains native/manual.
+- `start` powers on the requested client count; Native remains native/manual.
 - `open` opens the VM in VMware.
 - `restart` reboots the current VM state.
 - `set-ready` records the stopped client as its clean QA baseline.
