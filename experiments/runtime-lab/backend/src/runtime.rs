@@ -69,10 +69,12 @@ impl RuntimeLab {
 
         let mut result = Vec::with_capacity(3);
         for client in ClientId::ALL.into_iter().filter(|client| !client.is_native()) {
+            let state = provider.provision(client)?;
             result.push(ClientStatus {
                 id: client.as_str(),
                 native: false,
-                state: provider.provision(client)?,
+                state,
+                ready_snapshot: Some(provider.has_ready(client).unwrap_or(false)),
             });
         }
         Ok(result)
@@ -83,18 +85,25 @@ impl RuntimeLab {
         let mut clients = Vec::with_capacity(ClientId::ALL.len());
 
         for client in ClientId::ALL {
-            let state = if client.is_native() {
-                ClientState::Manual
+            let (state, ready_snapshot) = if client.is_native() {
+                (ClientState::Manual, None)
             } else if let Some(provider) = provider.as_ref() {
-                provider.status(client)?
+                let state = provider.status(client)?;
+                let ready = if state == ClientState::NotProvisioned {
+                    false
+                } else {
+                    provider.has_ready(client).unwrap_or(false)
+                };
+                (state, Some(ready))
             } else {
-                ClientState::Error
+                (ClientState::Error, Some(false))
             };
 
             clients.push(ClientStatus {
                 id: client.as_str(),
                 native: client.is_native(),
                 state,
+                ready_snapshot,
             });
         }
 
@@ -123,19 +132,22 @@ impl RuntimeLab {
 
         let mut result = Vec::with_capacity(count);
         for client in ClientId::ALL.into_iter().take(count) {
-            let state = if client.is_native() {
-                ClientState::Manual
-            } else {
-                provider
-                    .as_ref()
-                    .expect("provider checked above")
-                    .start(client)?
-            };
+            if client.is_native() {
+                result.push(ClientStatus {
+                    id: client.as_str(),
+                    native: true,
+                    state: ClientState::Manual,
+                    ready_snapshot: None,
+                });
+                continue;
+            }
 
+            let provider = provider.as_ref().expect("provider checked above");
             result.push(ClientStatus {
                 id: client.as_str(),
-                native: client.is_native(),
-                state,
+                native: false,
+                state: provider.start(client)?,
+                ready_snapshot: Some(provider.has_ready(client).unwrap_or(false)),
             });
         }
 
@@ -163,6 +175,7 @@ impl RuntimeLab {
                     id: client.as_str(),
                     native: true,
                     state: ClientState::Manual,
+                    ready_snapshot: None,
                 });
                 continue;
             }
@@ -171,17 +184,60 @@ impl RuntimeLab {
                 id: client.as_str(),
                 native: false,
                 state: provider.stop(client)?,
+                ready_snapshot: Some(provider.has_ready(client).unwrap_or(false)),
             });
         }
 
         Ok(result)
     }
 
+    pub fn restart(&self, client: ClientId) -> io::Result<ClientStatus> {
+        if client.is_native() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "native client cannot be VM-restarted",
+            ));
+        }
+
+        let _lock = OperationLock::acquire()?;
+        let provider = current_platform_provider().ok_or_else(|| {
+            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+        })?;
+
+        Ok(ClientStatus {
+            id: client.as_str(),
+            native: false,
+            state: provider.restart(client)?,
+            ready_snapshot: Some(provider.has_ready(client).unwrap_or(false)),
+        })
+    }
+
+    pub fn set_ready(&self, client: ClientId) -> io::Result<ClientStatus> {
+        if client.is_native() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "native client does not use QA_READY snapshots",
+            ));
+        }
+
+        let _lock = OperationLock::acquire()?;
+        let provider = current_platform_provider().ok_or_else(|| {
+            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+        })?;
+
+        Ok(ClientStatus {
+            id: client.as_str(),
+            native: false,
+            state: provider.set_ready(client)?,
+            ready_snapshot: Some(true),
+        })
+    }
+
     pub fn reset(&self, client: ClientId) -> io::Result<ClientStatus> {
         if client.is_native() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "native client cannot be VM-reset",
+                "native client does not use VM clean-state reset",
             ));
         }
 
@@ -194,6 +250,7 @@ impl RuntimeLab {
             id: client.as_str(),
             native: false,
             state: provider.reset(client)?,
+            ready_snapshot: Some(true),
         })
     }
 
@@ -203,6 +260,7 @@ impl RuntimeLab {
                 id: client.as_str(),
                 native: true,
                 state: ClientState::Manual,
+                ready_snapshot: None,
             });
         }
 
@@ -214,6 +272,7 @@ impl RuntimeLab {
             id: client.as_str(),
             native: false,
             state: provider.open(client)?,
+            ready_snapshot: Some(provider.has_ready(client).unwrap_or(false)),
         })
     }
 }
