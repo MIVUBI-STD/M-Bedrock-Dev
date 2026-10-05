@@ -61,10 +61,10 @@ Artifact
 ```
 
 Architecture and ownership:
-- [Architecture](docs/06-system/architecture.md)
-- [Authority Model](docs/06-system/authority-model.md)
-- [Implementation Map](docs/06-system/implementation-map.md)
-- [Canonical Naming](docs/06-system/canonical-naming.md)
+- [Architecture](docs/system/architecture.md)
+- [Authority Model](docs/system/authority-model.md)
+- [Implementation Map](docs/system/implementation-map.md)
+- [Canonical Naming](docs/system/canonical-naming.md)
 
 ## Selected-map gameplay audit
 
@@ -82,9 +82,9 @@ audit <selected.mcworld>
 ```
 
 Canonical owners:
-- [Master Selected-Map Audit Workflow](docs/03-analysis/master-selected-map-audit-workflow.md)
-- [Mandatory Gameplay Audit Procedure](docs/03-analysis/mandatory-audit-procedure.md)
-- [Bug-Finding Coverage System](docs/03-analysis/bug-finding-coverage.md)
+- [Master Selected-Map Audit Workflow](docs/analysis/master-selected-map-audit-workflow.md)
+- [Mandatory Gameplay Audit Procedure](docs/analysis/mandatory-audit-procedure.md)
+- [Bug-Finding Coverage System](docs/analysis/bug-finding-coverage.md)
 
 The exact selected map artifact is current gameplay authority. Historical evidence and user/client symptoms may guide search but never replace current-artifact proof.
 
