@@ -5,8 +5,7 @@ Repository planning lives here. This directory answers **what should be worked o
 ## Scope
 
 - `development.md` — M-Bedrock-Dev product, engine, architecture, tooling, detection, and technical-debt work.
-- `operations.md` — human-readable cross-project operational intent and policy.
-- `operations-audit-queue.json` — machine-readable active audit/revalidation queue only.
+- `operations.md` — cross-project operational intent and policy. Add a machine-readable queue only when a real active campaign requires one.
 - `projects.md` — compact project-specific continuation pointers. Detailed project files and execution state remain under `workspace/projects/<project-id>/`.
 
 ## Boundaries
@@ -23,6 +22,6 @@ Planning is not a source of gameplay truth, proof, audit state, report authority
 
 ## Growth rule
 
-Keep planning flat while each scope remains small. Machine-readable queue files are allowed only when they have one explicit owner and are referenced by the matching planning document. Create a subdirectory only when a scope has enough durable independent entries that a single document becomes difficult to navigate.
+Keep planning flat while each scope remains small. Machine-readable queue files are allowed only while a real active campaign exists, with one explicit owner and a matching planning reference. Remove/archive the queue when the campaign closes. Create a subdirectory only when a scope has enough durable independent entries that a single document becomes difficult to navigate.
 
 Do not create `misc`, `latest`, `final`, `temp`, or duplicate todo stores.
