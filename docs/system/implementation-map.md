@@ -56,7 +56,7 @@ Use this before broad repository search.
 | Bug Report V2 semantics/lifecycle; V1 import compatibility only | engine/packages/bug-report/ + engine/schemas/bug-report/ |
 | Proposed Bug Set chat-review / approval boundary | engine/packages/bug-report/src/review.ts |
 | Canonical persisted bug-report current state | workspace/reports/*.json |
-| Bug-report ownership/storage boundary | docs/06-system/bug-report-ownership.md |
+| Bug-report ownership/storage boundary | docs/system/bug-report-ownership.md |
 | Approved Bug Report V2 client projection + quality gate | engine/packages/bug-report/src/document/ + engine/packages/bug-report/DOCUMENT.md |
 | Compact ChatGPT/Markdown bug-report preview | engine/packages/bug-report/src/preview.ts + engine/packages/bug-report/PREVIEW.md |
 | Self-contained Map Audit Report + Approved Bug Report V2 HTML rendering | tooling/bug-report-documents/render.ts |
@@ -65,7 +65,7 @@ Use this before broad repository search.
 | Reliability invariants/fingerprint/update delta/retest/runtime evidence | engine/packages/reliability/ |
 | Capability-specific proof binding registry | engine/reliability/catalogs/capability-proof-bindings.json |
 | Knowledge → detector/proof coverage binding | engine/reliability/catalogs/knowledge-detector-bindings.json + tooling/repository/verify-knowledge-detector-bindings.mjs |
-| Canonical audit naming authority / verifier | docs/03-analysis/map-audit-naming-contract.md + tooling/repository/verify-canonical-naming.mjs |
+| Canonical audit naming authority / verifier | docs/analysis/map-audit-naming-contract.md + tooling/repository/verify-canonical-naming.mjs |
 | Reliability evidence router / ownership boundary | engine/reliability/README.md |
 | Calibration / blind acceptance / regression benchmark manifests | engine/reliability/corpus/ |
 | Runtime session recording/replay contract + first divergence | engine/packages/reliability/src/runtime/runtime-session-replay.ts |
@@ -83,11 +83,11 @@ Use this before broad repository search.
 | Runtime-profile → compatibility query adapter | engine/packages/compatibility/src/runtime-profile-adapter.ts |
 | Game Design specification schema/loader/compiler | engine/packages/game-design-spec/ + engine/design/ |
 | Selected-artifact Gameplay Contract / readiness | engine/packages/gameplay-intent/ |
-| Mandatory gameplay audit procedure / checkpoint semantics | docs/03-analysis/mandatory-audit-procedure.md |
+| Mandatory gameplay audit procedure / checkpoint semantics | docs/analysis/mandatory-audit-procedure.md |
 | Mandatory audit procedure machine-readable projection / closure | engine/packages/orchestrator/src/inspection/mandatory-audit-procedure.ts |
 | Rich state/ownership/progression audit projections | engine/packages/orchestrator/src/inspection/mandatory-audit-support.ts |
 | Production selected-map audit single entry + canonical continuations | engine/packages/orchestrator/src/map-audit-pipeline.ts (exact .mcworld → artifact proof → ordered audit → resolveSelectedMapAudit when needed → internal SelectedMapAuditRun) |
-| User prompt intake / non-authoritative search guidance / additive analysis demand | engine/packages/orchestrator/src/map-audit-user-intent.ts + docs/03-analysis/user-input-translation-contract.md + .agents/skills/m-bedrock-map-bug-audit/SKILL.md |
+| User prompt intake / non-authoritative search guidance / additive analysis demand | engine/packages/orchestrator/src/map-audit-user-intent.ts + docs/analysis/user-input-translation-contract.md + .agents/skills/m-bedrock-map-bug-audit/SKILL.md |
 | Pre-Audit Plan confirmation / stale-confirmation guard | engine/packages/orchestrator/src/map-audit-user-intent.ts (`createAuditUserIntentConfirmationRequest`, `confirmAuditUserIntent`, `validateAuditUserIntentConfirmation`) + map-audit-pipeline.ts admission prerequisite |
 | Sole operator-facing selected-map audit output | engine/packages/orchestrator/src/map-audit-output-v2.ts (SelectedMapAuditRun internal authority → Map Audit Output V2) |
 | Opaque production reporting authority / raw collector bypass guard | engine/packages/orchestrator/src/map-audit-authority.ts + reporting/report-defect-collector.ts |
@@ -110,7 +110,7 @@ Use this before broad repository search.
 | Audit-authoritative Work Session projection + persistence mirror | engine/packages/orchestrator/src/workflow/map-audit-work-session.ts + engine/packages/project-model/src/session/work-session.ts |
 | Evidence collection vs ordered decision authorization | engine/packages/orchestrator/src/map-audit-execution-trace.ts |
 | Gameplay bug audit workflow | .agents/skills/m-bedrock-map-bug-audit/ |
-| Approved bug repair + preservation workflow | .agents/skills/m-bedrock-target-repair/ + docs/04-repair/ |
+| Approved bug repair + preservation workflow | .agents/skills/m-bedrock-target-repair/ + docs/repair/ |
 | Versioned evidence-backed Minecraft platform knowledge and applicability | engine/packages/knowledge/ + engine/knowledge/ |
 | Applicable platform relation claims in audit/model context | inspection/knowledge-runtime-analysis.ts → gameplay-world-model.ts → map-audit-model-task.ts |
 | Knowledge source freshness/quarantine | engine/packages/knowledge/src/freshness.ts |
@@ -154,4 +154,4 @@ Use this before broad repository search.
 | GitHub execution | GITHUB_RULES.md |
 | Research | experiments/ |
 
-Use docs/06-system/architecture.md for enforceable dependency direction.
+Use docs/system/architecture.md for enforceable dependency direction.
