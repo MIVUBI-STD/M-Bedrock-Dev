@@ -415,6 +415,8 @@ export function buildInspectionResult(
     inventoryLifecycle,
     inventoryPolicy,
     inventoryRestoreOwnership,
+    worldRuleAuthority,
+    playerCapabilitySurfaces,
     combatLifecycle,
     combatRuntime:
       combatRuntimeTelemetry,
@@ -637,6 +639,8 @@ export function buildInspectionResult(
     scriptApiUsage,
     scriptSafeConfig,
     scriptSpatial,
+    worldRuleAuthority,
+    playerCapabilitySurfaces,
     ...(spatialAuthority === undefined
       ? {}
       : { spatialAuthority }),
