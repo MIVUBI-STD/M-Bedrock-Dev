@@ -9,7 +9,8 @@ fn native_client_open_is_manual_without_provider() {
     assert_eq!(status.id, "Native");
     assert!(status.native);
     assert_eq!(status.ready_snapshot, None);
-    assert_eq!(status.memory_mb, None);
+    assert_eq!(status.memory_limit_mb, None);
+    assert_eq!(status.host_working_set_mb, None);
 }
 
 #[test]
