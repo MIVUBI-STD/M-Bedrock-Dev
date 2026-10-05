@@ -183,5 +183,13 @@ describe("Map Audit Output V2 projection", () => {
       .toBe("CLOSED_CLEAR");
     expect(report.qualityGates.zeroFinding.status)
       .toBe("NOT_APPLICABLE");
+    expect(report.qualityGates.vitalGameplay.status)
+      .toBe("OPEN");
+    expect(
+      report.qualityGates.vitalGameplay.domains.find(
+        (item) =>
+          item.domain === "SCORE_RESULT_INTEGRITY",
+      )?.status,
+    ).toBe("DETECTION_GAP");
   });
 });
