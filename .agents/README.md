@@ -29,7 +29,7 @@ Select exactly one active work lane. Consult the smallest domain specialist only
 
 A `detection-gap` is a handoff boundary, not permission to start Detection Development inside an operational audit. Generic Product Development is a separate execution class.
 
-Canonical routing is owned by `../docs/06-system/skill-routing.md`.
+Canonical routing is owned by `../docs/system/skill-routing.md`.
 
 
 ## Machine-readable registry
