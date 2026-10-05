@@ -1098,23 +1098,14 @@
     "registeredMaps": 22,
     "mapsWithIssues": 10,
     "mapsWithoutPublishedIssues": 12,
-    "totalIssues": 22,
-    "bug": 17,
-    "designMismatch": 5,
-    "blocker": 4,
-    "major": 15,
-    "minor": 3,
-    "devNotes": 4,
-    "totalReportItems": 30,
     "gameplayDesignFindings": 26,
     "bugs": 21,
     "designMismatches": 5,
-    "totalActionableItems": 30,
-    "severity": {
-      "blocker": 4,
-      "major": 19,
-      "minor": 3
-    }
+    "blocker": 4,
+    "major": 19,
+    "minor": 3,
+    "devNotes": 4,
+    "totalActionableItems": 30
   },
   "devNotePolicy": {
     "label": "DEV NOTE",
