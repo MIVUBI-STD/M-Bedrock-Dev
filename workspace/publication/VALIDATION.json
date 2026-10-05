@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS",
+  "validatedOutputs": [
+    "workspace/publication/Bug_Tracker_Report_Golden.html",
+    "workspace/publication/Bug_Tracker_Report_Golden.json"
+  ],
+  "assertions": {
+    "registeredMaps": 22,
+    "renderedGameGroups": 18,
+    "renderedLevelSourceCards": 22,
+    "issueCards": 22,
+    "uniqueIssueIds": 22,
+    "bugs": 17,
+    "designMismatches": 5,
+    "severity": {
+      "blocker": 4,
+      "major": 15,
+      "minor": 3
+    },
+    "mapsWithIssues": 10,
+    "mapsWithoutPublishedIssues": 12,
+    "worldFileLinks": 22,
+    "driveFolderLinks": 22,
+    "testerNotes": 22,
+    "attachmentZones": 22,
+    "fixedControls": 22,
+    "mapDefaultCollapsed": true,
+    "exportJson": true,
+    "exportHtmlSnapshot": true,
+    "legacy34CountAbsent": true
+  },
+  "note": "18 visual game groups represent 22 registered map artifacts because four related Level 1/Level 2 families are grouped under one game with separate level source cards. All counts derive from the canonical publication dataset."
+}
