@@ -152,7 +152,7 @@ impl RuntimeLab {
         let required_available_gb = 6.0 + virtual_clients as f64 * 4.0;
         if host.available_memory_gb < required_available_gb {
             return Err(io::Error::new(
-                io::ErrorKind::OutOfMemory,
+                io::ErrorKind::Other,
                 format!(
                     "not enough available memory for {count} clients: {:.1} GB available, {:.1} GB required",
                     host.available_memory_gb,
