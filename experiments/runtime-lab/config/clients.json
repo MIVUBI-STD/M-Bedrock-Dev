@@ -1,0 +1,8 @@
+{
+  "clients": [
+    { "id": "MCE-01", "runtime": "native", "profileId": "interactive-low", "provider": "auto" },
+    { "id": "MCE-02", "runtime": "virtual", "profileId": "interactive-low", "provider": "auto" },
+    { "id": "MCE-03", "runtime": "virtual", "profileId": "interactive-low", "provider": "auto" },
+    { "id": "MCE-04", "runtime": "virtual", "profileId": "interactive-low", "provider": "auto" }
+  ]
+}
