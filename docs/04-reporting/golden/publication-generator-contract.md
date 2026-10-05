@@ -34,19 +34,21 @@ Generation must:
 12. Export HTML Snapshot from the same live report state, including notes/fixed state/embedded evidence;
 13. never maintain a second manually edited issue/count dataset.
 
-## Current canonical publication numbers
+## Canonical publication count assertions
 
-- Registered maps: 22
-- Maps with published issues: 10
-- Maps without published issues: 12
-- Issues: 22
-- BUG: 17
-- DESIGN_MISMATCH: 5
-- Blocker: 4
-- Major: 15
-- Minor: 3
+Do not hard-code current issue, severity, map, Developer Note, or actionable-item counts in this contract.
 
-These numbers are validation assertions only. The rendered UI must calculate them from the dataset and fail loudly if the calculation differs.
+At generation time:
+
+```text
+approved-publication-dataset.json
+→ calculate expected counts in memory
+→ render HTML / JSON from that same object
+→ validate rendered counts against the same calculated expectation
+→ write VALIDATION.json with dataset fingerprint + rendered fingerprint
+```
+
+A previously generated HTML/JSON/VALIDATION artifact is stale as soon as its source dataset fingerprint no longer matches the current dataset. Stale derived publication must never remain marked PASS.
 
 ## Source-card contract
 
