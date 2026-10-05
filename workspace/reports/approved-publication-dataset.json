@@ -9,7 +9,8 @@
       "worldFileId": "1eSlTNBhoWslPs8xUlxsK0FVEkBe3uGz1",
       "worldFileName": "Aftershock v1.0.4.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "attack-challenge",
@@ -107,7 +108,8 @@
             "Arena isolation and existing queue feedback must remain intact."
           ]
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "beach-bedwars",
@@ -117,7 +119,8 @@
       "worldFileId": "1JNNZpRPj6IYE3nMgOC01p-9P-Ct8pSWC",
       "worldFileName": "Beach Bedwars v1.1.0.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "blitzbuild",
@@ -127,7 +130,22 @@
       "worldFileId": "1Z8HrS3UhVRj4r-WAi1wtpqs900xYy7QE",
       "worldFileName": "BlitzBuild-v1.0.2.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": [
+        {
+          "id": "DEV-BLZ-VERSION-NAME",
+          "projectId": "blitzbuild",
+          "type": "DEV_NOTE",
+          "title": "Version Name Is Inconsistent",
+          "problem": "The project registry identifies Builder's Memory / BlitzBuild as version 1.0.3, while the selected current World File is named BlitzBuild-v1.0.2.mcworld.",
+          "action": "Align the release version across the project registry and delivered World File naming so developers and testers can identify the current build reliably.",
+          "evidence": {
+            "registryVersion": "1.0.3",
+            "worldFileName": "BlitzBuild-v1.0.2.mcworld"
+          },
+          "severity": null
+        }
+      ]
     },
     {
       "projectId": "build-and-decode",
@@ -171,7 +189,8 @@
           ],
           "issueType": "DESIGN_MISMATCH"
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "clockwork-vault",
@@ -181,7 +200,8 @@
       "worldFileId": "1bET36z9mdi3-GYEdHrbKet5QLPZpMq87",
       "worldFileName": "The Clockwork Vault v1.0.1.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "composite-challenge",
@@ -342,7 +362,8 @@
             "Existing floor repair around legitimate active-arena players must continue."
           ]
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "dark-crystal",
@@ -352,7 +373,8 @@
       "worldFileId": "1ELPTLlxFiyLhd0Wv3PHnnXO2PD9VHyJq",
       "worldFileName": "Dark Crystal v1.0.0.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "defense-challenge",
@@ -511,7 +533,8 @@
             "Per-arena simulation coverage and isolation must remain correct."
           ]
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "fall-of-the-pillager-l1",
@@ -556,7 +579,8 @@
             "Players in unrelated sessions must remain isolated by the existing session ownership model."
           ]
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "fall-of-the-pillager-l2",
@@ -566,7 +590,8 @@
       "worldFileId": "1m9JnjTHqUP39OWQVpmWGpmetUTx6Vqaa",
       "worldFileName": "Fall of the Pillager Level 2 v2.2.2.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "five-nights-z-village-l1",
@@ -606,7 +631,8 @@
           ],
           "issueType": "BUG"
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "five-nights-z-village-l2",
@@ -616,7 +642,22 @@
       "worldFileId": "1v-7t1gvcPoIxZuaexUnWKxUqtv-ezB8S",
       "worldFileName": "Defense_Level_2_v1_2_0.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": [
+        {
+          "id": "DEV-FNZ2-VERSION-NAME",
+          "projectId": "five-nights-z-village-l2",
+          "type": "DEV_NOTE",
+          "title": "Version Name Is Inconsistent",
+          "problem": "The project registry identifies Five Nights at Z Village Level 2 as version 1.2.2, while the selected current World File is named Defense_Level_2_v1_2_0.mcworld.",
+          "action": "Align the delivered World File name with the current release version and map identity so developers and testers can identify the correct build reliably.",
+          "evidence": {
+            "registryVersion": "1.2.2",
+            "worldFileName": "Defense_Level_2_v1_2_0.mcworld"
+          },
+          "severity": null
+        }
+      ]
     },
     {
       "projectId": "manhunt",
@@ -660,7 +701,8 @@
             "Arena 6 join/session identity must remain distinct while only divergent world content is restored."
           ]
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "marathon-test-of-tactics-l2",
@@ -670,7 +712,8 @@
       "worldFileId": "1WyB9P4kjirf-ft34Fcq2q6jR4wRkjqX8",
       "worldFileName": "Marathon Test of Tactics v2.2.0.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "mysteries-biomes-l1",
@@ -680,7 +723,8 @@
       "worldFileId": "1jgOHXyLfV0qcbYYPCTPwoXrSS-NCacqQ",
       "worldFileName": "Mysteries of Biomes v1.0.4.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "mysteries-biomes-l2",
@@ -690,7 +734,8 @@
       "worldFileId": "1pk4tqSJNY9UkHeSW94PeXaQjGdSTdeIE",
       "worldFileName": "Mysteries of Biomes v2.1.1.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "orb-illusioner-l1",
@@ -700,7 +745,8 @@
       "worldFileId": "1hU8Mvg8Ty1uB2C-MlDjaon-YqEf3Rffo",
       "worldFileName": "Orb of the Illusioner Level 1 v1.2.1.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "orb-illusioner-l2",
@@ -769,7 +815,8 @@
           ],
           "issueType": "BUG"
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "raid-arena-classic",
@@ -779,7 +826,8 @@
       "worldFileId": "1kkqaqb9FQIkAzorCNzVe8vyHgoFoHJWu",
       "worldFileName": "Raid Arena Classic v1.1.0.mcworld",
       "canonicalBugReport": null,
-      "issues": []
+      "issues": [],
+      "devNotes": []
     },
     {
       "projectId": "the-circuit",
@@ -819,7 +867,8 @@
             "Normal stick crafting and legitimate gameplay resources must remain unchanged."
           ]
         }
-      ]
+      ],
+      "devNotes": []
     },
     {
       "projectId": "the-gauntlet",
@@ -892,7 +941,8 @@
             "Authorized developer skip/retry workflows may remain available through the existing permission owner."
           ]
         }
-      ]
+      ],
+      "devNotes": []
     }
   ],
   "summary": {
@@ -904,6 +954,13 @@
     "designMismatch": 5,
     "blocker": 4,
     "major": 15,
-    "minor": 3
+    "minor": 3,
+    "devNotes": 2,
+    "totalReportItems": 24
+  },
+  "devNotePolicy": {
+    "label": "DEV NOTE",
+    "countAsGameplayIssue": false,
+    "admissionRule": "DEV_NOTE requires concrete evidence, clear developer value, an actionable correction, and must not be speculative."
   }
 }
