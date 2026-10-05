@@ -213,8 +213,15 @@ Map-level audit output also carries:
 ```text
 validationTests[]
 honesty
+qualityGates.informationIntegrity
+qualityGates.zeroFinding
 fullMapReplica
 ```
+
+The quality gates are projections over the same canonical audit state. They do not create new finding lanes, new gameplay authority, or a second audit state machine.
+
+- `informationIntegrity` is `CLOSED_CLEAR`, `CLOSED_WITH_FINDINGS`, or `BLOCKED`. Any contradiction remains exactly once in `bugs[]` or `designMismatches[]`.
+- `zeroFinding` is `ELIGIBLE`, `NOT_ELIGIBLE`, or `NOT_APPLICABLE`. It may be ELIGIBLE only when both finding lanes are empty and canonical coverage/closure/honesty are fully closed with no remaining Audit Obligations or validation groups.
 
 The canonical Map Audit Output V2 preserves every material finding in exactly two issue-type lanes:
 
