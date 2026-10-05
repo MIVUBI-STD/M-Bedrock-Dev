@@ -2314,4 +2314,38 @@ Audit closure targets:
 - generic NEED_VALIDATION = 0;
 - every retained NEED_VALIDATION has a complete Hard-Gate receipt.
 
+---
+
+# Proof Escalation Requirement
+
+Authority:
+- `docs/03-analysis/detection-coverage-assurance.md#proof-escalation-gate`
+
+Within PROVE, a contradiction with a missing claim must pass the Proof Escalation Gate before it can become NEED_VALIDATION.
+
+Required behavior:
+
+```text
+missing claim
+→ targeted evidence search
+→ blocker exhaustion
+→ applicable deterministic proof/substitution
+→ crosscheck / causal-slice refresh
+→ claim closure retry
+```
+
+Only after this loop may the result become:
+- PROVEN;
+- SAFE;
+- Audit Obligation; or
+- narrow NEED_VALIDATION with a complete receipt.
+
+A generic NEED_VALIDATION is a procedure failure and blocks audit closure.
+
+Audit metrics must preserve:
+- Unsupported PROVEN = 0;
+- Generic NEED_VALIDATION = 0;
+- exact NEED_VALIDATION receipts for every remaining runtime question.
+
+The engine must maximize PROVEN through stronger evidence and proof, never through reduced proof requirements.
 
