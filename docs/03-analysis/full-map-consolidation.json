@@ -7,13 +7,13 @@
     "remaining": 0
   },
   "canonicalIssueSet": {
-    "total": 27,
+    "total": 30,
     "counts": {
-      "BUG": 22,
+      "BUG": 25,
       "DESIGN_MISMATCH": 5,
       "blocker": 4,
-      "major": 20,
-      "minor": 3
+      "major": 22,
+      "minor": 4
     },
     "issues": [
       {
@@ -177,6 +177,24 @@
         "id": "BUG-BAD-TIME-BONUS-SCORING",
         "type": "BUG",
         "severity": "major"
+      },
+      {
+        "projectId": "build-and-decode",
+        "id": "BUG-BAD-DEPARTED-TEAM-WINNER",
+        "type": "BUG",
+        "severity": "major"
+      },
+      {
+        "projectId": "build-and-decode",
+        "id": "BUG-BAD-DRAW-WIN-COUNTER",
+        "type": "BUG",
+        "severity": "major"
+      },
+      {
+        "projectId": "build-and-decode",
+        "id": "BUG-BAD-GUESS-EXIT-COOLDOWN",
+        "type": "BUG",
+        "severity": "minor"
       }
     ]
   },
