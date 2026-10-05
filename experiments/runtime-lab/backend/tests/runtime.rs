@@ -4,9 +4,9 @@ use m_bedrock_runtime_lab_core::{client::ClientId, RuntimeLab};
 fn native_client_open_is_manual_without_provider() {
     let lab = RuntimeLab;
     let status = lab
-        .open(ClientId::Mce01)
+        .open(ClientId::Native)
         .expect("native open should not require a provider");
-    assert_eq!(status.id, "MCE-01");
+    assert_eq!(status.id, "Native");
     assert!(status.native);
     assert_eq!(status.ready_snapshot, None);
     assert_eq!(status.memory_mb, None);
@@ -24,21 +24,21 @@ fn native_client_cannot_use_vm_clean_state_actions() {
     let lab = RuntimeLab;
 
     assert_eq!(
-        lab.restart(ClientId::Mce01)
+        lab.restart(ClientId::Native)
             .expect_err("native restart must be external/manual")
             .kind(),
         std::io::ErrorKind::InvalidInput
     );
 
     assert_eq!(
-        lab.set_ready(ClientId::Mce01)
+        lab.set_ready(ClientId::Native)
             .expect_err("native client has no QA_READY snapshot")
             .kind(),
         std::io::ErrorKind::InvalidInput
     );
 
     assert_eq!(
-        lab.reset(ClientId::Mce01)
+        lab.reset(ClientId::Native)
             .expect_err("native client has no VM reset")
             .kind(),
         std::io::ErrorKind::InvalidInput
