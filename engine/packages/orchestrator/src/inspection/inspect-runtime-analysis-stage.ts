@@ -168,7 +168,14 @@ export function analyzeInspectionRuntimeState(
   const parsedScriptModels =
     input.parsedScripts.map((item) => item.parsed);
   const worldRuleAuthority =
-    analyzeWorldRuleAuthority(parsedScriptModels);
+    analyzeWorldRuleAuthority(
+      input.parsedScripts.map((item) => ({
+        parsed: item.parsed,
+        ...(item.text === undefined
+          ? {}
+          : { text: item.text }),
+      })),
+    );
   const playerCapabilitySurfaces =
     analyzePlayerCapabilitySurfaces(
       input.parsedScripts.map((item) => ({
