@@ -97,8 +97,13 @@ function presetAnchorIds(
   const preferredKinds: readonly GameplayIntentNode["kind"][] =
     kind === "multi-arena-parallel" ||
     kind === "arena-replica-integrity" ||
-    kind === "arena-capacity-plus-one"
+    kind === "arena-capacity-plus-one" ||
+    kind === "player-capability-integrity" ||
+    kind === "world-rule-authority"
       ? ["policy", "lifecycle", "state"]
+      : kind === "client-server-reconciliation" ||
+        kind === "spatial-containment"
+        ? ["spatial-region", "policy", "state"]
       : kind === "disconnect-reconnect" ||
         kind === "reload-recovery" ||
         kind === "repeated-run"
