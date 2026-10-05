@@ -2,7 +2,7 @@ use crate::{
     client::{ClientId, ClientState, ClientStatus},
     doctor::{doctor, DoctorReport},
     provider::{current_platform_provider, runtime_root},
-    resources::plan_memory,
+    resources::{plan_memory, HOST_RUNTIME_HEADROOM_MB},
 };
 use fs2::FileExt;
 use serde::Serialize;
@@ -21,6 +21,18 @@ pub struct RuntimeLab;
 pub struct RuntimeStatus {
     pub provider: Option<&'static str>,
     pub clients: Vec<ClientStatus>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResourcePlanView {
+    pub requested_clients: usize,
+    pub virtual_clients: usize,
+    pub stopped_virtual_clients: usize,
+    pub running_virtual_clients: usize,
+    pub available_memory_mb: u64,
+    pub host_headroom_mb: u64,
+    pub memory_per_stopped_vm_mb: u64,
 }
 
 struct OperationLock {
@@ -161,6 +173,81 @@ impl RuntimeLab {
         Ok(RuntimeStatus {
             provider: provider.as_ref().map(|provider| provider.id()),
             clients,
+        })
+    }
+
+    pub fn resources(&self, count: usize) -> io::Result<ResourcePlanView> {
+        if !(1..=4).contains(&count) {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "client count must be between 1 and 4",
+            ));
+        }
+
+        let host = doctor();
+        if count > host.max_recommended_clients {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!(
+                    "requested {count} clients but this host is recommended for at most {}",
+                    host.max_recommended_clients
+                ),
+            ));
+        }
+
+        let virtual_clients = count.saturating_sub(1);
+        if virtual_clients == 0 {
+            return Ok(ResourcePlanView {
+                requested_clients: count,
+                virtual_clients: 0,
+                stopped_virtual_clients: 0,
+                running_virtual_clients: 0,
+                available_memory_mb: available_memory_mb(&host),
+                host_headroom_mb: HOST_RUNTIME_HEADROOM_MB,
+                memory_per_stopped_vm_mb: 0,
+            });
+        }
+
+        let provider = current_platform_provider().ok_or_else(|| {
+            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+        })?;
+
+        let mut stopped_virtual_clients = 0;
+        let mut running_virtual_clients = 0;
+        for client in ClientId::ALL.into_iter().skip(1).take(virtual_clients) {
+            match provider.status(client)? {
+                ClientState::Stopped => stopped_virtual_clients += 1,
+                ClientState::Running => running_virtual_clients += 1,
+                ClientState::NotProvisioned => {
+                    return Err(io::Error::new(
+                        io::ErrorKind::NotFound,
+                        format!("{} is not provisioned", client.as_str()),
+                    ));
+                }
+                _ => {
+                    return Err(io::Error::new(
+                        io::ErrorKind::Other,
+                        format!("{} is not in a plannable state", client.as_str()),
+                    ));
+                }
+            }
+        }
+
+        let available_memory_mb = available_memory_mb(&host);
+        let plan = plan_memory(
+            available_memory_mb,
+            virtual_clients,
+            stopped_virtual_clients,
+        )?;
+
+        Ok(ResourcePlanView {
+            requested_clients: count,
+            virtual_clients,
+            stopped_virtual_clients,
+            running_virtual_clients,
+            available_memory_mb,
+            host_headroom_mb: HOST_RUNTIME_HEADROOM_MB,
+            memory_per_stopped_vm_mb: plan.memory_per_stopped_vm_mb,
         })
     }
 
