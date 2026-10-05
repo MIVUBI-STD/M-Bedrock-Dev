@@ -124,10 +124,10 @@ impl Provider for VmwareFusionProvider {
 
     fn reprovision(&self, client: ClientId) -> io::Result<ClientState> {
         let vmx = client_vmx_path(client)?;
-        if vmx.is_file() && self.running(&vmx)? {
+        if vmx.is_file() && (self.running(&vmx)? || has_suspend_state(&vmx)) {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                format!("{} must be stopped before reprovision", client.as_str()),
+                format!("{} must be fully stopped before reprovision", client.as_str()),
             ));
         }
         remove_vm_container(&vmx);
@@ -234,10 +234,10 @@ impl Provider for VmwareFusionProvider {
 
     fn set_ready(&self, client: ClientId) -> io::Result<ClientState> {
         let vmx = self.require_client(client)?;
-        if self.running(&vmx)? {
+        if self.running(&vmx)? || has_suspend_state(&vmx) {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                format!("{} must be stopped before setting QA_READY", client.as_str()),
+                format!("{} must be fully stopped before setting QA_READY", client.as_str()),
             ));
         }
         if self.has_ready(client)? {
@@ -263,7 +263,7 @@ impl Provider for VmwareFusionProvider {
             ));
         }
 
-        if self.running(&vmx)? {
+        if self.running(&vmx)? || has_suspend_state(&vmx) {
             self.stop(client)?;
         }
 
