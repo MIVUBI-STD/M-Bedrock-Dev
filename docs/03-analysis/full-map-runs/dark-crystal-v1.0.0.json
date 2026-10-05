@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "runType": "FULL_PRODUCTION_REAUDIT",
-  "status": "IN_PROGRESS_DISCOVERY_AND_PROOF",
+  "status": "FULL_REAUDIT_CLOSED",
   "target": {
     "map": "Dark Crystal",
     "version": "1.0.0",
@@ -14,57 +14,57 @@
     {
       "id": "DCR-PQ-01",
       "check": "Mandatory Replica / Arena Geometry",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "DCR-PQ-02",
       "check": "Role / Team / Participant Ownership",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "DCR-PQ-03",
       "check": "Combat / Death / Respawn / Reconnect",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "DCR-PQ-04",
       "check": "Objective / Progression / Terminal Integrity",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "DCR-PQ-05",
       "check": "Inventory / Equipment / Item Lifecycle",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "DCR-PQ-06",
       "check": "State-Agnostic Fresh-Session Reset",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "DCR-PQ-07",
       "check": "Cross-Player / Cross-Team Mutation",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "DCR-PQ-08",
       "check": "World Mutation / Reset / Second Run",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "DCR-PQ-09",
       "check": "Connection / Active-Session Reload Recovery",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "DCR-PQ-10",
       "check": "Player Capability / Developer Exposure",
-      "state": "PROVING"
+      "state": "CLOSED"
     },
     {
       "id": "DCR-PQ-11",
       "check": "Adversarial CROSS / RACE / RETAIN / REPLAY / ESCAPE / ORPHAN",
-      "state": "PROVING"
+      "state": "CLOSED"
     }
   ],
   "coverageGates": {
@@ -75,5 +75,68 @@
     "playerControlledSurfaceAccounting": "IN_PROGRESS",
     "genericNeedValidation": 0
   },
-  "evidenceReceiptRequired": true
+  "evidenceReceiptRequired": true,
+  "finalFindingSet": [],
+  "closure": {
+    "suppressed": [
+      {
+        "area": "Replica/arena geometry",
+        "reason": "No material gameplay-required replica divergence retained with complete Evidence Receipt."
+      },
+      {
+        "area": "Role/team/participant ownership",
+        "reason": "No independently proven ownership contradiction retained."
+      },
+      {
+        "area": "Combat/death/respawn/reconnect",
+        "reason": "No source-grounded recovery or elimination bypass retained."
+      },
+      {
+        "area": "Objective/progression/terminal",
+        "reason": "No duplicate or contradictory progression/terminal commit retained."
+      },
+      {
+        "area": "Inventory/equipment/items",
+        "reason": "No stale/duplicate/lost managed-state contradiction retained."
+      },
+      {
+        "area": "Fresh-session state",
+        "reason": "No setup/reset/reconnect state-domain contradiction retained."
+      },
+      {
+        "area": "Cross-player/team mutation",
+        "reason": "No independently proven cross-owner mutation retained."
+      },
+      {
+        "area": "World reset/second run",
+        "reason": "No residual world-state contradiction retained."
+      },
+      {
+        "area": "Connection/reload",
+        "reason": "No reconnect/reconstruction contradiction retained."
+      },
+      {
+        "area": "Capability/developer exposure",
+        "reason": "No ordinary-role acquisition + activation contradiction retained."
+      },
+      {
+        "area": "Adversarial paths",
+        "reason": "No publishable cross/race/retain/replay/escape/orphan sequence survived proof gates."
+      }
+    ],
+    "gates": {
+      "materialSurfaceRouting": "CLOSED",
+      "mutableResourceOwnership": "CLOSED",
+      "requiredCrosschecks": "CLOSED",
+      "materialScenarioAccounting": "CLOSED",
+      "playerControlledSurfaceAccounting": "CLOSED",
+      "genericNeedValidation": 0,
+      "unaccountedMaterialSurfaces": 0,
+      "unaccountedMutableResources": 0,
+      "unaccountedMaterialInterleavings": 0,
+      "unaccountedPlayerControlledSurfaces": 0
+    },
+    "evidenceReceiptGate": "PASSED_FOR_ZERO_FINDING_SET",
+    "note": "Zero source-proven findings does not assert runtime bug-free behavior."
+  }
 }
