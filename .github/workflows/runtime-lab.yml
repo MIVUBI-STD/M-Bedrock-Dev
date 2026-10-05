@@ -54,11 +54,14 @@ jobs:
           cargo fmt --all
           git diff -- . > runtime-lab-format.patch
 
-      - name: Upload formatting patch
+      - name: Upload formatted backend
         uses: actions/upload-artifact@v4
         with:
-          name: runtime-lab-format-${{ matrix.os }}
-          path: experiments/runtime-lab/backend/runtime-lab-format.patch
+          name: runtime-lab-formatted-${{ matrix.os }}
+          path: |
+            experiments/runtime-lab/backend/Cargo.toml
+            experiments/runtime-lab/backend/src
+            experiments/runtime-lab/backend/tests
           if-no-files-found: error
 
       - name: Format
