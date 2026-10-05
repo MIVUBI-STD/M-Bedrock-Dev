@@ -299,6 +299,8 @@ export function buildInspectionResult(
     scriptSpatial,
     spatialAuthority,
     scriptSafeConfig,
+    worldRuleAuthority,
+    playerCapabilitySurfaces,
     inventoryLifecycle,
     arenaLifecycle,
     arenaCleanupSurfaces,
