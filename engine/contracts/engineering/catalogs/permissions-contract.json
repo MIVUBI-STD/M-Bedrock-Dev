@@ -275,6 +275,82 @@
         "unattributed-state-change",
         "debugging-confusion"
       ]
+    },
+    {
+      "id": "permissions-policy.role-capability-matrix",
+      "domain": "permissions",
+      "subject": "privileged role capability",
+      "statement": "Gameplay/operator roles must be evaluated as a capability matrix covering permission level, command permission, gamemode, input permissions, flight/worldbuilder abilities, build/break, item use, entity-spawn access, developer commands, and cross-arena mutation. A single admin tag or role boolean is not sufficient proof of safe authority.",
+      "classification": "engineering-contract",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-permissions-contract-v1"
+      ],
+      "capabilityTags": [
+        "role-matrix",
+        "least-privilege",
+        "operator"
+      ],
+      "riskSurfaces": [
+        "blanket-admin-bypass",
+        "privilege-overreach",
+        "cross-arena-mutation"
+      ]
+    },
+    {
+      "id": "permissions-policy.live-arena-maintenance-scope",
+      "domain": "permissions",
+      "subject": "Roommaster/operator live-world mutation",
+      "statement": "Roommaster/operator status may authorize operational controls but must not implicitly authorize unrestricted live-arena block destruction, restricted item use, or entity spawning. Destructive world mutation requires an explicit maintenance scope or mode.",
+      "classification": "engineering-contract",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-permissions-contract-v1"
+      ],
+      "capabilityTags": [
+        "roommaster",
+        "maintenance-mode",
+        "world-mutation"
+      ],
+      "riskSurfaces": [
+        "arena-destruction",
+        "manual-spawn-bypass",
+        "privilege-leak"
+      ]
+    },
+    {
+      "id": "permissions-policy.guard-must-be-active",
+      "domain": "permissions",
+      "subject": "protection activation",
+      "statement": "Permission or anti-cheat protection counts as active only when the selected production artifact proves definition, import/reference, instantiation, subscription/registration, and a reachable guarded path. Dead or uninstantiated protection code is not a Blocking Proof.",
+      "classification": "engineering-contract",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-permissions-contract-v1"
+      ],
+      "capabilityTags": [
+        "guard-activation",
+        "production-reachability"
+      ],
+      "riskSurfaces": [
+        "dead-protection",
+        "false-safety"
+      ]
     }
   ],
   "relations": [
