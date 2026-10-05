@@ -91,44 +91,40 @@ None of these documents may authorize continuation independently of the Mandator
 ## Analysis domains
 
 ### Core models and graphs
-- [Project model](./project-model.md)
-- [Dependency graph](./dependency-graph.md)
-- [State scope](./state-scope.md)
+- [Dependency graph](./dependency-graph.md) — semantic relationships, reference resolution, and reverse-impact traversal.
 - [Topology](./topology.md) — coordinate resolution, translated-region candidates, conservative outliers, and bounded native chunk correlation.
-- [Executable reasoning architecture](./executable-reasoning-architecture.md)
+- [Executable reasoning architecture](./executable-reasoning-architecture.md) — executable reasoning/model integration.
+- [State authority](./state-authority-runtime.md) — logical authority, scope, mirrors, durability, and reconciliation.
 
 ### Authored source semantics
-- [Content discovery](./content-discovery.md)
-- [Command effects](./command-effects.md)
-- [Dialogue scene graph](./dialogue-scene-graph.md)
+- [Content discovery](./content-discovery.md) — file/pack discovery and first semantic extraction.
+- [Command effects](./command-effects.md) — typed command reads/writes/effects.
+- [Command context](./command-context-runtime.md) — executor, dimension, position, selector scope, and target cardinality.
 - [Entity state analysis](./entity-state-analysis.md) — possible-state modeling plus attack, sensor, targeting, navigation, event-reachability, and prerequisite knowledge.
-- [Script API](./script-api.md)
+- [Script API](./script-api.md) — static Script API usage and compatibility semantics.
 
 ### Native world and structure evidence
-- [World DB](./world-db.md)
-- [World DB native evidence](./world-db-native-evidence.md)
+- [World DB](./world-db.md) — conservative LevelDB/keyspace evidence and native differential boundaries.
 - [mcstructure](./mcstructure.md) — normalized structures, embedded runtime commands, load correlation, command-chain topology, and placement transforms.
-- [Structure load correlation](./structure-load-correlation.md)
-- [Native world differential](./native-world-differential.md)
 
 ### Platform knowledge and compatibility
-- [Knowledge layer](./knowledge-layer.md)
-- [Compatibility](./compatibility.md)
-- [Education](./education.md)
+- [Compatibility](./compatibility.md) — edition/version/module/experiment/runtime-profile compatibility.
+- [Education](./education.md) — Education-specific feature, Agent/Code Builder, permission-block, and runtime context.
 
 ### Gameplay capacity and concurrency
 - [Capacity and Concurrency](./capacity-concurrency.md) — presented vs deliverable capacity, throughput bottlenecks, queue behavior, and concurrency boundaries.
 
-### Runtime gameplay knowledge
+### Runtime gameplay domains
 Runtime documents describe evidence requirements only; knowledge presence is not proof and does not create a workflow.
 
-- arena/session: [arena cleanup](./arena-cleanup-runtime.md), [round integrity](./round-integrity-runtime.md)
-- player lifecycle: [player lifecycle](./player-lifecycle.md), [inventory](./inventory-runtime.md), [interaction](./interaction-runtime.md), [effects](./effects-runtime.md)
-- entities/combat: [entity navigation](./entity-runtime-navigation.md), [entity population](./entity-population-runtime.md), [combat](./combat-runtime.md)
-- world/chunks: [chunk loading](./chunk-runtime-loading.md), [world state](./world-state-runtime.md), [world mutation](./world-mutation-runtime.md), [spatial containment](./spatial-containment-runtime.md)
-- execution/order: [event ordering](./event-ordering-runtime.md), [persistence/recovery](./persistence-recovery-runtime.md), [state authority](./state-authority-runtime.md)
-- environment: [teleport](./teleport-runtime.md), [environment hazards](./environment-hazards-runtime.md)
-- economy/content: [loot/economy](./loot-economy-runtime.md), [NPC dialogue](./npc-dialogue-runtime.md)
+- arena/session: [arena cleanup](./arena-cleanup-runtime.md), [round integrity](./round-integrity-runtime.md), [multi-arena](./multi-arena-audit-contract.md)
+- player lifecycle: [player lifecycle](./player-lifecycle.md), [inventory](./inventory-runtime.md), [interaction](./interaction-runtime.md), [effects](./effects-runtime.md), [permissions](./permissions-runtime.md)
+- entities/combat: [entity navigation](./entity-runtime-navigation.md), [entity population](./entity-population-runtime.md), [combat](./combat-runtime.md), [mounts](./mounts-runtime.md)
+- world/chunks: [chunk loading](./chunk-runtime-loading.md), [world state](./world-state-runtime.md), [world mutation](./world-mutation-runtime.md), [spatial containment](./spatial-containment-runtime.md), [physics](./physics-runtime.md)
+- execution/order: [event ordering](./event-ordering-runtime.md), [persistence/recovery](./persistence-recovery-runtime.md), [automation](./automation-runtime.md)
+- presentation/control: [cinematic](./cinematic-runtime.md), [client feedback](./client-feedback-runtime.md)
+- economy/content: [loot/economy](./loot-economy-runtime.md)
+- operational risk: [performance](./performance-runtime.md), [teleport](./teleport-runtime.md)
 
 ## Placement rule
 
