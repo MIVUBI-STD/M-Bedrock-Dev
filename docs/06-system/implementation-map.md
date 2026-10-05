@@ -39,6 +39,11 @@ Use this before broad repository search.
 | Canonical gameplay semantic projection | engine/packages/orchestrator/src/inspection/gameplay-semantic-model.ts |
 | Risk-directed gameplay analysis priority | engine/packages/orchestrator/src/inspection/gameplay-analysis-priority.ts |
 | Reachability/capability orchestration | engine/packages/orchestrator/src/inspection/gameplay-reachability-stage.ts + capability-exposure-stage.ts |
+| Player capability / privileged-role authority | engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts |
+| Broad capability mutation/reset footprint | engine/packages/orchestrator/src/inspection/capability-mutation-footprint-analysis.ts |
+| World-rule / entity-spawn causality authority | engine/packages/orchestrator/src/inspection/world-rule-authority-analysis.ts |
+| Client-predicted mutation cancellation / reconciliation surface | engine/packages/orchestrator/src/inspection/client-mutation-reconciliation-analysis.ts |
+| Physical arena containment proof | engine/packages/orchestrator/src/arena/arena-voxel-proof.ts (`proveArenaBarrierEnclosure`) |
 | Hidden gameplay defect orchestration | engine/packages/orchestrator/src/inspection/hidden-gameplay-defect-analysis.ts |
 | Canonical map engineering/QA assessment projection | engine/packages/orchestrator/src/inspection/map-engineering-assessment.ts |
 | Gameplay world composition / closure integration | engine/packages/orchestrator/src/inspection/gameplay-world-model.ts |
@@ -59,6 +64,8 @@ Use this before broad repository search.
 | Repair preservation contracts, baselines, and verification receipts | engine/packages/preservation/ |
 | Reliability invariants/fingerprint/update delta/retest/runtime evidence | engine/packages/reliability/ |
 | Capability-specific proof binding registry | engine/reliability/catalogs/capability-proof-bindings.json |
+| Knowledge → detector/proof coverage binding | engine/reliability/catalogs/knowledge-detector-bindings.json + tooling/repository/verify-knowledge-detector-bindings.mjs |
+| Canonical audit naming authority / verifier | docs/03-analysis/map-audit-naming-contract.md + tooling/repository/verify-canonical-naming.mjs |
 | Reliability evidence router / ownership boundary | engine/reliability/README.md |
 | Calibration / blind acceptance / regression benchmark manifests | engine/reliability/corpus/ |
 | Runtime session recording/replay contract + first divergence | engine/packages/reliability/src/runtime/runtime-session-replay.ts |
