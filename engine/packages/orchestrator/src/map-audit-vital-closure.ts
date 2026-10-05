@@ -40,6 +40,7 @@ export type VitalCriticality =
 
 export interface VitalGameplayFindingInput {
   readonly id: string;
+  readonly status: "PROVEN" | "NEED_VALIDATION";
   readonly failureDomain: string;
   readonly contributingDomains: readonly string[];
   readonly gameplayFlow: string;
@@ -249,19 +250,6 @@ function obligationDomains(
   );
 }
 
-function isDetectionGap(
-  obligation: AuditObligation,
-): boolean {
-  return (
-    obligation.source === "detection-gap" ||
-    obligation.source === "knowledge-gap" ||
-    obligation.source === "gameplay-closure" ||
-    obligation.source === "scenario-coverage" ||
-    obligation.source === "graph-structure" ||
-    obligation.source === "discovery-challenge"
-  );
-}
-
 export function deriveVitalGameplayClosure(input: {
   readonly controlStatus: "READY_FOR_REVIEW" | "BLOCKED";
   readonly multiArenaDetected: boolean;
@@ -269,6 +257,10 @@ export function deriveVitalGameplayClosure(input: {
   readonly auditObligations: readonly AuditObligation[];
 }): VitalGameplayClosure {
   const findingsByDomain = new Map<
+    VitalGameplayDomain,
+    string[]
+  >();
+  const unresolvedFindingsByDomain = new Map<
     VitalGameplayDomain,
     string[]
   >();
@@ -284,9 +276,13 @@ export function deriveVitalGameplayClosure(input: {
 
   for (const finding of input.findings) {
     for (const domain of findingDomains(finding)) {
-      const current = findingsByDomain.get(domain) ?? [];
+      const target =
+        finding.status === "PROVEN"
+          ? findingsByDomain
+          : unresolvedFindingsByDomain;
+      const current = target.get(domain) ?? [];
       current.push(finding.id);
-      findingsByDomain.set(domain, current);
+      target.set(domain, current);
     }
   }
 
@@ -304,6 +300,24 @@ export function deriveVitalGameplayClosure(input: {
       const current = target.get(domain) ?? [];
       current.push(obligation.id);
       target.set(domain, current);
+    }
+  }
+
+  for (const domain of VITAL_GAMEPLAY_DOMAINS) {
+    const unresolved =
+      unique(unresolvedFindingsByDomain.get(domain) ?? []);
+    if (unresolved.length === 0) continue;
+    const runtimeIds = new Set(runtimeByDomain.get(domain) ?? []);
+    const detectionIds =
+      detectionByDomain.get(domain) ?? [];
+    const uncovered = unresolved.filter(
+      (id) => !runtimeIds.has(id),
+    );
+    if (uncovered.length > 0) {
+      detectionByDomain.set(
+        domain,
+        unique([...detectionIds, ...uncovered]),
+      );
     }
   }
 
