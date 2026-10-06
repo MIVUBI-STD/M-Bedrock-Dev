@@ -130,7 +130,7 @@ Graph
 → tooling/repository/graph.mjs
 
 Retrieval
-→ existing analysis-planner / orchestrator owners as implementation develops
+→ `engine/packages/analysis-planner/src/retrieval.ts`
 
 Context
 → existing orchestrator context compilation owners
