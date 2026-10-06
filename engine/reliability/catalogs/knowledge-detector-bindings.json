@@ -3,6 +3,56 @@
   "semantics": "Coverage bindings connect high-value knowledge/engineering facts to the production analyzer/check that consumes them and to a dedicated proof specification. This registry is a verification projection, not semantic authority.",
   "bindings": [
     {
+      "knowledgeId": "chunk-policy.post-await-generation-check",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunk-policy.script-manager-capacity-queue",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunk-policy.setup-readiness-evidence",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunk-policy.tickingarea-lease-cleanup",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunk-policy.tickingarea-startup-reconciliation",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "cleanup-policy.capability-mutation-footprint",
       "consumer": "arena-cleanup-surface-analysis",
       "analyzerPaths": [
@@ -152,6 +202,26 @@
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/capability-mutation-footprint-analysis.test.ts",
         "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "state-policy.authority-version-or-generation",
+      "consumer": "state-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/state-authority-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/state-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "state-policy.conflict-is-diagnostic-not-silent-choice",
+      "consumer": "state-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/state-authority-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/state-authority-analysis.test.ts"
       ]
     },
     {
