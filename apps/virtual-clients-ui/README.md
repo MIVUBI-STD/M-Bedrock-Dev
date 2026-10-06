@@ -15,33 +15,40 @@ support-bundle
 
 It does not own lifecycle rules, resource policy, Base state, identity policy, update policy, or recovery decisions.
 
-## Navigation
+## User navigation
 
-The UI keeps daily use separate from technical detail:
+The normal user flow intentionally hides infrastructure terminology.
 
 ```text
-Setup
-→ current DoctorReport.nextSetupAction
-→ guided one-step setup
+not ready
+→ Setup
+→ one backend-directed step at a time
 
-Clients
-→ Native + Virtual-01/02/03
-→ common lifecycle actions first
-→ advanced/recovery actions under More actions
+ready
+→ Clients
+→ Start all / Stop all
+→ one primary action per Virtual
+→ secondary and recovery actions under ···
 
-Health
-→ blockers/warnings
-→ host/resource diagnostics
-→ update staging
+Settings
+→ automatic resource behavior
+→ app update
+→ version compatibility
+
+Help & Support
+→ user-facing issues
+→ operation history
+→ technical details
 → support bundle
-
-History
-→ recent backend mutation journal
 ```
 
-The initial page is a presentation choice only: Setup while the backend reports a setup action, Clients once `nextSetupAction = READY`. Navigation does not create or persist lifecycle state.
+Once `DoctorReport.nextSetupAction = READY`, Setup disappears from primary navigation. The app opens on Clients by default.
 
-Lifecycle button eligibility always comes from backend `actions`. The UI never infers whether an action is safe from client state.
+Internal backend terms such as Base lifecycle, provenance, identity proof, and `QA_READY` remain unchanged in the Rust contract. The UI translates them into user-facing concepts such as environment setup, client checks, recovery point, restore, and recreate.
+
+Lifecycle button eligibility always comes from backend `actions`. The UI never infers whether an action is safe from client state. The UI may choose which allowed action is primary for presentation, but it cannot make a blocked action available.
+
+Capabilities that do not yet exist in the backend, including automatic window arrangement, are not exposed as working controls.
 
 ## Desktop host boundary
 
@@ -73,14 +80,7 @@ The desktop host supports a non-visual installer probe:
 virtual-clients-app.exe --probe
 ```
 
-The probe must:
-
-1. resolve the packaged UI `index.html`;
-2. resolve and start `bridge/virtual-clients-bridge.exe`;
-3. invoke backend `policy`;
-4. receive public contract schema 1.
-
-Installer verification fails when this chain is broken.
+The probe must resolve the packaged UI, start the bridge, invoke backend `policy`, and receive public contract schema 1.
 
 ## Commands
 
@@ -89,21 +89,3 @@ npm run virtual-clients-ui:dev
 npm run virtual-clients-ui:build
 npm run virtual-clients-ui:preview
 ```
-
-## Native bridge protocol
-
-The installed backend includes `bridge/virtual-clients-bridge.exe`.
-
-The process uses newline-delimited JSON on stdin/stdout:
-
-```json
-{"schema":1,"requestId":1,"command":"policy","args":[]}
-```
-
-Response:
-
-```json
-{"schema":1,"requestId":1,"success":true,"payload":"{...public contract JSON...}"}
-```
-
-The desktop host correlates `requestId` and returns only the bridge `payload` through `window.virtualClients.invoke`. It does not reinterpret the backend response.
