@@ -129,3 +129,10 @@ camera/control restore
 8. Are broad selectors affecting unrelated players?
 9. Is teleport destination actually ready?
 10. What proves the player is fully restored before gameplay begins?
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [Cinematic](../../engine/knowledge/gameplay-runtime/cinematic-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
