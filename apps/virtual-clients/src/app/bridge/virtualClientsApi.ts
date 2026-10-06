@@ -72,7 +72,6 @@ export const desktop = {
   canArrangeWindows: () => true,
   displays: () => invokeDesktop<DisplayInfo[]>("window_displays", payload.displayList),
   arrangeWindows: (request: WindowLayoutRequest, overlay: ScreenOverlayPreference, identify = false) => invokeDesktop<WindowArrangementResult>("window_apply_layout", payload.windowArrangement, { request: { layout: request, overlay, identify } }),
-  clearOverlay: () => invokeDesktop<void>("window_clear_overlay", payload.voidResult),
   openBaseLocation: () => invokeDesktop<void>("setup_open_base_location", payload.voidResult),
   openSetupTools: () => invokeDesktop<void>("setup_open_guest_tools", payload.voidResult)
 };
