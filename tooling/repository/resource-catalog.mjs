@@ -151,17 +151,32 @@ function catalogSourceModules(resources, seen) {
 
 function catalogKnowledge(resources, seen) {
   const ownership = readJson("engine/knowledge/ownership.json");
-  for (const [group, config] of Object.entries(ownership.groups ?? {})) {
+
+  for (const config of Object.values(ownership.groups ?? {})) {
     for (const file of config.files ?? []) {
       const path = join("engine/knowledge", file).replaceAll("\\", "/");
-      addResource(resources, seen, {
-        id: "knowledge." + slug(group) + "." + slug(basename(file)),
-        class: "KNOWLEDGE",
-        domain: slug(group),
-        authority: "REFERENCE",
-        path,
-        lifecycle: "ACTIVE",
-      });
+      const catalog = readJson(path);
+
+      for (const fact of catalog.facts ?? []) {
+        if (
+          typeof fact.id !== "string" ||
+          !fact.id.trim() ||
+          typeof fact.domain !== "string" ||
+          !fact.domain.trim()
+        ) {
+          throw new Error("Invalid knowledge fact in " + path);
+        }
+
+        addResource(resources, seen, {
+          id: "knowledge." + fact.id,
+          class: "KNOWLEDGE",
+          domain: slug(fact.domain),
+          authority: "REFERENCE",
+          path,
+          locator: fact.id,
+          lifecycle: "ACTIVE",
+        });
+      }
     }
   }
 }
