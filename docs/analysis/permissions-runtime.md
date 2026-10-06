@@ -182,3 +182,10 @@ Reconnect creates a new session generation. Revalidate permission/gamemode/contr
 8. Are gamemode and input permissions reconciled separately?
 9. Are debug surfaces disabled or guarded for production?
 10. Can every high-impact dev intervention be distinguished in diagnostics?
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [Permissions](../../engine/knowledge/platform/permissions-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
