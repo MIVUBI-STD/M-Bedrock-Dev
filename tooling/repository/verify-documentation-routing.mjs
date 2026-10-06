@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const failures = [];
-const domains = ["product", "artifacts", "analysis", "repair", "validation", "system"];
+const domains = ["product", "artifacts", "analysis", "repair", "validation", "system", "examples"];
 
 for (const domain of domains) {
   const dir = join("docs", domain);
