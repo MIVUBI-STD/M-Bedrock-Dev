@@ -919,7 +919,7 @@ impl VirtualClients {
 
     pub fn launch_minecraft(&self, client: ClientId) -> io::Result<ClientStatus> {
         self.record(
-            OperationKind::Open,
+            OperationKind::LaunchMinecraft,
             Some(format!("minecraft:{}", client.as_str())),
             self.launch_minecraft_inner(client),
         )
