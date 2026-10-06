@@ -177,3 +177,12 @@ Held input must not be treated as a one-shot press without edge detection, first
 Cooldown presentation is not gameplay authority; eligibility must use the actual cooldown contract.
 
 Cross-device behavior should be expressed in semantic actions rather than keyboard/controller/touch-specific assumptions.
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [Interaction](../../engine/knowledge/player-runtime/interaction-bedrock.json)
+- [Input Gesture](../../engine/knowledge/player-runtime/input-gesture-bedrock.json)
+- [NPC Dialogue](../../engine/knowledge/entity-runtime/npc-dialogue-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
