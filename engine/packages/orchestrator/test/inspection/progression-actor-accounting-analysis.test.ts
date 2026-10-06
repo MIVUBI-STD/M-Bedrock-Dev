@@ -16,6 +16,9 @@ import {
 import {
   analyzeArenaLifecycleConvergence,
 } from "../../src/arena/arena-lifecycle-analysis.js";
+import type {
+  EntityEventExternalEvidence,
+} from "../../src/inspection/entity-event-evidence.js";
 
 function parsed(
   text: string,
@@ -565,6 +568,196 @@ describe(
             "demo:enemy",
           ],
           status: "unresolved",
+        });
+    });
+
+    it("closes an unreachable conditional despawn path as statically inactive", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function maybeAdvance() { if (remainingEnemies === 0) nextWave(); }",
+      ].join("\n");
+      const entity =
+        parseEntityDefinition(
+          {
+            "minecraft:entity": {
+              description: { identifier: "demo:enemy" },
+              component_groups: {
+                despawn_state: {
+                  "minecraft:instant_despawn": {},
+                },
+              },
+              events: {
+                "demo:despawn": {
+                  add: {
+                    component_groups: ["despawn_state"],
+                  },
+                },
+              },
+            },
+          },
+          {
+            artifactId: "fixture",
+            relativePath: "entities/enemy.json",
+          },
+        );
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [parsed(source)],
+          [],
+          [entity],
+          undefined,
+          [],
+        );
+
+      expect(result.conditionalDespawnUnknowns)
+        .toBe(0);
+      expect(result.inactiveConditionalDespawnCounters)
+        .toBe(1);
+      expect(result.counters[0])
+        .toMatchObject({
+          inactiveConditionalDespawnActorIdentifiers: ["demo:enemy"],
+          unresolvedConditionalDespawnActorIdentifiers: [],
+        });
+    });
+
+    it("keeps an exact non-terminal external despawn event reachable and unresolved", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function triggerDespawn(entity) {",
+        "  entity.triggerEvent('demo:despawn');",
+        "}",
+        "function maybeAdvance() { if (remainingEnemies === 0) nextWave(); }",
+      ].join("\n");
+      const input = parsed(source);
+      const entity =
+        parseEntityDefinition(
+          {
+            "minecraft:entity": {
+              description: { identifier: "demo:enemy" },
+              component_groups: {
+                despawn_state: {
+                  "minecraft:instant_despawn": {},
+                },
+              },
+              events: {
+                "demo:despawn": {
+                  add: {
+                    component_groups: ["despawn_state"],
+                  },
+                },
+              },
+            },
+          },
+          {
+            artifactId: "fixture",
+            relativePath: "entities/enemy.json",
+          },
+        );
+      const evidence:
+        EntityEventExternalEvidence[] = [{
+          event: "demo:despawn",
+          kind: "event-command",
+          entityIdentifier: "demo:enemy",
+          executionRegion: "function:triggerDespawn",
+          source: input.parsed.source,
+        }];
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+          [],
+          [entity],
+          undefined,
+          evidence,
+        );
+
+      expect(result.reachableConditionalDespawnCounters)
+        .toBe(1);
+      expect(result.conditionalDespawnUnknowns)
+        .toBe(1);
+    });
+
+    it("closes exact conditional despawn activation when every trigger is proven terminal-only", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function endGame(arena, player, entity) {",
+        "  arena.players.delete(player);",
+        "  arena.generation++;",
+        "  triggerDespawn(entity);",
+        "}",
+        "function triggerDespawn(entity) {",
+        "  entity.triggerEvent('demo:despawn');",
+        "}",
+        "function maybeAdvance() { if (remainingEnemies === 0) nextWave(); }",
+      ].join("\n");
+      const input = parsed(source);
+      const lifecycle =
+        analyzeArenaLifecycleConvergence(
+          [input.parsed],
+        );
+      const entity =
+        parseEntityDefinition(
+          {
+            "minecraft:entity": {
+              description: { identifier: "demo:enemy" },
+              component_groups: {
+                despawn_state: {
+                  "minecraft:instant_despawn": {},
+                },
+              },
+              events: {
+                "demo:despawn": {
+                  add: {
+                    component_groups: ["despawn_state"],
+                  },
+                },
+              },
+            },
+          },
+          {
+            artifactId: "fixture",
+            relativePath: "entities/enemy.json",
+          },
+        );
+      const evidence:
+        EntityEventExternalEvidence[] = [{
+          event: "demo:despawn",
+          kind: "event-command",
+          entityIdentifier: "demo:enemy",
+          executionRegion: "function:triggerDespawn",
+          source: input.parsed.source,
+        }];
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+          [],
+          [entity],
+          lifecycle,
+          evidence,
+        );
+
+      expect(result.conditionalDespawnUnknowns)
+        .toBe(0);
+      expect(result.terminalOnlyConditionalDespawnCounters)
+        .toBe(1);
+      expect(result.counters[0])
+        .toMatchObject({
+          terminalOnlyConditionalDespawnActorIdentifiers: ["demo:enemy"],
+          unresolvedConditionalDespawnActorIdentifiers: [],
         });
     });
 

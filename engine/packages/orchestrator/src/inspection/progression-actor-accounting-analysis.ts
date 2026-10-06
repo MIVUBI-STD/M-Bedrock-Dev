@@ -3,9 +3,13 @@ import type {
   ParsedScriptFile,
   ScriptProgressionCounterEvidence,
 } from "../../../../analyzers/scripts/src/index.js";
-import type {
-  ParsedEntityDefinition,
+import {
+  analyzeEntityTransitionReachability,
+  type ParsedEntityDefinition,
 } from "../../../../analyzers/entities/src/index.js";
+import type {
+  EntityEventExternalEvidence,
+} from "./entity-event-evidence.js";
 import type {
   ArenaLifecycleAnalysis,
   ArenaLifecycleTerminalAssessment,
@@ -64,6 +68,12 @@ export interface ProgressionCounterAssessment {
     readonly string[];
   readonly conditionalDespawnActorIdentifiers:
     readonly string[];
+  readonly reachableConditionalDespawnActorIdentifiers:
+    readonly string[];
+  readonly terminalOnlyConditionalDespawnActorIdentifiers:
+    readonly string[];
+  readonly inactiveConditionalDespawnActorIdentifiers:
+    readonly string[];
   readonly uncoveredImmediateDespawnActorIdentifiers:
     readonly string[];
   readonly unresolvedConditionalDespawnActorIdentifiers:
@@ -103,6 +113,9 @@ export interface ProgressionActorAccountingAnalysis {
   readonly nonTerminalScriptedRemovalCounters: number;
   readonly provenImmediateDespawnWithoutReconciliation: number;
   readonly conditionalDespawnUnknowns: number;
+  readonly reachableConditionalDespawnCounters: number;
+  readonly terminalOnlyConditionalDespawnCounters: number;
+  readonly inactiveConditionalDespawnCounters: number;
   readonly reconciledFromMatchedActorLifecycle: number;
   readonly unresolvedCounters: number;
 }
@@ -951,6 +964,295 @@ function directRemovalCanReachDecrement(
   });
 }
 
+function followEntityEvents(
+  entity: ParsedEntityDefinition,
+  roots: readonly string[],
+): Set<string> {
+  const defined =
+    new Set(Object.keys(entity.events));
+  const seen = new Set<string>();
+  const queue =
+    roots.filter((event) =>
+      defined.has(event)
+    );
+  while (queue.length > 0) {
+    const event = queue.shift()!;
+    if (seen.has(event)) continue;
+    seen.add(event);
+    for (
+      const next of
+        entity.events[event]
+          ?.triggerEvents ?? []
+    ) {
+      if (
+        defined.has(next) &&
+        !seen.has(next)
+      ) {
+        queue.push(next);
+      }
+    }
+  }
+  return seen;
+}
+
+function conditionalDespawnEvents(
+  entity: ParsedEntityDefinition,
+): string[] {
+  const despawnGroups =
+    new Set(
+      Object.entries(
+        entity.componentGroups,
+      )
+        .filter(([, components]) =>
+          components.includes(
+            "minecraft:despawn",
+          ) ||
+          components.includes(
+            "minecraft:instant_despawn",
+          )
+        )
+        .map(([groupId]) => groupId),
+    );
+
+  return Object.entries(entity.events)
+    .filter(([, mutation]) =>
+      mutation.addGroups.some(
+        (groupId) =>
+          despawnGroups.has(groupId),
+      )
+    )
+    .map(([eventId]) => eventId)
+    .sort();
+}
+
+function eventEvidenceMatchesEntity(
+  evidence:
+    EntityEventExternalEvidence,
+  actorIdentifier: string,
+): boolean {
+  return (
+    evidence.entityIdentifier !== undefined &&
+    normalizeActorIdentifier(
+      evidence.entityIdentifier,
+    ) === actorIdentifier
+  );
+}
+
+function lifecycleScopeForRegion(
+  path: string,
+  region: string | undefined,
+  lifecycle:
+    ArenaLifecycleAnalysis | undefined,
+  terminalRegions:
+    ReadonlySet<string>,
+  incoming:
+    ReadonlyMap<
+      string,
+      ReadonlySet<string>
+    >,
+): "terminal-only" | "non-terminal" | "unresolved" {
+  if (!region) return "unresolved";
+  const synthetic: ScriptedRemovalEvidence = {
+    scriptPath: path,
+    executionRegion: region,
+    actorIdentifier: "*",
+    mechanism: "entity-remove",
+  };
+  return scriptedRemovalScope(
+    synthetic,
+    lifecycle,
+    terminalRegions,
+    incoming,
+  );
+}
+
+function conditionalDespawnReachabilityForActor(
+  actorIdentifier: string,
+  entities:
+    readonly ParsedEntityDefinition[],
+  externalEvidence:
+    readonly EntityEventExternalEvidence[],
+  lifecycle:
+    ArenaLifecycleAnalysis | undefined,
+  terminalRegions:
+    ReadonlySet<string>,
+  incoming:
+    ReadonlyMap<
+      string,
+      ReadonlySet<string>
+    >,
+): {
+  readonly status:
+    | "reachable"
+    | "terminal-only"
+    | "inactive"
+    | "unresolved";
+  readonly activationEvents:
+    readonly string[];
+} {
+  const entity =
+    entities.find(
+      (item) =>
+        item.identifier !== undefined &&
+        normalizeActorIdentifier(
+          item.identifier,
+        ) === actorIdentifier,
+    );
+  if (!entity) {
+    return {
+      status: "unresolved",
+      activationEvents: [],
+    };
+  }
+
+  const activationEvents =
+    conditionalDespawnEvents(entity);
+  if (activationEvents.length === 0) {
+    return {
+      status: "inactive",
+      activationEvents: [],
+    };
+  }
+
+  const internal =
+    analyzeEntityTransitionReachability(
+      entity,
+    );
+  const internallyReachable =
+    new Set([
+      ...internal.reachableEvents,
+      ...internal.externallyReachableEvents,
+    ]);
+  if (
+    activationEvents.some((event) =>
+      internallyReachable.has(event)
+    )
+  ) {
+    return {
+      status: "reachable",
+      activationEvents,
+    };
+  }
+
+  const exactEvidence =
+    externalEvidence.filter(
+      (item) =>
+        eventEvidenceMatchesEntity(
+          item,
+          actorIdentifier,
+        ) &&
+        Object.hasOwn(
+          entity.events,
+          item.event,
+        ),
+    );
+  const exactReachable =
+    followEntityEvents(
+      entity,
+      exactEvidence.map(
+        (item) => item.event,
+      ),
+    );
+  const reachesDespawn =
+    activationEvents.some((event) =>
+      exactReachable.has(event)
+    );
+
+  if (reachesDespawn) {
+    const relevantEvidence =
+      exactEvidence.filter(
+        (item) => {
+          const reachable =
+            followEntityEvents(
+              entity,
+              [item.event],
+            );
+          return activationEvents.some(
+            (event) =>
+              reachable.has(event),
+          );
+        },
+      );
+    const scopes =
+      relevantEvidence.map((item) =>
+        lifecycleScopeForRegion(
+          item.source.relativePath,
+          item.executionRegion,
+          lifecycle,
+          terminalRegions,
+          incoming,
+        )
+      );
+    if (
+      scopes.length > 0 &&
+      scopes.every(
+        (scope) =>
+          scope === "terminal-only",
+      )
+    ) {
+      return {
+        status: "terminal-only",
+        activationEvents,
+      };
+    }
+    if (
+      scopes.some(
+        (scope) =>
+          scope === "non-terminal",
+      )
+    ) {
+      return {
+        status: "reachable",
+        activationEvents,
+      };
+    }
+    return {
+      status: "unresolved",
+      activationEvents,
+    };
+  }
+
+  const broadEvidence =
+    externalEvidence.filter(
+      (item) =>
+        item.entityIdentifier ===
+          undefined &&
+        Object.hasOwn(
+          entity.events,
+          item.event,
+        ),
+    );
+  const broadReachable =
+    followEntityEvents(
+      entity,
+      broadEvidence.map(
+        (item) => item.event,
+      ),
+    );
+  if (
+    activationEvents.some((event) =>
+      broadReachable.has(event)
+    )
+  ) {
+    return {
+      status: "unresolved",
+      activationEvents,
+    };
+  }
+
+  if (entity.runtimeIdentifier) {
+    return {
+      status: "unresolved",
+      activationEvents,
+    };
+  }
+
+  return {
+    status: "inactive",
+    activationEvents,
+  };
+}
+
 function entityDespawnEvidence(
   entities:
     readonly ParsedEntityDefinition[],
@@ -1222,6 +1524,8 @@ export function analyzeProgressionActorAccounting(
     readonly ParsedEntityDefinition[] = [],
   arenaLifecycle?:
     ArenaLifecycleAnalysis,
+  entityEventEvidence:
+    readonly EntityEventExternalEvidence[] = [],
 ): ProgressionActorAccountingAnalysis {
   const scripts =
     inputs.map(normalizedInput);
@@ -1620,6 +1924,43 @@ export function analyzeProgressionActorAccounting(
                 ),
             ),
           ].sort();
+        const conditionalReachability =
+          new Map(
+            conditionalDespawnActorIdentifiers.map(
+              (actorIdentifier) => [
+                actorIdentifier,
+                conditionalDespawnReachabilityForActor(
+                  actorIdentifier,
+                  entities,
+                  entityEventEvidence,
+                  arenaLifecycle,
+                  terminalRegions,
+                  incoming,
+                ),
+              ],
+            ),
+          );
+        const reachableConditionalDespawnActorIdentifiers =
+          conditionalDespawnActorIdentifiers
+            .filter((id) =>
+              conditionalReachability
+                .get(id)?.status ===
+                "reachable",
+            );
+        const terminalOnlyConditionalDespawnActorIdentifiers =
+          conditionalDespawnActorIdentifiers
+            .filter((id) =>
+              conditionalReachability
+                .get(id)?.status ===
+                "terminal-only",
+            );
+        const inactiveConditionalDespawnActorIdentifiers =
+          conditionalDespawnActorIdentifiers
+            .filter((id) =>
+              conditionalReachability
+                .get(id)?.status ===
+                "inactive",
+            );
         const uncoveredImmediateDespawnActorIdentifiers =
           immediateDespawnActorIdentifiers
             .filter((id) =>
@@ -1629,7 +1970,15 @@ export function analyzeProgressionActorAccounting(
         const unresolvedConditionalDespawnActorIdentifiers =
           conditionalDespawnActorIdentifiers
             .filter((id) =>
-              !removeLifecycleSet.has(id)
+              !removeLifecycleSet.has(id) &&
+              (
+                conditionalReachability
+                  .get(id)?.status ===
+                  "reachable" ||
+                conditionalReachability
+                  .get(id)?.status ===
+                  "unresolved"
+              )
             )
             .sort();
 
@@ -1722,6 +2071,9 @@ export function analyzeProgressionActorAccounting(
           scriptedRemovalCoverage,
           immediateDespawnActorIdentifiers,
           conditionalDespawnActorIdentifiers,
+          reachableConditionalDespawnActorIdentifiers,
+          terminalOnlyConditionalDespawnActorIdentifiers,
+          inactiveConditionalDespawnActorIdentifiers,
           uncoveredImmediateDespawnActorIdentifiers,
           unresolvedConditionalDespawnActorIdentifiers,
           quantityComparableGrowths,
@@ -1850,6 +2202,24 @@ export function analyzeProgressionActorAccounting(
       counters.filter(
         (item) =>
           item.unresolvedConditionalDespawnActorIdentifiers
+            .length > 0,
+      ).length,
+    reachableConditionalDespawnCounters:
+      counters.filter(
+        (item) =>
+          item.reachableConditionalDespawnActorIdentifiers
+            .length > 0,
+      ).length,
+    terminalOnlyConditionalDespawnCounters:
+      counters.filter(
+        (item) =>
+          item.terminalOnlyConditionalDespawnActorIdentifiers
+            .length > 0,
+      ).length,
+    inactiveConditionalDespawnCounters:
+      counters.filter(
+        (item) =>
+          item.inactiveConditionalDespawnActorIdentifiers
             .length > 0,
       ).length,
     reconciledFromMatchedActorLifecycle:

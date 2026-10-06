@@ -21,6 +21,7 @@ function selectorEntityType(target: string | undefined): string | undefined {
 
 function fromEffects(
   effects: ReturnType<typeof flattenCommandEffects>,
+  executionRegion?: string,
 ): EntityEventExternalEvidence[] {
   const output: EntityEventExternalEvidence[] = [];
   for (const effect of effects) {
@@ -36,6 +37,9 @@ function fromEffects(
         ? "summon-spawn-event"
         : "event-command",
       ...(entityIdentifier ? { entityIdentifier } : {}),
+      ...(executionRegion === undefined
+        ? {}
+        : { executionRegion }),
       source: effect.source,
     });
   }
@@ -67,9 +71,15 @@ export function deriveEntityEventExternalEvidence(
     }
 
     for (const literal of script.commandLiterals) {
-      output.push(...fromEffects(flattenCommandEffects(
-        analyzeCommand(literal.command, literal.source),
-      )));
+      output.push(...fromEffects(
+        flattenCommandEffects(
+          analyzeCommand(
+            literal.command,
+            literal.source,
+          ),
+        ),
+        literal.executionRegion,
+      ));
     }
   }
 

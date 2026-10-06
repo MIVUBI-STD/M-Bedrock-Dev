@@ -59,6 +59,9 @@ import {
 import {
   analyzeProgressionActorAccounting,
 } from "./progression-actor-accounting-analysis.js";
+import {
+  deriveEntityEventExternalEvidence,
+} from "./entity-event-evidence.js";
 
 export interface InspectionRuntimeAnalysisInput {
   target: InspectTargetProfile;
@@ -274,6 +277,12 @@ export function analyzeInspectionRuntimeState(
       ),
     );
 
+  const entityEventEvidence =
+    deriveEntityEventExternalEvidence(
+      parsedFunctionModels,
+      parsedScriptModels,
+    );
+
   const arenaLifecycle =
     analyzeArenaLifecycleConvergence(
       scriptsFor("arena-lifecycle"),
@@ -331,6 +340,7 @@ export function analyzeInspectionRuntimeState(
         (item) => item.parsed,
       ),
       arenaLifecycle,
+      entityEventEvidence,
     );
   const chunkLifecycle =
     analyzeChunkLifecycle(

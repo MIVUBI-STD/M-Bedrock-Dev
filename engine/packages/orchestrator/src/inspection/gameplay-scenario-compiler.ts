@@ -932,9 +932,9 @@ function runtimeEdgeState(
         return {
           status: "DETECTION_GAP",
           reason:
-            "Counted actor type(s) expose minecraft:despawn or event/group-driven instant-despawn surfaces without source-proven remove reconciliation: " +
+            "Counted actor type(s) have conditional despawn activation that is source-reachable from an engine/sensor/exact external event path, or remains identity/scope unresolved, without source-proven remove reconciliation: " +
             actors.join(", ") +
-            ". This remains explicit gray-zone evidence because activation/timing may be conditional; resolve event/state reachability before runtime escalation.",
+            ". Terminal-only and statically inactive conditional despawn paths are excluded from this gray-zone; resolve the remaining event/state ownership before runtime escalation.",
         };
       }
       if (
