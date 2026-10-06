@@ -38,7 +38,9 @@ fn one_arg<'a>(command: &str, args: &'a [String]) -> io::Result<&'a str> {
     match args {
         [value] => Ok(value),
         [] => Err(input_error(format!("{command} requires one argument"))),
-        _ => Err(input_error(format!("{command} accepts exactly one argument"))),
+        _ => Err(input_error(format!(
+            "{command} accepts exactly one argument"
+        ))),
     }
 }
 

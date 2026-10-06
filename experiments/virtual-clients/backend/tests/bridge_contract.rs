@@ -26,7 +26,10 @@ fn bridge_binary_round_trips_public_contract() {
     assert!(output.status.success());
 
     let stdout = String::from_utf8(output.stdout).unwrap();
-    let line = stdout.lines().next().expect("bridge must emit one response");
+    let line = stdout
+        .lines()
+        .next()
+        .expect("bridge must emit one response");
     let response: Value = serde_json::from_str(line).unwrap();
 
     assert_eq!(response["schema"], 1);

@@ -54,7 +54,11 @@ fn validate_request(request: &BridgeRequest) -> io::Result<()> {
             "bridge argument count exceeds the protocol limit",
         ));
     }
-    if request.args.iter().any(|value| value.len() > BRIDGE_MAX_ARG_BYTES) {
+    if request
+        .args
+        .iter()
+        .any(|value| value.len() > BRIDGE_MAX_ARG_BYTES)
+    {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
             "bridge argument length exceeds the protocol limit",
@@ -110,9 +114,8 @@ mod tests {
 
     #[test]
     fn bridge_preserves_request_identity_and_public_payload() {
-        let response = handle_bridge_line(
-            r#"{"schema":1,"requestId":42,"command":"policy","args":[]}"#,
-        );
+        let response =
+            handle_bridge_line(r#"{"schema":1,"requestId":42,"command":"policy","args":[]}"#);
         assert!(response.success);
         assert_eq!(response.request_id, Some(42));
         assert!(response.payload.contains("\"schema\": 1"));
@@ -120,9 +123,8 @@ mod tests {
 
     #[test]
     fn bridge_rejects_unknown_protocol_schema() {
-        let response = handle_bridge_line(
-            r#"{"schema":2,"requestId":7,"command":"policy","args":[]}"#,
-        );
+        let response =
+            handle_bridge_line(r#"{"schema":2,"requestId":7,"command":"policy","args":[]}"#);
         assert!(!response.success);
         assert_eq!(response.request_id, Some(7));
         assert!(response.payload.contains("INVALID_INPUT"));
