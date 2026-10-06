@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { RetrievalResult } from "../../../analysis-planner/src/index.js";
-import { compileResourceContext } from "../../src/workflow/resource-context.js";
+import { compileResourceContext, compileSectionContext } from "../../src/workflow/resource-context.js";
 
 const selection: readonly RetrievalResult[] = [
   {
@@ -82,5 +82,57 @@ describe("compileResourceContext", () => {
     expect(() => compileResourceContext(selection, 0)).toThrow(
       /positive integer/,
     );
+  });
+});
+
+describe("compileSectionContext", () => {
+  it("preserves exact document range and ranking provenance", () => {
+    const context = compileSectionContext([
+      {
+        section: {
+          id: "document.analysis.mandatory-audit-procedure#prove",
+          documentId: "document.analysis.mandatory-audit-procedure",
+          path: "docs/analysis/mandatory-audit-procedure.md",
+          heading: "PROVE",
+          level: 2,
+          anchor: "prove",
+          startLine: 100,
+          endLine: 180,
+        },
+        score: {
+          documentScope: 30,
+          heading: 40,
+          semantic: 0,
+          level: 8,
+          total: 78,
+        },
+        reasons: [
+          "document-scope",
+          "heading-match",
+          "heading-level:2",
+        ],
+      },
+    ]);
+
+    expect(context).toEqual({
+      items: [
+        {
+          id: "document.analysis.mandatory-audit-procedure#prove",
+          documentId: "document.analysis.mandatory-audit-procedure",
+          path: "docs/analysis/mandatory-audit-procedure.md",
+          heading: "PROVE",
+          anchor: "prove",
+          startLine: 100,
+          endLine: 180,
+          score: 78,
+          reasons: [
+            "document-scope",
+            "heading-match",
+            "heading-level:2",
+          ],
+        },
+      ],
+      omitted: 0,
+    });
   });
 });
