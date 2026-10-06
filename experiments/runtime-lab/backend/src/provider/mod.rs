@@ -24,6 +24,7 @@ pub use workstation::VmwareWorkstationProvider;
 pub(crate) const READY_SNAPSHOT: &str = "QA_READY";
 pub(crate) const CLIENT_VCPUS: &str = "2";
 const COMMAND_TIMEOUT: Duration = Duration::from_secs(45);
+pub(crate) const DISK_STATE_TIMEOUT: Duration = Duration::from_secs(180);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -213,6 +214,18 @@ where
     I: IntoIterator<Item = S>,
     S: AsRef<OsStr>,
 {
+    command_output_with_timeout(program, args, COMMAND_TIMEOUT)
+}
+
+pub(crate) fn command_output_with_timeout<I, S>(
+    program: &Path,
+    args: I,
+    timeout: Duration,
+) -> io::Result<String>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+{
     let mut child = Command::new(program)
         .args(args)
         .stdout(Stdio::piped())
@@ -226,12 +239,12 @@ where
             return require_success(program, output.status.success(), &output.stdout, &output.stderr);
         }
 
-        if started.elapsed() >= COMMAND_TIMEOUT {
+        if started.elapsed() >= timeout {
             let _ = child.kill();
             let _ = child.wait();
             return Err(io::Error::new(
                 io::ErrorKind::TimedOut,
-                format!("{} exceeded {}s timeout", program.display(), COMMAND_TIMEOUT.as_secs()),
+                format!("{} exceeded {}s timeout", program.display(), timeout.as_secs()),
             ));
         }
 
