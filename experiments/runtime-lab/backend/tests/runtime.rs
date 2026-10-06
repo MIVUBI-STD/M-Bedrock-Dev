@@ -57,7 +57,6 @@ fn native_client_cannot_use_vm_clean_state_actions() {
     );
 }
 
-
 #[test]
 fn virtual_count_contract_is_one_to_three() {
     let lab = RuntimeLab;
