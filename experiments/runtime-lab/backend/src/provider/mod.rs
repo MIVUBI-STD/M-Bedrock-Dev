@@ -41,6 +41,7 @@ pub trait Provider {
     fn host_working_sets_mb(&self) -> io::Result<Vec<(ClientId, u64)>> {
         Ok(host_working_sets_mb())
     }
+    fn guest_tools_ready(&self, client: ClientId) -> io::Result<Option<bool>>;
     fn identity_key(&self, client: ClientId) -> io::Result<Option<String>>;
     fn status(&self, client: ClientId) -> io::Result<ClientState>;
     fn start(&self, client: ClientId) -> io::Result<ClientState>;
