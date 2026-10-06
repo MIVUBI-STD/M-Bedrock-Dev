@@ -350,11 +350,6 @@ pub fn arrange_with_slots(request: WindowLayoutRequest) -> io::Result<Arrangemen
     })
 }
 
-#[cfg(target_os = "windows")]
-pub fn arrange(request: WindowLayoutRequest) -> io::Result<WindowArrangementResult> {
-    arrange_with_slots(request).map(|execution| execution.result)
-}
-
 #[cfg(not(target_os = "windows"))]
 pub fn arrange(request: WindowLayoutRequest) -> io::Result<WindowArrangementResult> {
     validate_request(&request)?;
