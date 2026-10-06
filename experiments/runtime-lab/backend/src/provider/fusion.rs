@@ -1,5 +1,5 @@
 use super::{
-    apply_virtual_hardware_policy, base_vmx_path, client_vmx_path, command_output, command_output_with_timeout, ensure_parent, has_suspend_state, listed_as_running, read_vmx_memory, read_vmx_value,
+    apply_virtual_hardware_policy, base_vmx_path, client_vmx_path, command_output, command_output_with_timeout, ensure_parent, guest_tools_state_ready, has_suspend_state, listed_as_running, read_vmx_memory, vm_identity_key,
     promote_staging_vm, remove_vm_container, snapshot_list_contains, staging_client_vmx_path,
     wait_for_state, MemoryMode, Provider, DISK_STATE_TIMEOUT, READY_SNAPSHOT,
 };
@@ -149,24 +149,14 @@ impl Provider for VmwareFusionProvider {
             self.vmrun(),
             ["-T", "fusion", "checkToolsState", vmx.to_string_lossy().as_ref()],
         ) {
-            Ok(state) => Ok(Some(state.to_ascii_lowercase().contains("running"))),
+            Ok(state) => Ok(Some(guest_tools_state_ready(&state))),
             Err(_) => Ok(None),
         }
     }
 
     fn identity_key(&self, client: ClientId) -> io::Result<Option<String>> {
         let vmx = self.require_client(client)?;
-        let uuid = read_vmx_value(&vmx, "uuid.bios")?;
-        let mac = read_vmx_value(&vmx, "ethernet0.generatedAddress")?;
-
-        Ok(match (uuid, mac) {
-            (None, None) => None,
-            (uuid, mac) => Some(format!(
-                "{}|{}",
-                uuid.unwrap_or_default(),
-                mac.unwrap_or_default()
-            )),
-        })
+        vm_identity_key(&vmx)
     }
 
     fn start(&self, client: ClientId) -> io::Result<ClientState> {
