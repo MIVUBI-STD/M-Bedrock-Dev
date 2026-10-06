@@ -59,8 +59,12 @@ export function saveWindowLayoutPreference(preference: WindowLayoutPreference): 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(preference));
 }
 
+export function defaultWindowLayoutPreference(): WindowLayoutPreference {
+  return structuredClone(DEFAULT_WINDOW_LAYOUT);
+}
+
 export function resetWindowLayoutPreference(): WindowLayoutPreference {
-  const preference = structuredClone(DEFAULT_WINDOW_LAYOUT);
+  const preference = defaultWindowLayoutPreference();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(preference));
   return preference;
 }
