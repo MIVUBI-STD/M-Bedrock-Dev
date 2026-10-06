@@ -4,6 +4,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use crate::persistence::{read_text_recovering, write_text_transactional};
+
 pub const CURRENT_RUNTIME_SCHEMA: u32 = 1;
 pub const SCHEMA_FILE: &str = "runtime-schema.json";
 
@@ -44,7 +46,7 @@ pub fn inspect_runtime_schema(root: &Path) -> SchemaStatus {
         };
     }
 
-    let Ok(raw) = fs::read_to_string(path) else {
+    let Ok(raw) = read_text_recovering(path) else {
         return SchemaStatus {
             state: SchemaState::Invalid,
             schema: None,
@@ -76,7 +78,7 @@ pub fn ensure_runtime_schema(root: &Path) -> io::Result<RuntimeSchema> {
     let path = schema_path(root);
 
     if path.is_file() {
-        let raw = fs::read_to_string(&path)?;
+        let raw = read_text_recovering(&path)?;
         let schema: RuntimeSchema = serde_json::from_str(&raw).map_err(|error| {
             io::Error::new(
                 io::ErrorKind::InvalidData,
@@ -119,11 +121,9 @@ fn migrate_runtime_schema(_root: &Path, schema: RuntimeSchema) -> io::Result<Run
 }
 
 fn write_schema_atomically(path: &Path, schema: &RuntimeSchema) -> io::Result<()> {
-    let temporary = path.with_extension("json.tmp");
     let json = serde_json::to_string_pretty(schema)
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
-    fs::write(&temporary, format!("{json}\n"))?;
-    fs::rename(temporary, path)
+    write_text_transactional(path, &format!("{json}\n"))
 }
 
 #[cfg(test)]

@@ -17,6 +17,7 @@ use url::Url;
 use crate::{
     client::{ClientId, ClientState},
     paths::{runtime_root, update_staging_root},
+    persistence::{read_text_recovering, write_text_transactional},
     provider::current_platform_provider,
     schema::{inspect_runtime_schema, SchemaState},
 };
@@ -374,21 +375,17 @@ fn staged_update() -> io::Result<Option<StagedUpdate>> {
     if !path.is_file() {
         return Ok(None);
     }
-    let raw = fs::read_to_string(path)?;
+    let raw = read_text_recovering(&path)?;
     let staged = serde_json::from_str(&raw)
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
     Ok(Some(staged))
 }
 
 fn write_staged_update(staged: &StagedUpdate) -> io::Result<()> {
-    let root = update_staging_root()?;
-    fs::create_dir_all(&root)?;
     let path = staged_metadata_path()?;
-    let temporary = path.with_extension("json.tmp");
     let json = serde_json::to_string_pretty(staged)
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
-    fs::write(&temporary, format!("{json}\n"))?;
-    fs::rename(temporary, path)
+    write_text_transactional(&path, &format!("{json}\n"))
 }
 
 fn validate_platform_manifest(

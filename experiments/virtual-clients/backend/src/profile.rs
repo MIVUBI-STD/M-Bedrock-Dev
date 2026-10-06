@@ -8,6 +8,7 @@ use crate::{
         base_profile_path_for_version, base_vmx_path_for_version, client_profile_path,
         validate_version_segment,
     },
+    persistence::{read_text_recovering, write_text_transactional},
 };
 
 pub const BASE_PROFILE_SCHEMA: u32 = 2;
@@ -96,7 +97,7 @@ pub fn base_profile_path() -> io::Result<PathBuf> {
 
 pub fn load_base_profile() -> io::Result<BaseProfile> {
     let path = base_profile_path()?;
-    let raw = fs::read_to_string(&path)?;
+    let raw = read_text_recovering(&path)?;
     let profile: BaseProfile = serde_json::from_str(&raw).map_err(|error| {
         io::Error::new(
             io::ErrorKind::InvalidData,
@@ -139,19 +140,9 @@ pub fn write_verified_base_profile(
     };
 
     let path = base_profile_path_for_version(&native.version)?;
-    let parent = path.parent().ok_or_else(|| {
-        io::Error::new(
-            io::ErrorKind::InvalidInput,
-            "Base profile path has no parent directory",
-        )
-    })?;
-    fs::create_dir_all(parent)?;
-
-    let temporary = path.with_extension("json.tmp");
     let json = serde_json::to_string_pretty(&profile)
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
-    fs::write(&temporary, format!("{json}\n"))?;
-    fs::rename(&temporary, &path)?;
+    write_text_transactional(&path, &format!("{json}\n"))?;
 
     Ok(profile)
 }
@@ -178,18 +169,9 @@ pub fn write_client_profile(client: ClientId, base_version: &str) -> io::Result<
 fn write_client_profile_data(client: ClientId, profile: &ClientProfile) -> io::Result<()> {
     validate_client_profile_identities(profile)?;
     let path = client_profile_path(client.as_str())?;
-    let parent = path.parent().ok_or_else(|| {
-        io::Error::new(
-            io::ErrorKind::InvalidInput,
-            "client profile path has no parent",
-        )
-    })?;
-    fs::create_dir_all(parent)?;
-    let temporary = path.with_extension("json.tmp");
     let json = serde_json::to_string_pretty(profile)
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
-    fs::write(&temporary, format!("{json}\n"))?;
-    fs::rename(temporary, path)
+    write_text_transactional(&path, &format!("{json}\n"))
 }
 
 pub fn write_verified_client_identities(
@@ -206,7 +188,7 @@ pub fn write_verified_client_identities(
 
 pub fn load_client_profile(client: ClientId) -> io::Result<ClientProfile> {
     let path = client_profile_path(client.as_str())?;
-    let raw = fs::read_to_string(&path)?;
+    let raw = read_text_recovering(&path)?;
     let profile: ClientProfile = serde_json::from_str(&raw).map_err(|error| {
         io::Error::new(
             io::ErrorKind::InvalidData,

@@ -4,6 +4,7 @@ mod doctor;
 mod error;
 mod guest;
 mod paths;
+mod persistence;
 mod profile;
 mod provider;
 mod resources;
