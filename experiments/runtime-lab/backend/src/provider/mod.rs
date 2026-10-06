@@ -299,7 +299,7 @@ pub(crate) fn snapshot_list_contains(list_output: &str, name: &str) -> bool {
     list_output.lines().map(str::trim).any(|line| line == name)
 }
 
-pub(crate) fn apply_client_policy(vmx: &Path) -> io::Result<()> {
+pub(crate) fn apply_virtual_hardware_policy(vmx: &Path) -> io::Result<()> {
     let source = fs::read_to_string(vmx)?;
     let mut lines: Vec<String> = source.lines().map(ToOwned::to_owned).collect();
 
@@ -309,6 +309,7 @@ pub(crate) fn apply_client_policy(vmx: &Path) -> io::Result<()> {
         "memsize",
         &VIRTUAL_MEMORY_LIMIT_MB.to_string(),
     );
+    set_vmx_value(&mut lines, "answer.msg.uuid.altered", "I copied it");
 
     let mut output = lines.join("\n");
     output.push('\n');
@@ -381,4 +382,23 @@ mod tests {
         assert!(snapshot_list_contains(output, "QA_READY"));
         assert!(!snapshot_list_contains(output, "QA"));
     }
+}
+
+
+pub(crate) fn cleanup_staging() -> io::Result<()> {
+    let staging = runtime_root()?.join("staging");
+    if !staging.exists() {
+        return Ok(());
+    }
+
+    for entry in fs::read_dir(&staging)? {
+        let path = entry?.path();
+        if path.is_dir() {
+            fs::remove_dir_all(path)?;
+        } else {
+            fs::remove_file(path)?;
+        }
+    }
+
+    Ok(())
 }
