@@ -20,6 +20,7 @@
   export let busy: string;
   export let onStartAll: () => void | Promise<void>;
   export let onArrange: () => void | Promise<void>;
+  export let onConfigureLayout: () => void;
   export let onStopAll: () => void | Promise<void>;
   export let onPrimary: (client: ClientStatus, available: ClientLifecycleActions) => void | Promise<void>;
   export let onRestart: (client: ClientId) => void | Promise<void>;
@@ -82,9 +83,12 @@
       </button>
     {/if}
     {#if runningVirtuals > 0}
-      <button class="secondary" disabled={Boolean(busy)} on:click={onArrange}>
-        {busy === "arrange" ? "Arranging…" : "Arrange windows"}
-      </button>
+      <div class="split-action">
+        <button class="secondary" disabled={Boolean(busy)} on:click={onArrange}>
+          {busy === "arrange" ? "Arranging…" : "Arrange"}
+        </button>
+        <button class="secondary split-menu" disabled={Boolean(busy)} aria-label="Window Layout settings" on:click={onConfigureLayout}>⌄</button>
+      </div>
     {/if}
     {#if canStopAll}
       <button class="secondary" disabled={Boolean(busy)} on:click={onStopAll}>
