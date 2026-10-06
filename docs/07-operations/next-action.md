@@ -1,3 +1,27 @@
+## Virtual Clients Minecraft launch continuation
+
+REMOTE_GITHUB source now has a narrow authenticated Minecraft launch capability
+for Virtual guests and an idempotent Native desktop launcher.
+
+Before adding a Start Session convenience action, prove the launch boundary:
+- confirm the installed Guest Agent execution account/session can start Minecraft
+  Education in the interactive Windows user session; a session-0/service launch
+  that creates no visible app is a blocker;
+- confirm actual Start-menu/AppID and process naming for the canonical Minecraft
+  Education package;
+- confirm repeated launch requests do not create duplicate Minecraft instances;
+- confirm Start/Resume, Restart and QA_READY Reset open Minecraft and the VM
+  console while first-time OOBE Start remains manual;
+- confirm protocol-v1 guests remain diagnosable but are routed to the existing
+  rebuild/reprovision path because protocol v2 is required for daily auto-launch;
+- confirm launch failure leaves the verified VM running and presents Launch
+  Minecraft retry rather than rolling back the VM.
+
+Do not introduce a generic remote shell, arbitrary executable launch endpoint,
+credential automation, or background launcher daemon. If interactive-session
+launch fails, fix that Windows-session boundary in the Guest Agent owner with the
+smallest explicit mechanism supported by observed target-machine evidence.
+
 ## Virtual Clients desktop orchestration continuation
 
 Window Layout and Screen Overlay now have one source owner chain:
