@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { buildResourceCatalog } from "./resource-catalog.mjs";
 import { buildGraph, documentGraphRootId } from "./graph.mjs";
+import { buildDocumentSectionIndex } from "./document-sections.mjs";
 
 const failures = [];
 
@@ -134,6 +135,7 @@ const resourceIdPattern =
 try {
   const catalog = buildResourceCatalog();
   const graph = buildGraph();
+  const sectionIndex = buildDocumentSectionIndex();
 
   const ids = new Set();
   const paths = new Set();
@@ -235,6 +237,33 @@ try {
     byId.set(resource.id, resource);
   }
 
+  const sectionIds = new Set();
+  for (const section of sectionIndex.sections) {
+    if (sectionIds.has(section.id)) {
+      failures.push("Document Section id is duplicated: " + section.id);
+    }
+    sectionIds.add(section.id);
+
+    const parent = byId.get(section.documentId);
+    if (parent?.class !== "DOCUMENT") {
+      failures.push(
+        "Document Section parent is not a registered DOCUMENT: " +
+          section.id,
+      );
+    }
+    if (
+      !Number.isInteger(section.startLine) ||
+      !Number.isInteger(section.endLine) ||
+      section.startLine < 1 ||
+      section.endLine < section.startLine
+    ) {
+      failures.push("Document Section has invalid range: " + section.id);
+    }
+    if (!section.heading.trim() || !section.anchor.trim()) {
+      failures.push("Document Section lacks heading/anchor: " + section.id);
+    }
+  }
+
   const edgeKeys = new Set();
   for (const edge of graph.edges) {
     const key = edge.from + "|" + edge.type + "|" + edge.to;
@@ -248,6 +277,22 @@ try {
     }
     if (!byId.has(edge.to)) {
       failures.push("Graph edge target is not registered: " + edge.to);
+    }
+  }
+
+  const bindingRegistryPath =
+    "engine/reliability/catalogs/knowledge-detector-bindings.json";
+  if (existsSync(bindingRegistryPath)) {
+    const bindingRegistry = JSON.parse(
+      readFileSync(bindingRegistryPath, "utf8"),
+    );
+    if ((bindingRegistry.bindings ?? []).length > 0) {
+      if (!graph.edges.some((edge) => edge.type === "USES")) {
+        failures.push("Knowledge binding Graph lacks USES edges.");
+      }
+      if (!graph.edges.some((edge) => edge.type === "VALIDATES")) {
+        failures.push("Knowledge binding Graph lacks VALIDATES edges.");
+      }
     }
   }
 
