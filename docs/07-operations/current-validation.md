@@ -1,5 +1,35 @@
 ## 2026-10-06 — Virtual Clients action admission and payload validation
 
+
+## Virtual Clients naming and admission modularity — source review (2026-10-06)
+
+Baseline: Experimental `47b86efc62933c34da56af9d3a428baf634d58cb`.
+Execution context: REMOTE_GITHUB. User authorized source edits and commit through
+GitHub; no Codex/Work task or CI run is part of this delivery.
+
+Implemented source:
+- Existing pure lifecycle policy extracted into private lifecycle_admission.rs.
+- Runtime remains observation/provider/operation-lock owner; UI projection and
+  mutation enforcement import the same evaluator through the existing crate.
+- Eight existing policy tests moved without changing their assertions; sixteen
+  provider/orchestration tests remain in runtime.rs. Two policy edge tests added.
+- Recreate, recovery point saved and setup-complete terms aligned in presentation.
+- Save confirmation describes the signed-in observation before stopping the VM.
+- Two setup naming tests added; affected existing label expectations updated.
+
+Static checks performed during preparation: four extracted production function
+bodies are unchanged after normalizing renamed identifiers; observation-collector
+body is unchanged; admission module has no provider/filesystem/guest dependency;
+existing Rust test count is preserved across the split before the two additions.
+These are source/text checks, not Rust compilation or test execution.
+
+NOT RUN: Cargo check/test/fmt, frontend typecheck/build/Vitest, interactive dialog
+flows, VMware/Minecraft execution and performance measurement. The four new tests
+and moved tests are executable specifications, not PASS evidence. Public contract
+schema, command names and persisted formats were not changed. Backend-origin
+progress events remain unimplemented; source modularity does not close that gap.
+
+
 Branch: `Experimental`. Parent source:
 `df45f6e8aceab41e9b0364a011e0155bcf1bb02d`.
 

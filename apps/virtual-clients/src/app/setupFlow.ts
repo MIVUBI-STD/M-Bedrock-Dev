@@ -93,7 +93,7 @@ const flows: Record<SetupAction, SetupExperience> = {
   REPROVISION_VIRTUALS: {
     owner: "CLIENTS",
     phase: "CLIENTS",
-    title: "Refresh outdated clients",
+    title: "Recreate outdated clients",
     description: "One or more virtual clients no longer match the current environment. Recreate only the affected clients.",
     primaryLabel: "Review clients",
     steps: [],
@@ -126,7 +126,7 @@ const flows: Record<SetupAction, SetupExperience> = {
   READY: {
     owner: "APP",
     phase: "READY",
-    title: "Virtual Clients is ready",
+    title: "Setup complete",
     description: "Setup is complete. Normal use starts from Clients.",
     primaryLabel: "Open clients",
     steps: [],

@@ -149,6 +149,7 @@ Use this before broad repository search.
 | Structural/internal schemas | engine/schemas/ |
 | Virtual Clients desktop presentation / typed Tauri boundary | apps/virtual-clients/ |
 | Virtual Clients VM lifecycle, setup, resource, identity, recovery, support, and update authority | experiments/virtual-clients/backend/ |
+| Virtual Clients pure lifecycle eligibility / action admission | experiments/virtual-clients/backend/src/lifecycle_admission.rs |
 | Virtual Clients guest preparation / Guest Agent installation | experiments/virtual-clients/guest/ |
 | Virtual Clients native target acceptance evidence | experiments/virtual-clients/acceptance/ |
 | Thin user interfaces | apps/ |

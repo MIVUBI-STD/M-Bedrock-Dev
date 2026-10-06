@@ -16,10 +16,10 @@ export function actionLabel(action: SetupAction): string {
     FINALIZE_BASE: "Finish environment setup",
     REBUILD_BASE: "Repair virtual environment",
     PROVISION_VIRTUALS: "Create virtual clients",
-    REPROVISION_VIRTUALS: "Refresh virtual clients",
+    REPROVISION_VIRTUALS: "Recreate outdated clients",
     VERIFY_IDENTITIES: "Check virtual clients",
     CREATE_READY_SNAPSHOTS: "Finish account setup",
-    READY: "Ready to use",
+    READY: "Setup complete",
   };
   return labels[action];
 }
@@ -60,7 +60,7 @@ export function clientDisplayName(id: ClientStatus["id"]): string {
 }
 
 export function recoveryLabel(value: boolean | null): string {
-  if (value === true) return "Recovery point ready";
+  if (value === true) return "Recovery point saved";
   if (value === false) return "Recovery point not saved";
   return "Recovery point unknown";
 }
@@ -74,7 +74,7 @@ export function issueLabel(issue: HealthIssue): string {
     BASE_RUNNING: "Virtual environment must be stopped before setup can continue",
     BASE_STATE_UNKNOWN: "Virtual environment setup status could not be confirmed",
     BASE_FINALIZATION_INTERRUPTED: "Virtual environment setup was interrupted",
-    BASE_PROFILE_MISMATCH: "Minecraft Education was updated and virtual clients need refreshing",
+    BASE_PROFILE_MISMATCH: "The virtual environment no longer matches this PC and needs rebuilding",
     VIRTUAL_NOT_PROVISIONED: "Virtual client has not been created yet",
     VIRTUAL_LINEAGE_MISMATCH: "Virtual client is using an outdated Minecraft environment",
     IDENTITY_PROOF_MISSING: "Virtual client identity has not been checked yet",

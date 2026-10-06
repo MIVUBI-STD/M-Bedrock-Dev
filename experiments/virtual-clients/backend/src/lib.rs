@@ -9,6 +9,7 @@ mod doctor;
 mod error;
 mod guest;
 mod journal;
+mod lifecycle_admission;
 mod paths;
 mod persistence;
 mod policy;

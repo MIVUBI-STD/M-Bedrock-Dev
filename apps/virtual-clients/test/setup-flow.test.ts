@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { actionLabel } from "../src/view-model.js";
 import { setupExperience, setupPhaseIndex } from "../src/app/setupFlow.js";
 
 describe("Virtual Clients first-run presentation", () => {
@@ -19,5 +20,15 @@ describe("Virtual Clients first-run presentation", () => {
     expect(setupPhaseIndex("REGISTER_BASE")).toBe(1);
     expect(setupPhaseIndex("PROVISION_VIRTUALS")).toBe(2);
     expect(setupPhaseIndex("CREATE_READY_SNAPSHOTS")).toBe(3);
+  });
+  it("uses one recreation term in setup navigation and guidance", () => {
+    expect(actionLabel("REPROVISION_VIRTUALS")).toBe("Recreate outdated clients");
+    expect(setupExperience("REPROVISION_VIRTUALS").title).toBe(actionLabel("REPROVISION_VIRTUALS"));
+    expect(setupExperience("REPROVISION_VIRTUALS").owner).toBe("CLIENTS");
+  });
+
+  it("labels completed setup without claiming gameplay readiness", () => {
+    expect(actionLabel("READY")).toBe("Setup complete");
+    expect(setupExperience("READY").title).toBe(actionLabel("READY"));
   });
 });

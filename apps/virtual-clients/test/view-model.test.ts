@@ -51,7 +51,7 @@ describe("Virtual Clients presentation projection", () => {
   it("presents internal states in user-facing language", () => {
     expect(stateLabel("NOT_PROVISIONED")).toBe("Not created");
     expect(clientDisplayName("Virtual-03")).toBe("Virtual 3");
-    expect(recoveryLabel(true)).toBe("Recovery point ready");
+    expect(recoveryLabel(true)).toBe("Recovery point saved");
     expect(blockerLabel("READY_SNAPSHOT_MISSING")).toBe("Save a recovery point first");
   });
 
@@ -62,7 +62,7 @@ describe("Virtual Clients presentation projection", () => {
         severity: "BLOCKER",
         client: null,
       }),
-    ).toMatch(/Minecraft Education was updated/i);
+    ).toMatch(/virtual environment.*needs rebuilding/i);
     expect(
       issueLabel({
         code: "READY_SNAPSHOT_MISSING",
@@ -74,7 +74,7 @@ describe("Virtual Clients presentation projection", () => {
 
   it("uses backend setup action as the only setup decision", () => {
     expect(actionLabel("VERIFY_IDENTITIES")).toBe("Check virtual clients");
-    expect(actionLabel("READY")).toBe("Ready to use");
+    expect(actionLabel("READY")).toBe("Setup complete");
     expect(setupHint("FINALIZE_BASE")).not.toMatch(/sysprep|provenance|base/i);
   });
 

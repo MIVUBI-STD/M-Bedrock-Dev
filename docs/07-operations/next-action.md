@@ -173,6 +173,32 @@ Stages 3–4 remain unimplemented. Execution verification remains pending for
 Stages 1–2.
 Do not automatically expand scope beyond this bounded source delivery.
 
+### Naming and admission ownership checkpoint (2026-10-06)
+
+Explicit continuation scope: make names unambiguous and touched responsibilities
+modular without adding a new runtime system.
+
+- Goal: separate pure lifecycle eligibility from observation/provider work and
+  align recreation, recovery-point and setup-completion presentation.
+- First wrong owners: policy embedded in runtime orchestration; destructive
+  recreation described as Refresh in setup presentation.
+- Implementation: private lifecycle_admission.rs owns the existing pure policy;
+  runtime collects observations and orchestrates provider operations. Eight
+  existing policy tests move with their owner. Two Native/schema edge cases are
+  added. Public commands/enums and stored data formats remain unchanged.
+- UI: Recreate wording is consistent across setup/menu/confirmation. Recovery
+  point saved no longer implies gameplay readiness; setup completion has the
+  same label in navigation and guidance. The save dialog refers to observing
+  the signed-in menu before stopping the client, matching the stopped-state gate.
+- Proof: source review and normalized function-body comparison; four new
+  regression cases written (two Rust, two frontend), not executed.
+- STOP: one atomic source commit and exact remote content verification. No
+  runtime/build/test execution or CI run is included.
+
+This is a bounded maintainability delivery, not closure of remaining Stage 2
+observability. Backend-origin progress, measured status-read performance,
+first-boot usability and compatibility work remain pending as listed above.
+
 ### Source-grounded findings (review baseline, before Stage 1 changes)
 
 1. **Incomplete batch failure cleanup.**

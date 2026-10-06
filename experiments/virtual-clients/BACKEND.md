@@ -27,7 +27,8 @@ Rust owns runtime truth.
 
 ## Ownership
 
-- `runtime.rs` — lifecycle orchestration and mutation serialization.
+- `runtime.rs` — observation collection, lifecycle orchestration and mutation serialization.
+- `lifecycle_admission.rs` — pure lifecycle eligibility shared by action projection and execution; no provider, filesystem or Guest Agent access.
 - `profile.rs` — Native Minecraft detection, Base provenance and version parity.
 - `guest.rs` — read-only Guest Agent protocol.
 - `resources.rs` — host pressure policy.
@@ -259,7 +260,7 @@ Mutation operations write a bounded local history of the last 200 operations. Re
 
 ## Lifecycle action projection
 
-`actions` exposes the lifecycle state machine as read-only per-Virtual action availability. Frontend controls must consume this projection instead of recreating Start/Suspend/Stop/Open/Restart/Set-ready/Reset/Reprovision state rules. The projection and mutation execution use the same `action_admission` policy over observed `LifecycleFacts`. Facts are collected once per client for action projection and collected again under the operation lock before execution. They are never persisted as a second lifecycle state.
+`actions` exposes the lifecycle state machine as read-only per-Virtual action availability. Frontend controls must consume this projection instead of recreating Start/Suspend/Stop/Open/Restart/Set-ready/Reset/Reprovision state rules. The projection and mutation execution use the same `lifecycle_admission.rs::evaluate_lifecycle_admission` policy over observed `LifecycleFacts`. Facts are collected once per client for action projection and collected again under the operation lock before execution. They are never persisted as a second lifecycle state.
 
 Admission includes power state, runtime schema, Base/client compatibility, saved VM identity, duplicate UUID/MAC detection, recovery-point availability, verified identity provenance, Base finalization for reprovision, and memory admission where applicable. Stop/Suspend do not depend on Minecraft compatibility; recreation can recover a stale client from a healthy finalized/stopped Base.
 
@@ -270,3 +271,26 @@ Every frontend command response now requires a payload validator in addition to 
 STOPPED is displayed as Stopped, Native as Managed externally, and completed setup as Setup complete. These labels do not establish Minecraft gameplay readiness. Returning to the visible Clients page refreshes backend truth; no periodic heavyweight diagnostic polling or new persisted state is introduced.
 
 
+## Naming and module boundary
+
+The admission module is private to the existing crate. It owns power-state
+validation and the combined admission decision. Runtime collects
+`LifecycleFacts`, calls `require_lifecycle_admission` before mutation, and uses
+`evaluate_lifecycle_admission` for the read-only action projection. The requiring
+function delegates to that same evaluator; it does not own a second policy.
+Eight existing policy regression tests live beside this owner. Runtime tests
+continue to cover provider orchestration and rollback.
+
+Presentation uses one term per operation:
+- Recreate virtual client: replace the selected client from Base; destructive.
+- Save recovery point: save the configured checkpoint after account setup.
+- Restore recovery point: revert to that checkpoint, discarding later changes.
+- Refresh: retrieve current displayed state, not recreate a client.
+- Setup complete: setup milestones finished, not proof of a playable session.
+- Pause / Paused / Resume: UI wording for suspend / SUSPENDED / start-resume;
+  the guest is not an active multiplayer participant while paused.
+
+Machine-facing schema-1 command names, state enums and QA_READY snapshot identity
+remain unchanged. Presentation labels translate those identifiers; no command
+aliases or second persisted state are introduced. Backend-origin progress events
+and measured lightweight status performance remain separate pending work.

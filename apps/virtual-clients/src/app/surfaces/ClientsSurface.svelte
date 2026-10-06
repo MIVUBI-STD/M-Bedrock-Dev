@@ -65,7 +65,7 @@
 {:else if setupAction === "REPROVISION_VIRTUALS"}
   <section class="setup-client-banner">
     <div>
-      <span class="eyebrow">SETUP · REFRESH</span>
+      <span class="eyebrow">SETUP · RECREATE</span>
       <strong>One or more clients need to be recreated</strong>
       <small>Use Recreate virtual client only on affected clients. This removes that client's saved Windows and Minecraft session.</small>
     </div>
