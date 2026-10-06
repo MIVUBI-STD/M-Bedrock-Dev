@@ -1,5 +1,8 @@
 import type { ScriptEconomyEvidence } from "../domains/economy/economy-evidence.js";
-import type { ScriptProgressionCounterEvidence } from "../domains/progression/progression-counter-evidence.js";
+import type {
+  ScriptProgressionActorSpawnEvidence,
+  ScriptProgressionCounterEvidence,
+} from "../domains/progression/progression-counter-evidence.js";
 import type { ScriptChunkLifecycleEvidence } from "../domains/chunk/chunk-lifecycle-evidence.js";
 import type { ScriptCombatLifecycleEvidence } from "../domains/combat/combat-lifecycle-evidence.js";
 import type { ScriptInventoryLifecycleEvidence } from "../domains/inventory/inventory-lifecycle-evidence.js";
@@ -465,6 +468,7 @@ export interface ParsedScriptFile {
   combatLifecycleEvidence?: ScriptCombatLifecycleEvidence[];
   economyEvidence?: ScriptEconomyEvidence[];
   progressionCounterEvidence?: ScriptProgressionCounterEvidence[];
+  progressionActorSpawnEvidence?: ScriptProgressionActorSpawnEvidence[];
   inventoryLifecycleEvidence?: ScriptInventoryLifecycleEvidence[];
   globalLeaseEvidence?: ScriptGlobalLeaseEvidence[];
   persistentDataLifecycleEvidence?: PersistentDataLifecycleEvidence[];

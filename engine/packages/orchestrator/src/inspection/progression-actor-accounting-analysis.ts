@@ -11,6 +11,7 @@ export type ProgressionCounterKind =
 export type ProgressionCounterStatus =
   | "reconciled-from-matched-actor-lifecycle"
   | "actor-identity-mismatch"
+  | "spawn-quantity-mismatch"
   | "missing-reconciliation"
   | "unresolved";
 
@@ -23,6 +24,14 @@ export interface ProgressionCounterAssessment {
   readonly replacementWrites: number;
   readonly completionChecks: number;
   readonly lifecycleLinkedDecrements: number;
+  readonly quantityComparableGrowths: number;
+  readonly quantityMatchedGrowths: number;
+  readonly quantityMismatchGrowths: number;
+  readonly spawnQuantityStatus:
+    | "matched"
+    | "mismatch"
+    | "unresolved"
+    | "not-applicable";
   readonly actorAccountingCandidate: boolean;
   readonly spawnLinkedActorIdentifiers:
     readonly string[];
@@ -44,6 +53,7 @@ export interface ProgressionActorAccountingAnalysis {
     readonly ProgressionCounterAssessment[];
   readonly provenMissingReconciliation: number;
   readonly provenActorIdentityMismatch: number;
+  readonly provenSpawnQuantityMismatch: number;
   readonly reconciledFromMatchedActorLifecycle: number;
   readonly unresolvedCounters: number;
 }
@@ -71,12 +81,23 @@ interface CounterEvidenceRecord {
     | "replacement"
     | "completion-check";
   readonly executionRegion: string;
+  readonly amount?: number;
+  readonly executionShape:
+    | "single"
+    | "conditional"
+    | "repeated"
+    | "unknown";
 }
 
 interface SpawnEvidenceRecord {
   readonly scriptPath: string;
   readonly executionRegion: string;
   readonly actorIdentifier: string;
+  readonly executionShape:
+    | "single"
+    | "conditional"
+    | "repeated"
+    | "unknown";
 }
 
 interface LifecycleActorGuard {
@@ -185,6 +206,12 @@ function scoreboardEvidence(
             executionRegion:
               command.executionRegion ??
               "module",
+            amount:
+              operation === "growth" ||
+              operation === "decrement"
+                ? Math.abs(value)
+                : undefined,
+            executionShape: "unknown",
           });
         }
       }
@@ -211,6 +238,7 @@ function scoreboardEvidence(
         executionRegion:
           command.executionRegion ??
           "module",
+        executionShape: "unknown",
       });
     }
   }
@@ -236,6 +264,9 @@ function variableEvidence(
     operation: item.kind,
     executionRegion:
       item.executionRegion,
+    amount: item.amount,
+    executionShape:
+      item.executionShape,
   }));
 }
 
@@ -406,32 +437,19 @@ function spawnEvidence(
       script.parsed.source.relativePath;
 
     for (
-      const call of
-        script.parsed.methodCalls
+      const spawn of
+        script.parsed
+          .progressionActorSpawnEvidence ??
+        []
     ) {
-      if (
-        call.method !== "spawnEntity" ||
-        call.executionRegion === undefined
-      ) {
-        continue;
-      }
-      const raw =
-        call.argumentTexts?.[0];
-      if (!raw) continue;
-      const actorIdentifier =
-        normalizeActorIdentifier(raw);
-      if (
-        !/^[a-z0-9_.-]+:[a-z0-9_./-]+$/i.test(
-          actorIdentifier,
-        )
-      ) {
-        continue;
-      }
       output.push({
         scriptPath: path,
         executionRegion:
-          call.executionRegion,
-        actorIdentifier,
+          spawn.executionRegion,
+        actorIdentifier:
+          spawn.actorIdentifier,
+        executionShape:
+          spawn.executionShape,
       });
     }
 
@@ -453,6 +471,7 @@ function spawnEvidence(
           normalizeActorIdentifier(
             match[1],
           ),
+        executionShape: "unknown",
       });
     }
   }
@@ -465,7 +484,9 @@ function spawnEvidence(
         candidate.executionRegion ===
           item.executionRegion &&
         candidate.actorIdentifier ===
-          item.actorIdentifier
+          item.actorIdentifier &&
+        candidate.executionShape ===
+          item.executionShape
       ) === index,
   );
 }
@@ -595,6 +616,71 @@ function actorIdsForDecrement(
   ].sort();
 }
 
+function quantityForGrowth(
+  item: CounterEvidenceRecord,
+  spawns: readonly SpawnEvidenceRecord[],
+): {
+  readonly status:
+    | "matched"
+    | "mismatch"
+    | "unresolved";
+  readonly spawnCount?: number;
+  readonly counterAmount?: number;
+} {
+  if (
+    item.operation !== "growth" ||
+    item.kind !== "variable" ||
+    item.executionShape !== "single" ||
+    item.amount === undefined ||
+    !Number.isInteger(item.amount) ||
+    item.amount <= 0
+  ) {
+    return { status: "unresolved" };
+  }
+
+  const directSpawns =
+    spawns.filter((spawn) =>
+      spawn.scriptPath ===
+        item.scriptPath &&
+      spawn.executionRegion ===
+        item.executionRegion,
+    );
+
+  if (
+    directSpawns.length === 0 ||
+    directSpawns.some(
+      (spawn) =>
+        spawn.executionShape !==
+        "single",
+    )
+  ) {
+    return { status: "unresolved" };
+  }
+
+  const actorIds =
+    new Set(
+      directSpawns.map(
+        (spawn) =>
+          spawn.actorIdentifier,
+      ),
+    );
+  if (actorIds.size !== 1) {
+    return { status: "unresolved" };
+  }
+
+  const spawnCount =
+    directSpawns.length;
+  return {
+    status:
+      spawnCount === item.amount
+        ? "matched"
+        : "mismatch",
+    spawnCount,
+    counterAmount:
+      item.amount,
+  };
+}
+
 function counterKey(
   item: CounterEvidenceRecord,
 ): string {
@@ -693,6 +779,29 @@ export function analyzeProgressionActorAccounting(
           ACTOR_COUNTER_NAME.test(
             first.counterId,
           );
+        const quantityResults =
+          growth.map((item) =>
+            quantityForGrowth(
+              item,
+              spawns,
+            )
+          );
+        const quantityComparableGrowths =
+          quantityResults.filter(
+            (item) =>
+              item.status === "matched" ||
+              item.status === "mismatch",
+          ).length;
+        const quantityMatchedGrowths =
+          quantityResults.filter(
+            (item) =>
+              item.status === "matched",
+          ).length;
+        const quantityMismatchGrowths =
+          quantityResults.filter(
+            (item) =>
+              item.status === "mismatch",
+          ).length;
 
         const spawnLinkedActorIdentifiers =
           [
@@ -763,6 +872,22 @@ export function analyzeProgressionActorAccounting(
               : identityMismatch
                 ? "mismatch" as const
                 : "unresolved" as const;
+        const spawnQuantityStatus =
+          !actorAccountingCandidate
+            ? "not-applicable" as const
+            : quantityMismatchGrowths > 0
+              ? "mismatch" as const
+              : quantityComparableGrowths > 0 &&
+                  quantityMatchedGrowths ===
+                    quantityComparableGrowths
+                ? "matched" as const
+                : "unresolved" as const;
+        const quantityMismatch =
+          actorAccountingCandidate &&
+          growthWrites > 0 &&
+          completionChecks > 0 &&
+          quantityMismatchGrowths > 0 &&
+          replacementWrites === 0;
 
         return {
           scriptId: [
@@ -781,6 +906,10 @@ export function analyzeProgressionActorAccounting(
           completionChecks,
           lifecycleLinkedDecrements:
             linkedDecrements,
+          quantityComparableGrowths,
+          quantityMatchedGrowths,
+          quantityMismatchGrowths,
+          spawnQuantityStatus,
           actorAccountingCandidate,
           spawnLinkedActorIdentifiers,
           lifecycleActorIdentifiers,
@@ -791,9 +920,13 @@ export function analyzeProgressionActorAccounting(
               ? "missing-reconciliation" as const
               : identityMismatch
                 ? "actor-identity-mismatch" as const
-                : matched
-                  ? "reconciled-from-matched-actor-lifecycle" as const
-                  : "unresolved" as const,
+                : quantityMismatch
+                  ? "spawn-quantity-mismatch" as const
+                  : matched &&
+                      spawnQuantityStatus ===
+                        "matched"
+                    ? "reconciled-from-matched-actor-lifecycle" as const
+                    : "unresolved" as const,
           reasons:
             missingReconciliation
               ? [
@@ -807,13 +940,19 @@ export function analyzeProgressionActorAccounting(
                     lifecycleActorIdentifiers.join(", ") +
                     ". No matching actor identity can reconcile the growth path.",
                   ]
-                : matched
+                : quantityMismatch
                   ? [
-                      "Counter growth is source-linked to actor type(s) " +
-                      matchedActorIdentifiers.join(", ") +
-                      ", and an entity-death/entity-remove path guarded for the same actor identity reaches the decrement.",
+                      "A single-invocation actor spawn region has a deterministic literal spawn count that does not match the actor-counter growth amount. The counter can diverge from the population it claims to represent.",
                     ]
-                  : [
+                  : matched &&
+                      spawnQuantityStatus ===
+                        "matched"
+                    ? [
+                        "Counter growth is source-linked to actor type(s) " +
+                        matchedActorIdentifiers.join(", ") +
+                        ", actor quantity matches the direct spawn count, and an entity-death/entity-remove path guarded for the same actor identity reaches the decrement.",
+                      ]
+                    : [
                       linkedDecrements > 0
                         ? "A lifecycle-linked decrement exists, but the selected artifact does not yet prove that it reconciles the same actor identity that caused the counter growth."
                         : decrementWrites > 0
@@ -850,6 +989,12 @@ export function analyzeProgressionActorAccounting(
         (item) =>
           item.status ===
           "actor-identity-mismatch",
+      ).length,
+    provenSpawnQuantityMismatch:
+      counters.filter(
+        (item) =>
+          item.status ===
+          "spawn-quantity-mismatch",
       ).length,
     reconciledFromMatchedActorLifecycle:
       counters.filter(

@@ -812,6 +812,34 @@ function runtimeEdgeState(
         scenarioLabel ===
           "progression-wave-integrity" &&
         world.progression.actorAccounting
+          .provenSpawnQuantityMismatch > 0
+      ) {
+        const counters =
+          world.progression.actorAccounting.details
+            .filter((item) =>
+              item.status ===
+                "spawn-quantity-mismatch"
+            )
+            .map((item) =>
+              item.counterId +
+              " quantity-mismatch=" +
+              String(
+                item.quantityMismatchGrowths,
+              )
+            )
+            .sort();
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Selected-artifact wave accounting proves a deterministic direct spawn quantity does not match the actor-counter growth amount: " +
+            counters.join("; ") +
+            ". The counter and spawned population diverge in the same source path, so runtime reproduction is not required to establish this progression contradiction.",
+        };
+      }
+      if (
+        scenarioLabel ===
+          "progression-wave-integrity" &&
+        world.progression.actorAccounting
           .provenActorIdentityMismatch > 0
       ) {
         const counters =

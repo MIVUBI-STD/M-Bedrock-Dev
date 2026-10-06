@@ -123,6 +123,8 @@ describe(
           matchedActorIdentifiers: [
             "demo:enemy",
           ],
+          spawnQuantityStatus:
+            "matched",
           status:
             "reconciled-from-matched-actor-lifecycle",
         });
@@ -166,6 +168,96 @@ describe(
           matchedActorIdentifiers: [],
           status:
             "actor-identity-mismatch",
+        });
+    });
+
+    it("proves deterministic spawn quantity mismatch against actor counter growth", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "world.afterEvents.entityDie.subscribe((event) => {",
+        "  if (event.deadEntity.typeId === 'demo:enemy') decrementRemaining();",
+        "});",
+        "function spawnWave(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies += 2;",
+        "}",
+        "function decrementRemaining() { remainingEnemies--; }",
+        "function maybeAdvance() { if (remainingEnemies === 0) nextWave(); }",
+      ].join("\n");
+
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed(source),
+        ]);
+
+      expect(
+        result.provenSpawnQuantityMismatch,
+      ).toBe(1);
+      expect(result.counters[0])
+        .toMatchObject({
+          spawnQuantityStatus:
+            "mismatch",
+          quantityComparableGrowths: 1,
+          quantityMismatchGrowths: 1,
+          status:
+            "spawn-quantity-mismatch",
+        });
+    });
+
+    it("keeps looped spawn quantity unresolved instead of inventing a mismatch", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "function spawnWave(dimension) {",
+        "  for (let i = 0; i < 3; i++) {",
+        "    dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  }",
+        "  remainingEnemies += 3;",
+        "}",
+        "function maybeAdvance() { if (remainingEnemies === 0) nextWave(); }",
+      ].join("\n");
+
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed(source),
+        ]);
+
+      expect(
+        result.provenSpawnQuantityMismatch,
+      ).toBe(0);
+      expect(result.counters[0]
+        ?.spawnQuantityStatus)
+        .toBe("unresolved");
+    });
+
+    it("accepts non-death entity-remove reconciliation when the same actor identity reaches decrement", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "world.afterEvents.entityRemove.subscribe((event) => {",
+        "  if (event.entity.typeId === 'demo:enemy') decrementRemaining();",
+        "});",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function decrementRemaining() { remainingEnemies--; }",
+        "function maybeAdvance() { if (remainingEnemies === 0) nextWave(); }",
+      ].join("\n");
+
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed(source),
+        ]);
+
+      expect(
+        result
+          .reconciledFromMatchedActorLifecycle,
+      ).toBe(1);
+      expect(result.counters[0])
+        .toMatchObject({
+          actorIdentityStatus: "matched",
+          spawnQuantityStatus: "matched",
+          status:
+            "reconciled-from-matched-actor-lifecycle",
         });
     });
 

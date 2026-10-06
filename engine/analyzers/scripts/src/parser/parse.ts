@@ -61,7 +61,10 @@ import { deriveScriptCleanupResourceEvidence } from "../domains/cleanup/cleanup-
 import { deriveScriptCombatLifecycleEvidence } from "../domains/combat/combat-lifecycle-evidence.js";
 import { deriveScriptChunkLifecycleEvidence } from "../domains/chunk/chunk-lifecycle-evidence.js";
 import { deriveScriptEconomyEvidence } from "../domains/economy/economy-evidence.js";
-import { deriveScriptProgressionCounterEvidence } from "../domains/progression/progression-counter-evidence.js";
+import {
+  deriveScriptProgressionActorSpawnEvidence,
+  deriveScriptProgressionCounterEvidence,
+} from "../domains/progression/progression-counter-evidence.js";
 import { deriveScriptInventoryLifecycleEvidence } from "../domains/inventory/inventory-lifecycle-evidence.js";
 import { deriveScriptGlobalLeaseEvidence } from "../domains/arena/global-lease-evidence.js";
 import { derivePersistentDataLifecycleEvidence } from "../domains/persistence/persistent-data-lifecycle.js";
@@ -1868,6 +1871,11 @@ export function parseScriptFile(
       text,
       source,
     );
+  const progressionActorSpawnEvidence =
+    deriveScriptProgressionActorSpawnEvidence(
+      text,
+      source,
+    );
   const persistentDataLifecycleEvidence =
     derivePersistentDataLifecycleEvidence(
       text,
@@ -2694,6 +2702,9 @@ export function parseScriptFile(
     globalLeaseEvidence: [...globalLeaseEvidence],
     progressionCounterEvidence: [
       ...progressionCounterEvidence,
+    ],
+    progressionActorSpawnEvidence: [
+      ...progressionActorSpawnEvidence,
     ],
     persistentDataLifecycleEvidence: [
       ...persistentDataLifecycleEvidence,

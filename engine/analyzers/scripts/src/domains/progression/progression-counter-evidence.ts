@@ -7,6 +7,11 @@ export type ScriptProgressionCounterKind =
   | "variable"
   | "scoreboard";
 
+export type ScriptProgressionExecutionShape =
+  | "single"
+  | "conditional"
+  | "repeated";
+
 export type ScriptProgressionCounterEvidenceKind =
   | "growth"
   | "decrement"
@@ -20,7 +25,17 @@ export interface ScriptProgressionCounterEvidence {
     ScriptProgressionCounterKind;
   readonly counterId: string;
   readonly executionRegion: string;
+  readonly executionShape:
+    ScriptProgressionExecutionShape;
   readonly amount?: number;
+  readonly source: SourceRef;
+}
+
+export interface ScriptProgressionActorSpawnEvidence {
+  readonly actorIdentifier: string;
+  readonly executionRegion: string;
+  readonly executionShape:
+    ScriptProgressionExecutionShape;
   readonly source: SourceRef;
 }
 
@@ -100,6 +115,48 @@ function executionRegion(
   return "module";
 }
 
+function executionShape(
+  node: ts.Node,
+): ScriptProgressionExecutionShape {
+  let current: ts.Node | undefined =
+    node.parent;
+  let conditional = false;
+
+  while (current) {
+    if (
+      ts.isForStatement(current) ||
+      ts.isForInStatement(current) ||
+      ts.isForOfStatement(current) ||
+      ts.isWhileStatement(current) ||
+      ts.isDoStatement(current)
+    ) {
+      return "repeated";
+    }
+    if (
+      ts.isIfStatement(current) ||
+      ts.isConditionalExpression(current) ||
+      ts.isCaseClause(current) ||
+      ts.isDefaultClause(current) ||
+      ts.isSwitchStatement(current)
+    ) {
+      conditional = true;
+    }
+    if (
+      ts.isFunctionDeclaration(current) ||
+      ts.isMethodDeclaration(current) ||
+      ts.isArrowFunction(current) ||
+      ts.isFunctionExpression(current)
+    ) {
+      break;
+    }
+    current = current.parent;
+  }
+
+  return conditional
+    ? "conditional"
+    : "single";
+}
+
 function counterId(
   expression: ts.Expression,
 ): string | undefined {
@@ -146,6 +203,22 @@ function numericLiteral(
     }
   }
   return undefined;
+}
+
+function literalString(
+  expression: ts.Expression | undefined,
+): string | undefined {
+  return (
+    expression &&
+    (
+      ts.isStringLiteralLike(expression) ||
+      ts.isNoSubstitutionTemplateLiteral(
+        expression,
+      )
+    )
+  )
+    ? expression.text
+    : undefined;
 }
 
 function isZero(
@@ -215,13 +288,17 @@ export function deriveScriptProgressionCounterEvidence(
     node: ts.Node,
     values: Omit<
       ScriptProgressionCounterEvidence,
-      "executionRegion" | "source"
+      "executionRegion" |
+      "executionShape" |
+      "source"
     >,
   ) => {
     output.push({
       ...values,
       executionRegion:
         executionRegion(node, file),
+      executionShape:
+        executionShape(node),
       source: nodeSource(
         file,
         node,
@@ -364,5 +441,78 @@ export function deriveScriptProgressionCounterEvidence(
         b.counterId,
       ) ||
       a.kind.localeCompare(b.kind)
+    );
+}
+
+export function deriveScriptProgressionActorSpawnEvidence(
+  text: string,
+  source: SourceRef,
+): ScriptProgressionActorSpawnEvidence[] {
+  const file = ts.createSourceFile(
+    source.relativePath,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    scriptKind(source.relativePath),
+  );
+  const output:
+    ScriptProgressionActorSpawnEvidence[] = [];
+
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(
+        node.expression,
+      ) &&
+      node.expression.name.text ===
+        "spawnEntity"
+    ) {
+      const actorIdentifier =
+        literalString(node.arguments[0]);
+      if (
+        actorIdentifier &&
+        /^[a-z0-9_.-]+:[a-z0-9_./-]+$/i.test(
+          actorIdentifier,
+        )
+      ) {
+        output.push({
+          actorIdentifier:
+            actorIdentifier.toLowerCase(),
+          executionRegion:
+            executionRegion(node, file),
+          executionShape:
+            executionShape(node),
+          source:
+            nodeSource(
+              file,
+              node,
+              source,
+            ),
+        });
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+
+  visit(file);
+
+  return output
+    .filter((item, index, all) =>
+      all.findIndex((candidate) =>
+        candidate.actorIdentifier ===
+          item.actorIdentifier &&
+        candidate.executionRegion ===
+          item.executionRegion &&
+        candidate.source.range?.lineStart ===
+          item.source.range?.lineStart
+      ) === index
+    )
+    .sort((a, b) =>
+      a.executionRegion.localeCompare(
+        b.executionRegion,
+      ) ||
+      a.actorIdentifier.localeCompare(
+        b.actorIdentifier,
+      )
     );
 }

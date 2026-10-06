@@ -370,6 +370,7 @@ export interface GameplayWorldModel {
       counters: number;
       provenMissingReconciliation: number;
       provenActorIdentityMismatch: number;
+      provenSpawnQuantityMismatch: number;
       unresolvedCounters: number;
       reconciledFromMatchedActorLifecycle: number;
       details: readonly {
@@ -381,6 +382,14 @@ export interface GameplayWorldModel {
         replacementWrites: number;
         completionChecks: number;
         lifecycleLinkedDecrements: number;
+        quantityComparableGrowths: number;
+        quantityMatchedGrowths: number;
+        quantityMismatchGrowths: number;
+        spawnQuantityStatus:
+          | "matched"
+          | "mismatch"
+          | "unresolved"
+          | "not-applicable";
         actorIdentityStatus:
           | "matched"
           | "mismatch"
@@ -395,6 +404,7 @@ export interface GameplayWorldModel {
         status:
           | "reconciled-from-matched-actor-lifecycle"
           | "actor-identity-mismatch"
+          | "spawn-quantity-mismatch"
           | "missing-reconciliation"
           | "unresolved";
       }[];
@@ -1919,6 +1929,9 @@ export function deriveGameplayWorldModel(
         provenActorIdentityMismatch:
           source.progressionActorAccounting
             ?.provenActorIdentityMismatch ?? 0,
+        provenSpawnQuantityMismatch:
+          source.progressionActorAccounting
+            ?.provenSpawnQuantityMismatch ?? 0,
         unresolvedCounters:
           source.progressionActorAccounting
             ?.unresolvedCounters ?? 0,
@@ -1941,6 +1954,14 @@ export function deriveGameplayWorldModel(
                 item.completionChecks,
               lifecycleLinkedDecrements:
                 item.lifecycleLinkedDecrements,
+              quantityComparableGrowths:
+                item.quantityComparableGrowths,
+              quantityMatchedGrowths:
+                item.quantityMatchedGrowths,
+              quantityMismatchGrowths:
+                item.quantityMismatchGrowths,
+              spawnQuantityStatus:
+                item.spawnQuantityStatus,
               actorIdentityStatus:
                 item.actorIdentityStatus,
               spawnLinkedActorIdentifiers:
