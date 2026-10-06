@@ -93,18 +93,39 @@ fn identity_state(provider: &dyn Provider, client: ClientId) -> IdentityState {
     IdentityState::Unique
 }
 
-fn restore_batch_state(provider: &dyn Provider, started: &[(ClientId, ClientState)]) {
+fn restore_batch_state(
+    provider: &dyn Provider,
+    started: &[(ClientId, ClientState)],
+) -> Vec<&'static str> {
+    let mut failed = Vec::new();
+
     for (client, original_state) in started.iter().rev() {
-        match original_state {
-            ClientState::Suspended => {
-                let _ = provider.suspend(*client);
-            }
-            ClientState::Stopped => {
-                let _ = provider.stop(*client);
-            }
-            _ => {}
+        let result = match original_state {
+            ClientState::Suspended => provider.suspend(*client).map(|_| ()),
+            ClientState::Stopped => provider.stop(*client).map(|_| ()),
+            _ => Ok(()),
+        };
+
+        if result.is_err() {
+            failed.push(client.as_str());
         }
     }
+
+    failed
+}
+
+fn with_rollback_context(error: io::Error, failed: &[&'static str]) -> io::Error {
+    if failed.is_empty() {
+        return error;
+    }
+
+    io::Error::new(
+        error.kind(),
+        format!(
+            "{error}; rollback incomplete for {}. Run status to inspect the current state.",
+            failed.join(", ")
+        ),
+    )
 }
 
 fn working_set_for(working_sets: &[(ClientId, u64)], client: ClientId) -> Option<u64> {
@@ -329,29 +350,32 @@ impl RuntimeLab {
             if original_state != ClientState::Running {
                 let live_pressure = current_host_pressure();
                 if !live_pressure.can_start_virtual {
-                    restore_batch_state(provider.as_ref(), &started_by_batch);
-                    return Err(io::Error::new(
+                    let rollback_failed =
+                        restore_batch_state(provider.as_ref(), &started_by_batch);
+                    let error = io::Error::new(
                         io::ErrorKind::Other,
                         format!(
-                            "host memory pressure became {:?} before starting {}; previous batch starts were restored",
+                            "host memory pressure became {:?} before starting {}",
                             live_pressure.level,
                             client.as_str()
                         ),
-                    ));
+                    );
+                    return Err(with_rollback_context(error, &rollback_failed));
                 }
             }
 
             if identity_state(provider.as_ref(), client) == IdentityState::Duplicate {
-                restore_batch_state(provider.as_ref(), &started_by_batch);
-                return Err(io::Error::new(
+                let rollback_failed = restore_batch_state(provider.as_ref(), &started_by_batch);
+                let error = io::Error::new(
                     io::ErrorKind::InvalidData,
                     format!("{} has duplicate VM identity", client.as_str()),
-                ));
+                );
+                return Err(with_rollback_context(error, &rollback_failed));
             }
 
             if let Err(error) = provider.start(client) {
-                restore_batch_state(provider.as_ref(), &started_by_batch);
-                return Err(error);
+                let rollback_failed = restore_batch_state(provider.as_ref(), &started_by_batch);
+                return Err(with_rollback_context(error, &rollback_failed));
             }
 
             if original_state != ClientState::Running {
@@ -359,16 +383,20 @@ impl RuntimeLab {
             }
 
             if identity_state(provider.as_ref(), client) == IdentityState::Duplicate {
-                let _ = provider.stop(client);
+                let mut rollback_failed = Vec::new();
+                if provider.stop(client).is_err() {
+                    rollback_failed.push(client.as_str());
+                }
                 started_by_batch.retain(|(started, _)| *started != client);
-                restore_batch_state(provider.as_ref(), &started_by_batch);
-                return Err(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    format!(
-                        "{} received duplicate VM identity after start; batch state was restored",
-                        client.as_str()
-                    ),
+                rollback_failed.extend(restore_batch_state(
+                    provider.as_ref(),
+                    &started_by_batch,
                 ));
+                let error = io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    format!("{} received duplicate VM identity after start", client.as_str()),
+                );
+                return Err(with_rollback_context(error, &rollback_failed));
             }
 
             let working_sets = provider.host_working_sets_mb()?;
@@ -414,10 +442,13 @@ impl RuntimeLab {
             let client = *client;
             let original_state = provider.status(client)?;
             if let Err(error) = provider.suspend(client) {
+                let mut rollback_failed = Vec::new();
                 for suspended in suspended_by_batch.into_iter().rev() {
-                    let _ = provider.start(suspended);
+                    if provider.start(suspended).is_err() {
+                        rollback_failed.push(suspended.as_str());
+                    }
                 }
-                return Err(error);
+                return Err(with_rollback_context(error, &rollback_failed));
             }
 
             if original_state == ClientState::Running {
