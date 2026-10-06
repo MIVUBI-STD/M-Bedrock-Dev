@@ -3,14 +3,13 @@ export type CatalogResourceClass =
   | "KNOWLEDGE"
   | "SOURCE"
   | "RELIABILITY"
-  | "WORKFLOW"
   | "SCHEMA";
 
 export type DocumentRole =
   | "ROUTER"
   | "WORKFLOW"
   | "CONTRACT"
-  | "REFERENCE"
+  | "DOMAIN"
   | "ARCHITECTURE"
   | "GUIDE";
 
