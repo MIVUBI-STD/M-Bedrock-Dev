@@ -60,6 +60,9 @@ pub trait Provider {
     fn reset(&self, client: ClientId) -> io::Result<ClientState>;
     fn open(&self, client: ClientId) -> io::Result<ClientState>;
     fn is_running_path(&self, vmx: &Path) -> io::Result<bool>;
+    fn start_validation_vm(&self, vmx: &Path) -> io::Result<()>;
+    fn stop_validation_vm(&self, vmx: &Path) -> io::Result<()>;
+    fn guest_ip_for_path(&self, vmx: &Path) -> io::Result<Option<String>>;
 }
 
 pub fn current_platform_provider() -> Option<Box<dyn Provider>> {
