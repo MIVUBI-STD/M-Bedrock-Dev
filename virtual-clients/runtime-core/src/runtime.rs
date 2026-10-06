@@ -6,8 +6,8 @@ use crate::{
     diagnostics::{collect as collect_diagnostics, DiagnosticsReport},
     doctor::{doctor, DoctorReport},
     guest::{
-        guest_agent_launch_compatible, guest_agent_protocol_compatible, launch_guest_minecraft,
-        query_guest_status, GuestStatus, GUEST_AGENT_PROTOCOL_VERSION,
+        guest_agent_protocol_compatible, query_guest_status, GuestStatus,
+        GUEST_AGENT_PROTOCOL_VERSION,
     },
     journal::{record_operation, OperationKind},
     lifecycle_admission::{
@@ -407,35 +407,6 @@ fn guest_status_once(provider: &dyn Provider, client: ClientId) -> Option<GuestS
     let ip = provider.guest_ip_address(client).ok().flatten()?;
     let token = guest_token(client).ok().flatten()?;
     query_guest_status(&ip, &token, Duration::from_secs(1)).ok()
-}
-
-fn ensure_minecraft_running(provider: &dyn Provider, client: ClientId) -> io::Result<()> {
-    let ip = provider.guest_ip_address(client)?.ok_or_else(|| {
-        io::Error::new(io::ErrorKind::AddrNotAvailable, format!("{} guest IP is unavailable", client.as_str()))
-    })?;
-    let token = guest_token(client)?.ok_or_else(|| {
-        io::Error::new(io::ErrorKind::NotFound, format!("{} Guest Agent token is missing", client.as_str()))
-    })?;
-    let status = query_guest_status(&ip, &token, Duration::from_secs(2))?;
-    if !guest_agent_launch_compatible(status.protocol_version) {
-        return Err(io::Error::new(
-            io::ErrorKind::Unsupported,
-            format!(
-                "{} Guest Agent protocol {} does not support Minecraft auto-launch; protocol {} is required",
-                client.as_str(), status.protocol_version, GUEST_AGENT_PROTOCOL_VERSION
-            ),
-        ));
-    }
-    if status.interactive_launcher_ready != Some(true) {
-        return Err(io::Error::new(
-            io::ErrorKind::NotConnected,
-            format!(
-                "{} interactive launcher is not active; complete per-user launcher setup inside that Virtual",
-                client.as_str()
-            ),
-        ));
-    }
-    launch_guest_minecraft(&ip, &token, Duration::from_secs(35)).map(|_| ())
 }
 
 fn lineage_parity(native: Option<&MinecraftProfile>, client: ClientId) -> ProfileParity {
@@ -1521,7 +1492,7 @@ impl VirtualClients {
         )?;
 
         for (index, client) in targets.iter().enumerate() {
-            if let Err(error) = ensure_minecraft_running(provider.as_ref(), *client) {
+            if let Err(error) = crate::minecraft_runtime::ensure_running(provider.as_ref(), *client) {
                 return Err(io::Error::new(
                     error.kind(),
                     format!(
@@ -1675,7 +1646,7 @@ impl VirtualClients {
             };
             return Err(with_rollback_context(error, &failed));
         }
-        if let Err(error) = ensure_minecraft_running(provider.as_ref(), client) {
+        if let Err(error) = crate::minecraft_runtime::ensure_running(provider.as_ref(), client) {
             return Err(io::Error::new(
                 error.kind(),
                 format!("{} is running, but Minecraft Education could not be opened: {error}", client.as_str()),
@@ -1751,7 +1722,7 @@ impl VirtualClients {
             };
             return Err(with_rollback_context(error, &failed));
         }
-        if let Err(error) = ensure_minecraft_running(provider.as_ref(), client) {
+        if let Err(error) = crate::minecraft_runtime::ensure_running(provider.as_ref(), client) {
             return Err(io::Error::new(
                 error.kind(),
                 format!("{} is running, but Minecraft Education could not be opened: {error}", client.as_str()),
@@ -1784,7 +1755,7 @@ impl VirtualClients {
         if provider.status(client)? != ClientState::Running {
             return Err(io::Error::new(io::ErrorKind::InvalidInput, "Virtual client must be running before Minecraft can be launched"));
         }
-        ensure_minecraft_running(provider.as_ref(), client)?;
+        crate::minecraft_runtime::ensure_running(provider.as_ref(), client)?;
         let working_sets = provider.host_working_sets_mb()?;
         let native_profile = native_minecraft_profile();
         client_status(provider.as_ref(), &working_sets, native_profile.as_ref(), client)
