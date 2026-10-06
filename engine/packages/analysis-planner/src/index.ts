@@ -8,3 +8,4 @@ export * from "./task-routing.js";
 export * from "./domain-capabilities.js";
 export * from "./builtin-capabilities.js";
 export * from "./retrieval.js";
+export * from "./section-retrieval.js";
