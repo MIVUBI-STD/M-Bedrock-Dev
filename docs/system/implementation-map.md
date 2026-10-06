@@ -133,7 +133,7 @@ Retrieval
 → `engine/packages/analysis-planner/src/retrieval.ts`
 
 Context
-→ existing orchestrator context compilation owners
+→ `engine/packages/orchestrator/src/workflow/context-compiler.ts` + `resource-context.ts`
 ```
 
 Catalog and Graph are derived navigation structures. They never replace the source/data owners listed above.
