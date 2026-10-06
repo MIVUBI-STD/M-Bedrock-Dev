@@ -369,12 +369,29 @@ impl RuntimeLab {
 
         let targets: Vec<ClientId> = match client {
             Some(client) => vec![client],
-            None => ClientId::VIRTUAL.to_vec(),
+            None => ClientId::VIRTUAL
+                .into_iter()
+                .filter(|client| {
+                    provider.status(*client).ok() != Some(ClientState::NotProvisioned)
+                })
+                .collect(),
         };
 
+        let mut suspended_by_batch = Vec::new();
         let mut result = Vec::with_capacity(targets.len());
+
         for client in targets {
-            provider.suspend(client)?;
+            let original_state = provider.status(client)?;
+            if let Err(error) = provider.suspend(client) {
+                for suspended in suspended_by_batch.into_iter().rev() {
+                    let _ = provider.start(suspended);
+                }
+                return Err(error);
+            }
+
+            if original_state == ClientState::Running {
+                suspended_by_batch.push(client);
+            }
             result.push(client_status(provider.as_ref(), client)?);
         }
         Ok(result)
@@ -399,7 +416,12 @@ impl RuntimeLab {
                 }]);
             }
             Some(client) => vec![client],
-            None => ClientId::VIRTUAL.to_vec(),
+            None => ClientId::VIRTUAL
+                .into_iter()
+                .filter(|client| {
+                    provider.status(*client).ok() != Some(ClientState::NotProvisioned)
+                })
+                .collect(),
         };
 
         let mut result = Vec::with_capacity(targets.len());
