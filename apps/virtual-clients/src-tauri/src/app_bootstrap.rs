@@ -3,6 +3,11 @@ use crate::engine::app_instance;
 use rfd::{MessageButtons, MessageDialog, MessageLevel};
 
 pub fn run() {
+    if let Err(error) = crate::engine::dpi::configure() {
+        show_startup_error(&format!("Failed to configure display scaling: {error}"));
+        return;
+    }
+
     let _instance_lease = match app_instance::acquire() {
         Ok(lease) => lease,
         Err(error) => {
