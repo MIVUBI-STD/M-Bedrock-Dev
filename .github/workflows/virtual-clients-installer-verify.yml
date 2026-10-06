@@ -1,13 +1,13 @@
 name: Virtual Clients Installer Verify
 
 on:
-  workflow_dispatch:
   push:
     branches: [Experimental]
     paths:
       - "experiments/virtual-clients/backend/**"
       - "experiments/virtual-clients/distribution/**"
       - "experiments/virtual-clients/guest/windows/**"
+      - "experiments/virtual-clients/acceptance/windows/**"
       - ".github/workflows/virtual-clients-installer-verify.yml"
 
 permissions:
