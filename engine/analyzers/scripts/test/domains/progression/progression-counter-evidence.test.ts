@@ -4,6 +4,7 @@ import {
   deriveScriptProgressionActiveEventEvidence,
   deriveProgressionActiveStateValues,
   deriveScriptProgressionAdvanceEvidence,
+  deriveScriptProgressionOrdinalAdvanceEvidence,
   deriveScriptProgressionActiveTransitionEvidence,
   deriveScriptProgressionStateTransitionEvidence,
 } from "../../../src/domains/progression/progression-counter-evidence.js";
@@ -261,6 +262,35 @@ describe("progression active event evidence", () => {
       );
 
     expect(result).toHaveLength(1);
+  });
+
+  it("extracts direct ordinal progression increments", () => {
+    const result =
+      deriveScriptProgressionOrdinalAdvanceEvidence(
+        [
+          "function advance() {",
+          "  currentWave++;",
+          "  round += 2;",
+          "  score += 1;",
+          "}",
+        ].join("\n"),
+        source,
+      );
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        target: "currentWave",
+        amount: 1,
+        executionRegion:
+          "function:advance",
+      }),
+      expect.objectContaining({
+        target: "round",
+        amount: 2,
+        executionRegion:
+          "function:advance",
+      }),
+    ]);
   });
 
 });

@@ -68,6 +68,15 @@ export interface ScriptProgressionAdvanceEvidence {
   readonly source: SourceRef;
 }
 
+export interface ScriptProgressionOrdinalAdvanceEvidence {
+  readonly target: string;
+  readonly amount: number;
+  readonly executionRegion: string;
+  readonly executionShape:
+    ScriptProgressionExecutionShape;
+  readonly source: SourceRef;
+}
+
 const COUNTER_NAME =
   /(?:wave|enemy|enemies|mob|mobs|remaining|alive|objective|progress|count)/i;
 
@@ -1264,6 +1273,106 @@ function transitionOwnedCallsAndEvents(
   };
 
   visit(statement);
+}
+
+export function deriveScriptProgressionOrdinalAdvanceEvidence(
+  text: string,
+  source: SourceRef,
+): ScriptProgressionOrdinalAdvanceEvidence[] {
+  const file = ts.createSourceFile(
+    source.relativePath,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    scriptKind(source.relativePath),
+  );
+  const output:
+    ScriptProgressionOrdinalAdvanceEvidence[] = [];
+  const targetPattern =
+    /(?:wave|round|level|stage|phase|progress)/i;
+
+  const push = (
+    node: ts.Node,
+    target: string,
+    amount: number,
+  ) => {
+    if (
+      !targetPattern.test(target) ||
+      amount <= 0
+    ) return;
+    output.push({
+      target,
+      amount,
+      executionRegion:
+        executionRegion(node, file),
+      executionShape:
+        executionShape(node),
+      source:
+        nodeSource(file, node, source),
+    });
+  };
+
+  const visit = (node: ts.Node): void => {
+    if (
+      (ts.isPrefixUnaryExpression(node) ||
+        ts.isPostfixUnaryExpression(node)) &&
+      node.operator ===
+        ts.SyntaxKind.PlusPlusToken
+    ) {
+      push(
+        node,
+        node.operand.getText(file),
+        1,
+      );
+    }
+
+    if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind ===
+        ts.SyntaxKind.PlusEqualsToken
+    ) {
+      const amount =
+        numericLiteral(node.right);
+      if (
+        amount !== undefined &&
+        amount > 0
+      ) {
+        push(
+          node,
+          node.left.getText(file),
+          amount,
+        );
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(file);
+
+  return output
+    .filter((item, index, all) =>
+      all.findIndex((candidate) =>
+        candidate.target === item.target &&
+        candidate.amount === item.amount &&
+        candidate.executionRegion ===
+          item.executionRegion &&
+        candidate.source.range?.lineStart ===
+          item.source.range?.lineStart
+      ) === index
+    )
+    .sort((a, b) =>
+      a.executionRegion.localeCompare(
+        b.executionRegion,
+      ) ||
+      a.target.localeCompare(b.target) ||
+      (
+        a.source.range?.lineStart ?? 0
+      ) -
+        (
+          b.source.range?.lineStart ?? 0
+        )
+    );
 }
 
 export function deriveScriptProgressionAdvanceEvidence(

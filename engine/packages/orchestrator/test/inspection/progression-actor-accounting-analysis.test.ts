@@ -7,6 +7,7 @@ import {
   deriveCrossFileCallEdges,
   deriveProgressionActiveStateValues,
   deriveScriptProgressionAdvanceEvidence,
+  deriveScriptProgressionOrdinalAdvanceEvidence,
   deriveScriptProgressionActiveTransitionEvidence,
   deriveScriptProgressionStateTransitionEvidence,
   parseScriptFile,
@@ -1028,6 +1029,84 @@ describe(
       expect(
         result.activeTransitionProofs,
       ).toBeGreaterThan(0);
+    });
+
+    it("proves two callbacks on the same exact event double-advance one wave ordinal", () => {
+      const source = [
+        "world.afterEvents.entityDie.subscribe(() => {",
+        "  currentWave++;",
+        "});",
+        "world.afterEvents.entityDie.subscribe(() => {",
+        "  currentWave++;",
+        "});",
+      ].join("\n");
+      const input = parsed(source);
+      const ordinal =
+        deriveScriptProgressionOrdinalAdvanceEvidence(
+          source,
+          input.parsed.source,
+        );
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+          [],
+          [],
+          undefined,
+          [],
+          [],
+          [],
+          [],
+          [],
+          ordinal,
+        );
+
+      expect(
+        result.provenCrossIngressOrdinalAdvances,
+      ).toBe(1);
+      expect(
+        result.crossIngressOrdinalAdvances[0],
+      ).toMatchObject({
+        ingress:
+          "world.afterEvents.entityDie",
+        target: "currentWave",
+        totalAmount: 2,
+      });
+    });
+
+    it("does not merge different event types into one proven ordinal cross-ingress", () => {
+      const source = [
+        "world.afterEvents.entityDie.subscribe(() => {",
+        "  currentWave++;",
+        "});",
+        "world.afterEvents.playerLeave.subscribe(() => {",
+        "  currentWave++;",
+        "});",
+      ].join("\n");
+      const input = parsed(source);
+      const ordinal =
+        deriveScriptProgressionOrdinalAdvanceEvidence(
+          source,
+          input.parsed.source,
+        );
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+          [],
+          [],
+          undefined,
+          [],
+          [],
+          [],
+          [],
+          [],
+          ordinal,
+        );
+
+      expect(
+        result.provenCrossIngressOrdinalAdvances,
+      ).toBe(0);
     });
 
     it("proves duplicate next-wave ownership under one completion gate", () => {

@@ -812,6 +812,35 @@ function runtimeEdgeState(
         scenarioLabel ===
           "progression-wave-integrity" &&
         world.progression.actorAccounting
+          .provenCrossIngressOrdinalAdvances > 0
+      ) {
+        const ingresses =
+          world.progression.actorAccounting
+            .crossIngressOrdinalAdvances
+            .map((item) =>
+              item.ingress +
+              " ’ " +
+              item.target +
+              " callbacks=" +
+              String(
+                item.callbackRegions.length,
+              ) +
+              " totalAdvance=" +
+              String(item.totalAmount)
+            )
+            .sort();
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "A single exact event ingress fans out to multiple unconditional callbacks that directly advance the same progression ordinal: " +
+            ingresses.join("; ") +
+            ". One event occurrence therefore advances progression more than once; this is a static cross-ingress exactly-once violation.",
+        };
+      }
+      if (
+        scenarioLabel ===
+          "progression-wave-integrity" &&
+        world.progression.actorAccounting
           .duplicateProgressionAdvances > 0
       ) {
         const advances =
@@ -823,7 +852,7 @@ function runtimeEdgeState(
             )
             .map((item) =>
               item.counterId +
-              "â†’" +
+              "’" +
               item.effectTarget +
               " calls=" +
               String(item.calls) +
@@ -890,7 +919,7 @@ function runtimeEdgeState(
               item.target +
               ":" +
               item.from +
-              "â†’" +
+              "’" +
               item.to +
               " allowed=[" +
               item.allowedTargets.join(",") +

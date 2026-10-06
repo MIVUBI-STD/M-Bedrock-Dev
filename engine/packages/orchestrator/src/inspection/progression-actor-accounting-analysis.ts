@@ -3,6 +3,7 @@ import type {
   ParsedScriptFile,
   ScriptProgressionAdvanceEvidence,
   ScriptProgressionCounterEvidence,
+  ScriptProgressionOrdinalAdvanceEvidence,
   ScriptProgressionStateTransitionEvidence,
   deriveProgressionActiveStateValues,
 } from "../../../../analyzers/scripts/src/index.js";
@@ -141,6 +142,16 @@ export interface ProgressionAdvanceOwnershipAssessment {
   readonly reason: string;
 }
 
+export interface ProgressionCrossIngressOrdinalAssessment {
+  readonly scriptId: string;
+  readonly ingress: string;
+  readonly target: string;
+  readonly callbackRegions:
+    readonly string[];
+  readonly totalAmount: number;
+  readonly reason: string;
+}
+
 export interface ProgressionStateMachineAssessment {
   readonly scriptId: string;
   readonly tableName: string;
@@ -192,6 +203,9 @@ export interface ProgressionActorAccountingAnalysis {
   readonly progressionAdvances:
     readonly ProgressionAdvanceOwnershipAssessment[];
   readonly duplicateProgressionAdvances: number;
+  readonly crossIngressOrdinalAdvances:
+    readonly ProgressionCrossIngressOrdinalAssessment[];
+  readonly provenCrossIngressOrdinalAdvances: number;
   readonly reconciledFromMatchedActorLifecycle: number;
   readonly unresolvedCounters: number;
 }
@@ -1885,6 +1899,126 @@ function stateTransitionAssessments(
     );
 }
 
+function progressionCrossIngressOrdinalAdvances(
+  scripts: readonly NormalizedScript[],
+  evidence:
+    readonly ScriptProgressionOrdinalAdvanceEvidence[],
+): ProgressionCrossIngressOrdinalAssessment[] {
+  const output:
+    ProgressionCrossIngressOrdinalAssessment[] = [];
+
+  for (const script of scripts) {
+    const path =
+      script.parsed.source.relativePath;
+    const ingressByCallback =
+      new Map<string, string>();
+
+    for (
+      const subscription of
+        script.parsed.events
+    ) {
+      if (
+        subscription.callbackRegion ===
+          undefined ||
+        subscription.root ===
+          "unknown" ||
+        subscription.phase ===
+          "unknown"
+      ) {
+        continue;
+      }
+      ingressByCallback.set(
+        subscription.callbackRegion,
+        subscription.root +
+          "." +
+          subscription.phase +
+          "." +
+          subscription.event,
+      );
+    }
+
+    const groups =
+      new Map<
+        string,
+        {
+          ingress: string;
+          target: string;
+          items:
+            ScriptProgressionOrdinalAdvanceEvidence[];
+        }
+      >();
+
+    for (
+      const item of evidence.filter(
+        (candidate) =>
+          candidate.source.relativePath ===
+            path &&
+          candidate.executionShape ===
+            "single",
+      )
+    ) {
+      const ingress =
+        ingressByCallback.get(
+          item.executionRegion,
+        );
+      if (!ingress) continue;
+
+      const key =
+        ingress +
+        "\0" +
+        item.target;
+      const group =
+        groups.get(key) ?? {
+          ingress,
+          target: item.target,
+          items: [],
+        };
+      group.items.push(item);
+      groups.set(key, group);
+    }
+
+    for (const group of groups.values()) {
+      const callbackRegions =
+        [...new Set(
+          group.items.map(
+            (item) =>
+              item.executionRegion,
+          ),
+        )].sort();
+      if (callbackRegions.length < 2) {
+        continue;
+      }
+      output.push({
+        scriptId:
+          script.parsed.identifier,
+        ingress: group.ingress,
+        target: group.target,
+        callbackRegions,
+        totalAmount:
+          group.items.reduce(
+            (sum, item) =>
+              sum + item.amount,
+            0,
+          ),
+        reason:
+          "One exact event ingress has multiple distinct unconditional callbacks that directly advance the same progression ordinal.",
+      });
+    }
+  }
+
+  return output.sort((a, b) =>
+    a.scriptId.localeCompare(
+      b.scriptId,
+    ) ||
+    a.ingress.localeCompare(
+      b.ingress,
+    ) ||
+    a.target.localeCompare(
+      b.target,
+    )
+  );
+}
+
 function progressionAdvanceOwnership(
   scripts: readonly NormalizedScript[],
   evidence:
@@ -2190,6 +2324,8 @@ export function analyzeProgressionActorAccounting(
     readonly ScriptProgressionStateTransitionEvidence[] = [],
   advanceEvidence:
     readonly ScriptProgressionAdvanceEvidence[] = [],
+  ordinalAdvanceEvidence:
+    readonly ScriptProgressionOrdinalAdvanceEvidence[] = [],
 ): ProgressionActorAccountingAnalysis {
   const scripts =
     inputs.map(normalizedInput);
@@ -2197,6 +2333,11 @@ export function analyzeProgressionActorAccounting(
     progressionAdvanceOwnership(
       scripts,
       advanceEvidence,
+    );
+  const crossIngressOrdinalAdvances =
+    progressionCrossIngressOrdinalAdvances(
+      scripts,
+      ordinalAdvanceEvidence,
     );
   const stateTransitions =
     stateTransitionAssessments(
@@ -3063,6 +3204,9 @@ export function analyzeProgressionActorAccounting(
           item.status ===
           "duplicate",
       ).length,
+    crossIngressOrdinalAdvances,
+    provenCrossIngressOrdinalAdvances:
+      crossIngressOrdinalAdvances.length,
     reconciledFromMatchedActorLifecycle:
       counters.filter(
         (item) =>

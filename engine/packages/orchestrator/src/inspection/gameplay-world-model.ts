@@ -391,6 +391,16 @@ export interface GameplayWorldModel {
       unresolvedStateMachines: number;
       sourceEnteredDeadEndStates: number;
       duplicateProgressionAdvances: number;
+      provenCrossIngressOrdinalAdvances: number;
+      crossIngressOrdinalAdvances: readonly {
+        scriptId: string;
+        ingress: string;
+        target: string;
+        callbackRegions:
+          readonly string[];
+        totalAmount: number;
+        reason: string;
+      }[];
       progressionAdvances: readonly {
         scriptId: string;
         executionRegion: string;
@@ -2103,6 +2113,21 @@ export function deriveGameplayWorldModel(
         duplicateProgressionAdvances:
           source.progressionActorAccounting
             ?.duplicateProgressionAdvances ?? 0,
+        provenCrossIngressOrdinalAdvances:
+          source.progressionActorAccounting
+            ?.provenCrossIngressOrdinalAdvances ?? 0,
+        crossIngressOrdinalAdvances:
+          source.progressionActorAccounting
+            ?.crossIngressOrdinalAdvances.map((item) => ({
+              scriptId: item.scriptId,
+              ingress: item.ingress,
+              target: item.target,
+              callbackRegions:
+                [...item.callbackRegions],
+              totalAmount:
+                item.totalAmount,
+              reason: item.reason,
+            })) ?? [],
         progressionAdvances:
           source.progressionActorAccounting
             ?.progressionAdvances.map((item) => ({
