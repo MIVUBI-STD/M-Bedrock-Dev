@@ -29,6 +29,8 @@ pub struct GuestStatus {
     pub minecraft: Option<MinecraftProfile>,
     #[serde(default)]
     pub minecraft_running: Option<bool>,
+    #[serde(default)]
+    pub interactive_launcher_ready: Option<bool>,
     pub machine_identity: Option<String>,
 }
 
@@ -179,6 +181,7 @@ mod tests {
             agent_version: "0.1.0".into(),
             minecraft: None,
             minecraft_running: Some(false),
+            interactive_launcher_ready: Some(false),
             machine_identity: Some("a".repeat(64)),
         };
         validate_guest_status(&status).unwrap();
@@ -210,6 +213,7 @@ mod tests {
             agent_version: "9.9.9".into(),
             minecraft: None,
             minecraft_running: None,
+            interactive_launcher_ready: None,
             machine_identity: None,
         };
         assert_eq!(
@@ -231,6 +235,7 @@ mod tests {
                 install_type: MinecraftInstallType::Desktop,
             }),
             minecraft_running: Some(true),
+            interactive_launcher_ready: Some(true),
             machine_identity: Some("a".repeat(64)),
         };
 
