@@ -81,6 +81,33 @@ frame target    ~30 FPS
 
 ## Per-Virtual preparation
 
+## Interactive user launch boundary
+
+The Base may contain the SYSTEM Guest Agent binary/service task, but it must not
+contain a user-specific interactive launcher registration.
+
+Interactive Minecraft UI launch belongs to each provisioned Virtual after
+Windows OOBE establishes that Virtual's user profile:
+
+```text
+Base
+→ SYSTEM Guest Agent only
+→ Sysprep / clone
+
+Virtual
+→ OOBE / interactive Windows user exists
+→ register the narrow interactive launcher for that user
+→ sign in to Minecraft manually
+→ QA_READY
+```
+
+Do not bake a Base username, browser profile, Microsoft identity, Minecraft
+session, OAuth token, cookie, or per-user launcher registration into the Base.
+
+The SYSTEM Guest Agent may request only the fixed Minecraft Education launch
+action. The interactive helper must not expose a network listener, arbitrary
+command execution, executable/path arguments, or credential handling.
+
 Identity verification happens before account sign-in:
 
 ```text
