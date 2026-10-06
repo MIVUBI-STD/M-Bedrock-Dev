@@ -426,18 +426,14 @@ impl RuntimeLab {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
 
+        if client.is_some_and(ClientId::is_native) {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Native lifecycle is managed manually on the host",
+            ));
+        }
+
         let targets: Vec<ClientId> = match client {
-            Some(client) if client.is_native() => {
-                return Ok(vec![ClientStatus {
-                    id: ClientId::Native.as_str(),
-                    native: true,
-                    state: ClientState::Manual,
-                    ready_snapshot: None,
-                    memory_limit_mb: None,
-                    host_working_set_mb: None,
-                    identity: None,
-                }]);
-            }
             Some(client) => vec![client],
             None => ClientId::VIRTUAL
                 .into_iter()
@@ -512,15 +508,10 @@ impl RuntimeLab {
 
     pub fn open(&self, client: ClientId) -> io::Result<ClientStatus> {
         if client.is_native() {
-            return Ok(ClientStatus {
-                id: ClientId::Native.as_str(),
-                native: true,
-                state: ClientState::Manual,
-                ready_snapshot: None,
-                memory_limit_mb: None,
-                host_working_set_mb: None,
-                identity: None,
-            });
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Native is opened manually on the host",
+            ));
         }
 
         let provider = current_platform_provider().ok_or_else(|| {
