@@ -14,6 +14,7 @@ async fn run(command: &'static str, args: Vec<String>) -> Result<String, String>
 #[tauri::command] pub async fn virtual_clients_support_bundle() -> Result<String,String> { run("support-bundle", vec![]).await }
 #[tauri::command] pub async fn virtual_clients_check_update() -> Result<String,String> { run("check-update", vec![]).await }
 #[tauri::command] pub async fn virtual_clients_register_base() -> Result<String,String> { run("register-base", vec![]).await }
+#[tauri::command] pub async fn virtual_clients_open_base_finalization() -> Result<String,String> { run("open-base-finalization", vec![]).await }
 #[tauri::command] pub async fn virtual_clients_provision() -> Result<String,String> { run("provision", vec![]).await }
 #[tauri::command] pub async fn virtual_clients_verify_identities() -> Result<String,String> { run("verify-identities", vec![]).await }
 #[tauri::command] pub async fn virtual_clients_stage_update() -> Result<String,String> { run("stage-update", vec![]).await }

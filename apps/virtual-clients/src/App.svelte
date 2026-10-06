@@ -127,6 +127,10 @@
     await mutate("start-all", () => backend.start(count));
   }
 
+  async function openBaseFinalization() {
+    await mutate("open-base-finalization", backend.openBaseFinalization);
+  }
+
   async function openBaseLocation() {
     error = undefined;
     try {
@@ -259,6 +263,7 @@
           onSupport={() => selectPage("support")}
           onOpenBaseLocation={openBaseLocation}
           onOpenSetupTools={openSetupTools}
+          onOpenBaseFinalization={openBaseFinalization}
         />
       {:else if page === "clients"}
         <ClientsSurface

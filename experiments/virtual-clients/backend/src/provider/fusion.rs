@@ -496,7 +496,12 @@ impl Provider for VmwareFusionProvider {
 
     fn open(&self, client: ClientId) -> io::Result<ClientState> {
         let vmx = self.require_client(client)?;
-        Command::new("open").arg(&vmx).spawn()?;
+        self.open_vm_ui(&vmx)?;
         self.status(client)
+    }
+
+    fn open_vm_ui(&self, vmx: &Path) -> io::Result<()> {
+        Command::new("open").arg(vmx).spawn()?;
+        Ok(())
     }
 }

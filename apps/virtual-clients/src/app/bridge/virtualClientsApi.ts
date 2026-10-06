@@ -67,6 +67,7 @@ export const backend = {
   supportBundle: () => invokePublic<SupportBundleResult>("virtual_clients_support_bundle"),
   checkUpdate: () => invokePublic<UpdateCheck>("virtual_clients_check_update"),
   registerBase: () => invokePublic<unknown>("virtual_clients_register_base"),
+  openBaseFinalization: () => invokePublic<unknown>("virtual_clients_open_base_finalization"),
   provision: () => invokePublic<unknown>("virtual_clients_provision"),
   verifyIdentities: () => invokePublic<unknown>("virtual_clients_verify_identities"),
   stageUpdate: () => invokePublic<unknown>("virtual_clients_stage_update"),

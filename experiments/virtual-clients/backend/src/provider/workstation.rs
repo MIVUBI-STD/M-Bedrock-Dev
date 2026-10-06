@@ -455,14 +455,18 @@ impl Provider for VmwareWorkstationProvider {
 
     fn open(&self, client: ClientId) -> io::Result<ClientState> {
         let vmx = self.require_client(client)?;
+        self.open_vm_ui(&vmx)?;
+        self.status(client)
+    }
+
+    fn open_vm_ui(&self, vmx: &Path) -> io::Result<()> {
         let gui = self.gui().ok_or_else(|| {
             io::Error::new(
                 io::ErrorKind::NotFound,
                 "VMware Workstation UI was not found",
             )
         })?;
-
-        Command::new(gui).arg("-n").arg(&vmx).spawn()?;
-        self.status(client)
+        Command::new(gui).arg("-n").arg(vmx).spawn()?;
+        Ok(())
     }
 }

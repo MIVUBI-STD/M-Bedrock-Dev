@@ -61,6 +61,7 @@ pub trait Provider {
     fn has_ready(&self, client: ClientId) -> io::Result<bool>;
     fn reset(&self, client: ClientId) -> io::Result<ClientState>;
     fn open(&self, client: ClientId) -> io::Result<ClientState>;
+    fn open_vm_ui(&self, vmx: &Path) -> io::Result<()>;
     fn is_running_path(&self, vmx: &Path) -> io::Result<bool>;
     fn start_validation_vm(&self, vmx: &Path) -> io::Result<()>;
     fn stop_validation_vm(&self, vmx: &Path) -> io::Result<()>;

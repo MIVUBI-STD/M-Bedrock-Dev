@@ -21,6 +21,7 @@ pub fn run() {
             commands::virtual_clients::virtual_clients_support_bundle,
             commands::virtual_clients::virtual_clients_check_update,
             commands::virtual_clients::virtual_clients_register_base,
+            commands::virtual_clients::virtual_clients_open_base_finalization,
             commands::virtual_clients::virtual_clients_provision,
             commands::virtual_clients::virtual_clients_verify_identities,
             commands::virtual_clients::virtual_clients_stage_update,

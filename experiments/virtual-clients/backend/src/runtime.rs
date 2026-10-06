@@ -777,6 +777,14 @@ impl VirtualClients {
         )
     }
 
+    pub fn open_base_for_finalization(&self) -> io::Result<()> {
+        self.record(
+            OperationKind::OpenBaseFinalization,
+            Some("Base".to_string()),
+            self.open_base_for_finalization_inner(),
+        )
+    }
+
     pub fn provision(&self) -> io::Result<Vec<ClientStatus>> {
         self.record(OperationKind::Provision, None, self.provision_inner())
     }
@@ -1006,6 +1014,46 @@ impl VirtualClients {
 
         set_base_state_for_path(&base, BaseState::Registered)?;
         write_verified_base_profile(&native, &proof.agent_version)
+    }
+
+    fn open_base_for_finalization_inner(&self) -> io::Result<()> {
+        require_base_matches_native()?;
+        let _lock = OperationLock::acquire()?;
+        let provider = current_platform_provider().ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "virtualization provider is unavailable",
+            )
+        })?;
+        let base = current_base_vmx_path()?;
+        if !base.is_file() {
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                format!("Base VM is missing: {}", base.display()),
+            ));
+        }
+        if base_state_for_path(&base)? != Some(BaseState::Registered) {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Base can be opened for finalization only while it is REGISTERED",
+            ));
+        }
+
+        provider.start_validation_vm(&base)?;
+        if let Err(open_error) = provider.open_vm_ui(&base) {
+            let stop_error = provider.stop_validation_vm(&base).err();
+            return Err(io::Error::new(
+                open_error.kind(),
+                match stop_error {
+                    Some(stop_error) => format!(
+                        "Base started but VMware UI could not open: {open_error}; rollback stop also failed: {stop_error}"
+                    ),
+                    None => format!("VMware UI could not open for Base finalization: {open_error}"),
+                },
+            ));
+        }
+
+        Ok(())
     }
 
     fn provision_inner(&self) -> io::Result<Vec<ClientStatus>> {

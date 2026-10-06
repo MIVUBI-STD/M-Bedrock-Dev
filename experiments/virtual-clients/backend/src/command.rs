@@ -96,6 +96,11 @@ fn execute_value(command: &str, args: &[String]) -> io::Result<Value> {
             require_no_args(command, args)?;
             to_value(app.register_base()?)
         }
+        "open-base-finalization" => {
+            require_no_args(command, args)?;
+            app.open_base_for_finalization()?;
+            to_value(serde_json::json!({"opened": true}))
+        }
         "provision" => {
             require_no_args(command, args)?;
             to_value(app.provision()?)

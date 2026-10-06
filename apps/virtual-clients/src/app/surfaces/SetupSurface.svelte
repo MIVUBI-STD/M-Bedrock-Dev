@@ -12,6 +12,7 @@
   export let onSupport: () => void;
   export let onOpenBaseLocation: () => void | Promise<void>;
   export let onOpenSetupTools: () => void | Promise<void>;
+  export let onOpenBaseFinalization: () => void | Promise<void>;
 
   $: action = snapshot.doctor.nextSetupAction;
   $: experience = setupExperience(action);
@@ -46,7 +47,12 @@
     {:else if experience.owner === "BLOCKED"}
       <button class="secondary large" on:click={onSupport}>{experience.primaryLabel}</button>
     {:else}
-      <button class="primary large" disabled={Boolean(busy)} on:click={onContinue}>{experience.primaryLabel}</button>
+      {#if action === "FINALIZE_BASE"}
+        <button class="primary large" disabled={Boolean(busy)} on:click={onOpenBaseFinalization}>
+          {busy === "open-base-finalization" ? "Opening…" : "Open Base for finalization"}
+        </button>
+      {/if}
+      <button class="secondary large" disabled={Boolean(busy)} on:click={onContinue}>{experience.primaryLabel}</button>
       <small class="manual-note">Virtual Clients will check the result before moving to the next step.</small>
     {/if}
   </div>

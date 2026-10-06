@@ -19,6 +19,7 @@ const HISTORY_SCHEMA: u32 = 1;
 pub enum OperationKind {
     StageUpdate,
     RegisterBase,
+    OpenBaseFinalization,
     Provision,
     Reprovision,
     VerifyIdentities,
