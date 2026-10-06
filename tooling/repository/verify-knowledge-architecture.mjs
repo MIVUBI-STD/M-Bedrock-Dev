@@ -325,6 +325,19 @@ try {
     if (!byId.has(edge.to)) {
       failures.push("Graph edge target is not registered: " + edge.to);
     }
+
+    for (const endpoint of [edge.from, edge.to]) {
+      const resource = byId.get(endpoint);
+      if (
+        resource !== undefined &&
+        resource.lifecycle !== "ACTIVE"
+      ) {
+        failures.push(
+          "Graph edge references RETIRED resource: " +
+            endpoint,
+        );
+      }
+    }
   }
 
   const bindingRegistryPath =
