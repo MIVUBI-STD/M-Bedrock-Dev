@@ -107,7 +107,7 @@
       <div class="client-icon">{Number(client.id.slice(-2))}</div>
       <div class="client-main">
         <h3>{clientDisplayName(client.id)}</h3>
-        <small><span class="state-dot {client.state.toLowerCase()}" aria-hidden="true"></span>{stateLabel(client.state)}</small>
+        <small><span class="state-dot {client.state.toLowerCase()}" aria-hidden="true"></span>{client.state === "RUNNING" && client.minecraftRunning === true ? "Minecraft ready" : client.state === "RUNNING" && client.minecraftRunning === false ? "Minecraft closed" : stateLabel(client.state)}</small>
       </div>
       <div class="row-action">
         {#if available && primary}
