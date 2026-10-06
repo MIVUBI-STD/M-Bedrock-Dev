@@ -47,7 +47,7 @@ pub fn evaluate_pressure(total_memory_mb: u64, available_memory_mb: u64) -> Host
 
 #[cfg(test)]
 mod tests {
-    use super::{evaluate_pressure, PressureLevel};
+    use super::{evaluate_pressure, start_delay_secs, PressureLevel};
 
     #[test]
     fn normal_pressure_has_headroom() {
@@ -69,8 +69,23 @@ mod tests {
         assert_eq!(report.level, PressureLevel::Critical);
         assert!(!report.can_start_virtual);
     }
+
+    #[test]
+    fn start_delay_slows_under_pressure() {
+        assert_eq!(start_delay_secs(PressureLevel::Normal), 2);
+        assert_eq!(start_delay_secs(PressureLevel::Pressure), 5);
+        assert_eq!(start_delay_secs(PressureLevel::Critical), 0);
+    }
 }
 
+
+pub fn start_delay_secs(level: PressureLevel) -> u64 {
+    match level {
+        PressureLevel::Normal => 2,
+        PressureLevel::Pressure => 5,
+        PressureLevel::Critical => 0,
+    }
+}
 
 pub fn current_host_pressure() -> HostPressure {
     let mut system = System::new();
