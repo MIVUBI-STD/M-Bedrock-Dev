@@ -30,6 +30,7 @@ pub enum OperationKind {
     SetReady,
     Reset,
     Open,
+    LaunchMinecraft,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
