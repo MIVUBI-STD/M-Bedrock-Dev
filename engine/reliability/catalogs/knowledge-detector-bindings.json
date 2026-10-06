@@ -3,6 +3,17 @@
   "semantics": "Coverage bindings connect high-value knowledge/engineering facts to the production analyzer/check that consumes them and to a dedicated proof specification. This registry is a verification projection, not semantic authority.",
   "bindings": [
     {
+      "knowledgeId": "chunk-policy.continuous-lease-journal",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "chunk-policy.entity-remove-not-loss",
       "consumer": "chunk-lifecycle-analysis",
       "analyzerPaths": [
@@ -49,6 +60,17 @@
     },
     {
       "knowledgeId": "chunk-policy.registry-residency-state-machine",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunk-policy.relation.recovery-queues-capacity",
       "consumer": "chunk-lifecycle-analysis",
       "analyzerPaths": [
         "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
