@@ -109,6 +109,18 @@
       ]
     },
     {
+      "knowledgeId": "cleanup-policy.scope-delete-not-global-clear",
+      "consumer": "arena-state-isolation-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-state-isolation-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-state-isolation-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "feedback-policy.cancelled-predicted-mutation-reconcile",
       "consumer": "client-mutation-reconciliation-analysis",
       "analyzerPaths": [
@@ -184,6 +196,16 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "multiplayer-policy.selector-arena-scope",
+      "consumer": "arena-state-isolation-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-state-isolation-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-state-isolation-analysis.test.ts"
       ]
     },
     {
