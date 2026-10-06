@@ -101,7 +101,7 @@ pub fn doctor() -> DoctorReport {
         });
     let runtime_profile = profile_status();
 
-    let clients = ClientId::VIRTUAL
+    let clients: Vec<DoctorClient> = ClientId::VIRTUAL
         .into_iter()
         .map(|client| {
             let state = provider
