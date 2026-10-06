@@ -69,6 +69,7 @@ const required = [
   "tooling/repository/verify-authority-separation.mjs",
   "tooling/repository/verify-canonical-naming.mjs",
   "tooling/repository/verify-information-architecture.mjs",
+  "tooling/repository/verify-remote-workflow-policy.mjs",
   "tooling/repository/verify-documentation-ownership.mjs",
   "tooling/repository/verify-documentation-paths.mjs",
   "tooling/repository/verify-bug-finding-coverage.mjs",
