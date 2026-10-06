@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { buildResourceCatalog } from "./resource-catalog.mjs";
 
-const HEADING = /^(#{1,6})\s+(.+?)\s*$/;
+const HEADING = /^(#{2,3})\s+(.+?)\s*$/;
 
 function slug(value) {
   return value
