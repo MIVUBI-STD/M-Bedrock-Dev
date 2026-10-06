@@ -1,7 +1,7 @@
 use crate::{
     client::{ClientId, ClientState, ClientStatus, IdentityState},
     doctor::{doctor, DoctorReport},
-    provider::{current_platform_provider, runtime_root, MemoryMode, Provider},
+    provider::{cleanup_staging, current_platform_provider, runtime_root, MemoryMode, Provider},
     resources::{current_host_pressure, evaluate_pressure, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
 };
 use fs2::FileExt;
@@ -35,6 +35,8 @@ pub struct ResourceView {
     pub stopped_virtual_clients: usize,
     pub memory_mode: MemoryMode,
     pub virtual_memory_limit_mb: u64,
+    pub observed_working_set_mb: u64,
+    pub observed_working_set_instances: usize,
     pub pressure: HostPressure,
 }
 
@@ -133,6 +135,7 @@ impl RuntimeLab {
 
     pub fn provision(&self) -> io::Result<Vec<ClientStatus>> {
         let _lock = OperationLock::acquire()?;
+        cleanup_staging()?;
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
@@ -154,6 +157,7 @@ impl RuntimeLab {
         }
 
         let _lock = OperationLock::acquire()?;
+        cleanup_staging()?;
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
@@ -163,7 +167,6 @@ impl RuntimeLab {
     }
 
     pub fn status(&self) -> io::Result<RuntimeStatus> {
-        let host = doctor();
         let provider = current_platform_provider();
         let mut clients = Vec::with_capacity(ClientId::ALL.len());
 
@@ -198,7 +201,7 @@ impl RuntimeLab {
         Ok(RuntimeStatus {
             provider: provider.as_ref().map(|provider| provider.id()),
             memory_mode: provider.as_ref().map(|provider| provider.memory_mode()),
-            pressure: pressure(&host),
+            pressure: current_host_pressure(),
             clients,
         })
     }
@@ -220,6 +223,8 @@ impl RuntimeLab {
         let mut running = 0;
         let mut suspended = 0;
         let mut stopped = 0;
+        let mut observed_working_set_mb = 0;
+        let mut observed_working_set_instances = 0;
 
         for client in ClientId::VIRTUAL.into_iter().take(count) {
             match provider.status(client)? {
@@ -239,6 +244,11 @@ impl RuntimeLab {
                     ));
                 }
             }
+
+            if let Some(memory_mb) = provider.host_working_set_mb(client)? {
+                observed_working_set_mb += memory_mb;
+                observed_working_set_instances += 1;
+            }
         }
 
         Ok(ResourceView {
@@ -249,7 +259,9 @@ impl RuntimeLab {
             stopped_virtual_clients: stopped,
             memory_mode: provider.memory_mode(),
             virtual_memory_limit_mb: VIRTUAL_MEMORY_LIMIT_MB,
-            pressure: pressure(&host),
+            observed_working_set_mb,
+            observed_working_set_instances,
+            pressure: current_host_pressure(),
         })
     }
 
