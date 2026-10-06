@@ -24,6 +24,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "doctor" => print_json(&app.doctor())?,
         "diagnostics" => print_json(&app.diagnostics()?)?,
         "check-update" => print_json(&app.check_update()?)?,
+        "stage-update" => print_json(&app.stage_update()?)?,
         "register-base" => print_json(&app.register_base()?)?,
         "provision" => print_json(&app.provision()?)?,
         "status" => print_json(&app.status()?)?,
@@ -74,6 +75,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("  doctor");
             println!("  diagnostics");
             println!("  check-update");
+            println!("  stage-update");
             println!("  register-base");
             println!("  provision");
             println!("  status");
