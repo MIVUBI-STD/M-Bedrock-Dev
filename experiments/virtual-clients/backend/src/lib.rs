@@ -1,4 +1,5 @@
 mod client;
+mod contract;
 mod diagnostics;
 mod doctor;
 mod error;
@@ -13,11 +14,12 @@ mod schema;
 mod update;
 
 pub use client::{ClientId, ClientState, ClientStatus, DestructiveConfirmation, IdentityState};
+pub use contract::{SuccessReport, PUBLIC_CONTRACT_SCHEMA};
 pub use diagnostics::{
     DiagnosticsReport, HostDiagnostics, ProviderDiagnostics, VirtualHardwareDiagnostics,
 };
 pub use doctor::{DoctorClient, DoctorReport, SetupAction};
-pub use error::{ErrorCode, ErrorReport, PUBLIC_CONTRACT_SCHEMA};
+pub use error::{ErrorCode, ErrorReport};
 pub use profile::{
     BaseProfile, BaseProfileSource, MinecraftInstallType, MinecraftProfile, ProfileParity,
     ProfileStatus,

@@ -185,3 +185,22 @@ Not exposed today:
 ## Frontend boundary
 
 Future Tauri/Svelte code must consume this Rust core. It must not duplicate provider, lifecycle, parity, update, or resource policy.
+
+
+## Public contract
+
+The backend has one public contract schema for CLI/application-boundary JSON.
+
+Success:
+
+```json
+{"schema":1,"data":{...}}
+```
+
+Failure:
+
+```json
+{"schema":1,"code":"INVALID_INPUT","message":"...","retryable":false}
+```
+
+Internal provider, path, schema-storage, guest-wire and persistence modules are not public API. Frontend code must consume the exported root contract only.

@@ -1,7 +1,7 @@
 use serde::Serialize;
 use std::io;
 
-pub const PUBLIC_CONTRACT_SCHEMA: u32 = 1;
+use crate::contract::PUBLIC_CONTRACT_SCHEMA;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -56,7 +56,8 @@ impl ErrorReport {
 
 #[cfg(test)]
 mod tests {
-    use super::{ErrorCode, ErrorReport, PUBLIC_CONTRACT_SCHEMA};
+    use super::{ErrorCode, ErrorReport};
+    use crate::contract::PUBLIC_CONTRACT_SCHEMA;
     use std::io;
 
     #[test]

@@ -33,18 +33,18 @@ function Invoke-VirtualClientsJson {
   }
 }
 
-$doctor = Invoke-VirtualClientsJson -Name 'doctor' -Arguments @('doctor')
-$status = Invoke-VirtualClientsJson -Name 'status' -Arguments @('status')
+$doctor = (Invoke-VirtualClientsJson -Name 'doctor' -Arguments @('doctor')).data
+$status = (Invoke-VirtualClientsJson -Name 'status' -Arguments @('status')).data
 
 $identityProof = $null
 if ($VerifyIdentities) {
-  $identityProof = Invoke-VirtualClientsJson -Name 'verify-identities' -Arguments @('verify-identities')
-  $doctor = Invoke-VirtualClientsJson -Name 'doctor-after-verify' -Arguments @('doctor')
-  $status = Invoke-VirtualClientsJson -Name 'status-after-verify' -Arguments @('status')
+  $identityProof = (Invoke-VirtualClientsJson -Name 'verify-identities' -Arguments @('verify-identities')).data
+  $doctor = (Invoke-VirtualClientsJson -Name 'doctor-after-verify' -Arguments @('doctor')).data
+  $status = (Invoke-VirtualClientsJson -Name 'status-after-verify' -Arguments @('status')).data
 }
 
-$diagnostics = Invoke-VirtualClientsJson -Name 'diagnostics' -Arguments @('diagnostics')
-$resources = Invoke-VirtualClientsJson -Name 'resources-3' -Arguments @('resources', '3')
+$diagnostics = (Invoke-VirtualClientsJson -Name 'diagnostics' -Arguments @('diagnostics')).data
+$resources = (Invoke-VirtualClientsJson -Name 'resources-3' -Arguments @('resources', '3')).data
 
 $virtuals = @($status.clients | Where-Object { $_.native -eq $false })
 if ($virtuals.Count -ne 3) {

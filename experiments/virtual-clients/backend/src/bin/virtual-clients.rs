@@ -1,5 +1,5 @@
 use m_bedrock_virtual_clients_core::{
-    ClientId, DestructiveConfirmation, ErrorReport, VirtualClients,
+    ClientId, DestructiveConfirmation, ErrorReport, SuccessReport, VirtualClients,
 };
 use std::io;
 
@@ -18,7 +18,8 @@ fn parse_client(value: &str) -> io::Result<ClientId> {
 }
 
 fn print_json<T: serde::Serialize>(value: &T) -> io::Result<()> {
-    let json = serde_json::to_string_pretty(value)
+    let report = SuccessReport::new(value);
+    let json = serde_json::to_string_pretty(&report)
         .map_err(|error| io::Error::new(io::ErrorKind::Other, error))?;
     println!("{json}");
     Ok(())
