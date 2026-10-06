@@ -144,6 +144,7 @@ export interface BasePreparationReport {
   graphics3dEnabled: boolean | null;
   networkPresent: boolean | null;
   networkStartConnected: boolean | null;
+  networkConnectionType: string | null;
 }
 
 export interface EnginePolicy {
