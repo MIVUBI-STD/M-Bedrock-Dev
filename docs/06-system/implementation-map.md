@@ -148,6 +148,9 @@ Use this before broad repository search.
 | Versioned Bedrock/Education capability data | engine/rules/ |
 | Structural/internal schemas | engine/schemas/ |
 | Virtual Clients desktop presentation / typed Tauri boundary | apps/virtual-clients/ |
+| Virtual Clients Window Layout geometry / display + HWND adapter | apps/virtual-clients/src-tauri/src/engine/window_arrangement.rs |
+| Virtual Clients Screen Overlay native lifecycle | apps/virtual-clients/src-tauri/src/engine/screen_overlay.rs |
+| Virtual Clients per-monitor DPI initialization | apps/virtual-clients/src-tauri/src/engine/dpi.rs |
 | Virtual Clients VM lifecycle, setup, resource, identity, recovery, support, and update authority | virtual-clients/runtime-core/ |
 | Virtual Clients pure lifecycle eligibility / action admission | virtual-clients/runtime-core/src/lifecycle_admission.rs |
 | Virtual Clients guest preparation / Guest Agent installation | virtual-clients/guest/ |
