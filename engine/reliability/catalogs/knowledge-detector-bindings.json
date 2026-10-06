@@ -1958,6 +1958,17 @@
       ]
     },
     {
+      "knowledgeId": "player.dynamic-properties-persist-across-sessions",
+      "consumer": "persistent-state-lifetime",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/persistence/persistent-state-scope.ts",
+        "engine/analyzers/scripts/src/domains/persistence/persistent-state-lifetime.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/persistence/persistent-state-lifetime.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "player.initial-spawn-not-universal-readiness-proof",
       "consumer": "player-session-lifecycle-analysis",
       "analyzerPaths": [
