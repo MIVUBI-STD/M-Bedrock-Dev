@@ -1,6 +1,5 @@
 use super::{
-    apply_virtual_hardware_policy, base_vmx_path, client_vmx_path, command_output, ensure_parent, has_suspend_state,
-    host_working_set_mb, listed_as_running, read_vmx_memory, read_vmx_value,
+    apply_virtual_hardware_policy, base_vmx_path, client_vmx_path, command_output, ensure_parent, has_suspend_state, listed_as_running, read_vmx_memory, read_vmx_value,
     promote_staging_vm, remove_vm_container, snapshot_list_contains, staging_client_vmx_path,
     wait_for_state, MemoryMode, Provider, READY_SNAPSHOT,
 };
@@ -137,11 +136,6 @@ impl Provider for VmwareFusionProvider {
     fn memory_limit_mb(&self, client: ClientId) -> io::Result<u64> {
         let vmx = self.require_client(client)?;
         read_vmx_memory(&vmx)
-    }
-
-    fn host_working_set_mb(&self, client: ClientId) -> io::Result<Option<u64>> {
-        let vmx = self.require_client(client)?;
-        Ok(host_working_set_mb(&vmx))
     }
 
     fn identity_key(&self, client: ClientId) -> io::Result<Option<String>> {
