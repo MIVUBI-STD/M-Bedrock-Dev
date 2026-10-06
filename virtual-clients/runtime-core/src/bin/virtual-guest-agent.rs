@@ -57,7 +57,7 @@ fn request_interactive_minecraft_launch() -> Result<m_bedrock_virtual_clients_co
         if minecraft_process_running() {
             let _ = std::fs::remove_file(&request);
             let _ = std::fs::remove_file(&acknowledgement);
-            return Ok(());
+            return Ok(MinecraftLaunchResult { schema: 1, state: MinecraftLaunchState::Launched });
         }
         if acknowledgement.is_file() {
             let detail = std::fs::read_to_string(&acknowledgement).unwrap_or_default();
@@ -230,7 +230,7 @@ fn launch_minecraft_interactive() -> Result<(), Box<dyn std::error::Error>> {
     let deadline = std::time::Instant::now() + Duration::from_secs(30);
     while std::time::Instant::now() < deadline {
         if minecraft_process_running() {
-            return Ok(MinecraftLaunchResult { schema: 1, state: MinecraftLaunchState::Launched });
+            return Ok(());
         }
         std::thread::sleep(Duration::from_millis(500));
     }
