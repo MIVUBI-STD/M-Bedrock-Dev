@@ -21,6 +21,22 @@ for(const path of tracked){
   }
 }
 
+const knowledgeArchitectureAliasPatterns = [
+  /(?:^|\/)(?:rag|knowledge|memory|context|docs|graph)-manager(?:[./_-]|$)/i,
+  /(?:^|\/)semantic-search-manager(?:[./_-]|$)/i,
+  /(?:^|\/)resource-directory(?:[./_-]|$)/i,
+  /(?:^|\/)context-pack-manager(?:[./_-]|$)/i,
+];
+
+for(const path of tracked){
+  if(knowledgeArchitectureAliasPatterns.some((pattern)=>pattern.test(path))){
+    failures.push(
+      "Knowledge architecture alias path is forbidden; use Catalog, Graph, Retrieval, or Context ownership: " +
+        path,
+    );
+  }
+}
+
 const canonicalDocs=[
   "README.md",
   "CONTEXT.md",
@@ -66,6 +82,29 @@ for(const path of canonicalDocs){
   }
   if(/compatibility\/version policy/.test(text)){
     failures.push(path+": use compatibility/version rules instead of policy");
+  }
+}
+
+const canonicalNaming = readFileSync(
+  "docs/system/canonical-naming.md",
+  "utf8",
+);
+for(const required of [
+  "Catalog and Registry are deliberately different",
+  "Router",
+  "Retrieval",
+  "Context",
+  "DOMAIN",
+  "CANONICAL",
+  "REFERENCE",
+  "HISTORICAL",
+  "DERIVED",
+]){
+  if(!canonicalNaming.includes(required)){
+    failures.push(
+      "Canonical naming is missing knowledge architecture term/boundary: " +
+        required,
+    );
   }
 }
 
