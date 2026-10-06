@@ -116,6 +116,8 @@ Virtual Clients never silently kills existing running clients because of host pr
 - Live Virtual/Native version parity gate.
 - Guest Agent/backend version parity gate.
 - Unique VM UUID/MAC identity check.
+- Guest OS machine-identity fingerprint check across all running Virtual instances.
+- Base Microsoft device-registration preflight rejects Entra/Workplace-joined source images.
 - Pressure-aware staggered boot.
 - Batch rollback on start failure.
 - Rollback failure visibility.

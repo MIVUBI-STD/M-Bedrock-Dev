@@ -2,6 +2,7 @@ use m_bedrock_virtual_clients_core::{
     guest::{GuestStatus, GUEST_AGENT_PORT, GUEST_STATUS_SCHEMA},
     profile::native_minecraft_profile,
 };
+use sha2::{Digest, Sha256};
 use std::{
     io::{self, Read, Write},
     net::{TcpListener, TcpStream},
@@ -53,6 +54,7 @@ fn handle(mut stream: TcpStream, token: &str) -> Result<(), Box<dyn std::error::
         schema: GUEST_STATUS_SCHEMA,
         agent_version: env!("CARGO_PKG_VERSION").to_string(),
         minecraft: native_minecraft_profile(),
+        machine_identity: guest_machine_identity(),
     };
     let body = serde_json::to_string(&status)?;
     let response = format!(
@@ -62,6 +64,35 @@ fn handle(mut stream: TcpStream, token: &str) -> Result<(), Box<dyn std::error::
     );
     stream.write_all(response.as_bytes())?;
     Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn guest_machine_identity() -> Option<String> {
+    let output = std::process::Command::new("powershell.exe")
+        .args([
+            "-NoLogo",
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            "(Get-ItemProperty -LiteralPath 'HKLM:\\SOFTWARE\\Microsoft\\Cryptography' -Name MachineGuid -ErrorAction Stop).MachineGuid",
+        ])
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+
+    let machine_guid = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if machine_guid.is_empty() || machine_guid.len() > 128 {
+        return None;
+    }
+
+    Some(format!("{:x}", Sha256::digest(machine_guid.as_bytes())))
+}
+
+#[cfg(not(target_os = "windows"))]
+fn guest_machine_identity() -> Option<String> {
+    None
 }
 
 fn timing_safe_token_eq(candidate: &str, expected: &str) -> bool {

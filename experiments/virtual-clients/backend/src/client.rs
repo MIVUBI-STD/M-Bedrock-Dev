@@ -69,4 +69,5 @@ pub struct ClientStatus {
     pub lineage_parity: Option<ProfileParity>,
     pub version_parity: Option<ProfileParity>,
     pub identity: Option<IdentityState>,
+    pub guest_machine_identity: Option<IdentityState>,
 }

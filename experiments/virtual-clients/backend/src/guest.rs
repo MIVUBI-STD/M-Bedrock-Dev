@@ -8,7 +8,7 @@ use std::{
 use crate::profile::MinecraftProfile;
 
 pub const GUEST_AGENT_PORT: u16 = 47831;
-pub const GUEST_STATUS_SCHEMA: u32 = 1;
+pub const GUEST_STATUS_SCHEMA: u32 = 2;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -16,6 +16,7 @@ pub struct GuestStatus {
     pub schema: u32,
     pub agent_version: String,
     pub minecraft: Option<MinecraftProfile>,
+    pub machine_identity: Option<String>,
 }
 
 pub fn query_guest_status(ip: &str, token: &str, timeout: Duration) -> io::Result<GuestStatus> {
@@ -88,6 +89,7 @@ mod tests {
                 version: "1.21.120.0".into(),
                 install_type: MinecraftInstallType::Desktop,
             }),
+            machine_identity: Some("a".repeat(64)),
         };
 
         let json = serde_json::to_string(&status).unwrap();

@@ -50,6 +50,8 @@ Guest Agent security proof also requires:
 
 - the agent has no fallback/shared token source; Windows guests read only `guestinfo.virtualclients.token`;
 - cloned Virtual VMX files rotate the inherited Base token during the production hardware-policy path;
+- Base preparation rejects Microsoft Entra joined or Workplace joined source VMs;
+- Guest Agent exposes only a SHA-256 fingerprint of Windows MachineGuid, never the raw identifier;
 - `Base`, `Virtual-01`, `Virtual-02`, and `Virtual-03` do not share a Guest Agent token;
 - invalid or missing tokens receive no status payload;
 - the Windows firewall rule is scoped to the installed Guest Agent executable, TCP 47831, and `LocalSubnet`;
@@ -103,6 +105,7 @@ Required observations:
 - network path supports peer-to-peer multiplayer;
 - Base remains unchanged;
 - clone UUID/MAC identities remain unique;
+- with Virtual-01/02/03 running together, each reports `guestMachineIdentity = UNIQUE`;
 - 4 GB is treated as a ceiling, not measured resident use;
 - host working-set telemetry is plausible;
 - CRITICAL pressure blocks new starts without killing existing clients;

@@ -230,6 +230,35 @@ fn wait_for_guest_compatibility(
     }
 }
 
+fn guest_machine_identity_state(
+    provider: &dyn Provider,
+    client: ClientId,
+    guest: Option<&GuestStatus>,
+) -> IdentityState {
+    let Some(identity) = guest.and_then(|status| status.machine_identity.as_deref()) else {
+        return IdentityState::Unknown;
+    };
+
+    for other in ClientId::VIRTUAL {
+        if other == client {
+            continue;
+        }
+        if provider.status(other).ok() != Some(ClientState::Running) {
+            return IdentityState::Unknown;
+        }
+        let Some(other_identity) = guest_status_once(provider, other)
+            .and_then(|status| status.machine_identity)
+        else {
+            return IdentityState::Unknown;
+        };
+        if other_identity == identity {
+            return IdentityState::Duplicate;
+        }
+    }
+
+    IdentityState::Unique
+}
+
 fn working_set_for(working_sets: &[(ClientId, u64)], client: ClientId) -> Option<u64> {
     working_sets
         .iter()
@@ -258,6 +287,7 @@ fn client_status(
             lineage_parity: Some(ProfileParity::Unknown),
             version_parity: Some(ProfileParity::Unknown),
             identity: Some(IdentityState::Unknown),
+            guest_machine_identity: Some(IdentityState::Unknown),
         });
     }
 
@@ -286,6 +316,11 @@ fn client_status(
         lineage_parity: Some(lineage_parity(native, client)),
         version_parity: Some(parity),
         identity: Some(identity_state(provider, client)),
+        guest_machine_identity: Some(guest_machine_identity_state(
+            provider,
+            client,
+            guest.as_ref(),
+        )),
     })
 }
 
@@ -490,6 +525,7 @@ impl VirtualClients {
             lineage_parity: None,
             version_parity: None,
             identity: None,
+            guest_machine_identity: None,
         });
 
         if let Some(provider) = provider.as_ref() {
@@ -518,6 +554,7 @@ impl VirtualClients {
                     lineage_parity: Some(ProfileParity::Unknown),
                     version_parity: Some(ProfileParity::Unknown),
                     identity: Some(IdentityState::Unknown),
+                    guest_machine_identity: Some(IdentityState::Unknown),
                 });
             }
         }
