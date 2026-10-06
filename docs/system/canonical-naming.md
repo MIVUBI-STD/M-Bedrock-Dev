@@ -190,6 +190,22 @@ Todo / Backlog Store / Current Work       → Planning
 Active State Store / Project Memory       → Workspace
 ```
 
+Catalog and Registry are deliberately different:
+
+```text
+Catalog
+→ describes what resources/facts are available
+→ derived/rebuildable when used for repository knowledge access
+→ does not own operational mutation state
+
+Registry
+→ owns a typed set of registered entries
+→ may enforce registration/update/revision rules
+→ may be persisted or runtime state when its domain requires it
+```
+
+Examples of valid Registry usage include capability registration, project records, invariant registration, and contract registration. Do not rename those to Catalog unless their responsibility is actually reduced to descriptive discovery.
+
 The forbidden terms may still appear when they describe an external API/library concept or a source-native identifier, but they must not become new canonical repository responsibilities.
 
 ### Catalog, Registry, and Index
