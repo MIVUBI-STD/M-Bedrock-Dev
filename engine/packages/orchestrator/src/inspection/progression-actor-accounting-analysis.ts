@@ -11,6 +11,9 @@ import type {
   EntityEventExternalEvidence,
 } from "./entity-event-evidence.js";
 import type {
+  ScriptProgressionActiveEventEvidence,
+} from "../../../../analyzers/scripts/src/index.js";
+import type {
   ArenaLifecycleAnalysis,
   ArenaLifecycleTerminalAssessment,
 } from "../arena-lifecycle-analysis.js";
@@ -24,6 +27,7 @@ export type ProgressionCounterStatus =
   | "actor-identity-mismatch"
   | "spawn-quantity-mismatch"
   | "instant-despawn-without-reconciliation"
+  | "active-instant-despawn-without-reconciliation"
   | "missing-reconciliation"
   | "unresolved";
 
@@ -74,6 +78,10 @@ export interface ProgressionCounterAssessment {
     readonly string[];
   readonly inactiveConditionalDespawnActorIdentifiers:
     readonly string[];
+  readonly activeInstantDespawnActorIdentifiers:
+    readonly string[];
+  readonly uncoveredActiveInstantDespawnActorIdentifiers:
+    readonly string[];
   readonly uncoveredImmediateDespawnActorIdentifiers:
     readonly string[];
   readonly unresolvedConditionalDespawnActorIdentifiers:
@@ -116,6 +124,7 @@ export interface ProgressionActorAccountingAnalysis {
   readonly reachableConditionalDespawnCounters: number;
   readonly terminalOnlyConditionalDespawnCounters: number;
   readonly inactiveConditionalDespawnCounters: number;
+  readonly provenActiveInstantDespawnWithoutReconciliation: number;
   readonly reconciledFromMatchedActorLifecycle: number;
   readonly unresolvedCounters: number;
 }
@@ -995,6 +1004,92 @@ function followEntityEvents(
   return seen;
 }
 
+function conditionalDespawnEventKinds(
+  entity: ParsedEntityDefinition,
+): Map<string, "instant" | "despawn" | "mixed"> {
+  const groupKinds =
+    new Map<
+      string,
+      "instant" | "despawn" | "mixed"
+    >();
+
+  for (
+    const [groupId, components] of
+      Object.entries(
+        entity.componentGroups,
+      )
+  ) {
+    const hasInstant =
+      components.includes(
+        "minecraft:instant_despawn",
+      );
+    const hasDespawn =
+      components.includes(
+        "minecraft:despawn",
+      );
+    if (!hasInstant && !hasDespawn) {
+      continue;
+    }
+    groupKinds.set(
+      groupId,
+      hasInstant && hasDespawn
+        ? "mixed"
+        : hasInstant
+          ? "instant"
+          : "despawn",
+    );
+  }
+
+  const output =
+    new Map<
+      string,
+      "instant" | "despawn" | "mixed"
+    >();
+  for (
+    const [eventId, mutation] of
+      Object.entries(entity.events)
+  ) {
+    const kinds =
+      mutation.addGroups
+        .map((groupId) =>
+          groupKinds.get(groupId)
+        )
+        .filter(
+          (
+            value,
+          ): value is
+            | "instant"
+            | "despawn"
+            | "mixed" =>
+            value !== undefined,
+        );
+    if (kinds.length === 0) {
+      continue;
+    }
+    const instant =
+      kinds.some(
+        (kind) =>
+          kind === "instant" ||
+          kind === "mixed",
+      );
+    const despawn =
+      kinds.some(
+        (kind) =>
+          kind === "despawn" ||
+          kind === "mixed",
+      );
+    output.set(
+      eventId,
+      instant && despawn
+        ? "mixed"
+        : instant
+          ? "instant"
+          : "despawn",
+    );
+  }
+  return output;
+}
+
 function conditionalDespawnEvents(
   entity: ParsedEntityDefinition,
 ): string[] {
@@ -1526,6 +1621,8 @@ export function analyzeProgressionActorAccounting(
     ArenaLifecycleAnalysis,
   entityEventEvidence:
     readonly EntityEventExternalEvidence[] = [],
+  activeEventEvidence:
+    readonly ScriptProgressionActiveEventEvidence[] = [],
 ): ProgressionActorAccountingAnalysis {
   const scripts =
     inputs.map(normalizedInput);
@@ -1961,6 +2058,52 @@ export function analyzeProgressionActorAccounting(
                 .get(id)?.status ===
                 "inactive",
             );
+        const activeInstantDespawnActorIdentifiers =
+          conditionalDespawnActorIdentifiers
+            .filter((actorIdentifier) => {
+              const entity =
+                entities.find(
+                  (item) =>
+                    item.identifier !== undefined &&
+                    normalizeActorIdentifier(
+                      item.identifier,
+                    ) === actorIdentifier,
+                );
+              if (!entity) return false;
+              const kinds =
+                conditionalDespawnEventKinds(
+                  entity,
+                );
+              const exactExternal =
+                entityEventEvidence.filter(
+                  (item) =>
+                    eventEvidenceMatchesEntity(
+                      item,
+                      actorIdentifier,
+                    )
+                );
+              return exactExternal.some(
+                (item) =>
+                  (
+                    kinds.get(item.event) ===
+                      "instant" ||
+                    kinds.get(item.event) ===
+                      "mixed"
+                  ) &&
+                  activeEventEvidence.some(
+                    (active) =>
+                      active.event ===
+                        item.event &&
+                      active.source
+                        .relativePath ===
+                        item.source
+                          .relativePath &&
+                      active.executionRegion ===
+                        item.executionRegion,
+                  ),
+              );
+            })
+            .sort();
         const uncoveredImmediateDespawnActorIdentifiers =
           immediateDespawnActorIdentifiers
             .filter((id) =>
@@ -1979,6 +2122,12 @@ export function analyzeProgressionActorAccounting(
                   .get(id)?.status ===
                   "unresolved"
               )
+            )
+            .sort();
+        const uncoveredActiveInstantDespawnActorIdentifiers =
+          activeInstantDespawnActorIdentifiers
+            .filter((id) =>
+              !removeLifecycleSet.has(id)
             )
             .sort();
 
@@ -2038,6 +2187,13 @@ export function analyzeProgressionActorAccounting(
           uncoveredImmediateDespawnActorIdentifiers
             .length > 0 &&
           replacementWrites === 0;
+        const activeInstantDespawnWithoutReconciliation =
+          actorAccountingCandidate &&
+          growthWrites > 0 &&
+          completionChecks > 0 &&
+          uncoveredActiveInstantDespawnActorIdentifiers
+            .length > 0 &&
+          replacementWrites === 0;
 
         return {
           scriptId: [
@@ -2074,6 +2230,8 @@ export function analyzeProgressionActorAccounting(
           reachableConditionalDespawnActorIdentifiers,
           terminalOnlyConditionalDespawnActorIdentifiers,
           inactiveConditionalDespawnActorIdentifiers,
+          activeInstantDespawnActorIdentifiers,
+          uncoveredActiveInstantDespawnActorIdentifiers,
           uncoveredImmediateDespawnActorIdentifiers,
           unresolvedConditionalDespawnActorIdentifiers,
           quantityComparableGrowths,
@@ -2092,9 +2250,11 @@ export function analyzeProgressionActorAccounting(
                 ? "actor-identity-mismatch" as const
                 : quantityMismatch
                   ? "spawn-quantity-mismatch" as const
-                  : immediateDespawnWithoutReconciliation
-                    ? "instant-despawn-without-reconciliation" as const
-                    : matched &&
+                  : activeInstantDespawnWithoutReconciliation
+                    ? "active-instant-despawn-without-reconciliation" as const
+                    : immediateDespawnWithoutReconciliation
+                      ? "instant-despawn-without-reconciliation" as const
+                      : matched &&
                       spawnQuantityStatus ===
                         "matched"
                     ? "reconciled-from-matched-actor-lifecycle" as const
@@ -2116,11 +2276,15 @@ export function analyzeProgressionActorAccounting(
                   ? [
                       "A single-invocation actor spawn region has a deterministic literal spawn count that does not match the actor-counter growth amount. The counter can diverge from the population it claims to represent.",
                     ]
-                  : immediateDespawnWithoutReconciliation
+                  : activeInstantDespawnWithoutReconciliation
                     ? [
-                        "A counted actor definition includes base minecraft:instant_despawn, but no matching entity-remove reconciliation path reaches the actor counter. The actor can disappear immediately while the completion gate still depends on the counter.",
+                        "A counted actor has an exact event-driven minecraft:instant_despawn activation under a source-proven active gameplay state guard, but no matching entity-remove reconciliation path reaches the counter.",
                       ]
-                    : matched &&
+                    : immediateDespawnWithoutReconciliation
+                      ? [
+                          "A counted actor definition includes base minecraft:instant_despawn, but no matching entity-remove reconciliation path reaches the actor counter. The actor can disappear immediately while the completion gate still depends on the counter.",
+                        ]
+                      : matched &&
                       spawnQuantityStatus ===
                         "matched"
                     ? [
@@ -2221,6 +2385,12 @@ export function analyzeProgressionActorAccounting(
         (item) =>
           item.inactiveConditionalDespawnActorIdentifiers
             .length > 0,
+      ).length,
+    provenActiveInstantDespawnWithoutReconciliation:
+      counters.filter(
+        (item) =>
+          item.status ===
+          "active-instant-despawn-without-reconciliation",
       ).length,
     reconciledFromMatchedActorLifecycle:
       counters.filter(

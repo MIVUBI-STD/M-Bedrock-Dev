@@ -571,6 +571,82 @@ describe(
         });
     });
 
+    it("proves exact instant-despawn activation during active wave state when reconciliation is absent", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function tick(entity, waveState) {",
+        "  if (waveState === 'active') {",
+        "    entity.triggerEvent('demo:despawn');",
+        "  }",
+        "}",
+        "function maybeAdvance() { if (remainingEnemies === 0) nextWave(); }",
+      ].join("\n");
+      const input = parsed(source);
+      const entity =
+        parseEntityDefinition(
+          {
+            "minecraft:entity": {
+              description: { identifier: "demo:enemy" },
+              component_groups: {
+                despawn_state: {
+                  "minecraft:instant_despawn": {},
+                },
+              },
+              events: {
+                "demo:despawn": {
+                  add: {
+                    component_groups: ["despawn_state"],
+                  },
+                },
+              },
+            },
+          },
+          {
+            artifactId: "fixture",
+            relativePath: "entities/enemy.json",
+          },
+        );
+      const external:
+        EntityEventExternalEvidence[] = [{
+          event: "demo:despawn",
+          kind: "event-command",
+          entityIdentifier: "demo:enemy",
+          executionRegion: "function:tick",
+          source: input.parsed.source,
+        }];
+      const active = [{
+        event: "demo:despawn",
+        executionRegion: "function:tick",
+        source: input.parsed.source,
+      }];
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+          [],
+          [entity],
+          undefined,
+          external,
+          active,
+        );
+
+      expect(
+        result
+          .provenActiveInstantDespawnWithoutReconciliation,
+      ).toBe(1);
+      expect(result.counters[0])
+        .toMatchObject({
+          activeInstantDespawnActorIdentifiers: ["demo:enemy"],
+          uncoveredActiveInstantDespawnActorIdentifiers: ["demo:enemy"],
+          status:
+            "active-instant-despawn-without-reconciliation",
+        });
+    });
+
     it("closes an unreachable conditional despawn path as statically inactive", () => {
       const source = [
         "let remainingEnemies = 0;",

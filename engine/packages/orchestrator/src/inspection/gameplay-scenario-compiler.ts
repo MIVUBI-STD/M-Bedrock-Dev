@@ -812,6 +812,29 @@ function runtimeEdgeState(
         scenarioLabel ===
           "progression-wave-integrity" &&
         world.progression.actorAccounting
+          .provenActiveInstantDespawnWithoutReconciliation > 0
+      ) {
+        const actors =
+          world.progression.actorAccounting.details
+            .flatMap((item) =>
+              item.uncoveredActiveInstantDespawnActorIdentifiers
+            )
+            .filter((id, index, all) =>
+              all.indexOf(id) === index
+            )
+            .sort();
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Selected-artifact source proves counted actor type(s) can activate minecraft:instant_despawn under an active gameplay state guard while no matching entity-remove reconciliation reaches the actor counter: " +
+            actors.join(", ") +
+            ". This is an active-wave counter convergence contradiction and does not require runtime reproduction.",
+        };
+      }
+      if (
+        scenarioLabel ===
+          "progression-wave-integrity" &&
+        world.progression.actorAccounting
           .provenImmediateDespawnWithoutReconciliation > 0
       ) {
         const actors =

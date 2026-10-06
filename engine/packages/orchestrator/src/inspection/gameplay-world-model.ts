@@ -379,6 +379,7 @@ export interface GameplayWorldModel {
       reachableConditionalDespawnCounters: number;
       terminalOnlyConditionalDespawnCounters: number;
       inactiveConditionalDespawnCounters: number;
+      provenActiveInstantDespawnWithoutReconciliation: number;
       unresolvedCounters: number;
       reconciledFromMatchedActorLifecycle: number;
       details: readonly {
@@ -428,6 +429,10 @@ export interface GameplayWorldModel {
           readonly string[];
         inactiveConditionalDespawnActorIdentifiers:
           readonly string[];
+        activeInstantDespawnActorIdentifiers:
+          readonly string[];
+        uncoveredActiveInstantDespawnActorIdentifiers:
+          readonly string[];
         uncoveredImmediateDespawnActorIdentifiers:
           readonly string[];
         unresolvedConditionalDespawnActorIdentifiers:
@@ -456,6 +461,7 @@ export interface GameplayWorldModel {
           | "actor-identity-mismatch"
           | "spawn-quantity-mismatch"
           | "instant-despawn-without-reconciliation"
+          | "active-instant-despawn-without-reconciliation"
           | "missing-reconciliation"
           | "unresolved";
       }[];
@@ -2007,6 +2013,9 @@ export function deriveGameplayWorldModel(
         inactiveConditionalDespawnCounters:
           source.progressionActorAccounting
             ?.inactiveConditionalDespawnCounters ?? 0,
+        provenActiveInstantDespawnWithoutReconciliation:
+          source.progressionActorAccounting
+            ?.provenActiveInstantDespawnWithoutReconciliation ?? 0,
         unresolvedCounters:
           source.progressionActorAccounting
             ?.unresolvedCounters ?? 0,
@@ -2063,6 +2072,10 @@ export function deriveGameplayWorldModel(
                 [...item.terminalOnlyConditionalDespawnActorIdentifiers],
               inactiveConditionalDespawnActorIdentifiers:
                 [...item.inactiveConditionalDespawnActorIdentifiers],
+              activeInstantDespawnActorIdentifiers:
+                [...item.activeInstantDespawnActorIdentifiers],
+              uncoveredActiveInstantDespawnActorIdentifiers:
+                [...item.uncoveredActiveInstantDespawnActorIdentifiers],
               uncoveredImmediateDespawnActorIdentifiers:
                 [...item.uncoveredImmediateDespawnActorIdentifiers],
               unresolvedConditionalDespawnActorIdentifiers:
