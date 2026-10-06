@@ -2,6 +2,7 @@ use m_bedrock_virtual_clients_core::{
     guest::{GuestStatus, GUEST_AGENT_PORT, GUEST_STATUS_SCHEMA},
     profile::native_minecraft_profile,
 };
+#[cfg(target_os = "windows")]
 use sha2::{Digest, Sha256};
 use std::{
     io::{self, Read, Write},

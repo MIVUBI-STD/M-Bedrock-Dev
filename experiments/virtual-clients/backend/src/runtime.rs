@@ -246,8 +246,8 @@ fn guest_machine_identity_state(
         if provider.status(other).ok() != Some(ClientState::Running) {
             return IdentityState::Unknown;
         }
-        let Some(other_identity) = guest_status_once(provider, other)
-            .and_then(|status| status.machine_identity)
+        let Some(other_identity) =
+            guest_status_once(provider, other).and_then(|status| status.machine_identity)
         else {
             return IdentityState::Unknown;
         };
