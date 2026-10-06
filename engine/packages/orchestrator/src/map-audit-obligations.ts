@@ -839,7 +839,12 @@ export function deriveAuditObligations(input: {
       missingProof:
         "Whether stale or overlapping work can actually commit after the relevant ownership/state transition.",
       validationTest:
-        "Prove commit ordering/ownership across before, overlap, and after windows. Promote only if stale work can reach a wrong gameplay state.",
+        risk.factors.includes("reconnect") ||
+        risk.factors.includes("reload") ||
+        risk.factors.includes("cleanup") ||
+        risk.factors.includes("terminal-transition")
+          ? "Resolve this lifecycle race from selected-artifact control flow, state ownership, generation guards, and bounded interleaving first. Do not request a reconnect/reload/terminal playtest unless native ordering remains the single irreducible fact."
+          : "Prove commit ordering/ownership across before, overlap, and after windows. Promote only if stale work can reach a wrong gameplay state.",
       validationGroupKey:
         "temporal:" +
         [risk.leftSystem, risk.rightSystem]

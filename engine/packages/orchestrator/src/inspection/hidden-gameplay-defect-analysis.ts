@@ -371,6 +371,11 @@ function temporalRisksFromIr(
 ): readonly TemporalInteractionRisk[] {
   return ir.temporal.relations.flatMap(
     (relation) => {
+      const lifecycleText = [
+        relation.from,
+        relation.to ?? "",
+        relation.targetLabel,
+      ].join(" ");
       const factors = [
         relation.kind === "deferred"
           ? "async" as const
@@ -381,13 +386,37 @@ function temporalRisksFromIr(
         relation.guardEvidence === "unresolved"
           ? "delayed-callback" as const
           : undefined,
+        /disconnect|reconnect|playerleave|playerjoin|playerspawn/i.test(
+          lifecycleText,
+        )
+          ? "reconnect" as const
+          : undefined,
+        /reload|worldload|world-load|initialize|bootstrap/i.test(
+          lifecycleText,
+        )
+          ? "reload" as const
+          : undefined,
+        /cleanup|reset|abort|leavearena/i.test(
+          lifecycleText,
+        )
+          ? "cleanup" as const
+          : undefined,
+        /terminal|finish|victory|defeat|timeout|endgame|endmatch/i.test(
+          lifecycleText,
+        )
+          ? "terminal-transition" as const
+          : undefined,
       ].filter(
         (
           value,
         ): value is
           | "async"
           | "shared-resource"
-          | "delayed-callback" =>
+          | "delayed-callback"
+          | "reconnect"
+          | "reload"
+          | "cleanup"
+          | "terminal-transition" =>
           value !== undefined,
       );
 

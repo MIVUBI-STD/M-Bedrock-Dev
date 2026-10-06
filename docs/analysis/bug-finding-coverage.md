@@ -209,6 +209,8 @@ Generate crosschecks only when systems share material state, ownership, timing, 
 
 High-value interactions include:
 
+Lifecycle-sensitive deferred work is source-first. When deferred/periodic execution intersects disconnect/reconnect, reload, cleanup, or terminal transitions, classify that lifecycle boundary explicitly and keep the gray-zone residue visible until generation/ownership/order proof closes it. A generic reconnect or replay playtest is not the default proof method.
+
 ```text
 Reconnect × Inventory
 Reconnect × Death/Respawn
