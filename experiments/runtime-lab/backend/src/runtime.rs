@@ -314,8 +314,8 @@ impl RuntimeLab {
         Ok(result)
     }
 
-    pub fn suspend(&self, client: ClientId) -> io::Result<ClientStatus> {
-        if client.is_native() {
+    pub fn suspend(&self, client: Option<ClientId>) -> io::Result<Vec<ClientStatus>> {
+        if client.is_some_and(ClientId::is_native) {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "Native cannot be suspended by Runtime Lab",
@@ -326,8 +326,18 @@ impl RuntimeLab {
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
-        provider.suspend(client)?;
-        client_status(provider.as_ref(), client)
+
+        let targets: Vec<ClientId> = match client {
+            Some(client) => vec![client],
+            None => ClientId::VIRTUAL.to_vec(),
+        };
+
+        let mut result = Vec::with_capacity(targets.len());
+        for client in targets {
+            provider.suspend(client)?;
+            result.push(client_status(provider.as_ref(), client)?);
+        }
+        Ok(result)
     }
 
     pub fn stop(&self, client: Option<ClientId>) -> io::Result<Vec<ClientStatus>> {
