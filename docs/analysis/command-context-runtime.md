@@ -187,3 +187,10 @@ typed command
 ```
 
 This combined view is the basis for cross-arena selector leakage, wrong-player targeting, wrong-dimension mutation, and broad state-scope analysis.
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [Command Context](../../engine/knowledge/world-engine/command-context-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
