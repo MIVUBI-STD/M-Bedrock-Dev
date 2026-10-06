@@ -7,6 +7,7 @@ import {
   clientDisplayName,
   issueLabel,
   primaryClientAction,
+  primaryClientBlocker,
   recoveryLabel,
   setupHint,
   stateLabel,
@@ -110,5 +111,20 @@ describe("Stop all availability", () => {
     expect(hasStoppableClient([client("STOPPED")], actions)).toBe(false);
     expect(hasStoppableClient([client("RUNNING")], [{ ...actions[0], stop: deny }])).toBe(false);
     expect(hasStoppableClient([client("SUSPENDED")], [])).toBe(false);
+  });
+});
+
+describe("Admission presentation", () => {
+  it("does not label a stopped VM as ready for gameplay", () => {
+    expect(stateLabel("STOPPED")).toBe("Stopped");
+    expect(stateLabel("MANUAL")).toBe("Managed externally");
+  });
+
+  it("shows the backend reason without deriving a new admission policy", () => {
+    const blocked = { ...deny, reason: "Host memory is insufficient." };
+    const availability = { ...actions[0], start: blocked, open: allow };
+    expect(primaryClientAction(availability, "STOPPED")).toBeUndefined();
+    expect(primaryClientBlocker(availability, "STOPPED")).toBe("Host memory is insufficient.");
+    expect(blockerLabel(blocked.blocker, blocked.reason)).toBe(blocked.reason);
   });
 });

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { basePreparation } from "../src/app/bridge/payloadValidation.js";
 import { parseSuccessEnvelope, type BasePreparationReport } from "../src/contracts.js";
 
 describe("Base preparation public contract", () => {
@@ -21,7 +22,7 @@ describe("Base preparation public contract", () => {
         networkPresent: true,
         networkStartConnected: true
       }
-    }));
+    }), basePreparation);
     expect(report.basePresent).toBe(true);
     expect((report as unknown as Record<string, unknown>).nextSetupAction).toBeUndefined();
   });

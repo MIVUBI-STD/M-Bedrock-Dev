@@ -6,6 +6,7 @@
     hasStoppableClient,
     clientDisplayName,
     primaryClientAction,
+    primaryClientBlocker,
     recoveryLabel,
     stateLabel,
   } from "../../view-model.js";
@@ -32,6 +33,8 @@
   export let onSupport: () => void;
   export let onVerifyIdentities: () => void | Promise<void>;
   $: canStopAll = hasStoppableClient(virtuals, actions);
+  $: canStartAll = virtuals.length > 0 &&
+    virtuals.every((client) => actionForClient(actions, client.id)?.start.allowed === true);
 </script>
 
 <section class="hero compact">
@@ -75,7 +78,7 @@
     <small>{snapshot.diagnostics.runtime.pressure.canStartVirtual ? "Automatic resource protection is active" : "This PC is under resource pressure; new starts are paused"}</small>
   </div>
   <div class="batch-actions">
-    <button class="primary" disabled={Boolean(busy) || !snapshot.diagnostics.runtime.pressure.canStartVirtual || !policy} on:click={onStartAll}>
+    <button class="primary" disabled={Boolean(busy) || !canStartAll || !policy} on:click={onStartAll}>
       {busy === "start-all" ? "Starting…" : "Start all"}
     </button>
     <button class="secondary" disabled={Boolean(busy) || runningVirtuals === 0} on:click={onArrange}>
@@ -118,19 +121,22 @@
             {busy.endsWith(client.id) ? "Working…" : primary.label}
           </button>
         {:else}
-          <button class="secondary" disabled>Unavailable</button>
+          <div>
+            <button class="secondary" disabled title={primaryClientBlocker(available, client.state)}>Unavailable</button>
+            <small>{primaryClientBlocker(available, client.state)}</small>
+          </div>
         {/if}
         {#if available}
           <details class="manage-menu">
             <summary aria-label={`Manage ${clientDisplayName(client.id)}`}>•••</summary>
             <div class="menu-panel">
-              <button disabled={!available.restart.allowed || Boolean(busy)} title={blockerLabel(available.restart.blocker)} on:click={() => onRestart(client.id)}>Restart</button>
-              <button disabled={!available.suspend.allowed || Boolean(busy)} title={blockerLabel(available.suspend.blocker)} on:click={() => onSuspend(client.id)}>Pause</button>
-              <button disabled={!available.stop.allowed || Boolean(busy)} title={blockerLabel(available.stop.blocker)} on:click={() => onStop(client.id)}>Stop</button>
+              <button disabled={!available.restart.allowed || Boolean(busy)} title={blockerLabel(available.restart.blocker, available.restart.reason)} on:click={() => onRestart(client.id)}>Restart</button>
+              <button disabled={!available.suspend.allowed || Boolean(busy)} title={blockerLabel(available.suspend.blocker, available.suspend.reason)} on:click={() => onSuspend(client.id)}>Pause</button>
+              <button disabled={!available.stop.allowed || Boolean(busy)} title={blockerLabel(available.stop.blocker, available.stop.reason)} on:click={() => onStop(client.id)}>Stop</button>
               <hr />
-              <button disabled={!available.setReady.allowed || Boolean(busy)} title={blockerLabel(available.setReady.blocker)} on:click={() => onSetReady(client.id)}>Save recovery point</button>
-              <button disabled={!available.reset.allowed || Boolean(busy)} title={blockerLabel(available.reset.blocker)} on:click={() => onReset(client.id)}>Restore recovery point</button>
-              <button class="danger-menu" disabled={!available.reprovision.allowed || Boolean(busy)} title={blockerLabel(available.reprovision.blocker)} on:click={() => onReprovision(client.id)}>Recreate virtual client</button>
+              <button disabled={!available.setReady.allowed || Boolean(busy)} title={blockerLabel(available.setReady.blocker, available.setReady.reason)} on:click={() => onSetReady(client.id)}>Save recovery point</button>
+              <button disabled={!available.reset.allowed || Boolean(busy)} title={blockerLabel(available.reset.blocker, available.reset.reason)} on:click={() => onReset(client.id)}>Restore recovery point</button>
+              <button class="danger-menu" disabled={!available.reprovision.allowed || Boolean(busy)} title={blockerLabel(available.reprovision.blocker, available.reprovision.reason)} on:click={() => onReprovision(client.id)}>Recreate virtual client</button>
             </div>
           </details>
         {/if}

@@ -1,0 +1,130 @@
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+import {
+  actionAvailability, clientStatus, enginePolicy, engineSnapshot,
+  lifecycleActions, operationHistory, updateCheck, windowArrangement,
+} from "../src/app/bridge/payloadValidation.js";
+
+const allowed = { allowed: true, blocker: null };
+const actionsFor = (id: string) => ({
+  id, start: allowed, suspend: allowed, stop: allowed, open: allowed,
+  restart: allowed, setReady: allowed, reset: allowed, reprovision: allowed,
+});
+const clientFor = (id: string) => ({
+  id, native: id === "Native", state: id === "Native" ? "MANUAL" : "STOPPED",
+  readySnapshot: null, memoryLimitMb: null, hostWorkingSetMb: null,
+  guestToolsReady: null, guestAgentReady: null, guestAgentVersion: null,
+  minecraftVersion: null, lineageParity: null, versionParity: null,
+  vmIdentity: null, windowsIdentity: null,
+});
+const snapshot = () => ({
+  capturedAtUnixMs: 1,
+  doctor: {
+    platform: "windows", provider: null, logicalCpus: 8,
+    totalMemoryGb: 32, availableMemoryGb: 16, maxRecommendedVirtualClients: 3,
+    baseVmPresent: false, baseVmStopped: null, baseState: null,
+    readyForProvisioning: false, nextSetupAction: "INSTALL_PROVIDER", issues: [],
+  },
+  diagnostics: {
+    appVersion: "0.1.0",
+    runtime: {
+      provider: null,
+      runtimeProfile: { native: null, base: null, parity: "UNKNOWN" },
+      pressure: { level: "NORMAL", canStartVirtual: true },
+      clients: ["Native", "Virtual-01", "Virtual-02", "Virtual-03"].map(clientFor),
+    },
+    host: { os: "Windows", osVersion: null, logicalCpus: 8, totalMemoryMb: 32768, availableMemoryMb: 16384 },
+    provider: { id: null, version: null },
+  },
+});
+
+describe("Backend payload shapes", () => {
+  it("accepts the consumed snapshot fields and additive backend fields", () => {
+    expect(engineSnapshot({ ...snapshot(), extraBackendField: true })).toBe(true);
+  });
+
+  it("rejects missing nested fields and unknown setup actions", () => {
+    const missing = snapshot();
+    delete (missing.diagnostics as { runtime?: unknown }).runtime;
+    expect(engineSnapshot(missing)).toBe(false);
+    const unknown = snapshot();
+    unknown.doctor.nextSetupAction = "GUESS_SETUP";
+    expect(engineSnapshot(unknown)).toBe(false);
+  });
+
+  it("rejects non-finite telemetry and unknown pressure", () => {
+    const invalid = snapshot();
+    invalid.diagnostics.host.availableMemoryMb = Infinity;
+    expect(engineSnapshot(invalid)).toBe(false);
+    invalid.diagnostics.host.availableMemoryMb = 16;
+    invalid.diagnostics.runtime.pressure.level = "MAYBE";
+    expect(engineSnapshot(invalid)).toBe(false);
+  });
+
+  it("rejects unknown client states and mismatched Native identity", () => {
+    expect(clientStatus({ ...clientFor("Virtual-01"), state: "READY" })).toBe(false);
+    expect(clientStatus({ ...clientFor("Native"), native: false })).toBe(false);
+  });
+
+  it("rejects missing or duplicate clients in a complete snapshot", () => {
+    const invalid = snapshot();
+    invalid.diagnostics.runtime.clients[3] = clientFor("Virtual-02");
+    expect(engineSnapshot(invalid)).toBe(false);
+    invalid.diagnostics.runtime.clients.pop();
+    expect(engineSnapshot(invalid)).toBe(false);
+  });
+
+  it("requires one action entry for every Virtual", () => {
+    const all = ["Virtual-01", "Virtual-02", "Virtual-03"].map(actionsFor);
+    expect(lifecycleActions(all)).toBe(true);
+    expect(lifecycleActions(all.slice(1))).toBe(false);
+    expect(lifecycleActions([all[0], all[0], all[2]])).toBe(false);
+  });
+
+  it("checks the allowed/blocker invariant and optional explanation", () => {
+    expect(actionAvailability(allowed)).toBe(true);
+    expect(actionAvailability({ allowed: false, blocker: "INVALID_STATE", reason: "Memory pressure" })).toBe(true);
+    expect(actionAvailability({ allowed: true, blocker: "INVALID_STATE" })).toBe(false);
+    expect(actionAvailability({ allowed: false, blocker: null })).toBe(false);
+    expect(actionAvailability({ ...allowed, reason: 7 })).toBe(false);
+  });
+
+  it("rejects invalid numeric policy fields", () => {
+    const policy = {
+      maxVirtualClients: 3, virtualMemoryLimitMb: 4096, virtualVcpus: 2,
+      guestAgentPort: 47831, readySnapshotName: "QA_READY",
+      nativeIsVersionAuthority: true, runtimeSelfUpdateEnabled: false,
+    };
+    expect(enginePolicy(policy)).toBe(true);
+    expect(enginePolicy({ ...policy, virtualVcpus: "two" })).toBe(false);
+    expect(enginePolicy({ ...policy, maxVirtualClients: -1 })).toBe(false);
+  });
+
+  it("rejects malformed journal records", () => {
+    expect(operationHistory([])).toBe(true);
+    expect(operationHistory([{ schema: 1, outcome: "SUCCESS" }])).toBe(false);
+  });
+
+  it("rejects unknown update and desktop layout states", () => {
+    expect(updateCheck({ state: "READY" })).toBe(false);
+    expect(windowArrangement({ schema: 1, layout: "GRID_2X2", arranged: ["Native"], missing: [] })).toBe(true);
+    expect(windowArrangement({ schema: 1, layout: "SURPRISE", arranged: [], missing: [] })).toBe(false);
+  });
+});
+
+describe("Frontend boundary wiring", () => {
+  it("requires validators for command responses", () => {
+    const source = readFileSync(new URL("../src/app/bridge/virtualClientsApi.ts", import.meta.url), "utf8");
+    expect(source).toContain("parseSuccessEnvelope<T>(raw, validate)");
+    const commands = source.match(/invokePublic<[^>]+>\("virtual_clients_[^"]+", payload\.[A-Za-z]+/g) ?? [];
+    expect(commands.length).toBe(21);
+  });
+
+  it("refreshes on return without introducing a diagnostic polling loop", () => {
+    const source = readFileSync(new URL("../src/App.svelte", import.meta.url), "utf8");
+    expect(source).toContain('window.addEventListener("focus", refreshVisibleClients)');
+    expect(source).toContain('window.removeEventListener("focus", refreshVisibleClients)');
+    expect(source).toContain("if (busy || refreshRunning) return;");
+    expect(source).not.toContain("setInterval");
+  });
+});

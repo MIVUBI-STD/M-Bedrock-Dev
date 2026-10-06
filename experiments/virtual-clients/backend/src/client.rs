@@ -69,6 +69,8 @@ pub enum LifecycleBlocker {
 pub struct ActionAvailability {
     pub allowed: bool,
     pub blocker: Option<LifecycleBlocker>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reason: Option<&'static str>,
 }
 
 #[derive(Debug, Clone, Serialize)]

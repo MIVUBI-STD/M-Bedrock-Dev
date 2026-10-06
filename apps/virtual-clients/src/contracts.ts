@@ -38,6 +38,7 @@ export type LifecycleBlocker =
 export interface ActionAvailability {
   allowed: boolean;
   blocker: LifecycleBlocker | null;
+  reason?: string;
 }
 
 export interface ClientLifecycleActions {
@@ -207,12 +208,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-export function parseSuccessEnvelope<T>(raw: string): T {
+export type PayloadValidator<T> = (value: unknown) => value is T;
+
+export function parseSuccessEnvelope<T>(raw: string, validate: PayloadValidator<T>): T {
   const parsed: unknown = JSON.parse(raw);
   if (!isRecord(parsed) || parsed.schema !== PUBLIC_CONTRACT_SCHEMA || !("data" in parsed)) {
     throw new Error("Backend response does not match public contract schema 1.");
   }
-  return parsed.data as T;
+  if (!validate(parsed.data)) {
+    throw new Error("Backend response data does not match the requested command contract.");
+  }
+  return parsed.data;
 }
 
 export function parseErrorEnvelope(raw: string): ErrorEnvelope | undefined {

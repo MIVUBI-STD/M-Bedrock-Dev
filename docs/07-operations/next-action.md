@@ -147,7 +147,30 @@ Nine Rust regression cases and nine frontend regression cases were added.
 They are executable specifications, NOT executed PASS results.
 Current proof is recorded in [Current Validation](current-validation.md).
 
-Stage 1 remains pending execution verification. Stages 2–4 are not implemented.
+Stage 1 remains pending execution verification.
+
+### Stage 2 admission and contract checkpoint (2026-10-06)
+
+The user authorized continuing source implementation through GitHub.
+Implemented in this bounded pass:
+- one backend action admission policy for both UI projection and execution;
+- action-specific compatibility, identity, recovery and resource preconditions;
+- optional schema-1 action reason, with existing enum values retained;
+- required payload validation on 21 public and 3 desktop command responses;
+- honest power/setup labels and backend-derived batch Start eligibility;
+- serialized refresh on visible Clients-page return/focus, without polling.
+
+Twenty-one regression cases were added (six Rust, fifteen frontend); none were
+executed in this pass. Existing Base preflight parser tests were adapted to the
+required payload validator. See Current Validation for the proof ceiling.
+
+Remaining Stage 2 scope: measured lightweight status performance and
+backend-origin per-operation progress events. Do not invent percentage/stage
+progress in the frontend. Focus/visibility refresh is not continuous runtime
+monitoring and does not prove live interactive behavior.
+
+Stages 3–4 remain unimplemented. Execution verification remains pending for
+Stages 1–2.
 Do not automatically expand scope beyond this bounded source delivery.
 
 ### Source-grounded findings (review baseline, before Stage 1 changes)
@@ -335,4 +358,4 @@ The initial documentation handoff was committed as
 The subsequent Stage 1 delivery stops after the source commit and remote content
 are verified on Experimental. Source delivery is not test, package, or live
 acceptance, and is not a free-usage guarantee. Respect the user's no-Codex/Work
-constraint; leave execution proof and Stages 2–4 explicitly pending.
+constraint; leave execution proof and the remaining Stage 2 work plus Stages 3–4 explicitly pending.

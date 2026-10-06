@@ -1,6 +1,7 @@
 import {
   parseErrorEnvelope,
   parseSuccessEnvelope,
+  type PayloadValidator,
   type BasePreparationReport,
   type ClientId,
   type ClientLifecycleActions,
@@ -12,6 +13,7 @@ import {
   type WindowArrangementResult,
 } from "../../contracts.js";
 import { invokeRuntime } from "./invokeRuntime.js";
+import * as payload from "./payloadValidation.js";
 
 export class BackendBridgeError extends Error {
   readonly code: string;
@@ -24,12 +26,12 @@ export class BackendBridgeError extends Error {
   }
 }
 
-async function invokePublic<T>(tauriCommand: string, args?: Record<string, unknown>): Promise<T> {
+async function invokePublic<T>(tauriCommand: string, validate: PayloadValidator<T>, args?: Record<string, unknown>): Promise<T> {
   try {
     const raw = await invokeRuntime<string>(tauriCommand, args);
     const report = parseErrorEnvelope(raw);
     if (report) throw new BackendBridgeError(report.code, report.message, report.retryable);
-    return parseSuccessEnvelope<T>(raw);
+    return parseSuccessEnvelope<T>(raw, validate);
   } catch (error) {
     if (error instanceof BackendBridgeError) throw error;
     if (typeof error === "string") {
@@ -42,9 +44,11 @@ async function invokePublic<T>(tauriCommand: string, args?: Record<string, unkno
   }
 }
 
-async function invokeDesktop<T>(command: string): Promise<T> {
+async function invokeDesktop<T>(command: string, validate: PayloadValidator<T>): Promise<T> {
   try {
-    return await invokeRuntime<T>(command);
+    const result = await invokeRuntime<unknown>(command);
+    if (!validate(result)) throw new Error("Desktop response does not match its command contract.");
+    return result;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     throw new BackendBridgeError("DESKTOP_OPERATION_FAILED", message, true);
@@ -53,31 +57,31 @@ async function invokeDesktop<T>(command: string): Promise<T> {
 
 export const desktop = {
   canArrangeWindows: () => true,
-  arrangeWindows: () => invokeDesktop<WindowArrangementResult>("window_arrange"),
-  openBaseLocation: () => invokeDesktop<void>("setup_open_base_location"),
-  openSetupTools: () => invokeDesktop<void>("setup_open_guest_tools")
+  arrangeWindows: () => invokeDesktop<WindowArrangementResult>("window_arrange", payload.windowArrangement),
+  openBaseLocation: () => invokeDesktop<void>("setup_open_base_location", payload.voidResult),
+  openSetupTools: () => invokeDesktop<void>("setup_open_guest_tools", payload.voidResult)
 };
 
 export const backend = {
-  policy: () => invokePublic<EnginePolicy>("virtual_clients_policy"),
-  basePreflight: () => invokePublic<BasePreparationReport>("virtual_clients_base_preflight"),
-  snapshot: () => invokePublic<EngineSnapshot>("virtual_clients_snapshot"),
-  actions: () => invokePublic<ClientLifecycleActions[]>("virtual_clients_actions"),
-  history: () => invokePublic<OperationRecord[]>("virtual_clients_history"),
-  supportBundle: () => invokePublic<SupportBundleResult>("virtual_clients_support_bundle"),
-  checkUpdate: () => invokePublic<UpdateCheck>("virtual_clients_check_update"),
-  registerBase: () => invokePublic<unknown>("virtual_clients_register_base"),
-  openBaseFinalization: () => invokePublic<unknown>("virtual_clients_open_base_finalization"),
-  provision: () => invokePublic<unknown>("virtual_clients_provision"),
-  verifyIdentities: () => invokePublic<unknown>("virtual_clients_verify_identities"),
-  stageUpdate: () => invokePublic<unknown>("virtual_clients_stage_update"),
-  start: (count: number) => invokePublic<unknown>("virtual_clients_start", { count }),
-  startClient: (client: ClientId) => invokePublic<unknown>("virtual_clients_start_client", { client }),
-  suspend: (client?: ClientId) => invokePublic<unknown>("virtual_clients_suspend", { client }),
-  stop: (client?: ClientId) => invokePublic<unknown>("virtual_clients_stop", { client }),
-  restart: (client: ClientId) => invokePublic<unknown>("virtual_clients_restart", { client }),
-  setReady: (client: ClientId) => invokePublic<unknown>("virtual_clients_set_ready", { client }),
-  reset: (client: ClientId) => invokePublic<unknown>("virtual_clients_reset", { client }),
-  open: (client: ClientId) => invokePublic<unknown>("virtual_clients_open", { client }),
-  reprovision: (client: ClientId) => invokePublic<unknown>("virtual_clients_reprovision", { client })
+  policy: () => invokePublic<EnginePolicy>("virtual_clients_policy", payload.enginePolicy),
+  basePreflight: () => invokePublic<BasePreparationReport>("virtual_clients_base_preflight", payload.basePreparation),
+  snapshot: () => invokePublic<EngineSnapshot>("virtual_clients_snapshot", payload.engineSnapshot),
+  actions: () => invokePublic<ClientLifecycleActions[]>("virtual_clients_actions", payload.lifecycleActions),
+  history: () => invokePublic<OperationRecord[]>("virtual_clients_history", payload.operationHistory),
+  supportBundle: () => invokePublic<SupportBundleResult>("virtual_clients_support_bundle", payload.supportBundle),
+  checkUpdate: () => invokePublic<UpdateCheck>("virtual_clients_check_update", payload.updateCheck),
+  registerBase: () => invokePublic<unknown>("virtual_clients_register_base", payload.baseProfile),
+  openBaseFinalization: () => invokePublic<unknown>("virtual_clients_open_base_finalization", payload.openedBase),
+  provision: () => invokePublic<unknown>("virtual_clients_provision", payload.clientList),
+  verifyIdentities: () => invokePublic<unknown>("virtual_clients_verify_identities", payload.clientList),
+  stageUpdate: () => invokePublic<unknown>("virtual_clients_stage_update", payload.stagedUpdate),
+  start: (count: number) => invokePublic<unknown>("virtual_clients_start", payload.clientList, { count }),
+  startClient: (client: ClientId) => invokePublic<unknown>("virtual_clients_start_client", payload.clientStatus, { client }),
+  suspend: (client?: ClientId) => invokePublic<unknown>("virtual_clients_suspend", payload.clientList, { client }),
+  stop: (client?: ClientId) => invokePublic<unknown>("virtual_clients_stop", payload.clientList, { client }),
+  restart: (client: ClientId) => invokePublic<unknown>("virtual_clients_restart", payload.clientStatus, { client }),
+  setReady: (client: ClientId) => invokePublic<unknown>("virtual_clients_set_ready", payload.clientStatus, { client }),
+  reset: (client: ClientId) => invokePublic<unknown>("virtual_clients_reset", payload.clientStatus, { client }),
+  open: (client: ClientId) => invokePublic<unknown>("virtual_clients_open", payload.clientStatus, { client }),
+  reprovision: (client: ClientId) => invokePublic<unknown>("virtual_clients_reprovision", payload.clientStatus, { client })
 };

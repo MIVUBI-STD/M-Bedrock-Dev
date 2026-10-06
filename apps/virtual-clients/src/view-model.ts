@@ -44,9 +44,9 @@ export function setupHint(action: SetupAction): string {
 
 export function stateLabel(state: ClientStatus["state"]): string {
   const labels: Record<ClientStatus["state"], string> = {
-    MANUAL: "Available",
+    MANUAL: "Managed externally",
     NOT_PROVISIONED: "Not created",
-    STOPPED: "Ready",
+    STOPPED: "Stopped",
     SUSPENDED: "Paused",
     RUNNING: "Running",
     ERROR: "Needs attention",
@@ -92,7 +92,8 @@ export function actionForClient(
   return actions.find((item) => item.id === id);
 }
 
-export function blockerLabel(value: string | null | undefined): string {
+export function blockerLabel(value: string | null | undefined, reason?: string): string {
+  if (reason) return reason;
   if (!value) return "";
   const labels: Record<string, string> = {
     PROVIDER_UNAVAILABLE: "Virtualization is unavailable",
@@ -121,8 +122,6 @@ export function primaryClientAction(
     return { kind: "start", label: "Start" };
   }
 
-  if (actions.start.allowed) return { kind: "start", label: "Start" };
-  if (actions.open.allowed) return { kind: "open", label: "Open" };
   return undefined;
 }
 
@@ -147,4 +146,13 @@ export function hasStoppableClient(
       client.state !== "STOPPED" &&
       actionForClient(actions, client.id)?.stop.allowed === true,
   );
+}
+
+export function primaryClientBlocker(
+  actions: ClientLifecycleActions | undefined,
+  state: ClientStatus["state"],
+): string {
+  if (!actions) return "Action availability could not be verified.";
+  const action = state === "RUNNING" ? actions.open : actions.start;
+  return blockerLabel(action.blocker, action.reason);
 }

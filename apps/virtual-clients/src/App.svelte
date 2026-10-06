@@ -35,6 +35,7 @@
   let confirmReprovision: ClientStatus["id"] | undefined;
   let confirmReset: ClientStatus["id"] | undefined;
   let refreshFailed = false;
+  let refreshRunning = false;
   let confirmSetReady: ClientStatus["id"] | undefined;
   let loading = true;
   let busy = "";
@@ -57,6 +58,7 @@
   function selectPage(next: Page) {
     pageChosen = true;
     page = next;
+    if (next === "clients" && !busy && !loading) void refresh();
   }
 
   async function loadState() {
@@ -94,7 +96,8 @@
   }
 
   async function refresh() {
-    if (busy) return;
+    if (busy || refreshRunning) return;
+    refreshRunning = true;
     error = undefined;
     refreshFailed = false;
     try {
@@ -102,6 +105,8 @@
     } catch (value) {
       refreshFailed = true;
       error = presentRuntimeError(value);
+    } finally {
+      refreshRunning = false;
     }
   }
 
@@ -251,6 +256,17 @@
   onMount(() => {
     void refresh();
     void checkUpdateOnce();
+    // Reconcile external VMware changes when the operator returns. Avoid
+    // continuous polling of heavyweight diagnostics or duplicate requests.
+    const refreshVisibleClients = () => {
+      if (page === "clients" && !document.hidden && !busy && !loading) void refresh();
+    };
+    window.addEventListener("focus", refreshVisibleClients);
+    document.addEventListener("visibilitychange", refreshVisibleClients);
+    return () => {
+      window.removeEventListener("focus", refreshVisibleClients);
+      document.removeEventListener("visibilitychange", refreshVisibleClients);
+    };
   });
 </script>
 
@@ -277,7 +293,7 @@
       </div>
       {#if snapshot}
         <div class="ready-state" class:attention={!setupComplete || blockers.length > 0}>
-          {setupComplete && blockers.length === 0 ? "Ready" : blockers.length ? "Needs attention" : "Setup required"}
+          {setupComplete && blockers.length === 0 ? "Setup complete" : blockers.length ? "Needs attention" : "Setup required"}
         </div>
       {/if}
     </header>

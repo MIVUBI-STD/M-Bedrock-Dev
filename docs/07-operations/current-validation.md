@@ -1,3 +1,59 @@
+## 2026-10-06 — Virtual Clients action admission and payload validation
+
+Branch: `Experimental`. Parent source:
+`df45f6e8aceab41e9b0364a011e0155bcf1bb02d`.
+
+Execution context: **REMOTE_GITHUB / SOURCE REVIEW ONLY**.
+No Codex/Work task, terminal, build, typecheck, format command, test suite,
+new CI execution, or VMware/Minecraft session was run for this change.
+
+Source implementation:
+- `action_admission` is shared by UI action projection and mutation admission.
+  `LifecycleFacts` is a transient observation structure, not a state store.
+- Every lifecycle operation uses the common admission before provider mutation;
+  Start additionally retains preflight plus per-target live rechecks.
+- Compatibility does not block Stop/Suspend, while schema/power-state rules
+  remain enforced. Reprovision can repair stale client lineage from a healthy
+  finalized/stopped Base.
+- Missing recovery-point observations remain unavailable rather than silently
+  authorizing a new checkpoint.
+- Optional `ActionAvailability.reason` preserves the existing schema-1 required
+  fields and blocker enum; frontend displays reasons without deriving policy.
+- All 21 public command responses and three desktop-native responses have
+  required payload validators. Validation covers consumed fields, enum values,
+  nullability, finite numeric values, unique/complete client lists, and the
+  allowed/blocker invariant.
+- STOPPED is labeled Stopped, Native is Managed externally, and completed
+  setup is Setup complete. No gameplay-readiness proof is implied.
+- Start all consumes backend action eligibility. A denied Start no longer
+  silently falls back to offering Open as the primary action.
+- Returning to the visible Clients page/focus triggers refresh. Concurrent
+  refresh requests are ignored; listeners are removed on unmount. No periodic
+  diagnostic polling was added.
+
+Regression specifications added, not executed:
+- Six Rust cases for projection/execution agreement across the state/action/
+  snapshot matrix, compatibility/identity/resource rejection, stop/suspend
+  safety, stale-client recreation, recovery prerequisites, and running-client
+  memory handling.
+- Fifteen frontend cases: malformed envelope payload, ten payload-shape cases,
+  two bridge/refresh source-wiring checks, and two admission/status projections.
+- Existing Base preflight parsing now supplies its required payload validator.
+  Source-wiring assertions are not browser interaction tests.
+
+Outstanding proof:
+- Cargo check/test/fmt and frontend typecheck/build/Vitest on this exact source.
+- Live eligibility changes, focus/visibility reconciliation, and recovery UX.
+- Read-path performance measurement; per-operation backend progress events are
+  not implemented in this pass.
+- VMware/Minecraft compatibility, performance, sign-in, and multiplayer
+  acceptance remain unproven here.
+
+No ancestor CI result validates these changes.
+Continuation: [Next Action](next-action.md).
+
+---
+
 ## 2026-10-06 — Virtual Clients Stage 1 source reliability changes
 
 Branch: `Experimental`. Parent source:

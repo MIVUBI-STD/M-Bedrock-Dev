@@ -259,6 +259,14 @@ Mutation operations write a bounded local history of the last 200 operations. Re
 
 ## Lifecycle action projection
 
-`actions` exposes the lifecycle state machine as read-only per-Virtual action availability. Frontend controls must consume this projection instead of recreating Start/Suspend/Stop/Open/Restart/Set-ready/Reset/Reprovision state rules. The projection reuses the same lifecycle validator as mutation execution, so it is not a second policy engine.
+`actions` exposes the lifecycle state machine as read-only per-Virtual action availability. Frontend controls must consume this projection instead of recreating Start/Suspend/Stop/Open/Restart/Set-ready/Reset/Reprovision state rules. The projection and mutation execution use the same `action_admission` policy over observed `LifecycleFacts`. Facts are collected once per client for action projection and collected again under the operation lock before execution. They are never persisted as a second lifecycle state.
+
+Admission includes power state, runtime schema, Base/client compatibility, saved VM identity, duplicate UUID/MAC detection, recovery-point availability, verified identity provenance, Base finalization for reprovision, and memory admission where applicable. Stop/Suspend do not depend on Minecraft compatibility; recreation can recover a stale client from a healthy finalized/stopped Base.
+
+`ActionAvailability.reason` is an optional additive explanation. Existing `allowed` and `blocker` fields keep their schema-1 shape and enum values. Absence of a reason remains valid. Frontend code displays the explanation and must not interpret it as policy.
+
+Every frontend command response now requires a payload validator in addition to the public envelope/schema check. Required consumed fields, enums, nullability, complete client/action lists, and the allowed/blocker relationship are checked before entering presentation state. Extra backend fields remain compatible.
+
+STOPPED is displayed as Stopped, Native as Managed externally, and completed setup as Setup complete. These labels do not establish Minecraft gameplay readiness. Returning to the visible Clients page refreshes backend truth; no periodic heavyweight diagnostic polling or new persisted state is introduced.
 
 
