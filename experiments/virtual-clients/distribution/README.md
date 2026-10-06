@@ -4,13 +4,13 @@ Distribution is separate from runtime lifecycle.
 
 ## Release identity
 
-Stable release tags:
+Stable release authority is one signed tag:
 
 ```text
 virtual-clients-vMAJOR.MINOR.PATCH
 ```
 
-Release source, installer version, Rust package version, and future Tauri version must be identical.
+The tag must point at the exact `Experimental` commit to release. That tag is the only release trigger for Virtual Clients. Release source, installer version, Rust package version, and future Tauri version must be identical.
 
 ## Update policy
 
@@ -83,8 +83,8 @@ Deleting VM/runtime data is a separate explicit destructive action.
 Current backend distribution now includes:
 
 - current-user Windows installer definition;
-- exact-SHA draft release workflow;
-- release provenance + SHA256SUMS;
+- tag-bound trusted release workflow;
+- release provenance + SHA256SUMS + Authenticode signing proof;
 - read-only startup update check;
 - internal HTTPS transport using the operating-system trust store;
 - installer staging with SHA-256 verification;
