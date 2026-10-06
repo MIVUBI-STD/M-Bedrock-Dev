@@ -1,3 +1,44 @@
+## Virtual Clients Window Layout v2 — REMOTE_GITHUB implementation (2026-10-07)
+
+Window Layout is now a first-class desktop feature rather than one implicit
+Arrange-windows heuristic.
+
+Implemented source:
+- One public naming model: Window Layout with Grid, Focus and Columns.
+- Display discovery returns index, primary status and working-area dimensions.
+- Arrange requests carry only semantic choices: layout, display and optional
+  Main window. Frontend never owns pixel coordinates.
+- Rust is the single layout-geometry authority. Grid adapts to 1–4 open windows,
+  including a gap-free three-window layout; Focus gives the Main window the
+  large region; Columns divides the selected display evenly.
+- PowerShell is reduced to the Windows adapter boundary: discover target HWNDs
+  and display work area, then execute the Rust-produced MoveWindow plan.
+- Quick UI uses a split action: Arrange applies the remembered choice; the
+  dropdown opens Window Layout configuration.
+- Defaults require no setup: Grid, primary/available display fallback, This PC
+  as Focus Main window, Screen Overlay enabled with screen number + label.
+- One localStorage preference owns presentation choices. Invalid stored data
+  falls back to defaults; no database, registry or second runtime state exists.
+- Display selection recovers automatically when a saved monitor disappears.
+- Window Layout payload validation and preference specifications are authored.
+
+Screen Overlay boundary:
+- Overlay configuration is intentionally already part of the Window Layout
+  preference and UI: enabled, screen number, label, position and per-client
+  custom label.
+- The native persistent overlay renderer is NOT yet claimed implemented.
+  It must consume the same Rust slot/window identity authority, remain
+  click-through/non-focusable, and have explicit cleanup. Do not introduce a
+  PowerShell polling daemon, Minecraft HUD modification, or independent overlay
+  layout engine merely to complete this feature quickly.
+- Identify screens should be implemented through the same native overlay owner,
+  as a temporary presentation mode rather than separate overlay infrastructure.
+
+Proof ceiling: REMOTE_GITHUB source/static review only. CI and local execution
+remain intentionally deferred.
+
+---
+
 ## Virtual Clients Doctor lineage parity — source implementation (2026-10-06)
 
 Baseline: Experimental `a2ade6fc1c8ba9dda020d5919ae88d4a9fe246c0`.
