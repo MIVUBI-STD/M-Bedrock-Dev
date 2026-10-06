@@ -16,6 +16,21 @@ pub struct OverlayPreference {
     pub labels: HashMap<String, String>,
 }
 
+fn validate_overlay_preference(preference: &OverlayPreference) -> Result<(), String> {
+    if !preference.opacity.is_finite() || !(0.35..=1.0).contains(&preference.opacity) {
+        return Err("Screen Overlay opacity must be between 0.35 and 1.0.".into());
+    }
+    for (id, label) in &preference.labels {
+        if !matches!(id.as_str(), "Native" | "Virtual-01" | "Virtual-02" | "Virtual-03") {
+            return Err(format!("Unknown Screen Overlay client label: {id}"));
+        }
+        if label.chars().count() > 32 {
+            return Err(format!("Screen Overlay label for {id} exceeds 32 characters."));
+        }
+    }
+    Ok(())
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ApplyWindowLayoutRequest {
@@ -35,6 +50,7 @@ pub async fn window_displays() -> Result<Vec<DisplayInfo>, String> {
 
 #[tauri::command]
 pub async fn window_apply_layout(request: ApplyWindowLayoutRequest) -> Result<WindowArrangementResult, String> {
+    validate_overlay_preference(&request.overlay)?;
     tauri::async_runtime::spawn_blocking(move || {
         let execution = window_arrangement::arrange_with_slots(request.layout)?;
         let items = execution.slots.iter().enumerate().map(|(index, slot)| ScreenOverlayItem {
@@ -68,3 +84,26 @@ pub async fn window_apply_layout(request: ApplyWindowLayoutRequest) -> Result<Wi
     .map_err(|error| error.to_string())
 }
 
+
+#[cfg(test)]
+mod tests {
+    use super::{validate_overlay_preference, OverlayPreference};
+    use crate::engine::screen_overlay::OverlayPosition;
+    use std::collections::HashMap;
+
+    #[test]
+    fn overlay_preference_rejects_unknown_clients_and_unbounded_labels() {
+        let mut labels = HashMap::from([("Native".into(), "This PC".into())]);
+        let valid = OverlayPreference {
+            enabled: true,
+            show_screen_number: true,
+            show_label: true,
+            position: OverlayPosition::TopLeft,
+            opacity: 0.88,
+            labels: labels.clone(),
+        };
+        assert!(validate_overlay_preference(&valid).is_ok());
+        labels.insert("Unknown".into(), "Other".into());
+        assert!(validate_overlay_preference(&OverlayPreference { labels, ..valid }).is_err());
+    }
+}
