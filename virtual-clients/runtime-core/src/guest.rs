@@ -209,6 +209,7 @@ mod tests {
             protocol_version: 0,
             agent_version: "9.9.9".into(),
             minecraft: None,
+            minecraft_running: None,
             machine_identity: None,
         };
         assert_eq!(
