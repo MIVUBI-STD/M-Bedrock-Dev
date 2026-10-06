@@ -8,6 +8,7 @@ import {
   type OperationRecord,
   type SupportBundleResult,
   type UpdateCheck,
+  type WindowArrangementResult,
 } from "./contracts.js";
 
 export type BackendCommand =
@@ -32,6 +33,7 @@ export type BackendCommand =
 
 interface HostBridge {
   invoke(command: BackendCommand, args: readonly string[]): Promise<string>;
+  arrangeWindows?(): Promise<WindowArrangementResult>;
 }
 
 declare global {
@@ -85,6 +87,21 @@ async function invoke<T>(command: BackendCommand, args: readonly string[] = []):
     throw new BackendBridgeError("BRIDGE_FAILURE", String(error), false);
   }
 }
+
+export const desktop = {
+  canArrangeWindows: () => typeof window.virtualClients?.arrangeWindows === "function",
+  arrangeWindows: async (): Promise<WindowArrangementResult> => {
+    const bridge = host();
+    if (!bridge.arrangeWindows) {
+      throw new BackendBridgeError(
+        "WINDOW_ARRANGEMENT_UNAVAILABLE",
+        "Window arrangement is unavailable in this desktop host.",
+        false,
+      );
+    }
+    return bridge.arrangeWindows();
+  },
+};
 
 export const backend = {
   policy: () => invoke<EnginePolicy>("policy"),

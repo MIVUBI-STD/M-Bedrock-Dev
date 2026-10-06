@@ -48,7 +48,7 @@ Internal backend terms such as Base lifecycle, provenance, identity proof, and `
 
 Lifecycle button eligibility always comes from backend `actions`. The UI never infers whether an action is safe from client state. The UI may choose which allowed action is primary for presentation, but it cannot make a blocked action available.
 
-Capabilities that do not yet exist in the backend, including automatic window arrangement, are not exposed as working controls.
+Window arrangement is a desktop-host capability rather than lifecycle policy. On Windows, Arrange asks the backend to open running Virtual clients in dedicated VMware Workstation windows, then the desktop host positions discovered Minecraft/VMware windows using the primary monitor working area. Missing windows are reported; they are never synthesized.
 
 ## Desktop host boundary
 

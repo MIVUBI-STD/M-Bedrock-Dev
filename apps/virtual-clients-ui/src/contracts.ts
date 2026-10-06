@@ -162,6 +162,13 @@ export interface UpdateCheck {
   reason: string | null;
 }
 
+export interface WindowArrangementResult {
+  schema: 1;
+  layout: "SINGLE" | "SIDE_BY_SIDE" | "GRID_2X2";
+  arranged: ClientId[];
+  missing: ClientId[];
+}
+
 export interface SupportBundleResult {
   capturedAtUnixMs: number;
   path: string;

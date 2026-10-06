@@ -134,6 +134,116 @@ mod windows_host {
         }
     }
 
+
+    #[derive(Debug, Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct WindowArrangementResult {
+        schema: u32,
+        layout: &'static str,
+        arranged: Vec<String>,
+        missing: Vec<String>,
+    }
+
+    fn arrange_windows() -> io::Result<WindowArrangementResult> {
+        const SCRIPT: &str = r#"
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public static class VirtualClientsWindowNative {
+  [DllImport("user32.dll", SetLastError=true)]
+  public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int Width, int Height, bool Repaint);
+}
+"@
+
+$targets = @(
+  @{ id = 'Native'; patterns = @('Minecraft Education') },
+  @{ id = 'Virtual-01'; patterns = @('Virtual-01') },
+  @{ id = 'Virtual-02'; patterns = @('Virtual-02') },
+  @{ id = 'Virtual-03'; patterns = @('Virtual-03') }
+)
+
+$deadline = [DateTime]::UtcNow.AddSeconds(5)
+$found = @{}
+do {
+  foreach ($process in Get-Process | Where-Object { $_.MainWindowHandle -ne 0 -and $_.MainWindowTitle }) {
+    foreach ($target in $targets) {
+      if ($found.ContainsKey($target.id)) { continue }
+      foreach ($pattern in $target.patterns) {
+        if ($process.MainWindowTitle -like "*$pattern*") {
+          $found[$target.id] = $process
+          break
+        }
+      }
+    }
+  }
+  if ($found.Count -ge 4) { break }
+  Start-Sleep -Milliseconds 200
+} while ([DateTime]::UtcNow -lt $deadline)
+
+$ordered = @()
+$missing = @()
+foreach ($target in $targets) {
+  if ($found.ContainsKey($target.id)) {
+    $ordered += [PSCustomObject]@{ id = $target.id; process = $found[$target.id] }
+  } else {
+    $missing += $target.id
+  }
+}
+
+$count = $ordered.Count
+$layout = if ($count -le 1) { 'SINGLE' } elseif ($count -eq 2) { 'SIDE_BY_SIDE' } else { 'GRID_2X2' }
+
+if ($count -gt 0) {
+  $area = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
+  $columns = if ($count -eq 1) { 1 } elseif ($count -eq 2) { 2 } else { 2 }
+  $rows = if ($count -le 2) { 1 } else { 2 }
+  $cellWidth = [Math]::Floor($area.Width / $columns)
+  $cellHeight = [Math]::Floor($area.Height / $rows)
+
+  for ($index = 0; $index -lt $count; $index++) {
+    $column = $index % $columns
+    $row = [Math]::Floor($index / $columns)
+    $x = $area.Left + ($column * $cellWidth)
+    $y = $area.Top + ($row * $cellHeight)
+    [VirtualClientsWindowNative]::MoveWindow(
+      $ordered[$index].process.MainWindowHandle,
+      $x,
+      $y,
+      $cellWidth,
+      $cellHeight,
+      $true
+    ) | Out-Null
+  }
+}
+
+[PSCustomObject]@{
+  schema = 1
+  layout = $layout
+  arranged = @($ordered | ForEach-Object { $_.id })
+  missing = @($missing)
+} | ConvertTo-Json -Compress
+"#;
+
+        let output = Command::new("powershell.exe")
+            .args(["-NoLogo", "-NoProfile", "-NonInteractive", "-Command", SCRIPT])
+            .output()?;
+        if !output.status.success() {
+            let detail = String::from_utf8_lossy(&output.stderr).trim().to_string();
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                format!("window arrangement failed: {detail}"),
+            ));
+        }
+
+        serde_json::from_slice::<WindowArrangementResult>(&output.stdout).map_err(|error| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("window arrangement returned invalid data: {error}"),
+            )
+        })
+    }
+
     struct HttpRequest {
         method: String,
         path: String,
@@ -332,6 +442,45 @@ mod windows_host {
                     payload.as_bytes(),
                 )
             }
+            ("POST", "arrange") => {
+                if let Some(request_origin) = request.headers.get("origin") {
+                    if request_origin != origin {
+                        return write_response(
+                            &mut stream,
+                            403,
+                            "application/json; charset=utf-8",
+                            host_error_json(
+                                "HOST_ORIGIN_REJECTED",
+                                "Desktop host rejected a cross-origin request.",
+                                false,
+                            )
+                            .as_bytes(),
+                        );
+                    }
+                }
+                match arrange_windows() {
+                    Ok(result) => {
+                        let body = serde_json::to_vec(&result).map_err(io::Error::other)?;
+                        write_response(
+                            &mut stream,
+                            200,
+                            "application/json; charset=utf-8",
+                            &body,
+                        )
+                    }
+                    Err(error) => write_response(
+                        &mut stream,
+                        500,
+                        "application/json; charset=utf-8",
+                        host_error_json(
+                            "WINDOW_ARRANGEMENT_FAILED",
+                            &error.to_string(),
+                            true,
+                        )
+                        .as_bytes(),
+                    ),
+                }
+            }
             ("POST", "heartbeat") => {
                 heartbeat_seen.store(true, Ordering::Relaxed);
                 last_heartbeat.store(now_ms(), Ordering::Relaxed);
@@ -466,6 +615,7 @@ mod windows_host {
             403 => "Forbidden",
             404 => "Not Found",
             405 => "Method Not Allowed",
+            500 => "Internal Server Error",
             _ => "Error",
         };
         let headers = format!(
@@ -599,8 +749,17 @@ mod windows_host {
     return body;
   };
 
+  const arrangeWindows = async () => {
+    const response = await fetch("./arrange", { method: "POST" });
+    const body = await response.text();
+    if (!response.ok) {
+      throw new Error(body || "Window arrangement failed.");
+    }
+    return JSON.parse(body);
+  };
+
   Object.defineProperty(window, "virtualClients", {
-    value: Object.freeze({ invoke }),
+    value: Object.freeze({ invoke, arrangeWindows }),
     enumerable: false,
     configurable: false,
     writable: false

@@ -462,7 +462,7 @@ impl Provider for VmwareWorkstationProvider {
             )
         })?;
 
-        Command::new(gui).arg("-t").arg(&vmx).spawn()?;
+        Command::new(gui).arg("-n").arg(&vmx).spawn()?;
         self.status(client)
     }
 }

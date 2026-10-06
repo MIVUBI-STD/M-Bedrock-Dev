@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { backend, BackendBridgeError } from "./bridge.js";
+  import { backend, desktop, BackendBridgeError } from "./bridge.js";
   import type {
     ClientLifecycleActions,
     ClientStatus,
@@ -34,6 +34,7 @@
   let busy = "";
   let error = "";
   let supportPath = "";
+  let arrangeMessage = "";
   let page: Page = "setup";
   let pageChosen = false;
   let historyOpen = false;
@@ -150,6 +151,34 @@
     }
   }
 
+  async function arrangeWindows() {
+    busy = "arrange";
+    error = "";
+    arrangeMessage = "";
+    try {
+      for (const client of virtuals) {
+        const available = clientActions(client);
+        if (client.state === "RUNNING" && available?.open.allowed) {
+          await backend.open(client.id);
+        }
+      }
+      const result = await desktop.arrangeWindows();
+      if (result.arranged.length === 0) {
+        throw new BackendBridgeError(
+          "WINDOWS_NOT_FOUND",
+          "No Minecraft client windows are currently open.",
+          true,
+        );
+      }
+      const missingNative = result.missing.includes("Native");
+      arrangeMessage = `${result.arranged.length} window${result.arranged.length === 1 ? "" : "s"} arranged${missingNative ? " · This PC was not open" : ""}`;
+    } catch (value) {
+      error = errorMessage(value);
+    } finally {
+      busy = "";
+    }
+  }
+
   async function stageUpdate() {
     await mutate("stage-update", backend.stageUpdate);
   }
@@ -234,6 +263,16 @@
       </section>
     {/if}
 
+    {#if arrangeMessage}
+      <section class="notice" aria-live="polite">
+        <div>
+          <strong>Windows arranged</strong>
+          <span>{arrangeMessage}</span>
+        </div>
+        <button on:click={() => (arrangeMessage = "")}>Dismiss</button>
+      </section>
+    {/if}
+
     {#if supportPath}
       <section class="notice" aria-live="polite">
         <div>
@@ -302,6 +341,13 @@
               on:click={() => policy && mutate("start-all", () => backend.start(policy.maxVirtualClients))}
             >
               {busy === "start-all" ? "Starting…" : "Start all"}
+            </button>
+            <button
+              class="secondary"
+              disabled={Boolean(busy) || runningVirtuals === 0 || !desktop.canArrangeWindows()}
+              on:click={arrangeWindows}
+            >
+              {busy === "arrange" ? "Arranging…" : "Arrange"}
             </button>
             <button class="secondary" disabled={Boolean(busy) || runningVirtuals === 0} on:click={() => mutate("stop-all", () => backend.stop())}>
               {busy === "stop-all" ? "Stopping…" : "Stop all"}
