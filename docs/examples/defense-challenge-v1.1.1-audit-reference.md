@@ -2,7 +2,7 @@
 id: document.examples.defense-challenge-v1.1.1-audit-reference
 class: DOCUMENT
 domain: examples
-role: REFERENCE
+role: DOMAIN
 authority: REFERENCE
 lifecycle: ACTIVE
 ---
