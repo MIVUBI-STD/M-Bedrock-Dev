@@ -1,15 +1,4 @@
-import type { ClientId, WindowLayout, WindowLayoutRequest } from "../contracts.js";
-
-export type OverlayPosition = "TOP_LEFT" | "TOP_RIGHT";
-
-export interface ScreenOverlayPreference {
-  enabled: boolean;
-  showScreenNumber: boolean;
-  showLabel: boolean;
-  position: OverlayPosition;
-  opacity: number;
-  labels: Record<ClientId, string>;
-}
+import type { ClientId, ScreenOverlayPreference, WindowLayout, WindowLayoutRequest } from "../contracts.js";
 
 export interface WindowLayoutPreference extends WindowLayoutRequest {
   overlay: ScreenOverlayPreference;
