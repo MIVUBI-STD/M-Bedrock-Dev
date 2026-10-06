@@ -17,3 +17,4 @@ export * from "./release/index.js";
  * Production selected-map audit must enter through map-audit-pipeline.
  * Engine-development callers may import internal modules explicitly.
  */
+export * from "./map-classification-routing.js";

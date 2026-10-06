@@ -1,4 +1,7 @@
 import type {
+  GameDesignMapClassification,
+} from "../../game-design-spec/src/index.js";
+import type {
   GameplayIntentEdge,
   GameplayIntentModel,
   GameplayIntentNode,
@@ -92,6 +95,11 @@ export interface MapAuditOutputV2 {
   readonly mapVersion: string;
   readonly control: MapAuditOutputControl;
   readonly userIntent?: AuditUserIntentEnvelope;
+  readonly mapClassification?: {
+    readonly use: "audit-routing-only";
+    readonly classification:
+      GameDesignMapClassification;
+  };
   readonly evidenceScope: {
     readonly mode: "selected-map-version-only";
     readonly selectedArtifact: string;
@@ -560,6 +568,18 @@ export function projectMapAuditOutputV2(input: {
     mapVersion:
       input.identity.releaseVersion ??
       "UNRESOLVED",
+    ...(input.inspection.hiddenGameplayDefects
+      .classification === undefined
+      ? {}
+      : {
+          mapClassification: {
+            use: "audit-routing-only" as const,
+            classification:
+              input.inspection
+                .hiddenGameplayDefects
+                .classification,
+          },
+        }),
     evidenceScope: {
       mode: "selected-map-version-only",
       selectedArtifact:

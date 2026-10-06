@@ -23,6 +23,9 @@ import type {
   SemanticIr,
 } from "../../../semantic-ir/src/index.js";
 import type {
+  GameDesignMapClassification,
+} from "../../../game-design-spec/src/index.js";
+import type {
   GameplayWorldModel,
 } from "./gameplay-world-model.js";
 import {
@@ -58,6 +61,8 @@ import {
 
 export interface HiddenGameplayDefectAnalysis {
   readonly schemaVersion: 1;
+  readonly classification?:
+    GameDesignMapClassification;
   readonly designIntentChallenges: readonly {
     readonly subjectId: string;
     readonly label: string;
@@ -691,6 +696,8 @@ function auditScenarioPresetFromModel(
     readonly intent: GameplayIntentModel;
     readonly semanticIr: SemanticIr;
     readonly world: GameplayWorldModel;
+    readonly classification?:
+      GameDesignMapClassification;
     readonly defectResolutions?: readonly GameplayDefectResolution[];
   },
 ): GameplayAuditScenarioPreset {
@@ -704,6 +711,12 @@ function auditScenarioPresetFromModel(
     scenarioSurfaceSignals(input.intent);
 
   return buildGameplayAuditScenarioPreset({
+    ...(input.classification === undefined
+      ? {}
+      : {
+          classification:
+            input.classification,
+        }),
     arenaCount: input.world.arenas.count,
     concurrentArenaLimit:
       input.world.arenas.safeConcurrentArenas ??
@@ -834,6 +847,12 @@ export function analyzeHiddenGameplayDefects(
 
   return {
     schemaVersion: 1,
+    ...(input.classification === undefined
+      ? {}
+      : {
+          classification:
+            input.classification,
+        }),
     designIntentChallenges,
     mechanicCompleteness,
     negativeSpace,
@@ -985,6 +1004,12 @@ export function refreshHiddenGameplayDefectsForWorld(
       : scenarioSurfaceSignals(intent);
   const auditScenarioPreset =
     buildGameplayAuditScenarioPreset({
+      ...(existing.classification === undefined
+        ? {}
+        : {
+            classification:
+              existing.classification,
+          }),
       arenaCount: world.arenas.count,
       concurrentArenaLimit:
         world.arenas.safeConcurrentArenas ??

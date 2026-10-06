@@ -49,6 +49,9 @@ import { entityAiNavigationDiagnostics } from "../entity-ai-navigation-diagnosti
 import { arenaLifecycleDiagnostics } from "../arena-lifecycle-diagnostics.js";
 import { analyzeRouteNavigationEnvironments } from "../route-navigation-environment-analysis.js";
 import { analyzeReleaseIdentity } from "../release-identity-analysis.js";
+import type {
+  GameDesignMapClassification,
+} from "../../../game-design-spec/src/index.js";
 
 export async function inspectDirectory(
   root: string,
@@ -61,6 +64,7 @@ export async function inspectDirectory(
   telemetryDroppedEvents = 0,
   runtimeProbeResponses: readonly RuntimeProbeResponse[] = [],
   runtimeProbeDroppedExchanges = 0,
+  mapClassification?: GameDesignMapClassification,
 ): Promise<InspectDirectoryResult> {
   const runtimeEvidenceStage =
     prepareInspectionRuntimeEvidence({
@@ -413,6 +417,9 @@ export async function inspectDirectory(
     telemetryEvents,
     telemetryDroppedEvents,
     runtimeProbeDroppedExchanges,
+    ...(mapClassification === undefined
+      ? {}
+      : { mapClassification }),
     diagnostics,
   });
 }

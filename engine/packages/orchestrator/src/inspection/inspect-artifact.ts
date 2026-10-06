@@ -45,6 +45,10 @@ import { deriveGameplayAnalysisPriorities } from "./gameplay-analysis-priority.j
 import { collectArtifactReleaseObservations } from "../release-identity-evidence.js";
 import { analyzeReleaseIdentity } from "../release-identity-analysis.js";
 import { deriveMandatoryAuditProcedureReceipt } from "./mandatory-audit-procedure.js";
+import {
+  assertMapClassificationRoutingHint,
+  type MapClassificationRoutingHint,
+} from "../map-classification-routing.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
@@ -59,8 +63,16 @@ export async function inspectArtifact(
   knowledgeCatalog?: KnowledgeCatalog,
   telemetry: readonly TelemetryEvent[] | TelemetryBatch = [],
   runtimeProbeTranscript?: RuntimeProbeTranscript,
+  mapClassificationHint?: MapClassificationRoutingHint,
 ): Promise<InspectArtifactResult> {
   const fingerprint = await sha256File(path);
+  const mapClassification =
+    mapClassificationHint === undefined
+      ? undefined
+      : assertMapClassificationRoutingHint(
+          mapClassificationHint,
+          fingerprint,
+        );
   const artifactId = artifactIdFromFingerprint(fingerprint);
   const telemetryEvents = resolveTelemetryEventsForArtifact(
     telemetry,
@@ -102,6 +114,7 @@ export async function inspectArtifact(
       telemetryDroppedEvents,
       runtimeProbeResponses,
       runtimeProbeTranscript?.droppedExchanges ?? 0,
+      mapClassification,
     );
 
     const levelName = await readFile(

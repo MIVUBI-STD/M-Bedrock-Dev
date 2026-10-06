@@ -2,6 +2,9 @@ import type {
   KnowledgeCatalog,
 } from "../../knowledge/src/index.js";
 import type {
+  MapClassificationRoutingHint,
+} from "./map-classification-routing.js";
+import type {
   RuntimeProbeTranscript,
   TelemetryBatch,
   TelemetryEvent,
@@ -140,6 +143,13 @@ export interface SelectedMapAuditInput {
   readonly knowledgeCatalog?: KnowledgeCatalog;
   readonly telemetry?: readonly TelemetryEvent[] | TelemetryBatch;
   readonly runtimeProbeTranscript?: RuntimeProbeTranscript;
+  /**
+   * Optional map classification used only to broaden audit routing.
+   * The fingerprint must match the selected artifact exactly.
+   * It never becomes expected-behavior or defect proof.
+   */
+  readonly mapClassificationHint?:
+    MapClassificationRoutingHint;
   /**
    * Optional raw prompt fallback. Used only when structured userIntent is not
    * supplied. The raw prompt is preserved as an unmapped Audit Obligation.
@@ -522,6 +532,7 @@ async function inspectSelectedMapToDemandFixedPoint(
     input.knowledgeCatalog,
     input.telemetry ?? [],
     input.runtimeProbeTranscript,
+    input.mapClassificationHint,
   );
   const firstReconciliation =
     reconcileSelectedMapAuditDemand(
@@ -551,6 +562,7 @@ async function inspectSelectedMapToDemandFixedPoint(
     input.knowledgeCatalog,
     input.telemetry ?? [],
     input.runtimeProbeTranscript,
+    input.mapClassificationHint,
   );
   const secondReconciliation =
     reconcileSelectedMapAuditDemand(
