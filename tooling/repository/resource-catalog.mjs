@@ -24,30 +24,103 @@ function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
+function h2Headings(text) {
+  const headings = [];
+  let fenced = false;
+
+  for (const rawLine of text.replaceAll("\r\n", "\n").split("\n")) {
+    const line = rawLine.trimEnd();
+
+    if (/^\s*```/.test(line)) {
+      fenced = !fenced;
+      continue;
+    }
+    if (fenced) continue;
+
+    const match = line.match(/^##\s+(.+?)\s*$/);
+    if (!match) continue;
+
+    const value = match[1]
+      .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+      .replace(/[`*_~]/g, "")
+      .trim();
+
+    if (value) headings.push(value);
+  }
+
+  return headings;
+}
+
+function catalogDocumentSections(resources, seen, parent, text) {
+  const sectionIds = new Set();
+
+  for (const heading of h2Headings(text)) {
+    const section = slug(heading);
+    if (!section) continue;
+
+    if (sectionIds.has(section)) {
+      throw new Error(
+        "Duplicate H2 section slug in " +
+          parent.path +
+          ": " +
+          section,
+      );
+    }
+    sectionIds.add(section);
+
+    addResource(resources, seen, {
+      id: parent.id + ".section." + section,
+      class: "DOCUMENT",
+      domain: parent.domain,
+      role: parent.role,
+      authority: "DERIVED",
+      path: parent.path,
+      locator: "heading:" + section,
+      lifecycle: parent.lifecycle,
+    });
+  }
+}
+
 function catalogDocuments(resources, seen) {
   const rootPath = "docs/README.md";
+  const rootText = readFileSync(rootPath, "utf8");
   const rootMetadata = readDocumentMetadata(
-    readFileSync(rootPath, "utf8"),
+    rootText,
     rootPath,
   );
-  addResource(resources, seen, {
+  const rootResource = {
     ...rootMetadata,
     path: rootPath,
-  });
+  };
+  addResource(resources, seen, rootResource);
+  catalogDocumentSections(
+    resources,
+    seen,
+    rootResource,
+    rootText,
+  );
 
   for (const domain of DOC_DOMAINS) {
     const dir = join("docs", domain);
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       if (!entry.isFile() || !entry.name.endsWith(".md")) continue;
       const path = join(dir, entry.name).replaceAll("\\", "/");
+      const text = readFileSync(path, "utf8");
       const metadata = readDocumentMetadata(
-        readFileSync(path, "utf8"),
+        text,
         path,
       );
-      addResource(resources, seen, {
+      const resource = {
         ...metadata,
         path,
-      });
+      };
+      addResource(resources, seen, resource);
+      catalogDocumentSections(
+        resources,
+        seen,
+        resource,
+        text,
+      );
     }
   }
 }
