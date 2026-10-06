@@ -196,6 +196,7 @@ Microsoft credentials, passwords, access tokens, refresh tokens, and equivalent 
 
 ```text
 doctor
+base-preflight
 diagnostics
 snapshot
 support-bundle
@@ -234,6 +235,8 @@ Use it to collect deterministic backend evidence during the real-machine campaig
 
 
 ## Engine snapshot and support bundle
+
+`base-preflight` returns read-only facts about the expected Base VM and host-visible VMX configuration. It never decides setup readiness; `DoctorReport.nextSetupAction` remains the sole setup decision owner.
 
 `snapshot` returns one read-only engine view combining setup readiness and diagnostics under the public JSON contract.
 
