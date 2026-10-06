@@ -79,4 +79,61 @@ describe("Game Design intent resolution", () => {
 
     expect(errors.join(" ")).toMatch(/actorTypes/);
   });
+
+  it("accepts canonical resolved map classification", () => {
+    const errors = validateGameDesignSpec({
+      ...design,
+      classification: {
+        mapType: "SURVIVAL",
+        playerMode: "COOPERATIVE",
+        mechanicTags: [
+          "WAVE_DEFENSE",
+          "ENTITY_AI",
+          "ROUND_TIMER",
+          "WORLD_RESET",
+        ],
+        classificationStatus: "RESOLVED",
+        evidenceRefs: [
+          "design:survival-loop",
+        ],
+      },
+    });
+
+    expect(errors).toEqual([]);
+  });
+
+  it("rejects non-canonical map type labels", () => {
+    const errors = validateGameDesignSpec({
+      ...design,
+      classification: {
+        mapType: "PvP",
+        playerMode: "COMPETITIVE",
+        mechanicTags: [],
+        classificationStatus: "RESOLVED",
+        evidenceRefs: [
+          "sheet:map-type",
+        ],
+      },
+    });
+
+    expect(errors.join(" ")).toMatch(
+      /mapType is not canonical/,
+    );
+  });
+
+  it("keeps unresolved classification explicit instead of inventing an UNKNOWN map type", () => {
+    const errors = validateGameDesignSpec({
+      ...design,
+      classification: {
+        mapType: null,
+        playerMode: null,
+        mechanicTags: [],
+        classificationStatus:
+          "UNRESOLVED",
+        evidenceRefs: [],
+      },
+    });
+
+    expect(errors).toEqual([]);
+  });
 });

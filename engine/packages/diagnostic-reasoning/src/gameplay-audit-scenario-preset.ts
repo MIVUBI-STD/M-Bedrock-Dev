@@ -1,4 +1,14 @@
+import type {
+  AnalysisKnowledgeDomain,
+} from "../../analysis-planner/src/index.js";
+import type {
+  GameDesignMapClassification,
+} from "../../game-design-spec/src/index.js";
+import {
+  deriveMapClassificationAuditProfile,
+} from "./map-classification-audit-profile.js";
 export type GameplayAuditScenarioKind =
+  | "map-type-coverage"
   | "full-journey"
   | "solo"
   | "two-player"
@@ -45,9 +55,13 @@ export interface GameplayAuditScenario {
   readonly proofMode: GameplayAuditScenarioProofMode;
   readonly reason: string;
   readonly questions: readonly string[];
+  readonly requiredKnowledgeDomains?:
+    readonly AnalysisKnowledgeDomain[];
 }
 
 export interface GameplayAuditScenarioPresetInput {
+  readonly classification?:
+    GameDesignMapClassification;
   readonly maxPartySize?: number;
   readonly arenaCount?: number;
   readonly concurrentArenaLimit?: number | null;
@@ -83,6 +97,55 @@ function scenario(
 export function buildGameplayAuditScenarioPreset(
   input: GameplayAuditScenarioPresetInput,
 ): GameplayAuditScenarioPreset {
+  const classificationProfile =
+    deriveMapClassificationAuditProfile(
+      input.classification,
+    );
+  const effective = {
+    hasMultiArena:
+      Boolean(input.hasMultiArena) ||
+      classificationProfile.signals
+        .hasMultiArena,
+    hasPersistence:
+      Boolean(input.hasPersistence) ||
+      classificationProfile.signals
+        .hasPersistence,
+    hasDeferredWork:
+      Boolean(input.hasDeferredWork) ||
+      classificationProfile.signals
+        .hasDeferredWork,
+    hasRepeatedRunSurface:
+      Boolean(
+        input.hasRepeatedRunSurface,
+      ) ||
+      classificationProfile.signals
+        .hasRepeatedRunSurface,
+    hasTransactionalGameplay:
+      Boolean(
+        input.hasTransactionalGameplay,
+      ) ||
+      classificationProfile.signals
+        .hasTransactionalGameplay,
+    hasSimulationDistanceDependency:
+      Boolean(
+        input.hasSimulationDistanceDependency,
+      ) ||
+      classificationProfile.signals
+        .hasSimulationDistanceDependency,
+    hasProgressionActorSurface:
+      Boolean(
+        input.hasProgressionActorSurface,
+      ) ||
+      classificationProfile.signals
+        .hasProgressionActorSurface,
+    hasPlayerFeedbackSurface:
+      Boolean(
+        input.hasPlayerFeedbackSurface,
+      ) ||
+      classificationProfile.signals
+        .hasPlayerFeedbackSurface,
+  };
+
   const scenarios: GameplayAuditScenario[] = [
     scenario({
       id: "journey:full",
@@ -122,6 +185,29 @@ export function buildGameplayAuditScenarioPreset(
       ],
     }),
   ];
+
+  if (
+    classificationProfile.active &&
+    input.classification?.mapType
+  ) {
+    scenarios.push(
+      scenario({
+        id: "classification:map-type",
+        kind: "map-type-coverage",
+        flowStage: "FULL_JOURNEY",
+        reason:
+          "Resolved Map Type establishes minimum audit coverage without proving any defect by itself.",
+        questions: [
+          "Are all knowledge domains required by this Map Type represented in the Required Inspection Graph?",
+          "Do declared Mechanics add the expected bounded audit scenarios without assuming their failure?",
+          "Does selected-artifact evidence still decide whether each suspected issue is proven, unresolved, or safe?",
+        ],
+        requiredKnowledgeDomains:
+          classificationProfile
+            .requiredKnowledgeDomains,
+      }),
+    );
+  }
 
   const maxParty =
     input.maxPartySize !== undefined &&
@@ -204,7 +290,7 @@ export function buildGameplayAuditScenarioPreset(
       : undefined;
 
   if (
-    input.hasMultiArena ||
+    effective.hasMultiArena ||
     (arenaCount !== undefined && arenaCount > 1)
   ) {
     scenarios.push(
@@ -270,7 +356,7 @@ export function buildGameplayAuditScenarioPreset(
     }
   }
 
-  if (input.hasTransactionalGameplay) {
+  if (effective.hasTransactionalGameplay) {
     scenarios.push(
       scenario({
         id: "transaction:atomicity",
@@ -288,7 +374,7 @@ export function buildGameplayAuditScenarioPreset(
     );
   }
 
-  if (input.hasProgressionActorSurface) {
+  if (effective.hasProgressionActorSurface) {
     scenarios.push(
       scenario({
         id: "progression:actor-accounting",
@@ -307,7 +393,7 @@ export function buildGameplayAuditScenarioPreset(
     );
   }
 
-  if (input.hasSimulationDistanceDependency) {
+  if (effective.hasSimulationDistanceDependency) {
     scenarios.push(
       scenario({
         id: "simulation:distance",
@@ -325,7 +411,7 @@ export function buildGameplayAuditScenarioPreset(
     );
   }
 
-  if (input.hasPlayerFeedbackSurface) {
+  if (effective.hasPlayerFeedbackSurface) {
     scenarios.push(
       scenario({
         id: "feedback:correctness",
@@ -343,7 +429,7 @@ export function buildGameplayAuditScenarioPreset(
     );
   }
 
-  if (input.hasPersistence) {
+  if (effective.hasPersistence) {
     scenarios.push(
       scenario({
         id: "recovery:reload",
@@ -359,7 +445,7 @@ export function buildGameplayAuditScenarioPreset(
     );
   }
 
-  if (input.hasDeferredWork) {
+  if (effective.hasDeferredWork) {
     scenarios.push(
       scenario({
         id: "temporal:deferred-owner",
@@ -447,7 +533,7 @@ export function buildGameplayAuditScenarioPreset(
     );
   }
 
-  if (input.hasRepeatedRunSurface) {
+  if (effective.hasRepeatedRunSurface) {
     scenarios.push(
       scenario({
         id: "lifecycle:second-run",

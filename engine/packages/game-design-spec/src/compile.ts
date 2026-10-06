@@ -10,6 +10,7 @@ import type {
 export interface GameDesignBehaviorCompilation {
   designId: string;
   approved: boolean;
+  classification?: GameDesignSpec["classification"];
   constraints: GameDesignBehaviorConstraints;
   completeContracts: {
     inventory?: InventoryItemBehaviorContract;
@@ -29,6 +30,12 @@ export function compileGameDesignBehaviorContracts(
     return {
       designId: design.id,
       approved: false,
+      ...(design.classification === undefined
+        ? {}
+        : {
+            classification:
+              design.classification,
+          }),
       constraints,
       completeContracts,
       unresolved: [
@@ -89,6 +96,12 @@ export function compileGameDesignBehaviorContracts(
   return {
     designId: design.id,
     approved: true,
+    ...(design.classification === undefined
+      ? {}
+      : {
+          classification:
+            design.classification,
+        }),
     constraints,
     completeContracts,
     unresolved,

@@ -95,7 +95,19 @@ function presetAnchorIds(
   intent: GameplayIntentModel,
 ): readonly string[] {
   const preferredKinds: readonly GameplayIntentNode["kind"][] =
-    kind === "multi-arena-parallel" ||
+    kind === "map-type-coverage"
+      ? [
+          "game",
+          "mechanic",
+          "objective",
+          "phase",
+          "lifecycle",
+          "state",
+          "resource",
+          "policy",
+          "outcome",
+        ]
+      : kind === "multi-arena-parallel" ||
     kind === "arena-replica-integrity" ||
     kind === "arena-capacity-plus-one" ||
     kind === "player-capability-integrity" ||
@@ -1778,6 +1790,18 @@ export function compileGameplayScenarioGraph(
     };
 
     switch (kind) {
+      case "map-type-coverage":
+        addIntentKinds(
+          "mechanic",
+          "objective",
+          "phase",
+          "lifecycle",
+          "state",
+          "resource",
+          "policy",
+          "outcome",
+        );
+        break;
       case "full-journey":
         // Composition only: concrete child scenarios own runtime knowledge.
         addIntentKinds(
@@ -1968,10 +1992,12 @@ export function compileGameplayScenarioGraph(
     const scenarioId =
       "preset:" + presetScenario.id;
     const requiredDomains =
-      requiredKnowledgeDomainsForPreset(
-        presetScenario.kind,
-        input.world,
-      );
+      presetScenario.requiredKnowledgeDomains?.length
+        ? [...presetScenario.requiredKnowledgeDomains]
+        : requiredKnowledgeDomainsForPreset(
+            presetScenario.kind,
+            input.world,
+          );
     scenarioKnowledgeDomains.set(
       scenarioId,
       requiredDomains,

@@ -125,6 +125,110 @@ Ask whether a statement would remain true if the map were replaced by a complete
 - **Yes, because MIVUBI requires implementations to be safe that way** → Engineering Contract.
 
 
+## Map classification vocabulary
+
+Map classification is map-specific Game Design metadata owned by `engine/packages/game-design-spec/`.
+
+Use exactly these canonical fields:
+
+```text
+Map Type
+Player Mode
+Mechanic Tags
+Classification Status
+Evidence Refs
+```
+
+Canonical **Map Type** values:
+
+```text
+BUILDING
+COMBAT
+SURVIVAL
+STRATEGY
+SEARCH_PUZZLE
+CHALLENGE_COURSE
+SKILL_COURSE
+```
+
+Map Type identifies the map's primary gameplay architecture and has exactly one resolved value.
+
+Canonical **Player Mode** values:
+
+```text
+SOLO
+COOPERATIVE
+COMPETITIVE
+TEAM_COMPETITIVE
+ASYMMETRIC
+```
+
+Player Mode describes the relationship between players. Do not encode it into Map Type.
+
+Canonical **Mechanic Tags** are multi-value audit-routing signals. They are not a second definition of the root `GameDesignSpec.mechanics` objects.
+
+```text
+BUILD
+MEMORY
+SEARCH
+PUZZLE
+PARKOUR
+MELEE_COMBAT
+RANGED_COMBAT
+TEAM_COMBAT
+BASE_DEFENSE
+BASE_ATTACK
+CAPTURE_OBJECTIVE
+ESCORT
+EXTRACTION
+WAVE_DEFENSE
+SURVIVAL_TIMER
+ENTITY_AI
+RESOURCE_ECONOMY
+SHOP
+LOADOUT
+CRAFTING
+COLLECTION
+RESPAWN
+REVIVE
+ROUND_TIMER
+MULTI_ARENA
+MULTI_STAGE
+PROGRESSION
+PERSISTENCE
+RECONNECT
+WORLD_RESET
+```
+
+Classification Status uses only:
+
+```text
+RESOLVED
+UNRESOLVED
+```
+
+Rules:
+
+- `RESOLVED` requires one canonical Map Type, one canonical Player Mode, and Evidence Refs;
+- `UNRESOLVED` may keep Map Type or Player Mode null; do not create `UNKNOWN` as a Map Type or Player Mode;
+- Map Type selects minimum audit knowledge coverage, not a defect conclusion;
+- Mechanic Tags add bounded audit scenarios/capabilities and may be empty when no reusable mechanic is yet proven;
+- selected-artifact evidence remains the authority for gameplay truth and defect proof;
+- historical patterns may raise search pressure but never determine Map Type.
+
+Do not introduce parallel classification fields or aliases such as:
+
+```text
+Genre
+Game Genre
+Map Category
+Game Category
+Experience Type
+Map Class
+```
+
+Legacy spreadsheet values such as `PvP`, `Minigame`, `Challenge`, `Skills`, or `Find the button` must be translated into the canonical fields instead of becoming new Map Type values. For example, `PvP` belongs primarily in Player Mode plus combat Mechanic Tags, while `Find the button` belongs in search/puzzle Mechanic Tags.
+
 ## Audit role and spatial vocabulary
 
 Canonical role labels:

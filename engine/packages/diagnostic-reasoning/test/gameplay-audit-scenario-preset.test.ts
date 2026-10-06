@@ -104,4 +104,99 @@ describe("gameplay audit scenario preset flow stages", () => {
       "CLEANUP_REPLAY",
     );
   });
+
+  it("derives minimum audit coverage and bounded scenarios from resolved map classification", () => {
+    const preset =
+      buildGameplayAuditScenarioPreset({
+        classification: {
+          mapType: "SURVIVAL",
+          playerMode: "COOPERATIVE",
+          mechanicTags: [
+            "WAVE_DEFENSE",
+            "MULTI_ARENA",
+            "ROUND_TIMER",
+            "WORLD_RESET",
+          ],
+          classificationStatus:
+            "RESOLVED",
+          evidenceRefs: [
+            "design:survival-loop",
+          ],
+        },
+      });
+
+    const coverage = preset.scenarios.find(
+      (item) =>
+        item.kind ===
+          "map-type-coverage",
+    );
+
+    expect(
+      coverage?.requiredKnowledgeDomains,
+    ).toEqual(
+      expect.arrayContaining([
+        "state-flow",
+        "combat-lifecycle",
+        "entity-behavior",
+        "temporal-ownership",
+        "multiplayer-interleaving",
+        "chunk-simulation",
+        "arena-lifecycle",
+        "world-structure",
+      ]),
+    );
+
+    const kinds = new Set(
+      preset.scenarios.map(
+        (item) => item.kind,
+      ),
+    );
+
+    expect(kinds.has(
+      "multi-arena-parallel",
+    )).toBe(true);
+    expect(kinds.has(
+      "progression-wave-integrity",
+    )).toBe(true);
+    expect(kinds.has(
+      "simulation-distance",
+    )).toBe(true);
+    expect(kinds.has(
+      "deferred-ownership",
+    )).toBe(true);
+    expect(kinds.has(
+      "repeated-run",
+    )).toBe(true);
+  });
+
+  it("does not route unresolved map classification into mandatory audit coverage", () => {
+    const preset =
+      buildGameplayAuditScenarioPreset({
+        classification: {
+          mapType: null,
+          playerMode: null,
+          mechanicTags: [
+            "MULTI_ARENA",
+          ],
+          classificationStatus:
+            "UNRESOLVED",
+          evidenceRefs: [],
+        },
+      });
+
+    expect(
+      preset.scenarios.some(
+        (item) =>
+          item.kind ===
+            "map-type-coverage",
+      ),
+    ).toBe(false);
+    expect(
+      preset.scenarios.some(
+        (item) =>
+          item.kind ===
+            "multi-arena-parallel",
+      ),
+    ).toBe(false);
+  });
 });

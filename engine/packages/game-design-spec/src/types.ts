@@ -1,6 +1,67 @@
 export type GameDesignStatus = "draft" | "approved";
 export type GameDesignSourceKind = "authored-spec" | "client-brief" | "approved-reconstruction";
 
+export type GameDesignMapType =
+  | "BUILDING"
+  | "COMBAT"
+  | "SURVIVAL"
+  | "STRATEGY"
+  | "SEARCH_PUZZLE"
+  | "CHALLENGE_COURSE"
+  | "SKILL_COURSE";
+
+export type GameDesignPlayerMode =
+  | "SOLO"
+  | "COOPERATIVE"
+  | "COMPETITIVE"
+  | "TEAM_COMPETITIVE"
+  | "ASYMMETRIC";
+
+export type GameDesignMechanicTag =
+  | "BUILD"
+  | "MEMORY"
+  | "SEARCH"
+  | "PUZZLE"
+  | "PARKOUR"
+  | "MELEE_COMBAT"
+  | "RANGED_COMBAT"
+  | "TEAM_COMBAT"
+  | "BASE_DEFENSE"
+  | "BASE_ATTACK"
+  | "CAPTURE_OBJECTIVE"
+  | "ESCORT"
+  | "EXTRACTION"
+  | "WAVE_DEFENSE"
+  | "SURVIVAL_TIMER"
+  | "ENTITY_AI"
+  | "RESOURCE_ECONOMY"
+  | "SHOP"
+  | "LOADOUT"
+  | "CRAFTING"
+  | "COLLECTION"
+  | "RESPAWN"
+  | "REVIVE"
+  | "ROUND_TIMER"
+  | "MULTI_ARENA"
+  | "MULTI_STAGE"
+  | "PROGRESSION"
+  | "PERSISTENCE"
+  | "RECONNECT"
+  | "WORLD_RESET";
+
+export type GameDesignMapClassificationStatus =
+  | "RESOLVED"
+  | "UNRESOLVED";
+
+export interface GameDesignMapClassification {
+  readonly mapType: GameDesignMapType | null;
+  readonly playerMode: GameDesignPlayerMode | null;
+  readonly mechanicTags: readonly GameDesignMechanicTag[];
+  readonly classificationStatus:
+    GameDesignMapClassificationStatus;
+  readonly evidenceRefs: readonly string[];
+}
+
 export interface GameDesignSpec {
   schemaVersion: 1;
   id: string;
@@ -8,6 +69,7 @@ export interface GameDesignSpec {
   status: GameDesignStatus;
   scope?: { mapId?: string; modeId?: string };
   source: { kind: GameDesignSourceKind; reference: string };
+  classification?: GameDesignMapClassification;
   mechanics: readonly { id: string; statement: string; tags?: readonly string[] }[];
   intentRules?: readonly GameDesignIntentRule[];
   behaviorConstraints?: GameDesignBehaviorConstraints;

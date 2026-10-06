@@ -26,3 +26,4 @@ export * from "./contradiction-registry.js";
 export * from "./audit-risk.js";
 
 export * from "./gameplay-issue-taxonomy.js";
+export * from "./map-classification-audit-profile.js";

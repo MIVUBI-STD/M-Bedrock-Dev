@@ -1,5 +1,11 @@
+import {
+  GAME_DESIGN_MAP_TYPES,
+  GAME_DESIGN_MECHANIC_TAGS,
+  GAME_DESIGN_PLAYER_MODES,
+} from "./classification.js";
 import type {
   GameDesignIntentRule,
+  GameDesignMapClassification,
   GameDesignSpec,
 } from "./types.js";
 
@@ -11,6 +17,138 @@ function nonEmptyStringArray(
       typeof item === "string" &&
       item.trim().length > 0
     );
+}
+
+
+export function validateGameDesignMapClassification(
+  value: unknown,
+): string[] {
+  if (value === undefined) return [];
+  if (
+    !value ||
+    typeof value !== "object" ||
+    Array.isArray(value)
+  ) {
+    return [
+      "Game Design classification must be an object when provided.",
+    ];
+  }
+
+  const item =
+    value as Partial<GameDesignMapClassification>;
+  const errors: string[] = [];
+
+  if (
+    item.classificationStatus !== "RESOLVED" &&
+    item.classificationStatus !== "UNRESOLVED"
+  ) {
+    errors.push(
+      "Game Design classificationStatus must be RESOLVED or UNRESOLVED.",
+    );
+  }
+
+  if (
+    item.mapType !== null &&
+    item.mapType !== undefined &&
+    !GAME_DESIGN_MAP_TYPES.includes(
+      item.mapType as any,
+    )
+  ) {
+    errors.push(
+      "Game Design mapType is not canonical.",
+    );
+  }
+
+  if (
+    item.playerMode !== null &&
+    item.playerMode !== undefined &&
+    !GAME_DESIGN_PLAYER_MODES.includes(
+      item.playerMode as any,
+    )
+  ) {
+    errors.push(
+      "Game Design playerMode is not canonical.",
+    );
+  }
+
+  if (!Array.isArray(item.mechanicTags)) {
+    errors.push(
+      "Game Design classification mechanicTags must be an array.",
+    );
+  } else {
+    const invalid = item.mechanicTags.filter(
+      (mechanic) =>
+        !GAME_DESIGN_MECHANIC_TAGS.includes(
+          mechanic as any,
+        ),
+    );
+    if (invalid.length > 0) {
+      errors.push(
+        "Game Design classification contains non-canonical mechanic tag(s): " +
+          invalid.join(", ") +
+          ".",
+      );
+    }
+    if (
+      new Set(item.mechanicTags).size !==
+      item.mechanicTags.length
+    ) {
+      errors.push(
+        "Game Design classification mechanicTags must be unique.",
+      );
+    }
+  }
+
+  if (!Array.isArray(item.evidenceRefs)) {
+    errors.push(
+      "Game Design classification evidenceRefs must be an array.",
+    );
+  } else {
+    if (
+      item.evidenceRefs.some(
+        (entry) =>
+          typeof entry !== "string" ||
+          !entry.trim(),
+      )
+    ) {
+      errors.push(
+        "Game Design classification evidenceRefs must contain non-empty strings.",
+      );
+    }
+    if (
+      new Set(item.evidenceRefs).size !==
+      item.evidenceRefs.length
+    ) {
+      errors.push(
+        "Game Design classification evidenceRefs must be unique.",
+      );
+    }
+  }
+
+  if (
+    item.classificationStatus === "RESOLVED"
+  ) {
+    if (item.mapType == null) {
+      errors.push(
+        "Resolved Game Design classification requires mapType.",
+      );
+    }
+    if (item.playerMode == null) {
+      errors.push(
+        "Resolved Game Design classification requires playerMode.",
+      );
+    }
+    if (
+      !Array.isArray(item.evidenceRefs) ||
+      item.evidenceRefs.length === 0
+    ) {
+      errors.push(
+        "Resolved Game Design classification requires evidenceRefs.",
+      );
+    }
+  }
+
+  return errors;
 }
 
 function validateIntentRules(
@@ -123,6 +261,11 @@ export function validateGameDesignSpec(value: unknown): string[] {
     if (typeof source.reference!=="string" || !source.reference.trim()) errors.push("Game Design source reference is required.");
   }
   if (!Array.isArray(item.mechanics)) errors.push("Game Design mechanics must be an array.");
+  errors.push(
+    ...validateGameDesignMapClassification(
+      item.classification,
+    ),
+  );
   errors.push(...validateIntentRules(item.intentRules));
   if (!Array.isArray(item.invariants)) errors.push("Game Design invariants must be an array.");
   if (item.behaviorConstraints !== undefined && (!item.behaviorConstraints || typeof item.behaviorConstraints !== "object" || Array.isArray(item.behaviorConstraints))) errors.push("Game Design behaviorConstraints must be an object when provided.");
