@@ -34,31 +34,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-#[cfg(target_os = "windows")]
-fn ipc_root() -> io::Result<std::path::PathBuf> {
-    let program_data = std::env::var_os("ProgramData")
-        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "ProgramData is unavailable"))?;
-    Ok(std::path::PathBuf::from(program_data).join("M-Bedrock").join("VirtualClients").join("interactive"))
-}
+const INTERACTIVE_LAUNCHER_PORT: u16 = 47832;
 
 #[cfg(target_os = "windows")]
 fn interactive_launcher_ready() -> bool {
-    let Ok(root) = ipc_root() else { return false; };
-    let heartbeat = root.join("launcher.ready");
-    let Ok(metadata) = std::fs::metadata(&heartbeat) else { return false; };
-    let Ok(modified) = metadata.modified() else { return false; };
-    modified.elapsed().is_ok_and(|age| age <= Duration::from_secs(5))
-}
-
-#[cfg(target_os = "windows")]
-fn interactive_launcher_ready() -> bool {
-    let Ok(root) = ipc_root() else { return false; };
-    let heartbeat = root.join("interactive-launcher.heartbeat");
-    let Ok(metadata) = std::fs::metadata(&heartbeat) else { return false; };
-    let Ok(modified) = metadata.modified() else { return false; };
-    std::time::SystemTime::now()
-        .duration_since(modified)
-        .is_ok_and(|age| age <= Duration::from_secs(3))
+    "127.0.0.1:47832"
+        .parse()
+        .ok()
+        .and_then(|address| TcpStream::connect_timeout(&address, Duration::from_millis(150)).ok())
+        .is_some()
 }
 
 #[cfg(target_os = "windows")]
@@ -67,39 +51,25 @@ fn request_interactive_minecraft_launch() -> Result<m_bedrock_virtual_clients_co
     if minecraft_process_running() {
         return Ok(MinecraftLaunchResult { schema: 1, state: MinecraftLaunchState::AlreadyRunning });
     }
-    if !interactive_launcher_ready() {
-        return Err(io::Error::new(
-            io::ErrorKind::NotConnected,
-            "Interactive launcher is not active for the signed-in Windows user",
-        ).into());
-    }
-    let root = ipc_root()?;
-    std::fs::create_dir_all(&root)?;
-    let request = root.join("launch-minecraft.request");
-    let acknowledgement = root.join("launch-minecraft.ack");
-    let request_id = format!("{:016x}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_nanos());
-    let _ = std::fs::remove_file(&acknowledgement);
-    std::fs::write(&request, format!("MINECRAFT_EDUCATION {request_id}\n"))?;
 
-    let deadline = std::time::Instant::now() + Duration::from_secs(35);
-    while std::time::Instant::now() < deadline {
-        if minecraft_process_running() {
-            let _ = std::fs::remove_file(&request);
-            let _ = std::fs::remove_file(&acknowledgement);
-            return Ok(MinecraftLaunchResult { schema: 1, state: MinecraftLaunchState::Launched });
-        }
-        if acknowledgement.is_file() {
-            let detail = std::fs::read_to_string(&acknowledgement).unwrap_or_default();
-            if detail.starts_with(&format!("ERROR:{request_id}:")) {
-                let _ = std::fs::remove_file(&request);
-                let _ = std::fs::remove_file(&acknowledgement);
-                return Err(io::Error::new(io::ErrorKind::Other, detail.trim().to_string()).into());
-            }
-        }
-        std::thread::sleep(Duration::from_millis(500));
+    let address = "127.0.0.1:47832".parse()?;
+    let mut stream = TcpStream::connect_timeout(&address, Duration::from_secs(1))
+        .map_err(|_| io::Error::new(io::ErrorKind::NotConnected, "Interactive launcher is not active for the signed-in Windows user"))?;
+    stream.set_read_timeout(Some(Duration::from_secs(35)))?;
+    stream.set_write_timeout(Some(Duration::from_secs(2)))?;
+
+    let request_id = format!("{:016x}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_nanos());
+    stream.write_all(format!("MINECRAFT_EDUCATION {request_id}\n").as_bytes())?;
+    let mut response = String::new();
+    stream.read_to_string(&mut response)?;
+
+    if response.trim() == format!("OK:{request_id}") {
+        return Ok(MinecraftLaunchResult { schema: 1, state: MinecraftLaunchState::Launched });
     }
-    let _ = std::fs::remove_file(&request);
-    Err(io::Error::new(io::ErrorKind::TimedOut, "Interactive Minecraft launcher did not start Minecraft Education within 35 seconds").into())
+    if response.starts_with(&format!("ERROR:{request_id}:")) {
+        return Err(io::Error::new(io::ErrorKind::Other, response.trim().to_string()).into());
+    }
+    Err(io::Error::new(io::ErrorKind::InvalidData, "Interactive launcher returned an invalid response").into())
 }
 
 #[cfg(target_os = "windows")]
@@ -124,40 +94,35 @@ fn register_interactive_launcher() -> Result<(), Box<dyn std::error::Error>> {
 
 #[cfg(target_os = "windows")]
 fn run_interactive_launcher() -> Result<(), Box<dyn std::error::Error>> {
-    let root = ipc_root()?;
-    std::fs::create_dir_all(&root)?;
-    let request = root.join("launch-minecraft.request");
-    let acknowledgement = root.join("launch-minecraft.ack");
-    let heartbeat = root.join("launcher.ready");
-
-    loop {
-        let session = std::process::Command::new("powershell.exe")
-            .args(["-NoLogo", "-NoProfile", "-NonInteractive", "-Command", "(Get-Process -Id $PID).SessionId"])
-            .output()
-            .ok()
-            .filter(|output| output.status.success())
-            .map(|output| String::from_utf8_lossy(&output.stdout).trim().to_string())
-            .unwrap_or_default();
-        let _ = std::fs::write(&heartbeat, format!("session={session}\n"));
-        if request.is_file() {
-            let action = std::fs::read_to_string(&request).unwrap_or_default();
-            let mut parts = action.split_whitespace();
-            let verb = parts.next().unwrap_or_default();
-            let request_id = parts.next().unwrap_or_default();
-            if verb == "MINECRAFT_EDUCATION" && request_id.len() == 16 && request_id.chars().all(|character| character.is_ascii_hexdigit()) {
-                let result = launch_minecraft_interactive();
-                let message = match result {
-                    Ok(()) => format!("OK:{request_id}\n"),
-                    Err(error) => format!("ERROR:{request_id}:{error}\n"),
-                };
-                let _ = std::fs::write(&acknowledgement, message);
-            } else {
-                let _ = std::fs::write(&acknowledgement, "ERROR:unsupported interactive action\n");
-            }
-            let _ = std::fs::remove_file(&request);
-        }
-        std::thread::sleep(Duration::from_millis(250));
+    if !interactive_session_available() {
+        return Err(io::Error::new(io::ErrorKind::PermissionDenied, "Interactive launcher must run in an interactive Windows user session").into());
     }
+    let listener = TcpListener::bind(("127.0.0.1", INTERACTIVE_LAUNCHER_PORT))?;
+    for incoming in listener.incoming() {
+        let Ok(mut stream) = incoming else { continue; };
+        stream.set_read_timeout(Some(Duration::from_secs(2)))?;
+        stream.set_write_timeout(Some(Duration::from_secs(35)))?;
+        let mut request = String::new();
+        stream.read_to_string(&mut request)?;
+        if request.trim().is_empty() { continue; }
+        let mut parts = request.split_whitespace();
+        let verb = parts.next().unwrap_or_default();
+        let request_id = parts.next().unwrap_or_default();
+        let valid = verb == "MINECRAFT_EDUCATION"
+            && request_id.len() == 16
+            && request_id.chars().all(|character| character.is_ascii_hexdigit())
+            && parts.next().is_none();
+        let response = if valid {
+            match launch_minecraft_interactive() {
+                Ok(()) => format!("OK:{request_id}\n"),
+                Err(error) => format!("ERROR:{request_id}:{error}\n"),
+            }
+        } else {
+            "ERROR:INVALID:unsupported interactive action\n".to_string()
+        };
+        stream.write_all(response.as_bytes())?;
+    }
+    Ok(())
 }
 
 #[cfg(not(target_os = "windows"))]
