@@ -1,3 +1,24 @@
+## Window Layout remote hardening follow-up (2026-10-07)
+
+Additional source hardening:
+- Screen Overlay thread now has a startup handshake. Class-registration failure
+  is reported at Apply instead of leaving a dead sender/receiver pair.
+- Overlay labels are bounded to the same 32-character limit in persisted
+  preference validation as in the UI.
+- Identify screens uses a generation token so a three-second restore from an
+  older Identify action cannot overwrite a newer Apply/Arrange choice.
+- Per-monitor-v2 DPI awareness is configured before the desktop app starts;
+  an already-configured equivalent host context is not downgraded.
+- Overlay failure is nonfatal after successful window placement. The arrangement
+  result reports overlayApplied/overlayWarning, and the UI tells the user that
+  windows were arranged even if Screen Overlay could not be shown.
+
+No new user-facing subsystem was added. Remaining uncertainty is execution proof:
+Rust/windows-sys compilation on the pinned Windows toolchain, real Minecraft/
+VMware HWND identity, z-order/fullscreen behavior, and mixed-DPI observation.
+
+---
+
 ## Virtual Clients Screen Overlay — REMOTE_GITHUB implementation (2026-10-07)
 
 Implemented source on top of Window Layout v2:
