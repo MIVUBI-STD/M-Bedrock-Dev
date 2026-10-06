@@ -220,11 +220,11 @@ Pure vector similarity must not search the entire repository as an unbounded fir
 
 ### Document section indexing
 
-H2 headings in canonical documents are exposed as DERIVED Catalog resources. They retain the parent path and use a heading locator.
+H2/H3 headings in canonical documents are exposed as DERIVED Catalog resources. They retain the parent path and use a heading locator.
 
 ```text
 DOCUMENT parent
-→ derived H2 section
+→ derived H2/H3 section
 → Retrieval candidate
 ```
 
