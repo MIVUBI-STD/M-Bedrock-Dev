@@ -5,6 +5,69 @@ import { buildKnowledgeBindingEdges } from "./knowledge-binding-edges.mjs";
 
 const MARKDOWN_LINK = /\[[^\]]*\]\(([^)]+)\)/g;
 
+function sourceOwnerForPath(resources, path) {
+  return resources
+    .filter((resource) => resource.class === "SOURCE")
+    .filter(
+      (resource) =>
+        path === resource.path ||
+        path.startsWith(resource.path + "/"),
+    )
+    .sort((a, b) => b.path.length - a.path.length)[0];
+}
+
+function addKnowledgeBindingEdges(catalog, edges, seen) {
+  const path =
+    "engine/reliability/catalogs/knowledge-detector-bindings.json";
+  if (!existsSync(path)) return;
+
+  const registry = JSON.parse(readFileSync(path, "utf8"));
+  const byId = new Map(
+    catalog.resources.map((resource) => [resource.id, resource]),
+  );
+
+  for (const binding of registry.bindings ?? []) {
+    const knowledgeId = "knowledge." + binding.knowledgeId;
+
+    if (!byId.has(knowledgeId)) {
+      addEdge(edges, seen, {
+        from: "source.package.orchestrator",
+        type: "USES",
+        to: knowledgeId,
+      });
+      continue;
+    }
+
+    for (const analyzerPath of binding.analyzerPaths ?? []) {
+      const owner = sourceOwnerForPath(
+        catalog.resources,
+        analyzerPath,
+      );
+      if (!owner) continue;
+
+      addEdge(edges, seen, {
+        from: owner.id,
+        type: "USES",
+        to: knowledgeId,
+      });
+    }
+
+    for (const proofPath of binding.proofPaths ?? []) {
+      const owner = sourceOwnerForPath(
+        catalog.resources,
+        proofPath,
+      );
+      if (!owner) continue;
+
+      addEdge(edges, seen, {
+        from: owner.id,
+        type: "VALIDATES",
+        to: knowledgeId,
+      });
+    }
+  }
+}
+
 function cleanTarget(value) {
   return value
     .trim()
