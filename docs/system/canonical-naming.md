@@ -142,3 +142,174 @@ These names are deliberately non-interchangeable. Source-native identifiers such
 Detailed audit status, role, proof, and bound naming is owned by:
 
 `docs/analysis/map-audit-naming-contract.md`
+
+## Knowledge architecture vocabulary
+
+These terms have one repository-wide meaning. Do not introduce aliases for the same responsibility.
+
+| Term | Canonical meaning |
+|---|---|
+| Catalog | structured collection of registered resources or facts |
+| Graph | typed relationships between registered resources |
+| Router | deterministic selection of the first canonical owner/domain |
+| Retrieval | bounded selection and ranking of relevant registered resources |
+| Context | minimum evidence/content package supplied to reasoning or execution |
+| Owner | single canonical authority for one responsibility |
+| History | chronological execution evidence; never current authority |
+| Corpus | reusable/frozen evaluation material |
+| Planning | current/future work intent |
+| Workspace | current project execution data and working artifacts |
+
+Qualified forms preserve the same meaning. For example, `Reliability Catalog`, `Platform Knowledge Catalog`, and `Resource Catalog` are all catalogs; the qualifier identifies the domain, not a different concept.
+
+Forbidden architectural aliases for these concepts include:
+
+```text
+Registry / Directory / Index Database     → Catalog
+Knowledge Graph Manager / Link Graph      → Graph
+Dispatcher / Resolver                     → Router
+RAG Manager / Semantic Search Manager     → Retrieval
+Context Pack / Memory Bundle              → Context
+Master / Golden / Primary Owner           → Owner
+Archive Log / Execution Log Store         → History
+Benchmark Dataset / Evaluation Dataset    → Corpus
+Todo / Backlog Store / Current Work       → Planning
+Active State Store / Project Memory       → Workspace
+```
+
+The forbidden terms may still appear when they describe an external API/library concept or a source-native identifier, but they must not become new canonical repository responsibilities.
+
+### Resource classes
+
+Every registered knowledge-architecture resource uses exactly one class:
+
+```text
+DOCUMENT
+KNOWLEDGE
+SOURCE
+RELIABILITY
+WORKFLOW
+SCHEMA
+```
+
+Do not add synonymous classes such as NOTE, PAGE, ARTICLE, RESOURCE, CONTENT, or DOC_NODE.
+
+### Document roles
+
+Every registered document uses exactly one role:
+
+```text
+ROUTER
+WORKFLOW
+CONTRACT
+REFERENCE
+ARCHITECTURE
+GUIDE
+```
+
+These roles are mutually exclusive at registration time. A document can discuss another role without acquiring it.
+
+Do not introduce PROCEDURE, PLAYBOOK, HANDBOOK, MANUAL, SPEC, or PROTOCOL as parallel role names. Existing filenames may retain historical wording until a deliberate rename is justified; the registered role remains canonical.
+
+### Authority classes
+
+Every registered resource uses exactly one authority class:
+
+```text
+CANONICAL
+REFERENCE
+HISTORICAL
+DERIVED
+```
+
+Meaning:
+
+- `CANONICAL` — owns the current rule/state/contract for its concern.
+- `REFERENCE` — evidence-backed supporting information consumed by canonical owners.
+- `HISTORICAL` — past execution or incident evidence; search pressure only.
+- `DERIVED` — rebuildable projection/index/cache generated from other owners.
+
+Do not introduce PRIMARY, MASTER, GOLDEN, OFFICIAL, or SOURCE_OF_TRUTH as alternative authority-class values.
+
+### Relation types
+
+The knowledge graph uses only these relation types unless a genuinely new invariant cannot be represented:
+
+```text
+ROUTES_TO
+OWNS
+IMPLEMENTS
+USES
+DEPENDS_ON
+VALIDATES
+RELATES_TO
+DERIVED_FROM
+```
+
+Relation names are directional and semantic. Do not create synonyms such as CONSUMES for USES, BACKED_BY for DERIVED_FROM, or REFERENCES for RELATES_TO.
+
+### Resource identity
+
+Registered IDs are semantic and readable:
+
+```text
+<class>.<domain>.<name>
+```
+
+Examples:
+
+```text
+document.analysis.player-lifecycle
+knowledge.world.chunks
+source.orchestrator.map-audit
+reliability.regression.multi-arena-concurrency
+workflow.audit.selected-map
+schema.bug-report.v2
+```
+
+Rules:
+
+- lowercase;
+- dot-separated semantic segments;
+- stable across file relocation;
+- no sequential numeric IDs;
+- no `new`, `latest`, `final`, `v2` suffix unless the version is part of the actual schema/product identity;
+- one ID resolves to one resource;
+- one resource has one ID.
+
+Path is location. ID is identity. They are not interchangeable.
+
+## Data lifecycle vocabulary
+
+Resource lifecycle uses one state vocabulary:
+
+```text
+ACTIVE
+RETIRED
+```
+
+Resource management follows one process:
+
+```text
+Discover
+→ Classify
+→ Register
+→ Relate
+→ Validate
+→ Consume
+→ Update
+→ Retire
+```
+
+Definitions:
+
+- Discover — detect a new resource/fact/capability.
+- Classify — assign class, domain, role when applicable, and authority.
+- Register — assign one stable ID and owner/path.
+- Relate — add only typed graph relationships required for retrieval/impact.
+- Validate — verify identity, ownership, relationships, applicability, and consumers.
+- Consume — make the resource reachable from Router/Retrieval or executable consumers.
+- Update — modify the existing owner/resource rather than creating an alias/copy.
+- Retire — remove it from active routing/consumption; Git History preserves superseded repository content when no current artifact is needed.
+
+Do not create lifecycle states such as OLD, LEGACY, DEPRECATED, SUPERSEDED, ARCHIVED, or INACTIVE as parallel registry states. Domain-specific version/deprecation semantics may exist inside the owned data, but resource lifecycle remains ACTIVE or RETIRED.
