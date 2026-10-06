@@ -230,7 +230,10 @@ fn valid_identity_fingerprint(value: &str) -> bool {
 
 fn validate_client_profile_identities(profile: &ClientProfile) -> io::Result<()> {
     for (name, value) in [
-        ("verifiedVmIdentity", profile.verified_vm_identity.as_deref()),
+        (
+            "verifiedVmIdentity",
+            profile.verified_vm_identity.as_deref(),
+        ),
         (
             "verifiedWindowsIdentity",
             profile.verified_windows_identity.as_deref(),

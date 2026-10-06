@@ -547,11 +547,7 @@ mod tests {
         fs::write(&vmx, "uuid.bios = \"uuid-1\"\n").unwrap();
         assert_eq!(super::vm_identity_key(&vmx).unwrap(), None);
 
-        fs::write(
-            &vmx,
-            "ethernet0.generatedAddress = \"00:50:56:AA:BB:CC\"\n",
-        )
-        .unwrap();
+        fs::write(&vmx, "ethernet0.generatedAddress = \"00:50:56:AA:BB:CC\"\n").unwrap();
         assert_eq!(super::vm_identity_key(&vmx).unwrap(), None);
 
         fs::remove_dir_all(root).unwrap();
