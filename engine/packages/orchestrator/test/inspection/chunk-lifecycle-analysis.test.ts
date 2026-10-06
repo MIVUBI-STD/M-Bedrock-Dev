@@ -315,6 +315,58 @@ describe("chunk lifecycle analysis", () => {
     ).toBe(0);
   });
 
+  it("proves a bounded deferred chunk retry budget", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function retry(system, dimension, attempt) {",
+        "  if (attempt >= 3) return;",
+        "  system.runTimeout(() => {",
+        "    dimension.isChunkLoaded({ x: 0, y: 0, z: 0 });",
+        "  }, 2);",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(
+      result.boundedDeferredChunkRetries,
+    ).toBe(1);
+    expect(
+      result.unboundedDeferredChunkRetries,
+    ).toBe(0);
+  });
+
+  it("keeps deferred chunk retry without a budget guard explicit as unbounded", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function retry(system, dimension) {",
+        "  system.runTimeout(() => {",
+        "    dimension.isChunkLoaded({ x: 0, y: 0, z: 0 });",
+        "  }, 2);",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(
+      result.unboundedDeferredChunkRetries,
+    ).toBe(1);
+  });
+
   it("accepts unloaded-chunk-specific spawn recovery routing", () => {
     const script = parseScriptFile(
       "main",

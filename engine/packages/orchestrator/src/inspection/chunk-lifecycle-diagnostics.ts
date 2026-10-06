@@ -23,6 +23,7 @@ export function chunkLifecycleDiagnostics(
     analysis.readinessUnverifiedLeases > 0 ||
     analysis.unguardedDeferredChunkWork > 0 ||
     analysis.zeroTickDeferredChunkWork > 0 ||
+    analysis.unboundedDeferredChunkRetries > 0 ||
     analysis.broadSpawnRecoveryRisks > 0 ||
     analysis.entityRemoveTerminalizationRisks > 0 ||
     analysis.unresolvedResidencyStateMachines > 0 ||
@@ -62,6 +63,10 @@ export function chunkLifecycleDiagnostics(
           analysis.unguardedDeferredChunkWork,
         zeroTickDeferredChunkWork:
           analysis.zeroTickDeferredChunkWork,
+        boundedDeferredChunkRetries:
+          analysis.boundedDeferredChunkRetries,
+        unboundedDeferredChunkRetries:
+          analysis.unboundedDeferredChunkRetries,
         spawnRecoveryRoutes:
           analysis.spawnRecoveryRoutes,
         unloadedSpecificSpawnRecoveryRoutes:

@@ -54,6 +54,8 @@ export interface ChunkLifecycleAnalysis {
   worldLoadReconciliationPaths: number;
   unguardedDeferredChunkWork: number;
   zeroTickDeferredChunkWork: number;
+  boundedDeferredChunkRetries: number;
+  unboundedDeferredChunkRetries: number;
   spawnRecoveryRoutes: number;
   unloadedSpecificSpawnRecoveryRoutes: number;
   broadSpawnRecoveryRisks: number;
@@ -374,6 +376,203 @@ function unguardedDeferredChunkWorkFor(
   ).length;
 }
 
+
+
+function retryBudgetGuardRegions(
+  script: ParsedScriptFile,
+): ReadonlySet<string> {
+  const file = ts.createSourceFile(
+    script.source.relativePath,
+    script.text,
+    ts.ScriptTarget.Latest,
+    true,
+    script.source.relativePath.endsWith(
+      ".ts",
+    )
+      ? ts.ScriptKind.TS
+      : ts.ScriptKind.JS,
+  );
+  const regions = new Set<string>();
+
+  const regionFor = (
+    node: ts.Node,
+  ): string => {
+    let current:
+      ts.Node | undefined = node;
+    while (current) {
+      if (
+        ts.isFunctionDeclaration(
+          current,
+        ) &&
+        current.name
+      ) {
+        return (
+          "function:" +
+          current.name.text
+        );
+      }
+      if (
+        ts.isMethodDeclaration(current)
+      ) {
+        const name = current.name;
+        if (
+          ts.isIdentifier(name) ||
+          ts.isStringLiteralLike(name)
+        ) {
+          return (
+            "function:" +
+            name.text
+          );
+        }
+      }
+      if (
+        ts.isArrowFunction(current) ||
+        ts.isFunctionExpression(
+          current,
+        )
+      ) {
+        const start =
+          file.getLineAndCharacterOfPosition(
+            current.getStart(file),
+          );
+        return (
+          "callback@" +
+          (start.line + 1) +
+          ":" +
+          (start.character + 1)
+        );
+      }
+      current = current.parent;
+    }
+    return "module";
+  };
+
+  const terminalExit = (
+    node: ts.Statement,
+  ): boolean => {
+    let found = false;
+    const scan = (
+      current: ts.Node,
+    ): void => {
+      if (
+        ts.isReturnStatement(current) ||
+        ts.isThrowStatement(current)
+      ) {
+        found = true;
+        return;
+      }
+      if (!found) {
+        ts.forEachChild(
+          current,
+          scan,
+        );
+      }
+    };
+    scan(node);
+    return found;
+  };
+
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isIfStatement(node) &&
+      terminalExit(
+        node.thenStatement,
+      ) &&
+      ts.isBinaryExpression(
+        node.expression,
+      )
+    ) {
+      const condition =
+        node.expression;
+      const text =
+        condition.getText(file);
+      const hasRetryIdentity =
+        /(?:attempt|retry|retries|remaining|budget)/i.test(
+          text,
+        );
+      const hasNumericBound =
+        /(?:>=|>|<=|<)\s*\d+|\d+\s*(?:>=|>|<=|<)/.test(
+          text,
+        );
+      if (
+        hasRetryIdentity &&
+        hasNumericBound
+      ) {
+        regions.add(
+          regionFor(node),
+        );
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+
+  return regions;
+}
+
+function deferredChunkRetryBudgetFor(
+  script: ParsedScriptFile,
+): {
+  bounded: number;
+  unbounded: number;
+} {
+  const graph = callGraphFor(script);
+  const chunkRegions =
+    chunkLifecycleRegions(script);
+  const boundedRegions =
+    retryBudgetGuardRegions(script);
+  let bounded = 0;
+  let unbounded = 0;
+
+  for (
+    const callback of
+      script.deferredCallbacks
+  ) {
+    if (
+      callback.scheduler !==
+        "runTimeout" &&
+      callback.scheduler !==
+        "runInterval"
+    ) {
+      continue;
+    }
+
+    const root =
+      callback.callbackRegion;
+    if (root === undefined) {
+      continue;
+    }
+    const reachable =
+      reachableRegions(
+        graph,
+        root,
+      );
+    if (
+      ![...chunkRegions].some(
+        (region) =>
+          reachable.has(region),
+      )
+    ) {
+      continue;
+    }
+
+    const caller =
+      callback.callerRegion ??
+      "module";
+    if (
+      boundedRegions.has(caller)
+    ) {
+      bounded += 1;
+    } else {
+      unbounded += 1;
+    }
+  }
+
+  return {
+    bounded,
+    unbounded,
+  };
+}
 
 function zeroTickDeferredChunkWorkFor(
   script: ParsedScriptFile,
@@ -884,6 +1083,27 @@ export function analyzeChunkLifecycle(
         ),
       0,
     );
+  const deferredChunkRetryBudget =
+    scripts.reduce(
+      (summary, script) => {
+        const current =
+          deferredChunkRetryBudgetFor(
+            script,
+          );
+        return {
+          bounded:
+            summary.bounded +
+            current.bounded,
+          unbounded:
+            summary.unbounded +
+            current.unbounded,
+        };
+      },
+      {
+        bounded: 0,
+        unbounded: 0,
+      },
+    );
 
   return {
     worldLoadObservers,
@@ -945,6 +1165,10 @@ export function analyzeChunkLifecycle(
     worldLoadReconciliationPaths,
     unguardedDeferredChunkWork,
     zeroTickDeferredChunkWork,
+    boundedDeferredChunkRetries:
+      deferredChunkRetryBudget.bounded,
+    unboundedDeferredChunkRetries:
+      deferredChunkRetryBudget.unbounded,
     spawnRecoveryRoutes:
       spawnRecoveryRouting.routes,
     unloadedSpecificSpawnRecoveryRoutes:

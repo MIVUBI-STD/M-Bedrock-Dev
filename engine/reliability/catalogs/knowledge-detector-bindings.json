@@ -37,6 +37,17 @@
       ]
     },
     {
+      "knowledgeId": "chunk-policy.recovery-bounded-retry",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "chunk-policy.registry-residency-state-machine",
       "consumer": "chunk-lifecycle-analysis",
       "analyzerPaths": [
