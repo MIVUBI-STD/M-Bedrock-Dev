@@ -197,7 +197,7 @@ Every Markdown document under `docs/` carries a minimal metadata frontmatter:
 id: document.analysis.player-lifecycle
 class: DOCUMENT
 domain: analysis
-role: REFERENCE
+role: DOMAIN
 authority: CANONICAL
 lifecycle: ACTIVE
 ---
@@ -224,7 +224,6 @@ DOCUMENT
 KNOWLEDGE
 SOURCE
 RELIABILITY
-WORKFLOW
 SCHEMA
 ```
 
@@ -238,12 +237,12 @@ Every registered document uses exactly one role:
 ROUTER
 WORKFLOW
 CONTRACT
-REFERENCE
+DOMAIN
 ARCHITECTURE
 GUIDE
 ```
 
-These roles are mutually exclusive at registration time. A document can discuss another role without acquiring it.
+These roles are mutually exclusive at registration time. `DOMAIN` means descriptive domain semantics/reference material; `REFERENCE` is reserved exclusively for the Authority vocabulary. A document can discuss another role without acquiring it.
 
 Do not introduce PROCEDURE, PLAYBOOK, HANDBOOK, MANUAL, SPEC, or PROTOCOL as parallel role names. Existing filenames may retain historical wording until a deliberate rename is justified; the registered role remains canonical.
 
@@ -299,7 +298,6 @@ document.analysis.player-lifecycle
 knowledge.world.chunks
 source.orchestrator.map-audit
 reliability.regression.multi-arena-concurrency
-workflow.audit.selected-map
 schema.bug-report.v2
 ```
 
