@@ -164,6 +164,22 @@ describe("Frontend boundary wiring", () => {
     }
   });
 
+  it("keeps Window Layout on one registered desktop mutation path", () => {
+    const facade = readFileSync(new URL("../src/app/bridge/virtualClientsApi.ts", import.meta.url), "utf8");
+    const commands = readFileSync(new URL("../src-tauri/src/commands/window_arrangement.rs", import.meta.url), "utf8");
+    const bootstrap = readFileSync(new URL("../src-tauri/src/app_bootstrap.rs", import.meta.url), "utf8");
+    expect(facade).toContain('"window_displays"');
+    expect(facade).toContain('"window_apply_layout"');
+    expect(facade).not.toContain('"window_arrange"');
+    expect(facade).not.toContain('"window_clear_overlay"');
+    expect(commands).toContain("fn window_displays(");
+    expect(commands).toContain("fn window_apply_layout(");
+    expect(commands).not.toContain("fn window_arrange(");
+    expect(commands).not.toContain("fn window_clear_overlay(");
+    expect(bootstrap).toContain("commands::window_arrangement::window_displays,");
+    expect(bootstrap).toContain("commands::window_arrangement::window_apply_layout");
+  });
+
   it("refreshes on return without introducing a diagnostic polling loop", () => {
     const source = readFileSync(new URL("../src/App.svelte", import.meta.url), "utf8");
     expect(source).toContain('window.addEventListener("focus", refreshVisibleClients)');
