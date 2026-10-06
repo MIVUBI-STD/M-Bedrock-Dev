@@ -72,6 +72,7 @@ mod windows {
     }
 
     static SENDER: OnceLock<Sender<OverlayCommand>> = OnceLock::new();
+    static STARTUP: std::sync::Mutex<()> = std::sync::Mutex::new(());
     static TEXTS: OnceLock<std::sync::Mutex<Vec<(isize, Vec<u16>)>>> = OnceLock::new();
 
     fn texts() -> &'static std::sync::Mutex<Vec<(isize, Vec<u16>)>> {
@@ -107,6 +108,9 @@ mod windows {
     }
 
     fn sender() -> io::Result<&'static Sender<OverlayCommand>> {
+        if let Some(sender) = SENDER.get() { return Ok(sender); }
+        let _startup = STARTUP.lock()
+            .map_err(|_| io::Error::new(io::ErrorKind::Other, "Screen Overlay startup lock failed"))?;
         if let Some(sender) = SENDER.get() { return Ok(sender); }
         let (tx, rx) = mpsc::channel::<OverlayCommand>();
         let (ready_tx, ready_rx) = mpsc::sync_channel::<io::Result<()>>(1);
