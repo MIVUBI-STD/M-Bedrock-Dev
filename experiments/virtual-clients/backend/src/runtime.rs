@@ -135,6 +135,10 @@ fn vm_identity_state(provider: &dyn Provider, client: ClientId) -> IdentityState
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum LifecycleAction {
+    Start,
+    Suspend,
+    Stop,
+    Open,
     Restart,
     SetReady,
     Reset,
@@ -155,6 +159,21 @@ fn validate_lifecycle_action(
     }
 
     let valid = match action {
+        LifecycleAction::Start => matches!(
+            state,
+            ClientState::Stopped | ClientState::Suspended | ClientState::Running
+        ),
+        LifecycleAction::Suspend => {
+            matches!(state, ClientState::Running | ClientState::Suspended)
+        }
+        LifecycleAction::Stop => matches!(
+            state,
+            ClientState::Stopped | ClientState::Suspended | ClientState::Running
+        ),
+        LifecycleAction::Open => matches!(
+            state,
+            ClientState::Stopped | ClientState::Suspended | ClientState::Running
+        ),
         LifecycleAction::Restart => state == ClientState::Running,
         LifecycleAction::SetReady => state == ClientState::Stopped && !ready_snapshot,
         LifecycleAction::Reset => {
@@ -171,6 +190,10 @@ fn validate_lifecycle_action(
     }
 
     let action_name = match action {
+        LifecycleAction::Start => "start",
+        LifecycleAction::Suspend => "suspend",
+        LifecycleAction::Stop => "stop",
+        LifecycleAction::Open => "open",
         LifecycleAction::Restart => "restart",
         LifecycleAction::SetReady => "set-ready",
         LifecycleAction::Reset => "reset",
@@ -1046,6 +1069,7 @@ impl VirtualClients {
             require_client_matches_native(client)?;
             require_verified_vm_identity(provider.as_ref(), client)?;
             let original_state = provider.status(client)?;
+            validate_lifecycle_action(client, LifecycleAction::Start, original_state, false)?;
 
             if original_state != ClientState::Running {
                 let live_pressure = current_host_pressure();
@@ -1164,6 +1188,7 @@ impl VirtualClients {
         for client in &targets {
             let client = *client;
             let original_state = provider.status(client)?;
+            validate_lifecycle_action(client, LifecycleAction::Suspend, original_state, false)?;
             if let Err(error) = provider.suspend(client) {
                 let mut rollback_failed = Vec::new();
                 for suspended in suspended_by_batch.into_iter().rev() {
@@ -1218,6 +1243,8 @@ impl VirtualClients {
 
         let mut result = Vec::with_capacity(targets.len());
         for client in &targets {
+            let state = provider.status(*client)?;
+            validate_lifecycle_action(*client, LifecycleAction::Stop, state, false)?;
             provider.stop(*client)?;
         }
 
@@ -1379,6 +1406,12 @@ impl VirtualClients {
                 "virtualization provider is unavailable",
             )
         })?;
+        validate_lifecycle_action(
+            client,
+            LifecycleAction::Open,
+            provider.status(client)?,
+            false,
+        )?;
         provider.open(client)?;
         let working_sets = provider.host_working_sets_mb()?;
         let native_profile = native_minecraft_profile();
@@ -1615,6 +1648,66 @@ mod tests {
 
     #[test]
     fn lifecycle_matrix_rejects_illegal_transitions_without_provider_mutation() {
+        assert!(validate_lifecycle_action(
+            ClientId::Virtual01,
+            LifecycleAction::Start,
+            ClientState::Stopped,
+            false,
+        )
+        .is_ok());
+        assert!(validate_lifecycle_action(
+            ClientId::Virtual01,
+            LifecycleAction::Start,
+            ClientState::NotProvisioned,
+            false,
+        )
+        .is_err());
+
+        assert!(validate_lifecycle_action(
+            ClientId::Virtual01,
+            LifecycleAction::Suspend,
+            ClientState::Running,
+            false,
+        )
+        .is_ok());
+        assert!(validate_lifecycle_action(
+            ClientId::Virtual01,
+            LifecycleAction::Suspend,
+            ClientState::Stopped,
+            false,
+        )
+        .is_err());
+
+        assert!(validate_lifecycle_action(
+            ClientId::Virtual01,
+            LifecycleAction::Stop,
+            ClientState::Suspended,
+            false,
+        )
+        .is_ok());
+        assert!(validate_lifecycle_action(
+            ClientId::Virtual01,
+            LifecycleAction::Stop,
+            ClientState::NotProvisioned,
+            false,
+        )
+        .is_err());
+
+        assert!(validate_lifecycle_action(
+            ClientId::Virtual01,
+            LifecycleAction::Open,
+            ClientState::Stopped,
+            false,
+        )
+        .is_ok());
+        assert!(validate_lifecycle_action(
+            ClientId::Virtual01,
+            LifecycleAction::Open,
+            ClientState::Error,
+            false,
+        )
+        .is_err());
+
         assert!(validate_lifecycle_action(
             ClientId::Virtual01,
             LifecycleAction::Restart,
