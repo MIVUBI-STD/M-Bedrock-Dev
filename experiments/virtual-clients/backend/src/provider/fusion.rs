@@ -41,6 +41,25 @@ impl Provider for VmwareFusionProvider {
         "vmware-fusion"
     }
 
+    fn version(&self) -> Option<String> {
+        let output = Command::new("plutil")
+            .args([
+                "-extract",
+                "CFBundleShortVersionString",
+                "raw",
+                "-o",
+                "-",
+                "/Applications/VMware Fusion.app/Contents/Info.plist",
+            ])
+            .output()
+            .ok()?;
+        if !output.status.success() {
+            return None;
+        }
+        let version = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        (!version.is_empty()).then_some(version)
+    }
+
     fn detect(&self) -> bool {
         self.vmrun().is_file()
     }
