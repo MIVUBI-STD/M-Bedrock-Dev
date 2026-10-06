@@ -148,3 +148,78 @@ Extracted files remain source truth. Normalized components and semantic graphs a
 Component identity should be stable across workspace relocation and based on semantic scope + identifier rather than absolute paths.
 
 The project-model package may organize internal contracts, evidence, runtime normalization, and session continuity into subgroups, but those groups do not become separate semantic authorities.
+## Knowledge access architecture
+
+Repository information is accessed through one composable path:
+
+```text
+Task / Question
+→ Router
+→ Catalog
+→ Graph
+→ Retrieval
+→ Context
+→ Reasoning / Audit / Development
+```
+
+Each stage has one responsibility:
+
+- Router — selects the initial domain/canonical owner.
+- Catalog — resolves stable resource identity and metadata.
+- Graph — expands only typed relationships relevant to the concern.
+- Retrieval — ranks the bounded candidate set.
+- Context — compiles the minimum evidence package.
+
+This path supplements source ownership; it does not replace it.
+
+### Management flow
+
+New or changed information follows:
+
+```text
+Discover
+→ Classify
+→ Register
+→ Relate
+→ Validate
+→ Consume
+→ Update
+→ Retire
+```
+
+A change is production-complete only when the affected resource remains reachable through its Router/consumer and its relationships remain valid.
+
+### Retrieval order
+
+Use structural evidence before semantic similarity:
+
+```text
+Router scope
+→ canonical owner
+→ Catalog identity
+→ Graph neighbors
+→ source/ownership structure
+→ semantic ranking
+→ authority filtering
+→ Context
+```
+
+Pure vector similarity must not search the entire repository as an unbounded first step.
+
+### Generated projections
+
+Generated indexes and graphs are DERIVED.
+
+They must be:
+
+- deterministic when inputs are unchanged;
+- rebuildable from canonical sources;
+- safe to delete and regenerate;
+- excluded from manual semantic editing;
+- validated against current source identities.
+
+### No management-layer proliferation
+
+Do not introduce parallel responsibilities named Knowledge Manager, RAG Manager, Memory Manager, Context Manager, Docs Manager, or Graph Manager when the responsibility already belongs to Catalog, Graph, Retrieval, Context, or an existing canonical package.
+
+Prefer extending existing graph, analysis-planner, knowledge, project-model, and orchestrator owners rather than creating a parallel subsystem.
