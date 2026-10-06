@@ -41,37 +41,61 @@ install supported Windows
 → install Virtual Guest Agent
 → install Minecraft Education
 → disable independent Minecraft auto-update in the managed Base
+→ keep Base free of Microsoft/Minecraft user sessions
+→ require AzureAdJoined = NO and WorkplaceJoined = NO
 → apply conservative background cleanup
-→ low graphics / QA resolution
+→ configure guest QA graphics/resolution target
 → verify network + input + rendering
 → shut down Base
 → register-base
+→ Base state = REGISTERED
+→ boot Base only to run C:\ProgramData\M-Bedrock\VirtualClients\finalize-base.ps1 -ConfirmGeneralize
+→ Sysprep /generalize /oobe /mode:vm
+→ Base state = FINALIZED
+→ shutdown
+→ never boot finalized Base again
 → provision Virtuals
+→ complete first-boot Windows specialization/OOBE per Virtual
+→ start all three
+→ verify-identities
 ```
 
 ## Virtual profile
+
+Backend-enforced:
+
+```text
+memory ceiling  4096 MB
+vCPU            2
+3D acceleration enabled
+```
+
+Guest QA configuration targets, not backend truth:
 
 ```text
 resolution      1280x720
 graphics        low
 render distance QA-appropriate
 frame target    ~30 FPS
-memory ceiling  4096 MB
-vCPU            2
 ```
 
 ## Per-Virtual preparation
 
+Identity verification happens before account sign-in:
+
 ```text
-start Virtual
+start Virtual-01 + Virtual-02 + Virtual-03
 → live Guest Agent parity must pass
-→ sign in using that Virtual's own licensed test identity
-→ verify multiplayer
+→ verify-identities
+→ vmIdentity = UNIQUE for all three
+→ windowsIdentity = UNIQUE for all three
+→ configure/sign in each Virtual with its own licensed identity
+→ confirm the signed-in session survives stop/start
 → stop
 → set-ready
 ```
 
-QA_READY belongs to the Virtual, not Base.
+`QA_READY` belongs to the Virtual, not Base. It is created only after identity proof and account setup. Daily start/stop/restart/suspend/resume must preserve the guest disk and account state.
 
 ## Conservative optimization
 
@@ -89,11 +113,13 @@ Do not broadly disable Windows services merely to lower idle RAM.
 
 Do not auto-compact linked clones with active snapshots.
 
-If a Virtual delta becomes unhealthy or too large:
+If a Virtual delta becomes unhealthy, prefer `reset` to the existing `QA_READY` checkpoint first.
+
+If a full rebuild is required:
 
 ```text
 stop Virtual
-→ reprovision Virtual
+→ reprovision Virtual --destroy-account-state
 ```
 
-Base remains the stable parent; Virtuals are disposable.
+Base remains the immutable parent. Virtuals are reprovisionable, but reprovision intentionally destroys that Virtual's saved guest/account state and QA_READY snapshot.
