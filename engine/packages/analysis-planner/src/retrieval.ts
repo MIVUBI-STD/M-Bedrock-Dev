@@ -55,6 +55,7 @@ export interface RetrievalQuery {
   domains?: readonly string[];
   classes?: readonly CatalogResourceClass[];
   authorities?: readonly ResourceAuthority[];
+  includeHistorical?: boolean;
   seedIds?: readonly string[];
   lexicalScores?: Readonly<Record<string, number>>;
   semanticScores?: Readonly<Record<string, number>>;
@@ -191,6 +192,9 @@ export function retrieveResources(
   const classes = new Set(query.classes ?? []);
   const authorities = new Set(query.authorities ?? []);
   const seedIds = new Set(query.seedIds ?? []);
+  const historicalRequested =
+    query.includeHistorical === true ||
+    authorities.has("HISTORICAL");
   const queryTokens = tokens(query.text);
   const graphScore = graphScores(edges, seedIds);
   const lexicalScores = query.lexicalScores ?? {};
@@ -199,6 +203,12 @@ export function retrieveResources(
 
   return candidateResources(resources, graphScore, domains)
     .filter((resource) => resource.lifecycle === "ACTIVE")
+    .filter(
+      (resource) =>
+        resource.authority !== "HISTORICAL" ||
+        historicalRequested ||
+        seedIds.has(resource.id),
+    )
     .filter(
       (resource) =>
         classes.size === 0 ||
