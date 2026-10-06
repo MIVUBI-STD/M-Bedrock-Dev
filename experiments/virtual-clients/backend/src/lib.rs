@@ -1,4 +1,5 @@
 pub mod client;
+pub mod diagnostics;
 pub mod doctor;
 pub mod guest;
 pub mod paths;
