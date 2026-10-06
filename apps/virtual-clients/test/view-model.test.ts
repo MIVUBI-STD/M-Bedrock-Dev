@@ -35,7 +35,7 @@ describe("Virtual Clients presentation projection", () => {
   it("does not derive lifecycle rules locally", () => {
     expect(actionForClient(actions, "Virtual-01")).toBe(actions[0]);
     expect(actionForClient(actions, "Virtual-02")).toBeUndefined();
-    expect(primaryClientAction(actions[0], "RUNNING")).toEqual({ kind: "open", label: "Open" });
+    expect(primaryClientAction(actions[0], { ...client, state: "RUNNING" })).toEqual({ kind: "open", label: "Open" });
     expect(primaryClientAction({
       ...actions[0],
       open: allow,
@@ -133,7 +133,7 @@ describe("First-time setup action", () => {
   it("uses backend setup availability before daily start", () => {
     const available = { ...actions[0], start: allow, startSetup: allow };
     expect(primaryClientAction(available, "STOPPED")).toEqual({ kind: "start-setup", label: "Start first-time setup" });
-    expect(primaryClientAction(available, "RUNNING")).toEqual({ kind: "open", label: "Open" });
+    expect(primaryClientAction(available, { ...client, state: "RUNNING" })).toEqual({ kind: "open", label: "Open" });
   });
 
   it("does not bypass blocked setup with daily Start", () => {
