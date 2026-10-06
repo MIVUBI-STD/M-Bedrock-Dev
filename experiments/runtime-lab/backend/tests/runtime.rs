@@ -1,16 +1,20 @@
 use m_bedrock_runtime_lab_core::{client::ClientId, RuntimeLab};
 
 #[test]
-fn native_client_open_is_manual_without_provider() {
+fn native_client_lifecycle_is_manual() {
     let lab = RuntimeLab;
-    let status = lab
-        .open(ClientId::Native)
-        .expect("native open should not require a provider");
-    assert_eq!(status.id, "Native");
-    assert!(status.native);
-    assert_eq!(status.ready_snapshot, None);
-    assert_eq!(status.memory_limit_mb, None);
-    assert_eq!(status.host_working_set_mb, None);
+    assert_eq!(
+        lab.open(ClientId::Native)
+            .expect_err("Native open belongs to the host")
+            .kind(),
+        std::io::ErrorKind::InvalidInput
+    );
+    assert_eq!(
+        lab.stop(Some(ClientId::Native))
+            .expect_err("Native stop belongs to the host")
+            .kind(),
+        std::io::ErrorKind::InvalidInput
+    );
 }
 
 #[test]
