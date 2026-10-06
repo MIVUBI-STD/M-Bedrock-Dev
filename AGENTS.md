@@ -28,7 +28,11 @@ LIVE_MINECRAFT
 
 Never claim proof above the available context.
 
-Complete the source/static portion first. Escalate only the irreducible residue that truly requires filesystem, Minecraft, or live-game access.
+REMOTE_GITHUB is the normal ChatGPT execution mode and may complete repository/source work without a local checkout.
+
+Complete every source/static claim that can be decided from the exact GitHub ref. Do not make `npm run check`, local Node/npm availability, a local checkout, or `DEV.cmd` a completion prerequisite.
+
+Escalate only the exact claim that inherently requires filesystem execution, artifact execution, Minecraft import, or live gameplay. That higher-context residue does not invalidate remote completion of the source work already proven.
 
 ## Task classes
 
