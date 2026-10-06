@@ -7,6 +7,7 @@
   export let onCancel: () => void;
   export let onApply: (preference: WindowLayoutPreference) => void;
   export let onIdentify: (preference: WindowLayoutPreference) => void;
+  export let onReset: () => WindowLayoutPreference;
 
   let draft: WindowLayoutPreference = structuredClone(preference);
   const clients: { id: ClientId; label: string }[] = [
@@ -78,6 +79,6 @@
       </details>
     {/if}
 
-    <footer>{#if draft.overlay.enabled}<button class="identify-button" on:click={() => onIdentify(draft)}>Identify screens</button>{/if}<span class="dialog-spacer"></span><button on:click={onCancel}>Cancel</button><button class="primary" on:click={() => onApply(draft)}>Apply</button></footer>
+    <footer><button on:click={() => (draft = onReset())}>Reset to defaults</button>{#if draft.overlay.enabled}<button class="identify-button" on:click={() => onIdentify(draft)}>Identify screens</button>{/if}<span class="dialog-spacer"></span><button on:click={onCancel}>Cancel</button><button class="primary" on:click={() => onApply(draft)}>Apply</button></footer>
   </section>
 </div>
