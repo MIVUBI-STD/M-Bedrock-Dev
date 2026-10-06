@@ -1,3 +1,30 @@
+## Virtual Clients Minecraft auto-launch — REMOTE_GITHUB implementation (2026-10-07)
+
+Implemented source:
+- Guest Agent protocol is now v2 for the authenticated, fixed-purpose
+  `POST /minecraft/launch` capability. Protocol v1 remains status-readable but
+  is not launch-capable and no longer satisfies current Base lineage.
+- The endpoint accepts no command/path/arguments. It only launches the detected
+  Minecraft Education application and is idempotent when Minecraft is already
+  running.
+- Guest status now observes `minecraftRunning`; ClientStatus projects that
+  observation so daily UI distinguishes Minecraft ready vs Minecraft closed.
+- Daily Start/Resume performs VM admission + compatibility first, then launches
+  Minecraft and opens the VM console. Minecraft-launch failure does not rollback
+  a verified running VM.
+- Restart and QA_READY reset also relaunch Minecraft and reopen the console after
+  compatibility succeeds. First-time OOBE start remains intentionally manual.
+- A dedicated `launch-minecraft` public command provides retry for a running VM;
+  the client primary action becomes Launch Minecraft only when the backend
+  explicitly observes `minecraftRunning=false`.
+- Existing public-command registration assertions are updated from 22 to 23.
+
+Proof ceiling: source/static review only. Actual Windows Start-menu/AppID,
+Minecraft process naming, idempotency, account-session behavior, protocol-v2
+Base migration and launch timing remain target-machine acceptance.
+
+---
+
 ## Virtual Clients desktop orchestration contradiction sweep (2026-10-07)
 
 REMOTE_GITHUB cleanup after Window Layout/Screen Overlay implementation:
