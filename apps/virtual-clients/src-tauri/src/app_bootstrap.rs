@@ -39,6 +39,7 @@ pub fn run() {
             commands::virtual_clients::virtual_clients_set_ready,
             commands::virtual_clients::virtual_clients_reset,
             commands::virtual_clients::virtual_clients_open,
+            commands::virtual_clients::virtual_clients_launch_minecraft,
             commands::virtual_clients::virtual_clients_reprovision,
             commands::setup_tools::setup_open_base_location,
             commands::setup_tools::setup_open_guest_tools,
