@@ -54,7 +54,8 @@ pub use update::{StagedUpdate, UpdateCheck, UpdateState};
 
 #[doc(hidden)]
 pub use guest::{
-    GuestStatus, GUEST_AGENT_PORT, GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA,
+    GuestStatus, MinecraftLaunchResult, MinecraftLaunchState, GUEST_AGENT_PORT,
+    GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA,
 };
 
 #[doc(hidden)]
