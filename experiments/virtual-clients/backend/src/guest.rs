@@ -27,9 +27,8 @@ pub fn query_guest_status(ip: &str, timeout: Duration) -> io::Result<GuestStatus
     let mut stream = TcpStream::connect_timeout(&address, timeout)?;
     stream.set_read_timeout(Some(timeout))?;
     stream.set_write_timeout(Some(timeout))?;
-    stream.write_all(
-        b"GET /status HTTP/1.1\r\nHost: virtual-client\r\nConnection: close\r\n\r\n",
-    )?;
+    stream
+        .write_all(b"GET /status HTTP/1.1\r\nHost: virtual-client\r\nConnection: close\r\n\r\n")?;
 
     let mut response = Vec::new();
     stream.take(32 * 1024).read_to_end(&mut response)?;
@@ -37,7 +36,10 @@ pub fn query_guest_status(ip: &str, timeout: Duration) -> io::Result<GuestStatus
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
 
     let (headers, body) = response.split_once("\r\n\r\n").ok_or_else(|| {
-        io::Error::new(io::ErrorKind::InvalidData, "guest agent response is malformed")
+        io::Error::new(
+            io::ErrorKind::InvalidData,
+            "guest agent response is malformed",
+        )
     })?;
 
     let status_line = headers.lines().next().unwrap_or_default();
