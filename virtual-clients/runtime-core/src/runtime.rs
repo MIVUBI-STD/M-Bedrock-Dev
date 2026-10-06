@@ -1506,7 +1506,7 @@ impl VirtualClients {
             },
         )?;
 
-        for client in &targets {
+        for (index, client) in targets.iter().enumerate() {
             if let Err(error) = ensure_minecraft_running(provider.as_ref(), *client) {
                 return Err(io::Error::new(
                     error.kind(),
@@ -1524,6 +1524,9 @@ impl VirtualClients {
                         client.as_str()
                     ),
                 ));
+            }
+            if index + 1 < targets.len() {
+                thread::sleep(Duration::from_secs(start_delay_secs(current_host_pressure().level)));
             }
         }
         Ok(statuses)
