@@ -17,6 +17,7 @@ const selection: readonly RetrievalResult[] = [
       routing: 30,
       graph: 12,
       structural: 16,
+      lexical: 0,
       semantic: 0,
       authority: 20,
       total: 78,
@@ -41,6 +42,7 @@ const selection: readonly RetrievalResult[] = [
       routing: 0,
       graph: 0,
       structural: 8,
+      lexical: 0,
       semantic: 0,
       authority: 0,
       total: 8,
@@ -102,6 +104,7 @@ describe("compileSectionContext", () => {
         score: {
           documentScope: 30,
           heading: 40,
+          lexical: 0,
           semantic: 0,
           level: 8,
           total: 78,
