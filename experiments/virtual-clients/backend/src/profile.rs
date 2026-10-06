@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 use std::{fs, io, path::PathBuf, process::Command};
 
-use crate::paths::{base_profile_path_for_version, base_vmx_path_for_version};
+use crate::{
+    guest::GUEST_STATUS_SCHEMA,
+    paths::{base_profile_path_for_version, base_vmx_path_for_version},
+};
 
 pub const BASE_PROFILE_SCHEMA: u32 = 1;
 
@@ -32,6 +35,7 @@ pub enum BaseProfileSource {
 pub struct BaseProfile {
     pub schema: u32,
     pub minecraft_version: String,
+    pub guest_status_schema: u32,
     pub source: BaseProfileSource,
 }
 
@@ -113,6 +117,7 @@ pub fn register_base_from_native() -> io::Result<BaseProfile> {
     let profile = BaseProfile {
         schema: BASE_PROFILE_SCHEMA,
         minecraft_version: native.version,
+        guest_status_schema: GUEST_STATUS_SCHEMA,
         source: BaseProfileSource::NativeRecorded,
     };
 
@@ -154,7 +159,10 @@ pub fn profile_status() -> ProfileStatus {
     let base = load_base_profile().ok();
 
     let parity = match (&native, &base) {
-        (Some(native), Some(base)) if native.version == base.minecraft_version => {
+        (Some(native), Some(base))
+            if native.version == base.minecraft_version
+                && base.guest_status_schema == GUEST_STATUS_SCHEMA =>
+        {
             ProfileParity::Match
         }
         (Some(_), Some(_)) => ProfileParity::Mismatch,
@@ -310,6 +318,7 @@ mod tests {
         let profile = BaseProfile {
             schema: BASE_PROFILE_SCHEMA,
             minecraft_version: "1.21.120.0".into(),
+            guest_status_schema: GUEST_STATUS_SCHEMA,
             source: BaseProfileSource::NativeRecorded,
         };
 
