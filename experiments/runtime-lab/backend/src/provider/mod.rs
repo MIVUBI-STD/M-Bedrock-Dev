@@ -350,6 +350,24 @@ pub(crate) fn read_vmx_memory(vmx: &Path) -> io::Result<u64> {
         .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "invalid memsize in VMX"))
 }
 
+pub(crate) fn vm_identity_key(vmx: &Path) -> io::Result<Option<String>> {
+    let uuid = read_vmx_value(vmx, "uuid.bios")?;
+    let mac = read_vmx_value(vmx, "ethernet0.generatedAddress")?;
+
+    Ok(match (uuid, mac) {
+        (None, None) => None,
+        (uuid, mac) => Some(format!(
+            "{}|{}",
+            uuid.unwrap_or_default(),
+            mac.unwrap_or_default()
+        )),
+    })
+}
+
+pub(crate) fn guest_tools_state_ready(state: &str) -> bool {
+    state.trim().eq_ignore_ascii_case("running")
+}
+
 fn set_vmx_value(lines: &mut Vec<String>, key: &str, value: &str) {
     let prefix = format!("{key} =");
     if let Some(line) = lines.iter_mut().find(|line| line.trim_start().starts_with(&prefix)) {
@@ -394,7 +412,7 @@ pub(crate) fn host_working_sets_mb() -> Vec<(ClientId, u64)> {
 
 #[cfg(test)]
 mod tests {
-    use super::{listed_as_running, snapshot_list_contains};
+    use super::{guest_tools_state_ready, listed_as_running, snapshot_list_contains};
 
     #[test]
     fn detects_running_vm_from_vmrun_list() {
@@ -410,6 +428,14 @@ mod tests {
         let output = "Total snapshots: 2\nQA_READY\nBefore Update\n";
         assert!(snapshot_list_contains(output, "QA_READY"));
         assert!(!snapshot_list_contains(output, "QA"));
+    }
+
+    #[test]
+    fn tools_state_requires_running() {
+        assert!(guest_tools_state_ready("running"));
+        assert!(guest_tools_state_ready("Running\n"));
+        assert!(!guest_tools_state_ready("installed"));
+        assert!(!guest_tools_state_ready("not running"));
     }
 }
 
