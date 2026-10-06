@@ -229,3 +229,10 @@ Not allowed without new evidence:
 - compatibility shims for contracts that have no real consumer yet.
 
 A public-contract breaking change must increment `PUBLIC_CONTRACT_SCHEMA`. A runtime-data format breaking change must increment `CURRENT_RUNTIME_SCHEMA`. These are separate version domains.
+
+
+## Operability surface
+
+`snapshot` is the canonical aggregate read-model for operator/frontend inspection.
+
+`support-bundle` creates a diagnostic artifact from existing backend truth. It is not a state database and cannot influence lifecycle decisions. Bundle content excludes credentials, account identifiers, tokens, world content, and absolute runtime paths.

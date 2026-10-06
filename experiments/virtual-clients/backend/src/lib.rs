@@ -13,6 +13,7 @@ mod provider;
 mod resources;
 mod runtime;
 mod schema;
+mod support;
 mod update;
 
 pub use client::{ClientId, ClientState, ClientStatus, DestructiveConfirmation, IdentityState};
@@ -29,6 +30,7 @@ pub use profile::{
 pub use resources::{HostPressure, PressureLevel, VIRTUAL_MEMORY_LIMIT_MB};
 pub use runtime::{ResourceView, RuntimeStatus, VirtualClients};
 pub use schema::{SchemaState, SchemaStatus, CURRENT_RUNTIME_SCHEMA};
+pub use support::{EngineSnapshot, SupportBundleResult};
 pub use update::{StagedUpdate, UpdateCheck, UpdateState};
 
 #[doc(hidden)]

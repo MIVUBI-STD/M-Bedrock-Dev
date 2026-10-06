@@ -197,6 +197,8 @@ Microsoft credentials, passwords, access tokens, refresh tokens, and equivalent 
 ```text
 doctor
 diagnostics
+snapshot
+support-bundle
 check-update
 stage-update
 register-base
@@ -228,3 +230,10 @@ acceptance/windows/collect-acceptance.ps1
 ```
 
 Use it to collect deterministic backend evidence during the real-machine campaign. Pass `-VerifyIdentities` only when Virtual-01, Virtual-02, and Virtual-03 are all running after first-boot Windows setup.
+
+
+## Engine snapshot and support bundle
+
+`snapshot` returns one read-only engine view combining setup readiness and diagnostics under the public JSON contract.
+
+`support-bundle` writes one bounded JSON diagnostic artifact under the Virtual Clients runtime `support` directory. Its content excludes Microsoft credentials, account identifiers, Guest Agent tokens, world content, and absolute runtime paths. The returned command result contains the local file path so the operator can locate the artifact.

@@ -16,6 +16,7 @@ use crate::{
     },
     resources::{current_host_pressure, start_delay_secs, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
     schema::ensure_runtime_schema,
+    support::{capture_time_ms, write_support_bundle, EngineSnapshot, SupportBundleResult},
     update::{check_update, stage_update, StagedUpdate, UpdateCheck},
 };
 use fs2::FileExt;
@@ -628,6 +629,21 @@ impl VirtualClients {
 
     pub fn diagnostics(&self) -> io::Result<DiagnosticsReport> {
         collect_diagnostics(self.status()?)
+    }
+
+    pub fn snapshot(&self) -> io::Result<EngineSnapshot> {
+        let captured_at_unix_ms = capture_time_ms()?;
+        let runtime = self.status()?;
+        let diagnostics = collect_diagnostics(runtime)?;
+        Ok(EngineSnapshot {
+            captured_at_unix_ms,
+            doctor: self.doctor(),
+            diagnostics,
+        })
+    }
+
+    pub fn support_bundle(&self) -> io::Result<SupportBundleResult> {
+        write_support_bundle(self.snapshot()?)
     }
 
     pub fn register_base(&self) -> io::Result<BaseProfile> {
