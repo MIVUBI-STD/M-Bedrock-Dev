@@ -151,22 +151,45 @@ function catalogEngineeringContracts(resources, seen) {
   }
 }
 
+function reliabilityFiles(root) {
+  if (!existsSync(root)) return [];
+
+  return readdirSync(root, { withFileTypes: true })
+    .flatMap((entry) => {
+      const path = join(root, entry.name);
+      if (entry.isDirectory()) return reliabilityFiles(path);
+      if (!entry.isFile()) return [];
+      if (entry.name === "README.md") return [];
+      if (!/\.(?:json|md)$/i.test(entry.name)) return [];
+      return [path];
+    })
+    .sort();
+}
+
 function catalogReliability(resources, seen) {
-  for (const [name, authority] of [
+  for (const [bucket, authority] of [
     ["catalogs", "REFERENCE"],
     ["corpus", "REFERENCE"],
     ["history", "HISTORICAL"],
   ]) {
-    const path = "engine/reliability/" + name;
-    if (!existsSync(path)) continue;
-    addResource(resources, seen, {
-      id: "reliability.system." + name,
-      class: "RELIABILITY",
-      domain: "system",
-      authority,
-      path,
-      lifecycle: "ACTIVE",
-    });
+    const root = "engine/reliability/" + bucket;
+
+    for (const rawPath of reliabilityFiles(root)) {
+      const path = rawPath.replaceAll("\\", "/");
+      const rel = relative(root, rawPath).replaceAll("\\", "/");
+      addResource(resources, seen, {
+        id:
+          "reliability." +
+          bucket +
+          "." +
+          slug(rel),
+        class: "RELIABILITY",
+        domain: bucket,
+        authority,
+        path,
+        lifecycle: "ACTIVE",
+      });
+    }
   }
 }
 
