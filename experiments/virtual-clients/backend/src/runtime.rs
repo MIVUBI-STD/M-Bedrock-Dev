@@ -196,13 +196,14 @@ impl RuntimeLab {
     }
 
     pub fn reprovision(&self, client: ClientId) -> io::Result<ClientStatus> {
-        require_base_matches_native()?;
         if client.is_native() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "Native cannot be reprovisioned",
             ));
         }
+
+        require_base_matches_native()?;
 
         let _lock = OperationLock::acquire()?;
         cleanup_staging()?;
@@ -505,13 +506,14 @@ impl RuntimeLab {
     }
 
     pub fn restart(&self, client: ClientId) -> io::Result<ClientStatus> {
-        require_base_matches_native()?;
         if client.is_native() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "Native cannot be VM-restarted",
             ));
         }
+
+        require_base_matches_native()?;
 
         let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
@@ -546,13 +548,14 @@ impl RuntimeLab {
     }
 
     pub fn reset(&self, client: ClientId) -> io::Result<ClientStatus> {
-        require_base_matches_native()?;
         if client.is_native() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "Native does not use VM clean-state reset",
             ));
         }
+
+        require_base_matches_native()?;
 
         let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
