@@ -88,10 +88,7 @@ function add(
   const balanced =
     growthWrites > 0 &&
     completionChecks > 0 &&
-    (
-      decrementWrites > 0 ||
-      replacementWrites > 0
-    );
+    decrementWrites > 0;
 
   map.set(key, {
     scriptId: values.scriptId,
@@ -114,10 +111,12 @@ function add(
           ]
         : balanced
           ? [
-              "The counter has growth, a completion gate, and at least one selected-artifact decrement or replacement/recompute path.",
+              "The counter has growth, a completion gate, and at least one selected-artifact decrement path.",
             ]
           : [
-              "The source exposes only part of the counter lifecycle; do not classify it safe or defective until producer/consumer/reconciliation evidence is complete.",
+              replacementWrites > 0
+                ? "The counter has replacement/set writes that may be initialization, reset, or recomputation. Their lifecycle role is unresolved, so they cannot be credited as actor reconciliation without source-side ownership proof."
+                : "The source exposes only part of the counter lifecycle; do not classify it safe or defective until producer/consumer/reconciliation evidence is complete.",
             ],
   });
 }

@@ -75,6 +75,28 @@ describe(
         .toBe(1);
     });
 
+    it("keeps replacement/set writes unresolved instead of treating them as proven reconciliation", () => {
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed([
+            "let remainingEnemies = 0;",
+            "function spawnWave() { remainingEnemies += 3; }",
+            "function syncCount(list) { remainingEnemies = list.length; }",
+            "function maybeAdvance() {",
+            "  if (remainingEnemies <= 0) nextWave();",
+            "}",
+          ].join("\n")),
+        ]);
+
+      expect(
+        result.provenMissingReconciliation,
+      ).toBe(0);
+      expect(result.unresolvedCounters)
+        .toBe(1);
+      expect(result.counters[0]?.status)
+        .toBe("unresolved");
+    });
+
     it("tracks scoreboard-backed wave accounting", () => {
       const result =
         analyzeProgressionActorAccounting([
