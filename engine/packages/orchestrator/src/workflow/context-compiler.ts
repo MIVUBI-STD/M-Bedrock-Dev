@@ -18,6 +18,13 @@ import type {
 import type {
   CompiledDataFlowContextSlice,
 } from "../script-dataflow-context.js";
+import type {
+  RetrievalResult,
+} from "../../../analysis-planner/src/index.js";
+import {
+  compileResourceContext,
+  type CompiledResourceContext,
+} from "./resource-context.js";
 
 export interface ContextCompilerBudget {
   maxSemanticNodes: number;
@@ -40,6 +47,8 @@ export interface ContextCompilerRequest {
   worldModel?: GameplayWorldModel;
   repositoryTaskPlan?: RepositoryTaskPlan;
   dataFlowSlice?: CompiledDataFlowContextSlice;
+  resourceSelection?: readonly RetrievalResult[];
+  resourceLimit?: number;
   budget?: Partial<ContextCompilerBudget>;
 }
 
@@ -124,6 +133,7 @@ export interface CompiledContextPack {
     }>;
   };
   dataFlow?: CompiledDataFlowContextSlice;
+  resources?: CompiledResourceContext;
   executionScope?: {
     status: RepositoryTaskPlan["status"];
     affectedCapabilityIds: readonly string[];
@@ -293,6 +303,11 @@ export function compileContextPack(
 
   const budget =
     resolveBudget(input.budget);
+  const resources =
+    compileResourceContext(
+      input.resourceSelection,
+      input.resourceLimit,
+    );
   const semanticPool =
     semanticCandidates(
       input.graph,
@@ -774,6 +789,7 @@ export function compileContextPack(
   const complete =
     missingRequestedCount === 0 &&
     (input.dataFlowSlice?.complete ?? true) &&
+    (resources?.omitted ?? 0) === 0 &&
     (
       semanticScopeExplicit ||
       !semanticOptionalTruncated
@@ -1036,6 +1052,9 @@ export function compileContextPack(
     ...(input.dataFlowSlice === undefined
       ? {}
       : { dataFlow: input.dataFlowSlice }),
+    ...(resources === undefined
+      ? {}
+      : { resources }),
     semantic: {
       nodes:
         semanticSelection.values.map(
