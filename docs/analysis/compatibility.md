@@ -112,3 +112,10 @@ same files + different experiment profile = different effective runtime
 ```
 
 Edition-sensitive evidence must remain explicitly scoped to Bedrock, Education, or shared behavior.
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [Compatibility](../../engine/knowledge/platform/compatibility-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
