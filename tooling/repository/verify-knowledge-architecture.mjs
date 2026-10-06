@@ -142,7 +142,7 @@ try {
   const sectionIndex = buildDocumentSectionIndex();
 
   const ids = new Set();
-  const paths = new Set();
+  const locations = new Set();
   const byId = new Map();
 
   for (const resource of catalog.resources) {
@@ -154,10 +154,12 @@ try {
     }
     ids.add(resource.id);
 
-    if (paths.has(resource.path)) {
-      failures.push("Multiple active resources use the same path: " + resource.path);
+    const locationKey =
+      resource.path + "#" + (resource.locator ?? "");
+    if (locations.has(locationKey)) {
+      failures.push("Multiple active resources use the same location: " + locationKey);
     }
-    paths.add(resource.path);
+    locations.add(locationKey);
 
     if (!existsSync(resource.path)) {
       failures.push("Resource Catalog path does not exist: " + resource.path);
