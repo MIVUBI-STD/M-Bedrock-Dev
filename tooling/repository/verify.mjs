@@ -73,6 +73,7 @@ const required = [
   "tooling/repository/verify-canonical-naming.mjs",
   "tooling/repository/verify-information-architecture.mjs",
   "tooling/repository/verify-knowledge-architecture.mjs",
+  "tooling/repository/retrieve.ts",
   "tooling/repository/resource-catalog.mjs",
   "tooling/repository/document-metadata.mjs",
   "tooling/repository/document-sections.mjs",
