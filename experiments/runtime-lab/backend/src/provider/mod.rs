@@ -350,10 +350,11 @@ pub(crate) fn host_working_set_mb(vmx: &Path) -> Option<u64> {
         .processes()
         .values()
         .filter(|process| {
-            process
-                .cmd()
-                .iter()
-                .any(|arg| arg.to_ascii_lowercase().contains(&target))
+            process.cmd().iter().any(|arg| {
+                arg.to_string_lossy()
+                    .to_ascii_lowercase()
+                    .contains(&target)
+            })
         })
         .map(|process| process.memory())
         .sum::<u64>();
