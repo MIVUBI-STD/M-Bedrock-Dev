@@ -105,8 +105,9 @@ Do not bake a Base username, browser profile, Microsoft identity, Minecraft
 session, OAuth token, cookie, or per-user launcher registration into the Base.
 
 The SYSTEM Guest Agent may request only the fixed Minecraft Education launch
-action. The interactive helper must not expose a network listener, arbitrary
-command execution, executable/path arguments, or credential handling.
+action. The Interactive Launcher may listen only on localhost for its fixed
+PING and MINECRAFT_EDUCATION protocol; it must not expose a host/LAN listener,
+arbitrary command execution, executable/path arguments, or credential handling.
 
 Identity verification happens before account sign-in:
 
