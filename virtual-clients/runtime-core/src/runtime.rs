@@ -6,8 +6,8 @@ use crate::{
     diagnostics::{collect as collect_diagnostics, DiagnosticsReport},
     doctor::{doctor, DoctorReport},
     guest::{
-        guest_agent_protocol_compatible, query_guest_status, GuestStatus,
-        GUEST_AGENT_PROTOCOL_VERSION,
+        guest_agent_launch_compatible, guest_agent_protocol_compatible, launch_guest_minecraft,
+        query_guest_status, GuestStatus, GUEST_AGENT_PROTOCOL_VERSION,
     },
     journal::{record_operation, OperationKind},
     lifecycle_admission::{
@@ -407,6 +407,26 @@ fn guest_status_once(provider: &dyn Provider, client: ClientId) -> Option<GuestS
     let ip = provider.guest_ip_address(client).ok().flatten()?;
     let token = guest_token(client).ok().flatten()?;
     query_guest_status(&ip, &token, Duration::from_secs(1)).ok()
+}
+
+fn ensure_minecraft_running(provider: &dyn Provider, client: ClientId) -> io::Result<()> {
+    let ip = provider.guest_ip_address(client)?.ok_or_else(|| {
+        io::Error::new(io::ErrorKind::AddrNotAvailable, format!("{} guest IP is unavailable", client.as_str()))
+    })?;
+    let token = guest_token(client)?.ok_or_else(|| {
+        io::Error::new(io::ErrorKind::NotFound, format!("{} Guest Agent token is missing", client.as_str()))
+    })?;
+    let status = query_guest_status(&ip, &token, Duration::from_secs(2))?;
+    if !guest_agent_launch_compatible(status.protocol_version) {
+        return Err(io::Error::new(
+            io::ErrorKind::Unsupported,
+            format!(
+                "{} Guest Agent protocol {} does not support Minecraft auto-launch; protocol {} is required",
+                client.as_str(), status.protocol_version, GUEST_AGENT_PROTOCOL_VERSION
+            ),
+        ));
+    }
+    launch_guest_minecraft(&ip, &token, Duration::from_secs(35)).map(|_| ())
 }
 
 fn lineage_parity(native: Option<&MinecraftProfile>, client: ClientId) -> ProfileParity {
@@ -1442,7 +1462,7 @@ impl VirtualClients {
         let native_profile = native_minecraft_profile();
         let target_count = targets.len();
         let mut completed = 0;
-        execute_start_batch(
+        let statuses = execute_start_batch(
             provider.as_ref(),
             &targets,
             |client, _| {
@@ -1471,7 +1491,20 @@ impl VirtualClients {
                 }
                 Ok(status)
             },
-        )
+        )?;
+
+        for client in &targets {
+            if let Err(error) = ensure_minecraft_running(provider.as_ref(), *client) {
+                return Err(io::Error::new(
+                    error.kind(),
+                    format!(
+                        "{} is running, but Minecraft Education could not be opened: {error}",
+                        client.as_str()
+                    ),
+                ));
+            }
+        }
+        Ok(statuses)
     }
 
     fn suspend_inner(&self, client: Option<ClientId>) -> io::Result<Vec<ClientStatus>> {
