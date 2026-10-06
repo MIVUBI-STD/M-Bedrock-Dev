@@ -140,3 +140,12 @@ Examples intentionally not exposed today:
 - FPS/audio throttles unless the provider can apply and verify them safely.
 
 When a future optimization is added, it must have one owner, one execution path, observable effect, and acceptance proof on the target machine.
+
+
+## Batch recovery contract
+
+Batch lifecycle operations are best-effort transactional.
+
+If a batch start or suspend fails after changing earlier Virtual instances, Runtime Lab attempts to restore those instances to their previous state.
+
+Rollback failures are never hidden. The returned error names every Virtual instance that could not be restored and instructs the operator to run `status` before taking another action.
