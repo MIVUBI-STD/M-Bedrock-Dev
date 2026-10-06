@@ -3,8 +3,14 @@ export type ArenaResetClosureStatus =
   | "partial"
   | "unresolved";
 
+export type ArenaReuseEligibility =
+  | "reusable"
+  | "quarantined";
+
 export interface ArenaResetClosureAssessment {
   status: ArenaResetClosureStatus;
+  reuseEligibility: ArenaReuseEligibility;
+  requiresRecovery: boolean;
   blockers: readonly string[];
   warnings: readonly string[];
   surfaces: {
@@ -95,13 +101,22 @@ export function assessArenaResetClosure(input: {
       ? ["cleanupLedgerPartial"]
       : [];
 
-  return {
-    status:
+  const status:
+    ArenaResetClosureStatus =
       blockers.length > 0
         ? "unresolved"
         : warnings.length > 0
           ? "partial"
-          : "complete",
+          : "complete";
+
+  return {
+    status,
+    reuseEligibility:
+      status === "complete"
+        ? "reusable"
+        : "quarantined",
+    requiresRecovery:
+      status !== "complete",
     blockers,
     warnings,
     surfaces,

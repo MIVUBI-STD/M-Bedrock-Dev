@@ -44,6 +44,8 @@ describe("arena reset closure", () => {
       assessArenaResetClosure(clean),
     ).toMatchObject({
       status: "complete",
+      reuseEligibility: "reusable",
+      requiresRecovery: false,
       blockers: [],
     });
   });
@@ -63,6 +65,12 @@ describe("arena reset closure", () => {
       });
 
     expect(result.status).toBe("unresolved");
+    expect(result.reuseEligibility).toBe(
+      "quarantined",
+    );
+    expect(result.requiresRecovery).toBe(
+      true,
+    );
     expect(result.blockers).toEqual([
       "inputLockRisks",
       "staleReviveContradictions",
@@ -85,8 +93,44 @@ describe("arena reset closure", () => {
       });
 
     expect(result.status).toBe("partial");
+    expect(result.reuseEligibility).toBe(
+      "quarantined",
+    );
+    expect(result.requiresRecovery).toBe(
+      true,
+    );
     expect(result.warnings).toEqual([
       "cleanupLedgerPartial",
     ]);
+  });
+});
+
+
+describe("arena reuse quarantine gate", () => {
+  it("does not allow partial cleanup evidence to reactivate an arena", () => {
+    const dirty =
+      assessArenaResetClosure({
+        ...clean,
+        cleanup: {
+          ledger: {
+            missing: 0,
+            partial: 1,
+          },
+          lifecycle: {
+            unresolved: 0,
+          },
+        },
+      });
+
+    expect(dirty.reuseEligibility).toBe(
+      "quarantined",
+    );
+
+    const recovered =
+      assessArenaResetClosure(clean);
+
+    expect(
+      recovered.reuseEligibility,
+    ).toBe("reusable");
   });
 });

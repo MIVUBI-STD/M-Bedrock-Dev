@@ -349,6 +349,17 @@
       ]
     },
     {
+      "knowledgeId": "cleanup-policy.dirty-arena-quarantine",
+      "consumer": "arena-reset-closure-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-reset-closure-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "cleanup-policy.invalidate-first",
       "consumer": "arena-cleanup-surface-analysis",
       "analyzerPaths": [
@@ -392,6 +403,17 @@
       "proofPaths": [
         "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts",
         "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "cleanup-policy.relation-failed-reset-deactivates-arena",
+      "consumer": "arena-reset-closure-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-reset-closure-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts"
       ]
     },
     {
