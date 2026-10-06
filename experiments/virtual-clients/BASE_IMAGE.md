@@ -1,111 +1,99 @@
-# Runtime Lab Base Image
+# Virtual Clients Base Image
 
 Base is the immutable parent for Virtual-01, Virtual-02, and Virtual-03.
-
-The goal is not to create a stripped Windows build. The goal is a predictable QA image with low background activity while preserving Minecraft Education, Microsoft sign-in, networking, graphics, input, audio capability, and VMware guest integration.
 
 ## Required
 
 Base must keep:
 
 - supported Windows installation;
-- current VMware Tools;
+- VMware Tools;
+- Virtual Guest Agent;
 - working virtual GPU / 3D acceleration;
-- working keyboard, mouse and controller input;
-- working network stack;
-- Microsoft account / organization sign-in dependencies required by Minecraft Education;
+- keyboard, mouse and controller input;
+- networking;
+- Microsoft organization sign-in dependencies;
 - Minecraft Education;
-- Windows security components required by the organization;
-- normal shutdown, restart and suspend behavior.
+- normal shutdown/restart/suspend behavior.
 
-## Reduce background load
+## Minecraft installation policy
 
-Prefer reversible configuration changes:
+For managed Windows Base images, prefer the official Minecraft Education desktop installer with automatic updater creation disabled.
 
-- remove unnecessary third-party startup applications;
-- disable unnecessary third-party auto-updaters during QA sessions;
-- close cloud sync applications that are not needed for the test;
-- remove consumer applications from startup;
-- disable visual animation/transparency where it materially helps;
-- use low Minecraft graphics settings;
-- use a low render distance appropriate for gameplay testing;
-- keep the desktop resolution modest for Virtual instances;
-- avoid background browser tabs or launchers inside Base;
-- complete Windows/Minecraft updates before capturing the clean checkpoint.
+Goal:
 
-Do not broadly disable Windows services only to lower an idle-memory number.
+```text
+Native version changes
+→ Base is deliberately rebuilt/updated
+→ register-base
+→ Virtuals are reprovisioned
+```
 
-## Minecraft virtual profile
+Do not let Virtual-01 / Virtual-02 / Virtual-03 independently auto-update Minecraft Education.
 
-Target Virtual profile:
+The Base provenance record stores the intended Minecraft version. The Guest Agent later proves the live Virtual version.
+
+## Preparation flow
+
+```text
+install supported Windows
+→ install VMware Tools
+→ install Virtual Guest Agent
+→ install Minecraft Education
+→ disable independent Minecraft auto-update in the managed Base
+→ apply conservative background cleanup
+→ low graphics / QA resolution
+→ verify network + input + rendering
+→ shut down Base
+→ register-base
+→ provision Virtuals
+```
+
+## Virtual profile
 
 ```text
 resolution      1280x720
 graphics        low
-render distance low / QA-appropriate
+render distance QA-appropriate
 frame target    ~30 FPS
 memory ceiling  4096 MB
 vCPU            2
 ```
 
-The profile prioritizes responsive input and gameplay mechanics, not visual fidelity.
-
-## Image preparation flow
-
-```text
-install supported Windows
-→ install VMware Tools
-→ verify graphics/input/network
-→ install Minecraft Education
-→ apply conservative background cleanup
-→ apply low graphics profile
-→ update Windows + Minecraft
-→ shut down cleanly
-→ place VM as Base
-→ provision Virtual instances
-```
-
-Base is not used as a player instance after provisioning.
-
-## Virtual preparation
-
-Each Virtual is configured separately after clone creation:
+## Per-Virtual preparation
 
 ```text
 start Virtual
-→ complete first-boot clone identity
-→ sign in with that Virtual's test identity
-→ verify Minecraft multiplayer
+→ live Guest Agent parity must pass
+→ sign in using that Virtual's own licensed test identity
+→ verify multiplayer
 → stop
 → set-ready
 ```
 
-The per-Virtual QA_READY checkpoint belongs to the Virtual instance, not to Base.
+QA_READY belongs to the Virtual, not Base.
 
-## Acceptance
+## Conservative optimization
 
-Do not declare an optimization useful because idle RAM is lower.
+Prefer reversible reductions:
 
-Accept it only when:
+- remove unnecessary third-party startup apps;
+- avoid browsers/cloud sync inside Base;
+- disable unnecessary third-party auto-updaters;
+- reduce visual effects where useful;
+- keep Minecraft graphics low.
 
-1. Minecraft Education still launches and signs in;
-2. multiplayer networking still works;
-3. keyboard/mouse/controller input remains responsive;
-4. GPU rendering remains usable;
-5. suspend/resume remains reliable;
-6. working-set or CPU usage improves measurably on the target machine.
-
+Do not broadly disable Windows services merely to lower idle RAM.
 
 ## Disk hygiene
 
-Do not use automatic disk shrink/compact on Runtime Lab Virtual instances while they retain `QA_READY` or other snapshot state.
+Do not auto-compact linked clones with active snapshots.
 
-If a Virtual delta grows too large, prefer:
+If a Virtual delta becomes unhealthy or too large:
 
 ```text
 stop Virtual
 → reprovision Virtual
-→ prepare the clean instance again
 ```
 
-Base should remain clean and stable; Virtual instances are the disposable layer.
+Base remains the stable parent; Virtuals are disposable.
