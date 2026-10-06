@@ -128,6 +128,7 @@ describe("Backend payload shapes", () => {
 
   it("rejects malformed journal records", () => {
     expect(operationHistory([])).toBe(true);
+    expect(operationHistory([{ schema: 1, timestampUnixMs: 1, operation: "LAUNCH_MINECRAFT", target: "Virtual-01", outcome: "SUCCESS", errorCode: null, retryable: false }])).toBe(true);
     expect(operationHistory([{ schema: 1, outcome: "SUCCESS" }])).toBe(false);
   });
 
