@@ -68,11 +68,12 @@ jobs:
       - name: Build Authenticode-signed Tauri NSIS package
         shell: pwsh
         run: |
-          $signing = [ordered]@{ bundle = [ordered]@{ windows = [ordered]@{
+          $signing = Get-Content src-tauri/tauri.package.conf.json -Raw | ConvertFrom-Json
+          $signing.bundle | Add-Member -MemberType NoteProperty -Name windows -Value ([ordered]@{
             certificateThumbprint = $env:VIRTUAL_CLIENTS_PUBLISHER_CERT_THUMBPRINT
             digestAlgorithm = 'sha256'
-          }}}
-          $signing | ConvertTo-Json -Depth 6 | Set-Content -Encoding utf8 src-tauri/tauri.signing.conf.json
+          }) -Force
+          $signing | ConvertTo-Json -Depth 8 | Set-Content -Encoding utf8 src-tauri/tauri.signing.conf.json
           npx tauri build --bundles nsis --config src-tauri/tauri.signing.conf.json
           if ($LASTEXITCODE -ne 0) { throw "Tauri build failed: $LASTEXITCODE" }
       - name: Resolve signed installer

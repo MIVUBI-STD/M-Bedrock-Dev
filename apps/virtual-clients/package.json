@@ -10,15 +10,14 @@
     "dev:frontend": "vite --host 127.0.0.1 --port 1421 --strictPort",
     "prepare:icons": "node scripts/prepare-icons.mjs",
     "prepare:sidecars": "node scripts/prepare-sidecars.mjs",
-    "dev:app": "npm run prepare:desktop && tauri dev",
+    "dev:app": "npm run prepare:icons && tauri dev",
     "build:frontend": "vite build",
     "preview:frontend": "vite preview",
-    "build:app": "npm run prepare:desktop && tauri build --bundles nsis",
+    "build:app": "npm run prepare:icons && npm run prepare:sidecars && tauri build --bundles nsis --config src-tauri/tauri.package.conf.json",
     "typecheck": "svelte-check --tsconfig ./tsconfig.json",
-    "check:rust": "npm run prepare:desktop && cargo check --manifest-path src-tauri/Cargo.toml",
-    "test:rust": "npm run prepare:desktop && cargo test --manifest-path src-tauri/Cargo.toml",
-    "verify:source": "npm run typecheck && npm run build:frontend && npm run prepare:desktop && cargo check --manifest-path src-tauri/Cargo.toml && cargo test --manifest-path src-tauri/Cargo.toml",
-    "prepare:desktop": "npm run prepare:icons && npm run prepare:sidecars"
+    "check:rust": "npm run prepare:icons && cargo check --manifest-path src-tauri/Cargo.toml",
+    "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml",
+    "verify:source": "npm run typecheck && npm run build:frontend && npm run prepare:icons && cargo check --manifest-path src-tauri/Cargo.toml && cargo test --manifest-path src-tauri/Cargo.toml"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0"

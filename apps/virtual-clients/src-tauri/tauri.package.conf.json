@@ -1,0 +1,8 @@
+{
+  "bundle": {
+    "externalBin": [
+      "binaries/virtual-clients",
+      "binaries/virtual-guest-agent"
+    ]
+  }
+}

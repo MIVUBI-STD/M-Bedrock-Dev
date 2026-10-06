@@ -10,16 +10,18 @@
     "frontendDist": "../dist"
   },
   "app": {
-    "windows": [{
-      "label": "main",
-      "title": "M-Bedrock Virtual Clients",
-      "width": 1180,
-      "height": 760,
-      "minWidth": 920,
-      "minHeight": 620,
-      "resizable": true,
-      "fullscreen": false
-    }],
+    "windows": [
+      {
+        "label": "main",
+        "title": "M-Bedrock Virtual Clients",
+        "width": 1180,
+        "height": 760,
+        "minWidth": 920,
+        "minHeight": 620,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
     "security": {
       "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' ipc: http://ipc.localhost; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
     }
@@ -29,9 +31,15 @@
     "category": "Utility",
     "publisher": "MIVUBI-STD",
     "shortDescription": "Desktop manager for multiple Minecraft Education virtual clients.",
-    "targets": ["nsis"],
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.ico"],
-    "externalBin": ["binaries/virtual-clients", "binaries/virtual-guest-agent"],
+    "targets": [
+      "nsis"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
     "resources": {
       "../../../experiments/virtual-clients/guest/windows/": "guest/windows/",
       "../../../experiments/virtual-clients/acceptance/windows/": "acceptance/windows/",
@@ -39,10 +47,15 @@
     },
     "windows": {
       "allowDowngrades": false,
-      "webviewInstallMode": { "type": "downloadBootstrapper", "silent": true },
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper",
+        "silent": true
+      },
       "nsis": {
         "installMode": "currentUser",
-        "languages": ["English"],
+        "languages": [
+          "English"
+        ],
         "displayLanguageSelector": false,
         "installerIcon": "icons/icon.ico"
       }
