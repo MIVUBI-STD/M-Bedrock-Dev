@@ -167,6 +167,14 @@ describe("Map Audit Output V2 projection", () => {
       .toEqual(["PROVEN", "NEED_VALIDATION"]);
     expect(report.bugs[1]?.missingProof)
       .toBe("One exact runtime observation.");
+    expect(report.unresolved.status)
+      .toBe("HAS_UNRESOLVED");
+    expect(report.unresolved.needValidationIds)
+      .toEqual(["link:unresolved"]);
+    expect(report.unresolved.runtimeRequiredIds)
+      .toEqual([]);
+    expect(report.unresolved.staticProofPendingIds)
+      .toEqual(["link:unresolved"]);
     expect(report.control.allowedNextAction)
       .toBe("PREPARE_REVIEW");
     expect(report.coverage.disposition)

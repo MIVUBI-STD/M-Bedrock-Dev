@@ -360,6 +360,8 @@ SAFE / NOT_APPLICABLE
 
 Nothing may disappear because a detector did not fire, another analyzer looked healthy, approval was withheld, runtime was inconvenient, or a UI/projection omitted it.
 
+Unknown is not a bug by itself, but it is never equivalent to safe. Every material gray-zone item remains explicitly visible through the derived `unresolved` report index until it closes as PROVEN, NEED_VALIDATION detail, an Audit Obligation, NOT_APPLICABLE with positive evidence, or rejected with counter-proof. The report must distinguish static-proof residue from truly runtime-required residue so unresolved state does not automatically become player testing.
+
 Finalization also requires stable artifact identity, one root cause per issue, separate BUG and DESIGN_MISMATCH lanes, impact-derived severity, and no unresolved material coverage hidden behind generic PASS/CHECKED.
 
 ## Anti-forgetting rule

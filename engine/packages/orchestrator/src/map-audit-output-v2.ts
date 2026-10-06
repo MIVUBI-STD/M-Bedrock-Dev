@@ -172,6 +172,21 @@ export interface MapAuditOutputV2 {
     readonly AuditObligation[];
   readonly validationTests:
     readonly AuditValidationTestGroup[];
+  /**
+   * Derived visibility index only. It never changes issue type/proof state and
+   * exists so gray-zone evidence cannot disappear from the human report.
+   */
+  readonly unresolved: {
+    readonly status:
+      | "CLEAR"
+      | "HAS_UNRESOLVED";
+    readonly total: number;
+    readonly needValidationIds: readonly string[];
+    readonly staticProofPendingIds: readonly string[];
+    readonly runtimeRequiredIds: readonly string[];
+    readonly auditObligationIds: readonly string[];
+    readonly unknownSurfaceIds: readonly string[];
+  };
   readonly honesty: AuditHonestyAssessment;
   readonly qualityGates: MapAuditQualityGates;
   readonly fullMapReplica?: FullMapReplicaReceipt;
@@ -457,6 +472,59 @@ export function projectMapAuditOutputV2(input: {
     ...input.issueLanes.BUG,
     ...input.issueLanes.DESIGN_MISMATCH,
   ];
+  const needValidationIds = allFindings
+    .filter((finding) =>
+      finding.status === "NEED_VALIDATION"
+    )
+    .map((finding) => finding.causalLinkId)
+    .sort();
+  const runtimeRequiredIds = input.validationTests
+    .filter((group) =>
+      group.verificationMode ===
+        "NARROW_RUNTIME_VERIFICATION"
+    )
+    .flatMap((group) => group.findingIds)
+    .filter((id, index, values) =>
+      values.indexOf(id) === index
+    )
+    .sort();
+  const runtimeRequiredSet =
+    new Set(runtimeRequiredIds);
+  const staticProofPendingIds =
+    needValidationIds
+      .filter((id) =>
+        !runtimeRequiredSet.has(id)
+      )
+      .sort();
+  const auditObligationIds =
+    input.auditObligations
+      .map((item) => item.id)
+      .sort();
+  const unknownSurfaceIds =
+    closure.surfaces
+      .filter((surface) =>
+        surface.status === "unknown"
+      )
+      .map((surface) => surface.id)
+      .sort();
+  const unresolvedIds = new Set([
+    ...needValidationIds,
+    ...auditObligationIds,
+    ...unknownSurfaceIds,
+  ]);
+  const unresolved = {
+    status:
+      unresolvedIds.size === 0
+        ? "CLEAR" as const
+        : "HAS_UNRESOLVED" as const,
+    total: unresolvedIds.size,
+    needValidationIds,
+    staticProofPendingIds,
+    runtimeRequiredIds,
+    auditObligationIds,
+    unknownSurfaceIds,
+  };
+
   const qualityGates = deriveMapAuditQualityGates({
     controlStatus: input.control.status,
     coverageDisposition,
@@ -571,6 +639,7 @@ export function projectMapAuditOutputV2(input: {
       [...(input.auditObligations ?? [])],
     validationTests:
       [...input.validationTests],
+    unresolved,
     honesty: input.honesty,
     qualityGates,
     ...(input.fullMapReplica === undefined

@@ -15,8 +15,34 @@ describe("Map Audit Output V2 naming contract", () => {
         "honesty",
         "qualityGates",
         "validationTests",
+        "unresolved",
       ]),
     );
+  });
+
+  it("keeps gray-zone state explicitly visible without inventing a third issue status", () => {
+    const unresolved =
+      schema.properties.unresolved;
+    expect(unresolved.properties.status.enum)
+      .toEqual([
+        "CLEAR",
+        "HAS_UNRESOLVED",
+      ]);
+    expect(unresolved.required).toEqual(
+      expect.arrayContaining([
+        "needValidationIds",
+        "staticProofPendingIds",
+        "runtimeRequiredIds",
+        "auditObligationIds",
+        "unknownSurfaceIds",
+      ]),
+    );
+    expect(
+      schema.properties.bugs.items.properties.status.enum,
+    ).toEqual([
+      "PROVEN",
+      "NEED_VALIDATION",
+    ]);
   });
 
   it("keeps final quality projections bounded and non-authoritative", () => {
