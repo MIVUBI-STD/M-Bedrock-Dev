@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { buildResourceCatalog } from "./resource-catalog.mjs";
 
 const roots = [
   "engine/knowledge",
@@ -32,6 +33,13 @@ const bindings = existsSync(bindingPath)
   ? JSON.parse(readFileSync(bindingPath, "utf8")).bindings ?? []
   : [];
 const bound = new Set(bindings.map((item) => item.knowledgeId));
+const catalog = buildResourceCatalog();
+const resourceByPath = new Map(
+  catalog.resources.map((resource) => [
+    resource.path.replaceAll("\\", "/"),
+    resource,
+  ]),
+);
 
 const actionable = [];
 const passive = [];
@@ -43,9 +51,14 @@ for (const root of roots) {
     for (const kind of ["facts", "relations"]) {
       for (const item of catalog[kind] ?? []) {
         if (typeof item.id !== "string" || !item.id.trim()) continue;
+        const resource =
+          resourceByPath.get(path.replaceAll("\\", "/"));
         const record = {
           id: item.id,
           path,
+          ...(resource === undefined
+            ? {}
+            : { resourceId: resource.id }),
           kind: kind === "facts" ? "fact" : "relation",
           classification: item.classification ?? "unspecified",
         };
@@ -60,13 +73,43 @@ const stale = [...bound].filter(
   (id) => !actionable.some((item) => item.id === id) && !passive.some((item) => item.id === id),
 );
 
+const missingByResource = Object.values(
+  missing.reduce((groups, item) => {
+    const key = item.resourceId ?? item.path;
+    const current = groups[key] ?? {
+      resourceId: item.resourceId,
+      path: item.path,
+      knowledgeIds: [],
+    };
+    current.knowledgeIds.push(item.id);
+    groups[key] = current;
+    return groups;
+  }, {}),
+)
+  .map((item) => ({
+    ...item,
+    knowledgeIds: [...item.knowledgeIds].sort(),
+    count: item.knowledgeIds.length,
+  }))
+  .sort((left, right) =>
+    right.count - left.count ||
+    left.path.localeCompare(right.path)
+  );
+
+const actionableCoverage =
+  actionable.length === 0
+    ? 1
+    : (actionable.length - missing.length) / actionable.length;
+
 const result = {
   schemaVersion: 1,
   actionableKnowledge: actionable.length,
   passiveKnowledge: passive.length,
   dedicatedBindings: bound.size,
   actionableWithoutDedicatedBinding: missing.length,
+  actionableCoverage,
   staleBindings: stale.length,
+  missingByResource,
   missing,
   stale,
 };
