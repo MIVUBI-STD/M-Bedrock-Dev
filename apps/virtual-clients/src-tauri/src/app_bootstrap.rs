@@ -43,7 +43,6 @@ pub fn run() {
             commands::virtual_clients::virtual_clients_reprovision,
             commands::setup_tools::setup_open_base_location,
             commands::setup_tools::setup_open_guest_tools,
-            commands::setup_tools::desktop_launch_native_minecraft,
             commands::window_arrangement::window_displays,
             commands::window_arrangement::window_apply_layout
         ])
