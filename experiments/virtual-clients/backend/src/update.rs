@@ -424,8 +424,7 @@ fn validate_platform_manifest(
             )
         })?;
 
-    let expected_asset =
-        format!("M-Bedrock-Virtual-Clients-{version}-windows-x86_64.exe");
+    let expected_asset = format!("M-Bedrock-Virtual-Clients-{version}-windows-x86_64.exe");
 
     if parsed.scheme() != "https"
         || parsed.host_str() != Some("github.com")

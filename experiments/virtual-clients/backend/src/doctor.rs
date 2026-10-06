@@ -370,11 +370,7 @@ mod tests {
 
     #[test]
     fn ready_requires_all_ready_snapshots() {
-        let mut clients = vec![
-            client(true, true),
-            client(true, true),
-            client(false, true),
-        ];
+        let mut clients = vec![client(true, true), client(true, true), client(false, true)];
         assert_eq!(
             select_setup_action(
                 &compatible_schema(),

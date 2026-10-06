@@ -79,7 +79,11 @@ fn validate_guest_status(status: &GuestStatus) -> io::Result<()> {
     }
 
     if let Some(identity) = status.machine_identity.as_deref() {
-        if identity.len() != 64 || !identity.chars().all(|character| character.is_ascii_hexdigit()) {
+        if identity.len() != 64
+            || !identity
+                .chars()
+                .all(|character| character.is_ascii_hexdigit())
+        {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 "guest Windows identity fingerprint is invalid",
@@ -93,8 +97,8 @@ fn validate_guest_status(status: &GuestStatus) -> io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::{validate_guest_status, GuestStatus, GUEST_STATUS_SCHEMA};
-    use std::io;
     use crate::profile::{MinecraftInstallType, MinecraftProfile};
+    use std::io;
 
     #[test]
     fn guest_identity_fingerprint_format_is_strict() {

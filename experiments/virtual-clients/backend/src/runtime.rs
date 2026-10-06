@@ -327,8 +327,7 @@ fn verify_identity_provenance(provider: &dyn Provider) -> io::Result<Vec<ClientS
                 format!("{} VM identity is unavailable", client.as_str()),
             )
         })?;
-        let guest =
-            wait_for_guest_compatibility(provider, client, Duration::from_secs(30), false)?;
+        let guest = wait_for_guest_compatibility(provider, client, Duration::from_secs(30), false)?;
         let windows_identity = guest.machine_identity.clone().ok_or_else(|| {
             io::Error::new(
                 io::ErrorKind::InvalidData,
@@ -387,10 +386,7 @@ fn verify_identity_provenance(provider: &dyn Provider) -> io::Result<Vec<ClientS
     Ok(result)
 }
 
-fn require_verified_vm_identity(
-    provider: &dyn Provider,
-    client: ClientId,
-) -> io::Result<()> {
+fn require_verified_vm_identity(provider: &dyn Provider, client: ClientId) -> io::Result<()> {
     let Some(expected_vm_identity) = load_client_profile(client)
         .ok()
         .and_then(|profile| profile.verified_vm_identity)
@@ -964,14 +960,12 @@ impl VirtualClients {
                 return Err(with_rollback_context(error, &rollback_failed));
             }
 
-            if let Err(error) =
-                wait_for_guest_compatibility(
-                    provider.as_ref(),
-                    client,
-                    Duration::from_secs(90),
-                    true,
-                )
-            {
+            if let Err(error) = wait_for_guest_compatibility(
+                provider.as_ref(),
+                client,
+                Duration::from_secs(90),
+                true,
+            ) {
                 if original_state == ClientState::Running {
                     return Err(error);
                 }
@@ -1122,12 +1116,7 @@ impl VirtualClients {
         })?;
         provider.restart(client)?;
         if let Err(error) =
-            wait_for_guest_compatibility(
-                    provider.as_ref(),
-                    client,
-                    Duration::from_secs(90),
-                    true,
-                )
+            wait_for_guest_compatibility(provider.as_ref(), client, Duration::from_secs(90), true)
         {
             let failed = if provider.stop(client).is_err() {
                 vec![client.as_str()]
@@ -1196,12 +1185,7 @@ impl VirtualClients {
         })?;
         provider.reset(client)?;
         if let Err(error) =
-            wait_for_guest_compatibility(
-                    provider.as_ref(),
-                    client,
-                    Duration::from_secs(90),
-                    true,
-                )
+            wait_for_guest_compatibility(provider.as_ref(), client, Duration::from_secs(90), true)
         {
             let failed = if provider.stop(client).is_err() {
                 vec![client.as_str()]
