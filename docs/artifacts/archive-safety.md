@@ -2,7 +2,7 @@
 id: document.artifacts.archive-safety
 class: DOCUMENT
 domain: artifacts
-role: REFERENCE
+role: DOMAIN
 authority: CANONICAL
 lifecycle: ACTIVE
 ---
