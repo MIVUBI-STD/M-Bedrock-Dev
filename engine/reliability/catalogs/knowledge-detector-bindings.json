@@ -463,6 +463,16 @@
       ]
     },
     {
+      "knowledgeId": "combat-policy.damage-filter-before-sideeffects",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "combat-policy.friendly-fire-explicit",
       "consumer": "combat-lifecycle-analysis",
       "analyzerPaths": [

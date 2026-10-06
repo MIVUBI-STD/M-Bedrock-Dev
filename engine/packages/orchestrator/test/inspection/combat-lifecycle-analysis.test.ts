@@ -98,6 +98,9 @@ describe("combat lifecycle analysis", () => {
     expect(
       result.hurtHandlersWithoutScopeGuard,
     ).toBe(0);
+    expect(
+      result.secondaryEffectPathsWithoutScopeGuard,
+    ).toBe(0);
   });
 
   it("keeps hurt handling without explicit arena/team comparison as a scope gap", () => {
@@ -114,10 +117,15 @@ describe("combat lifecycle analysis", () => {
       },
     );
 
-    expect(
+    const result =
       analyzeCombatLifecycle([
         script,
-      ]).hurtHandlersWithoutScopeGuard,
+      ]);
+    expect(
+      result.hurtHandlersWithoutScopeGuard,
+    ).toBe(1);
+    expect(
+      result.secondaryEffectPathsWithoutScopeGuard,
     ).toBe(1);
   });
 

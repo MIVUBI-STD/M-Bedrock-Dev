@@ -28,6 +28,7 @@ export interface CombatLifecycleAnalysis {
   hurtOnlyTerminalRisk: number;
   explicitCombatScopeGuards: number;
   hurtHandlersWithoutScopeGuard: number;
+  secondaryEffectPathsWithoutScopeGuard: number;
   paths: readonly CombatEventPathAssessment[];
 }
 
@@ -266,6 +267,18 @@ export function analyzeCombatLifecycle(
         hurtHandlers -
           explicitCombatScopeGuards,
       ),
+    secondaryEffectPathsWithoutScopeGuard:
+      explicitCombatScopeGuards > 0
+        ? 0
+        : paths.filter(
+            (item) =>
+              item.event === "hurt" &&
+              (
+                item.knockbackEffects > 0 ||
+                item.statusEffects > 0 ||
+                item.ignitions > 0
+              ),
+          ).length,
     paths,
   };
 }
