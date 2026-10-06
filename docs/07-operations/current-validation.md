@@ -1,3 +1,43 @@
+## Virtual Clients remote-only closure sweep (2026-10-07)
+
+All remaining changes that can be justified from REMOTE_GITHUB evidence were
+closed without adding another subsystem:
+
+- interactive-user registration is per Virtual/per Windows user through the
+  public-desktop `Enable Virtual Clients Launcher` helper created by the Base;
+  registration writes only that user's Startup entry and immediately starts the
+  existing Guest Agent binary in `--interactive-launcher` mode;
+- SYSTEM Guest Agent remains the only host-facing listener. Interactive launch
+  binds only `127.0.0.1:47832`, has no firewall rule and accepts only PING or
+  the literal MINECRAFT_EDUCATION action with a correlated request id;
+- launcher readiness now requires a PING/READY protocol handshake, not merely an
+  open localhost port;
+- client status projects `interactiveLauncherReady`; a running client with a
+  missing helper is presented as Launcher setup needed and its clear next action
+  is Finish setup (open the VM), not a launch operation guaranteed to fail;
+- Accounts setup tells the user to use the one-click desktop launcher helper
+  before Minecraft sign-in;
+- one Virtual is defined to own one interactive Windows user session; concurrent
+  RDP/multi-user sessions are outside the accepted launcher routing model;
+- the unused public Native Minecraft launch Tauri command was removed. The
+  Native launcher engine remains internal until a proven Start Session workflow
+  has a real consumer;
+- VMware network connection type is observable but NAT/bridged policy remains
+  evidence-driven;
+- multi-Virtual Minecraft renderer launches reuse the existing pressure-aware
+  stagger;
+- process presence is labeled Minecraft open, never signed-in/multiplayer ready.
+
+Remote source stop rule reached:
+remaining P0/P1 items require actual Windows/VMware/Minecraft Education evidence
+(interactive launch, Microsoft auth handoff, four simultaneous clients/accounts,
+3D/input/audio behavior, NAT/bridged multiplayer, suspend/reconnect, reboot
+persistence). Do not add Start Session, account-state detectors, network mode
+forcing, GPU thresholds, auth automation or reconnect machinery before those
+proofs exist.
+
+---
+
 ## Interactive launcher registration closure — REMOTE_GITHUB (2026-10-07)
 
 The remaining remote registration/IPC gap is now narrowed without adding a new
