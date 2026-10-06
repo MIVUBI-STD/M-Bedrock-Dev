@@ -14,7 +14,7 @@ const clientFor = (id: string) => ({
   id, native: id === "Native", state: id === "Native" ? "MANUAL" : "STOPPED",
   readySnapshot: null, memoryLimitMb: null, hostWorkingSetMb: null,
   guestToolsReady: null, guestAgentReady: null, guestAgentVersion: null,
-  minecraftVersion: null, minecraftRunning: null, lineageParity: null, versionParity: null,
+  minecraftVersion: null, minecraftRunning: null, interactiveLauncherReady: null, lineageParity: null, versionParity: null,
   vmIdentity: null, windowsIdentity: null,
 });
 const snapshot = () => ({
