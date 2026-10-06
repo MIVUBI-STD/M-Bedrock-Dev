@@ -1,3 +1,37 @@
+## Virtual Clients maintenance hardening (2026-10-07)
+
+Maintenance-only cleanup after remote architecture closure:
+- extracted host-side guest Minecraft orchestration from the large runtime owner
+  into `virtual-clients/runtime-core/src/minecraft_runtime.rs`; runtime remains
+  lifecycle orchestration rather than owning Guest Agent launch policy inline;
+- removed the unused Native Minecraft desktop engine instead of retaining
+  speculative code for a future Start Session;
+- added a distinct `LAUNCH_MINECRAFT` operation-history kind and kept its
+  target as the canonical client id;
+- centralized the interactive launcher port/timeout naming inside the Guest
+  Agent binary without introducing a configuration framework;
+- corrected desktop AGENTS rules to the current `virtual-clients/runtime-core/`
+  owner, clarified guest-local localhost transport, documented the single Window
+  Layout mutation/geometry owners, and prohibited speculative future engines;
+- corrected Base docs to allow only the fixed-action localhost Interactive
+  Launcher, never a host/LAN listener;
+- launcher-missing UI uses the existing Open operation as `Finish setup`, while
+  Minecraft launch is offered only when the interactive launcher is positively
+  ready;
+- removed stale documentation claiming a retained Native launcher engine.
+
+Maintenance stop rule:
+- do not split `runtime.rs`, `App.svelte`, contracts or tests merely to reduce
+  line count; split only when a stable business/adapter owner can be named;
+- do not rename internal `window_arrangement` solely for cosmetic alignment:
+  Window Layout is the feature term, arrangement is the internal Windows adapter;
+- no new settings framework, service layer, event bus, repository abstraction,
+  launcher manager or session manager is justified by current evidence.
+
+Proof ceiling remains unchanged: no CI/local/target-machine execution was run.
+
+---
+
 ## Virtual Clients remote-only closure sweep (2026-10-07)
 
 All remaining changes that can be justified from REMOTE_GITHUB evidence were
