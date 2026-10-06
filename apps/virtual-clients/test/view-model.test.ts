@@ -66,6 +66,11 @@ describe("Virtual Clients presentation projection", () => {
     }, clientStatus("SUSPENDED"))).toEqual({ kind: "start", label: "Resume" });
   });
 
+  it("offers Finish setup when the interactive launcher is missing", () => {
+    const client = { ...clientStatus("RUNNING", false), interactiveLauncherReady: false };
+    expect(primaryClientAction(actions[0], client)).toEqual({ kind: "open", label: "Finish setup" });
+  });
+
   it("offers Minecraft launch when the VM is running but Minecraft is closed", () => {
     expect(primaryClientAction(actions[0], clientStatus("RUNNING", false, true))).toEqual({ kind: "launch-minecraft", label: "Launch Minecraft" });
   });
