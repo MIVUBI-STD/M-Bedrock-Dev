@@ -654,6 +654,18 @@ function runtimeEdgeState(
       if (
         scenarioLabel === "terminal-collision" &&
         world.arenas.lifecycle
+          .terminalPrecedenceUnresolved > 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Multiple terminal ingress paths exist without source-proven deterministic outcome precedence or tie policy. A one-shot latch can prevent duplicate commit but does not prove which simultaneous terminal outcome wins.",
+        };
+      }
+
+      if (
+        scenarioLabel === "terminal-collision" &&
+        world.arenas.lifecycle
           .provenTerminalRaces > 0
       ) {
         const races =

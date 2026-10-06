@@ -144,6 +144,8 @@ export interface GameplayWorldModel {
       protectedTerminalRaces: number;
       provenTerminalRaces: number;
       unresolvedTerminalRaces: number;
+      terminalPrecedenceProven: number;
+      terminalPrecedenceUnresolved: number;
       protectedDeferredMutations: number;
       unresolvedDeferredMutations: number;
       staleReadySnapshotRisks: number;
@@ -1733,6 +1735,12 @@ export function deriveGameplayWorldModel(
         unresolvedTerminalRaces:
           source.arena.lifecycle
             ?.unresolvedTerminalRaces ?? 0,
+        terminalPrecedenceProven:
+          source.arena.lifecycle
+            ?.terminalPrecedenceProven ?? 0,
+        terminalPrecedenceUnresolved:
+          source.arena.lifecycle
+            ?.terminalPrecedenceUnresolved ?? 0,
         protectedDeferredMutations:
           source.arena.lifecycle
             ?.protectedDeferredMutations ?? 0,

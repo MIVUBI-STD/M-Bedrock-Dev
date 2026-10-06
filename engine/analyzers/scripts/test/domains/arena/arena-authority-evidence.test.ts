@@ -199,4 +199,50 @@ describe("arena authority evidence", () => {
         ),
     ).toBe(false);
   });
+
+  it("proves explicit ordered terminal outcome precedence only when the terminal owner consumes it", () => {
+    const sourceText = [
+      "const RESULT_PRECEDENCE = ['objective', 'timeout', 'disconnect'];",
+      "function endGame(candidates) {",
+      "  return RESULT_PRECEDENCE.find((reason) => candidates.has(reason));",
+      "}",
+    ].join("\n");
+
+    expect(
+      deriveScriptTerminalPrecedenceEvidence(
+        sourceText,
+        source,
+      ),
+    ).toEqual([
+      expect.objectContaining({
+        functionRegion:
+          "function:endGame",
+        policyBinding:
+          "RESULT_PRECEDENCE",
+        policyKind:
+          "ordered-outcomes",
+        outcomes: [
+          "objective",
+          "timeout",
+          "disconnect",
+        ],
+      }),
+    ]);
+  });
+
+  it("does not credit an unused precedence declaration as terminal resolution proof", () => {
+    const sourceText = [
+      "const RESULT_PRECEDENCE = ['objective', 'timeout'];",
+      "function endGame(result) {",
+      "  return result;",
+      "}",
+    ].join("\n");
+
+    expect(
+      deriveScriptTerminalPrecedenceEvidence(
+        sourceText,
+        source,
+      ),
+    ).toEqual([]);
+  });
 });

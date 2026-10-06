@@ -16,6 +16,16 @@ export interface ScriptTerminalIdempotencyEvidence {
   readonly source: SourceRef;
 }
 
+export interface ScriptTerminalPrecedenceEvidence {
+  readonly functionRegion: string;
+  readonly policyBinding: string;
+  readonly policyKind:
+    | "ordered-outcomes"
+    | "priority-table";
+  readonly outcomes: readonly string[];
+  readonly source: SourceRef;
+}
+
 const MEMBERSHIP_PROPERTY =
   /^(?:members|players|participants|memberships)$/i;
 const READY_PROPERTY =
@@ -1454,4 +1464,210 @@ export function correlateScriptArenaAuthorityPaths(
         b.executionRegion,
       )
     );
+}
+
+
+const TERMINAL_PRECEDENCE_BINDING =
+  /(?:(?:terminal|result|outcome|winner).*(?:precedence|priority|tie)|(?:precedence|priority|tie).*(?:terminal|result|outcome|winner))/i;
+
+function precedenceArrayOutcomes(
+  expression: ts.Expression,
+): string[] | undefined {
+  if (!ts.isArrayLiteralExpression(expression)) {
+    return undefined;
+  }
+  const values = expression.elements
+    .map((item) =>
+      ts.isStringLiteralLike(item)
+        ? item.text.trim()
+        : undefined
+    )
+    .filter(
+      (item): item is string =>
+        Boolean(item),
+    );
+  return values.length >= 2
+    ? values
+    : undefined;
+}
+
+function precedenceObjectOutcomes(
+  expression: ts.Expression,
+): string[] | undefined {
+  if (!ts.isObjectLiteralExpression(expression)) {
+    return undefined;
+  }
+  const ranked = expression.properties
+    .flatMap((property) => {
+      if (!ts.isPropertyAssignment(property)) {
+        return [];
+      }
+      const name =
+        declarationMemberName(property.name);
+      if (!name) return [];
+      const value = property.initializer;
+      if (
+        !ts.isNumericLiteral(value) &&
+        !ts.isStringLiteralLike(value)
+      ) {
+        return [];
+      }
+      const rank = Number(value.text);
+      return Number.isFinite(rank)
+        ? [{ name, rank }]
+        : [];
+    });
+  if (ranked.length < 2) {
+    return undefined;
+  }
+  return ranked
+    .sort((a, b) =>
+      b.rank - a.rank ||
+      a.name.localeCompare(b.name)
+    )
+    .map((item) => item.name);
+}
+
+function functionReferencesBinding(
+  node:
+    | ts.FunctionDeclaration
+    | ts.MethodDeclaration,
+  binding: string,
+): boolean {
+  if (!node.body) return false;
+  let found = false;
+  const visit = (current: ts.Node): void => {
+    if (found) return;
+    if (
+      ts.isIdentifier(current) &&
+      current.text === binding
+    ) {
+      found = true;
+      return;
+    }
+    ts.forEachChild(current, visit);
+  };
+  visit(node.body);
+  return found;
+}
+
+export function deriveScriptTerminalPrecedenceEvidence(
+  text: string,
+  source: SourceRef,
+): ScriptTerminalPrecedenceEvidence[] {
+  const file = ts.createSourceFile(
+    source.relativePath,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    scriptKind(source.relativePath),
+  );
+
+  const policies = new Map<
+    string,
+    {
+      kind:
+        | "ordered-outcomes"
+        | "priority-table";
+      outcomes: readonly string[];
+      node: ts.Node;
+    }
+  >();
+
+  const collect = (node: ts.Node): void => {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.initializer &&
+      TERMINAL_PRECEDENCE_BINDING.test(
+        node.name.text,
+      )
+    ) {
+      const array =
+        precedenceArrayOutcomes(
+          node.initializer,
+        );
+      const object =
+        array === undefined
+          ? precedenceObjectOutcomes(
+              node.initializer,
+            )
+          : undefined;
+      if (array) {
+        policies.set(node.name.text, {
+          kind: "ordered-outcomes",
+          outcomes: array,
+          node,
+        });
+      } else if (object) {
+        policies.set(node.name.text, {
+          kind: "priority-table",
+          outcomes: object,
+          node,
+        });
+      }
+    }
+    ts.forEachChild(node, collect);
+  };
+  collect(file);
+
+  const output:
+    ScriptTerminalPrecedenceEvidence[] = [];
+  const visit = (node: ts.Node): void => {
+    if (
+      (
+        ts.isFunctionDeclaration(node) ||
+        ts.isMethodDeclaration(node)
+      ) &&
+      node.body
+    ) {
+      const name =
+        declarationMemberName(node.name);
+      if (
+        !name ||
+        !TERMINAL_FUNCTION_NAME.test(
+          name.replace(/[^A-Za-z0-9]/g, ""),
+        )
+      ) {
+        ts.forEachChild(node, visit);
+        return;
+      }
+
+      for (const [binding, policy] of policies) {
+        if (
+          !functionReferencesBinding(
+            node,
+            binding,
+          )
+        ) {
+          continue;
+        }
+        output.push({
+          functionRegion:
+            "function:" + name,
+          policyBinding: binding,
+          policyKind: policy.kind,
+          outcomes:
+            [...policy.outcomes],
+          source:
+            lineSource(
+              file,
+              policy.node,
+              source,
+            ),
+        });
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+
+  return output.sort((a, b) =>
+    a.functionRegion.localeCompare(
+      b.functionRegion,
+    ) ||
+    a.policyBinding.localeCompare(
+      b.policyBinding,
+    )
+  );
 }

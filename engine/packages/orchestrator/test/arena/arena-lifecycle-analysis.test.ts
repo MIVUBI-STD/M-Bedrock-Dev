@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   deriveCrossFileCallEdges,
   deriveScriptTerminalIdempotencyEvidence,
+  deriveScriptTerminalPrecedenceEvidence,
   parseScriptFile,
 } from "../../../../analyzers/scripts/src/index.js";
 import { analyzeArenaLifecycleConvergence } from "../../src/arena/arena-lifecycle-analysis.js";
@@ -601,5 +602,107 @@ describe("arena lifecycle convergence", () => {
     expect(
       result.unresolvedDeferredMutations,
     ).toBe(0);
+  });
+
+  it("separates one-shot terminal protection from deterministic simultaneous-outcome precedence", () => {
+    const sourceText = [
+      "const RESULT_PRECEDENCE = ['objective', 'timeout'];",
+      "let ended = false;",
+      "function endGame(candidates) {",
+      "  if (ended) return;",
+      "  ended = true;",
+      "  return RESULT_PRECEDENCE.find((reason) => candidates.has(reason));",
+      "}",
+      "world.afterEvents.entityDie.subscribe(() => endGame(new Set(['objective'])));",
+      "world.afterEvents.playerLeave.subscribe(() => endGame(new Set(['timeout'])));",
+    ].join("\n");
+    const script = parseScriptFile(
+      "main",
+      sourceText,
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeArenaLifecycleConvergence(
+        [script],
+        [],
+        deriveScriptTerminalIdempotencyEvidence(
+          sourceText,
+          script.source,
+        ),
+        deriveScriptTerminalPrecedenceEvidence(
+          sourceText,
+          script.source,
+        ),
+      );
+
+    expect(
+      result.protectedTerminalRaces,
+    ).toBe(1);
+    expect(
+      result.terminalPrecedenceProven,
+    ).toBe(1);
+    expect(
+      result.terminalRaces[0],
+    ).toMatchObject({
+      status: "protected",
+      precedenceStatus: "proven",
+      precedence: {
+        policyBinding:
+          "RESULT_PRECEDENCE",
+        outcomes: [
+          "objective",
+          "timeout",
+        ],
+      },
+    });
+  });
+
+  it("keeps simultaneous terminal resolution unresolved when a latch exists without an explicit precedence policy", () => {
+    const sourceText = [
+      "let ended = false;",
+      "function endGame(result) {",
+      "  if (ended) return;",
+      "  ended = true;",
+      "  return result;",
+      "}",
+      "world.afterEvents.entityDie.subscribe(() => endGame('objective'));",
+      "world.afterEvents.playerLeave.subscribe(() => endGame('timeout'));",
+    ].join("\n");
+    const script = parseScriptFile(
+      "main",
+      sourceText,
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeArenaLifecycleConvergence(
+        [script],
+        [],
+        deriveScriptTerminalIdempotencyEvidence(
+          sourceText,
+          script.source,
+        ),
+      );
+
+    expect(
+      result.protectedTerminalRaces,
+    ).toBe(1);
+    expect(
+      result.terminalPrecedenceUnresolved,
+    ).toBe(1);
+    expect(
+      result.terminalRaces[0],
+    ).toMatchObject({
+      status: "protected",
+      precedenceStatus:
+        "unresolved",
+    });
   });
 });

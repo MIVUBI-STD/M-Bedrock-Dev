@@ -72,6 +72,18 @@ export interface ArenaTerminalRaceAssessment {
   readonly idempotencyKind?:
     | "boolean-latch"
     | "state-latch";
+  readonly precedence?:
+    | {
+        readonly policyBinding: string;
+        readonly policyKind:
+          | "ordered-outcomes"
+          | "priority-table";
+        readonly outcomes:
+          readonly string[];
+      };
+  readonly precedenceStatus:
+    | "proven"
+    | "unresolved";
   readonly reason: string;
 }
 
@@ -103,6 +115,8 @@ export interface ArenaLifecycleAnalysis {
   protectedTerminalRaces: number;
   provenTerminalRaces: number;
   unresolvedTerminalRaces: number;
+  terminalPrecedenceProven: number;
+  terminalPrecedenceUnresolved: number;
   protectedDeferredMutations: number;
   unresolvedDeferredMutations: number;
   staleReadySnapshotRisks: number;
@@ -1088,11 +1102,21 @@ function terminalRaceAssessments(
     readonly ArenaLifecycleTerminalAssessment[],
   idempotencyEvidence:
     readonly ScriptTerminalIdempotencyEvidence[],
+  precedenceEvidence:
+    readonly ScriptTerminalPrecedenceEvidence[],
 ): ArenaTerminalRaceAssessment[] {
   const idempotency =
     terminalIdempotencyMap(
       idempotencyEvidence,
     );
+  const precedence = new Map(
+    precedenceEvidence.map((item) => [
+      item.source.relativePath +
+        "|" +
+        item.functionRegion,
+      item,
+    ]),
+  );
   const output:
     ArenaTerminalRaceAssessment[] = [];
 
@@ -1283,6 +1307,12 @@ function terminalRaceAssessments(
 
     const latch =
       idempotency.get(target);
+    const precedencePolicy =
+      precedence.get(
+        script.source.relativePath +
+          "|" +
+          assessment.terminalRegion,
+      );
     const unguardedDeferred =
       uniqueIngresses.filter(
         (item) =>
@@ -1320,6 +1350,22 @@ function terminalRaceAssessments(
             idempotencyKind:
               latch.kind,
           }),
+      ...(precedencePolicy === undefined
+        ? {}
+        : {
+            precedence: {
+              policyBinding:
+                precedencePolicy.policyBinding,
+              policyKind:
+                precedencePolicy.policyKind,
+              outcomes:
+                [...precedencePolicy.outcomes],
+            },
+          }),
+      precedenceStatus:
+        precedencePolicy === undefined
+          ? "unresolved"
+          : "proven",
       reason:
         status === "protected"
           ? "Multiple distinct terminal ingresses converge on the same terminal owner, but the terminal owner has a source-proven one-shot latch."
@@ -1592,6 +1638,8 @@ export function analyzeArenaLifecycleConvergence(
     readonly CrossFileCallEdge[] = [],
   terminalIdempotencyEvidence:
     readonly ScriptTerminalIdempotencyEvidence[] = [],
+  terminalPrecedenceEvidence:
+    readonly ScriptTerminalPrecedenceEvidence[] = [],
 ): ArenaLifecycleAnalysis {
   const assessments =
     crossFileCalls.length === 0
@@ -1618,6 +1666,7 @@ export function analyzeArenaLifecycleConvergence(
       crossFileCalls,
       assessments,
       terminalIdempotencyEvidence,
+      terminalPrecedenceEvidence,
     );
   const deferredMutations =
     deferredMutationAssessments(
@@ -1698,6 +1747,18 @@ export function analyzeArenaLifecycleConvergence(
       terminalRaces.filter(
         (item) =>
           item.status ===
+            "unresolved",
+      ).length,
+    terminalPrecedenceProven:
+      terminalRaces.filter(
+        (item) =>
+          item.precedenceStatus ===
+            "proven",
+      ).length,
+    terminalPrecedenceUnresolved:
+      terminalRaces.filter(
+        (item) =>
+          item.precedenceStatus ===
             "unresolved",
       ).length,
     protectedDeferredMutations:

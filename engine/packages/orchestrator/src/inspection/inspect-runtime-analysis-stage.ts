@@ -65,6 +65,7 @@ import {
 import {
   deriveProgressionActiveStateValues,
   deriveScriptTerminalIdempotencyEvidence,
+  deriveScriptTerminalPrecedenceEvidence,
   deriveScriptProgressionAdvanceEvidence,
   deriveScriptProgressionIdempotencyEvidence,
   deriveScriptProgressionOrdinalAdvanceEvidence,
@@ -403,6 +404,15 @@ export function analyzeInspectionRuntimeState(
             item.node.source,
           )
     );
+  const terminalPrecedenceEvidence =
+    input.parsedScripts.flatMap((item) =>
+      item.text === undefined
+        ? []
+        : deriveScriptTerminalPrecedenceEvidence(
+            item.text,
+            item.node.source,
+          )
+    );
 
   const arenaLifecycle =
     analyzeArenaLifecycleConvergence(
@@ -412,6 +422,9 @@ export function analyzeInspectionRuntimeState(
         : [],
       demanded.has("arena-lifecycle")
         ? terminalIdempotencyEvidence
+        : [],
+      demanded.has("arena-lifecycle")
+        ? terminalPrecedenceEvidence
         : [],
     );
   const arenaCleanupSurfaces =
