@@ -96,3 +96,218 @@ A blocking PROVE checkpoint is different: it requires `RESOLVE_DEFECTS` before r
 - CI/local test execution unless explicitly requested;
 - LOCAL_MINECRAFT/LIVE_MINECRAFT except for a specific runtime-proof residue;
 - benchmark promotion until exact artifact identity and frozen expectations exist.
+
+
+## Virtual Clients — source-review handoff (2026-10-06)
+
+This is a separate, user-requested Product Development planning handoff for
+`Experimental`. It does not reopen or change the Real Map Audit lane above.
+
+### Scope and evidence
+
+- Reviewed source: `6e87cdfadaefa0714f547f5824747806499fa897`.
+- Execution context: `REMOTE_GITHUB`; source review and existing workflow reads only.
+- Current delivery: review and implementation specification. No runtime behavior
+  was changed and no new build, test, CI run, or Minecraft session was initiated.
+- User constraint: ordinary chat plus the GitHub connector; do not start
+  Codex/Work execution for this work.
+- Windows + VMware Workstation is the primary target. Native + three Virtual
+  clients, manual gameplay, guest-owned accounts, and Native version authority
+  remain the product boundary. macOS acceptance is separate.
+- Existing exact-head Desktop Verify and Package Smoke runs succeeded:
+  [desktop](https://github.com/MIVUBI-STD/M-Bedrock-Dev/actions/runs/37476332443),
+  [package](https://github.com/MIVUBI-STD/M-Bedrock-Dev/actions/runs/37476332465).
+  Package Smoke covers build, silent install/uninstall, packaged resources, and
+  runtime-data preservation. It does not prove VMware/Minecraft behavior.
+
+Current semantic owners remain those in
+[Implementation Map](../06-system/implementation-map.md).
+Use [Development Discipline](../06-system/development-discipline.md):
+reuse existing owners, make the minimum complete change, and stop after proof.
+The items below are engineering findings and proposals, not gameplay bug reports.
+
+### Source-grounded findings
+
+1. **Incomplete batch failure cleanup.**
+   `runtime.rs::start_targets` explicitly restores prior states for several
+   errors, but lineage, saved-identity, state-validation, and status/telemetry
+   failures can propagate directly after earlier clients have started.
+   The existing fake-provider rollback tests exercise the helper, not the
+   complete orchestration. First owner: runtime lifecycle orchestration.
+
+2. **Stale UI after partial failure.**
+   `App.svelte::mutate` refreshes after success but only presents an error
+   after failure. A partly completed operation can leave the displayed client
+   state outdated. External VMware changes are not automatically reconciled.
+   First owner: frontend refresh coordination, using backend truth.
+
+3. **Action availability is narrower than execution admission.**
+   `lifecycle_actions` projects power-state/snapshot eligibility, while
+   execution separately enforces compatibility, identity and resource checks.
+   `view-model.ts` labels STOPPED as Ready. Do not equate a valid power state,
+   action eligibility, and verified Minecraft gameplay readiness.
+   First owners: lifecycle admission and its presentation.
+
+4. **Setup capacity and first-boot policy need an explicit decision.**
+   Doctor can recommend one or two Virtual clients, but identity verification
+   requires all three running. `start_targets` uses a 90-second Guest Agent
+   wait even during initial guest setup. This establishes a policy/UX mismatch
+   and a first-boot timeout risk, not a reproduced OOBE failure.
+   First owners: Doctor/setup and lifecycle startup policy.
+
+5. **Application and Guest Agent release versions are tightly coupled.**
+   `base_profile_matches_native` requires the Base agent version to equal
+   the backend Cargo package version. A backend version bump can invalidate a
+   finalized Base even when Minecraft is unchanged. Doctor then selects Base
+   rebuild. First owner: version compatibility.
+
+6. **Recovery and batch controls need clearer semantics.**
+   Restore recovery point directly invokes reset without its own loss-of-changes
+   confirmation. Stop all is disabled when no clients are RUNNING, even if
+   SUSPENDED clients remain. First owners: recovery presentation and batch
+   action eligibility.
+
+7. **UUID/MAC uniqueness is checked as a combined key.**
+   `vm_identity_key` combines UUID and MAC; equality of the combined value
+   does not independently prove each component is unique. First owner: identity
+   validation. Include same-MAC/different-UUID and same-UUID/different-MAC cases.
+
+8. **Resource optimization is not yet measured performance proof.**
+   The backend enforces 4096 MB/2 vCPU, memory-pressure admission, and staggered
+   starts. The 720p/low-graphics/about-30-FPS settings in BASE_IMAGE.md are
+   configuration targets, not automatically enforced or benchmarked results.
+   A suspended client must not be represented as an active low-resource
+   multiplayer participant.
+
+9. **Public payload validation is incomplete.**
+   `parseSuccessEnvelope<T>` checks schema/data presence then casts data.
+   Payload shape and enum values are not validated at runtime.
+   First owner: the typed public contract boundary.
+
+10. **Ownership guidance is inconsistent.**
+    The implementation map and desktop rules explicitly name
+    `experiments/virtual-clients/backend/` as the current owner, while the
+    general experiments rules prohibit production imports from experiments.
+    Reconcile the ownership decision before relocation; do not characterize
+    the current dependency as ownerless or copy it into a second authority.
+
+### Proposed implementation order
+
+These stages are a bounded continuation, not authorization to start an execution
+environment or a second persistent workflow.
+
+#### 1. Lifecycle reliability
+
+Goal: failure leaves an accurately reported, bounded result for every affected
+client.
+
+- Preflight all targets where possible before mutation.
+- Route every failure after mutation through one existing-owner cleanup path.
+- Restore only clients changed by the current operation; preserve clients
+  already running before it.
+- Distinguish recoverable lifecycle work from destructive reprovision.
+  Never promise rollback after deletion of the original guest disk.
+- Refresh actual status after success and failure without losing the original
+  operation error; if refresh fails, label displayed data stale.
+- Confirm restore consequences and allow stopping suspended clients.
+- Check UUID and MAC uniqueness independently.
+
+Proof required: deterministic orchestration scenarios for later-target failure,
+rollback failure, pre-existing running clients, selected-client isolation,
+identity collisions, and recovery confirmation routing.
+Tests must call the production orchestration with controlled dependencies,
+not only a cleanup helper.
+
+STOP: these scenarios pass and all changed behavior has matching source review;
+do not add a generic transaction framework or another runtime database.
+
+#### 2. Admission, contracts, and observability
+
+Goal: displayed action availability and actual execution use the same policy.
+
+- Reuse one backend admission function for action projection and execution.
+- Recheck immediately before mutation under the operation lock.
+- Return typed blockers; keep their policy out of Svelte.
+- Keep power state, readiness and transient operation progress distinct.
+- Validate public response data, including required fields and enums.
+- Reject incompatible contracts explicitly.
+- Report actual operation stages rather than invented progress percentages.
+- Use bounded lightweight refresh while the relevant UI is active.
+  Do not repeatedly perform heavyweight diagnostics for a simple state update.
+- Reuse existing runtime state and journal owners; progress must not authorize
+  lifecycle transitions independently.
+
+Proof required: projection/execution agreement, malformed payload rejection,
+stale refresh ordering, external-state reconciliation, and overlapping action
+handling.
+
+#### 3. First-run usability
+
+Goal: one guided path from an unprepared machine to daily client use.
+
+- Retain Doctor.nextSetupAction as the single setup decision owner.
+- Distinguish first-boot waiting/user interaction from normal daily startup.
+- Show current step, required user action, observed result and recovery path.
+- Keep unsupported automation visibly user-guided.
+- Proposed v1 scope: prepare three Virtual clients and make the simultaneous
+  identity-verification capacity requirement explicit before setup; daily use
+  may start fewer. Partial-count onboarding requires a separate approved
+  scope decision rather than an implicit change.
+- Preserve account sessions for normal lifecycle operations.
+
+Proof required: deterministic setup routing and interruption cases.
+OOBE duration, Microsoft sign-in, rendering and guest operation remain
+target-machine acceptance; source tests cannot close that residue.
+
+#### 4. Compatibility and maintainability
+
+Goal: safe application maintenance without unnecessary environment recreation.
+
+- Separate application version, public contract schema, Guest Agent protocol,
+  persisted data schema, and Minecraft version responsibilities.
+- Specify and test agent compatibility explicitly before relaxing exact-version
+  gates. Unknown/incompatible versions remain blocked.
+- Bind client and recovery-point provenance to the actual Base identity,
+  not only a matching Minecraft version. Avoid hashing whole VM disks on
+  every startup or introducing speculative caches.
+- Resolve the documented owner-location conflict once. Do not combine a large
+  directory move with lifecycle fixes or leave duplicate implementations.
+- Extract proven responsibilities from runtime.rs within the existing crate
+  when touched: setup, lifecycle, identity, compatibility, recovery/resources.
+  Keep runtime orchestration thin; avoid generic manager/registry layers.
+- Preserve verified update staging; self-apply remains disabled until its
+  separate implementation and acceptance are approved.
+
+Proof required: compatible/incompatible agent matrix, unchanged-Minecraft app
+upgrade, stale Base/checkpoint rejection, dependency-boundary review, and
+accurate update state.
+
+### Maturity references and limits
+
+- [BlueStacks multi-instance management](https://support.bluestacks.com/hc/en-us/articles/360052834092-How-to-create-and-manage-instances-using-the-Multi-instance-Manager-on-BlueStacks-5):
+  learn selected/batch actions and arrangement; folders/search for hundreds of
+  instances are unnecessary for the current three-Virtual scope.
+- [BlueStacks Eco mode](https://support.bluestacks.com/hc/en-us/articles/360052834772-How-to-run-multiple-instances-of-BlueStacks-5-more-efficiently-using-Eco-mode):
+  per-instance FPS control is not equivalent to suspending a Windows guest.
+  No equivalent efficiency claim without an enforceable primitive and measures.
+- [Genymotion device management](https://docs.genymotion.com/usage/desktop/vd_settings/):
+  learn clear boot/reset/log operations, not unrelated Android features.
+- [Minecraft Education requirements](https://edusupport.minecraft.net/hc/en-us/articles/360047556591-System-Requirements):
+  Android emulators other than the native ChromeOS one are not supported.
+  These comparisons do not establish official support for this VMware design.
+
+Later target-machine measures: time to signed-in playable state, idle/active
+resident RAM, input responsiveness, concurrent-client stability, reconnect,
+snapshot recovery, and session preservation. Do not invent numeric targets
+before a representative baseline exists.
+
+Four total clients cannot establish scenarios requiring more than four
+simultaneous players. Report this coverage limit explicitly.
+
+### Delivery stop
+
+This documentation handoff is complete when its commit is verified on
+Experimental. It does not claim implementation, fresh test execution, live
+acceptance, or a free-usage guarantee. Further coding execution must respect the
+user's no-Codex/Work constraint and requires a supported, explicitly authorized
+route.
