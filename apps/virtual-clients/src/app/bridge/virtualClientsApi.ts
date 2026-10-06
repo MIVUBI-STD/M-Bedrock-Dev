@@ -98,5 +98,6 @@ export const backend = {
   setReady: (client: ClientId, onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_set_ready", payload.clientStatus, { client }, onProgress),
   reset: (client: ClientId, onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_reset", payload.clientStatus, { client }, onProgress),
   open: (client: ClientId, onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_open", payload.clientStatus, { client }, onProgress),
+  launchMinecraft: (client: ClientId, onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_launch_minecraft", payload.clientStatus, { client }, onProgress),
   reprovision: (client: ClientId, onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_reprovision", payload.clientStatus, { client }, onProgress)
 };
