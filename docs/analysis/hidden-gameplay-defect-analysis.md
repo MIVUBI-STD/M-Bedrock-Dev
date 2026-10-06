@@ -2,7 +2,7 @@
 id: document.analysis.hidden-gameplay-defect-analysis
 class: DOCUMENT
 domain: analysis
-role: REFERENCE
+role: DOMAIN
 authority: CANONICAL
 lifecycle: ACTIVE
 ---
