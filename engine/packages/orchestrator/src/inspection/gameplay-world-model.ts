@@ -141,6 +141,32 @@ export interface GameplayWorldModel {
       partial: number;
       unresolved: number;
       multiIngressTerminalTargets: number;
+      protectedTerminalRaces: number;
+      provenTerminalRaces: number;
+      unresolvedTerminalRaces: number;
+      terminalRaces: readonly {
+        scriptId: string;
+        terminalRegion: string;
+        ingresses: readonly {
+          kind:
+            | "event"
+            | "deferred";
+          id: string;
+          callbackRegion: string;
+          guardStatus:
+            | "guarded"
+            | "unguarded"
+            | "not-applicable";
+        }[];
+        status:
+          | "protected"
+          | "contradicted"
+          | "unresolved";
+        idempotencyKind?:
+          | "boolean-latch"
+          | "state-latch";
+        reason: string;
+      }[];
       terminalIngresses: readonly {
         scriptId: string;
         terminalRegion: string;
@@ -1658,6 +1684,41 @@ export function deriveGameplayWorldModel(
         multiIngressTerminalTargets:
           source.arena.lifecycle
             ?.multiIngressTerminalTargets ?? 0,
+        protectedTerminalRaces:
+          source.arena.lifecycle
+            ?.protectedTerminalRaces ?? 0,
+        provenTerminalRaces:
+          source.arena.lifecycle
+            ?.provenTerminalRaces ?? 0,
+        unresolvedTerminalRaces:
+          source.arena.lifecycle
+            ?.unresolvedTerminalRaces ?? 0,
+        terminalRaces:
+          source.arena.lifecycle
+            ?.terminalRaces.map((item) => ({
+              scriptId: item.scriptId,
+              terminalRegion:
+                item.terminalRegion,
+              ingresses:
+                item.ingresses.map(
+                  (ingress) => ({
+                    kind: ingress.kind,
+                    id: ingress.id,
+                    callbackRegion:
+                      ingress.callbackRegion,
+                    guardStatus:
+                      ingress.guardStatus,
+                  }),
+                ),
+              status: item.status,
+              ...(item.idempotencyKind === undefined
+                ? {}
+                : {
+                    idempotencyKind:
+                      item.idempotencyKind,
+                  }),
+              reason: item.reason,
+            })) ?? [],
         terminalIngresses:
           source.arena.lifecycle
             ?.terminalIngresses.map((item) => ({

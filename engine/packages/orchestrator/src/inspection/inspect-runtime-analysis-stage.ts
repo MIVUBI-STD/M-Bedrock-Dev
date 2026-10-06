@@ -64,6 +64,7 @@ import {
 } from "./entity-event-evidence.js";
 import {
   deriveProgressionActiveStateValues,
+  deriveScriptTerminalIdempotencyEvidence,
   deriveScriptProgressionAdvanceEvidence,
   deriveScriptProgressionIdempotencyEvidence,
   deriveScriptProgressionOrdinalAdvanceEvidence,
@@ -393,12 +394,24 @@ export function analyzeInspectionRuntimeState(
       (item) => item.evidence.calls,
     ),
   ];
+  const terminalIdempotencyEvidence =
+    input.parsedScripts.flatMap((item) =>
+      item.text === undefined
+        ? []
+        : deriveScriptTerminalIdempotencyEvidence(
+            item.text,
+            item.node.source,
+          )
+    );
 
   const arenaLifecycle =
     analyzeArenaLifecycleConvergence(
       scriptsFor("arena-lifecycle"),
       demanded.has("arena-lifecycle")
         ? crossFileCalls
+        : [],
+      demanded.has("arena-lifecycle")
+        ? terminalIdempotencyEvidence
         : [],
     );
   const arenaCleanupSurfaces =

@@ -614,7 +614,71 @@ function runtimeEdgeState(
       if (
         scenarioLabel === "terminal-collision" &&
         world.arenas.lifecycle
-          .multiIngressTerminalTargets > 0
+          .provenTerminalRaces > 0
+      ) {
+        const races =
+          world.arenas.lifecycle.terminalRaces
+            .filter((item) =>
+              item.status ===
+                "contradicted"
+            )
+            .map((item) =>
+              item.terminalRegion +
+              " <= " +
+              item.ingresses
+                .map((ingress) =>
+                  ingress.kind +
+                  ":" +
+                  ingress.id
+                )
+                .join(" | ")
+            )
+            .sort();
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "A terminal owner is reachable from an unguarded deferred ingress and another distinct terminal ingress while no source-proven one-shot terminal latch blocks re-entry: " +
+            races.join("; ") +
+            ". This is a static terminal-race/double-ending contradiction and does not require broad runtime reproduction.",
+        };
+      }
+      if (
+        scenarioLabel === "terminal-collision" &&
+        world.arenas.lifecycle
+          .unresolvedTerminalRaces > 0
+      ) {
+        const races =
+          world.arenas.lifecycle.terminalRaces
+            .filter((item) =>
+              item.status ===
+                "unresolved"
+            )
+            .map((item) =>
+              item.terminalRegion +
+              " <= " +
+              item.ingresses
+                .map((ingress) =>
+                  ingress.kind +
+                  ":" +
+                  ingress.id
+                )
+                .join(" | ")
+            )
+            .sort();
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Different terminal ingresses converge on the same terminal owner, but source evidence does not yet prove coexistence or a blocking/idempotent exclusion: " +
+            races.join("; ") +
+            ". Keep this terminal-collision state explicit as unresolved rather than calling it a bug or safe.",
+        };
+      }
+      if (
+        scenarioLabel === "terminal-collision" &&
+        world.arenas.lifecycle
+          .multiIngressTerminalTargets >
+        world.arenas.lifecycle
+          .terminalRaces.length
       ) {
         const targets =
           world.arenas.lifecycle.terminalIngresses
@@ -631,9 +695,9 @@ function runtimeEdgeState(
         return {
           status: "DETECTION_GAP",
           reason:
-            "Multiple independent source paths can enter the same terminal owner: " +
+            "Multiple independent source paths can enter a terminal owner, but their concrete event/deferred ingress provenance is not fully resolved: " +
             targets.join("; ") +
-            ". This is explicit terminal-collision gray-zone evidence. Prove an exactly-once terminal guard/owner or a blocking exclusion before classifying it safe; do not hide it and do not request a broad playthrough.",
+            ". Preserve this gray-zone until exactly-once ownership can be proven.",
         };
       }
       const reduced =

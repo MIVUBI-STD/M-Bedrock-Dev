@@ -2,6 +2,7 @@ import type {
   CrossFileCallEdge,
   ParsedScriptFile,
   ScriptArenaAuthorityPath,
+  ScriptTerminalIdempotencyEvidence,
 } from "../../../../analyzers/scripts/src/index.js";
 import {
   composeQualifiedScriptLifecycleProjectGraph,
@@ -47,6 +48,33 @@ export interface ArenaTerminalIngressAssessment {
   status: "single-ingress" | "multi-ingress";
 }
 
+export interface ArenaTerminalRaceIngress {
+  readonly kind:
+    | "event"
+    | "deferred";
+  readonly id: string;
+  readonly callbackRegion: string;
+  readonly guardStatus:
+    | "guarded"
+    | "unguarded"
+    | "not-applicable";
+}
+
+export interface ArenaTerminalRaceAssessment {
+  readonly scriptId: string;
+  readonly terminalRegion: string;
+  readonly ingresses:
+    readonly ArenaTerminalRaceIngress[];
+  readonly status:
+    | "protected"
+    | "contradicted"
+    | "unresolved";
+  readonly idempotencyKind?:
+    | "boolean-latch"
+    | "state-latch";
+  readonly reason: string;
+}
+
 export interface ArenaLifecycleAnalysis {
   terminalCandidates: number;
   proven: number;
@@ -55,6 +83,11 @@ export interface ArenaLifecycleAnalysis {
   multiIngressTerminalTargets: number;
   terminalIngresses:
     readonly ArenaTerminalIngressAssessment[];
+  terminalRaces:
+    readonly ArenaTerminalRaceAssessment[];
+  protectedTerminalRaces: number;
+  provenTerminalRaces: number;
+  unresolvedTerminalRaces: number;
   assessments: readonly ArenaLifecycleTerminalAssessment[];
   crossFileCalls?: number;
 }
@@ -934,10 +967,359 @@ function terminalIngressesForProject(
   });
 }
 
+function terminalIdempotencyMap(
+  evidence:
+    readonly ScriptTerminalIdempotencyEvidence[],
+): Map<
+  string,
+  ScriptTerminalIdempotencyEvidence
+> {
+  return new Map(
+    evidence.map((item) => [
+      "module:" +
+        item.source.relativePath +
+        "#" +
+        item.functionRegion,
+      item,
+    ]),
+  );
+}
+
+function terminalIngressReachable(
+  edges:
+    readonly {
+      callerRegion: string;
+      targetRegion: string;
+      controlFlow:
+        | "unconditional"
+        | "conditional"
+        | "deferred"
+        | "unknown";
+    }[],
+  root: string,
+  target: string,
+  allowDeferredRoot: boolean,
+): boolean {
+  const seen =
+    new Set<string>([root]);
+  const queue: {
+    region: string;
+    root: boolean;
+  }[] = [{
+    region: root,
+    root: true,
+  }];
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    if (
+      current.region === target
+    ) {
+      return true;
+    }
+
+    for (
+      const edge of edges.filter(
+        (item) =>
+          item.callerRegion ===
+            current.region,
+      )
+    ) {
+      const allowed =
+        edge.controlFlow ===
+          "unconditional" ||
+        (
+          current.root &&
+          allowDeferredRoot &&
+          edge.controlFlow ===
+            "deferred"
+        );
+      if (
+        !allowed ||
+        seen.has(
+          edge.targetRegion,
+        )
+      ) {
+        continue;
+      }
+      seen.add(edge.targetRegion);
+      queue.push({
+        region:
+          edge.targetRegion,
+        root: false,
+      });
+    }
+  }
+
+  return false;
+}
+
+function terminalRaceAssessments(
+  scripts: readonly ParsedScriptFile[],
+  crossFileCalls:
+    readonly CrossFileCallEdge[],
+  assessments:
+    readonly ArenaLifecycleTerminalAssessment[],
+  idempotencyEvidence:
+    readonly ScriptTerminalIdempotencyEvidence[],
+): ArenaTerminalRaceAssessment[] {
+  const idempotency =
+    terminalIdempotencyMap(
+      idempotencyEvidence,
+    );
+  const output:
+    ArenaTerminalRaceAssessment[] = [];
+
+  const projectGraph =
+    crossFileCalls.length === 0
+      ? undefined
+      : composeQualifiedScriptLifecycleProjectGraph(
+          scripts.map((script) => ({
+            fileId:
+              script.source.relativePath,
+            localFunctionCalls:
+              script.localFunctionCalls,
+          })),
+          crossFileCalls,
+        );
+
+  for (const assessment of assessments) {
+    const script =
+      scripts.find(
+        (item) =>
+          item.identifier ===
+          assessment.scriptId,
+      );
+    if (!script) continue;
+
+    const target =
+      assessment.terminalRegion.startsWith(
+        "module:",
+      )
+        ? assessment.terminalRegion
+        : qualifiedRegion(
+            script,
+            assessment.terminalRegion,
+          );
+
+    const ingresses:
+      ArenaTerminalRaceIngress[] = [];
+
+    for (const owner of scripts) {
+      const localReach = (
+        callbackRegion: string,
+        allowDeferredRoot: boolean,
+      ): boolean => {
+        if (projectGraph) {
+          return terminalIngressReachable(
+            projectGraph.callEdges,
+            qualifiedRegion(
+              owner,
+              callbackRegion,
+            ),
+            target,
+            allowDeferredRoot,
+          );
+        }
+        if (
+          owner.identifier !==
+            assessment.scriptId
+        ) {
+          return false;
+        }
+        const edges =
+          owner.localFunctionCalls.map(
+            (call) => ({
+              callerRegion:
+                call.callerRegion,
+              targetRegion:
+                call.targetRegion,
+              controlFlow:
+                call.controlFlow ??
+                "unknown" as const,
+            }),
+          );
+        return terminalIngressReachable(
+          edges,
+          callbackRegion,
+          assessment.terminalRegion,
+          allowDeferredRoot,
+        );
+      };
+
+      for (
+        const subscription of
+          owner.events
+      ) {
+        if (
+          subscription.callbackRegion ===
+            undefined ||
+          subscription.root ===
+            "unknown" ||
+          subscription.phase ===
+            "unknown" ||
+          !localReach(
+            subscription.callbackRegion,
+            false,
+          )
+        ) {
+          continue;
+        }
+        ingresses.push({
+          kind: "event",
+          id:
+            subscription.root +
+            "." +
+            subscription.phase +
+            "." +
+            subscription.event,
+          callbackRegion:
+            projectGraph
+              ? qualifiedRegion(
+                  owner,
+                  subscription.callbackRegion,
+                )
+              : subscription.callbackRegion,
+          guardStatus:
+            "not-applicable",
+        });
+      }
+
+      for (
+        const callback of
+          owner.deferredCallbacks
+      ) {
+        if (
+          callback.callbackRegion ===
+            undefined ||
+          !localReach(
+            callback.callbackRegion,
+            true,
+          )
+        ) {
+          continue;
+        }
+        ingresses.push({
+          kind: "deferred",
+          id:
+            "deferred:" +
+            callback.scheduler +
+            "@" +
+            (
+              callback.callerRegion ??
+              "unknown"
+            ),
+          callbackRegion:
+            projectGraph
+              ? qualifiedRegion(
+                  owner,
+                  callback.callbackRegion,
+                )
+              : callback.callbackRegion,
+          guardStatus:
+            callback.guardEvidence ===
+              "explicit-generation-check"
+              ? "guarded"
+              : "unguarded",
+        });
+      }
+    }
+
+    const uniqueIngresses =
+      [...new Map(
+        ingresses.map((item) => [
+          item.kind +
+            "|" +
+            item.id +
+            "|" +
+            item.callbackRegion,
+          item,
+        ]),
+      ).values()].sort((a, b) =>
+        a.id.localeCompare(b.id) ||
+        a.callbackRegion.localeCompare(
+          b.callbackRegion,
+        )
+      );
+
+    const distinctIds =
+      new Set(
+        uniqueIngresses.map(
+          (item) =>
+            item.kind +
+            ":" +
+            item.id,
+        ),
+      );
+    if (distinctIds.size < 2) {
+      continue;
+    }
+
+    const latch =
+      idempotency.get(target);
+    const unguardedDeferred =
+      uniqueIngresses.filter(
+        (item) =>
+          item.kind ===
+            "deferred" &&
+          item.guardStatus ===
+            "unguarded",
+      );
+    const hasOtherIngress =
+      uniqueIngresses.some(
+        (item) =>
+          !unguardedDeferred.includes(
+            item,
+          ),
+      );
+
+    const status =
+      latch !== undefined
+        ? "protected" as const
+        : unguardedDeferred.length > 0 &&
+            hasOtherIngress
+          ? "contradicted" as const
+          : "unresolved" as const;
+
+    output.push({
+      scriptId:
+        assessment.scriptId,
+      terminalRegion:
+        assessment.terminalRegion,
+      ingresses: uniqueIngresses,
+      status,
+      ...(latch === undefined
+        ? {}
+        : {
+            idempotencyKind:
+              latch.kind,
+          }),
+      reason:
+        status === "protected"
+          ? "Multiple distinct terminal ingresses converge on the same terminal owner, but the terminal owner has a source-proven one-shot latch."
+          : status ===
+              "contradicted"
+            ? "An unguarded deferred terminal callback remains able to reach the same terminal owner as another distinct ingress, and the terminal owner has no source-proven one-shot latch."
+            : "Multiple distinct terminal ingresses reach the same terminal owner, but source evidence does not yet prove coexistence or a blocking/idempotent exclusion.",
+    });
+  }
+
+  return output.sort((a, b) =>
+    a.scriptId.localeCompare(
+      b.scriptId,
+    ) ||
+    a.terminalRegion.localeCompare(
+      b.terminalRegion,
+    )
+  );
+}
+
 export function analyzeArenaLifecycleConvergence(
   scripts: readonly ParsedScriptFile[],
   crossFileCalls:
     readonly CrossFileCallEdge[] = [],
+  terminalIdempotencyEvidence:
+    readonly ScriptTerminalIdempotencyEvidence[] = [],
 ): ArenaLifecycleAnalysis {
   const assessments =
     crossFileCalls.length === 0
@@ -958,6 +1340,13 @@ export function analyzeArenaLifecycleConvergence(
           crossFileCalls,
           assessments,
         );
+  const terminalRaces =
+    terminalRaceAssessments(
+      scripts,
+      crossFileCalls,
+      assessments,
+      terminalIdempotencyEvidence,
+    );
 
   return {
     terminalCandidates:
@@ -985,6 +1374,25 @@ export function analyzeArenaLifecycleConvergence(
           "multi-ingress",
       ).length,
     terminalIngresses,
+    terminalRaces,
+    protectedTerminalRaces:
+      terminalRaces.filter(
+        (item) =>
+          item.status ===
+            "protected",
+      ).length,
+    provenTerminalRaces:
+      terminalRaces.filter(
+        (item) =>
+          item.status ===
+            "contradicted",
+      ).length,
+    unresolvedTerminalRaces:
+      terminalRaces.filter(
+        (item) =>
+          item.status ===
+            "unresolved",
+      ).length,
     assessments,
     ...(crossFileCalls.length === 0
       ? {}

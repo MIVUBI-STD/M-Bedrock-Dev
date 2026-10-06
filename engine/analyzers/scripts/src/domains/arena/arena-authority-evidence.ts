@@ -7,6 +7,15 @@ import type {
   ScriptArenaAuthorityPath,
 } from "../../core/types.js";
 
+export interface ScriptTerminalIdempotencyEvidence {
+  readonly functionRegion: string;
+  readonly guardTarget: string;
+  readonly kind:
+    | "boolean-latch"
+    | "state-latch";
+  readonly source: SourceRef;
+}
+
 const MEMBERSHIP_PROPERTY =
   /^(?:members|players|participants|memberships)$/i;
 const CAPACITY_PROPERTY =
@@ -680,6 +689,289 @@ function evidenceKey(
     evidence.source.range?.lineStart ?? 0,
     evidence.source.range?.columnStart ?? 0,
   ].join("|");
+}
+
+const TERMINAL_FUNCTION_NAME =
+  /^(?:endgame|endmatch|finishgame|finishmatch|cleanup|cleanuparena|reset|resetarena|abort|abortgame|timeout|victory|defeat|stopgame|leavearena|disconnect|playerleave|onplayerleave)$/i;
+
+function terminalLiteralValue(
+  expression: ts.Expression,
+): string | undefined {
+  if (
+    expression.kind ===
+      ts.SyntaxKind.TrueKeyword
+  ) {
+    return "true";
+  }
+  if (
+    expression.kind ===
+      ts.SyntaxKind.FalseKeyword
+  ) {
+    return "false";
+  }
+  if (
+    ts.isStringLiteralLike(expression) ||
+    ts.isNoSubstitutionTemplateLiteral(
+      expression,
+    )
+  ) {
+    return expression.text;
+  }
+  return undefined;
+}
+
+function terminalReturnOnly(
+  statement: ts.Statement,
+): boolean {
+  return (
+    ts.isReturnStatement(statement) ||
+    (
+      ts.isBlock(statement) &&
+      statement.statements.length === 1 &&
+      ts.isReturnStatement(
+        statement.statements[0]!,
+      )
+    )
+  );
+}
+
+function terminalGuard(
+  expression: ts.Expression,
+  file: ts.SourceFile,
+): {
+  readonly target: string;
+  readonly mode:
+    | "truthy"
+    | "equal"
+    | "not-equal";
+  readonly value?: string;
+} | undefined {
+  if (
+    ts.isIdentifier(expression) ||
+    ts.isPropertyAccessExpression(
+      expression,
+    )
+  ) {
+    return {
+      target:
+        expression.getText(file),
+      mode: "truthy",
+    };
+  }
+
+  if (
+    !ts.isBinaryExpression(expression)
+  ) {
+    return undefined;
+  }
+
+  const operator =
+    expression.operatorToken.kind;
+  const equal =
+    operator ===
+      ts.SyntaxKind.EqualsEqualsToken ||
+    operator ===
+      ts.SyntaxKind.EqualsEqualsEqualsToken;
+  const notEqual =
+    operator ===
+      ts.SyntaxKind.ExclamationEqualsToken ||
+    operator ===
+      ts.SyntaxKind.ExclamationEqualsEqualsToken;
+  if (!equal && !notEqual) {
+    return undefined;
+  }
+
+  const pairs: readonly [
+    ts.Expression,
+    ts.Expression,
+  ][] = [
+    [expression.left, expression.right],
+    [expression.right, expression.left],
+  ];
+
+  for (const [candidate, literal] of pairs) {
+    if (
+      !ts.isIdentifier(candidate) &&
+      !ts.isPropertyAccessExpression(
+        candidate,
+      )
+    ) {
+      continue;
+    }
+    const value =
+      terminalLiteralValue(literal);
+    if (value === undefined) continue;
+    return {
+      target:
+        candidate.getText(file),
+      mode:
+        equal
+          ? "equal"
+          : "not-equal",
+      value,
+    };
+  }
+
+  return undefined;
+}
+
+function terminalLatchAssignment(
+  statement: ts.Statement,
+  file: ts.SourceFile,
+): {
+  readonly target: string;
+  readonly value: string;
+  readonly sourceNode:
+    ts.BinaryExpression;
+} | undefined {
+  if (
+    !ts.isExpressionStatement(statement) ||
+    !ts.isBinaryExpression(
+      statement.expression,
+    ) ||
+    statement.expression.operatorToken.kind !==
+      ts.SyntaxKind.EqualsToken
+  ) {
+    return undefined;
+  }
+
+  const value =
+    terminalLiteralValue(
+      statement.expression.right,
+    );
+  if (value === undefined) {
+    return undefined;
+  }
+
+  return {
+    target:
+      statement.expression.left.getText(
+        file,
+      ),
+    value,
+    sourceNode:
+      statement.expression,
+  };
+}
+
+export function deriveScriptTerminalIdempotencyEvidence(
+  text: string,
+  source: SourceRef,
+): ScriptTerminalIdempotencyEvidence[] {
+  const file = ts.createSourceFile(
+    source.relativePath,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    scriptKind(source.relativePath),
+  );
+  const output:
+    ScriptTerminalIdempotencyEvidence[] = [];
+
+  const visit = (node: ts.Node): void => {
+    if (
+      (
+        ts.isFunctionDeclaration(node) ||
+        ts.isMethodDeclaration(node)
+      ) &&
+      node.body
+    ) {
+      const name =
+        declarationMemberName(
+          node.name,
+        );
+      if (
+        name &&
+        TERMINAL_FUNCTION_NAME.test(
+          name.replace(
+            /[^A-Za-z0-9]/g,
+            "",
+          ),
+        ) &&
+        node.body.statements.length >= 2
+      ) {
+        const first =
+          node.body.statements[0]!;
+        const second =
+          node.body.statements[1]!;
+        if (
+          ts.isIfStatement(first) &&
+          first.elseStatement ===
+            undefined &&
+          terminalReturnOnly(
+            first.thenStatement,
+          )
+        ) {
+          const guard =
+            terminalGuard(
+              first.expression,
+              file,
+            );
+          const latch =
+            terminalLatchAssignment(
+              second,
+              file,
+            );
+          if (
+            guard &&
+            latch &&
+            guard.target ===
+              latch.target
+          ) {
+            const protectedByLatch =
+              (
+                guard.mode === "truthy" &&
+                latch.value === "true"
+              ) ||
+              (
+                guard.mode === "equal" &&
+                guard.value ===
+                  latch.value
+              ) ||
+              (
+                guard.mode ===
+                  "not-equal" &&
+                guard.value !== undefined &&
+                guard.value !==
+                  latch.value
+              );
+            if (protectedByLatch) {
+              output.push({
+                functionRegion:
+                  "function:" + name,
+                guardTarget:
+                  guard.target,
+                kind:
+                  guard.mode ===
+                    "truthy"
+                    ? "boolean-latch"
+                    : "state-latch",
+                source:
+                  lineSource(
+                    file,
+                    latch.sourceNode,
+                    source,
+                  ),
+              });
+            }
+          }
+        }
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(file);
+
+  return output.sort((a, b) =>
+    a.functionRegion.localeCompare(
+      b.functionRegion,
+    ) ||
+    a.guardTarget.localeCompare(
+      b.guardTarget,
+    )
+  );
 }
 
 export function deriveScriptArenaAuthorityEvidence(

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   deriveCrossFileCallEdges,
+  deriveScriptTerminalIdempotencyEvidence,
   parseScriptFile,
 } from "../../../../analyzers/scripts/src/index.js";
 import { analyzeArenaLifecycleConvergence } from "../../src/arena/arena-lifecycle-analysis.js";
@@ -87,6 +88,160 @@ describe("arena lifecycle convergence", () => {
         "function:onTimeExpired",
       ],
     });
+  });
+
+  it("proves an unguarded deferred terminal path can race another exact ingress", () => {
+    const source = [
+      "function endGame(arena, player) {",
+      "  arena.players.delete(player);",
+      "  arena.generation++;",
+      "}",
+      "world.afterEvents.entityDie.subscribe(() => {",
+      "  endGame(arena, player);",
+      "});",
+      "system.runTimeout(() => {",
+      "  endGame(arena, player);",
+      "}, 20);",
+    ].join("\n");
+    const script = parseScriptFile(
+      "main",
+      source,
+      {
+        artifactId: "fixture",
+        relativePath:
+          "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeArenaLifecycleConvergence(
+        [script],
+      );
+
+    expect(
+      result.provenTerminalRaces,
+    ).toBe(1);
+    expect(
+      result.terminalRaces.find(
+        (item) =>
+          item.terminalRegion ===
+            "function:endGame",
+      ),
+    ).toMatchObject({
+      status: "contradicted",
+      ingresses: expect.arrayContaining([
+        expect.objectContaining({
+          kind: "event",
+          id:
+            "world.afterEvents.entityDie",
+        }),
+        expect.objectContaining({
+          kind: "deferred",
+          guardStatus:
+            "unguarded",
+        }),
+      ]),
+    });
+  });
+
+  it("closes a deferred terminal race when the terminal owner has a one-shot latch", () => {
+    const source = [
+      "let ended = false;",
+      "function endGame(arena, player) {",
+      "  if (ended) return;",
+      "  ended = true;",
+      "  arena.players.delete(player);",
+      "  arena.generation++;",
+      "}",
+      "world.afterEvents.entityDie.subscribe(() => {",
+      "  endGame(arena, player);",
+      "});",
+      "system.runTimeout(() => {",
+      "  endGame(arena, player);",
+      "}, 20);",
+    ].join("\n");
+    const script = parseScriptFile(
+      "main",
+      source,
+      {
+        artifactId: "fixture",
+        relativePath:
+          "scripts/main.ts",
+      },
+    );
+    const latch =
+      deriveScriptTerminalIdempotencyEvidence(
+        source,
+        script.source,
+      );
+
+    const result =
+      analyzeArenaLifecycleConvergence(
+        [script],
+        [],
+        latch,
+      );
+
+    expect(
+      result.protectedTerminalRaces,
+    ).toBe(1);
+    expect(
+      result.provenTerminalRaces,
+    ).toBe(0);
+    expect(
+      result.terminalRaces.find(
+        (item) =>
+          item.terminalRegion ===
+            "function:endGame",
+      ),
+    ).toMatchObject({
+      status: "protected",
+      idempotencyKind:
+        "boolean-latch",
+    });
+  });
+
+  it("keeps different event terminal ingresses unresolved without coexistence proof", () => {
+    const source = [
+      "function endGame(arena, player) {",
+      "  arena.players.delete(player);",
+      "  arena.generation++;",
+      "}",
+      "world.afterEvents.entityDie.subscribe(() => {",
+      "  endGame(arena, player);",
+      "});",
+      "world.afterEvents.playerLeave.subscribe(() => {",
+      "  endGame(arena, player);",
+      "});",
+    ].join("\n");
+    const script = parseScriptFile(
+      "main",
+      source,
+      {
+        artifactId: "fixture",
+        relativePath:
+          "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeArenaLifecycleConvergence(
+        [script],
+      );
+
+    expect(
+      result.unresolvedTerminalRaces,
+    ).toBe(1);
+    expect(
+      result.provenTerminalRaces,
+    ).toBe(0);
+    expect(
+      result.terminalRaces.find(
+        (item) =>
+          item.terminalRegion ===
+            "function:endGame",
+      )?.status,
+    ).toBe("unresolved");
   });
 
   it("keeps release-only cleanup partial", () => {
