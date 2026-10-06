@@ -53,7 +53,8 @@ pub async fn window_apply_layout(request: ApplyWindowLayoutRequest) -> Result<Wi
             width: slot.rect.width,
             height: slot.rect.height,
         }).collect();
-        screen_overlay::apply(screen_overlay::ScreenOverlayRequest {
+        let mut result = execution.result;
+        match screen_overlay::apply(screen_overlay::ScreenOverlayRequest {
             enabled: request.overlay.enabled,
             show_screen_number: request.overlay.show_screen_number,
             show_label: request.overlay.show_label,
@@ -61,8 +62,14 @@ pub async fn window_apply_layout(request: ApplyWindowLayoutRequest) -> Result<Wi
             opacity: request.overlay.opacity,
             identify: request.identify,
             items,
-        })?;
-        Ok::<_, std::io::Error>(execution.result)
+        }) {
+            Ok(()) => result.overlay_applied = Some(request.overlay.enabled),
+            Err(error) => {
+                result.overlay_applied = Some(false);
+                result.overlay_warning = Some(error.to_string());
+            }
+        }
+        Ok::<_, std::io::Error>(result)
     })
     .await
     .map_err(|error| format!("Window Layout task failed: {error}"))?
