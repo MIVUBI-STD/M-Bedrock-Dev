@@ -1321,6 +1321,39 @@
       ]
     },
     {
+      "knowledgeId": "npc.commands-run-from-dialogue",
+      "consumer": "dialogue-command-graph",
+      "analyzerPaths": [
+        "engine/analyzers/dialogue/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/dialogue-graph.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/dialogue/test/parse.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "npc.dialogue-open-targets-npc-player",
+      "consumer": "dialogue-command-semantics",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/effects.ts",
+        "engine/analyzers/commands/src/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/commands/test/dialogue-selector.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "npc.dialogue-scenes-button-commands",
+      "consumer": "dialogue-command-graph",
+      "analyzerPaths": [
+        "engine/analyzers/dialogue/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/dialogue-graph.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/dialogue/test/parse.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "permissions-policy.dev-access-explicit",
       "consumer": "player-capability-surface-analysis",
       "analyzerPaths": [
@@ -1898,6 +1931,30 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "spatial.dimensionlocation-binds-coordinates",
+      "consumer": "spatial-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/spatial-authority-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/script-spatial-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/spatial-authority-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/script-spatial-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "spatial.teleport-can-change-dimension",
+      "consumer": "script-spatial-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/spatial/spatial-mutation-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/script-spatial-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/spatial/spatial-mutation-evidence.test.ts",
+        "engine/packages/orchestrator/test/inspection/script-spatial-analysis.test.ts"
       ]
     },
     {
