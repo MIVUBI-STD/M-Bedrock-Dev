@@ -33,7 +33,7 @@ src/                         presentation + ephemeral UI state
 src/app/bridge/              typed Tauri boundary
 src-tauri/src/commands/      thin adapters
 src-tauri/src/engine/        desktop-native behavior only
-../../virtual-clients/runtime-core/
+virtual-clients/runtime-core/
                              VM lifecycle/domain authority
 ```
 

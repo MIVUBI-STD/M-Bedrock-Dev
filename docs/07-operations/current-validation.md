@@ -26,7 +26,7 @@ before package readiness can be claimed.
 
 Baseline: Experimental `14b2c2e56d1a6e92b6c2891956961a12bb1bff9c`.
 
-Source changes prepared for the next Experimental commit:
+Implemented in Experimental `2e37c080fc6c716f461d8c71d4bf4e112b5f82b8`:
 - Runtime snapshot collection now gathers each Virtual client's power state,
   VM identity and bounded Guest Agent status once, then reuses those observations
   while projecting all three client rows. The lifecycle-admission identity check

@@ -187,7 +187,7 @@ Not exposed today:
 
 ## Frontend boundary
 
-The canonical product lives at `apps/virtual-clients/`; this runtime core is owned by `apps/virtual-clients/runtime-core/` and is consumed through typed Tauri commands. It must not duplicate provider, lifecycle, parity, update, resource, identity, or recovery policy.
+The user-facing desktop lives at `apps/virtual-clients/`; this runtime core is owned by `virtual-clients/runtime-core/` and is consumed through typed Tauri commands. It must not duplicate provider, lifecycle, parity, update, resource, identity, or recovery policy.
 
 `DoctorReport.nextSetupAction` is the sole first-run decision owner. Desktop presentation may classify that action as app-owned, user-guided, client-manager, or blocked for UX purposes, but it must refresh backend truth after every step and must never persist its own setup-completion state.
 
@@ -292,8 +292,9 @@ Presentation uses one term per operation:
 
 Machine-facing schema-1 command names, state enums and QA_READY snapshot identity
 remain unchanged. Presentation labels translate those identifiers; no command
-aliases or second persisted state are introduced. Backend-origin progress events
-and measured lightweight status performance remain separate pending work.
+aliases or second persisted state are introduced. Command-boundary activity is
+implemented with schema 2 operation events; detailed internal VM-stage progress
+and measured target-machine performance remain separate acceptance work.
 
 ## First-time setup boot and command activity
 

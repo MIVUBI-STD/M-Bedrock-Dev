@@ -346,10 +346,10 @@ Do not mark this gate PASS from the focused checks.
    First owner: the typed public contract boundary.
 
 10. **Ownership guidance was inconsistent.**
-    This is now resolved by promoting the production runtime core and packaged
-    product assets under `apps/virtual-clients/`. Production code no longer
-    depends on `experiments/virtual-clients/`; experiments keeps its original
-    non-production meaning without a product-specific exception.
+    This is now resolved by promoting non-UI production authority into the
+    durable `virtual-clients/` product domain while `apps/virtual-clients/`
+    remains user-facing only. Production code no longer depends on
+    `experiments/virtual-clients/`, and no product-specific exception is needed.
 
 ### Proposed implementation order
 
@@ -432,9 +432,10 @@ Goal: safe application maintenance without unnecessary environment recreation.
 - Keep client lineage bound to the registered Base generation rather than only
   Minecraft version. Do not replace this with whole-disk hashing or speculative
   caches.
-- Keep production Virtual Clients authorities under `apps/virtual-clients/`.
-  The ownership promotion is complete; do not recreate a duplicate runtime core
-  under `experiments/` or another top-level domain.
+- Keep non-UI Virtual Clients authority under the durable `virtual-clients/`
+  product domain and presentation under `apps/virtual-clients/`. Do not
+  recreate duplicate runtime authority under `experiments/`, `apps/`, or
+  another owner.
 - Extract proven responsibilities from runtime.rs within the existing crate
   when touched: setup, lifecycle, identity, compatibility, recovery/resources.
   Keep runtime orchestration thin; avoid generic manager/registry layers.
