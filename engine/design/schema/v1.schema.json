@@ -201,6 +201,128 @@
         }
       },
       "additionalProperties": false
+    },
+    "classification": {
+      "type": "object",
+      "required": [
+        "mapType",
+        "playerMode",
+        "mechanicTags",
+        "classificationStatus",
+        "evidenceRefs"
+      ],
+      "properties": {
+        "mapType": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "BUILDING",
+            "COMBAT",
+            "SURVIVAL",
+            "STRATEGY",
+            "SEARCH_PUZZLE",
+            "CHALLENGE_COURSE",
+            "SKILL_COURSE",
+            null
+          ]
+        },
+        "playerMode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "SOLO",
+            "COOPERATIVE",
+            "COMPETITIVE",
+            "TEAM_COMPETITIVE",
+            "ASYMMETRIC",
+            null
+          ]
+        },
+        "mechanicTags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "BUILD",
+              "MEMORY",
+              "SEARCH",
+              "PUZZLE",
+              "PARKOUR",
+              "MELEE_COMBAT",
+              "RANGED_COMBAT",
+              "TEAM_COMBAT",
+              "BASE_DEFENSE",
+              "BASE_ATTACK",
+              "CAPTURE_OBJECTIVE",
+              "ESCORT",
+              "EXTRACTION",
+              "WAVE_DEFENSE",
+              "SURVIVAL_TIMER",
+              "ENTITY_AI",
+              "RESOURCE_ECONOMY",
+              "SHOP",
+              "LOADOUT",
+              "CRAFTING",
+              "COLLECTION",
+              "RESPAWN",
+              "REVIVE",
+              "ROUND_TIMER",
+              "MULTI_ARENA",
+              "MULTI_STAGE",
+              "PROGRESSION",
+              "PERSISTENCE",
+              "RECONNECT",
+              "WORLD_RESET"
+            ]
+          }
+        },
+        "classificationStatus": {
+          "enum": [
+            "RESOLVED",
+            "UNRESOLVED"
+          ]
+        },
+        "evidenceRefs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "classificationStatus": {
+                "const": "RESOLVED"
+              }
+            },
+            "required": [
+              "classificationStatus"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mapType": {
+                "type": "string"
+              },
+              "playerMode": {
+                "type": "string"
+              },
+              "evidenceRefs": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
     }
   },
   "additionalProperties": false
