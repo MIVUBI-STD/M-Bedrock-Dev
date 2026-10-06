@@ -65,6 +65,7 @@ import {
 import {
   deriveScriptProgressionActiveCallEvidence,
   deriveScriptProgressionActiveEventEvidence,
+  deriveScriptProgressionActiveTransitionEvidence,
 } from "../../../../analyzers/scripts/src/index.js";
 
 export interface InspectionRuntimeAnalysisInput {
@@ -304,6 +305,32 @@ export function analyzeInspectionRuntimeState(
             item.node.source,
           )
     );
+  const progressionActiveTransitionEvidence =
+    input.parsedScripts.flatMap((item) =>
+      item.text === undefined
+        ? []
+        : [{
+            sourcePath:
+              item.node.source.relativePath,
+            evidence:
+              deriveScriptProgressionActiveTransitionEvidence(
+                item.text,
+                item.node.source,
+              ),
+          }]
+    );
+  const effectiveProgressionActiveEventEvidence = [
+    ...progressionActiveEventEvidence,
+    ...progressionActiveTransitionEvidence.flatMap(
+      (item) => item.evidence.events,
+    ),
+  ];
+  const effectiveProgressionActiveCallEvidence = [
+    ...progressionActiveCallEvidence,
+    ...progressionActiveTransitionEvidence.flatMap(
+      (item) => item.evidence.calls,
+    ),
+  ];
 
   const arenaLifecycle =
     analyzeArenaLifecycleConvergence(
@@ -363,8 +390,8 @@ export function analyzeInspectionRuntimeState(
       ),
       arenaLifecycle,
       entityEventEvidence,
-      progressionActiveEventEvidence,
-      progressionActiveCallEvidence,
+      effectiveProgressionActiveEventEvidence,
+      effectiveProgressionActiveCallEvidence,
     );
   const chunkLifecycle =
     analyzeChunkLifecycle(

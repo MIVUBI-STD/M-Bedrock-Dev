@@ -5,6 +5,7 @@ import {
 } from "vitest";
 import {
   deriveCrossFileCallEdges,
+  deriveScriptProgressionActiveTransitionEvidence,
   parseScriptFile,
 } from "../../../../analyzers/scripts/src/index.js";
 import {
@@ -818,6 +819,212 @@ describe(
       ).toBe(1);
       expect(result.activeInterproceduralProofs)
         .toBeGreaterThan(0);
+    });
+
+    it("proves active instant-despawn after a direct active-state transition and helper call", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function startWave(entity) {",
+        "  waveState = 'active';",
+        "  maybeDespawn(entity);",
+        "}",
+        "function maybeDespawn(entity) {",
+        "  entity.triggerEvent('demo:despawn');",
+        "}",
+        "function maybeAdvance() { if (remainingEnemies === 0) nextWave(); }",
+      ].join("\n");
+      const input = parsed(source);
+      const transition =
+        deriveScriptProgressionActiveTransitionEvidence(
+          source,
+          input.parsed.source,
+        );
+      const entity =
+        parseEntityDefinition(
+          {
+            "minecraft:entity": {
+              description: {
+                identifier: "demo:enemy",
+              },
+              component_groups: {
+                despawn_state: {
+                  "minecraft:instant_despawn": {},
+                },
+              },
+              events: {
+                "demo:despawn": {
+                  add: {
+                    component_groups: [
+                      "despawn_state",
+                    ],
+                  },
+                },
+              },
+            },
+          },
+          {
+            artifactId: "fixture",
+            relativePath:
+              "entities/enemy.json",
+          },
+        );
+      const external:
+        EntityEventExternalEvidence[] = [{
+          event: "demo:despawn",
+          kind: "event-command",
+          entityIdentifier:
+            "demo:enemy",
+          executionRegion:
+            "function:maybeDespawn",
+          source: input.parsed.source,
+        }];
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+          [],
+          [entity],
+          undefined,
+          external,
+          transition.events,
+          transition.calls,
+        );
+
+      expect(
+        result.provenActiveInstantDespawnWithoutReconciliation,
+      ).toBe(1);
+      expect(
+        result.activeTransitionProofs,
+      ).toBeGreaterThan(0);
+    });
+
+    it("propagates direct active-state transition ownership through an imported helper", () => {
+      const mainText = [
+        'import { maybeDespawn } from "./despawn.js";',
+        "function startWave(entity) {",
+        "  waveState = 'active';",
+        "  maybeDespawn(entity);",
+        "}",
+      ].join("\n");
+      const helperText = [
+        "export function maybeDespawn(entity) {",
+        "  entity.triggerEvent('demo:despawn');",
+        "}",
+      ].join("\n");
+      const counterText = [
+        "export let remainingEnemies = 0;",
+        "export function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "export function maybeAdvance() { if (remainingEnemies === 0) nextWave(); }",
+      ].join("\n");
+      const main =
+        parsed(
+          mainText,
+          "scripts/main.ts",
+        );
+      const helper =
+        parsed(
+          helperText,
+          "scripts/despawn.ts",
+        );
+      const counter =
+        parsed(
+          counterText,
+          "scripts/counter.ts",
+        );
+      const calls =
+        deriveCrossFileCallEdges([
+          {
+            path: "scripts/main.ts",
+            text: mainText,
+            source:
+              main.parsed.source,
+          },
+          {
+            path:
+              "scripts/despawn.ts",
+            text: helperText,
+            source:
+              helper.parsed.source,
+          },
+          {
+            path:
+              "scripts/counter.ts",
+            text: counterText,
+            source:
+              counter.parsed.source,
+          },
+        ]);
+      const transition =
+        deriveScriptProgressionActiveTransitionEvidence(
+          mainText,
+          main.parsed.source,
+        );
+      const entity =
+        parseEntityDefinition(
+          {
+            "minecraft:entity": {
+              description: {
+                identifier:
+                  "demo:enemy",
+              },
+              component_groups: {
+                despawn_state: {
+                  "minecraft:instant_despawn": {},
+                },
+              },
+              events: {
+                "demo:despawn": {
+                  add: {
+                    component_groups: [
+                      "despawn_state",
+                    ],
+                  },
+                },
+              },
+            },
+          },
+          {
+            artifactId: "fixture",
+            relativePath:
+              "entities/enemy.json",
+          },
+        );
+      const external:
+        EntityEventExternalEvidence[] = [{
+          event: "demo:despawn",
+          kind: "event-command",
+          entityIdentifier:
+            "demo:enemy",
+          executionRegion:
+            "function:maybeDespawn",
+          source:
+            helper.parsed.source,
+        }];
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [main, helper, counter],
+          calls,
+          [entity],
+          undefined,
+          external,
+          [],
+          transition.calls,
+        );
+
+      expect(
+        result.provenActiveInstantDespawnWithoutReconciliation,
+      ).toBe(1);
+      expect(
+        result.activeTransitionProofs,
+      ).toBeGreaterThan(0);
     });
 
     it("closes an unreachable conditional despawn path as statically inactive", () => {

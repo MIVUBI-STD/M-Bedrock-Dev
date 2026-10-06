@@ -381,6 +381,7 @@ export interface GameplayWorldModel {
       inactiveConditionalDespawnCounters: number;
       provenActiveInstantDespawnWithoutReconciliation: number;
       activeInterproceduralProofs: number;
+      activeTransitionProofs: number;
       unresolvedCounters: number;
       reconciledFromMatchedActorLifecycle: number;
       details: readonly {
@@ -2020,6 +2021,9 @@ export function deriveGameplayWorldModel(
         activeInterproceduralProofs:
           source.progressionActorAccounting
             ?.activeInterproceduralProofs ?? 0,
+        activeTransitionProofs:
+          source.progressionActorAccounting
+            ?.activeTransitionProofs ?? 0,
         unresolvedCounters:
           source.progressionActorAccounting
             ?.unresolvedCounters ?? 0,

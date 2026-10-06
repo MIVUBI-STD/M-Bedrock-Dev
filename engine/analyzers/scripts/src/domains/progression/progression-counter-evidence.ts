@@ -42,12 +42,14 @@ export interface ScriptProgressionActorSpawnEvidence {
 export interface ScriptProgressionActiveEventEvidence {
   readonly event: string;
   readonly executionRegion: string;
+  readonly basis?: "guard" | "transition";
   readonly source: SourceRef;
 }
 
 export interface ScriptProgressionActiveCallEvidence {
   readonly callerRegion: string;
   readonly targetName: string;
+  readonly basis?: "guard" | "transition";
   readonly source: SourceRef;
 }
 
@@ -706,6 +708,289 @@ export function deriveScriptProgressionCounterEvidence(
     );
 }
 
+function directStateAssignment(
+  statement: ts.Statement,
+  file: ts.SourceFile,
+): {
+  readonly target: string;
+  readonly value?: string;
+} | undefined {
+  if (
+    !ts.isExpressionStatement(statement) ||
+    !ts.isBinaryExpression(
+      statement.expression,
+    ) ||
+    statement.expression.operatorToken.kind !==
+      ts.SyntaxKind.EqualsToken
+  ) {
+    return undefined;
+  }
+
+  const target =
+    statement.expression.left.getText(file);
+  if (
+    !/(?:state|status|phase|stage|wave|round|mode)/i.test(
+      target,
+    )
+  ) {
+    return undefined;
+  }
+
+  return {
+    target,
+    value:
+      literalString(
+        statement.expression.right,
+      ),
+  };
+}
+
+function transitionOwnedCallsAndEvents(
+  statement: ts.Statement,
+  file: ts.SourceFile,
+  source: SourceRef,
+  calls:
+    ScriptProgressionActiveCallEvidence[],
+  events:
+    ScriptProgressionActiveEventEvidence[],
+): void {
+  const visit = (node: ts.Node): void => {
+    if (
+      node !== statement &&
+      (
+        ts.isFunctionDeclaration(node) ||
+        ts.isMethodDeclaration(node) ||
+        ts.isArrowFunction(node) ||
+        ts.isFunctionExpression(node)
+      )
+    ) {
+      return;
+    }
+
+    if (ts.isCallExpression(node)) {
+      const region =
+        executionRegion(node, file);
+
+      if (
+        ts.isPropertyAccessExpression(
+          node.expression,
+        ) &&
+        node.expression.name.text ===
+          "triggerEvent"
+      ) {
+        const event =
+          literalString(
+            node.arguments[0],
+          );
+        if (event) {
+          events.push({
+            event,
+            executionRegion: region,
+            basis: "transition",
+            source:
+              nodeSource(
+                file,
+                node,
+                source,
+              ),
+          });
+        }
+      } else if (
+        ts.isPropertyAccessExpression(
+          node.expression,
+        ) &&
+        (
+          node.expression.name.text ===
+            "runCommand" ||
+          node.expression.name.text ===
+            "runCommandAsync"
+        )
+      ) {
+        const command =
+          literalString(
+            node.arguments[0],
+          );
+        const match =
+          command?.match(
+            /^\/?event\s+entity\s+\S+\s+([A-Za-z0-9_.:-]+)/i,
+          );
+        if (match?.[1]) {
+          events.push({
+            event: match[1],
+            executionRegion: region,
+            basis: "transition",
+            source:
+              nodeSource(
+                file,
+                node,
+                source,
+              ),
+          });
+        }
+      } else {
+        let targetName:
+          string | undefined;
+        if (
+          ts.isIdentifier(
+            node.expression,
+          )
+        ) {
+          targetName =
+            node.expression.text;
+        } else if (
+          ts.isPropertyAccessExpression(
+            node.expression,
+          ) &&
+          node.expression.expression.kind ===
+            ts.SyntaxKind.ThisKeyword
+        ) {
+          targetName =
+            node.expression.name.text;
+        }
+
+        if (
+          targetName &&
+          !/^(?:spawnEntity)$/i.test(
+            targetName,
+          )
+        ) {
+          calls.push({
+            callerRegion: region,
+            targetName,
+            basis: "transition",
+            source:
+              nodeSource(
+                file,
+                node,
+                source,
+              ),
+          });
+        }
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(statement);
+}
+
+export function deriveScriptProgressionActiveTransitionEvidence(
+  text: string,
+  source: SourceRef,
+): {
+  readonly calls:
+    ScriptProgressionActiveCallEvidence[];
+  readonly events:
+    ScriptProgressionActiveEventEvidence[];
+} {
+  const file = ts.createSourceFile(
+    source.relativePath,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    scriptKind(source.relativePath),
+  );
+  const calls:
+    ScriptProgressionActiveCallEvidence[] = [];
+  const events:
+    ScriptProgressionActiveEventEvidence[] = [];
+
+  const scanStatements = (
+    statements:
+      readonly ts.Statement[],
+  ): void => {
+    const activeTargets =
+      new Set<string>();
+
+    for (const statement of statements) {
+      const assignment =
+        directStateAssignment(
+          statement,
+          file,
+        );
+      if (assignment) {
+        if (
+          assignment.value !== undefined &&
+          ACTIVE_STATE_LITERAL.test(
+            assignment.value,
+          )
+        ) {
+          activeTargets.add(
+            assignment.target,
+          );
+        } else {
+          activeTargets.delete(
+            assignment.target,
+          );
+        }
+        continue;
+      }
+
+      if (activeTargets.size > 0) {
+        transitionOwnedCallsAndEvents(
+          statement,
+          file,
+          source,
+          calls,
+          events,
+        );
+      }
+    }
+  };
+
+  scanStatements(file.statements);
+  for (const statement of file.statements) {
+    if (
+      ts.isFunctionDeclaration(statement) &&
+      statement.body
+    ) {
+      scanStatements(
+        statement.body.statements,
+      );
+    }
+  }
+
+  const uniqueCalls =
+    calls.filter((item, index, all) =>
+      all.findIndex((candidate) =>
+        candidate.callerRegion ===
+          item.callerRegion &&
+        candidate.targetName ===
+          item.targetName &&
+        candidate.source.range?.lineStart ===
+          item.source.range?.lineStart
+      ) === index
+    );
+  const uniqueEvents =
+    events.filter((item, index, all) =>
+      all.findIndex((candidate) =>
+        candidate.event === item.event &&
+        candidate.executionRegion ===
+          item.executionRegion &&
+        candidate.source.range?.lineStart ===
+          item.source.range?.lineStart
+      ) === index
+    );
+
+  return {
+    calls: uniqueCalls.sort((a, b) =>
+      a.callerRegion.localeCompare(
+        b.callerRegion,
+      ) ||
+      a.targetName.localeCompare(
+        b.targetName,
+      )
+    ),
+    events: uniqueEvents.sort((a, b) =>
+      a.executionRegion.localeCompare(
+        b.executionRegion,
+      ) ||
+      a.event.localeCompare(b.event)
+    ),
+  };
+}
+
 export function deriveScriptProgressionActiveCallEvidence(
   text: string,
   source: SourceRef,
@@ -758,6 +1043,7 @@ export function deriveScriptProgressionActiveCallEvidence(
               file,
             ),
           targetName,
+          basis: "guard",
           source:
             nodeSource(
               file,
@@ -832,6 +1118,7 @@ export function deriveScriptProgressionActiveEventEvidence(
                 node,
                 file,
               ),
+            basis: "guard",
             source:
               nodeSource(
                 file,
@@ -869,6 +1156,7 @@ export function deriveScriptProgressionActiveEventEvidence(
                 node,
                 file,
               ),
+            basis: "guard",
             source:
               nodeSource(
                 file,

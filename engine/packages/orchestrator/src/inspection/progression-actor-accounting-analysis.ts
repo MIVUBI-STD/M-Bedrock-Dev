@@ -127,6 +127,7 @@ export interface ProgressionActorAccountingAnalysis {
   readonly inactiveConditionalDespawnCounters: number;
   readonly provenActiveInstantDespawnWithoutReconciliation: number;
   readonly activeInterproceduralProofs: number;
+  readonly activeTransitionProofs: number;
   readonly reconciledFromMatchedActorLifecycle: number;
   readonly unresolvedCounters: number;
 }
@@ -2486,6 +2487,17 @@ export function analyzeProgressionActorAccounting(
       ).length,
     activeInterproceduralProofs:
       activeReachable.size,
+    activeTransitionProofs:
+      activeEventEvidence.filter(
+        (item) =>
+          item.basis ===
+          "transition",
+      ).length +
+      activeCallEvidence.filter(
+        (item) =>
+          item.basis ===
+          "transition",
+      ).length,
     reconciledFromMatchedActorLifecycle:
       counters.filter(
         (item) =>
