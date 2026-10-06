@@ -21,7 +21,9 @@ function resolveResourceLink(fromPath, rawTarget) {
     ? target.slice(1)
     : posix.normalize(posix.join(posix.dirname(fromPath), target));
 
-  if (!resolved.startsWith("docs/")) return undefined;
+  if (resolved === ".." || resolved.startsWith("../")) {
+    return undefined;
+  }
   return resolved;
 }
 
@@ -53,7 +55,12 @@ export function buildGraph() {
 
       addEdge(edges, seen, {
         from: resource.id,
-        type: resource.role === "ROUTER" ? "ROUTES_TO" : "RELATES_TO",
+        type:
+          resource.role === "ROUTER"
+            ? "ROUTES_TO"
+            : target.class === "KNOWLEDGE"
+              ? "USES"
+              : "RELATES_TO",
         to: target.id,
       });
     }
