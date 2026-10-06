@@ -111,23 +111,11 @@ pub fn ensure_runtime_schema(root: &Path) -> io::Result<RuntimeSchema> {
     Ok(schema)
 }
 
-fn migrate_runtime_schema(root: &Path, schema: RuntimeSchema) -> io::Result<RuntimeSchema> {
-    let mut current = schema;
-
-    while current.schema < CURRENT_RUNTIME_SCHEMA {
-        current = match current.schema {
-            _ => {
-                return Err(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    format!("no migration exists from runtime schema {}", current.schema),
-                ))
-            }
-        };
-    }
-
-    current.last_migrated_by = env!("CARGO_PKG_VERSION").to_string();
-    write_schema_atomically(&schema_path(root), &current)?;
-    Ok(current)
+fn migrate_runtime_schema(_root: &Path, schema: RuntimeSchema) -> io::Result<RuntimeSchema> {
+    Err(io::Error::new(
+        io::ErrorKind::InvalidData,
+        format!("no migration exists from runtime schema {}", schema.schema),
+    ))
 }
 
 fn write_schema_atomically(path: &Path, schema: &RuntimeSchema) -> io::Result<()> {
