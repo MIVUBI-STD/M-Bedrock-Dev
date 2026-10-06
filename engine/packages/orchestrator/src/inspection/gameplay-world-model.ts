@@ -101,6 +101,9 @@ import type {
 import type {
   ProgressionActorAccountingAnalysis,
 } from "./progression-actor-accounting-analysis.js";
+import type {
+  ObjectiveAuthorityAssessment,
+} from "./state-authority-analysis.js";
 import {
   discoverGameplaySurfaces,
   type GameplaySurfaceDiscoveryResult,
@@ -849,6 +852,10 @@ export interface GameplayWorldModel {
     semanticSurfaces: number;
     semanticOperations: number;
     broadWrites: number;
+    objectiveAuthorities: readonly ObjectiveAuthorityAssessment[];
+    declaredObjectiveAuthorities: number;
+    undeclaredObjectiveAuthorities: number;
+    multipleObjectiveAuthorities: number;
   };
   structures: {
     definitions: number;
@@ -1010,6 +1017,8 @@ export interface GameplayWorldModelSource {
     stateSurfaces: number;
     stateOperations: number;
   };
+  objectiveAuthority?:
+    readonly ObjectiveAuthorityAssessment[];
   broadWrites: number;
   structures: {
     definitions: number;
@@ -1409,23 +1418,35 @@ export function deriveGameplayWorldModel(
     });
   }
 
+  const objectiveAuthority =
+    source.objectiveAuthority ?? [];
+  const objectiveAuthorityUnresolved =
+    objectiveAuthority.some(
+      (item) =>
+        item.status !== "declared",
+    );
   const stateEvidence =
     source.semanticIr.stateSurfaces > 0 ||
-    source.semanticIr.stateOperations > 0;
+    source.semanticIr.stateOperations > 0 ||
+    objectiveAuthority.length > 0;
   if (stateEvidence) {
     runtimeSurfaces.push({
       id: "runtime:state",
       label: "Gameplay state model",
       kind: "runtime-domain",
       status:
-        source.broadWrites > 0
+        source.broadWrites > 0 ||
+        objectiveAuthorityUnresolved
           ? "unknown"
           : "understood",
       material: true,
-      ...(source.broadWrites > 0
+      ...(source.broadWrites > 0 ||
+          objectiveAuthorityUnresolved
         ? {
             reason:
-              "Broad state writes exist, so state ownership/authority is not fully resolved.",
+              source.broadWrites > 0
+                ? "Broad state writes exist, so state ownership/authority is not fully resolved."
+                : "At least one gameplay objective has undeclared or multiple explicit authority declarations.",
           }
         : {}),
     });
@@ -2820,6 +2841,32 @@ export function deriveGameplayWorldModel(
       semanticOperations:
         source.semanticIr.stateOperations,
       broadWrites: source.broadWrites,
+      objectiveAuthorities:
+        objectiveAuthority.map(
+          (item) => ({
+            ...item,
+            contractIds:
+              [...item.contractIds],
+            authorityKeys:
+              [...item.authorityKeys],
+          }),
+        ),
+      declaredObjectiveAuthorities:
+        objectiveAuthority.filter(
+          (item) =>
+            item.status === "declared",
+        ).length,
+      undeclaredObjectiveAuthorities:
+        objectiveAuthority.filter(
+          (item) =>
+            item.status === "undeclared",
+        ).length,
+      multipleObjectiveAuthorities:
+        objectiveAuthority.filter(
+          (item) =>
+            item.status ===
+            "multiple-authorities",
+        ).length,
     },
     structures: {
       ...source.structures,

@@ -24,6 +24,9 @@ import { analyzeInspectionRuntimeState } from "../inspect-runtime-analysis-stage
 import { analyzeInspectionEducation } from "./inspect-education-stage.js";
 import { analyzeInspectionCausality } from "./inspect-causality-stage.js";
 import { deriveGameplayWorldModel } from "../gameplay-world-model.js";
+import {
+  assessObjectiveAuthorityDeclarations,
+} from "./state-authority-analysis.js";
 import { projectGameplaySemanticModel } from "../gameplay-semantic-model.js";
 import { projectMapEngineeringAssessment } from "../map-engineering-assessment.js";
 import { analyzeHiddenGameplayDefects } from "./hidden-gameplay-defect-analysis.js";
@@ -432,6 +435,13 @@ export function buildInspectionResult(
         developerToolRelease,
     });
 
+  const objectiveAuthority =
+    assessObjectiveAuthorityDeclarations(
+      input.gameplayIntent,
+      input.target.stateAuthorityContracts ??
+        [],
+    );
+
   const gameplayWorld = deriveGameplayWorldModel({
     artifactId: input.artifactId,
     intent: input.gameplayIntent,
@@ -461,6 +471,7 @@ export function buildInspectionResult(
       stateSurfaces: semanticSummary.stateSurfaces,
       stateOperations: semanticSummary.stateOperations,
     },
+    objectiveAuthority,
     broadWrites: topology.broadWrites,
     structures: {
       definitions: nodes.filter(

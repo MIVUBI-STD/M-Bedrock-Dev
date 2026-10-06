@@ -360,6 +360,17 @@
       ]
     },
     {
+      "knowledgeId": "round-policy.objective-authority-declared",
+      "consumer": "state-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/state-authority-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-world-model.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/state-authority-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "round-policy.objective-progress-idempotent",
       "consumer": "progression-actor-accounting-analysis",
       "analyzerPaths": [

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { KnowledgeCatalog } from "../../../knowledge/src/index.js";
 import {
+  assessObjectiveAuthorityDeclarations,
   correlateStateAuthority,
   stateAuthorityRuntimeEvidence,
 } from "../../src/inspection/state-authority-analysis.js";
@@ -139,5 +140,93 @@ describe("state authority reconciliation", () => {
         code: "KNOWLEDGE_RELATION_VIOLATION",
       }),
     ]));
+  });
+});
+
+
+describe("objective authority declarations", () => {
+  const intent = {
+    schemaVersion: 1 as const,
+    id: "intent:test",
+    evidence: [],
+    nodes: [{
+      id: "objective:flag",
+      kind: "objective" as const,
+      label: "Flag",
+      status: "authored" as const,
+      evidenceIds: [],
+    }],
+    edges: [],
+    invariants: [],
+    unknowns: [],
+  };
+
+  it("accepts exactly one explicitly matched authority", () => {
+    const result =
+      assessObjectiveAuthorityDeclarations(
+        intent,
+        [{
+          id: "flag-authority",
+          purpose: "objective:flag",
+          authority: {
+            kind: "scoreboard",
+            key: "flagHealth",
+          },
+          mirrors: [{
+            kind: "tag",
+            key: "flag_low",
+          }],
+        }],
+      );
+
+    expect(result[0]).toMatchObject({
+      status: "declared",
+      authorityKeys: [
+        "scoreboard:flagHealth",
+      ],
+    });
+  });
+
+  it("keeps an objective without an explicit authority declaration unresolved", () => {
+    const result =
+      assessObjectiveAuthorityDeclarations(
+        intent,
+        [],
+      );
+
+    expect(result[0]?.status)
+      .toBe("undeclared");
+  });
+
+  it("detects split-brain objective authority declarations", () => {
+    const result =
+      assessObjectiveAuthorityDeclarations(
+        intent,
+        [{
+          id: "flag-score",
+          purpose: "Flag",
+          authority: {
+            kind: "scoreboard",
+            key: "flagHealth",
+          },
+          mirrors: [],
+        }, {
+          id: "flag-tag",
+          purpose: "objective:flag",
+          authority: {
+            kind: "tag",
+            key: "flag_alive",
+          },
+          mirrors: [],
+        }],
+      );
+
+    expect(result[0]).toMatchObject({
+      status: "multiple-authorities",
+      authorityKeys: [
+        "scoreboard:flagHealth",
+        "tag:flag_alive",
+      ],
+    });
   });
 });

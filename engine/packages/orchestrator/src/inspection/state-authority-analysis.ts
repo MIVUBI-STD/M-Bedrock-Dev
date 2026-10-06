@@ -4,6 +4,9 @@ import type {
   StateObservedValue,
   StateValueObservation,
 } from "../../../project-model/src/index.js";
+import type {
+  GameplayIntentModel,
+} from "../../../gameplay-intent/src/index.js";
 import { stateSurfaceKey } from "../../../project-model/src/index.js";
 
 export type StateMirrorStatus =
@@ -218,4 +221,107 @@ export function stateAuthorityRuntimeEvidence(
 
     return records;
   });
+}
+
+
+export type ObjectiveAuthorityStatus =
+  | "declared"
+  | "undeclared"
+  | "multiple-authorities";
+
+export interface ObjectiveAuthorityAssessment {
+  readonly objectiveId: string;
+  readonly objectiveLabel: string;
+  readonly status: ObjectiveAuthorityStatus;
+  readonly contractIds: readonly string[];
+  readonly authorityKeys: readonly string[];
+  readonly reason: string;
+}
+
+function normalizedObjectiveAuthorityKey(
+  value: string,
+): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+export function assessObjectiveAuthorityDeclarations(
+  intent: GameplayIntentModel,
+  contracts: readonly StateAuthorityContract[],
+): ObjectiveAuthorityAssessment[] {
+  const objectives =
+    intent.nodes.filter(
+      (node) =>
+        node.kind === "objective",
+    );
+
+  return objectives
+    .map((objective) => {
+      const objectiveKeys =
+        new Set([
+          normalizedObjectiveAuthorityKey(
+            objective.id,
+          ),
+          normalizedObjectiveAuthorityKey(
+            objective.label,
+          ),
+        ]);
+      const matching =
+        contracts.filter((contract) => {
+          const purpose =
+            contract.purpose?.trim();
+          if (!purpose) return false;
+          return objectiveKeys.has(
+            normalizedObjectiveAuthorityKey(
+              purpose,
+            ),
+          );
+        });
+      const authorityKeys =
+        [
+          ...new Set(
+            matching.map((contract) =>
+              stateSurfaceKey(
+                contract.authority,
+              )
+            ),
+          ),
+        ].sort();
+      const status:
+        ObjectiveAuthorityStatus =
+        matching.length === 0
+          ? "undeclared"
+          : authorityKeys.length > 1
+            ? "multiple-authorities"
+            : "declared";
+
+      return {
+        objectiveId:
+          objective.id,
+        objectiveLabel:
+          objective.label,
+        status,
+        contractIds:
+          matching
+            .map((contract) =>
+              contract.id
+            )
+            .sort(),
+        authorityKeys,
+        reason:
+          status === "undeclared"
+            ? "No StateAuthorityContract purpose explicitly matches this objective id or label; objective truth ownership remains undeclared."
+            : status ===
+                "multiple-authorities"
+              ? "Multiple StateAuthorityContract declarations for this objective resolve to different authority surfaces; objective truth is split-brain."
+              : "Exactly one authority surface is explicitly declared for this objective through StateAuthorityContract purpose matching.",
+      };
+    })
+    .sort((a, b) =>
+      a.objectiveId.localeCompare(
+        b.objectiveId,
+      )
+    );
 }
