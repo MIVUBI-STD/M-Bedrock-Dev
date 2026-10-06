@@ -66,6 +66,7 @@ pub struct ClientStatus {
     pub guest_agent_ready: Option<bool>,
     pub guest_agent_version: Option<String>,
     pub minecraft_version: Option<String>,
+    pub lineage_parity: Option<ProfileParity>,
     pub version_parity: Option<ProfileParity>,
     pub identity: Option<IdentityState>,
 }
