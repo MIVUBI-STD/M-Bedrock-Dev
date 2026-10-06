@@ -9,6 +9,7 @@ use std::{
     env,
     ffi::OsStr,
     fs, io,
+    net::IpAddr,
     path::{Path, PathBuf},
     process::{Command, Stdio},
     thread,
@@ -34,6 +35,7 @@ pub trait Provider {
         Ok(host_working_sets_mb())
     }
     fn guest_tools_ready(&self, client: ClientId) -> io::Result<Option<bool>>;
+    fn guest_ip_address(&self, client: ClientId) -> io::Result<Option<String>>;
     fn identity_key(&self, client: ClientId) -> io::Result<Option<String>>;
     fn status(&self, client: ClientId) -> io::Result<ClientState>;
     fn start(&self, client: ClientId) -> io::Result<ClientState>;
@@ -335,6 +337,16 @@ where
     }
 }
 
+pub(crate) fn parse_guest_ip(output: &str) -> Option<String> {
+    output.lines().find_map(|line| {
+        let value = line.trim();
+        value
+            .parse::<IpAddr>()
+            .ok()
+            .map(|address| address.to_string())
+    })
+}
+
 pub(crate) fn snapshot_list_contains(list_output: &str, name: &str) -> bool {
     list_output.lines().map(str::trim).any(|line| line == name)
 }
@@ -435,7 +447,7 @@ pub(crate) fn host_working_sets_mb() -> Vec<(ClientId, u64)> {
 
 #[cfg(test)]
 mod tests {
-    use super::{guest_tools_state_ready, listed_as_running, snapshot_list_contains};
+    use super::{guest_tools_state_ready, listed_as_running, parse_guest_ip, snapshot_list_contains};
 
     #[test]
     fn detects_running_vm_from_vmrun_list() {
@@ -459,6 +471,15 @@ mod tests {
         assert!(guest_tools_state_ready("Running\n"));
         assert!(!guest_tools_state_ready("installed"));
         assert!(!guest_tools_state_ready("not running"));
+    }
+
+    #[test]
+    fn guest_ip_parser_requires_real_ip() {
+        assert_eq!(
+            parse_guest_ip("192.168.10.42\n"),
+            Some("192.168.10.42".into())
+        );
+        assert_eq!(parse_guest_ip("Error: Tools not ready"), None);
     }
 }
 
