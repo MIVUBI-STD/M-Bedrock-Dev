@@ -130,6 +130,7 @@ fn client_status(
             ready_snapshot: Some(false),
             memory_limit_mb: None,
             host_working_set_mb: None,
+            guest_tools_ready: None,
             identity: Some(IdentityState::Unknown),
         });
     }
@@ -141,6 +142,7 @@ fn client_status(
         ready_snapshot: Some(provider.has_ready(client).unwrap_or(false)),
         memory_limit_mb: provider.memory_limit_mb(client).ok(),
         host_working_set_mb: working_set_for(working_sets, client),
+        guest_tools_ready: provider.guest_tools_ready(client).ok().flatten(),
         identity: Some(identity_state(provider, client)),
     })
 }
@@ -199,6 +201,7 @@ impl RuntimeLab {
             ready_snapshot: None,
             memory_limit_mb: None,
             host_working_set_mb: None,
+            guest_tools_ready: None,
             identity: None,
         });
 
@@ -216,6 +219,7 @@ impl RuntimeLab {
                     ready_snapshot: Some(false),
                     memory_limit_mb: None,
                     host_working_set_mb: None,
+                    guest_tools_ready: None,
                     identity: Some(IdentityState::Unknown),
                 });
             }
