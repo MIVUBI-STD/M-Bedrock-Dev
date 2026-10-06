@@ -37,7 +37,23 @@ function addEdge(edges, seen, edge) {
 
 export function buildGraph() {
   const catalog = buildResourceCatalog();
-  const byPath = new Map(catalog.resources.map((resource) => [resource.path, resource]));
+  const byPath = new Map();
+  for (const resource of catalog.resources) {
+    if (resource.locator !== undefined) continue;
+
+    const previous = byPath.get(resource.path);
+    if (
+      previous !== undefined &&
+      previous.id !== resource.id
+    ) {
+      throw new Error(
+        "Multiple physical Catalog resources share one path: " +
+          resource.path,
+      );
+    }
+
+    byPath.set(resource.path, resource);
+  }
   const edges = [];
   const seen = new Set();
 
