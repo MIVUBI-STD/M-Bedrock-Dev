@@ -338,6 +338,11 @@ export function derivePersistenceIdempotencyGuards(
         sideEffect,
         source,
       ),
+      journalWriteSource: lineSource(
+        file,
+        markerWriteStatement,
+        source,
+      ),
     });
 
     ts.forEachChild(node, visit);

@@ -335,6 +335,18 @@
       ]
     },
     {
+      "knowledgeId": "round-policy.cleanup-after-reward-journal",
+      "consumer": "reward-source-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/persistence/persistence-idempotency-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/reward-source-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/reward-source-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "round-policy.objective-progress-idempotent",
       "consumer": "progression-actor-accounting-analysis",
       "analyzerPaths": [

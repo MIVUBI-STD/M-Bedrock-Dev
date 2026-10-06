@@ -401,6 +401,9 @@ export interface GameplayWorldModel {
     deathRewardSourceOverlapUnresolved: number;
     pickupCurrencyWithoutConsumeCandidates: number;
     rewardPathsWithoutIdempotency: number;
+    cleanupAfterRewardJournalProven: number;
+    cleanupBeforeRewardJournalRisks: number;
+    cleanupRewardJournalOrderingUnresolved: number;
     dropCleanupSurfaces: number;
     worldDropRewardPathsWithoutCleanup: number;
     policy: {
@@ -427,6 +430,12 @@ export interface GameplayWorldModel {
       scoreWrites: number;
       itemConsumes: number;
       idempotencyGuards: number;
+      cleanupReleases: number;
+      rewardCleanupOrdering:
+        | "proven-after-journal"
+        | "contradicted-before-journal"
+        | "unresolved"
+        | "not-applicable";
     }[];
   };
   progression: {
@@ -1232,6 +1241,7 @@ export function deriveGameplayWorldModel(
     const unresolved =
       (source.rewardSources?.unresolvedEngineLootTables ?? 0) > 0 ||
       (source.rewardSources?.deathRewardSourceOverlapUnresolved ?? 0) > 0 ||
+      (source.rewardSources?.cleanupRewardJournalOrderingUnresolved ?? 0) > 0 ||
       (source.economyPolicy?.deathRewardOverlapUnresolved ?? 0) > 0;
     runtimeSurfaces.push({
       id: "runtime:economy",
@@ -2157,6 +2167,15 @@ export function deriveGameplayWorldModel(
       rewardPathsWithoutIdempotency:
         source.rewardSources
           ?.rewardPathsWithoutIdempotency ?? 0,
+      cleanupAfterRewardJournalProven:
+        source.rewardSources
+          ?.cleanupAfterRewardJournalProven ?? 0,
+      cleanupBeforeRewardJournalRisks:
+        source.rewardSources
+          ?.cleanupBeforeRewardJournalRisks ?? 0,
+      cleanupRewardJournalOrderingUnresolved:
+        source.rewardSources
+          ?.cleanupRewardJournalOrderingUnresolved ?? 0,
       dropCleanupSurfaces:
         source.rewardSources?.dropCleanupSurfaces ?? 0,
       worldDropRewardPathsWithoutCleanup:
@@ -2205,6 +2224,10 @@ export function deriveGameplayWorldModel(
           scoreWrites: item.scoreWrites,
           itemConsumes: item.itemConsumes,
           idempotencyGuards: item.idempotencyGuards,
+          cleanupReleases:
+            item.cleanupReleases,
+          rewardCleanupOrdering:
+            item.rewardCleanupOrdering,
         })) ?? [],
     },
     progression: {

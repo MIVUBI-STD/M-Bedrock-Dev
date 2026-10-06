@@ -34,6 +34,12 @@ export interface ScriptRewardPathAssessment {
   dropCleanupSurfaces: number;
   deathEntityTypeGuards: readonly string[];
   idempotencyGuards: number;
+  cleanupReleases: number;
+  rewardCleanupOrdering:
+    | "proven-after-journal"
+    | "contradicted-before-journal"
+    | "unresolved"
+    | "not-applicable";
 }
 
 export interface RewardSourceAnalysis {
@@ -54,6 +60,9 @@ export interface RewardSourceAnalysis {
   dropCleanupSurfaces: number;
   worldDropRewardPathsWithoutCleanup: number;
   rewardPathsWithoutIdempotency: number;
+  cleanupAfterRewardJournalProven: number;
+  cleanupBeforeRewardJournalRisks: number;
+  cleanupRewardJournalOrderingUnresolved: number;
   deathRewardPaths: number;
   pickupCurrencyPaths: number;
   deathRewardSourceOverlapCandidates: number;
@@ -190,7 +199,7 @@ function pathAssessment(
       script,
       regionSet,
     );
-  const idempotencyGuards =
+  const idempotencyGuardEvidence =
     (
       script.persistenceIdempotencyGuards ??
       []
@@ -199,7 +208,67 @@ function pathAssessment(
         regionSet.has(
           guard.executionRegion,
         ),
-    ).length;
+    );
+  const idempotencyGuards =
+    idempotencyGuardEvidence.length;
+  const cleanupReleases =
+    (
+      script.cleanupResourceEvidence ??
+      []
+    ).filter(
+      (item) =>
+        item.action === "release" &&
+        regionSet.has(
+          item.executionRegion,
+        ),
+    );
+
+  const cleanupOrdering = (() => {
+    if (cleanupReleases.length === 0) {
+      return "not-applicable" as const;
+    }
+    if (idempotencyGuardEvidence.length === 0) {
+      return "unresolved" as const;
+    }
+
+    let unresolved = false;
+    for (const cleanup of cleanupReleases) {
+      const sameRegion =
+        idempotencyGuardEvidence.filter(
+          (guard) =>
+            guard.executionRegion ===
+              cleanup.executionRegion,
+        );
+      if (sameRegion.length === 0) {
+        unresolved = true;
+        continue;
+      }
+
+      const cleanupLine =
+        cleanup.source.range?.lineStart;
+      if (cleanupLine === undefined) {
+        unresolved = true;
+        continue;
+      }
+
+      for (const guard of sameRegion) {
+        const journalLine =
+          guard.journalWriteSource.range
+            ?.lineStart;
+        if (journalLine === undefined) {
+          unresolved = true;
+          continue;
+        }
+        if (cleanupLine < journalLine) {
+          return "contradicted-before-journal" as const;
+        }
+      }
+    }
+
+    return unresolved
+      ? "unresolved" as const
+      : "proven-after-journal" as const;
+  })();
 
   return {
     scriptId: script.identifier,
@@ -279,6 +348,10 @@ function pathAssessment(
       ),
     ].sort(),
     idempotencyGuards,
+    cleanupReleases:
+      cleanupReleases.length,
+    rewardCleanupOrdering:
+      cleanupOrdering,
   };
 }
 
@@ -563,6 +636,24 @@ export function analyzeRewardSources(
       (path) =>
         path.idempotencyGuards === 0,
     ).length;
+  const cleanupAfterRewardJournalProven =
+    rewardRelevantPaths.filter(
+      (path) =>
+        path.rewardCleanupOrdering ===
+          "proven-after-journal",
+    ).length;
+  const cleanupBeforeRewardJournalRisks =
+    rewardRelevantPaths.filter(
+      (path) =>
+        path.rewardCleanupOrdering ===
+          "contradicted-before-journal",
+    ).length;
+  const cleanupRewardJournalOrderingUnresolved =
+    rewardRelevantPaths.filter(
+      (path) =>
+        path.rewardCleanupOrdering ===
+          "unresolved",
+    ).length;
 
   return {
     sourceKinds:
@@ -595,6 +686,9 @@ export function analyzeRewardSources(
     dropCleanupSurfaces,
     worldDropRewardPathsWithoutCleanup,
     rewardPathsWithoutIdempotency,
+    cleanupAfterRewardJournalProven,
+    cleanupBeforeRewardJournalRisks,
+    cleanupRewardJournalOrderingUnresolved,
     deathRewardPaths:
       deathRewardPaths.length,
     pickupCurrencyPaths:

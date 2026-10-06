@@ -221,4 +221,71 @@ describe("reward source analysis", () => {
       scoreCredits: 1,
     });
   });
+
+  it("proves cleanup occurs after the durable reward journal in the same execution region", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "world.afterEvents.entityDie.subscribe((event) => award(event.deadEntity, resultId));",
+        "function award(player, resultId) {",
+        "  const applied = world.getDynamicProperty('rewardOp');",
+        "  if (applied !== resultId) credits.addScore(player, 1);",
+        "  world.setDynamicProperty('rewardOp', resultId);",
+        "  credits.removeParticipant(player);",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result = analyzeRewardSources(
+      [script],
+      [],
+      [],
+    );
+
+    expect(
+      result.cleanupAfterRewardJournalProven,
+    ).toBe(1);
+    expect(result.paths[0]).toMatchObject({
+      rewardCleanupOrdering:
+        "proven-after-journal",
+      cleanupReleases: 1,
+    });
+  });
+
+  it("proves destructive cleanup before the reward journal as an ordering contradiction", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "world.afterEvents.entityDie.subscribe((event) => award(event.deadEntity, resultId));",
+        "function award(player, resultId) {",
+        "  const applied = world.getDynamicProperty('rewardOp');",
+        "  credits.removeParticipant(player);",
+        "  if (applied !== resultId) credits.addScore(player, 1);",
+        "  world.setDynamicProperty('rewardOp', resultId);",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result = analyzeRewardSources(
+      [script],
+      [],
+      [],
+    );
+
+    expect(
+      result.cleanupBeforeRewardJournalRisks,
+    ).toBe(1);
+    expect(result.paths[0]).toMatchObject({
+      rewardCleanupOrdering:
+        "contradicted-before-journal",
+    });
+  });
 });

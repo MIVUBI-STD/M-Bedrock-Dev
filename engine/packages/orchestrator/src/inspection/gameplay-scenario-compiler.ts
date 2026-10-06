@@ -1713,6 +1713,8 @@ function runtimeEdgeState(
       );
       const bad = scopedPaths.filter(
         (item) =>
+          item.rewardCleanupOrdering ===
+            "contradicted-before-journal" ||
           (
             item.trigger === "pickup" &&
             (item.scoreCredits > 0 || item.scoreWrites > 0) &&
@@ -1740,20 +1742,26 @@ function runtimeEdgeState(
       }
       const contamination = aggregateCannotBeScoped(
         world.economy.pickupCurrencyWithoutConsumeCandidates > 0 ||
-        world.economy.rewardPathsWithoutIdempotency > 0,
+        world.economy.rewardPathsWithoutIdempotency > 0 ||
+        world.economy.cleanupRewardJournalOrderingUnresolved > 0,
         sourceLocators,
         scopedPaths.length,
         "Economy/reward",
       );
       if (contamination) return contamination;
       if (
+        scopedPaths.some(
+          (item) =>
+            item.rewardCleanupOrdering ===
+              "unresolved",
+        ) ||
         world.economy.unresolvedEngineLootTables > 0 ||
         world.economy.deathRewardSourceOverlapUnresolved > 0
       ) {
         return {
           status: "DETECTION_GAP",
           reason:
-            "Economy/reward evidence remains unresolved.",
+            "Economy/reward evidence remains unresolved, including reward-to-cleanup journal ordering where source ordering cannot yet be proven.",
         };
       }
       return {

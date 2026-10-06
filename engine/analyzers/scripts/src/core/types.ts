@@ -413,6 +413,7 @@ export interface ScriptPersistenceIdempotencyGuard {
   executionRegion: string;
   conditionSource: SourceRef;
   sideEffectSource: SourceRef;
+  journalWriteSource: SourceRef;
 }
 
 export interface ScriptCapabilityUse {
