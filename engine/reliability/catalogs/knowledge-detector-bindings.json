@@ -805,6 +805,156 @@
       ]
     },
     {
+      "knowledgeId": "life-policy.death-invalidates-revive",
+      "consumer": "combat-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/telemetry/src/domains/revive/revive-guard.ts",
+        "engine/packages/telemetry/src/domains/revive/revive-monitor.ts",
+        "engine/packages/orchestrator/src/inspection/combat-runtime-telemetry-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/combat-contract-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/telemetry/test/domains/revive/revive-guard.test.ts",
+        "engine/packages/telemetry/test/domains/revive/revive-monitor.test.ts",
+        "engine/packages/orchestrator/test/inspection/combat-contract-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "life-policy.disconnect-invalidates-revive-role",
+      "consumer": "combat-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/telemetry/src/domains/revive/revive-guard.ts",
+        "engine/packages/telemetry/src/domains/revive/revive-monitor.ts",
+        "engine/packages/orchestrator/src/inspection/combat-runtime-telemetry-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/combat-contract-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/telemetry/test/domains/revive/revive-guard.test.ts",
+        "engine/packages/telemetry/test/domains/revive/revive-monitor.test.ts",
+        "engine/packages/orchestrator/test/inspection/combat-contract-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "life-policy.relation-death-deactivates-revive",
+      "consumer": "combat-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/telemetry/src/domains/revive/revive-guard.ts",
+        "engine/packages/telemetry/src/domains/revive/revive-monitor.ts",
+        "engine/packages/orchestrator/src/inspection/combat-runtime-telemetry-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/combat-contract-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/telemetry/test/domains/revive/revive-guard.test.ts",
+        "engine/packages/telemetry/test/domains/revive/revive-monitor.test.ts",
+        "engine/packages/orchestrator/test/inspection/combat-contract-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "life-policy.relation-downed-gates-revive",
+      "consumer": "combat-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/telemetry/src/domains/revive/revive-guard.ts",
+        "engine/packages/telemetry/src/domains/revive/revive-monitor.ts",
+        "engine/packages/orchestrator/src/inspection/combat-runtime-telemetry-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/combat-contract-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/telemetry/test/domains/revive/revive-guard.test.ts",
+        "engine/packages/telemetry/test/domains/revive/revive-monitor.test.ts",
+        "engine/packages/orchestrator/test/inspection/combat-contract-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "life-policy.relation-revive-completion-requires-valid-transaction",
+      "consumer": "combat-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/telemetry/src/domains/revive/revive-guard.ts",
+        "engine/packages/telemetry/src/domains/revive/revive-monitor.ts",
+        "engine/packages/orchestrator/src/inspection/combat-runtime-telemetry-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/combat-contract-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/telemetry/test/domains/revive/revive-guard.test.ts",
+        "engine/packages/telemetry/test/domains/revive/revive-monitor.test.ts",
+        "engine/packages/orchestrator/test/inspection/combat-contract-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "life-policy.revive-completion-idempotent",
+      "consumer": "combat-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/telemetry/src/domains/revive/revive-guard.ts",
+        "engine/packages/telemetry/src/domains/revive/revive-monitor.ts",
+        "engine/packages/orchestrator/src/inspection/combat-runtime-telemetry-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/combat-contract-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/telemetry/test/domains/revive/revive-guard.test.ts",
+        "engine/packages/telemetry/test/domains/revive/revive-monitor.test.ts",
+        "engine/packages/orchestrator/test/inspection/combat-contract-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "life-policy.revive-generation-bound",
+      "consumer": "combat-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/telemetry/src/domains/revive/revive-guard.ts",
+        "engine/packages/telemetry/src/domains/revive/revive-monitor.ts",
+        "engine/packages/orchestrator/src/inspection/combat-runtime-telemetry-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/combat-contract-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/telemetry/test/domains/revive/revive-guard.test.ts",
+        "engine/packages/telemetry/test/domains/revive/revive-monitor.test.ts",
+        "engine/packages/orchestrator/test/inspection/combat-contract-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "life-policy.reviver-distinct-current-participant",
+      "consumer": "combat-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/telemetry/src/domains/revive/revive-guard.ts",
+        "engine/packages/telemetry/src/domains/revive/revive-monitor.ts",
+        "engine/packages/orchestrator/src/inspection/combat-runtime-telemetry-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/combat-contract-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/telemetry/test/domains/revive/revive-guard.test.ts",
+        "engine/packages/telemetry/test/domains/revive/revive-monitor.test.ts",
+        "engine/packages/orchestrator/test/inspection/combat-contract-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "life-policy.self-revive-prohibited-by-default",
+      "consumer": "combat-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/telemetry/src/domains/revive/revive-guard.ts",
+        "engine/packages/telemetry/src/domains/revive/revive-monitor.ts",
+        "engine/packages/orchestrator/src/inspection/combat-runtime-telemetry-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/combat-contract-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/telemetry/test/domains/revive/revive-guard.test.ts",
+        "engine/packages/telemetry/test/domains/revive/revive-monitor.test.ts",
+        "engine/packages/orchestrator/test/inspection/combat-contract-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "life-policy.single-revive-transaction-owner",
+      "consumer": "combat-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/telemetry/src/domains/revive/revive-guard.ts",
+        "engine/packages/telemetry/src/domains/revive/revive-monitor.ts",
+        "engine/packages/orchestrator/src/inspection/combat-runtime-telemetry-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/combat-contract-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/telemetry/test/domains/revive/revive-guard.test.ts",
+        "engine/packages/telemetry/test/domains/revive/revive-monitor.test.ts",
+        "engine/packages/orchestrator/test/inspection/combat-contract-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "loot-policy.death-reward-arbitration",
       "consumer": "economy-contract-analysis",
       "analyzerPaths": [
