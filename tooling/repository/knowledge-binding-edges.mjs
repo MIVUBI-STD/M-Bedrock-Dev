@@ -5,27 +5,29 @@ function knowledgeFactOwners(resources) {
 
   for (const resource of resources) {
     if (resource.class !== "KNOWLEDGE") continue;
-    if (!resource.path.endsWith(".json")) continue;
-    if (!existsSync(resource.path)) continue;
-
-    const data = JSON.parse(readFileSync(resource.path, "utf8"));
-    for (const fact of data.facts ?? []) {
-      if (typeof fact?.id !== "string" || !fact.id) continue;
-
-      const previous = owners.get(fact.id);
-      if (previous !== undefined && previous !== resource.id) {
-        throw new Error(
-          "Knowledge fact has multiple Catalog owners: " +
-            fact.id +
-            " -> " +
-            previous +
-            " / " +
-            resource.id,
-        );
-      }
-
-      owners.set(fact.id, resource.id);
+    if (
+      typeof resource.locator !== "string" ||
+      !resource.locator
+    ) {
+      continue;
     }
+
+    const previous = owners.get(resource.locator);
+    if (
+      previous !== undefined &&
+      previous !== resource.id
+    ) {
+      throw new Error(
+        "Knowledge fact has multiple Catalog owners: " +
+          resource.locator +
+          " -> " +
+          previous +
+          " / " +
+          resource.id,
+      );
+    }
+
+    owners.set(resource.locator, resource.id);
   }
 
   return owners;
