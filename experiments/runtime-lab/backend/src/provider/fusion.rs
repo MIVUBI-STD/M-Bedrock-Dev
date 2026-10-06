@@ -1,7 +1,7 @@
 use super::{
-    apply_virtual_hardware_policy, base_vmx_path, client_vmx_path, command_output, ensure_parent, has_suspend_state, listed_as_running, read_vmx_memory, read_vmx_value,
+    apply_virtual_hardware_policy, base_vmx_path, client_vmx_path, command_output, command_output_with_timeout, ensure_parent, has_suspend_state, listed_as_running, read_vmx_memory, read_vmx_value,
     promote_staging_vm, remove_vm_container, snapshot_list_contains, staging_client_vmx_path,
-    wait_for_state, MemoryMode, Provider, READY_SNAPSHOT,
+    wait_for_state, MemoryMode, Provider, DISK_STATE_TIMEOUT, READY_SNAPSHOT,
 };
 use crate::client::{ClientId, ClientState};
 use std::{io, path::Path, process::Command, time::Duration};
@@ -76,7 +76,7 @@ impl Provider for VmwareFusionProvider {
         ensure_parent(&staging)?;
 
         let clone_name = format!("-cloneName={}", client.as_str());
-        let clone_result = command_output(
+        let clone_result = command_output_with_timeout(
             self.vmrun(),
             [
                 "-T",
@@ -87,6 +87,7 @@ impl Provider for VmwareFusionProvider {
                 "linked",
                 clone_name.as_str(),
             ],
+            DISK_STATE_TIMEOUT,
         );
 
         if let Err(error) = clone_result {
@@ -174,11 +175,21 @@ impl Provider for VmwareFusionProvider {
             return Ok(ClientState::Running);
         }
 
-        command_output(
-            self.vmrun(),
-            ["-T", "fusion", "start", vmx.to_string_lossy().as_ref(), "gui"],
-        )?;
-        wait_for_state(|| self.running(&vmx), true, Duration::from_secs(15))?;
+        let resume = has_suspend_state(&vmx);
+        if resume {
+            command_output_with_timeout(
+                self.vmrun(),
+                ["-T", "fusion", "start", vmx.to_string_lossy().as_ref(), "gui"],
+                DISK_STATE_TIMEOUT,
+            )?;
+            wait_for_state(|| self.running(&vmx), true, DISK_STATE_TIMEOUT)?;
+        } else {
+            command_output(
+                self.vmrun(),
+                ["-T", "fusion", "start", vmx.to_string_lossy().as_ref(), "gui"],
+            )?;
+            wait_for_state(|| self.running(&vmx), true, Duration::from_secs(15))?;
+        }
         Ok(ClientState::Running)
     }
 
@@ -192,11 +203,12 @@ impl Provider for VmwareFusionProvider {
             });
         }
 
-        command_output(
+        command_output_with_timeout(
             self.vmrun(),
             ["-T", "fusion", "suspend", vmx.to_string_lossy().as_ref(), "soft"],
+            DISK_STATE_TIMEOUT,
         )?;
-        wait_for_state(|| self.running(&vmx), false, Duration::from_secs(15))?;
+        wait_for_state(|| self.running(&vmx), false, DISK_STATE_TIMEOUT)?;
         Ok(ClientState::Suspended)
     }
 
@@ -271,9 +283,10 @@ impl Provider for VmwareFusionProvider {
             ));
         }
 
-        command_output(
+        command_output_with_timeout(
             self.vmrun(),
             ["-T", "fusion", "snapshot", vmx.to_string_lossy().as_ref(), READY_SNAPSHOT],
+            DISK_STATE_TIMEOUT,
         )?;
         Ok(ClientState::Stopped)
     }
@@ -291,9 +304,10 @@ impl Provider for VmwareFusionProvider {
             self.stop(client)?;
         }
 
-        command_output(
+        command_output_with_timeout(
             self.vmrun(),
             ["-T", "fusion", "revertToSnapshot", vmx.to_string_lossy().as_ref(), READY_SNAPSHOT],
+            DISK_STATE_TIMEOUT,
         )?;
         command_output(
             self.vmrun(),
