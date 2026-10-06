@@ -65,6 +65,7 @@ import {
 import {
   deriveProgressionActiveStateValues,
   deriveScriptProgressionAdvanceEvidence,
+  deriveScriptProgressionIdempotencyEvidence,
   deriveScriptProgressionOrdinalAdvanceEvidence,
   deriveScriptProgressionActiveCallEvidence,
   deriveScriptProgressionActiveEventEvidence,
@@ -371,6 +372,15 @@ export function analyzeInspectionRuntimeState(
             item.node.source,
           )
     );
+  const progressionIdempotencyEvidence =
+    input.parsedScripts.flatMap((item) =>
+      item.text === undefined
+        ? []
+        : deriveScriptProgressionIdempotencyEvidence(
+            item.text,
+            item.node.source,
+          )
+    );
   const effectiveProgressionActiveEventEvidence = [
     ...progressionActiveEventEvidence,
     ...progressionActiveTransitionEvidence.flatMap(
@@ -447,6 +457,7 @@ export function analyzeInspectionRuntimeState(
       progressionStateTransitionEvidence,
       progressionAdvanceEvidence,
       progressionOrdinalAdvanceEvidence,
+      progressionIdempotencyEvidence,
     );
   const chunkLifecycle =
     analyzeChunkLifecycle(

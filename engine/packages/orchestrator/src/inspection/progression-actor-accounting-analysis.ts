@@ -3,6 +3,7 @@ import type {
   ParsedScriptFile,
   ScriptProgressionAdvanceEvidence,
   ScriptProgressionCounterEvidence,
+  ScriptProgressionIdempotencyEvidence,
   ScriptProgressionOrdinalAdvanceEvidence,
   ScriptProgressionStateTransitionEvidence,
   deriveProgressionActiveStateValues,
@@ -152,6 +153,23 @@ export interface ProgressionCrossIngressOrdinalAssessment {
   readonly reason: string;
 }
 
+export interface ProgressionCrossIngressEffectAssessment {
+  readonly scriptId: string;
+  readonly ingress: string;
+  readonly target: string;
+  readonly callbackRegions:
+    readonly string[];
+  readonly status:
+    | "idempotent"
+    | "contradicted"
+    | "unresolved";
+  readonly directOrdinalAmount: number;
+  readonly idempotencyKind?:
+    | "boolean-latch"
+    | "state-latch";
+  readonly reason: string;
+}
+
 export interface ProgressionStateMachineAssessment {
   readonly scriptId: string;
   readonly tableName: string;
@@ -206,6 +224,11 @@ export interface ProgressionActorAccountingAnalysis {
   readonly crossIngressOrdinalAdvances:
     readonly ProgressionCrossIngressOrdinalAssessment[];
   readonly provenCrossIngressOrdinalAdvances: number;
+  readonly crossIngressEffectCalls:
+    readonly ProgressionCrossIngressEffectAssessment[];
+  readonly idempotentCrossIngressEffectCalls: number;
+  readonly provenCrossIngressEffectCalls: number;
+  readonly unresolvedCrossIngressEffectCalls: number;
   readonly reconciledFromMatchedActorLifecycle: number;
   readonly unresolvedCounters: number;
 }
@@ -2019,6 +2042,252 @@ function progressionCrossIngressOrdinalAdvances(
   );
 }
 
+const PROGRESSION_EFFECT_TARGET =
+  /(?:next.*(?:wave|round|level|stage)|advance|progress|complete|finish|end(?:wave|round|level|stage)|proceed)/i;
+
+function canonicalEffectTarget(
+  path: string,
+  region: string,
+): string {
+  return (
+    "module:" +
+    path +
+    "#" +
+    region
+  );
+}
+
+function progressionCrossIngressEffects(
+  scripts: readonly NormalizedScript[],
+  crossFileCalls:
+    readonly CrossFileCallEdge[],
+  ordinalEvidence:
+    readonly ScriptProgressionOrdinalAdvanceEvidence[],
+  idempotencyEvidence:
+    readonly ScriptProgressionIdempotencyEvidence[],
+): ProgressionCrossIngressEffectAssessment[] {
+  const ingressByCaller =
+    new Map<string, string>();
+
+  for (const script of scripts) {
+    const path =
+      script.parsed.source.relativePath;
+    for (
+      const subscription of
+        script.parsed.events
+    ) {
+      if (
+        subscription.callbackRegion ===
+          undefined ||
+        subscription.root ===
+          "unknown" ||
+        subscription.phase ===
+          "unknown"
+      ) {
+        continue;
+      }
+      ingressByCaller.set(
+        canonicalEffectTarget(
+          path,
+          subscription.callbackRegion,
+        ),
+        subscription.root +
+          "." +
+          subscription.phase +
+          "." +
+          subscription.event,
+      );
+    }
+  }
+
+  const groups =
+    new Map<
+      string,
+      {
+        ingress: string;
+        target: string;
+        callers: Set<string>;
+      }
+    >();
+
+  const add = (
+    callerPath: string,
+    callerRegion: string,
+    targetPath: string,
+    targetRegion: string,
+    targetName: string,
+  ) => {
+    if (
+      !PROGRESSION_EFFECT_TARGET.test(
+        targetName,
+      )
+    ) {
+      return;
+    }
+
+    const caller =
+      canonicalEffectTarget(
+        callerPath,
+        callerRegion,
+      );
+    const ingress =
+      ingressByCaller.get(caller);
+    if (!ingress) return;
+
+    const target =
+      canonicalEffectTarget(
+        targetPath,
+        targetRegion,
+      );
+    const key =
+      ingress +
+      "\0" +
+      target;
+    const group =
+      groups.get(key) ?? {
+        ingress,
+        target,
+        callers: new Set<string>(),
+      };
+    group.callers.add(caller);
+    groups.set(key, group);
+  };
+
+  for (const script of scripts) {
+    const path =
+      script.parsed.source.relativePath;
+    for (
+      const call of
+        script.parsed.localFunctionCalls
+    ) {
+      if (
+        call.controlFlow !==
+          "unconditional"
+      ) {
+        continue;
+      }
+      add(
+        path,
+        call.callerRegion,
+        path,
+        call.targetRegion,
+        call.targetName,
+      );
+    }
+  }
+
+  for (const call of crossFileCalls) {
+    if (
+      call.status !== "resolved" ||
+      call.targetModule === undefined ||
+      call.controlFlow !==
+        "unconditional"
+    ) {
+      continue;
+    }
+    add(
+      call.callerModule,
+      call.callerRegion,
+      call.targetModule,
+      "function:" +
+        call.targetExport,
+      call.targetExport,
+    );
+  }
+
+  const idempotencyByTarget =
+    new Map(
+      idempotencyEvidence.map(
+        (item) => [
+          canonicalEffectTarget(
+            item.source.relativePath,
+            item.functionRegion,
+          ),
+          item,
+        ],
+      ),
+    );
+
+  const ordinalByTarget =
+    new Map<string, number>();
+  for (
+    const item of
+      ordinalEvidence.filter(
+        (candidate) =>
+          candidate.executionShape ===
+            "single",
+      )
+  ) {
+    const key =
+      canonicalEffectTarget(
+        item.source.relativePath,
+        item.executionRegion,
+      );
+    ordinalByTarget.set(
+      key,
+      (
+        ordinalByTarget.get(key) ??
+        0
+      ) + item.amount,
+    );
+  }
+
+  return [...groups.values()]
+    .flatMap((group) => {
+      const callbackRegions =
+        [...group.callers].sort();
+      if (
+        callbackRegions.length < 2
+      ) {
+        return [];
+      }
+
+      const idempotency =
+        idempotencyByTarget.get(
+          group.target,
+        );
+      const directOrdinalAmount =
+        ordinalByTarget.get(
+          group.target,
+        ) ?? 0;
+
+      return [{
+        scriptId:
+          group.target,
+        ingress: group.ingress,
+        target: group.target,
+        callbackRegions,
+        status:
+          idempotency !== undefined
+            ? "idempotent" as const
+            : directOrdinalAmount > 0
+              ? "contradicted" as const
+              : "unresolved" as const,
+        directOrdinalAmount,
+        ...(idempotency === undefined
+          ? {}
+          : {
+              idempotencyKind:
+                idempotency.kind,
+            }),
+        reason:
+          idempotency !== undefined
+            ? "The same exact event ingress reaches this progression effect through multiple callbacks, but the target has a source-proven one-shot latch before its progression work."
+            : directOrdinalAmount > 0
+              ? "The same exact event ingress reaches the same progression effect through multiple unconditional callbacks, and the target directly advances a progression ordinal without a source-proven one-shot latch."
+              : "Duplicate invocation of the progression-looking effect is source-proven, but the target effect has neither direct ordinal mutation proof nor source-proven idempotency.",
+      }];
+    })
+    .sort((a, b) =>
+      a.ingress.localeCompare(
+        b.ingress,
+      ) ||
+      a.target.localeCompare(
+        b.target,
+      )
+    );
+}
+
 function progressionAdvanceOwnership(
   scripts: readonly NormalizedScript[],
   evidence:
@@ -2326,6 +2595,8 @@ export function analyzeProgressionActorAccounting(
     readonly ScriptProgressionAdvanceEvidence[] = [],
   ordinalAdvanceEvidence:
     readonly ScriptProgressionOrdinalAdvanceEvidence[] = [],
+  idempotencyEvidence:
+    readonly ScriptProgressionIdempotencyEvidence[] = [],
 ): ProgressionActorAccountingAnalysis {
   const scripts =
     inputs.map(normalizedInput);
@@ -2338,6 +2609,13 @@ export function analyzeProgressionActorAccounting(
     progressionCrossIngressOrdinalAdvances(
       scripts,
       ordinalAdvanceEvidence,
+    );
+  const crossIngressEffectCalls =
+    progressionCrossIngressEffects(
+      scripts,
+      crossFileCalls,
+      ordinalAdvanceEvidence,
+      idempotencyEvidence,
     );
   const stateTransitions =
     stateTransitionAssessments(
@@ -3207,6 +3485,25 @@ export function analyzeProgressionActorAccounting(
     crossIngressOrdinalAdvances,
     provenCrossIngressOrdinalAdvances:
       crossIngressOrdinalAdvances.length,
+    crossIngressEffectCalls,
+    idempotentCrossIngressEffectCalls:
+      crossIngressEffectCalls.filter(
+        (item) =>
+          item.status ===
+          "idempotent",
+      ).length,
+    provenCrossIngressEffectCalls:
+      crossIngressEffectCalls.filter(
+        (item) =>
+          item.status ===
+          "contradicted",
+      ).length,
+    unresolvedCrossIngressEffectCalls:
+      crossIngressEffectCalls.filter(
+        (item) =>
+          item.status ===
+          "unresolved",
+      ).length,
     reconciledFromMatchedActorLifecycle:
       counters.filter(
         (item) =>

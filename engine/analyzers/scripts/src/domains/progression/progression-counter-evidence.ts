@@ -77,6 +77,15 @@ export interface ScriptProgressionOrdinalAdvanceEvidence {
   readonly source: SourceRef;
 }
 
+export interface ScriptProgressionIdempotencyEvidence {
+  readonly functionRegion: string;
+  readonly guardTarget: string;
+  readonly kind:
+    | "boolean-latch"
+    | "state-latch";
+  readonly source: SourceRef;
+}
+
 const COUNTER_NAME =
   /(?:wave|enemy|enemies|mob|mobs|remaining|alive|objective|progress|count)/i;
 
@@ -1273,6 +1282,314 @@ function transitionOwnedCallsAndEvents(
   };
 
   visit(statement);
+}
+
+function returnOnlyStatement(
+  statement: ts.Statement,
+): boolean {
+  if (ts.isReturnStatement(statement)) {
+    return true;
+  }
+  return (
+    ts.isBlock(statement) &&
+    statement.statements.length === 1 &&
+    ts.isReturnStatement(
+      statement.statements[0]!,
+    )
+  );
+}
+
+function literalGuardValue(
+  expression: ts.Expression,
+): string | undefined {
+  const stringValue =
+    literalString(expression);
+  if (stringValue !== undefined) {
+    return stringValue;
+  }
+  if (
+    expression.kind ===
+      ts.SyntaxKind.TrueKeyword
+  ) {
+    return "true";
+  }
+  if (
+    expression.kind ===
+      ts.SyntaxKind.FalseKeyword
+  ) {
+    return "false";
+  }
+  if (ts.isNumericLiteral(expression)) {
+    return expression.text;
+  }
+  return undefined;
+}
+
+function idempotencyGuard(
+  expression: ts.Expression,
+  file: ts.SourceFile,
+): {
+  readonly target: string;
+  readonly mode:
+    | "truthy"
+    | "equal"
+    | "not-equal";
+  readonly value?: string;
+} | undefined {
+  if (
+    ts.isIdentifier(expression) ||
+    ts.isPropertyAccessExpression(
+      expression,
+    )
+  ) {
+    return {
+      target:
+        expression.getText(file),
+      mode: "truthy",
+    };
+  }
+
+  if (
+    !ts.isBinaryExpression(expression)
+  ) {
+    return undefined;
+  }
+
+  const operator =
+    expression.operatorToken.kind;
+  const equal =
+    operator ===
+      ts.SyntaxKind.EqualsEqualsToken ||
+    operator ===
+      ts.SyntaxKind.EqualsEqualsEqualsToken;
+  const notEqual =
+    operator ===
+      ts.SyntaxKind.ExclamationEqualsToken ||
+    operator ===
+      ts.SyntaxKind.ExclamationEqualsEqualsToken;
+  if (!equal && !notEqual) {
+    return undefined;
+  }
+
+  const pairs: readonly [
+    ts.Expression,
+    ts.Expression,
+  ][] = [
+    [expression.left, expression.right],
+    [expression.right, expression.left],
+  ];
+  for (const [candidate, literal] of pairs) {
+    if (
+      !ts.isIdentifier(candidate) &&
+      !ts.isPropertyAccessExpression(
+        candidate,
+      )
+    ) {
+      continue;
+    }
+    const value =
+      literalGuardValue(literal);
+    if (value === undefined) continue;
+    return {
+      target:
+        candidate.getText(file),
+      mode:
+        equal
+          ? "equal"
+          : "not-equal",
+      value,
+    };
+  }
+  return undefined;
+}
+
+function directLatchAssignment(
+  statement: ts.Statement,
+  file: ts.SourceFile,
+): {
+  readonly target: string;
+  readonly value: string;
+  readonly sourceNode:
+    ts.BinaryExpression;
+} | undefined {
+  if (
+    !ts.isExpressionStatement(statement) ||
+    !ts.isBinaryExpression(
+      statement.expression,
+    ) ||
+    statement.expression.operatorToken.kind !==
+      ts.SyntaxKind.EqualsToken
+  ) {
+    return undefined;
+  }
+
+  const value =
+    literalGuardValue(
+      statement.expression.right,
+    );
+  if (value === undefined) {
+    return undefined;
+  }
+
+  return {
+    target:
+      statement.expression.left.getText(
+        file,
+      ),
+    value,
+    sourceNode:
+      statement.expression,
+  };
+}
+
+function idempotencyEvidenceForFunction(
+  node:
+    | ts.FunctionDeclaration
+    | ts.MethodDeclaration,
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptProgressionIdempotencyEvidence | undefined {
+  const body = node.body;
+  if (
+    !body ||
+    body.statements.length < 2
+  ) {
+    return undefined;
+  }
+
+  const nameNode = node.name;
+  if (
+    !nameNode ||
+    (
+      !ts.isIdentifier(nameNode) &&
+      !ts.isStringLiteralLike(nameNode)
+    )
+  ) {
+    return undefined;
+  }
+  const functionName = nameNode.text;
+  if (
+    !PROGRESSION_EFFECT_NAME.test(
+      functionName,
+    )
+  ) {
+    return undefined;
+  }
+
+  const guardStatement =
+    body.statements[0]!;
+  const latchStatement =
+    body.statements[1]!;
+  if (
+    !ts.isIfStatement(
+      guardStatement,
+    ) ||
+    guardStatement.elseStatement !==
+      undefined ||
+    !returnOnlyStatement(
+      guardStatement.thenStatement,
+    )
+  ) {
+    return undefined;
+  }
+
+  const guard =
+    idempotencyGuard(
+      guardStatement.expression,
+      file,
+    );
+  const latch =
+    directLatchAssignment(
+      latchStatement,
+      file,
+    );
+  if (
+    !guard ||
+    !latch ||
+    guard.target !== latch.target
+  ) {
+    return undefined;
+  }
+
+  const protectedByLatch =
+    (
+      guard.mode === "truthy" &&
+      latch.value === "true"
+    ) ||
+    (
+      guard.mode === "equal" &&
+      guard.value === latch.value
+    ) ||
+    (
+      guard.mode === "not-equal" &&
+      guard.value !== undefined &&
+      guard.value !== latch.value
+    );
+
+  if (!protectedByLatch) {
+    return undefined;
+  }
+
+  return {
+    functionRegion:
+      "function:" +
+      functionName,
+    guardTarget:
+      guard.target,
+    kind:
+      guard.mode === "truthy"
+        ? "boolean-latch"
+        : "state-latch",
+    source:
+      nodeSource(
+        file,
+        latch.sourceNode,
+        source,
+      ),
+  };
+}
+
+export function deriveScriptProgressionIdempotencyEvidence(
+  text: string,
+  source: SourceRef,
+): ScriptProgressionIdempotencyEvidence[] {
+  const file = ts.createSourceFile(
+    source.relativePath,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    scriptKind(source.relativePath),
+  );
+  const output:
+    ScriptProgressionIdempotencyEvidence[] = [];
+
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isFunctionDeclaration(node) ||
+      ts.isMethodDeclaration(node)
+    ) {
+      const evidence =
+        idempotencyEvidenceForFunction(
+          node,
+          file,
+          source,
+        );
+      if (evidence) {
+        output.push(evidence);
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+
+  visit(file);
+  return output.sort((a, b) =>
+    a.functionRegion.localeCompare(
+      b.functionRegion,
+    ) ||
+    a.guardTarget.localeCompare(
+      b.guardTarget,
+    )
+  );
 }
 
 export function deriveScriptProgressionOrdinalAdvanceEvidence(

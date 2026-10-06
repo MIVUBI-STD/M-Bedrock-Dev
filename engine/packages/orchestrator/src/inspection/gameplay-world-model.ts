@@ -392,6 +392,25 @@ export interface GameplayWorldModel {
       sourceEnteredDeadEndStates: number;
       duplicateProgressionAdvances: number;
       provenCrossIngressOrdinalAdvances: number;
+      idempotentCrossIngressEffectCalls: number;
+      provenCrossIngressEffectCalls: number;
+      unresolvedCrossIngressEffectCalls: number;
+      crossIngressEffectCalls: readonly {
+        scriptId: string;
+        ingress: string;
+        target: string;
+        callbackRegions:
+          readonly string[];
+        status:
+          | "idempotent"
+          | "contradicted"
+          | "unresolved";
+        directOrdinalAmount: number;
+        idempotencyKind?:
+          | "boolean-latch"
+          | "state-latch";
+        reason: string;
+      }[];
       crossIngressOrdinalAdvances: readonly {
         scriptId: string;
         ingress: string;
@@ -2116,6 +2135,34 @@ export function deriveGameplayWorldModel(
         provenCrossIngressOrdinalAdvances:
           source.progressionActorAccounting
             ?.provenCrossIngressOrdinalAdvances ?? 0,
+        idempotentCrossIngressEffectCalls:
+          source.progressionActorAccounting
+            ?.idempotentCrossIngressEffectCalls ?? 0,
+        provenCrossIngressEffectCalls:
+          source.progressionActorAccounting
+            ?.provenCrossIngressEffectCalls ?? 0,
+        unresolvedCrossIngressEffectCalls:
+          source.progressionActorAccounting
+            ?.unresolvedCrossIngressEffectCalls ?? 0,
+        crossIngressEffectCalls:
+          source.progressionActorAccounting
+            ?.crossIngressEffectCalls.map((item) => ({
+              scriptId: item.scriptId,
+              ingress: item.ingress,
+              target: item.target,
+              callbackRegions:
+                [...item.callbackRegions],
+              status: item.status,
+              directOrdinalAmount:
+                item.directOrdinalAmount,
+              ...(item.idempotencyKind === undefined
+                ? {}
+                : {
+                    idempotencyKind:
+                      item.idempotencyKind,
+                  }),
+              reason: item.reason,
+            })) ?? [],
         crossIngressOrdinalAdvances:
           source.progressionActorAccounting
             ?.crossIngressOrdinalAdvances.map((item) => ({

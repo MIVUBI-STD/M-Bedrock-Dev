@@ -812,6 +812,41 @@ function runtimeEdgeState(
         scenarioLabel ===
           "progression-wave-integrity" &&
         world.progression.actorAccounting
+          .provenCrossIngressEffectCalls > 0
+      ) {
+        const effects =
+          world.progression.actorAccounting
+            .crossIngressEffectCalls
+            .filter((item) =>
+              item.status ===
+                "contradicted"
+            )
+            .map((item) =>
+              item.ingress +
+              " -> " +
+              item.target +
+              " callbacks=" +
+              String(
+                item.callbackRegions.length,
+              ) +
+              " ordinalAdvance=" +
+              String(
+                item.directOrdinalAmount,
+              )
+            )
+            .sort();
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "A single exact event ingress reaches the same progression effect through multiple unconditional callbacks, and that effect directly advances progression without a source-proven one-shot latch: " +
+            effects.join("; ") +
+            ". This is a static cross-ingress exactly-once violation and does not require runtime reproduction.",
+        };
+      }
+      if (
+        scenarioLabel ===
+          "progression-wave-integrity" &&
+        world.progression.actorAccounting
           .provenCrossIngressOrdinalAdvances > 0
       ) {
         const ingresses =
@@ -819,7 +854,7 @@ function runtimeEdgeState(
             .crossIngressOrdinalAdvances
             .map((item) =>
               item.ingress +
-              " ’ " +
+              " -> " +
               item.target +
               " callbacks=" +
               String(
@@ -852,7 +887,7 @@ function runtimeEdgeState(
             )
             .map((item) =>
               item.counterId +
-              "’" +
+              "->" +
               item.effectTarget +
               " calls=" +
               String(item.calls) +
@@ -919,7 +954,7 @@ function runtimeEdgeState(
               item.target +
               ":" +
               item.from +
-              "’" +
+              "->" +
               item.to +
               " allowed=[" +
               item.allowedTargets.join(",") +
@@ -1061,6 +1096,18 @@ function runtimeEdgeState(
             "Selected-artifact progression accounting proves a completion counter can grow and is checked for zero/complete, but has no decrement or replacement/recompute path: " +
             counters.join(", ") +
             ". The progression gate cannot converge through that counter lifecycle, so runtime reproduction is not required to establish the accounting contradiction.",
+        };
+      }
+      if (
+        scenarioLabel ===
+          "progression-wave-integrity" &&
+        world.progression.actorAccounting
+          .unresolvedCrossIngressEffectCalls > 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "One exact event ingress reaches the same progression-looking effect through multiple unconditional callbacks, but the target has neither direct progression-mutation proof nor source-proven idempotency. Keep this explicit as unresolved instead of calling it a bug or safe.",
         };
       }
       if (

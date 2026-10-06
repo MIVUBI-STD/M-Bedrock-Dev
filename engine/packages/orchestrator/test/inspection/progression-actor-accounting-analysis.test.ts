@@ -7,6 +7,7 @@ import {
   deriveCrossFileCallEdges,
   deriveProgressionActiveStateValues,
   deriveScriptProgressionAdvanceEvidence,
+  deriveScriptProgressionIdempotencyEvidence,
   deriveScriptProgressionOrdinalAdvanceEvidence,
   deriveScriptProgressionActiveTransitionEvidence,
   deriveScriptProgressionStateTransitionEvidence,
@@ -1107,6 +1108,144 @@ describe(
       expect(
         result.provenCrossIngressOrdinalAdvances,
       ).toBe(0);
+    });
+
+    it("proves same-event duplicate effect calls when the target directly advances progression", () => {
+      const source = [
+        "function nextWave() {",
+        "  currentWave++;",
+        "}",
+        "world.afterEvents.entityDie.subscribe(() => {",
+        "  nextWave();",
+        "});",
+        "world.afterEvents.entityDie.subscribe(() => {",
+        "  nextWave();",
+        "});",
+      ].join("\n");
+      const input = parsed(source);
+      const ordinal =
+        deriveScriptProgressionOrdinalAdvanceEvidence(
+          source,
+          input.parsed.source,
+        );
+      const idempotency =
+        deriveScriptProgressionIdempotencyEvidence(
+          source,
+          input.parsed.source,
+        );
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+          [],
+          [],
+          undefined,
+          [],
+          [],
+          [],
+          [],
+          [],
+          ordinal,
+          idempotency,
+        );
+
+      expect(
+        result.provenCrossIngressEffectCalls,
+      ).toBe(1);
+      expect(
+        result.crossIngressEffectCalls[0],
+      ).toMatchObject({
+        ingress:
+          "world.afterEvents.entityDie",
+        status: "contradicted",
+        directOrdinalAmount: 1,
+      });
+    });
+
+    it("closes same-event duplicate effect calls when the target has a source-proven one-shot latch", () => {
+      const source = [
+        "let waveAdvancing = false;",
+        "function nextWave() {",
+        "  if (waveAdvancing) return;",
+        "  waveAdvancing = true;",
+        "  currentWave++;",
+        "}",
+        "world.afterEvents.entityDie.subscribe(() => {",
+        "  nextWave();",
+        "});",
+        "world.afterEvents.entityDie.subscribe(() => {",
+        "  nextWave();",
+        "});",
+      ].join("\n");
+      const input = parsed(source);
+      const ordinal =
+        deriveScriptProgressionOrdinalAdvanceEvidence(
+          source,
+          input.parsed.source,
+        );
+      const idempotency =
+        deriveScriptProgressionIdempotencyEvidence(
+          source,
+          input.parsed.source,
+        );
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+          [],
+          [],
+          undefined,
+          [],
+          [],
+          [],
+          [],
+          [],
+          ordinal,
+          idempotency,
+        );
+
+      expect(
+        result.idempotentCrossIngressEffectCalls,
+      ).toBe(1);
+      expect(
+        result.provenCrossIngressEffectCalls,
+      ).toBe(0);
+      expect(
+        result.crossIngressEffectCalls[0],
+      ).toMatchObject({
+        status: "idempotent",
+        idempotencyKind:
+          "boolean-latch",
+      });
+    });
+
+    it("keeps same-event duplicate effect calls unresolved when target semantics are indirect and no latch is proven", () => {
+      const source = [
+        "function nextWave() {",
+        "  scheduleWaveLoad();",
+        "}",
+        "function scheduleWaveLoad() {}",
+        "world.afterEvents.entityDie.subscribe(() => {",
+        "  nextWave();",
+        "});",
+        "world.afterEvents.entityDie.subscribe(() => {",
+        "  nextWave();",
+        "});",
+      ].join("\n");
+      const input = parsed(source);
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+        );
+
+      expect(
+        result.unresolvedCrossIngressEffectCalls,
+      ).toBe(1);
+      expect(
+        result.crossIngressEffectCalls[0]
+          ?.status,
+      ).toBe("unresolved");
     });
 
     it("proves duplicate next-wave ownership under one completion gate", () => {

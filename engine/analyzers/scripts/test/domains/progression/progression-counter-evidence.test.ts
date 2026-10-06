@@ -4,6 +4,7 @@ import {
   deriveScriptProgressionActiveEventEvidence,
   deriveProgressionActiveStateValues,
   deriveScriptProgressionAdvanceEvidence,
+  deriveScriptProgressionIdempotencyEvidence,
   deriveScriptProgressionOrdinalAdvanceEvidence,
   deriveScriptProgressionActiveTransitionEvidence,
   deriveScriptProgressionStateTransitionEvidence,
@@ -291,6 +292,69 @@ describe("progression active event evidence", () => {
           "function:advance",
       }),
     ]);
+  });
+
+  it("proves a boolean one-shot latch on a progression effect", () => {
+    const result =
+      deriveScriptProgressionIdempotencyEvidence(
+        [
+          "function nextWave() {",
+          "  if (waveAdvancing) return;",
+          "  waveAdvancing = true;",
+          "  currentWave++;",
+          "}",
+        ].join("\n"),
+        source,
+      );
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        functionRegion:
+          "function:nextWave",
+        guardTarget:
+          "waveAdvancing",
+        kind: "boolean-latch",
+      }),
+    ]);
+  });
+
+  it("proves a state one-shot latch on a progression effect", () => {
+    const result =
+      deriveScriptProgressionIdempotencyEvidence(
+        [
+          "function nextWave() {",
+          "  if (waveState !== 'active') return;",
+          "  waveState = 'transitioning';",
+          "  currentWave++;",
+          "}",
+        ].join("\n"),
+        source,
+      );
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        functionRegion:
+          "function:nextWave",
+        guardTarget: "waveState",
+        kind: "state-latch",
+      }),
+    ]);
+  });
+
+  it("does not credit a latch installed after progression work", () => {
+    const result =
+      deriveScriptProgressionIdempotencyEvidence(
+        [
+          "function nextWave() {",
+          "  if (waveAdvancing) return;",
+          "  currentWave++;",
+          "  waveAdvancing = true;",
+          "}",
+        ].join("\n"),
+        source,
+      );
+
+    expect(result).toEqual([]);
   });
 
 });
