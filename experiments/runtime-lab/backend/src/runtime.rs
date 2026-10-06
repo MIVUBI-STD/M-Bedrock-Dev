@@ -2,7 +2,7 @@ use crate::{
     client::{ClientId, ClientState, ClientStatus, IdentityState},
     doctor::{doctor, DoctorReport},
     provider::{cleanup_staging, current_platform_provider, runtime_root, MemoryMode, Provider},
-    resources::{current_host_pressure, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
+    resources::{current_host_pressure, start_delay_secs, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
 };
 use fs2::FileExt;
 use serde::Serialize;
@@ -94,6 +94,20 @@ fn identity_state(provider: &dyn Provider, client: ClientId) -> IdentityState {
     }
 
     IdentityState::Unique
+}
+
+fn restore_batch_state(provider: &dyn Provider, started: &[(ClientId, ClientState)]) {
+    for (client, original_state) in started.iter().rev() {
+        match original_state {
+            ClientState::Suspended => {
+                let _ = provider.suspend(*client);
+            }
+            ClientState::Stopped => {
+                let _ = provider.stop(*client);
+            }
+            _ => {}
+        }
+    }
 }
 
 fn client_status(provider: &dyn Provider, client: ClientId) -> io::Result<ClientStatus> {
@@ -279,16 +293,19 @@ impl RuntimeLab {
 
         let targets: Vec<ClientId> = ClientId::VIRTUAL.into_iter().take(count).collect();
         let mut result = Vec::with_capacity(count);
+        let mut started_by_batch: Vec<(ClientId, ClientState)> = Vec::new();
 
         for (index, client) in targets.into_iter().enumerate() {
-            let state = provider.status(client)?;
-            if state != ClientState::Running {
+            let original_state = provider.status(client)?;
+
+            if original_state != ClientState::Running {
                 let live_pressure = current_host_pressure();
                 if !live_pressure.can_start_virtual {
+                    restore_batch_state(provider.as_ref(), &started_by_batch);
                     return Err(io::Error::new(
                         io::ErrorKind::Other,
                         format!(
-                            "host memory pressure became {:?} before starting {}; suspend another Virtual or free host memory",
+                            "host memory pressure became {:?} before starting {}; previous batch starts were restored",
                             live_pressure.level,
                             client.as_str()
                         ),
@@ -297,20 +314,30 @@ impl RuntimeLab {
             }
 
             if identity_state(provider.as_ref(), client) == IdentityState::Duplicate {
+                restore_batch_state(provider.as_ref(), &started_by_batch);
                 return Err(io::Error::new(
                     io::ErrorKind::InvalidData,
                     format!("{} has duplicate VM identity", client.as_str()),
                 ));
             }
 
-            provider.start(client)?;
+            if let Err(error) = provider.start(client) {
+                restore_batch_state(provider.as_ref(), &started_by_batch);
+                return Err(error);
+            }
+
+            if original_state != ClientState::Running {
+                started_by_batch.push((client, original_state));
+            }
 
             if identity_state(provider.as_ref(), client) == IdentityState::Duplicate {
                 let _ = provider.stop(client);
+                started_by_batch.retain(|(started, _)| *started != client);
+                restore_batch_state(provider.as_ref(), &started_by_batch);
                 return Err(io::Error::new(
                     io::ErrorKind::InvalidData,
                     format!(
-                        "{} received duplicate VM identity after start and was stopped",
+                        "{} received duplicate VM identity after start; batch state was restored",
                         client.as_str()
                     ),
                 ));
@@ -319,7 +346,8 @@ impl RuntimeLab {
             result.push(client_status(provider.as_ref(), client)?);
 
             if index + 1 < count {
-                thread::sleep(Duration::from_secs(2));
+                let delay = start_delay_secs(current_host_pressure().level);
+                thread::sleep(Duration::from_secs(delay));
             }
         }
 
