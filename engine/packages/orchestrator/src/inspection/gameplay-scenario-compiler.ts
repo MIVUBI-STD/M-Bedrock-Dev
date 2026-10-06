@@ -1218,6 +1218,36 @@ function runtimeEdgeState(
         scenarioLabel ===
           "progression-wave-integrity" &&
         world.progression.actorAccounting
+          .deferredSpawnAccountingGaps > 0
+      ) {
+        const counters =
+          world.progression.actorAccounting.details
+            .filter((item) =>
+              item.status ===
+                "deferred-spawn-accounting-unproven"
+            )
+            .map((item) =>
+              item.counterId +
+              " deferredActors=[" +
+              item.deferredSpawnActorIdentifiers.join(",") +
+              "] reservation=" +
+              item.deferredSpawnReservationStatus +
+              " generation=" +
+              item.deferredSpawnGenerationStatus
+            )
+            .sort();
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Selected-artifact progression has zero-gated actor counters with deferred spawn materialization that is not fully covered by pre-defer population reservation and generation revalidation: " +
+            counters.join("; ") +
+            ". A pending/retry spawn can therefore remain semantically outstanding while the materialized-actor counter reads zero. Resolve this source-side ownership before treating the wave as safe or escalating to player testing.",
+        };
+      }
+      if (
+        scenarioLabel ===
+          "progression-wave-integrity" &&
+        world.progression.actorAccounting
           .unresolvedCrossIngressEffectCalls > 0
       ) {
         return {

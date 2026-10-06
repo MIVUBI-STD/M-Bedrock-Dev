@@ -2023,6 +2023,93 @@ describe(
       });
     });
 
+    it("keeps deferred actor materialization unresolved when population is not reserved before scheduling", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function retrySpawn(dimension) {",
+        "  system.runTimeout(() => {",
+        "    spawnEnemy(dimension);",
+        "  }, 20);",
+        "}",
+        "world.afterEvents.entityDie.subscribe((event) => {",
+        "  if (event.deadEntity.typeId !== 'demo:enemy') return;",
+        "  remainingEnemies--;",
+        "});",
+        "function maybeAdvance() {",
+        "  if (remainingEnemies === 0) nextWave();",
+        "}",
+      ].join("\n");
+
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed(source),
+        ]);
+
+      expect(
+        result.deferredSpawnAccountingGaps,
+      ).toBe(1);
+      expect(result.counters[0]).toMatchObject({
+        counterId: "remainingEnemies",
+        status:
+          "deferred-spawn-accounting-unproven",
+        deferredSpawnActorIdentifiers: [
+          "demo:enemy",
+        ],
+        deferredSpawnReservationStatus:
+          "unresolved",
+        deferredSpawnGenerationStatus:
+          "unresolved",
+      });
+    });
+
+    it("accepts deferred actor materialization when population is reserved before scheduling and generation is revalidated", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "let arenaGeneration = 4;",
+        "function spawnReservedEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "}",
+        "function retrySpawn(dimension) {",
+        "  remainingEnemies++;",
+        "  const capturedGeneration = arenaGeneration;",
+        "  system.runTimeout(() => {",
+        "    if (capturedGeneration !== arenaGeneration) return;",
+        "    spawnReservedEnemy(dimension);",
+        "  }, 20);",
+        "}",
+        "world.afterEvents.entityDie.subscribe((event) => {",
+        "  if (event.deadEntity.typeId !== 'demo:enemy') return;",
+        "  remainingEnemies--;",
+        "});",
+        "function maybeAdvance() {",
+        "  if (remainingEnemies === 0) nextWave();",
+        "}",
+      ].join("\n");
+
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed(source),
+        ]);
+
+      expect(
+        result.deferredSpawnAccountingGaps,
+      ).toBe(0);
+      expect(result.counters[0]).toMatchObject({
+        counterId: "remainingEnemies",
+        deferredSpawnActorIdentifiers: [
+          "demo:enemy",
+        ],
+        deferredSpawnReservationStatus:
+          "covered-before-defer",
+        deferredSpawnGenerationStatus:
+          "generation-guarded",
+      });
+    });
+
     it("keeps an authored result lifecycle unresolved when a required reward phase is omitted", () => {
       const source = [
         "type ResultState = 'active' | 'terminal_candidate' | 'resolving' | 'result_committed' | 'cleanup' | 'complete';",

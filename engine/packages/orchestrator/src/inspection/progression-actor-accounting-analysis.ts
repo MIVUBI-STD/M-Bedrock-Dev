@@ -35,6 +35,7 @@ export type ProgressionCounterStatus =
   | "instant-despawn-without-reconciliation"
   | "active-instant-despawn-without-reconciliation"
   | "missing-reconciliation"
+  | "deferred-spawn-accounting-unproven"
   | "unresolved";
 
 export interface ProgressionCounterAssessment {
@@ -112,6 +113,17 @@ export interface ProgressionCounterAssessment {
     | "mismatch"
     | "unresolved"
     | "not-applicable";
+  readonly deferredSpawnActorIdentifiers:
+    readonly string[];
+  readonly deferredSpawnCallbacks: number;
+  readonly deferredSpawnReservationStatus:
+    | "covered-before-defer"
+    | "unresolved"
+    | "none";
+  readonly deferredSpawnGenerationStatus:
+    | "generation-guarded"
+    | "unresolved"
+    | "none";
   readonly status: ProgressionCounterStatus;
   readonly reasons: readonly string[];
 }
@@ -230,6 +242,7 @@ export interface ProgressionActorAccountingAnalysis {
   readonly provenCrossIngressEffectCalls: number;
   readonly unresolvedCrossIngressEffectCalls: number;
   readonly reconciledFromMatchedActorLifecycle: number;
+  readonly deferredSpawnAccountingGaps: number;
   readonly unresolvedCounters: number;
 }
 
@@ -262,6 +275,7 @@ interface CounterEvidenceRecord {
     | "conditional"
     | "repeated"
     | "unknown";
+  readonly sourceLine?: number;
 }
 
 interface SpawnEvidenceRecord {
@@ -406,6 +420,8 @@ function scoreboardEvidence(
                 ? Math.abs(value)
                 : undefined,
             executionShape: "unknown",
+            sourceLine:
+              command.source.range?.lineStart,
           });
         }
       }
@@ -466,6 +482,8 @@ function variableEvidence(
     amount: item.amount,
     executionShape:
       item.executionShape,
+    sourceLine:
+      item.source.range?.lineStart,
   }));
 }
 
@@ -700,6 +718,147 @@ function spawnEvidence(
           item.sourceLine
       ) === index,
   );
+}
+
+
+interface DeferredSpawnAccountingAssessment {
+  readonly actorIdentifiers: readonly string[];
+  readonly callbacks: number;
+  readonly reservationStatus:
+    | "covered-before-defer"
+    | "unresolved"
+    | "none";
+  readonly generationStatus:
+    | "generation-guarded"
+    | "unresolved"
+    | "none";
+}
+
+function deferredSpawnAccountingAssessment(
+  scripts: readonly NormalizedScript[],
+  growth: readonly CounterEvidenceRecord[],
+  spawns: readonly SpawnEvidenceRecord[],
+  graph: ReadonlyMap<
+    string,
+    ReadonlySet<string>
+  >,
+): DeferredSpawnAccountingAssessment {
+  const relevant: {
+    actorIdentifier: string;
+    reservationCovered: boolean;
+    generationGuarded: boolean;
+  }[] = [];
+
+  for (const script of scripts) {
+    const path =
+      script.parsed.source.relativePath;
+    for (
+      const deferred of
+        script.parsed.deferredCallbacks
+    ) {
+      if (
+        deferred.callbackRegion ===
+        undefined
+      ) {
+        continue;
+      }
+
+      const callbackNode =
+        localNode(
+          path,
+          deferred.callbackRegion,
+        );
+      const reachable =
+        reachableFrom(
+          new Set([callbackNode]),
+          graph,
+        );
+      const schedulerLine =
+        deferred.source.range?.lineStart;
+
+      const preReserved =
+        growth.some((item) =>
+          item.scriptPath === path &&
+          item.executionRegion ===
+            deferred.callerRegion &&
+          item.sourceLine !== undefined &&
+          schedulerLine !== undefined &&
+          item.sourceLine < schedulerLine
+        );
+
+      for (const spawn of spawns) {
+        if (
+          !reachable.has(
+            localNode(
+              spawn.scriptPath,
+              spawn.executionRegion,
+            ),
+          )
+        ) {
+          continue;
+        }
+
+        const materializationGrowth =
+          growth.some((item) =>
+            reachable.has(
+              localNode(
+                item.scriptPath,
+                item.executionRegion,
+              ),
+            )
+          );
+
+        if (
+          !preReserved &&
+          !materializationGrowth
+        ) {
+          continue;
+        }
+
+        relevant.push({
+          actorIdentifier:
+            spawn.actorIdentifier,
+          reservationCovered:
+            preReserved,
+          generationGuarded:
+            deferred.guardEvidence ===
+            "explicit-generation-check",
+        });
+      }
+    }
+  }
+
+  if (relevant.length === 0) {
+    return {
+      actorIdentifiers: [],
+      callbacks: 0,
+      reservationStatus: "none",
+      generationStatus: "none",
+    };
+  }
+
+  return {
+    actorIdentifiers: [
+      ...new Set(
+        relevant.map((item) =>
+          item.actorIdentifier
+        ),
+      ),
+    ].sort(),
+    callbacks: relevant.length,
+    reservationStatus:
+      relevant.every((item) =>
+        item.reservationCovered
+      )
+        ? "covered-before-defer"
+        : "unresolved",
+    generationStatus:
+      relevant.every((item) =>
+        item.generationGuarded
+      )
+        ? "generation-guarded"
+        : "unresolved",
+  };
 }
 
 function lifecycleActorGuards(
@@ -3311,6 +3470,36 @@ export function analyzeProgressionActorAccounting(
           matchedActorIdentifiers.length > 0 &&
           linkedDecrements > 0;
 
+        const deferredSpawnAccounting =
+          actorAccountingCandidate &&
+          completionChecks > 0
+            ? deferredSpawnAccountingAssessment(
+                scripts,
+                growth,
+                spawns,
+                graph,
+              )
+            : {
+                actorIdentifiers: [],
+                callbacks: 0,
+                reservationStatus:
+                  "none" as const,
+                generationStatus:
+                  "none" as const,
+              };
+        const deferredSpawnAccountingUnproven =
+          actorAccountingCandidate &&
+          completionChecks > 0 &&
+          deferredSpawnAccounting.callbacks > 0 &&
+          (
+            deferredSpawnAccounting
+              .reservationStatus !==
+              "covered-before-defer" ||
+            deferredSpawnAccounting
+              .generationStatus !==
+              "generation-guarded"
+          );
+
         const actorIdentityStatus =
           !actorAccountingCandidate
             ? "not-applicable" as const
@@ -3398,6 +3587,14 @@ export function analyzeProgressionActorAccounting(
           lifecycleActorIdentifiers,
           matchedActorIdentifiers,
           actorIdentityStatus,
+          deferredSpawnActorIdentifiers:
+            [...deferredSpawnAccounting.actorIdentifiers],
+          deferredSpawnCallbacks:
+            deferredSpawnAccounting.callbacks,
+          deferredSpawnReservationStatus:
+            deferredSpawnAccounting.reservationStatus,
+          deferredSpawnGenerationStatus:
+            deferredSpawnAccounting.generationStatus,
           status:
             missingReconciliation
               ? "missing-reconciliation" as const
@@ -3409,6 +3606,8 @@ export function analyzeProgressionActorAccounting(
                     ? "active-instant-despawn-without-reconciliation" as const
                     : immediateDespawnWithoutReconciliation
                       ? "instant-despawn-without-reconciliation" as const
+                      : deferredSpawnAccountingUnproven
+                        ? "deferred-spawn-accounting-unproven" as const
                       : matched &&
                       spawnQuantityStatus ===
                         "matched"
@@ -3644,6 +3843,12 @@ export function analyzeProgressionActorAccounting(
         (item) =>
           item.status ===
           "reconciled-from-matched-actor-lifecycle",
+      ).length,
+    deferredSpawnAccountingGaps:
+      counters.filter(
+        (item) =>
+          item.status ===
+          "deferred-spawn-accounting-unproven",
       ).length,
     unresolvedCounters:
       counters.filter(

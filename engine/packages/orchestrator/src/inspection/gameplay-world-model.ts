@@ -458,6 +458,7 @@ export interface GameplayWorldModel {
       provenMissingReconciliation: number;
       provenActorIdentityMismatch: number;
       provenSpawnQuantityMismatch: number;
+      deferredSpawnAccountingGaps: number;
       scriptedRemovalCoverageGaps: number;
       terminalOnlyScriptedRemovalCounters: number;
       nonTerminalScriptedRemovalCounters: number;
@@ -620,6 +621,17 @@ export interface GameplayWorldModel {
           | "mismatch"
           | "unresolved"
           | "not-applicable";
+        deferredSpawnActorIdentifiers:
+          readonly string[];
+        deferredSpawnCallbacks: number;
+        deferredSpawnReservationStatus:
+          | "covered-before-defer"
+          | "unresolved"
+          | "none";
+        deferredSpawnGenerationStatus:
+          | "generation-guarded"
+          | "unresolved"
+          | "none";
         spawnLinkedActorIdentifiers:
           readonly string[];
         lifecycleActorIdentifiers:
@@ -633,6 +645,7 @@ export interface GameplayWorldModel {
           | "instant-despawn-without-reconciliation"
           | "active-instant-despawn-without-reconciliation"
           | "missing-reconciliation"
+          | "deferred-spawn-accounting-unproven"
           | "unresolved";
       }[];
     };
@@ -2258,6 +2271,9 @@ export function deriveGameplayWorldModel(
         provenSpawnQuantityMismatch:
           source.progressionActorAccounting
             ?.provenSpawnQuantityMismatch ?? 0,
+        deferredSpawnAccountingGaps:
+          source.progressionActorAccounting
+            ?.deferredSpawnAccountingGaps ?? 0,
         scriptedRemovalCoverageGaps:
           source.progressionActorAccounting
             ?.scriptedRemovalCoverageGaps ?? 0,
@@ -2488,6 +2504,14 @@ export function deriveGameplayWorldModel(
                 item.spawnQuantityStatus,
               actorIdentityStatus:
                 item.actorIdentityStatus,
+              deferredSpawnActorIdentifiers:
+                [...item.deferredSpawnActorIdentifiers],
+              deferredSpawnCallbacks:
+                item.deferredSpawnCallbacks,
+              deferredSpawnReservationStatus:
+                item.deferredSpawnReservationStatus,
+              deferredSpawnGenerationStatus:
+                item.deferredSpawnGenerationStatus,
               spawnLinkedActorIdentifiers:
                 [...item.spawnLinkedActorIdentifiers],
               lifecycleActorIdentifiers:

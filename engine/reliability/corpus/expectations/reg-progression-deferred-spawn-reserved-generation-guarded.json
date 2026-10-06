@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "reg-progression-deferred-spawn-reserved-generation-guarded",
+  "lane": "regression",
+  "artifact": {
+    "label": "Deferred enemy spawn reserved before scheduling with generation revalidation",
+    "file": "engine/fixtures/regressions/progression/deferred-spawn-reserved-generation-guarded.ts",
+    "sha256": "1c2dd747ebe591e6297f5267898381d21586fdbac750025a4f964d1dd2f11ea0"
+  },
+  "target": {
+    "edition": "bedrock",
+    "minecraftVersion": "1.21.x"
+  },
+  "expected": {
+    "disposition": "designed-behavior",
+    "domain": "Progression Actor Population Integrity",
+    "proofCeiling": "STATIC VERIFIED"
+  },
+  "provenance": {
+    "frozenBeforeRun": true,
+    "source": "engine/contracts/engineering/catalogs/round-integrity-contract.json"
+  }
+}

@@ -450,6 +450,36 @@
       ]
     },
     {
+      "id": "reg_progression_deferred_spawn_reserved_generation_guarded",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/regressions/progression/deferred-spawn-reserved-generation-guarded.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "1c2dd747ebe591e6297f5267898381d21586fdbac750025a4f964d1dd2f11ea0",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-progression-deferred-spawn-reserved-generation-guarded.json"
+      },
+      "evidenceRole": "negative",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_progression_deferred_spawn_unreserved",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/regressions/progression/deferred-spawn-unreserved.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "17cdce56da1c7de85c6b83d24edfc5a99d3219b58579096f69997187e71ae350",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-progression-deferred-spawn-unreserved.json"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
       "id": "reg_result_transaction_cleanup_before_reward_journal",
       "status": "ready",
       "sourceRef": "engine/fixtures/regressions/result-transaction/cleanup-before-reward-journal.ts",
