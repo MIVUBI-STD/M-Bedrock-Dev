@@ -105,5 +105,15 @@ mod tests {
         assert!(validate_overlay_preference(&valid).is_ok());
         labels.insert("Unknown".into(), "Other".into());
         assert!(validate_overlay_preference(&OverlayPreference { labels, ..valid }).is_err());
+
+        let long_label = OverlayPreference {
+            enabled: true,
+            show_screen_number: true,
+            show_label: true,
+            position: OverlayPosition::TopLeft,
+            opacity: 0.88,
+            labels: HashMap::from([("Native".into(), "x".repeat(33))]),
+        };
+        assert!(validate_overlay_preference(&long_label).is_err());
     }
 }
