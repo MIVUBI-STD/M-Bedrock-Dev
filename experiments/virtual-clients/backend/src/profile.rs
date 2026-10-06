@@ -389,6 +389,7 @@ fn normalized_version(value: &str) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
+    use crate::guest::GUEST_STATUS_SCHEMA;
     use super::{
         normalized_version, BaseProfile, BaseProfileSource, MinecraftInstallType, MinecraftProfile,
         BASE_PROFILE_SCHEMA,
