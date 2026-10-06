@@ -145,7 +145,7 @@ describe("Frontend boundary wiring", () => {
     const source = readFileSync(new URL("../src/app/bridge/virtualClientsApi.ts", import.meta.url), "utf8");
     expect(source).toContain("parseSuccessEnvelope<T>(raw, validate)");
     const commands = source.match(/invokePublic<[^>]+>\("virtual_clients_[^"]+", payload\.[A-Za-z]+/g) ?? [];
-    expect(commands.length).toBe(22);
+    expect(commands.length).toBe(23);
   });
 
   it("registers every frontend command in Tauri and the core dispatcher", () => {
@@ -154,7 +154,7 @@ describe("Frontend boundary wiring", () => {
     const bootstrap = readFileSync(new URL("../src-tauri/src/app_bootstrap.rs", import.meta.url), "utf8");
     const core = readFileSync(new URL("../../../virtual-clients/runtime-core/src/command.rs", import.meta.url), "utf8");
     const commands = [...facade.matchAll(/invokePublic<[^>]+>\("([^"]+)"/g)].map((match) => match[1]);
-    expect(commands).toHaveLength(22);
+    expect(commands).toHaveLength(23);
     for (const command of commands) {
       expect(adapters).toContain(`fn ${command}(`);
       expect(bootstrap).toContain(`commands::virtual_clients::${command},`);
