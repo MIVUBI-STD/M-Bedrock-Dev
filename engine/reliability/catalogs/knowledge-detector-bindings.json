@@ -673,6 +673,55 @@
       ]
     },
     {
+      "knowledgeId": "effects-policy.baseline-contract",
+      "consumer": "arena-cleanup-surface-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/cleanup/cleanup-resource-evidence.ts",
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-reset-closure-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "effects-policy.relation-reset-restores-baseline",
+      "consumer": "arena-cleanup-surface-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/cleanup/cleanup-resource-evidence.ts",
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-reset-closure-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "effects-policy.reset-removes-ending-scope",
+      "consumer": "arena-cleanup-surface-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/cleanup/cleanup-resource-evidence.ts",
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "effects-policy.verify-baseline",
+      "consumer": "arena-reset-closure-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-reset-closure-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "effects.add-effect-updates-existing",
       "consumer": "combat-lifecycle-analysis",
       "analyzerPaths": [
