@@ -7,6 +7,7 @@ const outDir = fileURLToPath(new URL("../../dist/virtual-clients-ui/", import.me
 
 export default defineConfig({
   root,
+  base: "./",
   plugins: [svelte()],
   build: {
     outDir,

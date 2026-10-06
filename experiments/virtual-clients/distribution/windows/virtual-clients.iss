@@ -28,6 +28,7 @@ UninstallDisplayName=M-Bedrock Virtual Clients
 VersionInfoVersion={#AppVersion}
 
 [Files]
+Source: "{#SourceDir}\virtual-clients-app.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\virtual-clients.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\virtual-clients-bridge.exe"; DestDir: "{app}\bridge"; Flags: ignoreversion
 Source: "{#SourceDir}\virtual-guest-agent.exe"; DestDir: "{app}\guest"; Flags: ignoreversion
@@ -35,6 +36,12 @@ Source: "{#UiDir}\*"; DestDir: "{app}\ui"; Flags: ignoreversion recursesubdirs c
 Source: "..\..\guest\windows\*.ps1"; DestDir: "{app}\guest\windows"; Flags: ignoreversion
 Source: "..\..\acceptance\windows\*.ps1"; DestDir: "{app}\acceptance\windows"; Flags: ignoreversion
 Source: "..\release-channel.json"; DestDir: "{app}\distribution"; Flags: ignoreversion
+
+[Icons]
+Name: "{autoprograms}\M-Bedrock Virtual Clients"; Filename: "{app}\virtual-clients-app.exe"
+
+[Run]
+Filename: "{app}\virtual-clients-app.exe"; Description: "Launch M-Bedrock Virtual Clients"; Flags: nowait postinstall skipifsilent
 
 [Registry]
 Root: HKCU; Subkey: "Software\MIVUBI-STD\M-Bedrock Virtual Clients"; ValueType: string; ValueName: "InstallDir"; ValueData: "{app}"; Flags: uninsdeletekey

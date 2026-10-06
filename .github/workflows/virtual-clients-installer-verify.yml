@@ -189,6 +189,7 @@ jobs:
           ) -Wait -PassThru
           if ($install.ExitCode -ne 0) { throw "Installer failed: $($install.ExitCode)" }
 
+          $appExe = Join-Path $installDir 'virtual-clients-app.exe'
           $hostExe = Join-Path $installDir 'virtual-clients.exe'
           $bridgeExe = Join-Path $installDir 'bridge\virtual-clients-bridge.exe'
           $guestExe = Join-Path $installDir 'guest\virtual-guest-agent.exe'
@@ -197,7 +198,8 @@ jobs:
           $acceptance = Join-Path $installDir 'acceptance\windows\collect-acceptance.ps1'
           $uiIndex = Join-Path $installDir 'ui\index.html'
           $uiAssets = Join-Path $installDir 'ui\assets'
-          if (!(Test-Path $hostExe -PathType Leaf)) { throw 'Host executable missing after install.' }
+          if (!(Test-Path $appExe -PathType Leaf)) { throw 'Desktop host executable missing after install.' }
+          if (!(Test-Path $hostExe -PathType Leaf)) { throw 'CLI executable missing after install.' }
           if (!(Test-Path $bridgeExe -PathType Leaf)) { throw 'Bridge executable missing after install.' }
           if (!(Test-Path $guestExe -PathType Leaf)) { throw 'Guest Agent executable missing after install.' }
           if (!(Test-Path $prepare -PathType Leaf)) { throw 'Guest Base preparation script missing after install.' }
@@ -207,8 +209,11 @@ jobs:
           if (!(Test-Path $uiAssets -PathType Container)) { throw 'Virtual Clients UI assets missing after install.' }
           if (@(Get-ChildItem $uiAssets -Filter '*.js' -File).Count -lt 1) { throw 'Virtual Clients UI JavaScript bundle missing after install.' }
 
+          & $appExe --probe
+          if ($LASTEXITCODE -ne 0) { throw 'Installed desktop host frontend/backend probe failed.' }
+
           & $hostExe help | Out-Host
-          if ($LASTEXITCODE -ne 0) { throw 'Installed host executable smoke test failed.' }
+          if ($LASTEXITCODE -ne 0) { throw 'Installed CLI executable smoke test failed.' }
 
           $request = '{"schema":1,"requestId":1,"command":"policy","args":[]}'
           $bridgeOutput = $request | & $bridgeExe

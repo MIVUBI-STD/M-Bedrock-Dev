@@ -219,7 +219,7 @@ reset <Virtual-01|Virtual-02|Virtual-03>
 reprovision <Virtual-01|Virtual-02|Virtual-03> --destroy-account-state
 ```
 
-Frontend runtime controls are implemented as a thin projection of the Rust public contract. The packaged browser UI still requires a desktop window host that injects `window.virtualClients.invoke`; until that host is connected, the UI fails closed with `Backend bridge unavailable` rather than using mock runtime state.
+Frontend runtime controls are implemented as a thin projection of the Rust public contract. On Windows, `virtual-clients-app.exe` hosts the packaged UI on a randomized loopback-only session, injects `window.virtualClients.invoke`, and forwards requests through `virtual-clients-bridge.exe`. Lifecycle/setup/resource authority remains in the Rust backend.
 
 
 ## Acceptance evidence

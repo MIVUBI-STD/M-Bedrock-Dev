@@ -140,6 +140,7 @@ jobs:
         shell: pwsh
         run: |
           $targets = @(
+            'experiments/virtual-clients/backend/target/release/virtual-clients-app.exe',
             'experiments/virtual-clients/backend/target/release/virtual-clients.exe',
             'experiments/virtual-clients/backend/target/release/virtual-clients-bridge.exe',
             'experiments/virtual-clients/backend/target/release/virtual-guest-agent.exe'
@@ -214,6 +215,7 @@ jobs:
           ) -Wait -PassThru
           if ($install.ExitCode -ne 0) { throw "Signed installer failed: $($install.ExitCode)" }
 
+          $appExe = Join-Path $installDir 'virtual-clients-app.exe'
           $hostExe = Join-Path $installDir 'virtual-clients.exe'
           $bridgeExe = Join-Path $installDir 'bridge\virtual-clients-bridge.exe'
           $guestExe = Join-Path $installDir 'guest\virtual-guest-agent.exe'
@@ -223,14 +225,17 @@ jobs:
           $releaseChannel = Join-Path $installDir 'distribution\release-channel.json'
           $uiIndex = Join-Path $installDir 'ui\index.html'
           $uiAssets = Join-Path $installDir 'ui\assets'
-          foreach ($path in @($hostExe, $bridgeExe, $guestExe, $prepare, $finalize, $acceptance, $releaseChannel, $uiIndex)) {
+          foreach ($path in @($appExe, $hostExe, $bridgeExe, $guestExe, $prepare, $finalize, $acceptance, $releaseChannel, $uiIndex)) {
             if (!(Test-Path -LiteralPath $path -PathType Leaf)) { throw "Installed file missing: $path" }
           }
           if (!(Test-Path $uiAssets -PathType Container)) { throw 'Virtual Clients UI assets missing after signed install.' }
           if (@(Get-ChildItem $uiAssets -Filter '*.js' -File).Count -lt 1) { throw 'Virtual Clients UI JavaScript bundle missing after signed install.' }
 
+          & $appExe --probe
+          if ($LASTEXITCODE -ne 0) { throw 'Installed desktop host frontend/backend probe failed.' }
+
           & $hostExe help | Out-Host
-          if ($LASTEXITCODE -ne 0) { throw 'Installed host executable smoke test failed.' }
+          if ($LASTEXITCODE -ne 0) { throw 'Installed CLI executable smoke test failed.' }
 
           $request = '{"schema":1,"requestId":1,"command":"policy","args":[]}'
           $bridgeOutput = $request | & $bridgeExe
