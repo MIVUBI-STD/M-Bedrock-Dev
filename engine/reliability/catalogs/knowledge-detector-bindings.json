@@ -463,6 +463,68 @@
       ]
     },
     {
+      "knowledgeId": "combat-policy.friendly-fire-explicit",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "combat-policy.hurt-vs-death-separated",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "combat-policy.knockback-separate-from-damage",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "combat-policy.projectile-cleanup-on-generation-end",
+      "consumer": "combat-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/combat-contract-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/combat-contract-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "combat-policy.relation-scope-gates-damage-sideeffects",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "combat-policy.same-arena-proof",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "command-policy.dimension-explicit-for-script-command",
       "consumer": "command-context-analysis",
       "analyzerPaths": [

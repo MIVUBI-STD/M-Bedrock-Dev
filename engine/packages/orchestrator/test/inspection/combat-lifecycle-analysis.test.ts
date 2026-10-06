@@ -72,6 +72,55 @@ describe("combat lifecycle analysis", () => {
     });
   });
 
+  it("proves explicit arena/team scope gating on hurt handling", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "world.afterEvents.entityHurt.subscribe((event) => {",
+        "  const victimArena = arenaOf(event.hurtEntity);",
+        "  const attackerArena = arenaOf(event.damageSource.damagingEntity);",
+        "  if (victimArena !== attackerArena) return;",
+        "  event.hurtEntity.applyKnockback(1, 0, 1, 1);",
+        "});",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeCombatLifecycle([script]);
+
+    expect(
+      result.explicitCombatScopeGuards,
+    ).toBe(1);
+    expect(
+      result.hurtHandlersWithoutScopeGuard,
+    ).toBe(0);
+  });
+
+  it("keeps hurt handling without explicit arena/team comparison as a scope gap", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "world.afterEvents.entityHurt.subscribe((event) => {",
+        "  event.hurtEntity.applyKnockback(1, 0, 1, 1);",
+        "});",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    expect(
+      analyzeCombatLifecycle([
+        script,
+      ]).hurtHandlersWithoutScopeGuard,
+    ).toBe(1);
+  });
+
   it("reports projectile cleanup gap only for projectile-bounded evidence", () => {
     const script = parseScriptFile(
       "main",

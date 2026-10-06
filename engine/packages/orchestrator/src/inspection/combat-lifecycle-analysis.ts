@@ -1,3 +1,4 @@
+import ts from "typescript";
 import type {
   ParsedScriptFile,
   ScriptCombatLifecycleEvidence,
@@ -25,6 +26,8 @@ export interface CombatLifecycleAnalysis {
   projectileRemovals: number;
   projectileCleanupGap: number;
   hurtOnlyTerminalRisk: number;
+  explicitCombatScopeGuards: number;
+  hurtHandlersWithoutScopeGuard: number;
   paths: readonly CombatEventPathAssessment[];
 }
 
@@ -78,6 +81,66 @@ function countKind(
   return evidence.filter(
     (item) => item.kind === kind,
   ).length;
+}
+
+
+function explicitCombatScopeGuardsFor(
+  script: ParsedScriptFile,
+): number {
+  const file = ts.createSourceFile(
+    script.source.relativePath,
+    script.text,
+    ts.ScriptTarget.Latest,
+    true,
+    script.source.relativePath.endsWith(".ts")
+      ? ts.ScriptKind.TS
+      : ts.ScriptKind.JS,
+  );
+  let guards = 0;
+
+  const terminalExit = (
+    node: ts.Node,
+  ): boolean => {
+    let found = false;
+    const scan = (current: ts.Node): void => {
+      if (
+        ts.isReturnStatement(current) ||
+        ts.isThrowStatement(current)
+      ) {
+        found = true;
+        return;
+      }
+      if (!found) ts.forEachChild(current, scan);
+    };
+    scan(node);
+    return found;
+  };
+
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isIfStatement(node) &&
+      terminalExit(node.thenStatement)
+    ) {
+      const text = node.expression.getText(file);
+      const hasScope =
+        /(?:arena|team)/i.test(text);
+      const hasTwoCombatSides =
+        /(?:hurtEntity|victim|target)/i.test(text) &&
+        /(?:damageSource|damagingEntity|attacker|source|shooter|owner)/i.test(text);
+      const compares =
+        /===|!==|==|!=/.test(text);
+      if (
+        hasScope &&
+        hasTwoCombatSides &&
+        compares
+      ) {
+        guards += 1;
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+  return guards;
 }
 
 function analyzeScript(
@@ -159,6 +222,15 @@ export function analyzeCombatLifecycle(
   const hurtHandlers = paths.filter(
     (item) => item.event === "hurt",
   ).length;
+  const explicitCombatScopeGuards =
+    scripts.reduce(
+      (sum, script) =>
+        sum +
+        explicitCombatScopeGuardsFor(
+          script,
+        ),
+      0,
+    );
   const deathHandlers = paths.filter(
     (item) => item.event === "death",
   ).length;
@@ -187,6 +259,13 @@ export function analyzeCombatLifecycle(
       deathHandlers === 0
         ? hurtHandlers
         : 0,
+    explicitCombatScopeGuards,
+    hurtHandlersWithoutScopeGuard:
+      Math.max(
+        0,
+        hurtHandlers -
+          explicitCombatScopeGuards,
+      ),
     paths,
   };
 }
