@@ -39,11 +39,11 @@ jobs:
           $match = [regex]::Match($cargo, '(?m)^version\s*=\s*"([^"]+)"\s*$')
           if (!$match.Success -or $match.Groups[1].Value -ne $version) { throw "Requested version $version does not match Cargo.toml." }
 
-      - name: Install Rust 1.77.2
+      - name: Install Rust 1.98.1
         shell: pwsh
         run: |
-          rustup toolchain install 1.77.2 --profile minimal --component rustfmt
-          rustup override set 1.77.2
+          rustup toolchain install 1.98.1 --profile minimal --component rustfmt
+          rustup override set 1.98.1
 
       - name: Verify source
         run: |
@@ -74,7 +74,7 @@ jobs:
             source_sha = $env:GITHUB_SHA
             version = '${{ inputs.version }}'
             platform = 'windows-x86_64'
-            rust = '1.77.2'
+            rust = '1.98.1'
             runtime_schema = 1
             binaries = @('virtual-clients.exe', 'virtual-guest-agent.exe')
           }

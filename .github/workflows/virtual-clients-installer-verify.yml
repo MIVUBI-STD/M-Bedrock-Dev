@@ -6,7 +6,7 @@ on:
     branches: [Experimental]
     paths:
       - "experiments/virtual-clients/backend/**"
-      - "experiments/virtual-clients/distribution/windows/**"
+      - "experiments/virtual-clients/distribution/**"
       - "experiments/virtual-clients/guest/windows/**"
       - ".github/workflows/virtual-clients-installer-verify.yml"
 
@@ -31,6 +31,29 @@ jobs:
         run: |
           rustup toolchain install 1.98.1 --profile minimal
           rustup default 1.98.1
+
+      - name: Validate PowerShell distribution scripts
+        shell: pwsh
+        run: |
+          $paths = @(
+            'experiments/virtual-clients/distribution/write-update-manifest.ps1',
+            'experiments/virtual-clients/guest/windows/install-guest-agent.ps1',
+            'experiments/virtual-clients/guest/windows/prepare-base.ps1',
+            'experiments/virtual-clients/guest/windows/uninstall-guest-agent.ps1'
+          )
+          foreach ($path in $paths) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $path),
+              [ref]$tokens,
+              [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              $details = ($errors | ForEach-Object { $_.Message }) -join '; '
+              throw "$path has PowerShell parser errors: $details"
+            }
+          }
 
       - name: Build release binaries
         working-directory: experiments/virtual-clients/backend

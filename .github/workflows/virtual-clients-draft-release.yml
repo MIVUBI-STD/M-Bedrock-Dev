@@ -49,6 +49,21 @@ jobs:
           rustup toolchain install 1.98.1 --profile minimal
           rustup default 1.98.1
 
+      - name: Validate update manifest generator
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path 'experiments/virtual-clients/distribution/write-update-manifest.ps1'),
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $details = ($errors | ForEach-Object { $_.Message }) -join '; '
+            throw "Update manifest generator has PowerShell parser errors: $details"
+          }
+
       - name: Verify backend
         working-directory: experiments/virtual-clients/backend
         run: |
