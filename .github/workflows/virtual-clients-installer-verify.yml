@@ -74,8 +74,13 @@ jobs:
           $installer = @(Get-ChildItem $dist -Filter '*.exe' -File)
           if ($installer.Count -ne 1) { throw "Expected one installer, found $($installer.Count)." }
           $installDir = Join-Path $env:RUNNER_TEMP 'VirtualClientsInstall'
-          & $installer[0].FullName /VERYSILENT /SUPPRESSMSGBOXES /NORESTART "/DIR=$installDir"
-          if ($LASTEXITCODE -ne 0) { throw "Installer failed: $LASTEXITCODE" }
+          $install = Start-Process -FilePath $installer[0].FullName -ArgumentList @(
+            '/VERYSILENT',
+            '/SUPPRESSMSGBOXES',
+            '/NORESTART',
+            "/DIR=$installDir"
+          ) -Wait -PassThru
+          if ($install.ExitCode -ne 0) { throw "Installer failed: $($install.ExitCode)" }
 
           $hostExe = Join-Path $installDir 'virtual-clients.exe'
           $guestExe = Join-Path $installDir 'guest\virtual-guest-agent.exe'
@@ -89,7 +94,11 @@ jobs:
 
           $uninstaller = @(Get-ChildItem $installDir -Filter 'unins*.exe' -File)
           if ($uninstaller.Count -ne 1) { throw 'Expected one uninstaller.' }
-          & $uninstaller[0].FullName /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
-          if ($LASTEXITCODE -ne 0) { throw "Uninstall failed: $LASTEXITCODE" }
+          $uninstall = Start-Process -FilePath $uninstaller[0].FullName -ArgumentList @(
+            '/VERYSILENT',
+            '/SUPPRESSMSGBOXES',
+            '/NORESTART'
+          ) -Wait -PassThru
+          if ($uninstall.ExitCode -ne 0) { throw "Uninstall failed: $($uninstall.ExitCode)" }
           Start-Sleep -Seconds 2
           if (Test-Path $installDir) { throw 'Install directory remains after uninstall.' }
