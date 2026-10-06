@@ -9,6 +9,8 @@ use std::{
     time::Duration,
 };
 
+use url::Url;
+
 use crate::{
     client::{ClientId, ClientState},
     paths::{runtime_root, update_staging_root},
@@ -134,16 +136,19 @@ pub fn check_update() -> io::Result<UpdateCheck> {
 
     let readiness = update_apply_readiness();
 
+    let (can_apply_now, reason) =
+        apply_permission(policy.self_update_runtime_enabled, readiness);
+
     Ok(UpdateCheck {
         state,
         current_version: env!("CARGO_PKG_VERSION"),
         latest_version: Some(manifest.version),
-        can_apply_now: readiness.ready,
+        can_apply_now,
         self_update_enabled: policy.self_update_runtime_enabled,
         staged_path: staged
             .filter(|item| staged_matches && Path::new(&item.installer_path).is_file())
             .map(|item| item.installer_path),
-        reason: readiness.reason,
+        reason,
     })
 }
 
@@ -317,11 +322,42 @@ fn validate_platform_manifest(
 ) -> io::Result<()> {
     parse_version(version)?;
 
-    let expected_prefix = format!(
-        "https://github.com/{}/releases/download/{}{}",
-        policy.repository, policy.release_tag_prefix, version
-    );
-    if !platform.url.starts_with(&expected_prefix) {
+    let parsed = Url::parse(&platform.url).map_err(|_| {
+        io::Error::new(io::ErrorKind::InvalidData, "update package URL is invalid")
+    })?;
+    let (owner, repository) = policy.repository.split_once('/').ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::InvalidData,
+            "release-channel repository identity is invalid",
+        )
+    })?;
+    let expected_tag = format!("{}{}", policy.release_tag_prefix, version);
+    let expected_prefix = format!("/{owner}/{repository}/releases/download/{expected_tag}/");
+    let asset = parsed
+        .path()
+        .strip_prefix(&expected_prefix)
+        .filter(|asset| {
+            !asset.is_empty()
+                && !asset.contains('/')
+                && !asset.contains('\\')
+                && !asset.contains('%')
+        })
+        .ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                "update package URL does not match the configured release channel",
+            )
+        })?;
+
+    if parsed.scheme() != "https"
+        || parsed.host_str() != Some("github.com")
+        || parsed.port().is_some()
+        || !parsed.username().is_empty()
+        || parsed.password().is_some()
+        || parsed.query().is_some()
+        || parsed.fragment().is_some()
+        || !asset.to_ascii_lowercase().ends_with(".exe")
+    {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
             "update package URL does not match the configured release channel",
@@ -354,6 +390,23 @@ fn validate_platform_manifest(
 struct ApplyReadiness {
     ready: bool,
     reason: Option<String>,
+}
+
+fn apply_permission(
+    self_update_enabled: bool,
+    readiness: ApplyReadiness,
+) -> (bool, Option<String>) {
+    if !self_update_enabled {
+        return (
+            false,
+            Some(
+                "runtime self-update is disabled until trusted signature verification is accepted"
+                    .into(),
+            ),
+        );
+    }
+
+    (readiness.ready, readiness.reason)
 }
 
 fn update_apply_readiness() -> ApplyReadiness {
@@ -412,11 +465,18 @@ fn release_channel() -> io::Result<ReleaseChannel> {
 }
 
 fn validate_policy(policy: &ReleaseChannel) -> io::Result<()> {
+    let expected_manifest_endpoint = format!(
+        "https://github.com/{}/releases/latest/download/{}",
+        policy.repository, policy.manifest_asset
+    );
+
     if policy.schema != 1
         || policy.channel != "stable"
         || policy.repository != "MIVUBI-STD/M-Bedrock-Dev"
         || policy.release_tag_prefix != "virtual-clients-v"
+        || policy.platform != "windows-x86_64"
         || policy.manifest_asset != "latest.json"
+        || policy.manifest_endpoint != expected_manifest_endpoint
         || policy.check_mode != "startup-once"
         || policy.apply_gate != "all-virtuals-stopped"
     {
@@ -467,7 +527,10 @@ fn parse_version(value: &str) -> io::Result<(u64, u64, u64)> {
 
 #[cfg(test)]
 mod tests {
-    use super::{parse_version, release_channel, validate_policy};
+    use super::{
+        apply_permission, parse_version, release_channel, validate_platform_manifest,
+        validate_policy, ApplyReadiness, PlatformManifest,
+    };
 
     #[test]
     fn release_channel_is_valid() {
@@ -480,5 +543,35 @@ mod tests {
     fn semantic_version_order_is_numeric() {
         assert!(parse_version("0.10.0").unwrap() > parse_version("0.9.9").unwrap());
         assert!(parse_version("1.0.0").unwrap() > parse_version("0.99.99").unwrap());
+    }
+
+    #[test]
+    fn disabled_self_update_never_reports_apply_ready() {
+        let (ready, reason) = apply_permission(
+            false,
+            ApplyReadiness {
+                ready: true,
+                reason: None,
+            },
+        );
+        assert!(!ready);
+        assert!(reason.unwrap().contains("disabled"));
+    }
+
+    #[test]
+    fn release_url_requires_exact_version_tag_boundary() {
+        let policy = release_channel().unwrap();
+        let valid = PlatformManifest {
+            signature: "signed".into(),
+            url: "https://github.com/MIVUBI-STD/M-Bedrock-Dev/releases/download/virtual-clients-v1.2.3/Virtual-Clients-1.2.3.exe".into(),
+            sha256: "a".repeat(64),
+        };
+        validate_platform_manifest(&policy, "1.2.3", &valid).unwrap();
+
+        let prefix_confusion = PlatformManifest {
+            url: "https://github.com/MIVUBI-STD/M-Bedrock-Dev/releases/download/virtual-clients-v1.2.30/Virtual-Clients-1.2.3.exe".into(),
+            ..valid
+        };
+        assert!(validate_platform_manifest(&policy, "1.2.3", &prefix_confusion).is_err());
     }
 }
