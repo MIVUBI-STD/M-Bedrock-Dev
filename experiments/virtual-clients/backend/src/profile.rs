@@ -2,11 +2,15 @@ use serde::{Deserialize, Serialize};
 use std::{fs, io, path::PathBuf, process::Command};
 
 use crate::{
+    client::ClientId,
     guest::GUEST_STATUS_SCHEMA,
-    paths::{base_profile_path_for_version, base_vmx_path_for_version},
+    paths::{
+        base_profile_path_for_version, base_vmx_path_for_version, client_profile_path,
+    },
 };
 
 pub const BASE_PROFILE_SCHEMA: u32 = 1;
+pub const CLIENT_PROFILE_SCHEMA: u32 = 1;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -38,6 +42,14 @@ pub struct BaseProfile {
     pub guest_status_schema: u32,
     pub guest_agent_version: String,
     pub source: BaseProfileSource,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClientProfile {
+    pub schema: u32,
+    pub base_minecraft_version: String,
+    pub created_by: String,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -133,6 +145,85 @@ pub fn write_verified_base_profile(
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
     fs::write(&temporary, format!("{json}\n"))?;
     fs::rename(&temporary, &path)?;
+
+    Ok(profile)
+}
+
+pub fn write_client_profile(client: ClientId, base_version: &str) -> io::Result<ClientProfile> {
+    if client.is_native() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "Native does not have Virtual lineage provenance",
+        ));
+    }
+
+    let profile = ClientProfile {
+        schema: CLIENT_PROFILE_SCHEMA,
+        base_minecraft_version: base_version.to_string(),
+        created_by: env!("CARGO_PKG_VERSION").to_string(),
+    };
+    let path = client_profile_path(client.as_str())?;
+    let parent = path.parent().ok_or_else(|| {
+        io::Error::new(io::ErrorKind::InvalidInput, "client profile path has no parent")
+    })?;
+    fs::create_dir_all(parent)?;
+    let temporary = path.with_extension("json.tmp");
+    let json = serde_json::to_string_pretty(&profile)
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+    fs::write(&temporary, format!("{json}\n"))?;
+    fs::rename(temporary, path)?;
+    Ok(profile)
+}
+
+pub fn load_client_profile(client: ClientId) -> io::Result<ClientProfile> {
+    let path = client_profile_path(client.as_str())?;
+    let raw = fs::read_to_string(&path)?;
+    let profile: ClientProfile = serde_json::from_str(&raw).map_err(|error| {
+        io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!("invalid client profile {}: {error}", path.display()),
+        )
+    })?;
+    if profile.schema != CLIENT_PROFILE_SCHEMA {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!(
+                "unsupported client profile schema {}; expected {}",
+                profile.schema, CLIENT_PROFILE_SCHEMA
+            ),
+        ));
+    }
+    Ok(profile)
+}
+
+pub fn require_client_matches_native(client: ClientId) -> io::Result<ClientProfile> {
+    let native = native_minecraft_profile().ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::NotFound,
+            "Native Minecraft Education version could not be detected",
+        )
+    })?;
+    let profile = load_client_profile(client).map_err(|error| {
+        io::Error::new(
+            error.kind(),
+            format!(
+                "{} lineage cannot be proven: {error}. Reprovision this Virtual.",
+                client.as_str()
+            ),
+        )
+    })?;
+
+    if profile.base_minecraft_version != native.version {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!(
+                "{} was provisioned from Minecraft {} but Native is {}. Reprovision this Virtual.",
+                client.as_str(),
+                profile.base_minecraft_version,
+                native.version
+            ),
+        ));
+    }
 
     Ok(profile)
 }
