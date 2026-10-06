@@ -67,7 +67,6 @@ pub struct HealthIssue {
     pub client: Option<&'static str>,
 }
 
-
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DoctorReport {
