@@ -5,8 +5,6 @@ use m_bedrock_virtual_clients_core::{
     GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA,
 };
 
-const INTERACTIVE_LAUNCHER_ADDRESS: &str = INTERACTIVE_LAUNCHER_ADDRESS;
-const INTERACTIVE_LAUNCH_TIMEOUT: Duration = INTERACTIVE_LAUNCH_TIMEOUT;
 #[cfg(target_os = "windows")]
 use sha2::{Digest, Sha256};
 use std::{
@@ -38,10 +36,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 const INTERACTIVE_LAUNCHER_PORT: u16 = 47832;
+const INTERACTIVE_LAUNCH_TIMEOUT: Duration = Duration::from_secs(35);
+
+fn interactive_launcher_address() -> String {
+    format!("127.0.0.1:{INTERACTIVE_LAUNCHER_PORT}")
+}
 
 #[cfg(target_os = "windows")]
 fn interactive_launcher_ready() -> bool {
-    let Ok(address) = INTERACTIVE_LAUNCHER_ADDRESS.parse() else { return false; };
+    let Ok(address) = interactive_launcher_address().parse() else { return false; };
     let Ok(mut stream) = TcpStream::connect_timeout(&address, Duration::from_millis(150)) else { return false; };
     let request_id = "0000000000000000";
     if stream.set_read_timeout(Some(Duration::from_millis(250))).is_err()
@@ -62,7 +65,7 @@ fn request_interactive_minecraft_launch() -> Result<m_bedrock_virtual_clients_co
         return Ok(MinecraftLaunchResult { schema: 1, state: MinecraftLaunchState::AlreadyRunning });
     }
 
-    let address = INTERACTIVE_LAUNCHER_ADDRESS.parse()?;
+    let address = interactive_launcher_address().parse()?;
     let mut stream = TcpStream::connect_timeout(&address, Duration::from_secs(1))
         .map_err(|_| io::Error::new(io::ErrorKind::NotConnected, "Interactive launcher is not active for the signed-in Windows user"))?;
     stream.set_read_timeout(Some(INTERACTIVE_LAUNCH_TIMEOUT))?;
