@@ -1,5 +1,6 @@
 import type {
   RetrievalResult,
+  SectionRetrievalResult,
 } from "../../../analysis-planner/src/index.js";
 
 export interface CompiledResourceContextItem {
@@ -42,6 +43,48 @@ export function compileResourceContext(
       : { role: result.resource.role }),
     authority: result.resource.authority,
     path: result.resource.path,
+    score: result.score.total,
+    reasons: [...result.reasons],
+  }));
+
+  return {
+    items,
+    omitted: Math.max(0, selection.length - items.length),
+  };
+}
+
+export interface CompiledSectionContextItem {
+  readonly id: string;
+  readonly documentId: string;
+  readonly path: string;
+  readonly heading: string;
+  readonly anchor: string;
+  readonly startLine: number;
+  readonly endLine: number;
+  readonly score: number;
+  readonly reasons: readonly string[];
+}
+
+export interface CompiledSectionContext {
+  readonly items: readonly CompiledSectionContextItem[];
+  readonly omitted: number;
+}
+
+export function compileSectionContext(
+  selection: readonly SectionRetrievalResult[] | undefined,
+  maximum?: number,
+): CompiledSectionContext | undefined {
+  if (selection === undefined) return undefined;
+
+  const limit = positiveMaximum(maximum);
+  const items = selection.slice(0, limit).map((result) => ({
+    id: result.section.id,
+    documentId: result.section.documentId,
+    path: result.section.path,
+    heading: result.section.heading,
+    anchor: result.section.anchor,
+    startLine: result.section.startLine,
+    endLine: result.section.endLine,
     score: result.score.total,
     reasons: [...result.reasons],
   }));
