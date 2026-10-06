@@ -1,3 +1,12 @@
+---
+id: document.analysis.executable-reasoning-architecture
+class: DOCUMENT
+domain: analysis
+role: ARCHITECTURE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Executable Knowledge Reasoning Architecture
 
 ## Goal

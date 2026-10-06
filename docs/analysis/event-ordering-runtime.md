@@ -1,3 +1,12 @@
+---
+id: document.analysis.event-ordering-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Event Ordering and Tick Semantics
 
 ## Why this exists

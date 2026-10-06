@@ -1,3 +1,12 @@
+---
+id: document.analysis.entity-runtime-navigation
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Entity AI, Navigation, and Pathfinding Runtime Integrity
 
 ## Core problem

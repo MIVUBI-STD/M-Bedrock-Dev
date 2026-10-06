@@ -1,3 +1,12 @@
+---
+id: document.analysis.entity-state-analysis
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Entity State Analysis
 
 Entity JSON is now parsed into explicit possible-state candidates before knowledge checks run.

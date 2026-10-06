@@ -1,3 +1,12 @@
+---
+id: document.analysis.developer-note-coverage
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Developer Note Coverage
 
 ## Purpose

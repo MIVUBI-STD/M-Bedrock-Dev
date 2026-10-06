@@ -1,3 +1,12 @@
+---
+id: document.analysis.inventory-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Inventory, Equipment, and Item Transaction Integrity
 
 ## Core problem

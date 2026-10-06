@@ -1,3 +1,12 @@
+---
+id: document.analysis.interaction-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # UI, Input Permissions, and Interaction Lifecycle
 
 ## Core problem

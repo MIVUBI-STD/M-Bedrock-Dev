@@ -1,3 +1,12 @@
+---
+id: document.analysis.effects-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Effects, Attributes, Buff-Debuff, and Component Mutation Integrity
 
 ## Core problem

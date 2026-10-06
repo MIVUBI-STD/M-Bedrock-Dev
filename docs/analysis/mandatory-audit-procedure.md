@@ -1,3 +1,12 @@
+---
+id: document.analysis.mandatory-audit-procedure
+class: DOCUMENT
+domain: analysis
+role: WORKFLOW
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Mandatory Gameplay Audit Procedure
 
 > Operator navigation starts at `master-selected-map-audit-workflow.md`. This document remains the executable checkpoint contract and does not define a competing operator flow.

@@ -1,3 +1,12 @@
+---
+id: document.analysis.hidden-gameplay-defect-analysis
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Hidden Gameplay Defect Analysis
 
 ## Purpose

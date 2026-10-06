@@ -1,3 +1,12 @@
+---
+id: document.analysis.gameplay-bug-report-v2
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Approved Gameplay Bug Report V2
 
 ## Purpose

@@ -1,3 +1,12 @@
+---
+id: document.analysis.loot-economy-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Loot, Drops, Item Pickup, and Economy Transfer Integrity
 
 ## Core problem

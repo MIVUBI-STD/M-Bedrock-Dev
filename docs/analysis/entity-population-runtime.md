@@ -1,3 +1,12 @@
+---
+id: document.analysis.entity-population-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Entity Spawn, Despawn, Population, and Persistence Integrity
 
 ## Core problem

@@ -1,3 +1,12 @@
+---
+id: document.analysis.education
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Minecraft Education Capability Analysis
 
 M-Bedrock-Dev uses one shared Bedrock/Education engine.

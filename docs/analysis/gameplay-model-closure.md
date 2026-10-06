@@ -1,3 +1,12 @@
+---
+id: document.analysis.gameplay-model-closure
+class: DOCUMENT
+domain: analysis
+role: CONTRACT
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Gameplay Model Closure Contract
 
 > **Supporting contract only.** This document defines UNDERSTAND/MODEL closure semantics inside the Mandatory Gameplay Audit Procedure. It does not own audit order, continuation, PASS, or report publication.
