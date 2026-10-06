@@ -141,6 +141,43 @@ Required observations:
 - reprovision affects only the selected fully stopped Virtual;
 - rollback failures are surfaced explicitly.
 
+## Window Layout acceptance
+
+After Native and Virtual-01/02/03 are open, verify the desktop orchestration
+without changing Minecraft worlds or guest configuration:
+
+- default Arrange uses Grid on the saved display, or the current primary display
+  when the saved display is no longer available;
+- Grid places 1–4 discovered windows without an unused three-window quadrant;
+- Focus gives the selected Main window the large region and places the remaining
+  discovered windows in the side column;
+- Columns divides the selected display working area across discovered windows;
+- Apply persists the selected layout/display/Main-window/Screen-Overlay
+  presentation preference; Cancel does not persist draft changes;
+- Reset to defaults changes only the dialog draft until Apply;
+- Screen Overlay is click-through and does not take keyboard focus from
+  Minecraft;
+- default overlay shows Screen number + label and custom labels are limited to
+  32 characters;
+- Identify screens temporarily enlarges identification and returns to the latest
+  normal overlay without restoring an older layout;
+- disabling Screen Overlay and applying the layout removes existing overlays;
+- overlay failure is reported as a warning and does not misreport successfully
+  arranged Minecraft windows as unarranged;
+- closing Virtual Clients removes its native overlay windows;
+- manually moving a Minecraft window is not continuously overridden; Arrange
+  explicitly reapplies both window and overlay positions;
+- missing/crashed clients are reported as missing and no background auto-reflow
+  daemon is introduced;
+- mixed-DPI displays keep Window Layout and overlay coordinates aligned;
+- Native window discovery does not claim an unrelated window with a matching
+  title; ambiguous identity fails closed.
+
+Exercise Grid, Focus and Columns on the primary display. When a second display
+is available, repeat Apply there, disconnect/reconnect that display, and verify
+the saved-display fallback. Record actual Minecraft/VMware process names and
+window titles as acceptance evidence before strengthening identity matching.
+
 ## Support boundary
 
 Virtualization itself is not treated as officially supported by Minecraft Education until this target-machine campaign proves the complete workflow.
