@@ -218,6 +218,18 @@ Lexical ranking is repository-native and requires no external provider. Semantic
 
 Pure vector similarity must not search the entire repository as an unbounded first step.
 
+### Document section indexing
+
+H2 headings in canonical documents are exposed as DERIVED Catalog resources. They retain the parent path and use a heading locator.
+
+```text
+DOCUMENT parent
+→ derived H2 section
+→ Retrieval candidate
+```
+
+This enables bounded loading of large owners without fragmenting them into many files.
+
 ### Generated projections
 
 Generated indexes and graphs are DERIVED.
