@@ -36,11 +36,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Install Rust 1.77.2
+      - name: Install Rust 1.98.1
         shell: bash
         run: |
-          rustup toolchain install 1.77.2 --profile minimal --component rustfmt
-          rustup override set 1.77.2
+          rustup toolchain install 1.98.1 --profile minimal --component rustfmt
+          rustup override set 1.98.1
 
       - name: Generate dependency lock
         run: cargo generate-lockfile
