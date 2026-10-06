@@ -136,3 +136,10 @@ Arena cleanup/player normal form should reconcile:
 8. Does respawn/revive clear or preserve it?
 9. Does arena reset restore the baseline?
 10. Is post-reset effect/attribute state actually verified?
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [Effects](../../engine/knowledge/entity-runtime/effects-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
