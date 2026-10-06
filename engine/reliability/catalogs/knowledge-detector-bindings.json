@@ -1777,6 +1777,46 @@
       ]
     },
     {
+      "knowledgeId": "performance.entity-query-filtering-preferred",
+      "consumer": "script-performance-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/script-performance-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/script-performance-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "performance.relation-long-work-fallbacks-runjob",
+      "consumer": "script-performance-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/script-performance-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/script-performance-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "performance.runinterval-keeps-calling",
+      "consumer": "script-performance-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/script-performance-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/script-performance-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "performance.runjob-timesliced",
+      "consumer": "script-performance-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/script-performance-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/script-performance-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "permissions-policy.dev-access-explicit",
       "consumer": "player-capability-surface-analysis",
       "analyzerPaths": [
