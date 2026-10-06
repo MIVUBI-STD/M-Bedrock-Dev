@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   actionAvailability, baseProfile, clientStatus, enginePolicy, engineSnapshot,
-  lifecycleActions, operationHistory, updateCheck, windowArrangement,
+  displayList, lifecycleActions, operationHistory, updateCheck, windowArrangement,
 } from "../src/app/bridge/payloadValidation.js";
 
 const allowed = { allowed: true, blocker: null };
@@ -133,8 +133,10 @@ describe("Backend payload shapes", () => {
 
   it("rejects unknown update and desktop layout states", () => {
     expect(updateCheck({ state: "READY" })).toBe(false);
-    expect(windowArrangement({ schema: 1, layout: "GRID_2X2", arranged: ["Native"], missing: [] })).toBe(true);
-    expect(windowArrangement({ schema: 1, layout: "SURPRISE", arranged: [], missing: [] })).toBe(false);
+    expect(displayList([{ index: 0, primary: true, width: 1920, height: 1080 }])).toBe(true);
+    expect(displayList([{ index: 0, primary: true, width: 0, height: 1080 }])).toBe(false);
+    expect(windowArrangement({ schema: 2, layout: "GRID", displayIndex: 0, arranged: ["Native"], missing: [] })).toBe(true);
+    expect(windowArrangement({ schema: 2, layout: "SURPRISE", displayIndex: 0, arranged: [], missing: [] })).toBe(false);
   });
 });
 
