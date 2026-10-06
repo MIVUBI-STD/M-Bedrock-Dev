@@ -2,7 +2,10 @@ use crate::{
     client::{ClientId, ClientState},
     paths::runtime_root,
     profile::current_base_vmx_path,
-    profile::{load_client_profile, profile_status, BaseState, ProfileParity, ProfileStatus},
+    profile::{
+        load_client_profile, profile_status, BaseProfile, BaseState, ClientProfile,
+        MinecraftProfile, ProfileParity, ProfileStatus,
+    },
     provider::{base_state_for_path, current_platform_provider},
     schema::{inspect_runtime_schema, SchemaStatus},
 };
@@ -115,6 +118,29 @@ fn recommended_by_cpu(logical_cpus: usize) -> usize {
         1
     } else {
         0
+    }
+}
+
+fn client_lineage_parity(
+    native: Option<&MinecraftProfile>,
+    base: Option<&BaseProfile>,
+    client: Option<&ClientProfile>,
+    provisioned: bool,
+) -> ProfileParity {
+    if !provisioned {
+        return ProfileParity::Unknown;
+    }
+
+    match (native, base, client) {
+        (Some(native), Some(base), Some(client))
+            if native.version == base.minecraft_version
+                && native.version == client.base_minecraft_version
+                && base.base_generation_id == client.base_generation_id =>
+        {
+            ProfileParity::Match
+        }
+        (Some(_), Some(_), Some(_)) => ProfileParity::Mismatch,
+        _ => ProfileParity::Unknown,
     }
 }
 
@@ -344,20 +370,15 @@ pub fn doctor() -> DoctorReport {
                 false
             };
 
-            let lineage_parity = match (
+            let client_profile = provisioned
+                .then(|| load_client_profile(client).ok())
+                .flatten();
+            let lineage_parity = client_lineage_parity(
                 runtime_profile.native.as_ref(),
-                provisioned
-                    .then(|| load_client_profile(client).ok())
-                    .flatten(),
-            ) {
-                (Some(native), Some(profile))
-                    if native.version == profile.base_minecraft_version =>
-                {
-                    ProfileParity::Match
-                }
-                (Some(_), Some(_)) => ProfileParity::Mismatch,
-                _ => ProfileParity::Unknown,
-            };
+                runtime_profile.base.as_ref(),
+                client_profile.as_ref(),
+                provisioned,
+            );
 
             let current_vm_identity = provider.as_ref()
                 .and_then(|provider| provider.identity_key(client).ok().flatten());
@@ -426,12 +447,16 @@ pub fn doctor() -> DoctorReport {
 #[cfg(test)]
 mod tests {
     use super::{
-        collect_health_issues, recommended_by_cpu, recommended_by_memory,
+        client_lineage_parity, collect_health_issues, recommended_by_cpu, recommended_by_memory,
         schema_allows_provisioning, select_setup_action, DoctorClient, HealthIssueCode,
         HealthSeverity, SetupAction,
     };
     use crate::{
-        profile::{BaseState, ProfileParity},
+        guest::{GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA},
+        profile::{
+            BaseProfile, BaseProfileSource, BaseState, ClientProfile, MinecraftInstallType,
+            MinecraftProfile, ProfileParity, BASE_PROFILE_SCHEMA, CLIENT_PROFILE_SCHEMA,
+        },
         schema::{SchemaState, SchemaStatus},
     };
 
@@ -450,6 +475,49 @@ mod tests {
             lineage_parity: ProfileParity::Match,
             identity_provenance,
         }
+    }
+
+    #[test]
+    fn doctor_lineage_requires_the_current_base_generation() {
+        let native = MinecraftProfile {
+            version: "1.21.120.0".into(),
+            install_type: MinecraftInstallType::Desktop,
+        };
+        let base = BaseProfile {
+            schema: BASE_PROFILE_SCHEMA,
+            minecraft_version: native.version.clone(),
+            native_install_type: MinecraftInstallType::Desktop,
+            guest_status_schema: GUEST_STATUS_SCHEMA,
+            guest_agent_protocol: GUEST_AGENT_PROTOCOL_VERSION,
+            guest_agent_version: "0.1.0".into(),
+            base_generation_id: "a".repeat(64),
+            source: BaseProfileSource::LiveVerified,
+        };
+        let current = ClientProfile {
+            schema: CLIENT_PROFILE_SCHEMA,
+            base_minecraft_version: native.version.clone(),
+            base_generation_id: base.base_generation_id.clone(),
+            created_by: "test".into(),
+            verified_vm_identity: None,
+            verified_windows_identity: None,
+        };
+        assert_eq!(
+            client_lineage_parity(Some(&native), Some(&base), Some(&current), true),
+            ProfileParity::Match
+        );
+
+        let stale = ClientProfile {
+            base_generation_id: "b".repeat(64),
+            ..current
+        };
+        assert_eq!(
+            client_lineage_parity(Some(&native), Some(&base), Some(&stale), true),
+            ProfileParity::Mismatch
+        );
+        assert_eq!(
+            client_lineage_parity(Some(&native), Some(&base), Some(&stale), false),
+            ProfileParity::Unknown
+        );
     }
 
     #[test]

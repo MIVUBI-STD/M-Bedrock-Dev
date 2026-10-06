@@ -1,3 +1,24 @@
+## Virtual Clients Doctor lineage parity — source implementation (2026-10-06)
+
+Baseline: Experimental `a2ade6fc1c8ba9dda020d5919ae88d4a9fe246c0`.
+
+Fixed source inconsistency:
+- Runtime start admission already rejects a Virtual whose saved
+  `baseGenerationId` does not match the currently registered Base.
+- Doctor previously projected client lineage from Minecraft version only, so a
+  same-version Base replacement could leave setup/readiness presentation looking
+  healthy while lifecycle admission correctly blocked Start.
+- Doctor now uses one explicit client-lineage projection requiring Native version,
+  Base version and exact Base generation to agree.
+- A deterministic regression specification covers current-generation MATCH,
+  stale-generation MISMATCH and non-provisioned UNKNOWN.
+
+This keeps Doctor presentation and runtime admission aligned without introducing
+another lineage authority. Proof ceiling remains REMOTE_GITHUB source/static
+review; the regression test is authored but not executed here.
+
+---
+
 ## Virtual Clients production ownership promotion — source implementation (2026-10-06)
 
 Baseline: Experimental `2e37c080fc6c716f461d8c71d4bf4e112b5f82b8`.
