@@ -27,12 +27,6 @@
       "nextEvidenceOwner": "block-automation-analysis"
     },
     {
-      "knowledgeId": "automation.command-block-mode-semantics",
-      "status": "static-capability-gap",
-      "reason": "Command-block runtime mode/redstone/always-active metadata is not fully modeled.",
-      "nextEvidenceOwner": "command-block-runtime-analysis"
-    },
-    {
       "knowledgeId": "automation.queued-ticking-deprecated",
       "status": "static-capability-gap",
       "reason": "Legacy queued_ticking compatibility lacks block-component compatibility analysis.",
@@ -49,12 +43,6 @@
       "status": "static-capability-gap",
       "reason": "Block tick-to-callback relation lacks structural block automation analysis.",
       "nextEvidenceOwner": "block-automation-analysis"
-    },
-    {
-      "knowledgeId": "automation.repeat-delay-firsttick",
-      "status": "static-capability-gap",
-      "reason": "Repeating delay/first-tick metadata lacks structural timing analysis.",
-      "nextEvidenceOwner": "command-block-runtime-analysis"
     },
     {
       "knowledgeId": "blockstate.block-access-can-fail-unloaded",

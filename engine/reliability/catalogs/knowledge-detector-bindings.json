@@ -204,9 +204,31 @@
       ]
     },
     {
+      "knowledgeId": "automation.command-block-mode-semantics",
+      "consumer": "command-block-runtime-analysis",
+      "analyzerPaths": [
+        "engine/adapters/mcstructure/src/runtime-content.ts",
+        "engine/adapters/mcstructure/src/command-chain.ts"
+      ],
+      "proofPaths": [
+        "engine/adapters/mcstructure/test/command-chain.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "automation.relation-chain-success-gates-next",
       "consumer": "command-block-chain-analysis",
       "analyzerPaths": [
+        "engine/adapters/mcstructure/src/command-chain.ts"
+      ],
+      "proofPaths": [
+        "engine/adapters/mcstructure/test/command-chain.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "automation.repeat-delay-firsttick",
+      "consumer": "command-block-runtime-analysis",
+      "analyzerPaths": [
+        "engine/adapters/mcstructure/src/runtime-content.ts",
         "engine/adapters/mcstructure/src/command-chain.ts"
       ],
       "proofPaths": [
