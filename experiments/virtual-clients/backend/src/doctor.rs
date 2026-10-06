@@ -1,7 +1,8 @@
 use crate::{
     client::{ClientId, ClientState},
     profile::{profile_status, ProfileParity, ProfileStatus},
-    provider::{base_vmx_path, current_platform_provider},
+    provider::{base_vmx_path, current_platform_provider, runtime_root},
+    schema::{inspect_runtime_schema, SchemaStatus},
 };
 use serde::Serialize;
 use sysinfo::System;
@@ -26,6 +27,7 @@ pub struct DoctorReport {
     pub base_vm_path: Option<String>,
     pub base_vm_present: bool,
     pub base_vm_stopped: Option<bool>,
+    pub runtime_schema: SchemaStatus,
     pub runtime_profile: ProfileStatus,
     pub clients: Vec<DoctorClient>,
     pub ready_for_provisioning: bool,
@@ -76,6 +78,12 @@ pub fn doctor() -> DoctorReport {
         _ => None,
     };
 
+    let runtime_schema = runtime_root()
+        .map(|root| inspect_runtime_schema(&root))
+        .unwrap_or_else(|_| SchemaStatus {
+            state: crate::schema::SchemaState::Invalid,
+            schema: None,
+        });
     let runtime_profile = profile_status();
 
     let clients = ClientId::VIRTUAL
@@ -112,6 +120,7 @@ pub fn doctor() -> DoctorReport {
         base_vm_path: base.map(|path| path.display().to_string()),
         base_vm_present,
         base_vm_stopped,
+        runtime_schema,
         runtime_profile: runtime_profile.clone(),
         clients,
         ready_for_provisioning: provider.is_some()
