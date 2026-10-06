@@ -33,7 +33,17 @@ describe("Virtual Clients presentation projection", () => {
   it("does not derive lifecycle rules locally", () => {
     expect(actionForClient(actions, "Virtual-01")).toBe(actions[0]);
     expect(actionForClient(actions, "Virtual-02")).toBeUndefined();
-    expect(primaryClientAction(actions[0])).toEqual({ kind: "open", label: "Open" });
+    expect(primaryClientAction(actions[0], "RUNNING")).toEqual({ kind: "open", label: "Open" });
+    expect(primaryClientAction({
+      ...actions[0],
+      open: allow,
+      start: allow,
+    }, "STOPPED")).toEqual({ kind: "start", label: "Start" });
+    expect(primaryClientAction({
+      ...actions[0],
+      open: allow,
+      start: allow,
+    }, "SUSPENDED")).toEqual({ kind: "start", label: "Resume" });
   });
 
   it("presents internal states in user-facing language", () => {

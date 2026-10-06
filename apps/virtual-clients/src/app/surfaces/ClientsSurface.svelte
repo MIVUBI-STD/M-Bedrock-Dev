@@ -101,7 +101,7 @@
 
   {#each virtuals as client}
     {@const available = actionForClient(actions, client.id)}
-    {@const primary = primaryClientAction(available)}
+    {@const primary = primaryClientAction(available, client.state)}
     <article class="client-row">
       <div class="client-icon">{Number(client.id.slice(-2))}</div>
       <div class="client-main">

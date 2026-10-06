@@ -105,12 +105,24 @@ export function blockerLabel(value: string | null | undefined): string {
   return labels[value] ?? value.replaceAll("_", " ").toLowerCase();
 }
 
-export function primaryClientAction(actions: ClientLifecycleActions | undefined):
-  | { kind: "open" | "start"; label: string }
-  | undefined {
+export function primaryClientAction(
+  actions: ClientLifecycleActions | undefined,
+  state: ClientStatus["state"],
+): { kind: "open" | "start"; label: string } | undefined {
   if (!actions) return undefined;
-  if (actions.open.allowed) return { kind: "open", label: "Open" };
+
+  if (state === "RUNNING" && actions.open.allowed) {
+    return { kind: "open", label: "Open" };
+  }
+  if (state === "SUSPENDED" && actions.start.allowed) {
+    return { kind: "start", label: "Resume" };
+  }
+  if (state === "STOPPED" && actions.start.allowed) {
+    return { kind: "start", label: "Start" };
+  }
+
   if (actions.start.allowed) return { kind: "start", label: "Start" };
+  if (actions.open.allowed) return { kind: "open", label: "Open" };
   return undefined;
 }
 

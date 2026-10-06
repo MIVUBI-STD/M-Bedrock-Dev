@@ -117,7 +117,7 @@
   }
 
   async function runPrimaryClientAction(client: ClientStatus, available: ClientLifecycleActions) {
-    const primary = primaryClientAction(available);
+    const primary = primaryClientAction(available, client.state);
     if (!primary) return;
     if (primary.kind === "open") return mutate(`open-${client.id}`, () => backend.open(client.id));
     return mutate(`start-${client.id}`, () => backend.startClient(client.id));
