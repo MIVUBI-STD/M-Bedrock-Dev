@@ -88,6 +88,8 @@ fn host_diagnostics() -> HostDiagnostics {
     let mut system = System::new_all();
     system.refresh_all();
 
+    let virtualization = windows_virtualization_state();
+
     HostDiagnostics {
         os: System::name(),
         os_version: System::os_version(),
@@ -100,8 +102,8 @@ fn host_diagnostics() -> HostDiagnostics {
         total_memory_mb: system.total_memory() / 1024 / 1024,
         available_memory_mb: system.available_memory() / 1024 / 1024,
         graphics: graphics_summary(),
-        hypervisor_present: windows_virtualization_state().map(|state| state.0),
-        vbs_status: windows_virtualization_state().and_then(|state| state.1),
+        hypervisor_present: virtualization.map(|state| state.0),
+        vbs_status: virtualization.and_then(|state| state.1),
     }
 }
 
