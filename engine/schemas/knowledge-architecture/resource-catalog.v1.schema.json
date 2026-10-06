@@ -76,6 +76,10 @@
             "ACTIVE",
             "RETIRED"
           ]
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1
         }
       },
       "allOf": [
