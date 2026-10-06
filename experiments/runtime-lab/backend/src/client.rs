@@ -17,11 +17,7 @@ impl ClientId {
         Self::Virtual03,
     ];
 
-    pub const VIRTUAL: [Self; 3] = [
-        Self::Virtual01,
-        Self::Virtual02,
-        Self::Virtual03,
-    ];
+    pub const VIRTUAL: [Self; 3] = [Self::Virtual01, Self::Virtual02, Self::Virtual03];
 
     pub fn as_str(self) -> &'static str {
         match self {
