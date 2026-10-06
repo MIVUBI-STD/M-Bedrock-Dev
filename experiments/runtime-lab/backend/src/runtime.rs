@@ -8,8 +8,7 @@ use fs2::FileExt;
 use serde::Serialize;
 use std::{
     fs::{self, File, OpenOptions},
-    io,
-    thread,
+    io, thread,
     time::Duration,
 };
 
@@ -154,7 +153,10 @@ impl RuntimeLab {
         let _lock = OperationLock::acquire()?;
         cleanup_staging()?;
         let provider = current_platform_provider().ok_or_else(|| {
-            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "virtualization provider is unavailable",
+            )
         })?;
 
         for client in ClientId::VIRTUAL {
@@ -180,7 +182,10 @@ impl RuntimeLab {
         let _lock = OperationLock::acquire()?;
         cleanup_staging()?;
         let provider = current_platform_provider().ok_or_else(|| {
-            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "virtualization provider is unavailable",
+            )
         })?;
 
         provider.reprovision(client)?;
@@ -241,7 +246,10 @@ impl RuntimeLab {
         let host = doctor();
 
         let provider = current_platform_provider().ok_or_else(|| {
-            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "virtualization provider is unavailable",
+            )
         })?;
 
         let mut running = 0;
@@ -305,7 +313,10 @@ impl RuntimeLab {
 
         let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
-            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "virtualization provider is unavailable",
+            )
         })?;
 
         let targets: Vec<ClientId> = ClientId::VIRTUAL.into_iter().take(count).collect();
@@ -382,16 +393,17 @@ impl RuntimeLab {
 
         let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
-            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "virtualization provider is unavailable",
+            )
         })?;
 
         let targets: Vec<ClientId> = match client {
             Some(client) => vec![client],
             None => ClientId::VIRTUAL
                 .into_iter()
-                .filter(|client| {
-                    provider.status(*client).ok() != Some(ClientState::NotProvisioned)
-                })
+                .filter(|client| provider.status(*client).ok() != Some(ClientState::NotProvisioned))
                 .collect(),
         };
 
@@ -430,16 +442,17 @@ impl RuntimeLab {
 
         let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
-            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "virtualization provider is unavailable",
+            )
         })?;
 
         let targets: Vec<ClientId> = match client {
             Some(client) => vec![client],
             None => ClientId::VIRTUAL
                 .into_iter()
-                .filter(|client| {
-                    provider.status(*client).ok() != Some(ClientState::NotProvisioned)
-                })
+                .filter(|client| provider.status(*client).ok() != Some(ClientState::NotProvisioned))
                 .collect(),
         };
 
@@ -465,7 +478,10 @@ impl RuntimeLab {
 
         let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
-            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "virtualization provider is unavailable",
+            )
         })?;
         provider.restart(client)?;
         let working_sets = provider.host_working_sets_mb()?;
@@ -482,7 +498,10 @@ impl RuntimeLab {
 
         let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
-            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "virtualization provider is unavailable",
+            )
         })?;
         provider.set_ready(client)?;
         let working_sets = provider.host_working_sets_mb()?;
@@ -499,7 +518,10 @@ impl RuntimeLab {
 
         let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
-            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "virtualization provider is unavailable",
+            )
         })?;
         provider.reset(client)?;
         let working_sets = provider.host_working_sets_mb()?;
@@ -515,7 +537,10 @@ impl RuntimeLab {
         }
 
         let provider = current_platform_provider().ok_or_else(|| {
-            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "virtualization provider is unavailable",
+            )
         })?;
         provider.open(client)?;
         let working_sets = provider.host_working_sets_mb()?;
