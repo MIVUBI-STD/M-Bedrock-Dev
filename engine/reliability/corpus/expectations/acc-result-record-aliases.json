@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "acc-result-record-aliases",
+  "lane": "acceptance",
+  "artifact": {
+    "label": "Durable result record using alternate semantic field names",
+    "file": "engine/fixtures/acceptance/result-transaction/result-record-aliases.ts",
+    "sha256": "827eecefe49013fb4cd78ed1b1ac274aa3a3217ed34bb8454e32e41c6d1bd1fa"
+  },
+  "target": {
+    "edition": "bedrock",
+    "minecraftVersion": "1.21.x"
+  },
+  "expected": {
+    "disposition": "designed-behavior",
+    "domain": "Persistence Recovery Integrity",
+    "proofCeiling": "STATIC VERIFIED"
+  },
+  "provenance": {
+    "frozenBeforeRun": true,
+    "source": "engine/contracts/engineering/catalogs/round-integrity-contract.json"
+  }
+}

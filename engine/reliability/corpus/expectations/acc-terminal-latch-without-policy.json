@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "acc-terminal-latch-without-policy",
+  "lane": "acceptance",
+  "artifact": {
+    "label": "One-shot terminal latch without deterministic outcome policy",
+    "file": "engine/fixtures/acceptance/result-transaction/terminal-latch-without-policy.ts",
+    "sha256": "fcb1acbe4b93af52eb654723e97ff2cbbd8883f3a42a898565b4ce06c1de63ea"
+  },
+  "target": {
+    "edition": "bedrock",
+    "minecraftVersion": "1.21.x"
+  },
+  "expected": {
+    "disposition": "insufficient-evidence",
+    "domain": "Round Result Transaction Integrity",
+    "proofCeiling": "STATIC VERIFIED"
+  },
+  "provenance": {
+    "frozenBeforeRun": true,
+    "source": "engine/contracts/engineering/catalogs/round-integrity-contract.json"
+  }
+}

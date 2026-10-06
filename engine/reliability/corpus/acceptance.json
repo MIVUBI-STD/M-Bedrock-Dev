@@ -2,7 +2,92 @@
   "schemaVersion": 1,
   "id": "m-bedrock-acceptance-corpus-v1",
   "lane": "acceptance",
-  "cases": [],
+  "cases": [
+    {
+      "id": "acc_terminal_priority_table",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/acceptance/result-transaction/terminal-priority-table.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "4d2c68943afbeb50519766dd314a477db46e894586f2c25e81b17d9e25f38a1a",
+        "frozenExpectation": "engine/reliability/corpus/expectations/acc-terminal-priority-table.json"
+      },
+      "evidenceRole": "negative"
+    },
+    {
+      "id": "acc_terminal_latch_without_policy",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/acceptance/result-transaction/terminal-latch-without-policy.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "fcb1acbe4b93af52eb654723e97ff2cbbd8883f3a42a898565b4ce06c1de63ea",
+        "frozenExpectation": "engine/reliability/corpus/expectations/acc-terminal-latch-without-policy.json"
+      }
+    },
+    {
+      "id": "acc_reward_cross_function_cleanup",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/acceptance/result-transaction/reward-cross-function-cleanup.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "829c5cd1a614e668ae7acf6d0579847743e30c47eec2a40881274a3f61f8ebd6",
+        "frozenExpectation": "engine/reliability/corpus/expectations/acc-reward-cross-function-cleanup.json"
+      }
+    },
+    {
+      "id": "acc_result_record_aliases",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/acceptance/result-transaction/result-record-aliases.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "827eecefe49013fb4cd78ed1b1ac274aa3a3217ed34bb8454e32e41c6d1bd1fa",
+        "frozenExpectation": "engine/reliability/corpus/expectations/acc-result-record-aliases.json"
+      },
+      "evidenceRole": "negative"
+    },
+    {
+      "id": "acc_result_record_missing_reward_op",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/acceptance/result-transaction/result-record-missing-reward-op.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "119fb425b285349f42ea6b4728fda8de59890e92966372acdfa2357e46345326",
+        "frozenExpectation": "engine/reliability/corpus/expectations/acc-result-record-missing-reward-op.json"
+      }
+    },
+    {
+      "id": "acc_reconnect_session_state",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/acceptance/result-transaction/reconnect-session-state.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "41dac25466eccda4d67f97712d592d430828d54e6e10ead6275c4db2546daf57",
+        "frozenExpectation": "engine/reliability/corpus/expectations/acc-reconnect-session-state.json"
+      }
+    },
+    {
+      "id": "acc_reconnect_durable_player_state",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/acceptance/result-transaction/reconnect-durable-player-state.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "d9fa9d8190ff169a2efc013156a137f29b2d79cc87f7fe8ee0e8c6d833cdcf54",
+        "frozenExpectation": "engine/reliability/corpus/expectations/acc-reconnect-durable-player-state.json"
+      },
+      "evidenceRole": "negative"
+    },
+    {
+      "id": "acc_deferred_session_epoch",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/acceptance/result-transaction/deferred-session-epoch.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "d054ca78c97a2885f82f157a6b1c37d3906bdbb5a06625b06a373cedbef15d18",
+        "frozenExpectation": "engine/reliability/corpus/expectations/acc-deferred-session-epoch.json"
+      },
+      "evidenceRole": "negative"
+    }
+  ],
   "policy": {
     "mayInformDetectorDevelopment": false,
     "blindEvaluationRequired": true,

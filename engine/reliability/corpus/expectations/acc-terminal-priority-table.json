@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "acc-terminal-priority-table",
+  "lane": "acceptance",
+  "artifact": {
+    "label": "Priority-table terminal resolution",
+    "file": "engine/fixtures/acceptance/result-transaction/terminal-priority-table.ts",
+    "sha256": "4d2c68943afbeb50519766dd314a477db46e894586f2c25e81b17d9e25f38a1a"
+  },
+  "target": {
+    "edition": "bedrock",
+    "minecraftVersion": "1.21.x"
+  },
+  "expected": {
+    "disposition": "designed-behavior",
+    "domain": "Round Result Transaction Integrity",
+    "proofCeiling": "STATIC VERIFIED"
+  },
+  "provenance": {
+    "frozenBeforeRun": true,
+    "source": "engine/contracts/engineering/catalogs/round-integrity-contract.json"
+  }
+}

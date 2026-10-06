@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "acc-reward-cross-function-cleanup",
+  "lane": "acceptance",
+  "artifact": {
+    "label": "Reward journal with cleanup in a separate reachable function",
+    "file": "engine/fixtures/acceptance/result-transaction/reward-cross-function-cleanup.ts",
+    "sha256": "829c5cd1a614e668ae7acf6d0579847743e30c47eec2a40881274a3f61f8ebd6"
+  },
+  "target": {
+    "edition": "bedrock",
+    "minecraftVersion": "1.21.x"
+  },
+  "expected": {
+    "disposition": "insufficient-evidence",
+    "domain": "Round Result Transaction Integrity",
+    "proofCeiling": "STATIC VERIFIED"
+  },
+  "provenance": {
+    "frozenBeforeRun": true,
+    "source": "engine/contracts/engineering/catalogs/round-integrity-contract.json"
+  }
+}
