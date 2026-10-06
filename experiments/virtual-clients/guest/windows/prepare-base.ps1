@@ -1,0 +1,55 @@
+param(
+  [Parameter(Mandatory = $true)] [string]$MinecraftInstaller,
+  [Parameter(Mandatory = $true)] [string]$GuestAgentSource
+)
+
+$ErrorActionPreference = 'Stop'
+
+$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+$principal = New-Object Security.Principal.WindowsPrincipal($identity)
+if (!$principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+  throw 'Base preparation must run as Administrator.'
+}
+
+if (!(Test-Path -LiteralPath $MinecraftInstaller -PathType Leaf)) {
+  throw "Minecraft Education installer not found: $MinecraftInstaller"
+}
+
+if (!(Test-Path -LiteralPath $GuestAgentSource -PathType Leaf)) {
+  throw "Virtual Guest Agent not found: $GuestAgentSource"
+}
+
+$store = @(Get-AppxPackage -AllUsers *MinecraftEducation* -ErrorAction SilentlyContinue)
+if ($store.Count -gt 0) {
+  throw 'Microsoft Store Minecraft Education is installed. Remove it before preparing a managed Desktop Base.'
+}
+
+$arguments = @('/qn', 'INSTALL_UPDATER="NONE"')
+$process = Start-Process -FilePath $MinecraftInstaller -ArgumentList $arguments -Wait -PassThru
+if ($process.ExitCode -ne 0) {
+  throw "Minecraft Education installer failed with exit code $($process.ExitCode)."
+}
+
+$updaterTask = Get-ScheduledTask -TaskName 'Minecraft Education Automatic Updater' -ErrorAction SilentlyContinue
+if ($updaterTask) {
+  Disable-ScheduledTask -InputObject $updaterTask | Out-Null
+}
+
+$registryPath = 'HKLM:\SOFTWARE\Microsoft\Microsoft Studios\Minecraft Education Edition'
+$version = (Get-ItemProperty -LiteralPath $registryPath -Name Version -ErrorAction Stop).Version
+if (!$version -or $version -notmatch '^\d+(\.\d+)+$') {
+  throw 'Minecraft Education desktop version could not be verified after installation.'
+}
+
+$agentInstaller = Join-Path $PSScriptRoot 'install-guest-agent.ps1'
+if (!(Test-Path -LiteralPath $agentInstaller -PathType Leaf)) {
+  throw "Guest Agent installer script is missing: $agentInstaller"
+}
+& $agentInstaller -AgentSource $GuestAgentSource
+
+[ordered]@{
+  minecraftVersion = [string]$version
+  installType = 'DESKTOP'
+  independentUpdaterEnabled = $false
+  guestAgentInstalled = $true
+} | ConvertTo-Json
