@@ -12,7 +12,7 @@ use crate::{
     provider::{cleanup_staging, current_platform_provider, Provider},
     resources::{current_host_pressure, start_delay_secs, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
     schema::ensure_runtime_schema,
-    update::{check_update, UpdateCheck},
+    update::{check_update, stage_update, StagedUpdate, UpdateCheck},
 };
 use fs2::FileExt;
 use serde::Serialize;
@@ -289,6 +289,10 @@ impl VirtualClients {
 
     pub fn check_update(&self) -> io::Result<UpdateCheck> {
         check_update()
+    }
+
+    pub fn stage_update(&self) -> io::Result<StagedUpdate> {
+        stage_update()
     }
 
     pub fn diagnostics(&self) -> io::Result<DiagnosticsReport> {
