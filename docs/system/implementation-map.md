@@ -140,6 +140,8 @@ Graph
 
 Retrieval
 → `engine/packages/analysis-planner/src/retrieval.ts`
+→ section ranking: `engine/packages/analysis-planner/src/section-retrieval.ts`
+→ repository lexical scoring: `tooling/repository/lexical-retrieval.mjs`
 
 Context
 → `engine/packages/orchestrator/src/workflow/context-compiler.ts` + `resource-context.ts`
