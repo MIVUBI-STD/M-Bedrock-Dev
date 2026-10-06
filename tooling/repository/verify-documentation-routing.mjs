@@ -15,7 +15,15 @@ for (const domain of domains) {
 
   const routerText = readFileSync(router, "utf8");
   const files = readdirSync(dir, { withFileTypes: true })
-    .filter((entry) => entry.isFile() && entry.name.endsWith(".md") && entry.name !== "README.md")
+    .filter(
+      (entry) =>
+        entry.isFile() &&
+        entry.name !== "README.md" &&
+        (
+          entry.name.endsWith(".md") ||
+          (domain === "examples" && entry.name.endsWith(".json"))
+        ),
+    )
     .map((entry) => entry.name)
     .sort();
 
