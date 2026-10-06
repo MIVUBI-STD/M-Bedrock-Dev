@@ -98,6 +98,12 @@ describe("map audit validation plan", () => {
     expect(groups[0]?.verificationMode).toBe(
       "STATIC_PROOF_COMPLETION",
     );
+    expect(groups[0]?.test).toMatch(
+      /resolve without minecraft first/i,
+    );
+    expect(groups[0]?.test).toMatch(
+      /who owns the write/i,
+    );
   });
 
   it("keeps static proof work out of runtime mode", () => {
@@ -117,5 +123,8 @@ describe("map audit validation plan", () => {
       "STATIC_PROOF_COMPLETION",
     );
     expect(groups[0]?.broadPlaythroughAllowed).toBe(false);
+    expect(groups[0]?.test).toBe(
+      "Resolve the exact owner from selected-artifact evidence.",
+    );
   });
 });

@@ -23,6 +23,37 @@ export interface AuditValidationTestGroup {
   readonly missingProof: readonly string[];
 }
 
+function requiresRuntime(
+  finding: NeedValidationAuditIssueProjection,
+): boolean {
+  return finding.proofNavigation?.runtimeRequired === true;
+}
+
+function staticProofInstruction(
+  finding: NeedValidationAuditIssueProjection,
+): string {
+  const step = finding.proofNavigation?.route.find(
+    (item) => item.evidencePreference !== "runtime",
+  );
+  if (step === undefined) {
+    return finding.validationTest;
+  }
+  return (
+    "Resolve without Minecraft first: " +
+    step.question +
+    " " +
+    step.purpose
+  );
+}
+
+function decidingInstruction(
+  finding: NeedValidationAuditIssueProjection,
+): string {
+  return requiresRuntime(finding)
+    ? finding.validationTest
+    : staticProofInstruction(finding);
+}
+
 export function groupNeedValidationTests(
   findings: readonly NeedValidationAuditIssueProjection[],
 ): readonly AuditValidationTestGroup[] {
@@ -42,15 +73,16 @@ export function groupNeedValidationTests(
   }
 
   return [...groups.entries()]
-    .map(([key, items]) => ({
-      key,
-      verificationMode:
-        items.some(
-          (item) =>
-            item.proofNavigation?.runtimeRequired === true,
-        )
+    .map(([key, items]) => {
+      const runtimeRequired =
+        items.some(requiresRuntime);
+      const verificationMode =
+        runtimeRequired
           ? "NARROW_RUNTIME_VERIFICATION" as const
-          : "STATIC_PROOF_COMPLETION" as const,
+          : "STATIC_PROOF_COMPLETION" as const;
+      return {
+      key,
+      verificationMode,
       broadPlaythroughAllowed: false as const,
       findingIds: [
         ...new Set(
@@ -69,14 +101,16 @@ export function groupNeedValidationTests(
       ].sort(),
       test:
         items.length === 1
-          ? items[0]!.validationTest
-          : "Use one shared setup for " +
-            key +
-            ", then execute every exact finding assertion in order. Stop when each deciding assertion is resolved; do not expand this into a broad playthrough.",
+          ? decidingInstruction(items[0]!)
+          : runtimeRequired
+            ? "Use one shared setup for " +
+              key +
+              ", then execute only the runtime-required assertions in order. Resolve all remaining assertions statically first; do not expand this into a broad playthrough."
+            : "Resolve all assertions from selected-artifact/cross-domain/formal evidence. Do not open Minecraft unless a later proof step explicitly becomes runtime-required.",
       assertions: items
         .map((item) => ({
           findingId: item.causalLinkId,
-          test: item.validationTest,
+          test: decidingInstruction(item),
         }))
         .sort((a, b) =>
           a.findingId.localeCompare(b.findingId)
@@ -86,6 +120,7 @@ export function groupNeedValidationTests(
           items.map((item) => item.missingProof),
         ),
       ].sort(),
-    }))
+    };
+    })
     .sort((a, b) => a.key.localeCompare(b.key));
 }
