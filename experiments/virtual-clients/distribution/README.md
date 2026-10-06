@@ -33,10 +33,16 @@ Runtime self-update remains disabled until an explicit reviewed apply implementa
 
 ## Trusted release assets
 
-A trusted Windows release must eventually contain:
+A trusted Windows release uses one canonical installer asset name:
 
 ```text
-installer.exe
+M-Bedrock-Virtual-Clients-MAJOR.MINOR.PATCH-windows-x86_64.exe
+```
+
+The release must contain:
+
+```text
+M-Bedrock-Virtual-Clients-MAJOR.MINOR.PATCH-windows-x86_64.exe
 latest.json
 signing-proof.json
 SHA256SUMS.txt
@@ -47,6 +53,7 @@ Required proof:
 
 - exact source SHA;
 - exact semantic version;
+- installer asset name exactly matches the release version/platform;
 - Authenticode-valid installer;
 - Authenticode signer thumbprint pinned into the release backend;
 - SHA-256 checksums;

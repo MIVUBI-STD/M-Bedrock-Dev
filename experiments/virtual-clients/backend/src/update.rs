@@ -424,6 +424,9 @@ fn validate_platform_manifest(
             )
         })?;
 
+    let expected_asset =
+        format!("M-Bedrock-Virtual-Clients-{version}-windows-x86_64.exe");
+
     if parsed.scheme() != "https"
         || parsed.host_str() != Some("github.com")
         || parsed.port().is_some()
@@ -431,7 +434,7 @@ fn validate_platform_manifest(
         || parsed.password().is_some()
         || parsed.query().is_some()
         || parsed.fragment().is_some()
-        || !asset.to_ascii_lowercase().ends_with(".exe")
+        || asset != expected_asset
     {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
@@ -656,15 +659,21 @@ mod tests {
         let policy = release_channel().unwrap();
         let valid = PlatformManifest {
             authenticode_thumbprint: "a".repeat(40),
-            url: "https://github.com/MIVUBI-STD/M-Bedrock-Dev/releases/download/virtual-clients-v1.2.3/Virtual-Clients-1.2.3.exe".into(),
+            url: "https://github.com/MIVUBI-STD/M-Bedrock-Dev/releases/download/virtual-clients-v1.2.3/M-Bedrock-Virtual-Clients-1.2.3-windows-x86_64.exe".into(),
             sha256: "a".repeat(64),
         };
         validate_platform_manifest(&policy, "1.2.3", &valid).unwrap();
 
         let prefix_confusion = PlatformManifest {
-            url: "https://github.com/MIVUBI-STD/M-Bedrock-Dev/releases/download/virtual-clients-v1.2.30/Virtual-Clients-1.2.3.exe".into(),
-            ..valid
+            url: "https://github.com/MIVUBI-STD/M-Bedrock-Dev/releases/download/virtual-clients-v1.2.30/M-Bedrock-Virtual-Clients-1.2.3-windows-x86_64.exe".into(),
+            ..valid.clone()
         };
         assert!(validate_platform_manifest(&policy, "1.2.3", &prefix_confusion).is_err());
+
+        let wrong_asset = PlatformManifest {
+            url: "https://github.com/MIVUBI-STD/M-Bedrock-Dev/releases/download/virtual-clients-v1.2.3/Other-Installer.exe".into(),
+            ..valid
+        };
+        assert!(validate_platform_manifest(&policy, "1.2.3", &wrong_asset).is_err());
     }
 }

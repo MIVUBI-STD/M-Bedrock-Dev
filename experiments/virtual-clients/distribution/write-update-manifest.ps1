@@ -12,8 +12,9 @@ if ($Version -notmatch '^\d+\.\d+\.\d+$') {
   throw 'Virtual Clients update version must be MAJOR.MINOR.PATCH.'
 }
 
-if ([IO.Path]::GetFileName($InstallerName) -ne $InstallerName -or $InstallerName -notmatch '\.exe$') {
-  throw 'Virtual Clients installer name must be one Windows executable basename.'
+$expectedInstallerName = "M-Bedrock-Virtual-Clients-$Version-windows-x86_64.exe"
+if ([IO.Path]::GetFileName($InstallerName) -ne $InstallerName -or $InstallerName -ne $expectedInstallerName) {
+  throw "Virtual Clients installer name must be exactly $expectedInstallerName."
 }
 
 if ($InstallerSha256 -notmatch '^[A-Fa-f0-9]{64}$') {
