@@ -508,7 +508,9 @@ mod windows_host {
 
     fn random_token() -> io::Result<String> {
         let mut bytes = [0_u8; 24];
-        getrandom(&mut bytes).map_err(io::Error::other)?;
+        getrandom(&mut bytes).map_err(|error| {
+            io::Error::new(io::ErrorKind::Other, format!("random token generation failed: {error:?}"))
+        })?;
         let mut token = String::with_capacity(bytes.len() * 2);
         for byte in bytes {
             use std::fmt::Write as _;
