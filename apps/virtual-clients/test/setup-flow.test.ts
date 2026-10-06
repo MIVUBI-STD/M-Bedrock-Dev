@@ -33,7 +33,7 @@ describe("Virtual Clients first-run presentation", () => {
   });
   it("keeps interactive launcher registration per Virtual after OOBE", () => {
     const steps = setupExperience("VERIFY_IDENTITIES").steps.join(" ");
-    expect(steps).toContain("--register-interactive-launcher");
+    expect(steps).toContain("Enable Virtual Clients Launcher");
     expect(setupExperience("CREATE_READY_SNAPSHOTS").steps.join(" ")).toMatch(/same virtual Windows session/i);
   });
 
