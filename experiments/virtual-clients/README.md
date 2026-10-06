@@ -1,4 +1,4 @@
-# M-Bedrock Runtime Lab
+# M-Bedrock Virtual Clients
 
 Experimental backend for running multiple interactive Minecraft Education clients on one physical computer.
 
@@ -8,12 +8,17 @@ Experimental backend for running multiple interactive Minecraft Education client
 
 ```text
 doctor
+→ prepare Base with the same Minecraft Education version as Native
+register-base
 provision
+
 start 1
-→ manually configure Virtual-01
+→ configure Virtual-01
+→ sign in with its own test identity
 stop Virtual-01
 set-ready Virtual-01
-→ repeat for Virtual-02 / Virtual-03
+
+repeat for Virtual-02 / Virtual-03
 ```
 
 ### Daily use
@@ -24,35 +29,29 @@ start <1-3>
 status
 
 suspend [Virtual]
-→ free active resources while keeping warm state
-
-stop
-→ end all Virtual instances
+stop [Virtual]
 ```
 
 ### Recovery
 
 ```text
 reset Virtual-01
-→ return one instance to QA_READY
-
 reprovision Virtual-01
-→ rebuild only that fully stopped instance from Base
 ```
 
-The normal workflow does not require direct VMware commands or resource tuning. If a multi-instance start fails partway through, instances started by that batch are restored to their previous STOPPED/SUSPENDED state.
+Native is host-managed. Virtual Clients never starts, stops, or restarts Native.
 
 ## Runtime model
 
 ```text
-Native       host client
+Native       authority / host client
 Base         immutable VM parent
 Virtual-01   virtual client 1
 Virtual-02   virtual client 2
 Virtual-03   virtual client 3
 ```
 
-Virtual numbering never includes `Native`.
+Virtual numbering never includes Native.
 
 ```text
 start 1 → Virtual-01
@@ -60,30 +59,68 @@ start 2 → Virtual-01 + Virtual-02
 start 3 → Virtual-01 + Virtual-02 + Virtual-03
 ```
 
-Gameplay remains manually controlled. `Native` is entirely host-managed; Runtime Lab only reports it in status and never starts/stops/restarts it.
+Gameplay remains manually controlled.
+
+## Version authority
+
+Native is the compatibility authority.
+
+Virtual Clients compares:
+
+```text
+Native Minecraft Education version
+↕
+registered Base version
+↕
+live Virtual Minecraft Education version
+```
+
+Rules:
+
+- Base must be registered against the currently detected Native Minecraft Education version.
+- `provision` and every boot path reject a Native/Base mismatch.
+- Each running Virtual must expose the same Minecraft Education version through the read-only Guest Agent.
+- Guest Agent version must equal the host backend version.
+- A newly started Virtual that fails live parity is stopped and the batch is rolled back.
+- A Virtual already running before a command is never silently killed; the mismatch is surfaced in status/error output.
+
+This is required because Minecraft Education multiplayer requires all players to run the same version.
+
+## Guest Agent
+
+`virtual-guest-agent` is read-only.
+
+It exposes only:
+
+```text
+agent version
+Minecraft Education version
+Minecraft installation type
+```
+
+It does not control gameplay, input, worlds, inventory, or multiplayer actions.
+
+Host discovery uses VMware guest IP information and a bounded local status request.
 
 ## Emulator architecture
 
-Runtime Lab follows mature emulator/device-farm principles where they fit this product:
-
 ```text
-immutable Base
-→ linked copy-on-write Virtual instances
-→ fixed guest memory ceiling
-→ host-pressure admission control
-→ per-instance runtime telemetry
+Native authority
+→ immutable Base provenance
+→ linked Virtual instances
+→ 4 GB guest ceiling / 2 vCPU
+→ host-pressure admission
+→ per-instance working-set telemetry
+→ VMware Tools readiness
+→ Guest Agent version proof
 → suspend / fast resume
-→ clean QA checkpoint
-→ destructive reprovision only when requested
+→ QA_READY checkpoint
+→ selected-instance reprovision
 ```
-
-Rust is the only backend authority.
 
 ## Memory model
 
-Each Virtual is configured with a 4 GB guest memory ceiling. This is a guest-visible limit, not a claim that the host permanently consumes 4 GB of resident physical RAM.
-
-Runtime Lab observes host total memory, host available memory, host pressure, configured Virtual memory limit, and best-effort resident working set for each running Virtual. `resources` also reports the total observed working set for the requested Virtual set when process mapping is available. `status` exposes `guestToolsReady` when VMware Tools readiness can be observed.
+Each Virtual has a 4096 MB guest ceiling. This is not interpreted as permanently resident physical RAM.
 
 ```text
 NORMAL    >= 25% host RAM available
@@ -91,68 +128,42 @@ PRESSURE  15–24%
 CRITICAL  < 15%
 ```
 
-New Virtual starts are blocked only at CRITICAL pressure. Existing running Virtual instances are never resized or killed automatically. Batch start pacing is automatic: 2 seconds between instances under NORMAL pressure and 5 seconds under PRESSURE.
+New starts are blocked only at CRITICAL pressure. Existing running instances are not resized or killed automatically.
 
-## Suspend
-
-`suspend Virtual-02` stores one live VM state to disk and moves it to `SUSPENDED`. Running `suspend` without an instance parks all Virtual instances. A later `start N` resumes requested suspended instances through the same canonical start path.
-
-Suspend is the preferred warm-state path when an instance should stay available without remaining actively resident.
-
-## Base and isolation
-
-Windows Base:
+Batch pacing is automatic:
 
 ```text
-%LOCALAPPDATA%\M-Bedrock\RuntimeLab\base\Base\Base.vmx
+NORMAL    2 seconds between starts
+PRESSURE  5 seconds between starts
 ```
 
-macOS Base:
+## Runtime data
+
+Windows:
 
 ```text
-~/Library/Application Support/M-Bedrock/RuntimeLab/base/Base.vmwarevm/Base.vmx
+%LOCALAPPDATA%\M-Bedrock\VirtualClients
 ```
 
-Provisioning automatically clears abandoned staging output from an interrupted earlier provisioning attempt before creating new clones.
-
-Provisioning:
+macOS:
 
 ```text
-Base
-→ staging linked clone
-→ verify staged VMX
-→ apply 2 vCPU + 4 GB ceiling
-→ promote to Virtual-01 / Virtual-02 / Virtual-03
+~/Library/Application Support/M-Bedrock/VirtualClients
 ```
 
-Runtime Lab checks VMware UUID/MAC-derived identity and reports `UNKNOWN`, `UNIQUE`, or `DUPLICATE` for each Virtual.
-
-## Clean-state lifecycle
-
-After manual guest setup:
+Base profile:
 
 ```text
-stop Virtual-01
-set-ready Virtual-01
+base/.../base-profile.json
 ```
 
-This creates the `QA_READY` checkpoint.
-
-```text
-restart Virtual-01
-= reboot current state
-
-reset Virtual-01
-= return to QA_READY and boot
-
-reprovision Virtual-01
-= discard the fully stopped clone and rebuild from Base
-```
+The profile is provenance, not a runtime state database.
 
 ## Commands
 
 ```text
 doctor
+register-base
 provision
 status
 resources <1-3>
@@ -168,6 +179,4 @@ reset <Virtual-01|Virtual-02|Virtual-03>
 reprovision <Virtual-01|Virtual-02|Virtual-03>
 ```
 
-`guestToolsReady=true` means VMware Tools is running; it does not claim Minecraft itself has finished loading.
-
-Frontend work remains deferred until backend acceptance is proven.
+Frontend remains deferred until backend and real-machine acceptance are complete.
