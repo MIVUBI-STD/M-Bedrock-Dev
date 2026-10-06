@@ -1,3 +1,4 @@
+use crate::profile::ProfileParity;
 use serde::Serialize;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -62,5 +63,9 @@ pub struct ClientStatus {
     pub memory_limit_mb: Option<u64>,
     pub host_working_set_mb: Option<u64>,
     pub guest_tools_ready: Option<bool>,
+    pub guest_agent_ready: Option<bool>,
+    pub guest_agent_version: Option<String>,
+    pub minecraft_version: Option<String>,
+    pub version_parity: Option<ProfileParity>,
     pub identity: Option<IdentityState>,
 }
