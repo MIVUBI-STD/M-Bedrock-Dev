@@ -3,7 +3,8 @@ export type CatalogResourceClass =
   | "KNOWLEDGE"
   | "SOURCE"
   | "RELIABILITY"
-  | "SCHEMA";
+  | "SCHEMA"
+  | "EXAMPLE";
 
 export type DocumentRole =
   | "ROUTER"
