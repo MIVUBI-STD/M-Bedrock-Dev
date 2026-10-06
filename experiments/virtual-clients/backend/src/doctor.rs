@@ -1,5 +1,6 @@
 use crate::{
     client::{ClientId, ClientState},
+    profile::{profile_status, ProfileParity, ProfileStatus},
     provider::{base_vmx_path, current_platform_provider},
 };
 use serde::Serialize;
@@ -25,6 +26,7 @@ pub struct DoctorReport {
     pub base_vm_path: Option<String>,
     pub base_vm_present: bool,
     pub base_vm_stopped: Option<bool>,
+    pub runtime_profile: ProfileStatus,
     pub clients: Vec<DoctorClient>,
     pub ready_for_provisioning: bool,
 }
@@ -74,6 +76,8 @@ pub fn doctor() -> DoctorReport {
         _ => None,
     };
 
+    let runtime_profile = profile_status();
+
     let clients = ClientId::VIRTUAL
         .into_iter()
         .map(|client| {
@@ -108,10 +112,12 @@ pub fn doctor() -> DoctorReport {
         base_vm_path: base.map(|path| path.display().to_string()),
         base_vm_present,
         base_vm_stopped,
+        runtime_profile: runtime_profile.clone(),
         clients,
         ready_for_provisioning: provider.is_some()
             && base_vm_present
-            && base_vm_stopped == Some(true),
+            && base_vm_stopped == Some(true)
+            && runtime_profile.parity == ProfileParity::Match,
     }
 }
 
