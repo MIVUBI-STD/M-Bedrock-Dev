@@ -1306,11 +1306,7 @@ mod tests {
         client::{ClientId, ClientState, IdentityState},
         provider::Provider,
     };
-    use std::{
-        cell::RefCell,
-        io,
-        path::Path,
-    };
+    use std::{cell::RefCell, io, path::Path};
 
     #[derive(Debug)]
     struct FakeProvider {
@@ -1587,7 +1583,10 @@ mod tests {
         );
 
         assert!(failed.is_empty());
-        assert_eq!(provider.state(ClientId::Virtual01).unwrap(), ClientState::Stopped);
+        assert_eq!(
+            provider.state(ClientId::Virtual01).unwrap(),
+            ClientState::Stopped
+        );
         assert_eq!(
             provider.state(ClientId::Virtual02).unwrap(),
             ClientState::Suspended

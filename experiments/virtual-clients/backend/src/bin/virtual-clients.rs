@@ -82,7 +82,8 @@ fn run() -> io::Result<()> {
             let count = args
                 .next()
                 .ok_or_else(|| input_error("virtual client count is required"))?
-                .parse::<usize>().map_err(|_| input_error("virtual client count must be an integer"))?;
+                .parse::<usize>()
+                .map_err(|_| input_error("virtual client count must be an integer"))?;
             print_json(&app.start(count)?)?;
         }
         "suspend" => {

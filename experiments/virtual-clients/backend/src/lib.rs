@@ -11,9 +11,7 @@ mod runtime;
 mod schema;
 mod update;
 
-pub use client::{
-    ClientId, ClientState, ClientStatus, DestructiveConfirmation, IdentityState,
-};
+pub use client::{ClientId, ClientState, ClientStatus, DestructiveConfirmation, IdentityState};
 pub use diagnostics::{
     DiagnosticsReport, HostDiagnostics, ProviderDiagnostics, VirtualHardwareDiagnostics,
 };
