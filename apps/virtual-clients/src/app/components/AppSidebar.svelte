@@ -12,19 +12,19 @@
 
 <aside class="rail">
   <div class="brand">
-    <div class="brand-mark">MB</div>
+    <div class="brand-mark"><span></span><span></span><span></span></div>
     <div><strong>Virtual Clients</strong><span>Multi-client manager</span></div>
   </div>
 
   <nav aria-label="Virtual Clients navigation">
     <button class:active={page === "clients"} class="nav-item" on:click={() => onSelect("clients")}>
-      <span>Clients</span><small>{runningVirtuals ? `${runningVirtuals} running` : "Manage virtual clients"}</small>
+      <span class="nav-label"><i class="nav-glyph clients-glyph"></i>Clients</span><small>{runningVirtuals ? `${runningVirtuals} running` : "Manage virtual clients"}</small>
     </button>
     <button class:active={page === "settings"} class="nav-item" on:click={() => onSelect("settings")}>
-      <span>Settings</span><small>Performance & updates</small>
+      <span class="nav-label"><i class="nav-glyph settings-glyph"></i>Settings</span><small>Performance & updates</small>
     </button>
     <button class:active={page === "support"} class="nav-item" on:click={() => onSelect("support")}>
-      <span>Help</span><small>{blockerCount ? `${blockerCount} need attention` : "Support & diagnostics"}</small>
+      <span class="nav-label"><i class="nav-glyph help-glyph"></i>Help</span><small>{blockerCount ? `${blockerCount} need attention` : "Support & diagnostics"}</small>
     </button>
   </nav>
 

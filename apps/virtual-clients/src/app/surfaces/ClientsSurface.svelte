@@ -103,9 +103,8 @@
       <div class="client-icon">{Number(client.id.slice(-2))}</div>
       <div class="client-main">
         <h3>{clientDisplayName(client.id)}</h3>
-        <small>{stateLabel(client.state)}</small>
+        <small><span class="state-dot {client.state.toLowerCase()}" aria-hidden="true"></span>{stateLabel(client.state)}</small>
       </div>
-      <span class="state-dot {client.state.toLowerCase()}" aria-hidden="true"></span>
       <div class="row-action">
         {#if available && primary}
           <button class="primary" disabled={Boolean(busy)} on:click={() => onPrimary(client, available)}>
