@@ -15,6 +15,34 @@ support-bundle
 
 It does not own lifecycle rules, resource policy, Base state, identity policy, update policy, or recovery decisions.
 
+## Navigation
+
+The UI keeps daily use separate from technical detail:
+
+```text
+Setup
+→ current DoctorReport.nextSetupAction
+→ guided one-step setup
+
+Clients
+→ Native + Virtual-01/02/03
+→ common lifecycle actions first
+→ advanced/recovery actions under More actions
+
+Health
+→ blockers/warnings
+→ host/resource diagnostics
+→ update staging
+→ support bundle
+
+History
+→ recent backend mutation journal
+```
+
+The initial page is a presentation choice only: Setup while the backend reports a setup action, Clients once `nextSetupAction = READY`. Navigation does not create or persist lifecycle state.
+
+Lifecycle button eligibility always comes from backend `actions`. The UI never infers whether an action is safe from client state.
+
 ## Bridge
 
 The browser bundle expects a desktop host to inject:
@@ -32,7 +60,6 @@ npm run virtual-clients-ui:dev
 npm run virtual-clients-ui:build
 npm run virtual-clients-ui:preview
 ```
-
 
 ## Native bridge protocol
 

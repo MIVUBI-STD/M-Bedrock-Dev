@@ -219,7 +219,7 @@ reset <Virtual-01|Virtual-02|Virtual-03>
 reprovision <Virtual-01|Virtual-02|Virtual-03> --destroy-account-state
 ```
 
-Frontend remains deferred until backend and real-machine acceptance are complete.
+Frontend runtime controls are implemented as a thin projection of the Rust public contract. The packaged browser UI still requires a desktop window host that injects `window.virtualClients.invoke`; until that host is connected, the UI fails closed with `Backend bridge unavailable` rather than using mock runtime state.
 
 
 ## Acceptance evidence
