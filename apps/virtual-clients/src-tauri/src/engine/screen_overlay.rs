@@ -72,9 +72,9 @@ mod windows {
     }
 
     static SENDER: OnceLock<Sender<OverlayCommand>> = OnceLock::new();
-    static TEXTS: OnceLock<std::sync::Mutex<Vec<(HWND, Vec<u16>)>>> = OnceLock::new();
+    static TEXTS: OnceLock<std::sync::Mutex<Vec<(isize, Vec<u16>)>>> = OnceLock::new();
 
-    fn texts() -> &'static std::sync::Mutex<Vec<(HWND, Vec<u16>)>> {
+    fn texts() -> &'static std::sync::Mutex<Vec<(isize, Vec<u16>)>> {
         TEXTS.get_or_init(|| std::sync::Mutex::new(Vec::new()))
     }
 
@@ -94,7 +94,7 @@ mod windows {
             SetTextColor(dc, 0x00F5F5F5 as COLORREF);
             SelectObject(dc, GetStockObject(DEFAULT_GUI_FONT));
             if let Ok(items) = texts().lock() {
-                if let Some((_, text)) = items.iter().find(|(window, _)| *window == hwnd) {
+                if let Some((_, text)) = items.iter().find(|(window, _)| *window == hwnd as isize) {
                     let mut text_rect = rect;
                     text_rect.left += 12;
                     DrawTextW(dc, text.as_ptr(), -1, &mut text_rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
@@ -161,7 +161,7 @@ mod windows {
                                     }
                                 }
                                 if let Ok(mut items) = texts().lock() {
-                                    *items = windows.iter().map(|window| (window.hwnd, window.text.clone())).collect();
+                                    *items = windows.iter().map(|window| (window.hwnd as isize, window.text.clone())).collect();
                                 }
                                 for window in &windows { ShowWindow(window.hwnd, SW_SHOWNOACTIVATE); }
                             }
