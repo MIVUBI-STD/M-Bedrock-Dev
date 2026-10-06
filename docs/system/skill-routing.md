@@ -2,7 +2,7 @@
 id: document.system.skill-routing
 class: DOCUMENT
 domain: system
-role: REFERENCE
+role: WORKFLOW
 authority: CANONICAL
 lifecycle: ACTIVE
 ---
