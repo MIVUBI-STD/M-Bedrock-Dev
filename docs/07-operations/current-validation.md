@@ -1,3 +1,23 @@
+## Interactive launcher registration/IPC refinement (2026-10-07)
+
+- Interactive launcher registration is now self-owned by the same Guest Agent
+  binary through `--register-interactive-launcher`. It writes one Startup entry
+  in the current Windows user's profile; no username is baked into Base.
+- Runtime helper readiness is projected through `interactiveLauncherReady`.
+  Daily UI does not offer Launch Minecraft when the helper is unavailable.
+- Shared ProgramData request/ack IPC was removed before proof. SYSTEM ↔ user
+  handoff now uses a loopback-only listener on `127.0.0.1:47832` with one
+  literal Minecraft action and request correlation. No LAN/VMware bind and no
+  filesystem ACL dependency remain.
+- The helper requires a nonzero Windows session with Explorer in that exact
+  session before it can launch Minecraft UI.
+- Setup instructions explicitly place registration after OOBE and before account
+  sign-in/QA_READY.
+- Target-machine proof is still required for Startup registration, loopback
+  cross-account behavior, Minecraft UI visibility and Microsoft auth handoff.
+
+---
+
 ## Four-client deep audit — interactive auth and concurrency (2026-10-07)
 
 Deep scenario audit found two P0 proof boundaries and several secondary ones.
