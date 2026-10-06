@@ -39,6 +39,7 @@ export function buildGraph() {
   const catalog = buildResourceCatalog();
   const byPath = new Map();
   for (const resource of catalog.resources) {
+    if (resource.lifecycle !== "ACTIVE") continue;
     if (resource.locator !== undefined) continue;
 
     const previous = byPath.get(resource.path);
@@ -58,6 +59,7 @@ export function buildGraph() {
   const seen = new Set();
 
   for (const resource of catalog.resources) {
+    if (resource.lifecycle !== "ACTIVE") continue;
     if (resource.class !== "DOCUMENT") continue;
     if (resource.locator !== undefined) continue;
     if (!existsSync(resource.path)) continue;
@@ -83,7 +85,11 @@ export function buildGraph() {
     }
   }
 
-  for (const edge of buildKnowledgeBindingEdges(catalog.resources)) {
+  for (const edge of buildKnowledgeBindingEdges(
+    catalog.resources.filter(
+      (resource) => resource.lifecycle === "ACTIVE",
+    ),
+  )) {
     addEdge(edges, seen, edge);
   }
 
