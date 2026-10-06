@@ -1,3 +1,12 @@
+---
+id: document.analysis.chunk-runtime-loading
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Chunk Runtime Loading Architecture
 
 This document defines the MIVUBI chunk-loading knowledge model for arena setup and runtime entity recovery.

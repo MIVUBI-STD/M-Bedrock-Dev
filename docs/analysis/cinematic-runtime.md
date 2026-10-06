@@ -1,3 +1,12 @@
+---
+id: document.analysis.cinematic-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Camera, Cutscene, Player Control, and Cinematic Lifecycle Integrity
 
 ## Core problem

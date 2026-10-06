@@ -1,3 +1,12 @@
+---
+id: document.analysis.dependency-graph
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Semantic Dependency Graph
 
 The graph answers how normalized content relates semantically. It is separate from the artifact containment graph.

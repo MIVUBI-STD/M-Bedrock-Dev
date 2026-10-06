@@ -1,3 +1,12 @@
+---
+id: document.analysis.command-context-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Command Execution and Selector Context Semantics
 
 ## Core problem

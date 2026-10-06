@@ -1,3 +1,12 @@
+---
+id: document.analysis.compatibility
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Compatibility Analysis
 
 Compatibility is a first-class semantic concern rather than scattered version checks.

@@ -1,3 +1,12 @@
+---
+id: document.docs.router
+class: DOCUMENT
+domain: docs
+role: ROUTER
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # M-Bedrock-Dev Documentation
 
 Single entry point for human and AI documentation discovery.

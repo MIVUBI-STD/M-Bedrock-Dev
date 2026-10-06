@@ -1,3 +1,12 @@
+---
+id: document.analysis.arena-cleanup-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Arena Reset, Cleanup, and Reusability Integrity
 
 ## Core problem

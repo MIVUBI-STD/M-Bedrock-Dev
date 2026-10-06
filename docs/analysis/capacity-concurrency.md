@@ -1,3 +1,12 @@
+---
+id: document.analysis.capacity-concurrency
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Capacity and Concurrency
 
 ## Purpose

@@ -1,3 +1,12 @@
+---
+id: document.analysis.content-discovery
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Content Discovery and First Analyzers
 
 The first Bedrock-aware analysis pass is intentionally cheap and selective.

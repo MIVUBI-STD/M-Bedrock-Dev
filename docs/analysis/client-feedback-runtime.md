@@ -1,3 +1,12 @@
+---
+id: document.analysis.client-feedback-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Sound, Music, Animation, and Visual Feedback Lifecycle Integrity
 
 ## Core problem

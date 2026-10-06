@@ -1,3 +1,12 @@
+---
+id: document.analysis.automation-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Redstone, Command Block, and Block-Driven Automation Integrity
 
 ## Core problem

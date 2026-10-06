@@ -1,3 +1,12 @@
+---
+id: document.analysis.router
+class: DOCUMENT
+domain: analysis
+role: ROUTER
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Analysis
 
 Canonical semantic-analysis policy. Analyzers are read-only evidence providers; they do not own production audit order.

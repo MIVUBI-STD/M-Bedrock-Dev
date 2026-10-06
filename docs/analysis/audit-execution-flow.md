@@ -1,3 +1,12 @@
+---
+id: document.analysis.audit-execution-flow
+class: DOCUMENT
+domain: analysis
+role: WORKFLOW
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Audit Execution Flow
 
 > Start from `master-selected-map-audit-workflow.md`. This document only projects the canonical audit onto player-flow order.

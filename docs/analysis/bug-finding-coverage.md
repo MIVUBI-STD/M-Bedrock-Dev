@@ -1,3 +1,12 @@
+---
+id: document.analysis.bug-finding-coverage
+class: DOCUMENT
+domain: analysis
+role: CONTRACT
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Bug-Finding Coverage System
 
 ## Purpose

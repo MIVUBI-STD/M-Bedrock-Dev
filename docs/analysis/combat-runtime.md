@@ -1,3 +1,12 @@
+---
+id: document.analysis.combat-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Damage, Combat, Friendly Fire, and Attribution
 
 ## Core problem
