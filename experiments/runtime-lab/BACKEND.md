@@ -123,3 +123,20 @@ fully stop Virtual
 ```
 
 This keeps disk hygiene aligned with the disposable-instance model instead of mutating a live snapshot chain.
+
+
+## Emulator feature gate
+
+Runtime Lab borrows behavior from mature emulator managers only when the underlying provider can enforce it measurably.
+
+Do not add a user-facing feature unless the backend has a real primitive for it.
+
+Examples intentionally not exposed today:
+
+- fake Eco/Low Power modes without measurable CPU/GPU control;
+- live RAM resizing while a Virtual is running;
+- automatic killing of running Virtual instances under pressure;
+- automatic disk shrink while snapshot chains are present;
+- FPS/audio throttles unless the provider can apply and verify them safely.
+
+When a future optimization is added, it must have one owner, one execution path, observable effect, and acceptance proof on the target machine.
