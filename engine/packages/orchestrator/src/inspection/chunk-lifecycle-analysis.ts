@@ -24,6 +24,8 @@ export interface ChunkLifecycleAnalysis {
   worldLoadObservers: number;
   entityLoadObservers: number;
   entityRemoveObservers: number;
+  entityDieObservers: number;
+  entitySpawnObservers: number;
   shutdownObservers: number;
   readinessProbes: number;
   tickingAreaReadinessStates: number;
@@ -46,7 +48,11 @@ export interface ChunkLifecycleAnalysis {
   unloadedSpecificSpawnRecoveryRoutes: number;
   broadSpawnRecoveryRisks: number;
   otherSpecificSpawnRecoveryRoutes: number;
-  entityResidencyObservability: "complete" | "partial" | "absent";
+  entityRemoveTerminalizationRisks: number;
+  entityResidencyObservability:
+    | "complete"
+    | "partial"
+    | "absent";
   leases: readonly ChunkLeaseAssessment[];
 }
 
@@ -392,6 +398,72 @@ function zeroTickDeferredChunkWorkFor(
 }
 
 
+
+function entityRemoveTerminalizationRisksFor(
+  script: ParsedScriptFile,
+): number {
+  const removeRegions =
+    new Set(
+      evidenceFor(script)
+        .filter(
+          (item) =>
+            item.kind ===
+            "entity-remove-subscription",
+        )
+        .map(
+          (item) =>
+            item.executionRegion,
+        ),
+    );
+
+  if (removeRegions.size === 0) {
+    return 0;
+  }
+
+  return (
+    script.stateMutations ?? []
+  ).filter((mutation) => {
+    if (
+      !removeRegions.has(
+        mutation.executionRegion,
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      mutation.value.kind !==
+      "literal"
+    ) {
+      return false;
+    }
+
+    const value =
+      mutation.value.literal
+        .trim()
+        .toLowerCase();
+    const target =
+      (
+        mutation.target +
+        " " +
+        mutation.targetName
+      ).toLowerCase();
+
+    const terminalValue =
+      /^(?:dead|lost|missing|gone|destroyed|removed|permanentlylost|deadconfirmed)$/i.test(
+        value,
+      ) ||
+      (
+        value === "true" &&
+        /(?:dead|lost|missing|destroyed|removed)/i.test(
+          target,
+        )
+      );
+
+    return terminalValue;
+  }).length;
+}
+
 function spawnRecoveryRoutingFor(
   script: ParsedScriptFile,
 ): {
@@ -531,6 +603,16 @@ export function analyzeChunkLifecycle(
       item.kind ===
       "entity-remove-subscription",
   ).length;
+  const entityDieObservers = all.filter(
+    (item) =>
+      item.kind ===
+      "entity-die-subscription",
+  ).length;
+  const entitySpawnObservers = all.filter(
+    (item) =>
+      item.kind ===
+      "entity-spawn-subscription",
+  ).length;
   const shutdownObservers = all.filter(
     (item) =>
       item.kind ===
@@ -640,12 +722,25 @@ export function analyzeChunkLifecycle(
       },
     );
 
+  const entityRemoveTerminalizationRisks =
+    scripts.reduce(
+      (sum, script) =>
+        sum +
+        entityRemoveTerminalizationRisksFor(
+          script,
+        ),
+      0,
+    );
+
   const entityResidencyObservability =
     entityLoadObservers > 0 &&
-    entityRemoveObservers > 0
+    entityRemoveObservers > 0 &&
+    entityDieObservers > 0
       ? "complete"
       : entityLoadObservers > 0 ||
-          entityRemoveObservers > 0
+          entityRemoveObservers > 0 ||
+          entityDieObservers > 0 ||
+          entitySpawnObservers > 0
         ? "partial"
         : "absent";
 
@@ -681,6 +776,8 @@ export function analyzeChunkLifecycle(
     worldLoadObservers,
     entityLoadObservers,
     entityRemoveObservers,
+    entityDieObservers,
+    entitySpawnObservers,
     shutdownObservers,
     readinessProbes,
     tickingAreaReadinessStates,
@@ -743,6 +840,7 @@ export function analyzeChunkLifecycle(
       spawnRecoveryRouting.broadRisk,
     otherSpecificSpawnRecoveryRoutes:
       spawnRecoveryRouting.otherSpecific,
+    entityRemoveTerminalizationRisks,
     entityResidencyObservability,
     leases,
   };

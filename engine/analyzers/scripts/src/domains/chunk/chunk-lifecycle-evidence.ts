@@ -7,6 +7,8 @@ export type ScriptChunkLifecycleEvidenceKind =
   | "world-load-subscription"
   | "entity-load-subscription"
   | "entity-remove-subscription"
+  | "entity-die-subscription"
+  | "entity-spawn-subscription"
   | "shutdown-subscription"
   | "chunk-readiness-probe"
   | "ticking-area-acquire"
@@ -474,6 +476,28 @@ export function deriveScriptChunkLifecycleEvidence(
         push(
           node,
           "entity-remove-subscription",
+          receiver,
+          {
+            ...(region === undefined
+              ? {}
+              : { executionRegion: region }),
+          },
+        );
+      } else if (event === "entityDie") {
+        push(
+          node,
+          "entity-die-subscription",
+          receiver,
+          {
+            ...(region === undefined
+              ? {}
+              : { executionRegion: region }),
+          },
+        );
+      } else if (event === "entitySpawn") {
+        push(
+          node,
+          "entity-spawn-subscription",
           receiver,
           {
             ...(region === undefined

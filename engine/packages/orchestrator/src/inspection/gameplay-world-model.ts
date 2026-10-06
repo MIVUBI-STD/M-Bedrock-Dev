@@ -397,6 +397,12 @@ export interface GameplayWorldModel {
     shutdownOnlyCleanupRisk: number;
     worldLoadReconciliationPaths: number;
     unguardedDeferredChunkWork: number;
+    zeroTickDeferredChunkWork: number;
+    spawnRecoveryRoutes: number;
+    unloadedSpecificSpawnRecoveryRoutes: number;
+    broadSpawnRecoveryRisks: number;
+    otherSpecificSpawnRecoveryRoutes: number;
+    entityRemoveTerminalizationRisks: number;
     entityResidencyObservability:
       "complete" | "partial" | "absent";
     leases: readonly {
@@ -2227,6 +2233,18 @@ export function deriveGameplayWorldModel(
         source.chunkLifecycle?.worldLoadReconciliationPaths ?? 0,
       unguardedDeferredChunkWork:
         source.chunkLifecycle?.unguardedDeferredChunkWork ?? 0,
+      zeroTickDeferredChunkWork:
+        source.chunkLifecycle?.zeroTickDeferredChunkWork ?? 0,
+      spawnRecoveryRoutes:
+        source.chunkLifecycle?.spawnRecoveryRoutes ?? 0,
+      unloadedSpecificSpawnRecoveryRoutes:
+        source.chunkLifecycle?.unloadedSpecificSpawnRecoveryRoutes ?? 0,
+      broadSpawnRecoveryRisks:
+        source.chunkLifecycle?.broadSpawnRecoveryRisks ?? 0,
+      otherSpecificSpawnRecoveryRoutes:
+        source.chunkLifecycle?.otherSpecificSpawnRecoveryRoutes ?? 0,
+      entityRemoveTerminalizationRisks:
+        source.chunkLifecycle?.entityRemoveTerminalizationRisks ?? 0,
       entityResidencyObservability:
         source.chunkLifecycle?.entityResidencyObservability ?? "absent",
       leases:

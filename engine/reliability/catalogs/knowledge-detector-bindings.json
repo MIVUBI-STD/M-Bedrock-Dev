@@ -3,6 +3,18 @@
   "semantics": "Coverage bindings connect high-value knowledge/engineering facts to the production analyzer/check that consumes them and to a dedicated proof specification. This registry is a verification projection, not semantic authority.",
   "bindings": [
     {
+      "knowledgeId": "chunk-policy.entity-remove-not-loss",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "chunk-policy.no-zero-timeout-retry-loop",
       "consumer": "chunk-lifecycle-analysis",
       "analyzerPaths": [

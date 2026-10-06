@@ -24,6 +24,7 @@ export function chunkLifecycleDiagnostics(
     analysis.unguardedDeferredChunkWork > 0 ||
     analysis.zeroTickDeferredChunkWork > 0 ||
     analysis.broadSpawnRecoveryRisks > 0 ||
+    analysis.entityRemoveTerminalizationRisks > 0 ||
     worldLoadReconciliationMissing;
 
   if (!strongRisk && !reviewRisk) {
@@ -63,6 +64,12 @@ export function chunkLifecycleDiagnostics(
           analysis.broadSpawnRecoveryRisks,
         otherSpecificSpawnRecoveryRoutes:
           analysis.otherSpecificSpawnRecoveryRoutes,
+        entityRemoveTerminalizationRisks:
+          analysis.entityRemoveTerminalizationRisks,
+        entityDieObservers:
+          analysis.entityDieObservers,
+        entitySpawnObservers:
+          analysis.entitySpawnObservers,
         worldLoadReconciliationMissing,
         dynamicLeaseKeys:
           analysis.dynamicLeaseKeys,

@@ -425,6 +425,101 @@ describe("chunk lifecycle analysis", () => {
     ).toBe(0);
   });
 
+  it("requires death distinction before residency observability is complete", () => {
+    const partial = parseScriptFile(
+      "partial",
+      [
+        "world.afterEvents.entityLoad.subscribe(() => {});",
+        "world.afterEvents.entityRemove.subscribe(() => {});",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/partial.ts",
+      },
+    );
+    const complete = parseScriptFile(
+      "complete",
+      [
+        "world.afterEvents.entityLoad.subscribe(() => {});",
+        "world.afterEvents.entityRemove.subscribe(() => {});",
+        "world.afterEvents.entityDie.subscribe(() => {});",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/complete.ts",
+      },
+    );
+
+    expect(
+      analyzeChunkLifecycle([
+        partial,
+      ]).entityResidencyObservability,
+    ).toBe("partial");
+    expect(
+      analyzeChunkLifecycle([
+        complete,
+      ]).entityResidencyObservability,
+    ).toBe("complete");
+  });
+
+  it("flags entityRemove handlers that directly promote residency to dead or lost", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "let residencyState = 'RESIDENT';",
+        "world.afterEvents.entityRemove.subscribe(() => {",
+        "  residencyState = 'DEAD';",
+        "});",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(
+      result.entityRemoveTerminalizationRisks,
+    ).toBe(1);
+    expect(
+      result.entityResidencyObservability,
+    ).toBe("partial");
+  });
+
+  it("allows entityRemove to transition into a non-terminal missing candidate state", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "let residencyState = 'RESIDENT';",
+        "world.afterEvents.entityRemove.subscribe(() => {",
+        "  residencyState = 'UNLOADED_OR_REMOVED';",
+        "});",
+        "world.afterEvents.entityDie.subscribe(() => {",
+        "  residencyState = 'DEAD_CONFIRMED';",
+        "});",
+        "world.afterEvents.entityLoad.subscribe(() => {",
+        "  residencyState = 'RESIDENT';",
+        "});",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(
+      result.entityRemoveTerminalizationRisks,
+    ).toBe(0);
+    expect(
+      result.entityResidencyObservability,
+    ).toBe("complete");
+  });
+
   it("reports partial entity residency observability when only load is observed", () => {
     const script = parseScriptFile(
       "main",
