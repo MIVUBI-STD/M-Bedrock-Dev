@@ -242,8 +242,13 @@ Remaining readiness gates:
   Tauri checks, explicit canonical core tests, and core formatting. Package
   readiness still requires installer verification.
 - Perform target-machine OOBE, identity, account, recovery and multiplayer acceptance.
-- Measure status-read cost and VM memory/latency before efficiency claims.
-- Rich internal-stage progress is not implemented; command activity is implemented.
+- Snapshot source now bounds Guest Agent/VM-identity observation to one collection
+  per Virtual per snapshot, and routine UI refresh no longer reloads static policy
+  or operation history. Measure real status-read latency and VM memory before
+  making efficiency claims.
+- Command activity now carries an explicit operation name and user-facing text.
+  Rich truthful internal-stage progress is still not implemented; do not invent
+  percentages or synthetic stages.
 - Guest Agent package version is now separated from the explicit Guest Agent
   protocol contract in source. Unknown protocol versions remain fail-closed;
   target-machine acceptance is still required before this source change is ready.

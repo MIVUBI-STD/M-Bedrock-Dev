@@ -183,10 +183,11 @@ pub enum OperationPhase {
     Failed,
 }
 
-#[derive(Debug, Clone, Copy, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OperationProgress {
     pub schema: u32,
+    pub operation: String,
     pub phase: OperationPhase,
 }
 
@@ -197,10 +198,15 @@ pub fn execute_public_command_with_progress(
     args: &[String],
     mut report: impl FnMut(OperationProgress),
 ) -> PublicCommandResult {
-    report(OperationProgress { schema: 1, phase: OperationPhase::Executing });
+    report(OperationProgress {
+        schema: 2,
+        operation: command.to_string(),
+        phase: OperationPhase::Executing,
+    });
     let result = execute_public_command_result(command, args);
     report(OperationProgress {
-        schema: 1,
+        schema: 2,
+        operation: command.to_string(),
         phase: if result.success { OperationPhase::Succeeded } else { OperationPhase::Failed },
     });
     result
@@ -255,7 +261,8 @@ mod tests {
     fn progress_reports_real_dispatch_and_terminal_result() {
         let mut phases = Vec::new();
         let result = super::execute_public_command_with_progress("policy", &[], |event| {
-            assert_eq!(event.schema, 1);
+            assert_eq!(event.schema, 2);
+            assert_eq!(event.operation, "policy");
             phases.push(event.phase);
         });
         assert!(result.success);

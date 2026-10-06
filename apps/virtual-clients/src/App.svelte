@@ -61,20 +61,28 @@
   $: readyVirtuals = virtuals.filter((client) => client.readySnapshot === true).length;
   $: setupComplete = snapshot?.doctor.nextSetupAction === "READY";
 
+  async function loadHistory() {
+    try {
+      history = await backend.history();
+    } catch (value) {
+      error = presentRuntimeError(value);
+    }
+  }
+
   function selectPage(next: Page) {
     pageChosen = true;
     page = next;
     if (next === "clients" && !busy && !loading) void refresh();
+    if (next === "support" && !busy && !loading) void loadHistory();
   }
 
   async function loadState() {
     loading = true;
     try {
-      const [nextSnapshot, nextPolicy, nextActions, nextHistory] = await Promise.all([
+      const [nextSnapshot, nextPolicy, nextActions] = await Promise.all([
         backend.snapshot(),
-        backend.policy(),
+        policy ? Promise.resolve(policy) : backend.policy(),
         backend.actions(),
-        backend.history(),
       ]);
       const nextBasePreflight =
         setupExperience(nextSnapshot.doctor.nextSetupAction).phase === "ENVIRONMENT"
@@ -85,7 +93,6 @@
       policy = nextPolicy;
       basePreflight = nextBasePreflight;
       actions = nextActions;
-      history = nextHistory;
 
       if (!pageChosen) page = nextSnapshot.doctor.nextSetupAction === "READY" ? "clients" : "setup";
       if (page === "setup" && nextSnapshot.doctor.nextSetupAction === "READY" && pageChosen) page = "clients";
@@ -94,7 +101,6 @@
       basePreflight = undefined;
       policy = undefined;
       actions = [];
-      history = [];
       throw value;
     } finally {
       loading = false;

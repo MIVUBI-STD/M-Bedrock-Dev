@@ -157,6 +157,71 @@ fn classify_identity_state<'a>(
     IdentityState::Unique
 }
 
+#[derive(Debug, Clone)]
+struct ClientObservation {
+    client: ClientId,
+    state: ClientState,
+    vm_identity: Option<String>,
+    guest: Option<GuestStatus>,
+}
+
+fn collect_client_observations(provider: &dyn Provider) -> io::Result<Vec<ClientObservation>> {
+    ClientId::VIRTUAL
+        .into_iter()
+        .map(|client| {
+            let state = provider.status(client)?;
+            let vm_identity = if state == ClientState::NotProvisioned {
+                None
+            } else {
+                provider.identity_key(client).ok().flatten()
+            };
+            let guest = (state == ClientState::Running)
+                .then(|| guest_status_once(provider, client))
+                .flatten();
+            Ok(ClientObservation {
+                client,
+                state,
+                vm_identity,
+                guest,
+            })
+        })
+        .collect()
+}
+
+fn observation_for(
+    observations: &[ClientObservation],
+    client: ClientId,
+) -> io::Result<&ClientObservation> {
+    observations
+        .iter()
+        .find(|observation| observation.client == client)
+        .ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("{} observation is missing", client.as_str()),
+            )
+        })
+}
+
+fn vm_identity_state_from_observations(
+    client: ClientId,
+    observations: &[ClientObservation],
+) -> IdentityState {
+    let Ok(current) = observation_for(observations, client) else {
+        return IdentityState::Unknown;
+    };
+    let mut peers = Vec::new();
+
+    for other in observations {
+        if other.client == client || other.state == ClientState::NotProvisioned {
+            continue;
+        }
+        peers.push(other.vm_identity.as_deref());
+    }
+
+    classify_identity_state(current.vm_identity.as_deref(), peers)
+}
+
 fn vm_identity_state(provider: &dyn Provider, client: ClientId) -> IdentityState {
     let current = provider.identity_key(client).ok().flatten();
     let mut peers = Vec::new();
@@ -487,23 +552,31 @@ fn wait_for_guest_compatibility(
 }
 
 fn windows_identity_state(
-    provider: &dyn Provider,
     client: ClientId,
-    guest: Option<&GuestStatus>,
+    observations: &[ClientObservation],
 ) -> IdentityState {
-    let Some(identity) = guest.and_then(|status| status.machine_identity.as_deref()) else {
+    let Ok(current) = observation_for(observations, client) else {
+        return IdentityState::Unknown;
+    };
+    let Some(identity) = current
+        .guest
+        .as_ref()
+        .and_then(|status| status.machine_identity.as_deref())
+    else {
         return IdentityState::Unknown;
     };
 
-    for other in ClientId::VIRTUAL {
-        if other == client {
+    for other in observations {
+        if other.client == client {
             continue;
         }
-        if provider.status(other).ok() != Some(ClientState::Running) {
+        if other.state != ClientState::Running {
             return IdentityState::Unknown;
         }
-        let Some(other_identity) =
-            guest_status_once(provider, other).and_then(|status| status.machine_identity)
+        let Some(other_identity) = other
+            .guest
+            .as_ref()
+            .and_then(|status| status.machine_identity.as_deref())
         else {
             return IdentityState::Unknown;
         };
@@ -606,13 +679,15 @@ fn working_set_for(working_sets: &[(ClientId, u64)], client: ClientId) -> Option
         .find_map(|(candidate, memory_mb)| (*candidate == client).then_some(*memory_mb))
 }
 
-fn client_status(
+fn client_status_from_observations(
     provider: &dyn Provider,
     working_sets: &[(ClientId, u64)],
     native: Option<&MinecraftProfile>,
     client: ClientId,
+    observations: &[ClientObservation],
 ) -> io::Result<ClientStatus> {
-    let state = provider.status(client)?;
+    let observation = observation_for(observations, client)?;
+    let state = observation.state;
     if state == ClientState::NotProvisioned {
         return Ok(ClientStatus {
             id: client.as_str(),
@@ -632,16 +707,11 @@ fn client_status(
         });
     }
 
-    let guest = if state == ClientState::Running {
-        guest_status_once(provider, client)
-    } else {
-        None
-    };
+    let guest = observation.guest.as_ref();
     let minecraft_version = guest
-        .as_ref()
         .and_then(|status| status.minecraft.as_ref())
         .map(|minecraft| minecraft.version.clone());
-    let parity = version_parity(native, guest.as_ref());
+    let parity = version_parity(native, guest);
 
     Ok(ClientStatus {
         id: client.as_str(),
@@ -652,13 +722,23 @@ fn client_status(
         host_working_set_mb: working_set_for(working_sets, client),
         guest_tools_ready: provider.guest_tools_ready(client).ok().flatten(),
         guest_agent_ready: Some(guest.is_some()),
-        guest_agent_version: guest.as_ref().map(|status| status.agent_version.clone()),
+        guest_agent_version: guest.map(|status| status.agent_version.clone()),
         minecraft_version,
         lineage_parity: Some(lineage_parity(native, client)),
         version_parity: Some(parity),
-        vm_identity: Some(vm_identity_state(provider, client)),
-        windows_identity: Some(windows_identity_state(provider, client, guest.as_ref())),
+        vm_identity: Some(vm_identity_state_from_observations(client, observations)),
+        windows_identity: Some(windows_identity_state(client, observations)),
     })
+}
+
+fn client_status(
+    provider: &dyn Provider,
+    working_sets: &[(ClientId, u64)],
+    native: Option<&MinecraftProfile>,
+    client: ClientId,
+) -> io::Result<ClientStatus> {
+    let observations = collect_client_observations(provider)?;
+    client_status_from_observations(provider, working_sets, native, client, &observations)
 }
 
 impl VirtualClients {
@@ -1185,12 +1265,14 @@ impl VirtualClients {
 
         if let Some(provider) = provider.as_ref() {
             let working_sets = provider.host_working_sets_mb()?;
+            let observations = collect_client_observations(provider.as_ref())?;
             for client in ClientId::VIRTUAL {
-                clients.push(client_status(
+                clients.push(client_status_from_observations(
                     provider.as_ref(),
                     &working_sets,
                     native_profile.as_ref(),
                     client,
+                    &observations,
                 )?);
             }
         } else {

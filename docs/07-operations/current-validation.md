@@ -1,8 +1,37 @@
+## Virtual Clients bounded refresh and user-facing activity — source implementation (2026-10-06)
+
+Baseline: Experimental `14b2c2e56d1a6e92b6c2891956961a12bb1bff9c`.
+
+Source changes prepared for the next Experimental commit:
+- Runtime snapshot collection now gathers each Virtual client's power state,
+  VM identity and bounded Guest Agent status once, then reuses those observations
+  while projecting all three client rows. The lifecycle-admission identity check
+  remains a separate lightweight live path and does not inherit guest probing.
+- Frontend routine refresh no longer reloads operation history on every focus or
+  post-mutation reconciliation. History is loaded when Help & Support is opened
+  or after creating a support bundle.
+- Engine policy is loaded once per process session and reused on routine refresh;
+  mutable client state and action admission still come from backend truth.
+- Operation activity IPC advances to schema 2 and includes the canonical command
+  name. The UI maps it to simple user-facing text such as “Starting virtual
+  client…” and “Saving recovery point…” instead of exposing backend terminology.
+  This remains command-boundary activity, not invented percentage progress or
+  proof of internal-stage completion.
+- Regression specifications were updated for the activity schema, user-facing
+  labels, lazy history routing, policy reuse and identity projection signatures.
+
+Proof ceiling: REMOTE_GITHUB source/static review only. No CI, TypeScript/Svelte
+build, Vitest, Cargo/rustfmt, installer, VMware or Minecraft execution was run.
+Real refresh latency, guest responsiveness and memory behavior remain
+target-machine measurement work.
+
+---
+
 ## Virtual Clients provenance and Guest Agent protocol — source implementation (2026-10-06)
 
 Baseline: Experimental `9e1cc0e4522f59f11bc9789782afb3f948f2ba1b`.
 
-Source changes prepared for the next Experimental commit:
+Implemented in Experimental `14b2c2e56d1a6e92b6c2891956961a12bb1bff9c`:
 - Guest Agent status now carries an explicit protocol version. Backend
   compatibility uses that protocol authority rather than Cargo package-version
   equality; unknown protocol versions remain fail-closed.

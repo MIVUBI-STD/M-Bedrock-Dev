@@ -156,7 +156,8 @@ export interface EnginePolicy {
 }
 
 export interface OperationProgress {
-  schema: 1;
+  schema: 2;
+  operation: string;
   phase: "EXECUTING" | "SUCCEEDED" | "FAILED";
 }
 
