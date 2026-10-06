@@ -57,6 +57,20 @@ describe("script cleanup resource evidence", () => {
     );
   });
 
+  it("tracks exact rider relationship acquire and release", () => {
+    const result = deriveScriptCleanupResourceEvidence(
+      [
+        "function start(rideable, player) { rideable.addRider(player); }",
+        "function cleanup(rideable, player) { rideable.removeRider(player); }",
+      ].join("\n"),
+      source,
+    );
+    expect(result).toEqual(expect.arrayContaining([
+      expect.objectContaining({ surface: "mount-relationship", action: "acquire", key: "rideable:player" }),
+      expect.objectContaining({ surface: "mount-relationship", action: "release", key: "rideable:player" }),
+    ]));
+  });
+
   it("treats literal permission restoration as release evidence", () => {
     const result =
       deriveScriptCleanupResourceEvidence(
