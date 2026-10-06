@@ -18,9 +18,9 @@ fn backup_path(path: &Path) -> io::Result<PathBuf> {
 }
 
 fn temporary_path(path: &Path) -> io::Result<PathBuf> {
-    let parent = path
-        .parent()
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "metadata path has no parent"))?;
+    let parent = path.parent().ok_or_else(|| {
+        io::Error::new(io::ErrorKind::InvalidInput, "metadata path has no parent")
+    })?;
     let name = path
         .file_name()
         .and_then(|name| name.to_str())
@@ -46,9 +46,9 @@ pub(crate) fn read_text_recovering(path: &Path) -> io::Result<String> {
 }
 
 pub(crate) fn write_text_transactional(path: &Path, contents: &str) -> io::Result<()> {
-    let parent = path
-        .parent()
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "metadata path has no parent"))?;
+    let parent = path.parent().ok_or_else(|| {
+        io::Error::new(io::ErrorKind::InvalidInput, "metadata path has no parent")
+    })?;
     fs::create_dir_all(parent)?;
     recover_interrupted_replace(path)?;
 

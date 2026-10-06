@@ -89,7 +89,6 @@ pub fn update_staging_root() -> io::Result<PathBuf> {
     Ok(runtime_root()?.join("updates"))
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::validate_version_segment;
