@@ -10,6 +10,7 @@ concurrently on one physical Windows host.
 | --- | --- | --- | --- | --- |
 | Interactive launch | SYSTEM Guest Agent receives launch | Handoff to an interactive-user launcher; never claim visible UI from session 0 | Guest Agent / guest Windows setup | Windows |
 | Interactive launch | No user logged on | Keep VM running; report interactive session unavailable | Guest Agent | Windows |
+| Interactive launch | Multiple Windows user sessions/RDP sessions in one Virtual | Reject acceptance; one Virtual owns one interactive Windows user session so localhost launcher routing is unambiguous | guest setup | Windows |
 
 | Interactive launch | Interactive helper missing/stopped | Loopback readiness is false; keep VM running and direct user to per-user launcher setup | Guest Agent IPC | source + Windows |
 | Login | Minecraft opens auth surface | Auth surface stays inside the same Virtual Windows session | Minecraft/Windows session boundary | Windows |
