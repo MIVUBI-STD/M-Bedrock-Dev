@@ -223,13 +223,16 @@ function scoreboardEvidence(
     }
 
     const completion =
-      /(?:if|unless)\s+score\s+\S+\s+([A-Za-z0-9_.:-]+)\s+matches\s+(?:\.\.)?0(?:\b|\.\.)/i.exec(
+      /(?:if|unless)\s+score\s+\S+\s+([A-Za-z0-9_.:-]+)\s+matches\s+(?:\.\.)?0(?:\b|\.\.)[^\r\n]*\brun\s+([^\r\n]+)/i.exec(
         text,
       );
     if (
       completion &&
       SCOREBOARD_COUNTER_NAME.test(
         completion[1]!,
+      ) &&
+      /(?:next.*(?:wave|round|level|stage)|advance|progress|complete|finish|end(?:wave|round|level|stage)|proceed)/i.test(
+        completion[2]!,
       )
     ) {
       output.push({

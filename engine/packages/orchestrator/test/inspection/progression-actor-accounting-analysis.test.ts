@@ -31,6 +31,57 @@ function parsed(
 describe(
   "progression actor accounting analysis",
   () => {
+    it("does not treat a diagnostic zero check as a progression completion gate", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function debug() {",
+        "  if (remainingEnemies === 0) console.warn('zero');",
+        "}",
+      ].join("\n");
+
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed(source),
+        ]);
+
+      expect(
+        result.provenMissingReconciliation,
+      ).toBe(0);
+      expect(result.counters[0]
+        ?.completionChecks ?? 0)
+        .toBe(0);
+    });
+
+    it("recognizes a zero gate that commits progression state", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "let waveState = 'active';",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function maybeAdvance() {",
+        "  if (remainingEnemies === 0) waveState = 'complete';",
+        "}",
+      ].join("\n");
+
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed(source),
+        ]);
+
+      expect(
+        result.provenMissingReconciliation,
+      ).toBe(1);
+      expect(result.counters[0]
+        ?.completionChecks)
+        .toBe(1);
+    });
+
     it("proves missing reconciliation when a strong actor counter only grows", () => {
       const result =
         analyzeProgressionActorAccounting([

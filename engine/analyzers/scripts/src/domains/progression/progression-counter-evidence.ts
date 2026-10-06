@@ -227,6 +227,135 @@ function isZero(
   return numericLiteral(expression) === 0;
 }
 
+const PROGRESSION_EFFECT_NAME =
+  /(?:next.*(?:wave|round|level|stage)|advance|progress|complete|finish|end(?:wave|round|level|stage)|proceed)/i;
+
+function containsProgressionEffect(
+  node: ts.Node,
+  file: ts.SourceFile,
+): boolean {
+  let found = false;
+  const visit = (current: ts.Node): void => {
+    if (found) return;
+
+    if (ts.isCallExpression(current)) {
+      const target =
+        current.expression.getText(file);
+      if (
+        PROGRESSION_EFFECT_NAME.test(
+          target,
+        )
+      ) {
+        found = true;
+        return;
+      }
+    }
+
+    if (
+      ts.isBinaryExpression(current) &&
+      current.operatorToken.kind ===
+        ts.SyntaxKind.EqualsToken
+    ) {
+      const left =
+        current.left.getText(file);
+      const right =
+        current.right.getText(file);
+      if (
+        /(?:state|status|phase|stage|wave|round|level|progress)/i.test(
+          left,
+        ) &&
+        /(?:next|complete|completed|finish|finished|done|advance)/i.test(
+          right,
+        )
+      ) {
+        found = true;
+        return;
+      }
+    }
+
+    ts.forEachChild(
+      current,
+      visit,
+    );
+  };
+  visit(node);
+  return found;
+}
+
+function completionControlsProgression(
+  node: ts.BinaryExpression,
+  file: ts.SourceFile,
+): boolean {
+  let current: ts.Node | undefined =
+    node.parent;
+
+  while (current) {
+    if (ts.isIfStatement(current)) {
+      const start =
+        current.expression.getStart(file);
+      const end =
+        current.expression.getEnd();
+      const position =
+        node.getStart(file);
+      if (
+        position >= start &&
+        position < end
+      ) {
+        return (
+          containsProgressionEffect(
+            current.thenStatement,
+            file,
+          ) ||
+          (
+            current.elseStatement !==
+              undefined &&
+            containsProgressionEffect(
+              current.elseStatement,
+              file,
+            )
+          )
+        );
+      }
+    }
+
+    if (
+      ts.isConditionalExpression(current)
+    ) {
+      const position =
+        node.getStart(file);
+      if (
+        position >=
+          current.condition.getStart(file) &&
+        position <
+          current.condition.getEnd()
+      ) {
+        return (
+          containsProgressionEffect(
+            current.whenTrue,
+            file,
+          ) ||
+          containsProgressionEffect(
+            current.whenFalse,
+            file,
+          )
+        );
+      }
+    }
+
+    if (
+      ts.isFunctionDeclaration(current) ||
+      ts.isMethodDeclaration(current) ||
+      ts.isArrowFunction(current) ||
+      ts.isFunctionExpression(current)
+    ) {
+      break;
+    }
+    current = current.parent;
+  }
+
+  return false;
+}
+
 function completionCounter(
   node: ts.BinaryExpression,
 ): string | undefined {
@@ -405,7 +534,13 @@ export function deriveScriptProgressionCounterEvidence(
 
       const completion =
         completionCounter(node);
-      if (completion) {
+      if (
+        completion &&
+        completionControlsProgression(
+          node,
+          file,
+        )
+      ) {
         push(node, {
           kind: "completion-check",
           counterKind: "variable",
