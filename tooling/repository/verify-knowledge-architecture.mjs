@@ -227,9 +227,11 @@ try {
       }
 
       const expectedAuthority =
-        expectedDomain === "examples"
-          ? "REFERENCE"
-          : "CANONICAL";
+        resource.locator !== undefined
+          ? "DERIVED"
+          : expectedDomain === "examples"
+            ? "REFERENCE"
+            : "CANONICAL";
       if (resource.authority !== expectedAuthority) {
         failures.push(
           "DOCUMENT authority/domain mismatch: " +
