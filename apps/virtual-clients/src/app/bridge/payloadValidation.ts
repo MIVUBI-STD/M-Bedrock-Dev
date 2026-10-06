@@ -61,7 +61,7 @@ const clientShape = shape<ClientStatus>({
   readySnapshot: nullable(boolean),
   memoryLimitMb: nullable(integer), hostWorkingSetMb: nullable(integer),
   guestToolsReady: nullable(boolean), guestAgentReady: nullable(boolean),
-  guestAgentVersion: nullable(text), minecraftVersion: nullable(text), minecraftRunning: nullable(boolean), interactiveLauncherReady: nullable(boolean),
+  guestAgentVersion: nullable(text), minecraftVersion: nullable(text), minecraftRunning: nullable(boolean), interactiveLauncherReady: nullable(boolean), interactiveLauncherReady: nullable(boolean),
   lineageParity: nullable(parity), versionParity: nullable(parity),
   vmIdentity: nullable(identity), windowsIdentity: nullable(identity),
 });
