@@ -19,7 +19,7 @@ const DOMAINS = new Set<ReliabilityDomain>([
   "artifact", "commands", "entities", "structures", "scripts", "world-db",
   "multiplayer", "state", "chunks", "compatibility", "education",
   "combat", "inventory", "economy", "ui", "persistence", "environment",
-  "unknown",
+  "gameplay", "stability", "world", "unknown",
 ]);
 
 const LANES = new Set<ReliabilityLane>([
@@ -228,7 +228,6 @@ export function validateRegressionCatalog(
     if (!regression.expected?.trim()) errors.push(`Regression ${regression.id} requires expected behavior.`);
     if (!regression.observed?.trim()) errors.push(`Regression ${regression.id} requires observed behavior.`);
     if (!Array.isArray(regression.capabilityTags)) errors.push(`Regression ${regression.id} requires capabilityTags.`);
-    if (!Array.isArray(regression.reproduction)) errors.push(`Regression ${regression.id} requires reproduction steps.`);
   }
 
   return errors;

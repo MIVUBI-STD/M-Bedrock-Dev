@@ -10,8 +10,8 @@ import {
 import {
   historicalRegressionId,
   mergeAndSaveHistoricalRegressions,
-  type HistoricalRegressionRecord,
-} from "../../../reliability-search/src/index.js";
+  type RegressionCase,
+} from "../../../reliability/src/index.js";
 import type {
   ProjectRecord,
 } from "../../../project-model/src/index.js";
@@ -91,7 +91,7 @@ export function projectApprovedBugReportToHistoricalRegressions(
     readonly reportPath: string;
     readonly artifactFingerprint: string;
   },
-): readonly HistoricalRegressionRecord[] {
+): readonly RegressionCase[] {
   return input.report.bugs.map(
     (bug) => {
       const canonicalIssueId =

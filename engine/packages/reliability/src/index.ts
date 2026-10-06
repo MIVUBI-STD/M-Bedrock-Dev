@@ -42,3 +42,6 @@ export * from "./portfolio/portfolio-regression-scheduler.js";
 export * from "./session/multiplayer-stress-matrix.js";
 
 export * from "./runtime/runtime-session-replay.js";
+
+export * from "./catalog/historical-regression-catalog.js";
+export * from "./catalog/historical-regression-store.js";

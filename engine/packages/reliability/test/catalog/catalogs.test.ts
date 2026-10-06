@@ -82,4 +82,28 @@ describe("reliability catalog validation", () => {
       retestFocus: ["Repeat the transition with mutated state."],
     }], [regression])).toEqual([]);
   });
+
+  it("accepts the production historical regression vocabulary", () => {
+    expect(validateRegressionCatalog([{
+      id: "reg-production",
+      canonicalIssueId: "reg-production",
+      title: "Production regression",
+      issueType: "BUG",
+      domain: "world",
+      discoveredBy: "approved-ai",
+      provenance: {
+        source: "Canonical Bug Report V2",
+        reportPath: "workspace/reports/Map-BugReport.json",
+        map: "Map",
+        mapVersion: "1.0.0",
+        bugId: "BUG-001",
+        artifactFingerprint: "sha256:example",
+      },
+      triggerTags: ["gameplay"],
+      capabilityTags: ["world-mutation"],
+      reproduction: ["Reproduce the issue."],
+      expected: "World state remains isolated.",
+      observed: "World state leaks.",
+    }])).toEqual([]);
+  });
 });

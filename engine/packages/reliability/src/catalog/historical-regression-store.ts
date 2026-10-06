@@ -5,10 +5,12 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import type {
+  HistoricalRegressionCatalog,
+  RegressionCase,
+} from "../core/types.js";
 import {
   mergeHistoricalRegressionCatalog,
-  type HistoricalRegressionCatalog,
-  type HistoricalRegressionRecord,
 } from "./historical-regression-catalog.js";
 
 export const HISTORICAL_REGRESSION_CATALOG_PATH =
@@ -55,7 +57,7 @@ export async function loadHistoricalRegressionCatalog(
 
 export async function mergeAndSaveHistoricalRegressions(
   repositoryRoot: string,
-  incoming: readonly HistoricalRegressionRecord[],
+  incoming: readonly RegressionCase[],
 ): Promise<HistoricalRegressionCatalog> {
   const current =
     await loadHistoricalRegressionCatalog(

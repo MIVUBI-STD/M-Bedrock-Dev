@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   historicalRegressionId,
   mergeHistoricalRegressionCatalog,
-  type HistoricalRegressionRecord,
-} from "../src/corpus/historical-regression-catalog.js";
+  type RegressionCase,
+} from "../../src/index.js";
 
-const incoming: HistoricalRegressionRecord = {
+const incoming: RegressionCase = {
   id: "reg_defense_2_0_0_bug_001",
   title: "Arena state leaks",
   domain: "multiplayer",

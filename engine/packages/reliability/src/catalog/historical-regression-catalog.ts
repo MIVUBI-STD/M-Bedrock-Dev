@@ -1,43 +1,8 @@
-export interface HistoricalRegressionProvenance {
-  readonly source: string;
-  readonly canonicalIssueId?: string;
-  readonly issueType?: "BUG" | "DESIGN_MISMATCH";
-  readonly reportPath?: string;
-  readonly map?: string;
-  readonly mapVersion?: string;
-  readonly bugId?: string;
-  readonly artifactFingerprint?: string;
-  readonly [key: string]: unknown;
-}
-
-export interface HistoricalRegressionRecord {
-  readonly id: string;
-  readonly canonicalIssueId?: string;
-  readonly title: string;
-  readonly issueType?: "BUG" | "DESIGN_MISMATCH";
-  readonly domain: string;
-  readonly discoveredBy: string;
-  readonly provenance?: HistoricalRegressionProvenance;
-  readonly triggerTags?: readonly string[];
-  readonly capabilityTags?: readonly string[];
-  readonly reproduction?: readonly string[];
-  readonly expected: string;
-  readonly observed: string;
-  readonly [key: string]: unknown;
-}
-
-export interface HistoricalRegressionCatalogEntry {
-  readonly id: string;
-  readonly canonicalIssueId?: string;
-  readonly title?: string;
-  readonly [key: string]: unknown;
-}
-
-export interface HistoricalRegressionCatalog {
-  readonly schemaVersion: 1;
-  readonly regressions:
-    readonly HistoricalRegressionCatalogEntry[];
-}
+import type {
+  HistoricalRegressionCatalog,
+  HistoricalRegressionCatalogEntry,
+  RegressionCase,
+} from "../core/types.js";
 
 function slug(value: string): string {
   const clean = value
@@ -65,7 +30,7 @@ export function historicalRegressionId(input: {
 
 function sameMeaning(
   left: HistoricalRegressionCatalogEntry,
-  right: HistoricalRegressionRecord,
+  right: RegressionCase,
 ): boolean {
   const expected =
     typeof left.expected === "string"
@@ -119,7 +84,7 @@ function sameMeaning(
 export function mergeHistoricalRegressionCatalog(
   catalog: HistoricalRegressionCatalog,
   incoming:
-    readonly HistoricalRegressionRecord[],
+    readonly RegressionCase[],
 ): HistoricalRegressionCatalog {
   if (catalog.schemaVersion !== 1) {
     throw new Error(

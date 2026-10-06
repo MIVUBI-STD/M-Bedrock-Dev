@@ -23,6 +23,9 @@ export type ReliabilityDomain =
   | "ui"
   | "persistence"
   | "environment"
+  | "gameplay"
+  | "stability"
+  | "world"
   | "unknown";
 
 export type InvariantSeverity = "minor" | "medium" | "critical";
@@ -51,20 +54,54 @@ export interface FailurePattern {
   retestFocus: readonly string[];
 }
 
+export interface RegressionProvenance {
+  readonly source: string;
+  readonly canonicalIssueId?: string;
+  readonly issueType?: "BUG" | "DESIGN_MISMATCH";
+  readonly reportPath?: string;
+  readonly map?: string;
+  readonly mapVersion?: string;
+  readonly bugId?: string;
+  readonly artifactFingerprint?: string;
+  readonly [key: string]: unknown;
+}
+
 export interface RegressionCase {
-  id: string;
-  title: string;
-  domain: ReliabilityDomain;
-  discoveredBy: ReliabilityLane | "manual";
-  invariantIds: readonly string[];
-  triggerTags: readonly string[];
-  capabilityTags: readonly string[];
-  reproduction: readonly string[];
-  expected: string;
-  observed: string;
-  fixturePath?: string;
-  firstObservedVersion?: string;
-  lastKnownGoodVersion?: string;
+  readonly id: string;
+  readonly canonicalIssueId?: string;
+  readonly title: string;
+  readonly issueType?: "BUG" | "DESIGN_MISMATCH";
+  readonly domain: ReliabilityDomain;
+  readonly discoveredBy:
+    | ReliabilityLane
+    | "manual"
+    | "approved-ai"
+    | "approved-tester"
+    | "static-audit"
+    | "tester-runtime";
+  readonly provenance?: RegressionProvenance;
+  readonly invariantIds?: readonly string[];
+  readonly triggerTags: readonly string[];
+  readonly capabilityTags: readonly string[];
+  readonly reproduction?: readonly string[];
+  readonly expected: string;
+  readonly observed: string;
+  readonly fixturePath?: string;
+  readonly firstObservedVersion?: string;
+  readonly lastKnownGoodVersion?: string;
+}
+
+export interface HistoricalRegressionCatalogEntry {
+  readonly id: string;
+  readonly canonicalIssueId?: string;
+  readonly title?: string;
+  readonly [key: string]: unknown;
+}
+
+export interface HistoricalRegressionCatalog {
+  readonly schemaVersion: 1;
+  readonly regressions:
+    readonly HistoricalRegressionCatalogEntry[];
 }
 
 export type UpdateChangeKind =
