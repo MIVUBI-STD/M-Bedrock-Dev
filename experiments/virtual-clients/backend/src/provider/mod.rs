@@ -323,6 +323,7 @@ pub(crate) fn apply_virtual_hardware_policy(vmx: &Path) -> io::Result<()> {
 
     set_vmx_value(&mut lines, "numvcpus", CLIENT_VCPUS);
     set_vmx_value(&mut lines, "memsize", &VIRTUAL_MEMORY_LIMIT_MB.to_string());
+    set_vmx_value(&mut lines, "mks.enable3d", "TRUE");
     set_vmx_value(&mut lines, "answer.msg.uuid.altered", "I copied it");
 
     let mut output = lines.join("\n");
