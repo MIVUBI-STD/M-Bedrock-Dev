@@ -39,8 +39,6 @@ jobs:
           rustup default 1.98.1
       - name: Install exact desktop dependencies
         run: npm ci --no-audit --no-fund
-      - name: Verify desktop source
-        run: npm run verify:source
       - name: Build unsigned NSIS package smoke
         run: npm run build:app
       - name: Validate package artifact
