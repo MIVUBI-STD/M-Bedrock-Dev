@@ -15,6 +15,21 @@ describe("interactive block state analysis", () => {
     });
   });
 
+  it("decodes literal BlockPermutation.resolve state maps", () => {
+    const script = parseScriptFile(
+      "main",
+      "dimension.setBlockPermutation({ x: 1, y: 2, z: 3 }, BlockPermutation.resolve('minecraft:oak_door', { 'open_bit': true, 'direction': 2 }));",
+      { artifactId: "fixture", relativePath: "scripts/main.ts" },
+    );
+    const result = analyzeInteractiveBlockState([script]);
+    expect(result.decodedPermutationWrites).toBe(1);
+    expect(result.mutations[0]).toMatchObject({
+      typeIdentity: "minecraft:oak_door",
+      permutationStates: { open_bit: true, direction: 2 },
+      stateEvidence: "decoded-permutation",
+    });
+  });
+
   it("preserves authored permutation expression as state evidence", () => {
     const script = parseScriptFile(
       "main",
