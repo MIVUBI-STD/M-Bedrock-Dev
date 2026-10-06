@@ -425,17 +425,17 @@ impl RuntimeLab {
     }
 
     pub fn stop(&self, client: Option<ClientId>) -> io::Result<Vec<ClientStatus>> {
-        let _lock = OperationLock::acquire()?;
-        let provider = current_platform_provider().ok_or_else(|| {
-            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
-        })?;
-
         if client.is_some_and(ClientId::is_native) {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "Native lifecycle is managed manually on the host",
             ));
         }
+
+        let _lock = OperationLock::acquire()?;
+        let provider = current_platform_provider().ok_or_else(|| {
+            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+        })?;
 
         let targets: Vec<ClientId> = match client {
             Some(client) => vec![client],
