@@ -2,7 +2,7 @@ use crate::{
     client::{ClientId, ClientState, ClientStatus, IdentityState},
     doctor::{doctor, DoctorReport},
     provider::{current_platform_provider, runtime_root, MemoryMode, Provider},
-    resources::{evaluate_pressure, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
+    resources::{current_host_pressure, evaluate_pressure, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
 };
 use fs2::FileExt;
 use serde::Serialize;
@@ -283,6 +283,28 @@ impl RuntimeLab {
         let mut result = Vec::with_capacity(count);
 
         for (index, client) in targets.into_iter().enumerate() {
+            let state = provider.status(client)?;
+            if state != ClientState::Running {
+                let live_pressure = current_host_pressure();
+                if !live_pressure.can_start_virtual {
+                    return Err(io::Error::new(
+                        io::ErrorKind::Other,
+                        format!(
+                            "host memory pressure became {:?} before starting {}; suspend another Virtual or free host memory",
+                            live_pressure.level,
+                            client.as_str()
+                        ),
+                    ));
+                }
+            }
+
+            if identity_state(provider.as_ref(), client) == IdentityState::Duplicate {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    format!("{} has duplicate VM identity", client.as_str()),
+                ));
+            }
+
             provider.start(client)?;
             result.push(client_status(provider.as_ref(), client)?);
 
