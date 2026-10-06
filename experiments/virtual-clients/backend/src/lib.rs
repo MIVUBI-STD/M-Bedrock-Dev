@@ -5,7 +5,7 @@ pub mod paths;
 pub mod profile;
 pub mod provider;
 pub mod resources;
-pub mod schema;
 pub mod runtime;
+pub mod schema;
 
 pub use runtime::VirtualClients;
