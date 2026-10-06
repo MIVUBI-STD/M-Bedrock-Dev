@@ -283,7 +283,10 @@ function runtimeComponents(
     world.playerCapabilities.abilityWrites > 0 ||
     world.playerCapabilities.commandPermissionWrites > 0 ||
     world.playerCapabilities.privilegedGuardReferences > 0 ||
-    world.playerCapabilities.protectionDefinitions > 0
+    world.playerCapabilities.protectionDefinitions > 0 ||
+    world.capabilityExposure.exposed > 0 ||
+    world.capabilityExposure.potentiallyExposed > 0 ||
+    world.capabilityExposure.unresolved > 0
   ) {
     output.push({
       id: "runtime:player-capability",
@@ -424,6 +427,33 @@ function runtimeEdgeState(
       };
     }
     case "runtime:player-capability": {
+      if (world.capabilityExposure.exposed > 0) {
+        const exposed = world.capabilityExposure.exposures
+          .filter((item) => item.status === "exposed")
+          .map((item) =>
+            item.capabilityId +
+            " (" +
+            item.impact +
+            ", prerequisite=" +
+            item.prerequisiteReachability +
+            ")"
+          )
+          .sort();
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Selected-artifact reachability proves release-enabled restricted capability exposure without its required authorization gate: " +
+            exposed.join(", ") +
+            ". Runtime reproduction is not required to establish the exposure; gameplay translation still determines the reportable player consequence.",
+        };
+      }
+      if (world.capabilityExposure.potentiallyExposed > 0) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Restricted capability exposure is source-detected, but ordinary-player prerequisite reachability or active-guard status is not yet fully proven. Resolve the selected-artifact reachability/guard path before any local Minecraft test.",
+        };
+      }
       if (world.playerCapabilities.inactiveProtectionDefinitions > 0) {
         return {
           status: "DETECTION_GAP",

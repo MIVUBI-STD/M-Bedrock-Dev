@@ -95,6 +95,9 @@ import type {
 import type {
   CapabilityMutationFootprintAnalysis,
 } from "./capability-mutation-footprint-analysis.js";
+import type {
+  CapabilityExposureSummary,
+} from "./capability-exposure-stage.js";
 import {
   discoverGameplaySurfaces,
   type GameplaySurfaceDiscoveryResult,
@@ -464,6 +467,37 @@ export interface GameplayWorldModel {
       reason: string;
     }[];
   };
+  capabilityExposure: {
+    exposed: number;
+    potentiallyExposed: number;
+    releaseBlocking: number;
+    unresolved: number;
+    exposures: readonly {
+      capabilityId: string;
+      capabilityLabel: string;
+      status:
+        | "blocked"
+        | "guarded"
+        | "exposed"
+        | "potentially-exposed"
+        | "unknown";
+      prerequisiteReachability:
+        | "reachable"
+        | "unreachable"
+        | "unknown"
+        | "not-required";
+      impact:
+        | "progression"
+        | "state"
+        | "fairness"
+        | "interaction"
+        | "debug-information"
+        | "cosmetic"
+        | "unknown";
+      evidenceIds: readonly string[];
+      reasons: readonly string[];
+    }[];
+  };
   playerCapabilities: {
     gamemodeWrites: number;
     creativeModeGrants: number;
@@ -632,6 +666,7 @@ export interface GameplayWorldModelSource {
   inventoryRestoreOwnership?: InventoryRestoreOwnershipAnalysis;
   worldRuleAuthority?: WorldRuleAuthorityAnalysis;
   playerCapabilitySurfaces?: PlayerCapabilitySurfaceAnalysis;
+  capabilityExposure?: CapabilityExposureSummary;
   clientMutationReconciliation?: ClientMutationReconciliationAnalysis;
   capabilityMutationFootprint?: CapabilityMutationFootprintAnalysis;
   semanticIr: {
@@ -1965,6 +2000,27 @@ export function deriveGameplayWorldModel(
         source.clientMutationReconciliation?.blockBreakCancellations ?? 0,
       interactionCancellations:
         source.clientMutationReconciliation?.interactionCancellations ?? 0,
+    },
+    capabilityExposure: {
+      exposed:
+        source.capabilityExposure?.exposed ?? 0,
+      potentiallyExposed:
+        source.capabilityExposure?.potentiallyExposed ?? 0,
+      releaseBlocking:
+        source.capabilityExposure?.releaseBlocking ?? 0,
+      unresolved:
+        source.capabilityExposure?.unresolved ?? 0,
+      exposures:
+        source.capabilityExposure?.exposures.map((item) => ({
+          capabilityId: item.capabilityId,
+          capabilityLabel: item.capabilityLabel,
+          status: item.status,
+          prerequisiteReachability:
+            item.prerequisiteReachability,
+          impact: item.impact,
+          evidenceIds: [...item.evidenceIds],
+          reasons: [...item.reasons],
+        })) ?? [],
     },
     playerCapabilities: {
       gamemodeWrites:

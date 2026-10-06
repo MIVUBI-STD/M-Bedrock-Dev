@@ -301,6 +301,7 @@ export function buildInspectionResult(
     scriptSafeConfig,
     worldRuleAuthority,
     playerCapabilitySurfaces,
+    capabilityExposure,
     clientMutationReconciliation,
     capabilityMutationFootprint,
     inventoryLifecycle,
@@ -405,6 +406,27 @@ export function buildInspectionResult(
     deriveUnsupportedSurfaceSignals(
       parsedScripts,
     );
+
+  // Restricted/debug capability reachability is selected-artifact evidence.
+  // Resolve it before GameplayWorld/scenario compilation so an exposed
+  // capability can become a static contradiction instead of a manual-test
+  // obligation discovered only after the main causal graph is built.
+  const gameplayReachability =
+    buildGameplayReachabilityGraph(
+      parsedScripts,
+      nodes,
+      parsedStructureModels,
+    );
+  const developerToolRelease =
+    analyzeDeveloperToolReleaseExposure(
+      parsedScripts,
+      gameplayReachability,
+    );
+  const capabilityExposure =
+    summarizeCapabilityExposure({
+      developerTools:
+        developerToolRelease,
+    });
 
   const gameplayWorld = deriveGameplayWorldModel({
     artifactId: input.artifactId,
@@ -563,22 +585,6 @@ export function buildInspectionResult(
     deriveMultiplayerStateValidationPlan(
       input.gameplayIntent,
     );
-  const gameplayReachability =
-    buildGameplayReachabilityGraph(
-      parsedScripts,
-      nodes,
-      parsedStructureModels,
-    );
-  const developerToolRelease =
-    analyzeDeveloperToolReleaseExposure(
-      parsedScripts,
-      gameplayReachability,
-    );
-  const capabilityExposure =
-    summarizeCapabilityExposure({
-      developerTools:
-        developerToolRelease,
-    });
   const analysisPriorities =
     deriveGameplayAnalysisPriorities(
       gameplayWorld,
