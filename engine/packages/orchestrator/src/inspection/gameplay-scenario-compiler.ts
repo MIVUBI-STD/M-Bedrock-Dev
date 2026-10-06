@@ -611,6 +611,31 @@ function runtimeEdgeState(
       };
     }
     case "runtime:arena": {
+      if (
+        scenarioLabel === "terminal-collision" &&
+        world.arenas.lifecycle
+          .multiIngressTerminalTargets > 0
+      ) {
+        const targets =
+          world.arenas.lifecycle.terminalIngresses
+            .filter((item) =>
+              item.status ===
+                "multi-ingress"
+            )
+            .map((item) =>
+              item.terminalRegion +
+              " <= " +
+              item.incomingCallerRegions.join(" | ")
+            )
+            .sort();
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Multiple independent source paths can enter the same terminal owner: " +
+            targets.join("; ") +
+            ". This is explicit terminal-collision gray-zone evidence. Prove an exactly-once terminal guard/owner or a blocking exclusion before classifying it safe; do not hide it and do not request a broad playthrough.",
+        };
+      }
       const reduced =
         world.arenas.count !== undefined &&
         world.arenas.safeConcurrentArenas !== undefined &&

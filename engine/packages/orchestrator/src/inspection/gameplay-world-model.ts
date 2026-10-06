@@ -137,6 +137,17 @@ export interface GameplayWorldModel {
       proven: number;
       partial: number;
       unresolved: number;
+      multiIngressTerminalTargets: number;
+      terminalIngresses: readonly {
+        scriptId: string;
+        terminalRegion: string;
+        incomingCallerRegions: readonly string[];
+        incomingControlFlows: readonly string[];
+        distinctIngresses: number;
+        status:
+          | "single-ingress"
+          | "multi-ingress";
+      }[];
     };
     cleanup: {
       acquiredSurfaces: number;
@@ -1454,6 +1465,23 @@ export function deriveGameplayWorldModel(
           source.arena.lifecycle?.partial ?? 0,
         unresolved:
           source.arena.lifecycle?.unresolved ?? 0,
+        multiIngressTerminalTargets:
+          source.arena.lifecycle
+            ?.multiIngressTerminalTargets ?? 0,
+        terminalIngresses:
+          source.arena.lifecycle
+            ?.terminalIngresses.map((item) => ({
+              scriptId: item.scriptId,
+              terminalRegion:
+                item.terminalRegion,
+              incomingCallerRegions:
+                [...item.incomingCallerRegions],
+              incomingControlFlows:
+                [...item.incomingControlFlows],
+              distinctIngresses:
+                item.distinctIngresses,
+              status: item.status,
+            })) ?? [],
       },
       cleanup: {
         acquiredSurfaces:

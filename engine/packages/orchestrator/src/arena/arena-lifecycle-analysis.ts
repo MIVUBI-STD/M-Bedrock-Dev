@@ -33,11 +33,28 @@ export interface ArenaLifecycleTerminalAssessment {
   status: ArenaLifecycleConvergenceStatus;
 }
 
+export interface ArenaTerminalIngressAssessment {
+  scriptId: string;
+  terminalRegion: string;
+  incomingCallerRegions: readonly string[];
+  incomingControlFlows: readonly (
+    | "unconditional"
+    | "conditional"
+    | "deferred"
+    | "unknown"
+  )[];
+  distinctIngresses: number;
+  status: "single-ingress" | "multi-ingress";
+}
+
 export interface ArenaLifecycleAnalysis {
   terminalCandidates: number;
   proven: number;
   partial: number;
   unresolved: number;
+  multiIngressTerminalTargets: number;
+  terminalIngresses:
+    readonly ArenaTerminalIngressAssessment[];
   assessments: readonly ArenaLifecycleTerminalAssessment[];
   crossFileCalls?: number;
 }
@@ -816,6 +833,107 @@ function assessProject(
   );
 }
 
+function terminalIngressesForLocal(
+  scripts: readonly ParsedScriptFile[],
+  assessments:
+    readonly ArenaLifecycleTerminalAssessment[],
+): ArenaTerminalIngressAssessment[] {
+  return assessments.map((assessment) => {
+    const script = scripts.find(
+      (item) =>
+        item.identifier === assessment.scriptId,
+    );
+    const incoming =
+      script?.localFunctionCalls.filter(
+        (call) =>
+          call.targetRegion ===
+            assessment.terminalRegion,
+      ) ?? [];
+    const callers = [
+      ...new Set(
+        incoming.map(
+          (call) => call.callerRegion,
+        ),
+      ),
+    ].sort();
+    const flows = [
+      ...new Set(
+        incoming.map(
+          (call) =>
+            call.controlFlow ??
+            "unknown" as const,
+        ),
+      ),
+    ].sort();
+    return {
+      scriptId: assessment.scriptId,
+      terminalRegion:
+        assessment.terminalRegion,
+      incomingCallerRegions: callers,
+      incomingControlFlows: flows,
+      distinctIngresses: callers.length,
+      status:
+        callers.length > 1
+          ? "multi-ingress" as const
+          : "single-ingress" as const,
+    };
+  });
+}
+
+function terminalIngressesForProject(
+  scripts: readonly ParsedScriptFile[],
+  crossFileCalls:
+    readonly CrossFileCallEdge[],
+  assessments:
+    readonly ArenaLifecycleTerminalAssessment[],
+): ArenaTerminalIngressAssessment[] {
+  const projectGraph =
+    composeQualifiedScriptLifecycleProjectGraph(
+      scripts.map((script) => ({
+        fileId:
+          script.source.relativePath,
+        localFunctionCalls:
+          script.localFunctionCalls,
+      })),
+      crossFileCalls,
+    );
+
+  return assessments.map((assessment) => {
+    const incoming =
+      projectGraph.callEdges.filter(
+        (edge) =>
+          edge.targetRegion ===
+            assessment.terminalRegion,
+      );
+    const callers = [
+      ...new Set(
+        incoming.map(
+          (edge) => edge.callerRegion,
+        ),
+      ),
+    ].sort();
+    const flows = [
+      ...new Set(
+        incoming.map(
+          (edge) => edge.controlFlow,
+        ),
+      ),
+    ].sort();
+    return {
+      scriptId: assessment.scriptId,
+      terminalRegion:
+        assessment.terminalRegion,
+      incomingCallerRegions: callers,
+      incomingControlFlows: flows,
+      distinctIngresses: callers.length,
+      status:
+        callers.length > 1
+          ? "multi-ingress" as const
+          : "single-ingress" as const,
+    };
+  });
+}
+
 export function analyzeArenaLifecycleConvergence(
   scripts: readonly ParsedScriptFile[],
   crossFileCalls:
@@ -827,6 +945,18 @@ export function analyzeArenaLifecycleConvergence(
       : assessProject(
           scripts,
           crossFileCalls,
+        );
+
+  const terminalIngresses =
+    crossFileCalls.length === 0
+      ? terminalIngressesForLocal(
+          scripts,
+          assessments,
+        )
+      : terminalIngressesForProject(
+          scripts,
+          crossFileCalls,
+          assessments,
         );
 
   return {
@@ -848,6 +978,13 @@ export function analyzeArenaLifecycleConvergence(
           item.status ===
           "unresolved",
       ).length,
+    multiIngressTerminalTargets:
+      terminalIngresses.filter(
+        (item) =>
+          item.status ===
+          "multi-ingress",
+      ).length,
+    terminalIngresses,
     assessments,
     ...(crossFileCalls.length === 0
       ? {}

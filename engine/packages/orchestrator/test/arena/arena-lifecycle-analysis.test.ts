@@ -41,6 +41,54 @@ describe("arena lifecycle convergence", () => {
     });
   });
 
+  it("keeps multiple independent terminal ingresses visible for collision proof", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function onFlagCaptured(arena, player) {",
+        "  endGame(arena, player);",
+        "}",
+        "function onTimeExpired(arena, player) {",
+        "  endGame(arena, player);",
+        "}",
+        "function endGame(arena, player) {",
+        "  cleanupArena(arena, player);",
+        "}",
+        "function cleanupArena(arena, player) {",
+        "  arena.players.delete(player);",
+        "  arena.generation++;",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeArenaLifecycleConvergence(
+        [script],
+      );
+
+    expect(
+      result.multiIngressTerminalTargets,
+    ).toBe(1);
+    expect(
+      result.terminalIngresses.find(
+        (item) =>
+          item.terminalRegion ===
+            "function:endGame",
+      ),
+    ).toMatchObject({
+      distinctIngresses: 2,
+      status: "multi-ingress",
+      incomingCallerRegions: [
+        "function:onFlagCaptured",
+        "function:onTimeExpired",
+      ],
+    });
+  });
+
   it("keeps release-only cleanup partial", () => {
     const script = parseScriptFile(
       "main",
