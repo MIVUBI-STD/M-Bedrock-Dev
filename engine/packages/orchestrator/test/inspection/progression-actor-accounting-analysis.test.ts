@@ -8,6 +8,9 @@ import {
   parseScriptFile,
 } from "../../../../analyzers/scripts/src/index.js";
 import {
+  parseEntityDefinition,
+} from "../../../../analyzers/entities/src/index.js";
+import {
   analyzeProgressionActorAccounting,
 } from "../../src/inspection/progression-actor-accounting-analysis.js";
 
@@ -445,6 +448,121 @@ describe(
       expect(result.counters[0]
         ?.scriptedRemovalActorIdentifiers)
         .toEqual(["demo:enemy"]);
+    });
+
+    it("proves base instant-despawn can strand a counted actor counter when remove reconciliation is absent", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function maybeAdvance() { if (remainingEnemies === 0) nextWave(); }",
+      ].join("\n");
+      const entity =
+        parseEntityDefinition(
+          {
+            "minecraft:entity": {
+              description: {
+                identifier:
+                  "demo:enemy",
+              },
+              components: {
+                "minecraft:instant_despawn": {},
+              },
+            },
+          },
+          {
+            artifactId: "fixture",
+            relativePath:
+              "entities/enemy.json",
+          },
+        );
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [parsed(source)],
+          [],
+          [entity],
+        );
+
+      expect(
+        result
+          .provenImmediateDespawnWithoutReconciliation,
+      ).toBe(1);
+      expect(result.counters[0])
+        .toMatchObject({
+          immediateDespawnActorIdentifiers: [
+            "demo:enemy",
+          ],
+          uncoveredImmediateDespawnActorIdentifiers: [
+            "demo:enemy",
+          ],
+          status:
+            "instant-despawn-without-reconciliation",
+        });
+    });
+
+    it("keeps component-group despawn as unresolved until activation reachability is proven", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function maybeAdvance() { if (remainingEnemies === 0) nextWave(); }",
+      ].join("\n");
+      const entity =
+        parseEntityDefinition(
+          {
+            "minecraft:entity": {
+              description: {
+                identifier:
+                  "demo:enemy",
+              },
+              component_groups: {
+                despawn_state: {
+                  "minecraft:instant_despawn": {},
+                },
+              },
+              events: {
+                "demo:despawn": {
+                  add: {
+                    component_groups: [
+                      "despawn_state",
+                    ],
+                  },
+                },
+              },
+            },
+          },
+          {
+            artifactId: "fixture",
+            relativePath:
+              "entities/enemy.json",
+          },
+        );
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [parsed(source)],
+          [],
+          [entity],
+        );
+
+      expect(
+        result.conditionalDespawnUnknowns,
+      ).toBe(1);
+      expect(result.counters[0])
+        .toMatchObject({
+          conditionalDespawnActorIdentifiers: [
+            "demo:enemy",
+          ],
+          unresolvedConditionalDespawnActorIdentifiers: [
+            "demo:enemy",
+          ],
+          status: "unresolved",
+        });
     });
 
     it("proves matched actor reconciliation across imported counter helpers", () => {

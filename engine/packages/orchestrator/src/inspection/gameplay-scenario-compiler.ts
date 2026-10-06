@@ -812,6 +812,29 @@ function runtimeEdgeState(
         scenarioLabel ===
           "progression-wave-integrity" &&
         world.progression.actorAccounting
+          .provenImmediateDespawnWithoutReconciliation > 0
+      ) {
+        const actors =
+          world.progression.actorAccounting.details
+            .flatMap((item) =>
+              item.uncoveredImmediateDespawnActorIdentifiers
+            )
+            .filter((id, index, all) =>
+              all.indexOf(id) === index
+            )
+            .sort();
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Selected-artifact entity definitions prove counted actor type(s) include base minecraft:instant_despawn while their actor counter has no matching remove reconciliation path: " +
+            actors.join(", ") +
+            ". The actor population can disappear immediately without converging the progression counter, so runtime reproduction is not required to establish the contradiction.",
+        };
+      }
+      if (
+        scenarioLabel ===
+          "progression-wave-integrity" &&
+        world.progression.actorAccounting
           .provenSpawnQuantityMismatch > 0
       ) {
         const counters =
@@ -889,6 +912,29 @@ function runtimeEdgeState(
             "Selected-artifact progression accounting proves a completion counter can grow and is checked for zero/complete, but has no decrement or replacement/recompute path: " +
             counters.join(", ") +
             ". The progression gate cannot converge through that counter lifecycle, so runtime reproduction is not required to establish the accounting contradiction.",
+        };
+      }
+      if (
+        scenarioLabel ===
+          "progression-wave-integrity" &&
+        world.progression.actorAccounting
+          .conditionalDespawnUnknowns > 0
+      ) {
+        const actors =
+          world.progression.actorAccounting.details
+            .flatMap((item) =>
+              item.unresolvedConditionalDespawnActorIdentifiers
+            )
+            .filter((id, index, all) =>
+              all.indexOf(id) === index
+            )
+            .sort();
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Counted actor type(s) expose minecraft:despawn or event/group-driven instant-despawn surfaces without source-proven remove reconciliation: " +
+            actors.join(", ") +
+            ". This remains explicit gray-zone evidence because activation/timing may be conditional; resolve event/state reachability before runtime escalation.",
         };
       }
       if (

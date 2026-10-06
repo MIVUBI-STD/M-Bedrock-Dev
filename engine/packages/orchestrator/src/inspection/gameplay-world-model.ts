@@ -372,6 +372,8 @@ export interface GameplayWorldModel {
       provenActorIdentityMismatch: number;
       provenSpawnQuantityMismatch: number;
       scriptedRemovalCoverageGaps: number;
+      provenImmediateDespawnWithoutReconciliation: number;
+      conditionalDespawnUnknowns: number;
       unresolvedCounters: number;
       reconciledFromMatchedActorLifecycle: number;
       details: readonly {
@@ -400,6 +402,14 @@ export interface GameplayWorldModel {
           | "uncovered"
           | "none"
           | "unresolved";
+        immediateDespawnActorIdentifiers:
+          readonly string[];
+        conditionalDespawnActorIdentifiers:
+          readonly string[];
+        uncoveredImmediateDespawnActorIdentifiers:
+          readonly string[];
+        unresolvedConditionalDespawnActorIdentifiers:
+          readonly string[];
         quantityComparableGrowths: number;
         quantityMatchedGrowths: number;
         quantityMismatchGrowths: number;
@@ -423,6 +433,7 @@ export interface GameplayWorldModel {
           | "reconciled-from-matched-actor-lifecycle"
           | "actor-identity-mismatch"
           | "spawn-quantity-mismatch"
+          | "instant-despawn-without-reconciliation"
           | "missing-reconciliation"
           | "unresolved";
       }[];
@@ -1953,6 +1964,12 @@ export function deriveGameplayWorldModel(
         scriptedRemovalCoverageGaps:
           source.progressionActorAccounting
             ?.scriptedRemovalCoverageGaps ?? 0,
+        provenImmediateDespawnWithoutReconciliation:
+          source.progressionActorAccounting
+            ?.provenImmediateDespawnWithoutReconciliation ?? 0,
+        conditionalDespawnUnknowns:
+          source.progressionActorAccounting
+            ?.conditionalDespawnUnknowns ?? 0,
         unresolvedCounters:
           source.progressionActorAccounting
             ?.unresolvedCounters ?? 0,
@@ -1991,6 +2008,14 @@ export function deriveGameplayWorldModel(
                 [...item.uncoveredScriptedRemovalActorIdentifiers],
               scriptedRemovalCoverage:
                 item.scriptedRemovalCoverage,
+              immediateDespawnActorIdentifiers:
+                [...item.immediateDespawnActorIdentifiers],
+              conditionalDespawnActorIdentifiers:
+                [...item.conditionalDespawnActorIdentifiers],
+              uncoveredImmediateDespawnActorIdentifiers:
+                [...item.uncoveredImmediateDespawnActorIdentifiers],
+              unresolvedConditionalDespawnActorIdentifiers:
+                [...item.unresolvedConditionalDespawnActorIdentifiers],
               quantityComparableGrowths:
                 item.quantityComparableGrowths,
               quantityMatchedGrowths:

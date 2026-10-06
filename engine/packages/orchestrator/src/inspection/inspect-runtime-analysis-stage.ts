@@ -327,6 +327,9 @@ export function analyzeInspectionRuntimeState(
           : { text: item.text }),
       })),
       crossFileCalls,
+      input.parsedEntities.map(
+        (item) => item.parsed,
+      ),
     );
   const chunkLifecycle =
     analyzeChunkLifecycle(
