@@ -7,7 +7,7 @@ use crate::{
     profile::{
         current_base_vmx_path, load_client_profile, native_minecraft_profile, profile_status,
         require_base_matches_native, require_client_matches_native, write_client_profile,
-        write_verified_base_profile, write_verified_client_identities, BaseProfile,
+        write_verified_base_profile, write_verified_client_identities, BaseProfile, BaseState,
         MinecraftProfile, ProfileParity, ProfileStatus,
     },
     provider::{
@@ -658,14 +658,14 @@ impl VirtualClients {
             ));
         }
 
-        match base_state_for_path(&base)?.as_deref() {
-            Some("FINALIZED") => {
+        match base_state_for_path(&base)? {
+            Some(BaseState::Finalized) => {
                 return Err(io::Error::new(
                     io::ErrorKind::AlreadyExists,
                     "Base is already FINALIZED and must not be booted for re-registration",
                 ))
             }
-            Some("FINALIZING") => {
+            Some(BaseState::Finalizing) => {
                 return Err(io::Error::new(
                     io::ErrorKind::InvalidData,
                     "Base is in FINALIZING state; inspect the Base before continuing",
@@ -750,7 +750,7 @@ impl VirtualClients {
             }
         };
 
-        set_base_state_for_path(&base, "REGISTERED")?;
+        set_base_state_for_path(&base, BaseState::Registered)?;
         write_verified_base_profile(&native, &proof.agent_version)
     }
 
@@ -763,7 +763,7 @@ impl VirtualClients {
             )
         })?;
         let base = current_base_vmx_path()?;
-        if base_state_for_path(&base)?.as_deref() != Some("FINALIZED") {
+        if base_state_for_path(&base)? != Some(BaseState::Finalized) {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "Base must be FINALIZED with finalize-base.ps1 before provisioning",
@@ -827,7 +827,7 @@ impl VirtualClients {
             )
         })?;
         let base = current_base_vmx_path()?;
-        if base_state_for_path(&base)?.as_deref() != Some("FINALIZED") {
+        if base_state_for_path(&base)? != Some(BaseState::Finalized) {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "Base must be FINALIZED with finalize-base.ps1 before reprovisioning",

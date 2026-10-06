@@ -4,7 +4,7 @@ mod workstation;
 use crate::{
     client::{ClientId, ClientState},
     paths::{client_root, staging_root},
-    profile::current_base_vmx_path,
+    profile::{current_base_vmx_path, BaseState},
     resources::VIRTUAL_MEMORY_LIMIT_MB,
 };
 use std::{
@@ -365,21 +365,16 @@ pub(crate) fn guest_token_for_path(vmx: &Path) -> io::Result<Option<String>> {
     read_vmx_value(vmx, GUEST_TOKEN_KEY)
 }
 
-pub(crate) fn base_state_for_path(vmx: &Path) -> io::Result<Option<String>> {
-    read_vmx_value(vmx, BASE_STATE_KEY)
+pub(crate) fn base_state_for_path(vmx: &Path) -> io::Result<Option<BaseState>> {
+    read_vmx_value(vmx, BASE_STATE_KEY)?
+        .map(|value| BaseState::from_vmx_str(&value))
+        .transpose()
 }
 
-pub(crate) fn set_base_state_for_path(vmx: &Path, state: &str) -> io::Result<()> {
-    if !matches!(state, "REGISTERED" | "FINALIZING" | "FINALIZED") {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            "invalid Base lifecycle state",
-        ));
-    }
-
+pub(crate) fn set_base_state_for_path(vmx: &Path, state: BaseState) -> io::Result<()> {
     let source = fs::read_to_string(vmx)?;
     let mut lines: Vec<String> = source.lines().map(ToOwned::to_owned).collect();
-    set_vmx_value(&mut lines, BASE_STATE_KEY, state);
+    set_vmx_value(&mut lines, BASE_STATE_KEY, state.as_vmx_str());
     let mut output = lines.join("\n");
     output.push('\n');
     fs::write(vmx, output)
@@ -499,6 +494,7 @@ mod tests {
         listed_as_running, parse_guest_ip, snapshot_list_contains, valid_guest_token,
         BASE_STATE_KEY, GUEST_TOKEN_KEY,
     };
+    use crate::profile::BaseState;
     use std::{
         fs,
         path::PathBuf,
@@ -577,13 +573,12 @@ mod tests {
         let vmx = root.join("Base.vmx");
         fs::write(&vmx, "config.version = \"8\"\n").unwrap();
 
-        super::set_base_state_for_path(&vmx, "REGISTERED").unwrap();
+        super::set_base_state_for_path(&vmx, BaseState::Registered).unwrap();
         assert_eq!(
             super::base_state_for_path(&vmx).unwrap().as_deref(),
-            Some("REGISTERED")
+            Some(BaseState::Registered)
         );
         assert!(fs::read_to_string(&vmx).unwrap().contains(BASE_STATE_KEY));
-        assert!(super::set_base_state_for_path(&vmx, "READY").is_err());
 
         fs::remove_dir_all(root).unwrap();
     }
@@ -620,7 +615,7 @@ mod tests {
         );
         assert_eq!(
             super::base_state_for_path(&base).unwrap().as_deref(),
-            Some("FINALIZED")
+            Some(BaseState::Finalized)
         );
         assert_ne!(virtual_tokens[0], virtual_tokens[1]);
         assert_ne!(virtual_tokens[0], virtual_tokens[2]);

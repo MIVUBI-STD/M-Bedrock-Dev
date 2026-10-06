@@ -2,7 +2,7 @@ use crate::{
     client::{ClientId, ClientState},
     paths::runtime_root,
     profile::current_base_vmx_path,
-    profile::{load_client_profile, profile_status, ProfileParity, ProfileStatus},
+    profile::{load_client_profile, profile_status, BaseState, ProfileParity, ProfileStatus},
     provider::{base_state_for_path, current_platform_provider},
     schema::{inspect_runtime_schema, SchemaStatus},
 };
@@ -47,7 +47,7 @@ pub struct DoctorReport {
     pub max_recommended_virtual_clients: usize,
     pub base_vm_present: bool,
     pub base_vm_stopped: Option<bool>,
-    pub base_state: Option<String>,
+    pub base_state: Option<BaseState>,
     pub runtime_schema: SchemaStatus,
     pub runtime_profile: ProfileStatus,
     pub clients: Vec<DoctorClient>,
@@ -92,7 +92,7 @@ fn select_setup_action(
     native_available: bool,
     base_vm_present: bool,
     profile_parity: ProfileParity,
-    base_state: Option<&str>,
+    base_state: Option<BaseState>,
     clients: &[DoctorClient],
 ) -> SetupAction {
     if matches!(
@@ -107,16 +107,16 @@ fn select_setup_action(
     } else if !base_vm_present {
         SetupAction::PrepareBase
     } else if profile_parity != ProfileParity::Match {
-        if matches!(base_state, Some("FINALIZED") | Some("FINALIZING")) {
+        if matches!(base_state, Some(BaseState::Finalized) | Some(BaseState::Finalizing)) {
             SetupAction::RebuildBase
         } else {
             SetupAction::RegisterBase
         }
-    } else if base_state == Some("FINALIZING") {
+    } else if base_state == Some(BaseState::Finalizing) {
         SetupAction::RebuildBase
-    } else if base_state != Some("REGISTERED") && base_state != Some("FINALIZED") {
+    } else if base_state != Some(BaseState::Registered) && base_state != Some(BaseState::Finalized) {
         SetupAction::RegisterBase
-    } else if base_state == Some("REGISTERED") {
+    } else if base_state == Some(BaseState::Registered) {
         SetupAction::FinalizeBase
     } else if clients.iter().any(|client| !client.provisioned) {
         SetupAction::ProvisionVirtuals
@@ -220,14 +220,14 @@ pub fn doctor() -> DoctorReport {
         runtime_profile.native.is_some(),
         base_vm_present,
         runtime_profile.parity,
-        base_state.as_deref(),
+        base_state,
         &clients,
     );
 
     let ready_for_provisioning = provider.is_some()
         && base_vm_present
         && base_vm_stopped == Some(true)
-        && base_state.as_deref() == Some("FINALIZED")
+        && base_state.as_deref() == Some(BaseState::Finalized)
         && runtime_profile.parity == ProfileParity::Match
         && schema_allows_provisioning(&runtime_schema);
 
@@ -256,7 +256,7 @@ mod tests {
         DoctorClient, SetupAction,
     };
     use crate::{
-        profile::ProfileParity,
+        profile::{BaseState, ProfileParity},
         schema::{SchemaState, SchemaStatus},
     };
 
@@ -333,7 +333,7 @@ mod tests {
                 true,
                 true,
                 ProfileParity::Match,
-                Some("FINALIZED"),
+                Some(BaseState::Finalized),
                 &clients,
             ),
             SetupAction::VerifyIdentities
@@ -351,7 +351,7 @@ mod tests {
                 true,
                 true,
                 ProfileParity::Match,
-                Some("FINALIZED"),
+                Some(BaseState::Finalized),
                 &clients,
             ),
             SetupAction::CreateReadySnapshots
@@ -386,7 +386,7 @@ mod tests {
                 true,
                 true,
                 ProfileParity::Match,
-                Some("REGISTERED"),
+                Some(BaseState::Registered),
                 &clients,
             ),
             SetupAction::FinalizeBase
@@ -399,7 +399,7 @@ mod tests {
                 true,
                 true,
                 ProfileParity::Match,
-                Some("FINALIZING"),
+                Some(BaseState::Finalizing),
                 &clients,
             ),
             SetupAction::RebuildBase
@@ -421,7 +421,7 @@ mod tests {
                 true,
                 true,
                 ProfileParity::Mismatch,
-                Some("FINALIZED"),
+                Some(BaseState::Finalized),
                 &clients,
             ),
             SetupAction::RebuildBase
@@ -433,7 +433,7 @@ mod tests {
                 true,
                 true,
                 ProfileParity::Mismatch,
-                Some("REGISTERED"),
+                Some(BaseState::Registered),
                 &clients,
             ),
             SetupAction::RegisterBase
@@ -509,7 +509,7 @@ mod tests {
                 true,
                 true,
                 ProfileParity::Match,
-                Some("FINALIZED"),
+                Some(BaseState::Finalized),
                 &missing_virtual,
             ),
             SetupAction::ProvisionVirtuals
@@ -524,7 +524,7 @@ mod tests {
                 true,
                 true,
                 ProfileParity::Match,
-                Some("FINALIZED"),
+                Some(BaseState::Finalized),
                 &stale_lineage,
             ),
             SetupAction::ReprovisionVirtuals
@@ -539,7 +539,7 @@ mod tests {
                 true,
                 true,
                 ProfileParity::Match,
-                Some("FINALIZED"),
+                Some(BaseState::Finalized),
                 &no_identity,
             ),
             SetupAction::VerifyIdentities
@@ -554,7 +554,7 @@ mod tests {
                 true,
                 true,
                 ProfileParity::Match,
-                Some("FINALIZED"),
+                Some(BaseState::Finalized),
                 &no_ready,
             ),
             SetupAction::CreateReadySnapshots
@@ -567,7 +567,7 @@ mod tests {
                 true,
                 true,
                 ProfileParity::Match,
-                Some("FINALIZED"),
+                Some(BaseState::Finalized),
                 &ready_clients,
             ),
             SetupAction::Ready
@@ -584,7 +584,7 @@ mod tests {
                 true,
                 true,
                 ProfileParity::Match,
-                Some("FINALIZED"),
+                Some(BaseState::Finalized),
                 &clients,
             ),
             SetupAction::CreateReadySnapshots
@@ -598,7 +598,7 @@ mod tests {
                 true,
                 true,
                 ProfileParity::Match,
-                Some("FINALIZED"),
+                Some(BaseState::Finalized),
                 &clients,
             ),
             SetupAction::Ready

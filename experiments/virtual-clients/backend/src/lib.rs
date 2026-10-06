@@ -23,8 +23,8 @@ pub use diagnostics::{
 pub use doctor::{DoctorClient, DoctorReport, SetupAction};
 pub use error::{ErrorCode, ErrorReport};
 pub use profile::{
-    BaseProfile, BaseProfileSource, MinecraftInstallType, MinecraftProfile, ProfileParity,
-    ProfileStatus,
+    BaseProfile, BaseProfileSource, BaseState, MinecraftInstallType, MinecraftProfile,
+    ProfileParity, ProfileStatus,
 };
 pub use resources::{HostPressure, PressureLevel, VIRTUAL_MEMORY_LIMIT_MB};
 pub use runtime::{ResourceView, RuntimeStatus, VirtualClients};

@@ -32,6 +32,36 @@ pub struct MinecraftProfile {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum BaseState {
+    Registered,
+    Finalizing,
+    Finalized,
+}
+
+impl BaseState {
+    pub(crate) fn as_vmx_str(self) -> &'static str {
+        match self {
+            Self::Registered => "REGISTERED",
+            Self::Finalizing => "FINALIZING",
+            Self::Finalized => "FINALIZED",
+        }
+    }
+
+    pub(crate) fn from_vmx_str(value: &str) -> io::Result<Self> {
+        match value {
+            "REGISTERED" => Ok(Self::Registered),
+            "FINALIZING" => Ok(Self::Finalizing),
+            "FINALIZED" => Ok(Self::Finalized),
+            _ => Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("invalid Base lifecycle state: {value}"),
+            )),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum BaseProfileSource {
     LiveVerified,
 }
@@ -426,7 +456,7 @@ fn normalized_version(value: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::{
-        base_profile_matches_native, normalized_version, BaseProfile, BaseProfileSource,
+        base_profile_matches_native, normalized_version, BaseProfile, BaseProfileSource, BaseState,
         ClientProfile, MinecraftInstallType, MinecraftProfile, BASE_PROFILE_SCHEMA,
         CLIENT_PROFILE_SCHEMA,
     };
@@ -442,6 +472,21 @@ mod tests {
         assert_eq!(normalized_version(".."), None);
         assert_eq!(normalized_version("1..21"), None);
         assert_eq!(normalized_version("version 1.21"), None);
+    }
+
+    #[test]
+    fn base_state_vmx_contract_is_exact() {
+        assert_eq!(BaseState::Registered.as_vmx_str(), "REGISTERED");
+        assert_eq!(BaseState::Finalizing.as_vmx_str(), "FINALIZING");
+        assert_eq!(BaseState::Finalized.as_vmx_str(), "FINALIZED");
+        assert_eq!(
+            BaseState::from_vmx_str("FINALIZED").unwrap(),
+            BaseState::Finalized
+        );
+        assert_eq!(
+            BaseState::from_vmx_str("READY").unwrap_err().kind(),
+            std::io::ErrorKind::InvalidData
+        );
     }
 
     #[test]
