@@ -4,6 +4,7 @@ import {
   deriveScriptProgressionActiveEventEvidence,
   deriveProgressionActiveStateValues,
   deriveScriptProgressionActiveTransitionEvidence,
+  deriveScriptProgressionStateTransitionEvidence,
 } from "../../../src/domains/progression/progression-counter-evidence.js";
 
 const source = {
@@ -168,6 +169,46 @@ describe("progression active event evidence", () => {
         basis: "transition",
       }),
     ]);
+  });
+
+  it("extracts an actual guarded state transition from source", () => {
+    const result =
+      deriveScriptProgressionStateTransitionEvidence(
+        [
+          "function advance(waveState) {",
+          "  if (waveState === 'preparing') {",
+          "    waveState = 'combat_live';",
+          "  }",
+          "}",
+        ].join("\n"),
+        source,
+      );
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        target: "waveState",
+        from: "preparing",
+        to: "combat_live",
+        executionRegion:
+          "function:advance",
+      }),
+    ]);
+  });
+
+  it("does not invent a transition when the assignment targets a different state owner", () => {
+    const result =
+      deriveScriptProgressionStateTransitionEvidence(
+        [
+          "function advance(waveState) {",
+          "  if (waveState === 'preparing') {",
+          "    uiState = 'combat_live';",
+          "  }",
+          "}",
+        ].join("\n"),
+        source,
+      );
+
+    expect(result).toEqual([]);
   });
 
 });

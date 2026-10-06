@@ -7,6 +7,7 @@ import {
   deriveCrossFileCallEdges,
   deriveProgressionActiveStateValues,
   deriveScriptProgressionActiveTransitionEvidence,
+  deriveScriptProgressionStateTransitionEvidence,
   parseScriptFile,
 } from "../../../../analyzers/scripts/src/index.js";
 import {
@@ -1026,6 +1027,97 @@ describe(
       expect(
         result.activeTransitionProofs,
       ).toBeGreaterThan(0);
+    });
+
+    it("proves a guarded transition that skips the authored state-machine contract", () => {
+      const source = [
+        "type WaveState = 'preparing' | 'active' | 'combat_live' | 'victory';",
+        "const waveTransitions: Record<WaveState, readonly WaveState[]> = {",
+        "  preparing: ['active'],",
+        "  active: ['combat_live'],",
+        "  combat_live: ['victory'],",
+        "  victory: [],",
+        "};",
+        "function advance(waveState) {",
+        "  if (waveState === 'preparing') {",
+        "    waveState = 'combat_live';",
+        "  }",
+        "}",
+      ].join("\n");
+      const input = parsed(source);
+      const actual =
+        deriveScriptProgressionStateTransitionEvidence(
+          source,
+          input.parsed.source,
+        );
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+          [],
+          [],
+          undefined,
+          [],
+          [],
+          [],
+          actual,
+        );
+
+      expect(
+        result.invalidStateTransitions,
+      ).toBe(1);
+      expect(
+        result.stateTransitions[0],
+      ).toMatchObject({
+        target: "waveState",
+        from: "preparing",
+        to: "combat_live",
+        tableName:
+          "waveTransitions",
+        status: "invalid",
+        allowedTargets: ["active"],
+      });
+    });
+
+    it("accepts a guarded transition allowed by the authored state-machine contract", () => {
+      const source = [
+        "type WaveState = 'preparing' | 'active' | 'combat_live';",
+        "const waveTransitions: Record<WaveState, readonly WaveState[]> = {",
+        "  preparing: ['active'],",
+        "  active: ['combat_live'],",
+        "  combat_live: [],",
+        "};",
+        "function advance(waveState) {",
+        "  if (waveState === 'preparing') {",
+        "    waveState = 'active';",
+        "  }",
+        "}",
+      ].join("\n");
+      const input = parsed(source);
+      const actual =
+        deriveScriptProgressionStateTransitionEvidence(
+          source,
+          input.parsed.source,
+        );
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+          [],
+          [],
+          undefined,
+          [],
+          [],
+          [],
+          actual,
+        );
+
+      expect(
+        result.validStateTransitions,
+      ).toBe(1);
+      expect(
+        result.invalidStateTransitions,
+      ).toBe(0);
     });
 
     it("uses parsed state-machine declarations to prove a custom active combat state", () => {

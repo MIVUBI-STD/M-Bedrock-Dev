@@ -383,6 +383,23 @@ export interface GameplayWorldModel {
       activeInterproceduralProofs: number;
       activeTransitionProofs: number;
       declaredActiveStateAliases: number;
+      validStateTransitions: number;
+      invalidStateTransitions: number;
+      unresolvedStateTransitions: number;
+      stateTransitions: readonly {
+        scriptId: string;
+        target: string;
+        from: string;
+        to: string;
+        tableName?: string;
+        status:
+          | "valid"
+          | "invalid"
+          | "unresolved";
+        allowedTargets:
+          readonly string[];
+        reason: string;
+      }[];
       unresolvedCounters: number;
       reconciledFromMatchedActorLifecycle: number;
       details: readonly {
@@ -2028,6 +2045,33 @@ export function deriveGameplayWorldModel(
         declaredActiveStateAliases:
           source.progressionActorAccounting
             ?.declaredActiveStateAliases ?? 0,
+        validStateTransitions:
+          source.progressionActorAccounting
+            ?.validStateTransitions ?? 0,
+        invalidStateTransitions:
+          source.progressionActorAccounting
+            ?.invalidStateTransitions ?? 0,
+        unresolvedStateTransitions:
+          source.progressionActorAccounting
+            ?.unresolvedStateTransitions ?? 0,
+        stateTransitions:
+          source.progressionActorAccounting
+            ?.stateTransitions.map((item) => ({
+              scriptId: item.scriptId,
+              target: item.target,
+              from: item.from,
+              to: item.to,
+              ...(item.tableName === undefined
+                ? {}
+                : {
+                    tableName:
+                      item.tableName,
+                  }),
+              status: item.status,
+              allowedTargets:
+                [...item.allowedTargets],
+              reason: item.reason,
+            })) ?? [],
         unresolvedCounters:
           source.progressionActorAccounting
             ?.unresolvedCounters ?? 0,

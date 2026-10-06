@@ -812,6 +812,37 @@ function runtimeEdgeState(
         scenarioLabel ===
           "progression-wave-integrity" &&
         world.progression.actorAccounting
+          .invalidStateTransitions > 0
+      ) {
+        const transitions =
+          world.progression.actorAccounting
+            .stateTransitions
+            .filter((item) =>
+              item.status === "invalid"
+            )
+            .map((item) =>
+              item.target +
+              ":" +
+              item.from +
+              "→" +
+              item.to +
+              " allowed=[" +
+              item.allowedTargets.join(",") +
+              "]"
+            )
+            .sort();
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Selected-artifact source performs guarded gameplay state transition(s) that violate the uniquely correlated authored transition table: " +
+            transitions.join("; ") +
+            ". This is a static design/state-machine mismatch and does not require runtime reproduction.",
+        };
+      }
+      if (
+        scenarioLabel ===
+          "progression-wave-integrity" &&
+        world.progression.actorAccounting
           .provenActiveInstantDespawnWithoutReconciliation > 0
       ) {
         const actors =

@@ -67,6 +67,7 @@ import {
   deriveScriptProgressionActiveCallEvidence,
   deriveScriptProgressionActiveEventEvidence,
   deriveScriptProgressionActiveTransitionEvidence,
+  deriveScriptProgressionStateTransitionEvidence,
 } from "../../../../analyzers/scripts/src/index.js";
 
 export interface InspectionRuntimeAnalysisInput {
@@ -341,6 +342,15 @@ export function analyzeInspectionRuntimeState(
               ),
           }]
     );
+  const progressionStateTransitionEvidence =
+    input.parsedScripts.flatMap((item) =>
+      item.text === undefined
+        ? []
+        : deriveScriptProgressionStateTransitionEvidence(
+            item.text,
+            item.node.source,
+          )
+    );
   const effectiveProgressionActiveEventEvidence = [
     ...progressionActiveEventEvidence,
     ...progressionActiveTransitionEvidence.flatMap(
@@ -414,6 +424,7 @@ export function analyzeInspectionRuntimeState(
       entityEventEvidence,
       effectiveProgressionActiveEventEvidence,
       effectiveProgressionActiveCallEvidence,
+      progressionStateTransitionEvidence,
     );
   const chunkLifecycle =
     analyzeChunkLifecycle(

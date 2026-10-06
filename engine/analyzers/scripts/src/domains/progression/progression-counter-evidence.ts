@@ -53,6 +53,14 @@ export interface ScriptProgressionActiveCallEvidence {
   readonly source: SourceRef;
 }
 
+export interface ScriptProgressionStateTransitionEvidence {
+  readonly target: string;
+  readonly from: string;
+  readonly to: string;
+  readonly executionRegion: string;
+  readonly source: SourceRef;
+}
+
 const COUNTER_NAME =
   /(?:wave|enemy|enemies|mob|mobs|remaining|alive|objective|progress|count)/i;
 
@@ -790,6 +798,204 @@ export function deriveScriptProgressionCounterEvidence(
         b.counterId,
       ) ||
       a.kind.localeCompare(b.kind)
+    );
+}
+
+function guardedStateValue(
+  expression: ts.Expression,
+  file: ts.SourceFile,
+): {
+  readonly target: string;
+  readonly value: string;
+} | undefined {
+  if (
+    ts.isParenthesizedExpression(expression)
+  ) {
+    return guardedStateValue(
+      expression.expression,
+      file,
+    );
+  }
+
+  if (
+    !ts.isBinaryExpression(expression) ||
+    (
+      expression.operatorToken.kind !==
+        ts.SyntaxKind.EqualsEqualsToken &&
+      expression.operatorToken.kind !==
+        ts.SyntaxKind.EqualsEqualsEqualsToken
+    )
+  ) {
+    return undefined;
+  }
+
+  const pairs: readonly [
+    ts.Expression,
+    ts.Expression,
+  ][] = [
+    [expression.left, expression.right],
+    [expression.right, expression.left],
+  ];
+
+  for (const [candidate, literal] of pairs) {
+    const value =
+      literalString(literal);
+    if (value === undefined) continue;
+    const target =
+      candidate.getText(file);
+    if (
+      /(?:state|status|phase|stage|wave|round|mode)/i.test(
+        target,
+      )
+    ) {
+      return {
+        target,
+        value,
+      };
+    }
+  }
+
+  return undefined;
+}
+
+function assignmentsInStatement(
+  statement: ts.Statement,
+  file: ts.SourceFile,
+): readonly {
+  readonly target: string;
+  readonly value: string;
+  readonly node: ts.BinaryExpression;
+}[] {
+  const output: {
+    target: string;
+    value: string;
+    node: ts.BinaryExpression;
+  }[] = [];
+
+  const visit = (node: ts.Node): void => {
+    if (
+      node !== statement &&
+      (
+        ts.isFunctionDeclaration(node) ||
+        ts.isMethodDeclaration(node) ||
+        ts.isArrowFunction(node) ||
+        ts.isFunctionExpression(node)
+      )
+    ) {
+      return;
+    }
+
+    if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind ===
+        ts.SyntaxKind.EqualsToken
+    ) {
+      const target =
+        node.left.getText(file);
+      const value =
+        literalString(node.right);
+      if (
+        value !== undefined &&
+        /(?:state|status|phase|stage|wave|round|mode)/i.test(
+          target,
+        )
+      ) {
+        output.push({
+          target,
+          value,
+          node,
+        });
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(statement);
+  return output;
+}
+
+export function deriveScriptProgressionStateTransitionEvidence(
+  text: string,
+  source: SourceRef,
+): ScriptProgressionStateTransitionEvidence[] {
+  const file = ts.createSourceFile(
+    source.relativePath,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    scriptKind(source.relativePath),
+  );
+  const output:
+    ScriptProgressionStateTransitionEvidence[] = [];
+
+  const visit = (node: ts.Node): void => {
+    if (ts.isIfStatement(node)) {
+      const guarded =
+        guardedStateValue(
+          node.expression,
+          file,
+        );
+      if (guarded) {
+        for (
+          const assignment of
+            assignmentsInStatement(
+              node.thenStatement,
+              file,
+            )
+        ) {
+          if (
+            assignment.target !==
+              guarded.target ||
+            assignment.value ===
+              guarded.value
+          ) {
+            continue;
+          }
+          output.push({
+            target:
+              guarded.target,
+            from:
+              guarded.value,
+            to:
+              assignment.value,
+            executionRegion:
+              executionRegion(
+                assignment.node,
+                file,
+              ),
+            source:
+              nodeSource(
+                file,
+                assignment.node,
+                source,
+              ),
+          });
+        }
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(file);
+
+  return output
+    .filter((item, index, all) =>
+      all.findIndex((candidate) =>
+        candidate.target === item.target &&
+        candidate.from === item.from &&
+        candidate.to === item.to &&
+        candidate.executionRegion ===
+          item.executionRegion &&
+        candidate.source.range?.lineStart ===
+          item.source.range?.lineStart
+      ) === index
+    )
+    .sort((a, b) =>
+      a.target.localeCompare(b.target) ||
+      a.from.localeCompare(b.from) ||
+      a.to.localeCompare(b.to)
     );
 }
 

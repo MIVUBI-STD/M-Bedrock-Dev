@@ -2,6 +2,7 @@ import type {
   CrossFileCallEdge,
   ParsedScriptFile,
   ScriptProgressionCounterEvidence,
+  ScriptProgressionStateTransitionEvidence,
   deriveProgressionActiveStateValues,
 } from "../../../../analyzers/scripts/src/index.js";
 import {
@@ -112,6 +113,21 @@ export interface ProgressionCounterAssessment {
   readonly reasons: readonly string[];
 }
 
+export interface ProgressionStateTransitionAssessment {
+  readonly scriptId: string;
+  readonly target: string;
+  readonly from: string;
+  readonly to: string;
+  readonly tableName?: string;
+  readonly status:
+    | "valid"
+    | "invalid"
+    | "unresolved";
+  readonly allowedTargets:
+    readonly string[];
+  readonly reason: string;
+}
+
 export interface ProgressionActorAccountingAnalysis {
   readonly counters:
     readonly ProgressionCounterAssessment[];
@@ -130,6 +146,11 @@ export interface ProgressionActorAccountingAnalysis {
   readonly activeInterproceduralProofs: number;
   readonly activeTransitionProofs: number;
   readonly declaredActiveStateAliases: number;
+  readonly stateTransitions:
+    readonly ProgressionStateTransitionAssessment[];
+  readonly validStateTransitions: number;
+  readonly invalidStateTransitions: number;
+  readonly unresolvedStateTransitions: number;
   readonly reconciledFromMatchedActorLifecycle: number;
   readonly unresolvedCounters: number;
 }
@@ -1684,6 +1705,145 @@ function counterKey(
   );
 }
 
+function normalizedStateOwner(
+  value: string,
+): string {
+  return value
+    .replace(/[^A-Za-z0-9]/g, "")
+    .replace(
+      /(?:state|status|phase|stage|mode|transitions?)$/i,
+      "",
+    )
+    .toLowerCase();
+}
+
+function stateTransitionAssessments(
+  scripts: readonly NormalizedScript[],
+  actual:
+    readonly ScriptProgressionStateTransitionEvidence[],
+): ProgressionStateTransitionAssessment[] {
+  return actual
+    .map((transition) => {
+      const script =
+        scripts.find(
+          (item) =>
+            item.parsed.source.relativePath ===
+              transition.source.relativePath,
+        );
+      const declarations =
+        script?.parsed
+          .transitionDeclarations ?? [];
+
+      const targetOwner =
+        normalizedStateOwner(
+          transition.target,
+        );
+      const candidates =
+        declarations
+          .filter((item) =>
+            item.from ===
+              transition.from
+          )
+          .filter((item) => {
+            const tableOwner =
+              normalizedStateOwner(
+                item.tableName,
+              );
+            const typeOwner =
+              item.stateType === undefined
+                ? ""
+                : normalizedStateOwner(
+                    item.stateType,
+                  );
+            return (
+              targetOwner.length > 0 &&
+              (
+                tableOwner ===
+                  targetOwner ||
+                typeOwner ===
+                  targetOwner ||
+                tableOwner.startsWith(
+                  targetOwner,
+                ) ||
+                targetOwner.startsWith(
+                  tableOwner,
+                )
+              )
+            );
+          });
+
+      const tableNames =
+        [...new Set(
+          candidates.map(
+            (item) =>
+              item.tableName,
+          ),
+        )];
+
+      if (
+        candidates.length === 0 ||
+        tableNames.length !== 1
+      ) {
+        return {
+          scriptId:
+            script?.parsed.identifier ??
+            transition.source.relativePath,
+          target: transition.target,
+          from: transition.from,
+          to: transition.to,
+          status: "unresolved" as const,
+          allowedTargets: [],
+          reason:
+            candidates.length === 0
+              ? "No uniquely correlated authored transition table owns this guarded state mutation."
+              : "Multiple authored transition tables plausibly own this guarded state mutation.",
+        };
+      }
+
+      const allowedTargets =
+        [...new Set(
+          candidates.flatMap(
+            (item) => item.to,
+          ),
+        )].sort();
+      const tableName =
+        tableNames[0]!;
+      const valid =
+        allowedTargets.includes(
+          transition.to,
+        );
+
+      return {
+        scriptId:
+          script?.parsed.identifier ??
+          transition.source.relativePath,
+        target: transition.target,
+        from: transition.from,
+        to: transition.to,
+        tableName,
+        status:
+          valid
+            ? "valid" as const
+            : "invalid" as const,
+        allowedTargets,
+        reason:
+          valid
+            ? "The guarded source transition is allowed by its uniquely correlated authored transition table."
+            : "The guarded source transition skips or violates the uniquely correlated authored transition table.",
+      };
+    })
+    .sort((a, b) =>
+      a.scriptId.localeCompare(
+        b.scriptId,
+      ) ||
+      a.target.localeCompare(
+        b.target,
+      ) ||
+      a.from.localeCompare(b.from) ||
+      a.to.localeCompare(b.to)
+    );
+}
+
 export function analyzeProgressionActorAccounting(
   inputs:
     readonly ProgressionActorAccountingInput[],
@@ -1699,9 +1859,16 @@ export function analyzeProgressionActorAccounting(
     readonly ScriptProgressionActiveEventEvidence[] = [],
   activeCallEvidence:
     readonly ScriptProgressionActiveCallEvidence[] = [],
+  stateTransitionEvidence:
+    readonly ScriptProgressionStateTransitionEvidence[] = [],
 ): ProgressionActorAccountingAnalysis {
   const scripts =
     inputs.map(normalizedInput);
+  const stateTransitions =
+    stateTransitionAssessments(
+      scripts,
+      stateTransitionEvidence,
+    );
   const evidence = scripts.flatMap(
     (script) => [
       ...variableEvidence(script),
@@ -2510,6 +2677,22 @@ export function analyzeProgressionActorAccounting(
           )
         ),
       ).size,
+    stateTransitions,
+    validStateTransitions:
+      stateTransitions.filter(
+        (item) =>
+          item.status === "valid",
+      ).length,
+    invalidStateTransitions:
+      stateTransitions.filter(
+        (item) =>
+          item.status === "invalid",
+      ).length,
+    unresolvedStateTransitions:
+      stateTransitions.filter(
+        (item) =>
+          item.status === "unresolved",
+      ).length,
     reconciledFromMatchedActorLifecycle:
       counters.filter(
         (item) =>
