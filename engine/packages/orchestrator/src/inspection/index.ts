@@ -25,7 +25,7 @@ export * from "./entity-ai-navigation-diagnostics.js";
 export * from "./entity-ai-stack-analysis.js";
 export * from "./entity-event-evidence.js";
 export * from "./entity-knowledge-analysis.js";
-export * from "./entity-navigation-runtime-classification.js";
+export * from "./entity-navigation-runtime-classification.js";\nexport * from "./environment-hazard-analysis.js";
 export * from "./gameplay-calibration-corpus.js";
 export * from "./gameplay-intent-runtime-stage.js";
 export * from "./gameplay-intent-stage.js";
