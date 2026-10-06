@@ -14,6 +14,8 @@ doctor
 → provision
 → verify Virtual identities are not DUPLICATE
 → start 1
+→ Virtual-01 reaches RUNNING
+→ observe guestToolsReady when VMware Tools becomes available
 → Virtual-01 manually playable
 → inspect memoryLimitMb = 4096
 → inspect hostWorkingSetMb when available
@@ -49,6 +51,7 @@ Required observations:
 - suspend reduces active resource pressure enough to be useful;
 - batch suspend parks all Virtual instances without touching Native;
 - resumed client remains manually playable;
+- guestToolsReady does not report true before VMware Tools is actually available;
 - soft stop normally works;
 - hard stop remains exceptional recovery;
 - reset affects only the selected Virtual;
