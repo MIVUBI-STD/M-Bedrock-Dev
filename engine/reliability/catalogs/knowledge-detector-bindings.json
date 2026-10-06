@@ -824,6 +824,20 @@
       ]
     },
     {
+      "knowledgeId": "permissions-policy.dev-command-scope",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-state-isolation-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-state-isolation-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "permissions-policy.guard-must-be-active",
       "consumer": "capability-exposure",
       "analyzerPaths": [
@@ -866,6 +880,18 @@
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts",
         "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "permissions-policy.relation-dev-capability-gates-action",
+      "consumer": "player-capability-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/capability-mutation-footprint-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/capability-mutation-footprint-analysis.test.ts"
       ]
     },
     {
