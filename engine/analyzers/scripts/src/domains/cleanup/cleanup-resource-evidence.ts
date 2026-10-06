@@ -8,7 +8,7 @@ export type ScriptCleanupResourceSurface =
   | "effect"
   | "scoreboard"
   | "deferred-callback"
-  | "input-permission";
+  | "input-permission"\n  | "mount-relationship";
 
 export interface ScriptCleanupResourceEvidence {
   surface: ScriptCleanupResourceSurface;
@@ -289,6 +289,16 @@ export function deriveScriptCleanupResourceEvidence(
             ? undefined
             : "handle:" + handle,
         );
+      } else if (method === "addRider") {
+        const rider = node.arguments[0]?.getText(file);
+        push(node, "mount-relationship", "acquire",
+          rider === undefined ? undefined : receiver + ":" + rider);
+      } else if (method === "removeRider") {
+        const rider = node.arguments[0]?.getText(file);
+        push(node, "mount-relationship", "release",
+          rider === undefined ? undefined : receiver + ":" + rider);
+      } else if (method === "ejectRiders") {
+        push(node, "mount-relationship", "release", receiver + ":*");
       } else if (method === "clearRun") {
         const handle =
           node.arguments[0] &&
