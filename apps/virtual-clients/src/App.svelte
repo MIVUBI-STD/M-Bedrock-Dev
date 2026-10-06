@@ -54,6 +54,7 @@
   let layoutDialogOpen = false;
   let layoutDisplays: DisplayInfo[] = [];
   let layoutPreference: WindowLayoutPreference = loadWindowLayoutPreference();
+  let identifyGeneration = 0;
   let page: Page = "clients";
   let pageChosen = false;
 
@@ -242,6 +243,7 @@
 
   async function identifyScreens(preference: WindowLayoutPreference) {
     error = undefined;
+    const generation = ++identifyGeneration;
     try {
       const displays = await desktop.displays();
       const selectedDisplay = displays.find((display) => display.index === preference.displayIndex)
@@ -255,7 +257,7 @@
       };
       await desktop.arrangeWindows(request, preference.overlay, true);
       window.setTimeout(() => {
-        if (!disposed) void desktop.arrangeWindows(request, preference.overlay, false).catch(() => {});
+        if (!disposed && generation === identifyGeneration) void desktop.arrangeWindows(request, preference.overlay, false).catch(() => {});
       }, 3000);
     } catch (value) {
       error = presentRuntimeError(value);
@@ -263,6 +265,7 @@
   }
 
   async function applyWindowLayout(preference: WindowLayoutPreference) {
+    identifyGeneration += 1;
     saveWindowLayoutPreference(preference);
     layoutPreference = preference;
     layoutDialogOpen = false;
@@ -271,6 +274,7 @@
 
   async function arrangeWindows() {
     if (busy || loading || refreshRunning) return;
+    identifyGeneration += 1;
     operationStatus = "Waiting for backend confirmation…";
     busy = "arrange";
     error = undefined;
