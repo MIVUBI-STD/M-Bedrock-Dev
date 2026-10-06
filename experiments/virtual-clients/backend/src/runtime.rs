@@ -1,7 +1,10 @@
 use crate::{
     client::{ClientId, ClientState, ClientStatus, IdentityState},
     doctor::{doctor, DoctorReport},
-    profile::{profile_status, require_base_matches_native, ProfileStatus},
+    profile::{
+        profile_status, register_base_from_native, require_base_matches_native, BaseProfile,
+        ProfileStatus,
+    },
     provider::{cleanup_staging, current_platform_provider, runtime_root, Provider},
     resources::{current_host_pressure, start_delay_secs, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
 };
@@ -170,6 +173,11 @@ fn client_status(
 impl VirtualClients {
     pub fn doctor(&self) -> DoctorReport {
         doctor()
+    }
+
+    pub fn register_base(&self) -> io::Result<BaseProfile> {
+        let _lock = OperationLock::acquire()?;
+        register_base_from_native()
     }
 
     pub fn provision(&self) -> io::Result<Vec<ClientStatus>> {
