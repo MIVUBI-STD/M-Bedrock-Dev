@@ -38,6 +38,38 @@
       ]
     },
     {
+      "knowledgeId": "ai-policy.path-invalidated-by-world-mutation",
+      "consumer": "route-mutation-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/route-mutation-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/route-mutation-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "ai-policy.relation-route-contract-validates-world",
+      "consumer": "route-mutation-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/gameplay-route-corridor.ts",
+        "engine/packages/orchestrator/src/inspection/route-mutation-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/route-mutation-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "ai-policy.relation-route-mutation-requires-revalidation",
+      "consumer": "route-mutation-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/route-mutation-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/route-mutation-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "ai-policy.relation-target-gates-path-diagnosis",
       "consumer": "entity-ai-navigation-diagnostics",
       "analyzerPaths": [
@@ -46,6 +78,17 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/entity-ai-navigation-diagnostics.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "ai-policy.route-corridor-contract",
+      "consumer": "route-mutation-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/gameplay-route-corridor.ts",
+        "engine/packages/orchestrator/src/inspection/route-mutation-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/route-mutation-analysis.test.ts"
       ]
     },
     {
