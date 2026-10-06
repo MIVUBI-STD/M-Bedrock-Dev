@@ -209,8 +209,8 @@ jobs:
           if (!(Test-Path $uiAssets -PathType Container)) { throw 'Virtual Clients UI assets missing after install.' }
           if (@(Get-ChildItem $uiAssets -Filter '*.js' -File).Count -lt 1) { throw 'Virtual Clients UI JavaScript bundle missing after install.' }
 
-          & $appExe --probe
-          if ($LASTEXITCODE -ne 0) {
+          $probe = Start-Process -FilePath $appExe -ArgumentList @('--probe') -Wait -PassThru
+          if ($probe.ExitCode -ne 0) {
             $hostLog = Join-Path $env:LOCALAPPDATA 'M-Bedrock\VirtualClients\desktop-host-error.log'
             if (Test-Path -LiteralPath $hostLog -PathType Leaf) {
               Write-Host 'Desktop host error log:'
