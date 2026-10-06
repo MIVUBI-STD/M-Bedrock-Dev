@@ -65,5 +65,6 @@ pub struct ClientStatus {
     pub ready_snapshot: Option<bool>,
     pub memory_limit_mb: Option<u64>,
     pub host_working_set_mb: Option<u64>,
+    pub guest_tools_ready: Option<bool>,
     pub identity: Option<IdentityState>,
 }
