@@ -167,6 +167,7 @@ export const displayList: PayloadValidator<DisplayInfo[]> = (value): value is Di
 export const windowArrangement = shape<WindowArrangementResult>({
   schema: oneOf(2), layout: oneOf("GRID", "FOCUS", "COLUMNS"), displayIndex: integer,
   arranged: array(clientId), missing: array(clientId),
+  overlayApplied: optional(boolean), overlayWarning: optional(nullable(text)),
 });
 export const voidResult: PayloadValidator<void> = (value): value is void =>
   value === undefined || value === null;
