@@ -216,11 +216,12 @@ impl Provider for VmwareFusionProvider {
         let vmx = self.require_client(client)?;
         if !self.running(&vmx)? {
             if has_suspend_state(&vmx) {
-                command_output(
+                command_output_with_timeout(
                     self.vmrun(),
                     ["-T", "fusion", "start", vmx.to_string_lossy().as_ref(), "nogui"],
+                    DISK_STATE_TIMEOUT,
                 )?;
-                wait_for_state(|| self.running(&vmx), true, Duration::from_secs(15))?;
+                wait_for_state(|| self.running(&vmx), true, DISK_STATE_TIMEOUT)?;
             } else {
                 return Ok(ClientState::Stopped);
             }
