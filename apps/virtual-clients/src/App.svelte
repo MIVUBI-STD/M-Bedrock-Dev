@@ -27,7 +27,7 @@
   import type { Page } from "./app/navigation.js";
   import { presentRuntimeError, type RuntimeErrorPresentation } from "./app/runtimeErrorPresentation.js";
   import { setupExperience } from "./app/setupFlow.js";
-  import { loadWindowLayoutPreference, saveWindowLayoutPreference, type WindowLayoutPreference } from "./app/windowLayoutPreference.js";
+  import { loadWindowLayoutPreference, resetWindowLayoutPreference, saveWindowLayoutPreference, type WindowLayoutPreference } from "./app/windowLayoutPreference.js";
 
 
   let snapshot: EngineSnapshot | undefined;
@@ -498,6 +498,7 @@
       onCancel={() => (layoutDialogOpen = false)}
       onApply={applyWindowLayout}
       onIdentify={identifyScreens}
+      onReset={resetWindowLayoutPreference}
     />
   {/if}
 
