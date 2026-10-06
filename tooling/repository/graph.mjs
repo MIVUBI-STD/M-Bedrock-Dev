@@ -41,7 +41,12 @@ function addKnowledgeBindingEdges(catalog, edges, seen) {
         catalog.resources,
         analyzerPath,
       );
-      if (!owner) continue;
+      if (!owner) {
+        throw new Error(
+          "Knowledge binding analyzer path has no registered SOURCE owner: " +
+            analyzerPath,
+        );
+      }
 
       addEdge(edges, seen, {
         from: owner.id,
@@ -55,7 +60,12 @@ function addKnowledgeBindingEdges(catalog, edges, seen) {
         catalog.resources,
         proofPath,
       );
-      if (!owner) continue;
+      if (!owner) {
+        throw new Error(
+          "Knowledge binding proof path has no registered SOURCE owner: " +
+            proofPath,
+        );
+      }
 
       addEdge(edges, seen, {
         from: owner.id,
