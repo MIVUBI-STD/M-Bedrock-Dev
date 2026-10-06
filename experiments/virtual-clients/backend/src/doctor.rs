@@ -31,6 +31,7 @@ pub enum SetupAction {
     ProvisionVirtuals,
     ReprovisionVirtuals,
     VerifyIdentities,
+    CreateReadySnapshots,
     Ready,
 }
 
@@ -75,6 +76,46 @@ fn recommended_by_cpu(logical_cpus: usize) -> usize {
         1
     } else {
         0
+    }
+}
+
+fn select_setup_action(
+    runtime_schema: &SchemaStatus,
+    provider_available: bool,
+    native_available: bool,
+    base_vm_present: bool,
+    profile_parity: ProfileParity,
+    base_state: Option<&str>,
+    clients: &[DoctorClient],
+) -> SetupAction {
+    if matches!(
+        runtime_schema.state,
+        crate::schema::SchemaState::Invalid | crate::schema::SchemaState::NewerThanApp
+    ) {
+        SetupAction::RuntimeDataIncompatible
+    } else if !provider_available {
+        SetupAction::InstallProvider
+    } else if !native_available {
+        SetupAction::InstallNativeMinecraft
+    } else if !base_vm_present {
+        SetupAction::PrepareBase
+    } else if profile_parity != ProfileParity::Match {
+        SetupAction::RegisterBase
+    } else if base_state != Some("FINALIZED") {
+        SetupAction::FinalizeBase
+    } else if clients.iter().any(|client| !client.provisioned) {
+        SetupAction::ProvisionVirtuals
+    } else if clients
+        .iter()
+        .any(|client| client.lineage_parity != ProfileParity::Match)
+    {
+        SetupAction::ReprovisionVirtuals
+    } else if clients.iter().any(|client| !client.identity_provenance) {
+        SetupAction::VerifyIdentities
+    } else if clients.iter().any(|client| !client.ready_snapshot) {
+        SetupAction::CreateReadySnapshots
+    } else {
+        SetupAction::Ready
     }
 }
 
@@ -158,33 +199,15 @@ pub fn doctor() -> DoctorReport {
         })
         .collect();
 
-    let next_setup_action = if matches!(
-        runtime_schema.state,
-        crate::schema::SchemaState::Invalid | crate::schema::SchemaState::NewerThanApp
-    ) {
-        SetupAction::RuntimeDataIncompatible
-    } else if provider.is_none() {
-        SetupAction::InstallProvider
-    } else if runtime_profile.native.is_none() {
-        SetupAction::InstallNativeMinecraft
-    } else if !base_vm_present {
-        SetupAction::PrepareBase
-    } else if runtime_profile.parity != ProfileParity::Match {
-        SetupAction::RegisterBase
-    } else if base_state.as_deref() != Some("FINALIZED") {
-        SetupAction::FinalizeBase
-    } else if clients.iter().any(|client| !client.provisioned) {
-        SetupAction::ProvisionVirtuals
-    } else if clients
-        .iter()
-        .any(|client| client.lineage_parity != ProfileParity::Match)
-    {
-        SetupAction::ReprovisionVirtuals
-    } else if clients.iter().any(|client| !client.identity_provenance) {
-        SetupAction::VerifyIdentities
-    } else {
-        SetupAction::Ready
-    };
+    let next_setup_action = select_setup_action(
+        &runtime_schema,
+        provider.is_some(),
+        runtime_profile.native.is_some(),
+        base_vm_present,
+        runtime_profile.parity,
+        base_state.as_deref(),
+        &clients,
+    );
 
     DoctorReport {
         platform: std::env::consts::OS,
@@ -211,7 +234,30 @@ pub fn doctor() -> DoctorReport {
 
 #[cfg(test)]
 mod tests {
-    use super::{recommended_by_cpu, recommended_by_memory};
+    use super::{
+        recommended_by_cpu, recommended_by_memory, select_setup_action, DoctorClient, SetupAction,
+    };
+    use crate::{
+        profile::ProfileParity,
+        schema::{SchemaState, SchemaStatus},
+    };
+
+    fn compatible_schema() -> SchemaStatus {
+        SchemaStatus {
+            state: SchemaState::Ready,
+            schema: Some(crate::schema::CURRENT_RUNTIME_SCHEMA),
+        }
+    }
+
+    fn client(ready_snapshot: bool, identity_provenance: bool) -> DoctorClient {
+        DoctorClient {
+            id: "Virtual-test",
+            provisioned: true,
+            ready_snapshot,
+            lineage_parity: ProfileParity::Match,
+            identity_provenance,
+        }
+    }
 
     #[test]
     fn memory_capacity_is_bounded() {
@@ -228,5 +274,79 @@ mod tests {
         assert_eq!(recommended_by_cpu(6), 2);
         assert_eq!(recommended_by_cpu(4), 1);
         assert_eq!(recommended_by_cpu(2), 0);
+    }
+
+    #[test]
+    fn identity_proof_precedes_ready_snapshot_setup() {
+        let clients = vec![
+            client(false, false),
+            client(false, false),
+            client(false, false),
+        ];
+        assert_eq!(
+            select_setup_action(
+                &compatible_schema(),
+                true,
+                true,
+                true,
+                ProfileParity::Match,
+                Some("FINALIZED"),
+                &clients,
+            ),
+            SetupAction::VerifyIdentities
+        );
+
+        let clients = vec![
+            client(false, true),
+            client(false, true),
+            client(false, true),
+        ];
+        assert_eq!(
+            select_setup_action(
+                &compatible_schema(),
+                true,
+                true,
+                true,
+                ProfileParity::Match,
+                Some("FINALIZED"),
+                &clients,
+            ),
+            SetupAction::CreateReadySnapshots
+        );
+    }
+
+    #[test]
+    fn ready_requires_all_ready_snapshots() {
+        let mut clients = vec![
+            client(true, true),
+            client(true, true),
+            client(false, true),
+        ];
+        assert_eq!(
+            select_setup_action(
+                &compatible_schema(),
+                true,
+                true,
+                true,
+                ProfileParity::Match,
+                Some("FINALIZED"),
+                &clients,
+            ),
+            SetupAction::CreateReadySnapshots
+        );
+
+        clients[2].ready_snapshot = true;
+        assert_eq!(
+            select_setup_action(
+                &compatible_schema(),
+                true,
+                true,
+                true,
+                ProfileParity::Match,
+                Some("FINALIZED"),
+                &clients,
+            ),
+            SetupAction::Ready
+        );
     }
 }

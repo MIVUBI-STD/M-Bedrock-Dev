@@ -80,6 +80,7 @@ provision
 → verify-identities
 → vmIdentity = UNIQUE for all three
 → windowsIdentity = UNIQUE for all three
+→ doctor nextSetupAction = CREATE_READY_SNAPSHOTS
 → stop all
 → start 1
 → Virtual-01 RUNNING
@@ -97,6 +98,7 @@ provision
 → reset
 → start again and verify account session remains usable
 → repeat for Virtual-02 / Virtual-03
+→ doctor nextSetupAction = READY
 → resources 3
 → start 3
 → open Native manually

@@ -18,6 +18,7 @@ provision
 
 start 3
 verify-identities
+→ doctor nextSetupAction = CREATE_READY_SNAPSHOTS
 
 start 1
 → configure Virtual-01
@@ -27,6 +28,7 @@ stop Virtual-01
 set-ready Virtual-01
 
 repeat for Virtual-02 / Virtual-03
+→ doctor nextSetupAction = READY
 
 Base must never contain a Microsoft/Minecraft user session. Account state belongs to each provisioned Virtual only.
 
