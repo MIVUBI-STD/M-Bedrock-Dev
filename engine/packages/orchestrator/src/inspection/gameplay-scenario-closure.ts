@@ -63,9 +63,9 @@ export function assessGameplayScenarioClosure(
         narrowTestQuestion:
           "In scenario '" +
           scenarioLabel +
-          "', directly exercise and observe this unresolved dependency: " +
+          "', resolve this unresolved dependency from selected-artifact source, ownership, reachability, lifecycle, cross-domain, or formal evidence first: " +
           edge.purpose +
-          ". Does actual gameplay satisfy it without relying on inferred or unsupported semantics?",
+          ". Do not request Minecraft/player execution unless the unresolved fact is later reclassified as explicitly runtime-native.",
         evidenceIds: [...edge.evidenceIds],
       };
     });
@@ -155,8 +155,9 @@ export function assessGameplayScenarioClosure(
   }
   if (detectionGapCausalLinkIds.length > 0) {
     reasons.push(
-      "Causal gameplay links remain unproven and require detection work: " +
-      detectionGapCausalLinkIds.join(", ") + ".",
+      "Causal gameplay links remain unproven and require source-first detection/proof work: " +
+      detectionGapCausalLinkIds.join(", ") +
+      ". They remain explicit gray-zone evidence and must not be treated as safe or converted directly into player testing.",
     );
   }
   if (missingRequiredKnowledgeIds.length > 0) {

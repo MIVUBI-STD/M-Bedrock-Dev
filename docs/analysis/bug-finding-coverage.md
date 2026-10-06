@@ -338,6 +338,8 @@ Timing-sensitive claims must explicitly prove event ordering and stale/new owner
 
 Runtime verification is only for behavior static/package/formal reasoning cannot decide, such as native pathfinding/collision, actual simulation, client/server ordering, multi-client visual divergence, rendering/input, or performance manifestation.
 
+A `DETECTION_GAP` is a source/proof obligation, not a manual-test instruction. It stays visible as gray-zone evidence and must continue through selected-artifact, ownership, reachability, lifecycle, cross-domain, and formal proof before any runtime escalation.
+
 `runtimeLastResort` means runtime is available only as the final escalation tier; it does **not** mean a Minecraft/local-player test is already required. A validation group becomes `NARROW_RUNTIME_VERIFICATION` only when the unresolved claim is explicitly classified `runtimeRequired` after static/cross-domain/formal substitutions are exhausted.
 
 Each unresolved runtime item becomes exactly one narrow Audit Obligation/question.
