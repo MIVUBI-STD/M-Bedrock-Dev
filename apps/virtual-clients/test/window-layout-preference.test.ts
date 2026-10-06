@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import {
   DEFAULT_WINDOW_LAYOUT,
   loadWindowLayoutPreference,
+  defaultWindowLayoutPreference,
   resetWindowLayoutPreference,
   saveWindowLayoutPreference,
 } from "../src/app/windowLayoutPreference.js";
@@ -38,6 +39,7 @@ describe("Window Layout preference", () => {
     value.overlay.labels["Virtual-02"] = "Roommaster";
     saveWindowLayoutPreference(value);
     expect(loadWindowLayoutPreference()).toEqual(value);
+    expect(defaultWindowLayoutPreference()).toEqual(DEFAULT_WINDOW_LAYOUT);
     expect(resetWindowLayoutPreference()).toEqual(DEFAULT_WINDOW_LAYOUT);
   });
 
