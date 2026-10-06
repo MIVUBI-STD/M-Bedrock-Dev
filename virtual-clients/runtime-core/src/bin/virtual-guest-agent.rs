@@ -197,7 +197,7 @@ fn interactive_session_available() -> bool {
     let output = std::process::Command::new("powershell.exe")
         .args([
             "-NoLogo", "-NoProfile", "-NonInteractive", "-Command",
-            "$session = (Get-Process -Id $PID).SessionId; $interactive = @(Get-Process explorer -ErrorAction SilentlyContinue | Where-Object { $_.SessionId -ne 0 }).Count -gt 0; ($session -ne 0) -and $interactive",
+            "$session = (Get-Process -Id $PID).SessionId; $interactive = @(Get-Process explorer -ErrorAction SilentlyContinue | Where-Object { $_.SessionId -eq $session }).Count -gt 0; ($session -ne 0) -and $interactive",
         ])
         .output();
     output.ok()
