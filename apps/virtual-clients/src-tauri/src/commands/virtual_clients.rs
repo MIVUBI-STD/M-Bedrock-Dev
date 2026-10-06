@@ -34,6 +34,7 @@ async fn run(command: &'static str, args: Vec<String>, on_progress: Option<Chann
 #[tauri::command] pub async fn virtual_clients_set_ready(client: String, on_progress: Option<Channel<OperationProgress>>) -> Result<String,String> { run("set-ready", vec![client], on_progress).await }
 #[tauri::command] pub async fn virtual_clients_reset(client: String, on_progress: Option<Channel<OperationProgress>>) -> Result<String,String> { run("reset", vec![client], on_progress).await }
 #[tauri::command] pub async fn virtual_clients_open(client: String, on_progress: Option<Channel<OperationProgress>>) -> Result<String,String> { run("open", vec![client], on_progress).await }
+#[tauri::command] pub async fn virtual_clients_launch_minecraft(client: String, on_progress: Option<Channel<OperationProgress>>) -> Result<String,String> { run("launch-minecraft", vec![client], on_progress).await }
 #[tauri::command] pub async fn virtual_clients_reprovision(client: String, on_progress: Option<Channel<OperationProgress>>) -> Result<String,String> {
     run("reprovision", vec![client, "--destroy-account-state".to_string()], on_progress).await
 }
