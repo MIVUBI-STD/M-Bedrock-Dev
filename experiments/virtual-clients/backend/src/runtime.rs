@@ -1,5 +1,6 @@
 use crate::{
     client::{ClientId, ClientState, ClientStatus, IdentityState},
+    diagnostics::{collect as collect_diagnostics, DiagnosticsReport},
     doctor::{doctor, DoctorReport},
     guest::{query_guest_status, GuestStatus},
     paths::runtime_root,
@@ -284,6 +285,10 @@ impl VirtualClients {
 
     pub fn check_update(&self) -> io::Result<UpdateCheck> {
         check_update()
+    }
+
+    pub fn diagnostics(&self) -> io::Result<DiagnosticsReport> {
+        collect_diagnostics(self.status()?)
     }
 
     pub fn register_base(&self) -> io::Result<BaseProfile> {
