@@ -63,8 +63,3 @@ export function defaultWindowLayoutPreference(): WindowLayoutPreference {
   return structuredClone(DEFAULT_WINDOW_LAYOUT);
 }
 
-export function resetWindowLayoutPreference(): WindowLayoutPreference {
-  const preference = defaultWindowLayoutPreference();
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(preference));
-  return preference;
-}
