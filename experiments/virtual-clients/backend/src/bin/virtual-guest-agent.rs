@@ -3,17 +3,19 @@ use m_bedrock_virtual_clients_core::{
     profile::native_minecraft_profile,
 };
 use std::{
-    io::{Read, Write},
+    io::{self, Read, Write},
     net::{TcpListener, TcpStream},
+    process::Command,
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let token = guest_agent_token()?;
     let listener = TcpListener::bind(("0.0.0.0", GUEST_AGENT_PORT))?;
 
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
-                let _ = handle(stream);
+                let _ = handle(stream, &token);
             }
             Err(error) => eprintln!("guest agent accept error: {error}"),
         }
@@ -22,8 +24,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn handle(mut stream: TcpStream) -> Result<(), Box<dyn std::error::Error>> {
-    let mut request = [0_u8; 2048];
+fn handle(mut stream: TcpStream, token: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let mut request = [0_u8; 4096];
     let size = stream.read(&mut request)?;
     let request = String::from_utf8_lossy(&request[..size]);
     let first_line = request.lines().next().unwrap_or_default();
@@ -31,6 +33,19 @@ fn handle(mut stream: TcpStream) -> Result<(), Box<dyn std::error::Error>> {
     if first_line != "GET /status HTTP/1.1" {
         stream.write_all(
             b"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+        )?;
+        return Ok(());
+    }
+
+    let supplied = request.lines().find_map(|line| {
+        let (name, value) = line.split_once(':')?;
+        name.eq_ignore_ascii_case("X-Virtual-Clients-Token")
+            .then(|| value.trim())
+    });
+
+    if supplied != Some(token) {
+        stream.write_all(
+            b"HTTP/1.1 401 Unauthorized\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
         )?;
         return Ok(());
     }
@@ -48,4 +63,50 @@ fn handle(mut stream: TcpStream) -> Result<(), Box<dyn std::error::Error>> {
     );
     stream.write_all(response.as_bytes())?;
     Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn guest_agent_token() -> io::Result<String> {
+    let program_files = std::env::var_os("ProgramFiles")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "ProgramFiles is unavailable"))?;
+    let vmtoolsd = std::path::PathBuf::from(program_files)
+        .join("VMware")
+        .join("VMware Tools")
+        .join("vmtoolsd.exe");
+    if !vmtoolsd.is_file() {
+        return Err(io::Error::new(
+            io::ErrorKind::NotFound,
+            format!("VMware Tools vmtoolsd.exe is missing: {}", vmtoolsd.display()),
+        ));
+    }
+
+    let output = Command::new(vmtoolsd)
+        .args([
+            "--cmd",
+            "info-get guestinfo.virtualclients.token",
+        ])
+        .output()?;
+    if !output.status.success() {
+        return Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            "Guest Agent token is not available from VMware guestinfo",
+        ));
+    }
+
+    let token = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if token.len() != 64 || !token.chars().all(|character| character.is_ascii_hexdigit()) {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Guest Agent token has an invalid format",
+        ));
+    }
+    Ok(token)
+}
+
+#[cfg(not(target_os = "windows"))]
+fn guest_agent_token() -> io::Result<String> {
+    Err(io::Error::new(
+        io::ErrorKind::Unsupported,
+        "Virtual Guest Agent currently targets Windows guests",
+    ))
 }
