@@ -43,6 +43,7 @@ import type { InventoryContractAnalysis } from "../inventory-contract-analysis.j
 import type { InventoryRestoreOwnershipAnalysis } from "../inventory-restore-ownership-analysis.js";
 import type { ReleaseIdentityAnalysis } from "../release-identity-analysis.js";
 import type { EntityAiStackAnalysis } from "../entity-ai-stack-analysis.js";
+import type { EntityPopulationSourceAnalysis } from "../inspection/entity-population-analysis.js";
 import type { RouteNavigationEnvironmentAnalysis } from "../route-navigation-environment-analysis.js";
 import type { CombatLifecycleAnalysis } from "../combat-lifecycle-analysis.js";
 import type { CombatRuntimeTelemetryAnalysis } from "../combat-runtime-telemetry-analysis.js";
@@ -189,6 +190,7 @@ export interface InspectDirectoryResult {
   parsedStructures: number;
   entities: number;
   entityAiStack: EntityAiStackAnalysis;
+  entityPopulation: EntityPopulationSourceAnalysis;
   routeNavigationEnvironment: RouteNavigationEnvironmentAnalysis;
   entityKnowledge: {
     analyzed: number;

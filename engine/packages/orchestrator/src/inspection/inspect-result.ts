@@ -298,6 +298,7 @@ export function buildInspectionResult(
 
   const {
     entityAiStack,
+    entityPopulation,
     routeNavigationEnvironment,
     structureRuntime,
     scriptStructureLoads,
@@ -711,6 +712,7 @@ export function buildInspectionResult(
     parsedStructures,
     entities: parsedEntities.length,
     entityAiStack,
+    entityPopulation,
     routeNavigationEnvironment,
     entityKnowledge: {
       analyzed:

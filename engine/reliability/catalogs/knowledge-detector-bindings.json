@@ -505,6 +505,32 @@
       ]
     },
     {
+      "knowledgeId": "population-policy.hidden-spawner-audit",
+      "consumer": "entity-population-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/entity-population-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/entities/test/entity.test.ts",
+        "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "population-policy.wave-count-registry",
+      "consumer": "progression-actor-accounting-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/progression/progression-counter-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/progression-actor-accounting-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/progression/progression-counter-evidence.test.ts",
+        "engine/packages/orchestrator/test/inspection/progression-actor-accounting-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "round-policy.cleanup-after-reward-journal",
       "consumer": "reward-source-analysis",
       "analyzerPaths": [

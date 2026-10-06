@@ -64,6 +64,10 @@ import {
   commandContextDiagnostics,
 } from "./command-context-analysis.js";
 import {
+  analyzeEntityPopulationSources,
+  entityPopulationSourceDiagnostics,
+} from "./entity-population-analysis.js";
+import {
   deriveEntityEventExternalEvidence,
 } from "./entity-event-evidence.js";
 import {
@@ -246,6 +250,18 @@ export function analyzeInspectionRuntimeState(
             : { text: item.text }),
         }))
       : [];
+  const entityPopulation =
+    analyzeEntityPopulationSources(
+      input.parsedEntities.map(
+        (item) => item.parsed,
+      ),
+    );
+  diagnostics.push(
+    ...entityPopulationSourceDiagnostics(
+      entityPopulation,
+    ),
+  );
+
   const entityAiStack =
     input.entityAiStack;
   const routeNavigationEnvironment =
@@ -729,6 +745,7 @@ export function analyzeInspectionRuntimeState(
     worldRuleAuthority,
     playerCapabilitySurfaces,
     entityAiStack,
+    entityPopulation,
     routeNavigationEnvironment,
     structureRuntime,
     scriptStructureLoads,
