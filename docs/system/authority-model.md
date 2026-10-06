@@ -153,6 +153,43 @@ When a resource moves physically, update its path while retaining its semantic I
 
 When a resource is no longer active, retire or remove it from current routing. Do not preserve current-tree duplicates merely for backward naming compatibility unless an explicit external compatibility contract requires them.
 
+### Update gate
+
+Updating data means updating the existing owner whenever identity is unchanged.
+
+```text
+new information
+→ resolve stable resource ID
+→ existing resource?
+   ├─ yes → update owner in place
+   └─ no  → classify/register new resource
+→ refresh relationships/bindings
+→ validate consumer reachability
+```
+
+Do not create `-new`, `-latest`, copy, alias, or replacement owners for ordinary updates.
+
+### Move gate
+
+A physical move changes `path`, not semantic identity.
+
+For documents, preserve frontmatter `id`. Update Router links and any explicit Graph/binding source that addresses the old path.
+
+### Retire gate
+
+`RETIRED` means excluded from active access:
+
+```text
+mark/decide retirement
+→ remove Router links
+→ remove active Graph/binding relationships
+→ remove active consumers
+→ retain only if a compatibility/history reason requires the current-tree artifact
+→ otherwise remove from current tree and rely on Git history
+```
+
+No active Graph edge may reference a RETIRED resource.
+
 ## Current-state access boundary
 
 Planning and Workspace remain directly routed current-state owners.
