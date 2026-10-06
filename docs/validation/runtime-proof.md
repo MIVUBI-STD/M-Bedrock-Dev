@@ -2,7 +2,7 @@
 id: document.validation.runtime-proof
 class: DOCUMENT
 domain: validation
-role: REFERENCE
+role: WORKFLOW
 authority: CANONICAL
 lifecycle: ACTIVE
 ---
