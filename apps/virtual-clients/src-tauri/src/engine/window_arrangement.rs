@@ -34,6 +34,10 @@ pub struct WindowArrangementResult {
     pub display_index: usize,
     pub arranged: Vec<String>,
     pub missing: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub overlay_applied: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub overlay_warning: Option<String>,
 }
 
 fn validate_request(request: &WindowLayoutRequest) -> io::Result<()> {
@@ -339,6 +343,8 @@ pub fn arrange_with_slots(request: WindowLayoutRequest) -> io::Result<Arrangemen
             display_index: request.display_index,
             arranged,
             missing: discovery.missing,
+            overlay_applied: None,
+            overlay_warning: None,
         },
         slots: arranged_slots,
     })
