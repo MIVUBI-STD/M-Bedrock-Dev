@@ -26,6 +26,7 @@ pub fn run() {
             commands::virtual_clients::virtual_clients_verify_identities,
             commands::virtual_clients::virtual_clients_stage_update,
             commands::virtual_clients::virtual_clients_start,
+            commands::virtual_clients::virtual_clients_start_client,
             commands::virtual_clients::virtual_clients_suspend,
             commands::virtual_clients::virtual_clients_stop,
             commands::virtual_clients::virtual_clients_restart,

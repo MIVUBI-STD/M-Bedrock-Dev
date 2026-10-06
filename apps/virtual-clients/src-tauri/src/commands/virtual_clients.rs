@@ -19,6 +19,7 @@ async fn run(command: &'static str, args: Vec<String>) -> Result<String, String>
 #[tauri::command] pub async fn virtual_clients_verify_identities() -> Result<String,String> { run("verify-identities", vec![]).await }
 #[tauri::command] pub async fn virtual_clients_stage_update() -> Result<String,String> { run("stage-update", vec![]).await }
 #[tauri::command] pub async fn virtual_clients_start(count: u8) -> Result<String,String> { run("start", vec![count.to_string()]).await }
+#[tauri::command] pub async fn virtual_clients_start_client(client: String) -> Result<String,String> { run("start-client", vec![client]).await }
 #[tauri::command] pub async fn virtual_clients_suspend(client: Option<String>) -> Result<String,String> { run("suspend", client.into_iter().collect()).await }
 #[tauri::command] pub async fn virtual_clients_stop(client: Option<String>) -> Result<String,String> { run("stop", client.into_iter().collect()).await }
 #[tauri::command] pub async fn virtual_clients_restart(client: String) -> Result<String,String> { run("restart", vec![client]).await }

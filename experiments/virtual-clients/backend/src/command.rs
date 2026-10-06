@@ -141,6 +141,9 @@ fn execute_value(command: &str, args: &[String]) -> io::Result<Value> {
                 .map_err(|_| input_error("virtual client count must be an integer"))?;
             to_value(app.start(count)?)
         }
+        "start-client" => {
+            to_value(app.start_client(parse_client(one_arg(command, args)?)?)?)
+        }
         "suspend" => {
             let client = match args {
                 [] => None,

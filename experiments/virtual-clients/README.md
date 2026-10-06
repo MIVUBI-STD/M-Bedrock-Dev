@@ -81,7 +81,7 @@ Virtual-02   virtual client 2
 Virtual-03   virtual client 3
 ```
 
-Virtual numbering never includes Native.
+Virtual numbering never includes Native. Batch start keeps prefix semantics, while the desktop per-client Start control uses `start-client` and affects only the selected Virtual.
 
 ```text
 start 1 → Virtual-01
@@ -209,6 +209,7 @@ provision
 status
 resources <1-3>
 start <1-3>
+start-client <Virtual-01|Virtual-02|Virtual-03>
 verify-identities
 
 open <Virtual-01|Virtual-02|Virtual-03>

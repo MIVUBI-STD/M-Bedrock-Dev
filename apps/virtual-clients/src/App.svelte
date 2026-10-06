@@ -120,7 +120,7 @@
     const primary = primaryClientAction(available);
     if (!primary) return;
     if (primary.kind === "open") return mutate(`open-${client.id}`, () => backend.open(client.id));
-    return mutate(`start-${client.id}`, () => backend.start(Number(client.id.slice(-2))));
+    return mutate(`start-${client.id}`, () => backend.startClient(client.id));
   }
 
   async function startAll() {

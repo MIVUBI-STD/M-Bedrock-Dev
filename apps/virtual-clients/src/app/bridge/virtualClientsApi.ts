@@ -72,6 +72,7 @@ export const backend = {
   verifyIdentities: () => invokePublic<unknown>("virtual_clients_verify_identities"),
   stageUpdate: () => invokePublic<unknown>("virtual_clients_stage_update"),
   start: (count: number) => invokePublic<unknown>("virtual_clients_start", { count }),
+  startClient: (client: ClientId) => invokePublic<unknown>("virtual_clients_start_client", { client }),
   suspend: (client?: ClientId) => invokePublic<unknown>("virtual_clients_suspend", { client }),
   stop: (client?: ClientId) => invokePublic<unknown>("virtual_clients_stop", { client }),
   restart: (client: ClientId) => invokePublic<unknown>("virtual_clients_restart", { client }),

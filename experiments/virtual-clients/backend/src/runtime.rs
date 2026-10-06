@@ -827,6 +827,14 @@ impl VirtualClients {
         )
     }
 
+    pub fn start_client(&self, client: ClientId) -> io::Result<ClientStatus> {
+        self.record(
+            OperationKind::Start,
+            Some(client.as_str().to_string()),
+            self.start_client_inner(client),
+        )
+    }
+
     pub fn suspend(&self, client: Option<ClientId>) -> io::Result<Vec<ClientStatus>> {
         let target = client
             .map(|client| client.as_str().to_string())
@@ -1312,20 +1320,34 @@ impl VirtualClients {
     }
 
     fn start_inner(&self, count: usize) -> io::Result<Vec<ClientStatus>> {
-        let resources = self.resources(count)?;
-        require_base_matches_native()?;
-        let inactive = resources.suspended_virtual_clients + resources.stopped_virtual_clients;
-
-        if inactive > 0 && !resources.pressure.can_start_virtual {
+        if !(1..=MAX_VIRTUAL_CLIENTS).contains(&count) {
             return Err(io::Error::new(
-                io::ErrorKind::Other,
-                format!(
-                    "host memory pressure is {:?}; suspend another Virtual or free host memory before starting more instances",
-                    resources.pressure.level
-                ),
+                io::ErrorKind::InvalidInput,
+                "virtual client count must be within the configured engine policy",
             ));
         }
+        let targets: Vec<ClientId> = ClientId::VIRTUAL.into_iter().take(count).collect();
+        self.start_targets(targets)
+    }
 
+    fn start_client_inner(&self, client: ClientId) -> io::Result<ClientStatus> {
+        if client.is_native() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Native lifecycle is managed manually on the host",
+            ));
+        }
+        let mut result = self.start_targets(vec![client])?;
+        result.pop().ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::Other,
+                "selected Virtual start returned no client status",
+            )
+        })
+    }
+
+    fn start_targets(&self, targets: Vec<ClientId>) -> io::Result<Vec<ClientStatus>> {
+        require_base_matches_native()?;
         let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(
@@ -1334,16 +1356,21 @@ impl VirtualClients {
             )
         })?;
 
-        let targets: Vec<ClientId> = ClientId::VIRTUAL.into_iter().take(count).collect();
         let native_profile = native_minecraft_profile();
-        let mut result = Vec::with_capacity(count);
+        let target_count = targets.len();
+        let mut result = Vec::with_capacity(target_count);
         let mut started_by_batch: Vec<(ClientId, ClientState)> = Vec::new();
 
         for (index, client) in targets.into_iter().enumerate() {
             require_client_matches_native(client)?;
             require_verified_vm_identity(provider.as_ref(), client)?;
             let original_state = provider.status(client)?;
-            validate_lifecycle_action(client, LifecycleAction::Start, original_state, false)?;
+            validate_lifecycle_action(
+                client,
+                LifecycleAction::Start,
+                original_state,
+                provider.has_ready(client).unwrap_or(false),
+            )?;
 
             if original_state != ClientState::Running {
                 let live_pressure = current_host_pressure();
@@ -1423,7 +1450,7 @@ impl VirtualClients {
                 client,
             )?);
 
-            if index + 1 < count {
+            if index + 1 < target_count {
                 let delay = start_delay_secs(current_host_pressure().level);
                 thread::sleep(Duration::from_secs(delay));
             }
@@ -1878,6 +1905,17 @@ mod tests {
         fn guest_ip_for_path(&self, _vmx: &Path) -> io::Result<Option<String>> {
             Self::unsupported()
         }
+    }
+
+    #[test]
+    fn selected_start_target_is_not_prefix_batch() {
+        let selected = ClientId::Virtual02;
+        let targets = vec![selected];
+        assert_eq!(targets, vec![ClientId::Virtual02]);
+        assert_ne!(
+            targets,
+            ClientId::VIRTUAL.into_iter().take(2).collect::<Vec<_>>()
+        );
     }
 
     #[test]
