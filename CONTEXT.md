@@ -61,6 +61,23 @@ Artifact
 
 Repository task planning is a separate control-plane concern. It may select affected work and reuse valid results, but it never upgrades semantic/runtime proof or owns Minecraft behavior.
 
+## Execution model
+
+ChatGPT repository work is remote-GitHub-first. A local PC/toolchain is optional and is not part of the normal completion contract.
+
+```text
+REMOTE_GITHUB
+→ canonical owner/source
+→ bounded mutation
+→ exact-head source/static verification
+→ STOP
+
+higher execution context
+→ only for claims inherently requiring artifact/Minecraft/runtime execution
+```
+
+Local npm/TypeScript/Vitest execution may strengthen proof when independently available, but absence of local execution does not make source-level repository work incomplete.
+
 ## Engineering invariants
 
 - one semantic owner per responsibility;
