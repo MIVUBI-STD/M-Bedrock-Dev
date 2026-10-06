@@ -22,6 +22,7 @@ pub struct BasePreparationReport {
     pub graphics_3d_enabled: Option<bool>,
     pub network_present: Option<bool>,
     pub network_start_connected: Option<bool>,
+    pub network_connection_type: Option<String>,
 }
 
 pub fn inspect_base_preparation() -> io::Result<BasePreparationReport> {
@@ -63,6 +64,8 @@ pub fn inspect_base_preparation() -> io::Result<BasePreparationReport> {
                 .flatten()
         })
         .map(|value| value.eq_ignore_ascii_case("TRUE"));
+    let network_connection_type = vmx
+        .and_then(|path| read_vmx_value(path, "ethernet0.connectionType").ok().flatten());
 
     Ok(BasePreparationReport {
         platform: std::env::consts::OS,
@@ -81,6 +84,7 @@ pub fn inspect_base_preparation() -> io::Result<BasePreparationReport> {
         graphics_3d_enabled,
         network_present,
         network_start_connected,
+        network_connection_type,
     })
 }
 
@@ -105,6 +109,7 @@ mod tests {
             graphics_3d_enabled: Some(true),
             network_present: Some(true),
             network_start_connected: Some(true),
+            network_connection_type: Some("nat".into()),
         };
         let json = serde_json::to_value(report).unwrap();
         assert_eq!(json["basePresent"], true);
