@@ -77,3 +77,50 @@ runtime-schema.json
 ```
 
 Deleting VM/runtime data is a separate explicit destructive action.
+
+## Implemented backend distribution
+
+Current backend distribution now includes:
+
+- current-user Windows installer definition;
+- exact-SHA draft release workflow;
+- release provenance + SHA256SUMS;
+- read-only startup update check;
+- internal HTTPS transport using the operating-system trust store;
+- installer staging with SHA-256 verification;
+- staged-update metadata stored under Runtime data;
+- apply readiness requiring compatible runtime schema and all Virtual instances fully stopped.
+
+Runtime self-apply remains disabled until trusted installer signing and signature verification are accepted.
+
+## Update staging flow
+
+```text
+check-update
+→ UPDATE_AVAILABLE
+→ stage-update
+→ download installer from configured GitHub release
+→ verify release-channel URL
+→ verify SHA-256
+→ atomic stage
+→ UPDATE_STAGED
+```
+
+Staging does not modify VMware clients, Base images, Minecraft Education, or runtime schema.
+
+Application update and Minecraft/Base update remain separate owners.
+
+## Native authority during application updates
+
+An application update must never rewrite Minecraft/Base lineage merely to make parity appear healthy.
+
+After an app update:
+
+```text
+detect Native
+→ inspect registered Base
+→ inspect Virtual lineage
+→ require exact parity
+```
+
+If Native Minecraft changed independently, the application remains healthy but Virtual boot is blocked until a matching Base is prepared, registered, and the affected Virtual instances are reprovisioned.
