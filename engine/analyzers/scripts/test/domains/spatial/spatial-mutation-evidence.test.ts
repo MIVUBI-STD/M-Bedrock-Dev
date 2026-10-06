@@ -29,6 +29,21 @@ describe("script non-block spatial mutation evidence", () => {
     expect(result.rejected).toEqual([]);
   });
 
+  it("preserves explicit teleport dimension and collision policy", () => {
+    const result = deriveScriptSpatialMutations(
+      [
+        "const P = { x: 1, y: 2, z: 3 };",
+        "player.teleport(P, { dimension: nether, checkForBlocks: true });",
+      ].join("\n"),
+      source,
+    );
+    expect(result.mutations[0]).toMatchObject({
+      kind: "teleport",
+      dimensionExpression: "nether",
+      checkForBlocks: true,
+    });
+  });
+
   it("rejects runtime-computed coordinates instead of executing them", () => {
     const result = deriveScriptSpatialMutations(
       "dimension.spawnEntity('minecraft:zombie', getRuntimeLocation());",
