@@ -9,7 +9,10 @@ use crate::{
         require_base_matches_native, require_client_matches_native, write_client_profile,
         write_verified_base_profile, BaseProfile, MinecraftProfile, ProfileParity, ProfileStatus,
     },
-    provider::{cleanup_staging, current_platform_provider, Provider},
+    provider::{
+        cleanup_staging, current_platform_provider, ensure_guest_token_for_path, guest_token,
+        Provider,
+    },
     resources::{current_host_pressure, start_delay_secs, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
     schema::ensure_runtime_schema,
     update::{check_update, stage_update, StagedUpdate, UpdateCheck},
@@ -142,7 +145,8 @@ fn with_rollback_context(error: io::Error, failed: &[&'static str]) -> io::Error
 
 fn guest_status_once(provider: &dyn Provider, client: ClientId) -> Option<GuestStatus> {
     let ip = provider.guest_ip_address(client).ok().flatten()?;
-    query_guest_status(&ip, Duration::from_secs(1)).ok()
+    let token = guest_token(client).ok().flatten()?;
+    query_guest_status(&ip, &token, Duration::from_secs(1)).ok()
 }
 
 fn lineage_parity(
@@ -177,11 +181,17 @@ fn wait_for_guest_compatibility(
             "Native Minecraft Education version could not be detected",
         )
     })?;
+    let token = guest_token(client)?.ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::NotFound,
+            format!("{} Guest Agent token is missing", client.as_str()),
+        )
+    })?;
     let started = std::time::Instant::now();
 
     loop {
         if let Some(ip) = provider.guest_ip_address(client)? {
-            if let Ok(status) = query_guest_status(&ip, Duration::from_secs(2)) {
+            if let Ok(status) = query_guest_status(&ip, &token, Duration::from_secs(2)) {
                 let guest = status.minecraft.as_ref().ok_or_else(|| {
                     io::Error::new(
                         io::ErrorKind::NotFound,
@@ -327,13 +337,14 @@ impl VirtualClients {
             ));
         }
 
+        let token = ensure_guest_token_for_path(&base)?;
         provider.start_validation_vm(&base)?;
 
         let proof = (|| -> io::Result<GuestStatus> {
             let started = std::time::Instant::now();
             loop {
                 if let Some(ip) = provider.guest_ip_for_path(&base)? {
-                    if let Ok(status) = query_guest_status(&ip, Duration::from_secs(2)) {
+                    if let Ok(status) = query_guest_status(&ip, &token, Duration::from_secs(2)) {
                         let minecraft = status.minecraft.as_ref().ok_or_else(|| {
                             io::Error::new(
                                 io::ErrorKind::NotFound,
