@@ -47,7 +47,7 @@ export * from "./gameplay-scenario-closure.js";
 export * from "./gameplay-defect-resolution.js";
 export * from "./hidden-gameplay-defect-analysis.js";
 export * from "./engineering-analysis-stage.js";
-export * from "./multiplayer-state-validation.js";
+export * from "./multiplayer-state-validation.js";\nexport * from "./mount-analysis.js";
 export * from "./developer-tool-release-analysis.js";
 export * from "./gameplay-reachability-stage.js";
 export * from "./capability-exposure-stage.js";
