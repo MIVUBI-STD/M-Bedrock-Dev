@@ -73,6 +73,19 @@ export function validateFailurePatternCatalog(
     }
   }
 
+  if (regressions.length > 0) {
+    const coveredRegressionIds = new Set(
+      patterns.flatMap((pattern) => pattern.supportingRegressionIds ?? []),
+    );
+    for (const regression of regressions) {
+      if (!coveredRegressionIds.has(regression.id)) {
+        errors.push(
+          `Regression ${regression.id} has no failure-pattern learning coverage.`,
+        );
+      }
+    }
+  }
+
   return errors;
 }
 
