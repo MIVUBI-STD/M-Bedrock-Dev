@@ -40,4 +40,60 @@ describe("persistence source analysis", () => {
       growth: "append-without-clear",
     });
   });
+
+  it("keeps persisted session state read on reconnect as an explicit reconciliation gap", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "world.afterEvents.playerJoin.subscribe((event) => {",
+        "  restoreSession(event.player);",
+        "});",
+        "function restoreSession(player) {",
+        "  const state = world.getDynamicProperty('matchSession');",
+        "  return state;",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzePersistenceSource([script]);
+
+    expect(
+      result.reconnectTransientRestoreRiskCount,
+    ).toBe(1);
+    expect(
+      result.reconnectTransientRestoreRisks[0],
+    ).toMatchObject({
+      propertyId: "matchSession",
+      lifecycleEvent: "playerJoin",
+      scope: "session",
+    });
+  });
+
+  it("does not flag player-durable reconnect reads as transient session restore", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "world.afterEvents.playerJoin.subscribe((event) => {",
+        "  const xp = event.player.getDynamicProperty('progressionXp');",
+        "  return xp;",
+        "});",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzePersistenceSource([script]);
+
+    expect(
+      result.reconnectTransientRestoreRiskCount,
+    ).toBe(0);
+  });
 });

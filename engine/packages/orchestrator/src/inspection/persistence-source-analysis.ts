@@ -32,18 +32,82 @@ export interface PersistenceSourceProperty {
     | "unknown";
 }
 
+export interface PersistenceReconnectRestoreRisk {
+  scriptId: string;
+  propertyId: string;
+  lifecycleEvent:
+    | "playerJoin"
+    | "playerSpawn";
+  callbackRegion: string;
+  scope:
+    | "arena"
+    | "session";
+  reason: string;
+}
+
 export interface PersistenceSourceAnalysis {
   properties: readonly PersistenceSourceProperty[];
+  reconnectTransientRestoreRisks:
+    readonly PersistenceReconnectRestoreRisk[];
   appendWithoutClear: number;
   worldScopedAppendWithoutClear: number;
   unknownScope: number;
   unknownLifetime: number;
+  reconnectTransientRestoreRiskCount: number;
+}
+
+function graphFor(
+  script: ParsedScriptFile,
+): Map<string, Set<string>> {
+  const graph = new Map<string, Set<string>>();
+  for (const call of script.localFunctionCalls) {
+    const next =
+      graph.get(call.callerRegion) ??
+      new Set<string>();
+    next.add(call.targetRegion);
+    graph.set(call.callerRegion, next);
+  }
+  return graph;
+}
+
+function reachable(
+  graph: ReadonlyMap<string, ReadonlySet<string>>,
+  root: string,
+): Set<string> {
+  const seen = new Set<string>([root]);
+  const queue = [root];
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    for (const next of graph.get(current) ?? []) {
+      if (seen.has(next)) continue;
+      seen.add(next);
+      queue.push(next);
+    }
+  }
+  return seen;
+}
+
+function reconnectLifecycleEvent(
+  event: string,
+): "playerJoin" | "playerSpawn" | undefined {
+  const normalized =
+    event.replace(/[^A-Za-z0-9]/g, "")
+      .toLowerCase();
+  if (normalized === "playerjoin") {
+    return "playerJoin";
+  }
+  if (normalized === "playerspawn") {
+    return "playerSpawn";
+  }
+  return undefined;
 }
 
 export function analyzePersistenceSource(
   scripts: readonly ParsedScriptFile[],
 ): PersistenceSourceAnalysis {
   const properties: PersistenceSourceProperty[] = [];
+  const reconnectTransientRestoreRisks:
+    PersistenceReconnectRestoreRisk[] = [];
 
   for (const script of scripts) {
     const scopes = new Map(
@@ -78,6 +142,76 @@ export function analyzePersistenceSource(
           lifetime?.confidence ?? "unknown",
       });
     }
+
+    const graph = graphFor(script);
+    const scopeByProperty = new Map(
+      (script.persistentStateScopes ?? [])
+        .map((item) => [
+          item.propertyId,
+          item.scope,
+        ] as const),
+    );
+
+    for (const event of script.events) {
+      const lifecycleEvent =
+        reconnectLifecycleEvent(
+          event.event,
+        );
+      if (
+        lifecycleEvent === undefined ||
+        event.callbackRegion === undefined
+      ) {
+        continue;
+      }
+
+      const reachableRegions =
+        reachable(
+          graph,
+          event.callbackRegion,
+        );
+
+      for (
+        const access of
+          script.dynamicProperties
+      ) {
+        if (
+          access.operation !== "get" ||
+          access.propertyId === undefined ||
+          access.executionRegion === undefined ||
+          !reachableRegions.has(
+            access.executionRegion,
+          )
+        ) {
+          continue;
+        }
+
+        const scope =
+          scopeByProperty.get(
+            access.propertyId,
+          );
+        if (
+          scope !== "session" &&
+          scope !== "arena"
+        ) {
+          continue;
+        }
+
+        reconnectTransientRestoreRisks.push({
+          scriptId:
+            script.identifier,
+          propertyId:
+            access.propertyId,
+          lifecycleEvent,
+          callbackRegion:
+            event.callbackRegion,
+          scope,
+          reason:
+            "Reconnect/initial-spawn path reads persisted " +
+            scope +
+            "-scoped state without source proof that stale transient ownership is reconciled against the current session/arena generation.",
+        });
+      }
+    }
   }
 
   properties.sort((a, b) =>
@@ -85,8 +219,17 @@ export function analyzePersistenceSource(
     a.propertyId.localeCompare(b.propertyId)
   );
 
+  reconnectTransientRestoreRisks.sort((a, b) =>
+    a.scriptId.localeCompare(b.scriptId) ||
+    a.propertyId.localeCompare(b.propertyId) ||
+    a.lifecycleEvent.localeCompare(
+      b.lifecycleEvent,
+    )
+  );
+
   return {
     properties,
+    reconnectTransientRestoreRisks,
     appendWithoutClear:
       properties.filter(
         (item) =>
@@ -110,5 +253,7 @@ export function analyzePersistenceSource(
         (item) =>
           item.lifetime === "unknown",
       ).length,
+    reconnectTransientRestoreRiskCount:
+      reconnectTransientRestoreRisks.length,
   };
 }

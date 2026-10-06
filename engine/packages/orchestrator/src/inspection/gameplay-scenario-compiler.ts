@@ -1529,6 +1529,49 @@ function runtimeEdgeState(
         "Persistence",
       );
       if (contamination) return contamination;
+
+      const scopedReconnectRisks =
+        (world.persistence
+          ?.reconnectTransientRestoreRisks ?? [])
+          .filter((item) =>
+            scriptMatchesScenarioScope(
+              item.scriptId,
+              sourceLocators,
+            )
+          );
+      if (
+        scopedReconnectRisks.length > 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Reconnect/initial-spawn path reads persisted session/arena-scoped state without source proof of reconciliation against current ownership: " +
+            scopedReconnectRisks
+              .map((item) =>
+                item.scriptId +
+                ":" +
+                item.propertyId +
+                " (" +
+                item.lifecycleEvent +
+                ")"
+              )
+              .sort()
+              .join(", ") +
+            ". Persisted state may inform recovery, but stale transient session state must not reactivate silently.",
+        };
+      }
+      const reconnectContamination =
+        aggregateCannotBeScoped(
+          (world.persistence
+            ?.reconnectTransientRestoreRiskCount ?? 0) > 0,
+          sourceLocators,
+          scopedReconnectRisks.length,
+          "Reconnect persistence reconciliation",
+        );
+      if (reconnectContamination) {
+        return reconnectContamination;
+      }
+
       if (
         scopedProperties.some(
           (item) =>

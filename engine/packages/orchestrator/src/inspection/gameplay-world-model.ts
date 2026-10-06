@@ -314,6 +314,19 @@ export interface GameplayWorldModel {
     worldScopedAppendWithoutClear: number;
     unknownScope: number;
     unknownLifetime: number;
+    reconnectTransientRestoreRiskCount: number;
+    reconnectTransientRestoreRisks: readonly {
+      scriptId: string;
+      propertyId: string;
+      lifecycleEvent:
+        | "playerJoin"
+        | "playerSpawn";
+      callbackRegion: string;
+      scope:
+        | "arena"
+        | "session";
+      reason: string;
+    }[];
     propertiesDetail: readonly {
       scriptId: string;
       propertyId: string;

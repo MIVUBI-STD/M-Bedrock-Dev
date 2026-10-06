@@ -225,6 +225,18 @@
       ]
     },
     {
+      "knowledgeId": "persistence-policy.player-reconnect-durable-filter",
+      "consumer": "persistence-source-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/persistence/persistent-state-scope.ts",
+        "engine/packages/orchestrator/src/inspection/persistence-source-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/persistence-source-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "persistence.shutdown-restricted",
       "consumer": "chunk-lifecycle-analysis",
       "analyzerPaths": [
@@ -256,6 +268,17 @@
       ]
     },
     {
+      "knowledgeId": "player-policy.reconnect-reconciliation",
+      "consumer": "persistence-source-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/persistence-source-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/persistence-source-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "state-policy.authority-version-or-generation",
       "consumer": "state-authority-analysis",
       "analyzerPaths": [
@@ -273,6 +296,18 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/state-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "state-policy.transient-vs-durable-separation",
+      "consumer": "persistence-source-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/persistence/persistent-state-scope.ts",
+        "engine/packages/orchestrator/src/inspection/persistence-source-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/persistence-source-analysis.test.ts"
       ]
     },
     {
