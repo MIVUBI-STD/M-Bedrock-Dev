@@ -20,10 +20,13 @@ import type {
 } from "../script-dataflow-context.js";
 import type {
   RetrievalResult,
+  SectionRetrievalResult,
 } from "../../../analysis-planner/src/index.js";
 import {
   compileResourceContext,
+  compileSectionContext,
   type CompiledResourceContext,
+  type CompiledSectionContext,
 } from "./resource-context.js";
 
 export interface ContextCompilerBudget {
@@ -49,6 +52,8 @@ export interface ContextCompilerRequest {
   dataFlowSlice?: CompiledDataFlowContextSlice;
   resourceSelection?: readonly RetrievalResult[];
   resourceLimit?: number;
+  sectionSelection?: readonly SectionRetrievalResult[];
+  sectionLimit?: number;
   budget?: Partial<ContextCompilerBudget>;
 }
 
@@ -134,6 +139,7 @@ export interface CompiledContextPack {
   };
   dataFlow?: CompiledDataFlowContextSlice;
   resources?: CompiledResourceContext;
+  sections?: CompiledSectionContext;
   executionScope?: {
     status: RepositoryTaskPlan["status"];
     affectedCapabilityIds: readonly string[];
@@ -307,6 +313,11 @@ export function compileContextPack(
     compileResourceContext(
       input.resourceSelection,
       input.resourceLimit,
+    );
+  const sections =
+    compileSectionContext(
+      input.sectionSelection,
+      input.sectionLimit,
     );
   const semanticPool =
     semanticCandidates(
@@ -790,6 +801,7 @@ export function compileContextPack(
     missingRequestedCount === 0 &&
     (input.dataFlowSlice?.complete ?? true) &&
     (resources?.omitted ?? 0) === 0 &&
+    (sections?.omitted ?? 0) === 0 &&
     (
       semanticScopeExplicit ||
       !semanticOptionalTruncated
@@ -1055,6 +1067,9 @@ export function compileContextPack(
     ...(resources === undefined
       ? {}
       : { resources }),
+    ...(sections === undefined
+      ? {}
+      : { sections }),
     semantic: {
       nodes:
         semanticSelection.values.map(
