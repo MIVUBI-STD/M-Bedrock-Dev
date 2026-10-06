@@ -38,7 +38,7 @@ if errorlevel 1 (
 )
 echo.
 echo Virtual Clients launcher is enabled for this Windows user.
-echo Sign out and back in once before continuing account setup.
+echo You can continue account setup now.
 pause
 "@ | Set-Content -LiteralPath $interactiveSetup -Encoding ASCII
 
