@@ -1,6 +1,6 @@
 param(
     [Parameter(Position=0)]
-    [ValidateSet("setup","doctor","audit","check","test","inspect","affected","plan","finalize-local","help")]
+    [ValidateSet("setup","doctor","audit","check","test","inspect","affected","plan","finalize-local","verify-virtual-clients","help")]
     [string]$Command = "help",
 
     [Parameter(Position=1, ValueFromRemainingArguments=$true)]
@@ -200,6 +200,12 @@ try {
 
             npm run cli -- plan @paths
         }
+        "verify-virtual-clients" {
+            if ($Arguments -and $Arguments.Count -gt 0) {
+                throw "Usage: DEV.cmd verify-virtual-clients"
+            }
+            npm run virtual-clients:verify
+        }
         "finalize-local" {
             npm run verify:ready
         }
@@ -214,6 +220,7 @@ try {
             Write-Host "  DEV.cmd affected [changed-path ...]"
             Write-Host "  DEV.cmd plan [changed-path ...]"
             Write-Host "  DEV.cmd finalize-local"
+            Write-Host "  DEV.cmd verify-virtual-clients"
         }
     }
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

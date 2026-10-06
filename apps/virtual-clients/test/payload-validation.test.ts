@@ -127,6 +127,22 @@ describe("Frontend boundary wiring", () => {
     expect(commands.length).toBe(22);
   });
 
+  it("registers every frontend command in Tauri and the core dispatcher", () => {
+    const facade = readFileSync(new URL("../src/app/bridge/virtualClientsApi.ts", import.meta.url), "utf8");
+    const adapters = readFileSync(new URL("../src-tauri/src/commands/virtual_clients.rs", import.meta.url), "utf8");
+    const bootstrap = readFileSync(new URL("../src-tauri/src/app_bootstrap.rs", import.meta.url), "utf8");
+    const core = readFileSync(new URL("../../../experiments/virtual-clients/backend/src/command.rs", import.meta.url), "utf8");
+    const commands = [...facade.matchAll(/invokePublic<[^>]+>\("([^"]+)"/g)].map((match) => match[1]);
+    expect(commands).toHaveLength(22);
+    for (const command of commands) {
+      expect(adapters).toContain(`fn ${command}(`);
+      expect(bootstrap).toContain(`commands::virtual_clients::${command},`);
+    }
+    for (const match of adapters.matchAll(/run\("([^"]+)"/g)) {
+      expect(core).toContain(`"${match[1]}" =>`);
+    }
+  });
+
   it("refreshes on return without introducing a diagnostic polling loop", () => {
     const source = readFileSync(new URL("../src/App.svelte", import.meta.url), "utf8");
     expect(source).toContain('window.addEventListener("focus", refreshVisibleClients)');

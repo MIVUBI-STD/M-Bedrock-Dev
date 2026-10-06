@@ -70,3 +70,20 @@ BLOCKED  → stop and route to support
 The desktop never infers the next setup state from health issues. User-owned steps always finish by refreshing backend truth; there is no UI-completed setup flag.
 
 Base creation and Windows Sysprep remain guided user steps because the backend has no safe primitive that owns those actions yet. The UI must not pretend they are automated.
+
+## Complete source checkpoint
+
+From repository root, use `DEV.cmd verify-virtual-clients`. This is the canonical
+focused developer entrypoint; package scripts above are app-local implementation
+commands. The complete route includes both the root-managed frontend tests and
+the canonical backend crate's tests, in addition to the app's Svelte/build/Tauri
+checks. App-local `verify:source` alone is not the complete product checkpoint.
+
+Prepare dependencies from their lockfiles in both the repository root and
+apps/virtual-clients. Use the pinned Node/npm versions in toolchain.json, the
+Rust toolchain used by the Virtual Clients backend workflow (including rustfmt),
+and Windows desktop build prerequisites. See
+[Development Operations](../../docs/06-system/development-operations.md#virtual-clients-source-verification).
+
+This command does not build/install the distributable or start VMware/Minecraft.
+Package and real-machine acceptance remain separate gates.

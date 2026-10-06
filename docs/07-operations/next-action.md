@@ -237,7 +237,10 @@ Implemented:
   this does not replace the pending typecheck/build/Vitest/Rust gates.
 
 Remaining readiness gates:
-- Compile/typecheck/test the final combined source before claiming package readiness.
+- Run DEV.cmd verify-virtual-clients on the final combined source before claiming
+  source readiness. The route now includes frontend Vitest, app typecheck/build/
+  Tauri checks, explicit canonical core tests, and core formatting. Package
+  readiness still requires installer verification.
 - Perform target-machine OOBE, identity, account, recovery and multiplayer acceptance.
 - Measure status-read cost and VM memory/latency before efficiency claims.
 - Rich internal-stage progress is not implemented; command activity is implemented.
@@ -249,6 +252,33 @@ Remaining readiness gates:
 
 Do not call the whole system ready based on source commits alone. User requests
 end-to-end readiness; these unresolved gates are the remaining work, not PASS.
+
+### Complete source-verification route checkpoint (2026-10-06)
+
+The previous virtual-clients:verify script omitted root-managed frontend tests
+and dependency-core unit tests. DEV.cmd verify-virtual-clients now delegates to
+the expanded existing aggregate. It retains app build/icon ordering and adds
+explicit locked core check/test plus core formatting. No second runner or CI was
+introduced. Desktop Cargo resolution remains unlocked because that crate has no
+tracked Cargo.lock; do not claim fully pinned desktop dependencies.
+
+Four regression cases were authored (three route assertions, one 22-command
+registration graph). Three equivalent structural assertion groups ran in Node
+and passed; static registration inspection found all 22 frontend commands wired
+through Tauri registration and core dispatch. This is not execution of the
+aggregate command or its Vitest suite.
+
+Next operator step on an existing Windows development checkout:
+- Use the pinned Node/npm toolchain and DEV.cmd doctor.
+- Ensure both root and desktop npm ci installations are complete.
+- Ensure the Virtual Clients Rust/Windows prerequisites are installed.
+- Run DEV.cmd verify-virtual-clients and retain the exact HEAD plus complete
+  output of the first failure. Fix that owner and repeat the same checkpoint.
+
+No installer/VM/Minecraft is launched by that command. Current environment cannot
+execute the full checkpoint: Rust and package-managed frontend tools are absent,
+and the available Node 24.19.0 is not the repository's pinned developer version.
+Do not mark this gate PASS from the focused checks.
 
 ### Source-grounded findings (review baseline, before Stage 1 changes)
 

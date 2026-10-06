@@ -12,6 +12,7 @@ DEV.cmd check
 DEV.cmd test
 DEV.cmd inspect <artifact>
 DEV.cmd finalize-local
+DEV.cmd verify-virtual-clients
 ```
 
 It delegates to `tooling/windows-toolchain/dev.ps1`. Internal package scripts remain implementation details.
@@ -89,3 +90,31 @@ The audit is non-blocking while legacy deep imports remain. Migrate one semantic
 The public API audit fails only when an owner exceeds its recorded baseline. Existing debt may remain temporarily, but it cannot increase. After a migration reduces an owner's count, lower that owner's baseline in the same logical change.
 
 Never raise a baseline merely to make CI green; a baseline increase requires an intentional architecture decision.
+
+## Virtual Clients source verification
+
+`DEV.cmd verify-virtual-clients` is the focused source checkpoint for the desktop
+product. It delegates through the existing `virtual-clients:verify` package script:
+
+1. Root-managed Virtual Clients frontend Vitest tests.
+2. App-managed Svelte/TypeScript check and frontend build.
+3. Icon preparation and all-target Tauri Rust check/tests.
+4. Locked all-target canonical backend Rust check/tests.
+5. Canonical backend Rust formatting check.
+
+Testing the Tauri crate does not execute the dependency backend crate's unit
+tests; the explicit backend manifest steps are required. Each command fails
+closed through the existing exit-code handling. No installer, VM or Minecraft
+is started by this source checkpoint.
+
+Prerequisites: the developer toolchain from toolchain.json, root and desktop
+lockfile dependencies installed with npm ci, and the Rust/Windows desktop build
+prerequisites documented by Virtual Clients. No global TypeScript/Vitest install
+is required. A green source checkpoint is not installer or target-machine
+acceptance. CI is not invoked by this command.
+
+The backend Cargo.lock is tracked, so its checks use --locked. The desktop crate
+currently has no tracked Cargo.lock; its existing resolution behavior is retained.
+Do not claim fully pinned desktop Rust dependency resolution from this checkpoint.
+DEV.cmd setup and doctor cover the root dependencies, not the separate desktop
+installation. Rust is required for this product lane, not for all map-audit work.

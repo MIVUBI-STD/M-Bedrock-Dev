@@ -1,6 +1,33 @@
 ## 2026-10-06 — Virtual Clients action admission and payload validation
 
 
+## Virtual Clients complete verification routing — source/static checks (2026-10-06)
+
+Baseline: Experimental `f5ed7bd4f1820545709559fe7671094c9f39171a`.
+
+Fixed gap: virtual-clients:verify previously ran only app-local verify:source,
+omitting root frontend Vitest and the canonical backend dependency's unit tests.
+DEV.cmd verify-virtual-clients now reaches one aggregate that includes those
+checks, app build/typecheck/Tauri checks, locked core check/test and core fmt.
+App check/test scripts use all-targets and preserve icon/build ordering; app
+Cargo remains unlocked because no desktop Cargo.lock is tracked.
+
+Evidence: Node 24.19.0 executed three equivalent structural assertion groups
+against the prepared package scripts and PowerShell routing text: all passed.
+Static inspection found all 22 public frontend commands declared and registered
+in Tauri with their adapter commands present in the core dispatcher. Four
+corresponding Vitest regressions were written, not run as a Vitest suite.
+
+NOT RUN: PowerShell route execution, npm dependency installs, full aggregate,
+typecheck, Svelte build, Cargo/rustfmt, installer or VM acceptance. No CI or
+Codex/Work task was created. npm cache inspection found no cached TypeScript/
+Vitest/svelte-check packages. Global tool absence is not itself a requirement
+for global installation; normal verification uses package-managed dependencies.
+The environment's Node version also differs from toolchain.json's developer pin.
+No full source/package readiness claim is supported yet.
+
+
+
 ## Virtual Clients readiness consistency — source implementation (2026-10-06)
 
 Baseline: Experimental `a107b7d86d1728975c374b6ecc9f4d73e566ad82`.
