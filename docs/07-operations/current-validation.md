@@ -88,7 +88,7 @@ P0 four-client boundary:
   assuming NAT/bridged equivalence;
 - Minecraft launch after multi-VM start is staggered with the existing pressure
   delay to reduce renderer/disk initialization storms;
-- UI wording is `Minecraft open`, not `Minecraft ready`, because process
+- UI wording is `Minecraft open`, not `Minecraft open`, because process
   presence does not prove signed-in menu or multiplayer readiness.
 
 Canonical scenario matrix:
@@ -113,7 +113,7 @@ Implemented source:
   Minecraft Education application and is idempotent when Minecraft is already
   running.
 - Guest status now observes `minecraftRunning`; ClientStatus projects that
-  observation so daily UI distinguishes Minecraft ready vs Minecraft closed.
+  observation so daily UI distinguishes Minecraft open vs Minecraft closed.
 - Daily Start/Resume performs VM admission + compatibility first, then launches
   Minecraft and opens the VM console. Minecraft-launch failure does not rollback
   a verified running VM.
