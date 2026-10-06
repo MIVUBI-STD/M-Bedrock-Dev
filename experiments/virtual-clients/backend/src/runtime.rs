@@ -4,9 +4,8 @@ use crate::{
     guest::{query_guest_status, GuestStatus},
     paths::runtime_root,
     profile::{
-        current_base_vmx_path, native_minecraft_profile, profile_status,
-        register_base_from_native, require_base_matches_native, BaseProfile, MinecraftProfile,
-        ProfileParity, ProfileStatus,
+        current_base_vmx_path, native_minecraft_profile, profile_status, register_base_from_native,
+        require_base_matches_native, BaseProfile, MinecraftProfile, ProfileParity, ProfileStatus,
     },
     provider::{cleanup_staging, current_platform_provider, Provider},
     resources::{current_host_pressure, start_delay_secs, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
@@ -143,14 +142,8 @@ fn guest_status_once(provider: &dyn Provider, client: ClientId) -> Option<GuestS
     query_guest_status(&ip, Duration::from_secs(1)).ok()
 }
 
-fn version_parity(
-    native: Option<&MinecraftProfile>,
-    guest: Option<&GuestStatus>,
-) -> ProfileParity {
-    match (
-        native,
-        guest.and_then(|status| status.minecraft.as_ref()),
-    ) {
+fn version_parity(native: Option<&MinecraftProfile>, guest: Option<&GuestStatus>) -> ProfileParity {
+    match (native, guest.and_then(|status| status.minecraft.as_ref())) {
         (Some(native), Some(guest)) if native.version == guest.version => ProfileParity::Match,
         (Some(_), Some(_)) => ProfileParity::Mismatch,
         _ => ProfileParity::Unknown,
@@ -380,7 +373,9 @@ impl VirtualClients {
             guest_tools_ready: None,
             guest_agent_ready: None,
             guest_agent_version: None,
-            minecraft_version: native_profile.as_ref().map(|profile| profile.version.clone()),
+            minecraft_version: native_profile
+                .as_ref()
+                .map(|profile| profile.version.clone()),
             version_parity: None,
             identity: None,
         });
