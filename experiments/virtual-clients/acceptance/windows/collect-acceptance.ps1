@@ -35,17 +35,28 @@ function Invoke-VirtualClientsJson {
 
 $doctor = Invoke-VirtualClientsJson -Name 'doctor' -Arguments @('doctor')
 $status = Invoke-VirtualClientsJson -Name 'status' -Arguments @('status')
-$diagnostics = Invoke-VirtualClientsJson -Name 'diagnostics' -Arguments @('diagnostics')
-$resources = Invoke-VirtualClientsJson -Name 'resources-3' -Arguments @('resources', '3')
 
 $identityProof = $null
 if ($VerifyIdentities) {
   $identityProof = Invoke-VirtualClientsJson -Name 'verify-identities' -Arguments @('verify-identities')
+  $doctor = Invoke-VirtualClientsJson -Name 'doctor-after-verify' -Arguments @('doctor')
+  $status = Invoke-VirtualClientsJson -Name 'status-after-verify' -Arguments @('status')
 }
+
+$diagnostics = Invoke-VirtualClientsJson -Name 'diagnostics' -Arguments @('diagnostics')
+$resources = Invoke-VirtualClientsJson -Name 'resources-3' -Arguments @('resources', '3')
 
 $virtuals = @($status.clients | Where-Object { $_.native -eq $false })
 if ($virtuals.Count -ne 3) {
   throw "Expected exactly three Virtual clients, found $($virtuals.Count)."
+}
+
+if ($VerifyIdentities) {
+  foreach ($virtual in $virtuals) {
+    if ([string]$virtual.vmIdentity -ne 'UNIQUE' -or [string]$virtual.windowsIdentity -ne 'UNIQUE') {
+      throw "$($virtual.id) did not remain identity-unique after verify-identities."
+    }
+  }
 }
 
 $summary = [ordered]@{

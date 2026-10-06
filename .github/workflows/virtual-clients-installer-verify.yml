@@ -145,6 +145,11 @@ jobs:
           & $hostExe help | Out-Host
           if ($LASTEXITCODE -ne 0) { throw 'Installed host executable smoke test failed.' }
 
+          $runtimeRoot = Join-Path $env:LOCALAPPDATA 'M-Bedrock\VirtualClients'
+          $runtimeSentinel = Join-Path $runtimeRoot 'installer-preservation-sentinel.txt'
+          New-Item -ItemType Directory -Path $runtimeRoot -Force | Out-Null
+          Set-Content -LiteralPath $runtimeSentinel -Value 'preserve-runtime-data' -Encoding ascii
+
           $uninstaller = @(Get-ChildItem $installDir -Filter 'unins*.exe' -File)
           if ($uninstaller.Count -ne 1) { throw 'Expected one uninstaller.' }
           $uninstall = Start-Process -FilePath $uninstaller[0].FullName -ArgumentList @(
@@ -155,3 +160,10 @@ jobs:
           if ($uninstall.ExitCode -ne 0) { throw "Uninstall failed: $($uninstall.ExitCode)" }
           Start-Sleep -Seconds 2
           if (Test-Path $installDir) { throw 'Install directory remains after uninstall.' }
+          if (!(Test-Path -LiteralPath $runtimeSentinel -PathType Leaf)) {
+            throw 'Runtime data was removed by uninstall.'
+          }
+          Remove-Item -LiteralPath $runtimeSentinel -Force
+          if ((Get-ChildItem -LiteralPath $runtimeRoot -Force | Measure-Object).Count -eq 0) {
+            Remove-Item -LiteralPath $runtimeRoot -Force
+          }
