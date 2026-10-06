@@ -2,13 +2,7 @@
 
 ## Source proof
 
-The Experimental backend workflow must pass on Windows and macOS:
-
-```text
-cargo fmt --check
-cargo check --all-targets
-cargo test --all-targets
-```
+The Experimental backend workflow must pass `cargo check --all-targets` and `cargo test --all-targets` on Windows and macOS. `cargo fmt --all --check` is reported separately as a source-hygiene audit and is not runtime proof.
 
 Hosted compilation does not prove VMware, GPU, input, or Minecraft runtime behavior.
 
