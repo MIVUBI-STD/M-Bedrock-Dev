@@ -160,7 +160,7 @@ impl Provider for VmwareFusionProvider {
         }
 
         let staging = staging_client_vmx_path(client)?;
-        remove_vm_container(&staging);
+        remove_vm_container(&staging)?;
         ensure_parent(&staging)?;
 
         let clone_name = format!("-cloneName={}", client.as_str());
@@ -179,17 +179,17 @@ impl Provider for VmwareFusionProvider {
         );
 
         if let Err(error) = clone_result {
-            remove_vm_container(&staging);
+            let _ = remove_vm_container(&staging);
             return Err(error);
         }
 
         if let Err(error) = apply_virtual_hardware_policy(&staging) {
-            remove_vm_container(&staging);
+            let _ = remove_vm_container(&staging);
             return Err(error);
         }
 
         if let Err(error) = promote_staging_vm(&staging, &target) {
-            remove_vm_container(&staging);
+            let _ = remove_vm_container(&staging);
             return Err(error);
         }
 
@@ -221,7 +221,7 @@ impl Provider for VmwareFusionProvider {
                 ),
             ));
         }
-        remove_vm_container(&vmx);
+        remove_vm_container(&vmx)?;
         self.provision(client)
     }
 

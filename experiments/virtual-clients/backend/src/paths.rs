@@ -62,11 +62,11 @@ pub fn base_profile_path_for_version(version: &str) -> io::Result<PathBuf> {
     Ok(base_version_root(version)?.join("base-profile.json"))
 }
 
-fn validate_version_segment(version: &str) -> io::Result<()> {
+pub(crate) fn validate_version_segment(version: &str) -> io::Result<()> {
     if version.is_empty()
-        || !version
-            .chars()
-            .all(|character| character.is_ascii_digit() || character == '.')
+        || version.split('.').any(|segment| {
+            segment.is_empty() || !segment.chars().all(|character| character.is_ascii_digit())
+        })
     {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
@@ -103,7 +103,13 @@ mod tests {
     #[test]
     fn version_path_segment_is_strict() {
         assert!(validate_version_segment("1.21.120.0").is_ok());
-        assert!(validate_version_segment("../bad").is_err());
-        assert!(validate_version_segment("1.21 preview").is_err());
+        assert!(validate_version_segment("1").is_ok());
+
+        for invalid in ["", ".", "..", ".1", "1.", "1..2", "../bad", "1.21 preview"] {
+            assert!(
+                validate_version_segment(invalid).is_err(),
+                "{invalid:?} must not be a Base path version"
+            );
+        }
     }
 }

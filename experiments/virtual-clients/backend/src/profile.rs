@@ -4,7 +4,10 @@ use std::{fs, io, path::PathBuf, process::Command};
 use crate::{
     client::ClientId,
     guest::GUEST_STATUS_SCHEMA,
-    paths::{base_profile_path_for_version, base_vmx_path_for_version, client_profile_path},
+    paths::{
+        base_profile_path_for_version, base_vmx_path_for_version, client_profile_path,
+        validate_version_segment,
+    },
 };
 
 pub const BASE_PROFILE_SCHEMA: u32 = 2;
@@ -434,13 +437,7 @@ fn macos_native_profile() -> Option<MinecraftProfile> {
 
 fn normalized_version(value: &str) -> Option<String> {
     let value = value.trim();
-    if value.is_empty()
-        || !value
-            .chars()
-            .all(|character| character.is_ascii_digit() || character == '.')
-    {
-        return None;
-    }
+    validate_version_segment(value).ok()?;
     Some(value.to_string())
 }
 
@@ -460,6 +457,8 @@ mod tests {
             Some("1.21.120.0".into())
         );
         assert_eq!(normalized_version(""), None);
+        assert_eq!(normalized_version(".."), None);
+        assert_eq!(normalized_version("1..21"), None);
         assert_eq!(normalized_version("version 1.21"), None);
     }
 

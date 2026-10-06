@@ -156,10 +156,12 @@ pub(crate) fn ensure_parent(path: &Path) -> io::Result<()> {
     fs::create_dir_all(vm_container(path)?)
 }
 
-pub(crate) fn remove_vm_container(path: &Path) {
-    if let Ok(container) = vm_container(path) {
-        let _ = fs::remove_dir_all(container);
+pub(crate) fn remove_vm_container(path: &Path) -> io::Result<()> {
+    let container = vm_container(path)?;
+    if container.exists() {
+        fs::remove_dir_all(container)?;
     }
+    Ok(())
 }
 
 pub(crate) fn promote_staging_vm(staging_vmx: &Path, final_vmx: &Path) -> io::Result<()> {
