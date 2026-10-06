@@ -1354,3 +1354,10 @@ Use:
 - explicit >=1 tick delay,
 
 plus bounded attempts and watchdog-aware budgets.
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [Chunks](../../engine/knowledge/world-engine/chunks-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
