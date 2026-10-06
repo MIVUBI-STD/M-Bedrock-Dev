@@ -1,26 +1,25 @@
-## Virtual Clients Window Layout continuation
+## Virtual Clients desktop orchestration continuation
 
-REMOTE_GITHUB source now has Window Layout v2 through the desktop boundary:
-Grid / Focus / Columns, display discovery, semantic request contracts, Rust-owned
-adaptive geometry, remembered defaults, and the quick configuration surface.
+Window Layout and Screen Overlay now have one source owner chain:
+- `window_arrangement.rs`: display/HWND adapter + Rust-owned Grid/Focus/Columns geometry;
+- `screen_overlay.rs`: native click-through overlay lifecycle;
+- `dpi.rs`: per-monitor-v2 desktop coordinate initialization;
+- `window_apply_layout`: the single public layout mutation command;
+- frontend Window Layout preference/dialog: defaults and presentation choices only.
 
-Next source unit is **Screen Overlay native ownership**, not another layout
-system. Requirements:
-- consume the exact arranged slot/window identity result from Window Layout;
-- transparent, click-through, non-focusable and topmost relative to its target;
-- default content is Screen number + label;
-- custom labels remain presentation preference only;
-- Identify screens is a temporary mode of the same overlay owner;
-- overlay disappears when its target disappears and is recreated only through
-  explicit Arrange/re-apply, not a permanent auto-rearrange daemon;
-- cleanup must be deterministic when the app exits or layout is reapplied;
-- no Minecraft pack/HUD modification and no PowerShell polling daemon.
+Do not add another layout/overlay manager, polling daemon, custom-coordinate
+editor, profile system, or Minecraft HUD integration.
 
-Do not add custom coordinates, drag-and-drop layout editing, overlay themes,
-font editors, animation, macros or additional layout presets without observed
-need.
+Remaining gates are proof, not new capability:
+1. run the canonical desktop/source checkpoint when local execution is approved;
+2. fix the first compile/type/test failure at its existing owner;
+3. perform Windows target-machine acceptance for actual VMware/Minecraft HWND
+   identity, Grid/Focus/Columns, multi-display fallback, mixed DPI, overlay
+   z-order/click-through/focus behavior, Identify screens, fullscreen/windowed
+   behavior, and deterministic app-exit cleanup;
+4. use observed process/window evidence to tighten identity matching only if the
+   current fail-closed Minecraft/VMware process + title rules are insufficient.
 
-# Next Action
 
 ## Current lane — Real Map Audit / Detection Benchmark
 
