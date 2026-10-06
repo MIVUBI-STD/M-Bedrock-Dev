@@ -42,6 +42,10 @@ export interface ChunkLifecycleAnalysis {
   worldLoadReconciliationPaths: number;
   unguardedDeferredChunkWork: number;
   zeroTickDeferredChunkWork: number;
+  spawnRecoveryRoutes: number;
+  unloadedSpecificSpawnRecoveryRoutes: number;
+  broadSpawnRecoveryRisks: number;
+  otherSpecificSpawnRecoveryRoutes: number;
   entityResidencyObservability: "complete" | "partial" | "absent";
   leases: readonly ChunkLeaseAssessment[];
 }
@@ -387,6 +391,83 @@ function zeroTickDeferredChunkWorkFor(
   ).length;
 }
 
+
+function spawnRecoveryRoutingFor(
+  script: ParsedScriptFile,
+): {
+  routes: number;
+  unloadedSpecific: number;
+  broadRisk: number;
+  otherSpecific: number;
+} {
+  const graph = callGraphFor(script);
+  const chunkRegions =
+    chunkLifecycleRegions(script);
+  let routes = 0;
+  let unloadedSpecific = 0;
+  let broadRisk = 0;
+  let otherSpecific = 0;
+
+  for (
+    const evidence of
+      evidenceFor(script)
+  ) {
+    if (
+      evidence.kind !==
+      "spawn-recovery-catch"
+    ) {
+      continue;
+    }
+
+    const targets =
+      evidence.recoveryTargetRegions ??
+      [];
+    const reachesChunkRecovery =
+      targets.some((target) => {
+        if (
+          chunkRegions.has(target)
+        ) {
+          return true;
+        }
+        const reachable =
+          reachableRegions(
+            graph,
+            target,
+          );
+        return [...chunkRegions].some(
+          (region) =>
+            reachable.has(region),
+        );
+      });
+
+    if (!reachesChunkRecovery) {
+      continue;
+    }
+
+    routes += 1;
+    if (
+      evidence.spawnRecoveryGuard ===
+      "unloaded-specific"
+    ) {
+      unloadedSpecific += 1;
+    } else if (
+      evidence.spawnRecoveryGuard ===
+      "other-specific"
+    ) {
+      otherSpecific += 1;
+    } else {
+      broadRisk += 1;
+    }
+  }
+
+  return {
+    routes,
+    unloadedSpecific,
+    broadRisk,
+    otherSpecific,
+  };
+}
+
 function worldLoadReconciliationPathsFor(
   script: ParsedScriptFile,
 ): number {
@@ -529,6 +610,36 @@ export function analyzeChunkLifecycle(
       (item) => !item.shutdownReachable,
     );
 
+  const spawnRecoveryRouting =
+    scripts.reduce(
+      (summary, script) => {
+        const current =
+          spawnRecoveryRoutingFor(
+            script,
+          );
+        return {
+          routes:
+            summary.routes +
+            current.routes,
+          unloadedSpecific:
+            summary.unloadedSpecific +
+            current.unloadedSpecific,
+          broadRisk:
+            summary.broadRisk +
+            current.broadRisk,
+          otherSpecific:
+            summary.otherSpecific +
+            current.otherSpecific,
+        };
+      },
+      {
+        routes: 0,
+        unloadedSpecific: 0,
+        broadRisk: 0,
+        otherSpecific: 0,
+      },
+    );
+
   const entityResidencyObservability =
     entityLoadObservers > 0 &&
     entityRemoveObservers > 0
@@ -624,6 +735,14 @@ export function analyzeChunkLifecycle(
     worldLoadReconciliationPaths,
     unguardedDeferredChunkWork,
     zeroTickDeferredChunkWork,
+    spawnRecoveryRoutes:
+      spawnRecoveryRouting.routes,
+    unloadedSpecificSpawnRecoveryRoutes:
+      spawnRecoveryRouting.unloadedSpecific,
+    broadSpawnRecoveryRisks:
+      spawnRecoveryRouting.broadRisk,
+    otherSpecificSpawnRecoveryRoutes:
+      spawnRecoveryRouting.otherSpecific,
     entityResidencyObservability,
     leases,
   };

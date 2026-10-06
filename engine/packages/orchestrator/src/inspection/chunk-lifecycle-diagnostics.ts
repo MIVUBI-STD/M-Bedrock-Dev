@@ -23,6 +23,7 @@ export function chunkLifecycleDiagnostics(
     analysis.readinessUnverifiedLeases > 0 ||
     analysis.unguardedDeferredChunkWork > 0 ||
     analysis.zeroTickDeferredChunkWork > 0 ||
+    analysis.broadSpawnRecoveryRisks > 0 ||
     worldLoadReconciliationMissing;
 
   if (!strongRisk && !reviewRisk) {
@@ -54,6 +55,14 @@ export function chunkLifecycleDiagnostics(
           analysis.unguardedDeferredChunkWork,
         zeroTickDeferredChunkWork:
           analysis.zeroTickDeferredChunkWork,
+        spawnRecoveryRoutes:
+          analysis.spawnRecoveryRoutes,
+        unloadedSpecificSpawnRecoveryRoutes:
+          analysis.unloadedSpecificSpawnRecoveryRoutes,
+        broadSpawnRecoveryRisks:
+          analysis.broadSpawnRecoveryRisks,
+        otherSpecificSpawnRecoveryRoutes:
+          analysis.otherSpecificSpawnRecoveryRoutes,
         worldLoadReconciliationMissing,
         dynamicLeaseKeys:
           analysis.dynamicLeaseKeys,

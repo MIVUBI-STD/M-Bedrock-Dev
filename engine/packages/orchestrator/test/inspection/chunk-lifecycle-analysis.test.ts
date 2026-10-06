@@ -315,6 +315,116 @@ describe("chunk lifecycle analysis", () => {
     ).toBe(0);
   });
 
+  it("accepts unloaded-chunk-specific spawn recovery routing", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "async function spawnWithRecovery(dimension, manager, options) {",
+        "  try {",
+        "    dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  } catch (error) {",
+        "    if (!(error instanceof LocationInUnloadedChunkError)) throw error;",
+        "    await recover(manager, options);",
+        "  }",
+        "}",
+        "async function recover(manager, options) {",
+        "  if (!manager.hasCapacity(options)) return;",
+        "  const area = await manager.createTickingArea('arena:recover', options);",
+        "  if (!area.isFullyLoaded) return;",
+        "  manager.removeTickingArea('arena:recover');",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(
+      result.spawnRecoveryRoutes,
+    ).toBe(1);
+    expect(
+      result.unloadedSpecificSpawnRecoveryRoutes,
+    ).toBe(1);
+    expect(
+      result.broadSpawnRecoveryRisks,
+    ).toBe(0);
+  });
+
+  it("flags generic spawn catches that route every error into chunk recovery", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "async function spawnWithRecovery(dimension, manager, options) {",
+        "  try {",
+        "    dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  } catch (error) {",
+        "    await recover(manager, options);",
+        "  }",
+        "}",
+        "async function recover(manager, options) {",
+        "  if (!manager.hasCapacity(options)) return;",
+        "  const area = await manager.createTickingArea('arena:recover', options);",
+        "  if (!area.isFullyLoaded) return;",
+        "  manager.removeTickingArea('arena:recover');",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(
+      result.broadSpawnRecoveryRisks,
+    ).toBe(1);
+    expect(
+      result.unloadedSpecificSpawnRecoveryRoutes,
+    ).toBe(0);
+  });
+
+  it("does not treat another specific spawn error as unloaded-chunk recovery proof", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "async function spawnWithRecovery(dimension, manager, options) {",
+        "  try {",
+        "    dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  } catch (error) {",
+        "    if (!(error instanceof InvalidEntityError)) throw error;",
+        "    await recover(manager, options);",
+        "  }",
+        "}",
+        "async function recover(manager, options) {",
+        "  if (!manager.hasCapacity(options)) return;",
+        "  const area = await manager.createTickingArea('arena:recover', options);",
+        "  if (!area.isFullyLoaded) return;",
+        "  manager.removeTickingArea('arena:recover');",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(
+      result.otherSpecificSpawnRecoveryRoutes,
+    ).toBe(1);
+    expect(
+      result.unloadedSpecificSpawnRecoveryRoutes,
+    ).toBe(0);
+  });
+
   it("reports partial entity residency observability when only load is observed", () => {
     const script = parseScriptFile(
       "main",

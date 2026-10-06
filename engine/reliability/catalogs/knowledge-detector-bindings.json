@@ -25,6 +25,18 @@
       ]
     },
     {
+      "knowledgeId": "chunk-policy.relation.spawn-unloaded-fallback",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "chunk-policy.script-manager-capacity-queue",
       "consumer": "chunk-lifecycle-analysis",
       "analyzerPaths": [
@@ -39,6 +51,18 @@
       "consumer": "chunk-lifecycle-analysis",
       "analyzerPaths": [
         "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunk-policy.spawn-retry-specific-error",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"

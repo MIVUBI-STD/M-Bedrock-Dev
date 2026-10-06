@@ -12,13 +12,19 @@ export type ScriptChunkLifecycleEvidenceKind =
   | "ticking-area-acquire"
   | "ticking-area-release"
   | "ticking-area-capacity-check"
-  | "ticking-area-readiness-state";
+  | "ticking-area-readiness-state"
+  | "spawn-recovery-catch";
 
 export interface ScriptChunkLifecycleEvidence {
   kind: ScriptChunkLifecycleEvidenceKind;
   executionRegion: string;
   receiverExpression: string;
   leaseKey?: string;
+  spawnRecoveryGuard?:
+    | "unloaded-specific"
+    | "other-specific"
+    | "generic";
+  recoveryTargetRegions?: readonly string[];
   source: SourceRef;
 }
 
@@ -204,6 +210,11 @@ export function deriveScriptChunkLifecycleEvidence(
     options: {
       executionRegion?: string;
       leaseKey?: string;
+      spawnRecoveryGuard?:
+        | "unloaded-specific"
+        | "other-specific"
+        | "generic";
+      recoveryTargetRegions?: readonly string[];
     } = {},
   ) => {
     output.push({
@@ -215,11 +226,199 @@ export function deriveScriptChunkLifecycleEvidence(
       ...(options.leaseKey === undefined
         ? {}
         : { leaseKey: options.leaseKey }),
+      ...(options.spawnRecoveryGuard === undefined
+        ? {}
+        : {
+            spawnRecoveryGuard:
+              options.spawnRecoveryGuard,
+          }),
+      ...(options.recoveryTargetRegions === undefined
+        ? {}
+        : {
+            recoveryTargetRegions:
+              [...options.recoveryTargetRegions],
+          }),
       source: nodeSource(file, node, source),
     });
   };
 
+
+  const containsSpawnEntity = (
+    node: ts.Node,
+  ): boolean => {
+    let found = false;
+    const scan = (current: ts.Node): void => {
+      if (
+        ts.isCallExpression(current) &&
+        ts.isPropertyAccessExpression(
+          current.expression,
+        ) &&
+        current.expression.name.text ===
+          "spawnEntity"
+      ) {
+        found = true;
+        return;
+      }
+      if (!found) {
+        ts.forEachChild(current, scan);
+      }
+    };
+    scan(node);
+    return found;
+  };
+
+  const catchGuardKind = (
+    clause: ts.CatchClause,
+  ):
+    | "unloaded-specific"
+    | "other-specific"
+    | "generic" => {
+    const variable =
+      clause.variableDeclaration &&
+      ts.isIdentifier(
+        clause.variableDeclaration.name,
+      )
+        ? clause.variableDeclaration.name.text
+        : undefined;
+    if (!variable) return "generic";
+
+    let unloaded = false;
+    let specific = false;
+    const scan = (current: ts.Node): void => {
+      if (
+        ts.isBinaryExpression(current) &&
+        current.operatorToken.kind ===
+          ts.SyntaxKind.InstanceOfKeyword &&
+        ts.isIdentifier(current.left) &&
+        current.left.text === variable
+      ) {
+        specific = true;
+        const right =
+          current.right.getText(file);
+        if (
+          /LocationInUnloadedChunkError/i.test(
+            right,
+          )
+        ) {
+          unloaded = true;
+        }
+      }
+
+      if (
+        ts.isBinaryExpression(current) &&
+        (
+          current.operatorToken.kind ===
+            ts.SyntaxKind.EqualsEqualsToken ||
+          current.operatorToken.kind ===
+            ts.SyntaxKind.EqualsEqualsEqualsToken
+        )
+      ) {
+        const text =
+          current.getText(file);
+        if (
+          new RegExp(
+            "\\b" +
+              variable +
+              "\\.(?:name|constructor\\.name)\\b",
+            "i",
+          ).test(text)
+        ) {
+          specific = true;
+          if (
+            /LocationInUnloadedChunkError/i.test(
+              text,
+            )
+          ) {
+            unloaded = true;
+          }
+        }
+      }
+      ts.forEachChild(current, scan);
+    };
+    scan(clause.block);
+
+    return unloaded
+      ? "unloaded-specific"
+      : specific
+        ? "other-specific"
+        : "generic";
+  };
+
+  const directRecoveryTargets = (
+    clause: ts.CatchClause,
+  ): string[] => {
+    const targets = new Set<string>();
+    const scan = (current: ts.Node): void => {
+      if (ts.isCallExpression(current)) {
+        if (
+          ts.isPropertyAccessExpression(
+            current.expression,
+          )
+        ) {
+          const method =
+            current.expression.name.text;
+          if (
+            method === "isChunkLoaded" ||
+            method ===
+              "createTickingArea" ||
+            method ===
+              "removeTickingArea" ||
+            method === "hasCapacity"
+          ) {
+            targets.add(
+              executionRegion(
+                current,
+                file,
+              ),
+            );
+          }
+        } else if (
+          ts.isIdentifier(
+            current.expression,
+          )
+        ) {
+          targets.add(
+            "function:" +
+              current.expression.text,
+          );
+        }
+      }
+      ts.forEachChild(current, scan);
+    };
+    scan(clause.block);
+    return [...targets].sort();
+  };
+
   const visit = (node: ts.Node): void => {
+    if (
+      ts.isTryStatement(node) &&
+      node.catchClause &&
+      containsSpawnEntity(
+        node.tryBlock,
+      )
+    ) {
+      push(
+        node.catchClause,
+        "spawn-recovery-catch",
+        "spawnEntity",
+        {
+          executionRegion:
+            executionRegion(
+              node,
+              file,
+            ),
+          spawnRecoveryGuard:
+            catchGuardKind(
+              node.catchClause,
+            ),
+          recoveryTargetRegions:
+            directRecoveryTargets(
+              node.catchClause,
+            ),
+        },
+      );
+    }
+
     if (
       ts.isPropertyAccessExpression(node) &&
       node.name.text === "isFullyLoaded" &&
@@ -365,6 +564,14 @@ export function deriveScriptChunkLifecycleEvidence(
           item.receiverExpression &&
         candidate.leaseKey ===
           item.leaseKey &&
+        candidate.spawnRecoveryGuard ===
+          item.spawnRecoveryGuard &&
+        JSON.stringify(
+          candidate.recoveryTargetRegions ?? [],
+        ) ===
+          JSON.stringify(
+            item.recoveryTargetRegions ?? [],
+          ) &&
         candidate.source.range?.lineStart ===
           item.source.range?.lineStart
       ) === index
