@@ -57,7 +57,11 @@ pub fn inspect_base_preparation() -> io::Result<BasePreparationReport> {
         .and_then(|path| read_vmx_value(path, "ethernet0.present").ok().flatten())
         .map(|value| value.eq_ignore_ascii_case("TRUE"));
     let network_start_connected = vmx
-        .and_then(|path| read_vmx_value(path, "ethernet0.startConnected").ok().flatten())
+        .and_then(|path| {
+            read_vmx_value(path, "ethernet0.startConnected")
+                .ok()
+                .flatten()
+        })
         .map(|value| value.eq_ignore_ascii_case("TRUE"));
 
     Ok(BasePreparationReport {
