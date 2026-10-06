@@ -64,7 +64,7 @@ jobs:
       - name: Prepare Tauri package inputs
         run: |
           npm run prepare:icons
-          npm run prepare:sidecars
+          npm run prepare:package-binaries
       - name: Build Authenticode-signed Tauri NSIS package
         shell: pwsh
         run: |

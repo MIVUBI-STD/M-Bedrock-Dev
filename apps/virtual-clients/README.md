@@ -43,7 +43,7 @@ Window arrangement is desktop-native presentation behavior. VM lifecycle eligibi
 
 ## Packaging
 
-The Tauri NSIS package includes the support CLI and Guest Agent as package-only sidecars plus guest/acceptance scripts as resources. `scripts/prepare-sidecars.mjs` builds target-specific sidecars only for package/release work; normal dev/check/test does not depend on sidecar staging.
+The Tauri NSIS package includes the support CLI as the only host sidecar. Guest Agent is a guest payload and is packaged beside the guest preparation scripts under `guest/windows/`. `scripts/prepare-package-binaries.mjs` builds both binaries, stages the CLI as a target-specific sidecar, and stages Guest Agent as a package resource. Normal dev/check/test does not depend on package binary staging.
 
 ## Commands
 

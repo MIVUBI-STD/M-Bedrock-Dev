@@ -1,17 +1,20 @@
 use crate::engine::setup_tools;
-use tauri::{AppHandle, Manager};
+use tauri::{path::BaseDirectory, AppHandle, Manager};
 
 #[tauri::command]
 pub async fn setup_open_guest_tools(app: AppHandle) -> Result<(), String> {
-    let resource_dir = app
+    let tools = app
         .path()
-        .resource_dir()
-        .map_err(|error| format!("Virtual Clients resource directory is unavailable: {error}"))?;
-    let tools = resource_dir.join("guest").join("windows");
+        .resolve("guest/windows", BaseDirectory::Resource)
+        .map_err(|error| format!("Virtual Clients setup tools path is unavailable: {error}"))?;
     if !tools.is_dir() {
+        return Err(format!("Packaged setup tools are missing: {}", tools.display()));
+    }
+    let guest_agent = tools.join("virtual-guest-agent.exe");
+    if !guest_agent.is_file() {
         return Err(format!(
-            "Packaged setup tools are missing: {}",
-            tools.display()
+            "Packaged Guest Agent is missing from setup tools: {}",
+            guest_agent.display()
         ));
     }
 

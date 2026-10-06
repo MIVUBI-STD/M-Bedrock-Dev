@@ -52,7 +52,8 @@ jobs:
           if ($installer.Length -le 0) { throw 'Tauri NSIS installer is empty.' }
           $sidecars = Join-Path $PWD 'src-tauri\binaries'
           if (@(Get-ChildItem $sidecars -Filter 'virtual-clients-*-windows-msvc.exe' -File).Count -ne 1) { throw 'CLI sidecar missing.' }
-          if (@(Get-ChildItem $sidecars -Filter 'virtual-guest-agent-*-windows-msvc.exe' -File).Count -ne 1) { throw 'Guest Agent sidecar missing.' }
+          $guestAgent = Join-Path $PWD 'src-tauri\package-resources\guest\windows\virtual-guest-agent.exe'
+          if (!(Test-Path -LiteralPath $guestAgent -PathType Leaf)) { throw 'Guest Agent package payload missing.' }
           $hash = (Get-FileHash -Algorithm SHA256 $installer.FullName).Hash.ToLowerInvariant()
           "installer_path=$($installer.FullName)" >> $env:GITHUB_OUTPUT
           "### Virtual Clients package smoke" >> $env:GITHUB_STEP_SUMMARY
