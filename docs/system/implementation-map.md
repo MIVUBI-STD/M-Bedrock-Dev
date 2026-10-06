@@ -1,157 +1,153 @@
 # Implementation Map
 
-Use this before broad repository search.
+Human-readable routing map for implementation ownership.
 
-| Responsibility | Canonical owner |
+This file is intentionally high-level. It is **not** a manually maintained database of every source file or symbol.
+
+Exact implementation lookup follows:
+
+```text
+Task / concern
+→ Router
+→ Resource Catalog
+→ ownership.json
+→ targeted source lookup
+```
+
+Machine-readable ownership and current source win if this overview becomes stale.
+
+## Engine domains
+
+| Concern | Canonical implementation owner |
 |---|---|
-| Shared dependency-neutral primitives | engine/packages/common/ |
-| Artifact kind/identity/fingerprint | engine/packages/artifact/ |
-| ZIP/archive safety, inventory, package transport | engine/packages/archive/ |
-| Workspace/session/file inventory + telemetry data contracts | engine/packages/project-model/ |
-| Canonical per-project working path | engine/packages/project-model/src/project/workspace.ts → `workspace/projects/<project-id>/` |
-| Tracked compact project registry / publication proof pointers | engine/packages/project-model/src/project/project-lifecycle.ts + `workspace/project-registry.json` |
-| Project registry persistence / monotonic revision gate | engine/packages/orchestrator/src/workflow/project-registry-store.ts |
-| Work Session checkpoint persistence | engine/packages/orchestrator/src/workflow/work-session-store.ts → `workspace/projects/<project-id>/state/work-session.json` |
-| Derived approval readiness / immutable snapshot / derived publication completion | engine/packages/orchestrator/src/workflow/project-lifecycle.ts |
-| Canonical project approval + publication persistence workflow | engine/packages/orchestrator/src/workflow/project-publication-workflow.ts |
-| Selected-map audit → Work Session + project registry continuity | engine/packages/orchestrator/src/workflow/map-audit-work-session.ts |
-| Approved Bug Report → historical regression projection | engine/packages/orchestrator/src/workflow/project-history-sync.ts |
-| Historical regression catalog merge/persistence | engine/packages/reliability-search/src/corpus/historical-regression-catalog.ts + historical-regression-store.ts |
-| Approved snapshot → Drive publish plan | engine/packages/orchestrator/src/workflow/project-drive-publish-plan.ts |
-| Approved Drive plan → adapter execution / fingerprint verification | engine/packages/orchestrator/src/workflow/project-drive-publish-executor.ts |
-| Canonical current Bug Report V2 state | `workspace/reports/*.json` only; project workspace uses `evidence/` and `output/`, never a second report store |
-| Drive global root + single per-project destination binding | engine/packages/project-model/src/project/drive-binding.ts + `workspace/drive-root.json` (global root) + ProjectRecord.publication.drive (project binding) |
-| Runtime semantic attribute convention | engine/packages/project-model/src/runtime/runtime-semantic-convention.ts |
-| Runtime telemetry emission helpers / sinks / instrumentation guards | engine/packages/telemetry/ |
-| Semantic dependency graph/invalidation | engine/packages/graph/ |
-| Repository capability dependencies, domain path ownership, affected closure, execution planning | engine/packages/task-graph/ |
-| Minimum-sufficient evidence/capability planning | engine/packages/analysis-planner/ |
-| Execution/state/temporal Semantic IR contracts and queries | engine/packages/semantic-ir/ |
-| Parser-independent value-flow graph + forward/backward semantic slicing | engine/packages/dataflow/ |
-| JavaScript/TypeScript direct interprocedural value-flow extraction | engine/analyzers/scripts/src/flow/dataflow.ts |
-| Minecraft semantic source/sink bindings over value flow | engine/analyzers/scripts/src/flow/semantic-flow-bindings.ts |
-| Semantic source→sink taint witness | engine/analyzers/scripts/src/flow/semantic-flow-witness.ts |
-| Bundled/minified source-shape recovery + source-map discovery | engine/analyzers/scripts/src/recovery/source-recovery.ts |
-| Source-map generated→original binding | engine/analyzers/scripts/src/recovery/source-map-binding.ts |
-| Compact data-flow context slice for diagnosis/AI context | engine/packages/orchestrator/src/inspection/script-dataflow-context.ts |
-| Evidence-backed gameplay intent graph, authored invariants, state/model closure, unknowns, intent grounding, and domain-specific authority resolution | engine/packages/gameplay-intent/ |
-| Canonical gameplay surface discovery + Discovery Closure | engine/packages/orchestrator/src/inspection/gameplay-surface-discovery.ts + gameplay-discovery-closure.ts |
-| Canonical gameplay semantic projection | engine/packages/orchestrator/src/inspection/gameplay-semantic-model.ts |
-| Risk-directed gameplay analysis priority | engine/packages/orchestrator/src/inspection/gameplay-analysis-priority.ts |
-| Reachability/capability orchestration | engine/packages/orchestrator/src/inspection/gameplay-reachability-stage.ts + capability-exposure-stage.ts |
-| Player capability / privileged-role authority | engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts |
-| Broad capability mutation/reset footprint | engine/packages/orchestrator/src/inspection/capability-mutation-footprint-analysis.ts |
-| World-rule / entity-spawn causality authority | engine/packages/orchestrator/src/inspection/world-rule-authority-analysis.ts |
-| Client-predicted mutation cancellation / reconciliation surface | engine/packages/orchestrator/src/inspection/client-mutation-reconciliation-analysis.ts |
-| Physical arena containment proof | engine/packages/orchestrator/src/arena/arena-voxel-proof.ts (`proveArenaBarrierEnclosure`) |
-| Hidden gameplay defect orchestration | engine/packages/orchestrator/src/inspection/hidden-gameplay-defect-analysis.ts |
-| Canonical map engineering/QA assessment projection | engine/packages/orchestrator/src/inspection/map-engineering-assessment.ts |
-| Gameplay world composition / closure integration | engine/packages/orchestrator/src/inspection/gameplay-world-model.ts |
-| Formal behavioral state/transition/temporal property kernel + Minecraft overlays | engine/packages/behavior-model/ |
-| Constraint-backed reachability, invariant proof, and counterexample traces | engine/packages/logic-solver/ |
-| Competing hypotheses, falsifiers, negative-space/temporal reasoning, reachability, capability exposure, contradiction registry, risk-directed proof depth, and diagnostic probe discrimination | engine/packages/diagnostic-reasoning/ |
-| Gameplay-critical candidate discovery + counter-evidence suppression | engine/packages/diagnostic-reasoning/src/candidate-evidence.ts |
-| Diagnostic contract/IDs | engine/packages/diagnostics/ |
-| Validation step/result contracts | engine/packages/validation/ |
-| Bug Report V2 semantics/lifecycle; V1 import compatibility only | engine/packages/bug-report/ + engine/schemas/bug-report/ |
-| Proposed Bug Set chat-review / approval boundary | engine/packages/bug-report/src/review.ts |
-| Canonical persisted bug-report current state | workspace/reports/*.json |
-| Bug-report ownership/storage boundary | docs/system/bug-report-ownership.md |
-| Approved Bug Report V2 client projection + quality gate | engine/packages/bug-report/src/document/ + engine/packages/bug-report/DOCUMENT.md |
-| Compact ChatGPT/Markdown bug-report preview | engine/packages/bug-report/src/preview.ts + engine/packages/bug-report/PREVIEW.md |
-| Self-contained Map Audit Report + Approved Bug Report V2 HTML rendering | tooling/bug-report-documents/render.ts |
-| Optional Bug Report UI viewer | apps/bug-report-ui/ (projection only; not report authority) |
-| Repair preservation contracts, baselines, and verification receipts | engine/packages/preservation/ |
-| Reliability invariants/fingerprint/update delta/retest/runtime evidence | engine/packages/reliability/ |
-| Capability-specific proof binding registry | engine/reliability/catalogs/capability-proof-bindings.json |
-| Knowledge → detector/proof coverage binding | engine/reliability/catalogs/knowledge-detector-bindings.json + tooling/repository/verify-knowledge-detector-bindings.mjs |
-| Canonical audit naming authority / verifier | docs/analysis/map-audit-naming-contract.md + tooling/repository/verify-canonical-naming.mjs |
-| Reliability evidence router / ownership boundary | engine/reliability/README.md |
-| Calibration / blind acceptance / regression benchmark manifests | engine/reliability/corpus/ |
-| Runtime session recording/replay contract + first divergence | engine/packages/reliability/src/runtime/runtime-session-replay.ts |
-| Reliability search/corpus/interleavings/minimization | engine/packages/reliability-search/ |
-| Cross-map behavioral pattern aggregation | engine/packages/reliability-search/src/corpus/behavioral-pattern-library.ts |
-| Metamorphic detector testing | engine/packages/reliability-search/src/robustness/metamorphic.ts |
-| Parser robustness campaigns | engine/packages/reliability-search/src/robustness/parser-robustness.ts |
-| Coverage-quality dashboard + generated known-limits | engine/packages/reliability-search/src/coverage/coverage-quality-dashboard.ts + coverage/generated-known-limits.ts |
-| Empirical diagnostic calibration | engine/packages/diagnostic-reasoning/src/calibration.ts |
-| Controlled Minecraft experiment planning/qualification/provenance | engine/packages/runtime-lab/ + engine/runtime/lab/ |
-| Cross-version runtime differential planning/receipt | engine/packages/runtime-lab/src/differential/cross-version-differential-plan.ts |
-| Cross-version runtime differential executor over RuntimeExperimentHost | engine/packages/runtime-lab/src/differential/cross-version-differential-executor.ts |
-| Compatibility engine/version/track contracts | engine/packages/compatibility/ |
-| Exact target Minecraft runtime identity and inventory completeness | engine/packages/runtime-profile/ |
-| Runtime-profile → compatibility query adapter | engine/packages/compatibility/src/runtime-profile-adapter.ts |
-| Game Design specification schema/loader/compiler | engine/packages/game-design-spec/ + engine/design/ |
-| Selected-artifact Gameplay Contract / readiness | engine/packages/gameplay-intent/ |
-| Mandatory gameplay audit procedure / checkpoint semantics | docs/analysis/mandatory-audit-procedure.md |
-| Mandatory audit procedure machine-readable projection / closure | engine/packages/orchestrator/src/inspection/mandatory-audit-procedure.ts |
-| Rich state/ownership/progression audit projections | engine/packages/orchestrator/src/inspection/mandatory-audit-support.ts |
-| Production selected-map audit single entry + canonical continuations | engine/packages/orchestrator/src/map-audit-pipeline.ts (exact .mcworld → artifact proof → ordered audit → resolveSelectedMapAudit when needed → internal SelectedMapAuditRun) |
-| User prompt intake / non-authoritative search guidance / additive analysis demand | engine/packages/orchestrator/src/map-audit-user-intent.ts + docs/analysis/user-input-translation-contract.md + .agents/skills/m-bedrock-map-bug-audit/SKILL.md |
-| Pre-Audit Plan confirmation / stale-confirmation guard | engine/packages/orchestrator/src/map-audit-user-intent.ts (`createAuditUserIntentConfirmationRequest`, `confirmAuditUserIntent`, `validateAuditUserIntentConfirmation`) + map-audit-pipeline.ts admission prerequisite |
-| Sole operator-facing selected-map audit output | engine/packages/orchestrator/src/map-audit-output-v2.ts (SelectedMapAuditRun internal authority → Map Audit Output V2) |
-| Opaque production reporting authority / raw collector bypass guard | engine/packages/orchestrator/src/map-audit-authority.ts + reporting/report-defect-collector.ts |
-| Ordered production audit admission / first blocking stage (reads Mandatory Audit Procedure checkpoints only) | engine/packages/orchestrator/src/map-audit-admission.ts |
-| Typed directional gameplay-scenario component traversal / semantic stop boundaries | engine/packages/orchestrator/src/inspection/gameplay-scenario-knowledge.ts |
-| Bounded model-facing audit task packets / next-action / evidence+RIG context projection | engine/packages/orchestrator/src/map-audit-model-task.ts |
-| Canonical continuation ownership / rerun-vs-resolve-vs-review contract | engine/packages/orchestrator/src/map-audit-pipeline.ts (SelectedMapAuditRun.continuation) |
-| Selected-artifact identity binding through review/report | engine/packages/orchestrator/src/map-audit-identity.ts |
-| Production runtime-target boundary / reject caller map-design contracts | engine/packages/orchestrator/src/map-audit-pipeline.ts (SelectedMapAuditRuntimeTarget) |
-| Deterministic confirmed resolution → PROVEN / confirmation-ready NEED_VALIDATION issue projection | engine/packages/orchestrator/src/map-audit-issue-projection.ts + map-audit-validation-projection.ts |
-| Unresolved audit/model/proof residue that is not yet a gameplay issue | engine/packages/orchestrator/src/map-audit-obligations.ts (`auditObligations[]`) |
-| Deterministic pre-report AI candidate grouping + coverage enforcement | engine/packages/orchestrator/src/map-audit-candidate-grouping.ts |
-| Canonical confirmed-defect root-cause grouping | engine/packages/bug-report/src/grouping.ts (broken invariant + repair unit + primary failure) |
-| Bounded counter-proof search receipt / confirmed-defect admission | engine/packages/orchestrator/src/inspection/gameplay-defect-resolution.ts |
-| AI candidate Expected/Actual narrative binding to ready resolutions | engine/packages/orchestrator/src/reporting/report-defect-collector.ts |
-| Audit snapshot revision / stale model-result + review/report rejection | engine/packages/orchestrator/src/map-audit-revision.ts + map-audit-pipeline.ts |
-| Audit-revision-bound semantic proof reuse | engine/packages/orchestrator/src/workflow/semantic-proof-cache.ts (audit-bound wrapper) |
-| Audit-revision-bound rejected-candidate reuse | engine/packages/orchestrator/src/reporting/report-candidate-reuse.ts (audit-bound wrapper) |
-| Bounded preflight → final RIG demand reconciliation (max 2 full artifact passes) | engine/packages/orchestrator/src/map-audit-demand-reconciliation.ts + map-audit-pipeline.ts |
-| Audit-authoritative Work Session projection + persistence mirror | engine/packages/orchestrator/src/workflow/map-audit-work-session.ts + engine/packages/project-model/src/session/work-session.ts |
-| Evidence collection vs ordered decision authorization | engine/packages/orchestrator/src/map-audit-execution-trace.ts |
-| Gameplay bug audit workflow | .agents/skills/m-bedrock-map-bug-audit/ |
-| Approved bug repair + preservation workflow | .agents/skills/m-bedrock-target-repair/ + docs/repair/ |
-| Versioned evidence-backed Minecraft platform knowledge and applicability | engine/packages/knowledge/ + engine/knowledge/ |
-| Applicable platform relation claims in audit/model context | inspection/knowledge-runtime-analysis.ts → gameplay-world-model.ts → map-audit-model-task.ts |
-| Knowledge source freshness/quarantine | engine/packages/knowledge/src/freshness.ts |
-| Declarative evidence-based diagnostic rules | engine/packages/diagnostic-reasoning/src/declarative-rules.ts |
-| Engineering/validation contracts | engine/contracts/engineering/ |
-| Education edition/feature profile | engine/packages/compatibility/education* |
-| Repair transactions/preconditions/application | engine/packages/repair/ |
-| Repair workflow authority / Approved Bug mutation gate | engine/packages/orchestrator/src/repair/repair-admission-pipeline.ts + repair-proof-bundle.ts |
-| Cross-owner inspect/repair-validation orchestration | engine/packages/orchestrator/ |
-| Fail-closed repository task planning | engine/packages/orchestrator/src/workflow/repository-task-plan.ts |
-| Affected semantic/context compression for Codex | engine/packages/orchestrator/src/workflow/semantic-affected-plan.ts + workflow/context-compiler.ts |
-| Arena lifecycle + cleanup convergence | engine/packages/orchestrator/src/arena/arena-lifecycle-* + arena/arena-cleanup-* |
-| Spatial gameplay authority | engine/packages/behavior-model/src/minecraft/spatial-authority.ts + engine/packages/orchestrator/src/inspection/spatial-authority-* |
-| Inventory/equipment lifecycle + item Behavior Contract | engine/packages/behavior-model/src/minecraft/inventory-* + engine/packages/orchestrator/src/inspection/inventory-* |
-| Entity AI/navigation source readiness + route environment | engine/analyzers/entities/ + engine/packages/orchestrator/src/inspection/entity-ai-* + inspection/route-navigation-* |
-| Scenario-scoped entity/navigation + structure contradiction projection | gameplay-world-model.ts + gameplay-scenario-compiler.ts |
-| Combat/downed/revive Behavior Contract and lifecycle | engine/packages/behavior-model/src/minecraft/combat-* + engine/packages/orchestrator/src/inspection/combat-* + engine/packages/telemetry/src/domains/revive/revive-* |
-| Chunk lifecycle/readiness/lease reasoning | engine/packages/behavior-model/src/minecraft/chunk.ts + engine/packages/orchestrator/src/inspection/chunk-* |
-| Economy/reward source arbitration | engine/packages/behavior-model/src/minecraft/economy-* + engine/packages/orchestrator/src/inspection/economy-* + inspection/reward-source-analysis.ts |
-| Generic Bedrock NBT transport | engine/adapters/nbt/ |
-| mcstructure semantic normalization | engine/adapters/mcstructure/ |
-| Bedrock LevelDB snapshot/transport | engine/adapters/leveldb/ |
-| World DB semantic decoding | engine/analyzers/world-db/ |
-| Script source/module/capability analysis | engine/analyzers/scripts/ |
-| Entity behavior/navigation/targeting/loot semantics | engine/analyzers/entities/ |
-| Gameplay-intent signal extraction from selected-artifact source evidence | engine/analyzers/gameplay-intent/ |
-| File/path discovery | engine/analyzers/discovery/ |
-| Manifest semantics + compatibility fact extraction | engine/analyzers/manifest/ |
-| Function source/reference extraction | engine/analyzers/functions/ |
-| Command semantics/effects | engine/analyzers/commands/ |
-| Reference resolution | engine/analyzers/references/ |
-| Derived diagnostics | engine/analyzers/diagnostics/ |
-| Coordinate/topology derivation | engine/analyzers/topology/ |
-| Regression fixtures | engine/fixtures/regressions/ |
-| Versioned Bedrock/Education capability data | engine/rules/ |
-| Structural/internal schemas | engine/schemas/ |
-| Thin user interfaces | apps/ |
-| Root developer routing | DEV.cmd → tooling/windows-toolchain/dev.ps1 |
-| Repository/source boundary verification | tooling/repository/ |
-| Stable project facts | CONTEXT.md |
-| GitHub execution | GITHUB_RULES.md |
-| Research | experiments/ |
+| Artifact identity / fingerprint | `engine/packages/artifact/` |
+| Archive / ZIP safety and deterministic transport | `engine/packages/archive/` |
+| Shared dependency-neutral primitives | `engine/packages/common/` |
+| Project/workspace/session models | `engine/packages/project-model/` |
+| Semantic dependency graph / invalidation | `engine/packages/graph/` |
+| Semantic execution/state representation | `engine/packages/semantic-ir/` |
+| Parser-independent value/data flow | `engine/packages/dataflow/` |
+| Platform knowledge contracts/applicability | `engine/packages/knowledge/` + `engine/knowledge/` |
+| Gameplay intent / selected-artifact expected behavior | `engine/packages/gameplay-intent/` |
+| Behavioral state/transition/temporal model | `engine/packages/behavior-model/` |
+| Compatibility / edition / capability | `engine/packages/compatibility/` |
+| Runtime target identity | `engine/packages/runtime-profile/` |
+| Diagnostic contracts | `engine/packages/diagnostics/` |
+| Diagnostic reasoning / hypotheses / counter-evidence | `engine/packages/diagnostic-reasoning/` |
+| Constraint/reachability reasoning | `engine/packages/logic-solver/` |
+| Minimum-sufficient analysis planning | `engine/packages/analysis-planner/` |
+| Diagnosis execution/reuse | `engine/packages/diagnosis-pipeline/` |
+| Repair mutation | `engine/packages/repair/` |
+| Preservation contracts/proof | `engine/packages/preservation/` |
+| Validation contracts/results | `engine/packages/validation/` |
+| Runtime telemetry | `engine/packages/telemetry/` |
+| Controlled runtime experiments | `engine/packages/runtime-lab/` + `engine/runtime/` |
+| Reliability models/fingerprints/retest | `engine/packages/reliability/` |
+| Reliability search/minimization/robustness | `engine/packages/reliability-search/` |
+| Repository affected-work planning | `engine/packages/task-graph/` |
+| Cross-owner composition / production workflows | `engine/packages/orchestrator/` |
+| Approved Bug Report V2 | `engine/packages/bug-report/` |
+| Game Design specification | `engine/packages/game-design-spec/` + `engine/design/` |
 
-Use docs/system/architecture.md for enforceable dependency direction.
+Canonical package grouping is machine-readable in:
+
+```text
+engine/packages/ownership.json
+```
+
+## Analyzer domains
+
+| Concern | Canonical analyzer owner |
+|---|---|
+| File/content discovery | `engine/analyzers/discovery/` |
+| Manifest semantics | `engine/analyzers/manifest/` |
+| mcfunction parsing | `engine/analyzers/functions/` |
+| Command semantics | `engine/analyzers/commands/` |
+| Script / TypeScript semantics | `engine/analyzers/scripts/` |
+| Dialogue semantics | `engine/analyzers/dialogue/` |
+| Entity authored state | `engine/analyzers/entities/` |
+| Gameplay intent extraction | `engine/analyzers/gameplay-intent/` |
+| Reference resolution | `engine/analyzers/references/` |
+| Spatial/topology analysis | `engine/analyzers/topology/` |
+| Native world DB evidence | `engine/analyzers/world-db/` |
+| Derived diagnostics | `engine/analyzers/diagnostics/` |
+
+Canonical grouping:
+
+```text
+engine/analyzers/ownership.json
+engine/adapters/ownership.json
+```
+
+## Data and evidence owners
+
+| Data | Canonical owner |
+|---|---|
+| Minecraft platform/runtime facts | `engine/knowledge/` |
+| Engineering contracts | `engine/contracts/engineering/` |
+| Reliability catalogs | `engine/reliability/catalogs/` |
+| Frozen evaluation corpus | `engine/reliability/corpus/` |
+| Historical execution evidence | `engine/reliability/history/` |
+| Regression fixtures | `engine/fixtures/regressions/` |
+| Current project continuity | `workspace/projects/` |
+| Current Bug Report V2 | `workspace/reports/` |
+| Current Developer Notes | `workspace/developer-notes.json` |
+| Work intent | `planning/` |
+
+## Critical selected-map audit entrypoints
+
+These exact source entrypoints are intentionally listed because they define production workflow authority.
+
+| Responsibility | Source owner |
+|---|---|
+| Production selected-map audit entry / continuation | `engine/packages/orchestrator/src/map-audit-pipeline.ts` |
+| User intent / pre-audit confirmation | `engine/packages/orchestrator/src/map-audit-user-intent.ts` |
+| Ordered stage admission | `engine/packages/orchestrator/src/map-audit-admission.ts` |
+| Operator-facing Map Audit Output V2 | `engine/packages/orchestrator/src/map-audit-output-v2.ts` |
+| Audit obligations | `engine/packages/orchestrator/src/map-audit-obligations.ts` |
+| Model-facing bounded task context | `engine/packages/orchestrator/src/map-audit-model-task.ts` |
+| Work Session audit projection | `engine/packages/orchestrator/src/workflow/map-audit-work-session.ts` |
+| Report candidate collection | `engine/packages/orchestrator/src/reporting/report-defect-collector.ts` |
+| Bug review / approval | `engine/packages/bug-report/src/review.ts` |
+| Repair admission | `engine/packages/orchestrator/src/repair/repair-admission-pipeline.ts` |
+
+Human workflow owners:
+
+- [Master Selected-Map Audit Workflow](../analysis/master-selected-map-audit-workflow.md)
+- [Mandatory Gameplay Audit Procedure](../analysis/mandatory-audit-procedure.md)
+- [Bug-Finding Coverage](../analysis/bug-finding-coverage.md)
+
+## Knowledge access owners
+
+```text
+Router
+→ docs/README.md + domain README
+
+Catalog
+→ tooling/repository/resource-catalog.mjs
+
+Graph
+→ tooling/repository/graph.mjs
+
+Retrieval
+→ existing analysis-planner / orchestrator owners as implementation develops
+
+Context
+→ existing orchestrator context compilation owners
+```
+
+Catalog and Graph are derived navigation structures. They never replace the source/data owners listed above.
+
+## Exact lookup rule
+
+Do not expand this document back into a per-symbol or per-file database.
+
+For an exact implementation question:
+
+1. resolve the concern through the appropriate Router;
+2. resolve registered resources through the Resource Catalog;
+3. inspect the matching machine-readable ownership file;
+4. search only the selected owner/module;
+5. read the minimum source required to decide the question.
+
+If a responsibility cannot be resolved through this path, fix ownership/routing metadata rather than adding another row of ad-hoc implementation trivia here.
