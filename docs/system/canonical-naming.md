@@ -158,7 +158,9 @@ These terms have one repository-wide meaning. Do not introduce aliases for the s
 
 | Term | Canonical meaning |
 |---|---|
-| Catalog | structured collection of registered resources or facts |
+| Catalog | durable structured collection of resources or facts |
+| Registry | executable membership/lookup/admission set for a bounded code contract |
+| Index | derived lookup acceleration built from canonical owners; never authority |
 | Graph | typed relationships between registered resources |
 | Router | deterministic selection of the first canonical owner/domain |
 | Retrieval | bounded selection and ranking of relevant registered resources |
@@ -174,7 +176,9 @@ Qualified forms preserve the same meaning. For example, `Reliability Catalog`, `
 Forbidden architectural aliases for these concepts include:
 
 ```text
-Registry / Directory / Index Database     → Catalog
+Directory / Knowledge List               → Catalog
+Registry used as knowledge inventory      → Catalog
+Persisted index used as source of truth   → canonical Owner; Index stays DERIVED
 Knowledge Graph Manager / Link Graph      → Graph
 Dispatcher / Resolver                     → Router
 RAG Manager / Semantic Search Manager     → Retrieval
@@ -187,6 +191,39 @@ Active State Store / Project Memory       → Workspace
 ```
 
 The forbidden terms may still appear when they describe an external API/library concept or a source-native identifier, but they must not become new canonical repository responsibilities.
+
+### Catalog, Registry, and Index
+
+These terms are deliberately different:
+
+```text
+Catalog
+→ durable resource/fact inventory
+
+Registry
+→ executable membership, lookup, uniqueness, or admission contract
+
+Index
+→ rebuildable lookup acceleration
+```
+
+Rules:
+
+- do not rename a runtime Registry to Catalog merely because both contain entries;
+- do not call a knowledge/resource inventory Registry;
+- Index is always `DERIVED` and may be deleted/rebuilt;
+- Catalog may reference canonical owners but does not replace them;
+- Registry may enforce runtime/code membership semantics but does not become repository knowledge authority.
+
+Examples:
+
+```text
+Resource Catalog        → Catalog
+Platform Knowledge Catalog → Catalog
+capability-registry.ts  → Registry
+contract-registry.json  → Registry
+Document Section Index  → Index
+```
 
 ### Document metadata
 
