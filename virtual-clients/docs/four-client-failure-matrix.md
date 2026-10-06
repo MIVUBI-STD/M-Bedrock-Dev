@@ -10,8 +10,8 @@ concurrently on one physical Windows host.
 | --- | --- | --- | --- | --- |
 | Interactive launch | SYSTEM Guest Agent receives launch | Handoff to an interactive-user launcher; never claim visible UI from session 0 | Guest Agent / guest Windows setup | Windows |
 | Interactive launch | No user logged on | Keep VM running; report interactive session unavailable | Guest Agent | Windows |
-| Interactive launch | Interactive helper missing/stopped | Keep VM running; Launch Minecraft remains retryable | Guest Agent setup | Windows |
-| Interactive launch | Stale local request/ack | Correlate request; never treat stale ack as success | Guest Agent IPC | source + Windows |
+
+| Interactive launch | Interactive helper missing/stopped | Loopback readiness is false; keep VM running and direct user to per-user launcher setup | Guest Agent IPC | source + Windows |
 | Login | Minecraft opens auth surface | Auth surface stays inside the same Virtual Windows session | Minecraft/Windows session boundary | Windows |
 | Login | Browser/WebView opens on another monitor | User can still reach it; do not assume fixed tab/window location | Window UX | Windows |
 | Login | MFA / Conditional Access / federation | Remain manually usable; Virtual Clients never intercept credentials | account boundary | manual |
