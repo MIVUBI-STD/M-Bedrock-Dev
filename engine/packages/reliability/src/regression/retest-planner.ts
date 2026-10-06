@@ -173,12 +173,18 @@ export function planRetestWithKnowledge(
     coverage,
   );
 
-  if (!mapKnowledge || failurePatterns.length === 0) {
+  if (failurePatterns.length === 0) {
     return plan;
   }
 
   const knownPatternIds = new Set(
-    mapKnowledge.failurePatternIds,
+    mapKnowledge?.failurePatternIds ?? [],
+  );
+  const mapCapabilities = new Set(
+    fingerprint.capabilityTags,
+  );
+  const mapDomains = new Set(
+    fingerprint.domains,
   );
   const updateCapabilities = new Set(
     delta.entries.flatMap((entry) =>
@@ -193,28 +199,49 @@ export function planRetestWithKnowledge(
   const extraDomains = new Set<ReliabilityDomain>();
 
   for (const pattern of failurePatterns) {
-    if (!knownPatternIds.has(pattern.id)) continue;
-
-    const capabilityOverlap =
+    const updateCapabilityOverlap =
       pattern.capabilityTags.some((tag) =>
         updateCapabilities.has(tag)
       );
-    const domainOverlap =
+    const updateDomainOverlap =
       updateDomains.has(pattern.domain);
 
-    if (!capabilityOverlap && !domainOverlap) continue;
+    if (
+      !updateCapabilityOverlap &&
+      !updateDomainOverlap
+    ) {
+      continue;
+    }
+
+    const knownToMap =
+      knownPatternIds.has(pattern.id);
+    const mapCapabilityOverlap =
+      pattern.capabilityTags.some((tag) =>
+        mapCapabilities.has(tag)
+      );
+    const mapDomainOverlap =
+      mapDomains.has(pattern.domain);
+
+    if (
+      !knownToMap &&
+      !(mapCapabilityOverlap && mapDomainOverlap)
+    ) {
+      continue;
+    }
 
     extraDomains.add(pattern.domain);
     extraReasons.push({
       kind: "causal-regression",
       detail:
-        "Known failure pattern " +
+        (knownToMap
+          ? "Known failure pattern "
+          : "Cross-map failure pattern ") +
         pattern.id +
         " overlaps Minecraft " +
         delta.toVersion +
         ": " +
         pattern.title,
-      weight: 4,
+      weight: knownToMap ? 4 : 2,
     });
   }
 

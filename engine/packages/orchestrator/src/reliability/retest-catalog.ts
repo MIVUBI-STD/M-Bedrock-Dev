@@ -13,7 +13,7 @@ export async function planArtifactRetestFromCatalogs(
   artifactPath: string,
   input: CatalogRetestCommon,
 ) {
-  const [{ regressions, coverage }, updateDelta] = await Promise.all([
+  const [{ regressions, failurePatterns, coverage }, updateDelta] = await Promise.all([
     loadReliabilityCatalogs(input.catalogRoot),
     loadUpdateDeltaCatalog(input.catalogRoot, input.updateVersion),
   ]);
@@ -23,6 +23,7 @@ export async function planArtifactRetestFromCatalogs(
     updateDelta,
     regressions,
     coverage,
+    failurePatterns,
     ...(input.target ? { target: input.target } : {}),
   });
 }

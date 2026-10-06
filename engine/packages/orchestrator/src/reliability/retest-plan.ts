@@ -1,7 +1,8 @@
 import { inspectArtifact } from "../inspect-artifact.js";
-import { planRetest } from "../../../reliability/src/index.js";
+import { planRetestWithKnowledge } from "../../../reliability/src/index.js";
 import type {
   BlindspotCoverage,
+  FailurePattern,
   MinecraftUpdateDelta,
   RegressionCase,
   RetestPlan,
@@ -13,6 +14,7 @@ export interface ArtifactRetestPlanInput {
   updateDelta: MinecraftUpdateDelta;
   regressions?: readonly RegressionCase[];
   coverage?: readonly BlindspotCoverage[];
+  failurePatterns?: readonly FailurePattern[];
   target?: InspectTargetProfile;
 }
 
@@ -38,11 +40,13 @@ export async function planArtifactRetest(
     input.target ?? {},
   );
 
-  const plan = planRetest(
+  const plan = planRetestWithKnowledge(
     inspection.reliability.fingerprint,
     input.updateDelta,
     input.regressions ?? [],
     input.coverage ?? [],
+    undefined,
+    input.failurePatterns ?? [],
   );
 
   return {

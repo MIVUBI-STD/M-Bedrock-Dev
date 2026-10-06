@@ -1,7 +1,8 @@
 import { inspectDirectory } from "../inspect.js";
-import { planRetest } from "../../../reliability/src/index.js";
+import { planRetestWithKnowledge } from "../../../reliability/src/index.js";
 import type {
   BlindspotCoverage,
+  FailurePattern,
   MinecraftUpdateDelta,
   RegressionCase,
   RetestPlan,
@@ -14,6 +15,7 @@ export interface DirectoryRetestPlanInput {
   updateDelta: MinecraftUpdateDelta;
   regressions?: readonly RegressionCase[];
   coverage?: readonly BlindspotCoverage[];
+  failurePatterns?: readonly FailurePattern[];
   target?: InspectTargetProfile;
 }
 
@@ -37,11 +39,13 @@ export async function planDirectoryRetest(
     mapId: input.mapId,
   };
 
-  const plan = planRetest(
+  const plan = planRetestWithKnowledge(
     fingerprint,
     input.updateDelta,
     input.regressions ?? [],
     input.coverage ?? [],
+    undefined,
+    input.failurePatterns ?? [],
   );
 
   return {

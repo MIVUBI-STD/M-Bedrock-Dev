@@ -88,10 +88,32 @@ const patterns = [{
   supportingRegressionIds: ["reg:owned"],
   detectionHints: ["observe route"],
   retestFocus: ["repeat wave"],
+}, {
+  id: "cross-map-entity-route",
+  title: "Cross-map entity route pressure",
+  domain: "entities" as const,
+  summary: "A historical route failure from another map applies to compatible entity maps.",
+  invariantIds: ["entity.route"],
+  triggerTags: ["navigation"],
+  capabilityTags: ["entity-ai"],
+  supportingRegressionIds: ["reg:other-map"],
+  detectionHints: ["search compatible entity routes"],
+  retestFocus: ["repeat route"],
+}, {
+  id: "unrelated-inventory",
+  title: "Unrelated inventory pressure",
+  domain: "inventory" as const,
+  summary: "Must not route into an entity-only map.",
+  invariantIds: ["inventory.state"],
+  triggerTags: ["inventory"],
+  capabilityTags: ["inventory"],
+  supportingRegressionIds: ["reg:other-map"],
+  detectionHints: ["inspect inventory"],
+  retestFocus: ["inventory transition"],
 }];
 
 describe("knowledge-aware retest planning", () => {
-  it("scopes historical regressions to the map and adds explicit cross-map patterns", () => {
+  it("scopes incident history while applying bounded cross-map pattern pressure", () => {
     const plan = planRetestWithKnowledge(
       fingerprint,
       delta,
@@ -117,5 +139,16 @@ describe("knowledge-aware retest planning", () => {
         item.detail.includes("entity-route")
       ),
     ).toBe(true);
+    expect(
+      plan.reasons.some((item) =>
+        item.kind === "causal-regression" &&
+        item.detail.includes("Cross-map failure pattern cross-map-entity-route")
+      ),
+    ).toBe(true);
+    expect(
+      plan.reasons.some((item) =>
+        item.detail.includes("unrelated-inventory")
+      ),
+    ).toBe(false);
   });
 });
