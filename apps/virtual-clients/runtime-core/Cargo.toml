@@ -1,7 +1,7 @@
 [package]
 name = "m-bedrock-virtual-clients-core"
 version = "0.1.0"
-description = "Experimental M-Bedrock Virtual Clients backend core"
+description = "M-Bedrock Virtual Clients runtime core"
 authors = ["MIVUBI-STD"]
 edition = "2021"
 rust-version = "1.85"

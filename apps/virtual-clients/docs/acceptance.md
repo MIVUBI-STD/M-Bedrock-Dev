@@ -1,8 +1,8 @@
-# Virtual Clients Backend Acceptance
+# Virtual Clients Acceptance
 
 ## Source proof
 
-The Experimental workflow must pass on both Windows and macOS:
+The canonical local source checkpoint must pass before target-machine acceptance:
 
 ```text
 cargo check --locked --all-targets
@@ -45,12 +45,19 @@ For every Virtual:
 start
 → VMware Tools ready
 → Guest Agent reachable
-→ Guest Agent version = host backend version
+→ Guest Agent protocol = compatible backend protocol
 → live Minecraft version = Native version
 → versionParity = MATCH
 ```
 
 A newly started mismatch must be stopped and batch rollback attempted.
+
+Base lineage proof additionally requires:
+
+- replacing/re-registering a Base at the same Minecraft version creates a new `baseGenerationId`;
+- Virtuals from an older Base generation are rejected until reprovisioned from the current Base;
+- application package-version changes alone do not invalidate a Base when the Guest Agent protocol remains compatible;
+- unknown Guest Agent protocol versions remain blocked.
 
 Base lifecycle proof also requires:
 

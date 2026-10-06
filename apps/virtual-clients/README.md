@@ -1,6 +1,6 @@
 # Virtual Clients Desktop
 
-Canonical desktop application source for M-Bedrock Virtual Clients.
+Canonical product source for M-Bedrock Virtual Clients.
 
 ## Stack
 
@@ -33,7 +33,7 @@ src/                         presentation + ephemeral UI state
 src/app/bridge/              typed Tauri boundary
 src-tauri/src/commands/      thin adapters
 src-tauri/src/engine/        desktop-native behavior only
-experiments/virtual-clients/backend/
+runtime-core/
                              VM lifecycle/domain authority
 ```
 

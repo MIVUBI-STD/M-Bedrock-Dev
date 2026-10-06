@@ -31,7 +31,7 @@ Native version changes
 
 Do not let Virtual-01 / Virtual-02 / Virtual-03 independently auto-update Minecraft Education.
 
-The Base provenance record stores the intended Minecraft version. The Guest Agent later proves the live Virtual version.
+The Base provenance record stores the intended Minecraft version and one Base generation identity. Each provisioned Virtual stores that exact Base generation. The Guest Agent later proves the live Virtual version and protocol compatibility.
 
 ## Preparation flow
 

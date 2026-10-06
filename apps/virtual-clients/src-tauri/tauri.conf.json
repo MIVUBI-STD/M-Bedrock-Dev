@@ -41,9 +41,9 @@
       "icons/icon.ico"
     ],
     "resources": {
-      "../../../experiments/virtual-clients/guest/windows/": "guest/windows/",
-      "../../../experiments/virtual-clients/acceptance/windows/": "acceptance/windows/",
-      "../../../experiments/virtual-clients/distribution/release-channel.json": "distribution/release-channel.json"
+      "../guest/windows/": "guest/windows/",
+      "../acceptance/windows/": "acceptance/windows/",
+      "../distribution/release-channel.json": "distribution/release-channel.json"
     },
     "windows": {
       "allowDowngrades": false,

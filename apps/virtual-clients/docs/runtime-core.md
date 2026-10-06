@@ -1,4 +1,4 @@
-# Virtual Clients Backend
+# Virtual Clients Runtime Core
 
 ## Product boundary
 
@@ -58,7 +58,7 @@ Verified daily boot paths require:
 2. registered Base profile present;
 3. Native/Base versions equal;
 4. Guest Agent reachable after boot;
-5. Guest Agent version equals backend version;
+5. Guest Agent protocol is compatible with the backend protocol;
 6. Virtual Minecraft version equals Native.
 
 ## Base provenance
@@ -126,7 +126,7 @@ Virtual Clients never silently kills existing running clients because of host pr
 - Immutable Base requirement.
 - Native/Base version parity gate.
 - Live Virtual/Native version parity gate.
-- Guest Agent/backend version parity gate.
+- Guest Agent protocol compatibility gate.
 - Unique VM UUID/MAC identity check.
 - VM identity and Windows machine-identity proof across all three running Virtual instances.
 - Verified identity fingerprints are stored only as client provenance for later QA_READY gating.
@@ -187,7 +187,7 @@ Not exposed today:
 
 ## Frontend boundary
 
-The canonical desktop application lives at `apps/virtual-clients/` and consumes this Rust core through typed Tauri commands. It must not duplicate provider, lifecycle, parity, update, resource, identity, or recovery policy.
+The canonical product lives at `apps/virtual-clients/`; this runtime core is owned by `apps/virtual-clients/runtime-core/` and is consumed through typed Tauri commands. It must not duplicate provider, lifecycle, parity, update, resource, identity, or recovery policy.
 
 `DoctorReport.nextSetupAction` is the sole first-run decision owner. Desktop presentation may classify that action as app-owned, user-guided, client-manager, or blocked for UX purposes, but it must refresh backend truth after every step and must never persist its own setup-completion state.
 
@@ -320,7 +320,7 @@ Start out of the identity-setup screen. The host's recommendation is displayed
 beside the all-three-running requirement; it is not a capacity guarantee.
 
 Command activity has an optional, per-invocation observer and versioned DTO:
-schema 1, phase EXECUTING / SUCCEEDED / FAILED. It reports command dispatch and
+schema 2, operation name, phase EXECUTING / SUCCEEDED / FAILED. It reports command dispatch and
 serialized result only, not internal VM stages or percentage completion.
 The existing CLI entry delegates to the same implementation without an observer.
 The Tauri adapter forwards at most two messages through a per-invocation Channel;

@@ -148,10 +148,10 @@ Use this before broad repository search.
 | Versioned Bedrock/Education capability data | engine/rules/ |
 | Structural/internal schemas | engine/schemas/ |
 | Virtual Clients desktop presentation / typed Tauri boundary | apps/virtual-clients/ |
-| Virtual Clients VM lifecycle, setup, resource, identity, recovery, support, and update authority | experiments/virtual-clients/backend/ |
-| Virtual Clients pure lifecycle eligibility / action admission | experiments/virtual-clients/backend/src/lifecycle_admission.rs |
-| Virtual Clients guest preparation / Guest Agent installation | experiments/virtual-clients/guest/ |
-| Virtual Clients native target acceptance evidence | experiments/virtual-clients/acceptance/ |
+| Virtual Clients VM lifecycle, setup, resource, identity, recovery, support, and update authority | apps/virtual-clients/runtime-core/ |
+| Virtual Clients pure lifecycle eligibility / action admission | apps/virtual-clients/runtime-core/src/lifecycle_admission.rs |
+| Virtual Clients guest preparation / Guest Agent installation | apps/virtual-clients/guest/ |
+| Virtual Clients native target acceptance evidence | apps/virtual-clients/acceptance/ |
 | Thin user interfaces | apps/ |
 | Root developer routing | DEV.cmd → tooling/windows-toolchain/dev.ps1 |
 | Repository/source boundary verification | tooling/repository/ |

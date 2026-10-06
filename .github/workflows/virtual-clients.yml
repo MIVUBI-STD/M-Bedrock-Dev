@@ -5,7 +5,7 @@ on:
     branches:
       - Experimental
     paths:
-      - "experiments/virtual-clients/backend/**"
+      - "apps/virtual-clients/runtime-core/**"
       - ".github/workflows/virtual-clients.yml"
 
 permissions:
@@ -29,7 +29,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: experiments/virtual-clients/backend
+        working-directory: apps/virtual-clients/runtime-core
 
     steps:
       - name: Checkout
@@ -56,8 +56,8 @@ jobs:
         with:
           name: virtual-clients-canonical-backend
           path: |
-            experiments/virtual-clients/backend/Cargo.toml
-            experiments/virtual-clients/backend/Cargo.lock
-            experiments/virtual-clients/backend/src
-            experiments/virtual-clients/backend/tests
+            apps/virtual-clients/runtime-core/Cargo.toml
+            apps/virtual-clients/runtime-core/Cargo.lock
+            apps/virtual-clients/runtime-core/src
+            apps/virtual-clients/runtime-core/tests
           if-no-files-found: error

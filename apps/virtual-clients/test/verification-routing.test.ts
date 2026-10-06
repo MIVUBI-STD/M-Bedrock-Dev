@@ -11,9 +11,9 @@ describe("Complete Virtual Clients source checkpoint", () => {
     expect(steps).toEqual([
       "npm run virtual-clients:test",
       "npm --prefix apps/virtual-clients run verify:source",
-      "cargo check --locked --all-targets --manifest-path experiments/virtual-clients/backend/Cargo.toml",
-      "cargo test --locked --all-targets --manifest-path experiments/virtual-clients/backend/Cargo.toml",
-      "cargo fmt --manifest-path experiments/virtual-clients/backend/Cargo.toml --all --check",
+      "cargo check --locked --all-targets --manifest-path apps/virtual-clients/runtime-core/Cargo.toml",
+      "cargo test --locked --all-targets --manifest-path apps/virtual-clients/runtime-core/Cargo.toml",
+      "cargo fmt --manifest-path apps/virtual-clients/runtime-core/Cargo.toml --all --check",
     ]);
   });
 

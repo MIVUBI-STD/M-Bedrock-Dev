@@ -345,12 +345,11 @@ Do not mark this gate PASS from the focused checks.
    Payload shape and enum values are not validated at runtime.
    First owner: the typed public contract boundary.
 
-10. **Ownership guidance is inconsistent.**
-    The implementation map and desktop rules explicitly name
-    `experiments/virtual-clients/backend/` as the current owner, while the
-    general experiments rules prohibit production imports from experiments.
-    Reconcile the ownership decision before relocation; do not characterize
-    the current dependency as ownerless or copy it into a second authority.
+10. **Ownership guidance was inconsistent.**
+    This is now resolved by promoting the production runtime core and packaged
+    product assets under `apps/virtual-clients/`. Production code no longer
+    depends on `experiments/virtual-clients/`; experiments keeps its original
+    non-production meaning without a product-specific exception.
 
 ### Proposed implementation order
 
@@ -433,8 +432,9 @@ Goal: safe application maintenance without unnecessary environment recreation.
 - Keep client lineage bound to the registered Base generation rather than only
   Minecraft version. Do not replace this with whole-disk hashing or speculative
   caches.
-- Resolve the documented owner-location conflict once. Do not combine a large
-  directory move with lifecycle fixes or leave duplicate implementations.
+- Keep production Virtual Clients authorities under `apps/virtual-clients/`.
+  The ownership promotion is complete; do not recreate a duplicate runtime core
+  under `experiments/` or another top-level domain.
 - Extract proven responsibilities from runtime.rs within the existing crate
   when touched: setup, lifecycle, identity, compatibility, recovery/resources.
   Keep runtime orchestration thin; avoid generic manager/registry layers.

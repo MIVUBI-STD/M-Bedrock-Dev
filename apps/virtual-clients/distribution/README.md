@@ -58,7 +58,7 @@ Required proof:
 - Authenticode signer thumbprint pinned into the release backend;
 - SHA-256 checksums;
 - runtime-schema compatibility;
-- backend Windows acceptance;
+- Windows target-machine acceptance;
 - no auto-publish from an untrusted build.
 
 ## Provider boundary

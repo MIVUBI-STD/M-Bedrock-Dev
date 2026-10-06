@@ -1,3 +1,28 @@
+## Virtual Clients production ownership promotion — source implementation (2026-10-06)
+
+Baseline: Experimental `2e37c080fc6c716f461d8c71d4bf4e112b5f82b8`.
+
+The product runtime and packaged assets are promoted out of `experiments/` so
+repository semantics have one meaning:
+- `apps/virtual-clients/runtime-core/` owns VM lifecycle, setup, resource,
+  identity, recovery, support, update and Guest Agent protocol authority.
+- `apps/virtual-clients/guest/` owns guest preparation/install scripts.
+- `apps/virtual-clients/distribution/` owns release-channel packaging inputs.
+- `apps/virtual-clients/acceptance/` owns product acceptance collection assets.
+- `apps/virtual-clients/src-tauri/` remains the thin desktop-native adapter.
+- app-specific operational documentation lives under `apps/virtual-clients/docs/`.
+
+All known build, Cargo path dependency, package-resource, test-source, developer
+verification and release-workflow paths are rewritten to the product location.
+The old experimental implementation is deleted rather than retained as an alias
+or compatibility copy.
+
+Proof ceiling: REMOTE_GITHUB structural/source review only. CI is intentionally
+not run. The moved paths still require the canonical local source checkpoint
+before package readiness can be claimed.
+
+---
+
 ## Virtual Clients bounded refresh and user-facing activity — source implementation (2026-10-06)
 
 Baseline: Experimental `14b2c2e56d1a6e92b6c2891956961a12bb1bff9c`.
