@@ -282,6 +282,7 @@ SOURCE
 RELIABILITY
 SCHEMA
 EXAMPLE
+EXAMPLE
 ```
 
 Class meanings:
@@ -300,8 +301,9 @@ Class meanings:
 - `SOURCE` — implementation owner/module.
 - `RELIABILITY` — reliability evidence/catalog/corpus/history resource.
 - `SCHEMA` — structural schema.
+- `EXAMPLE` — non-authoritative sample payload/artifact used to illustrate a contract; always supporting reference, never current truth.
 
-Do not add synonymous classes such as NOTE, PAGE, ARTICLE, RESOURCE, CONTENT, DOC_NODE, or WORKFLOW. Workflow is a document role, not a resource class.
+Do not add synonymous classes such as NOTE, PAGE, ARTICLE, RESOURCE, CONTENT, DOC_NODE, SAMPLE, or WORKFLOW. `EXAMPLE` is the only class name for non-authoritative sample payloads. Workflow is a document role, not a resource class.
 
 ### Document roles
 
@@ -373,6 +375,7 @@ knowledge.world.chunks
 source.orchestrator.map-audit
 reliability.regression.multi-arena-concurrency
 schema.bug-report.v2
+example.examples.map-audit-output-v2
 ```
 
 Rules:
