@@ -118,7 +118,9 @@ const flows: Record<SetupAction, SetupExperience> = {
     description: "Sign in once on each virtual client, then save its recovery point. Account sessions remain inside each virtual machine.",
     primaryLabel: "Open clients",
     steps: [
-      "Open one virtual client and confirm its interactive launcher is active.",
+      "Open one virtual client and sign in to its Windows user.",
+      "Run the installed Virtual Guest Agent once with --register-interactive-launcher. This registers the Minecraft-only launcher for that Windows user.",
+      "Confirm Virtual Clients reports the interactive launcher as active.",
       "Open Minecraft Education, complete Microsoft sign-in in that same virtual Windows session, and confirm the main menu appears.",
       "Stop that client and choose Save recovery point.",
       "Repeat for the remaining clients.",
