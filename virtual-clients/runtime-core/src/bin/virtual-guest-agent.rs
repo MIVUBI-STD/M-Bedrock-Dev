@@ -48,8 +48,9 @@ fn request_interactive_minecraft_launch() -> Result<m_bedrock_virtual_clients_co
     std::fs::create_dir_all(&root)?;
     let request = root.join("launch-minecraft.request");
     let acknowledgement = root.join("launch-minecraft.ack");
+    let request_id = format!("{:016x}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_nanos());
     let _ = std::fs::remove_file(&acknowledgement);
-    std::fs::write(&request, b"MINECRAFT_EDUCATION\n")?;
+    std::fs::write(&request, format!("MINECRAFT_EDUCATION {request_id}\n"))?;
 
     let deadline = std::time::Instant::now() + Duration::from_secs(35);
     while std::time::Instant::now() < deadline {
@@ -60,7 +61,7 @@ fn request_interactive_minecraft_launch() -> Result<m_bedrock_virtual_clients_co
         }
         if acknowledgement.is_file() {
             let detail = std::fs::read_to_string(&acknowledgement).unwrap_or_default();
-            if detail.starts_with("ERROR:") {
+            if detail.starts_with(&format!("ERROR:{request_id}:")) {
                 let _ = std::fs::remove_file(&request);
                 let _ = std::fs::remove_file(&acknowledgement);
                 return Err(io::Error::new(io::ErrorKind::Other, detail.trim().to_string()).into());
@@ -82,11 +83,14 @@ fn run_interactive_launcher() -> Result<(), Box<dyn std::error::Error>> {
     loop {
         if request.is_file() {
             let action = std::fs::read_to_string(&request).unwrap_or_default();
-            if action.trim() == "MINECRAFT_EDUCATION" {
+            let mut parts = action.split_whitespace();
+            let verb = parts.next().unwrap_or_default();
+            let request_id = parts.next().unwrap_or_default();
+            if verb == "MINECRAFT_EDUCATION" && request_id.len() == 16 && request_id.chars().all(|character| character.is_ascii_hexdigit()) {
                 let result = launch_minecraft_interactive();
                 let message = match result {
-                    Ok(()) => "OK\n".to_string(),
-                    Err(error) => format!("ERROR:{error}\n"),
+                    Ok(()) => format!("OK:{request_id}\n"),
+                    Err(error) => format!("ERROR:{request_id}:{error}\n"),
                 };
                 let _ = std::fs::write(&acknowledgement, message);
             } else {
