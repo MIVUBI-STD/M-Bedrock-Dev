@@ -59,12 +59,11 @@
     loading = true;
     error = undefined;
     try {
-      const [nextSnapshot, nextPolicy, nextActions, nextHistory, nextUpdate] = await Promise.all([
+      const [nextSnapshot, nextPolicy, nextActions, nextHistory] = await Promise.all([
         backend.snapshot(),
         backend.policy(),
         backend.actions(),
         backend.history(),
-        backend.checkUpdate(),
       ]);
       const nextBasePreflight =
         setupExperience(nextSnapshot.doctor.nextSetupAction).phase === "ENVIRONMENT"
@@ -76,7 +75,6 @@
       basePreflight = nextBasePreflight;
       actions = nextActions;
       history = nextHistory;
-      update = nextUpdate;
 
       if (!pageChosen) page = nextSnapshot.doctor.nextSetupAction === "READY" ? "clients" : "setup";
       if (page === "setup" && nextSnapshot.doctor.nextSetupAction === "READY" && pageChosen) page = "clients";
@@ -85,9 +83,29 @@
       snapshot = undefined;
       basePreflight = undefined;
       actions = [];
-      update = undefined;
     } finally {
       loading = false;
+    }
+  }
+
+  async function checkUpdateOnce() {
+    try {
+      update = await backend.checkUpdate();
+    } catch {
+      update = undefined;
+    }
+  }
+
+  async function stageApplicationUpdate() {
+    busy = "stage-update";
+    error = undefined;
+    try {
+      await backend.stageUpdate();
+      update = await backend.checkUpdate();
+    } catch (value) {
+      error = presentRuntimeError(value);
+    } finally {
+      busy = "";
     }
   }
 
@@ -201,7 +219,10 @@
     await mutate(`reprovision-${client}`, () => backend.reprovision(client));
   }
 
-  onMount(() => void refresh());
+  onMount(() => {
+    void refresh();
+    void checkUpdateOnce();
+  });
 </script>
 
 <div class="app-shell">
@@ -304,7 +325,7 @@
           {policy}
           {update}
           {busy}
-          onStageUpdate={() => mutate("stage-update", backend.stageUpdate)}
+          onStageUpdate={stageApplicationUpdate}
         />
       {:else}
         <SupportSurface
