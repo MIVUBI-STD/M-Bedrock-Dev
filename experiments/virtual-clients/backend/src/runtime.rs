@@ -5,9 +5,9 @@ use crate::{
     guest::{query_guest_status, GuestStatus},
     paths::runtime_root,
     profile::{
-        current_base_vmx_path, native_minecraft_profile, profile_status,
-        require_base_matches_native, write_verified_base_profile, BaseProfile, MinecraftProfile,
-        ProfileParity, ProfileStatus,
+        current_base_vmx_path, load_client_profile, native_minecraft_profile, profile_status,
+        require_base_matches_native, require_client_matches_native, write_client_profile,
+        write_verified_base_profile, BaseProfile, MinecraftProfile, ProfileParity, ProfileStatus,
     },
     provider::{cleanup_staging, current_platform_provider, Provider},
     resources::{current_host_pressure, start_delay_secs, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
@@ -145,6 +145,19 @@ fn guest_status_once(provider: &dyn Provider, client: ClientId) -> Option<GuestS
     query_guest_status(&ip, Duration::from_secs(1)).ok()
 }
 
+fn lineage_parity(
+    native: Option<&MinecraftProfile>,
+    client: ClientId,
+) -> ProfileParity {
+    match (native, load_client_profile(client).ok()) {
+        (Some(native), Some(profile)) if native.version == profile.base_minecraft_version => {
+            ProfileParity::Match
+        }
+        (Some(_), Some(_)) => ProfileParity::Mismatch,
+        _ => ProfileParity::Unknown,
+    }
+}
+
 fn version_parity(native: Option<&MinecraftProfile>, guest: Option<&GuestStatus>) -> ProfileParity {
     match (native, guest.and_then(|status| status.minecraft.as_ref())) {
         (Some(native), Some(guest)) if native.version == guest.version => ProfileParity::Match,
@@ -235,6 +248,7 @@ fn client_status(
             guest_agent_ready: None,
             guest_agent_version: None,
             minecraft_version: None,
+            lineage_parity: Some(ProfileParity::Unknown),
             version_parity: Some(ProfileParity::Unknown),
             identity: Some(IdentityState::Unknown),
         });
@@ -262,6 +276,7 @@ fn client_status(
         guest_agent_ready: Some(guest.is_some()),
         guest_agent_version: guest.as_ref().map(|status| status.agent_version.clone()),
         minecraft_version,
+        lineage_parity: Some(lineage_parity(native, client)),
         version_parity: Some(parity),
         identity: Some(identity_state(provider, client)),
     })
@@ -371,7 +386,13 @@ impl VirtualClients {
     }
 
     pub fn provision(&self) -> io::Result<Vec<ClientStatus>> {
-        require_base_matches_native()?;
+        let profile = require_base_matches_native()?;
+        let native = profile.native.ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "Native Minecraft Education version could not be detected",
+            )
+        })?;
         let _lock = OperationLock::acquire()?;
         cleanup_staging()?;
         let provider = current_platform_provider().ok_or_else(|| {
@@ -382,7 +403,11 @@ impl VirtualClients {
         })?;
 
         for client in ClientId::VIRTUAL {
+            let previous = provider.status(client)?;
             provider.provision(client)?;
+            if previous == ClientState::NotProvisioned {
+                write_client_profile(client, &native.version)?;
+            }
         }
 
         let working_sets = provider.host_working_sets_mb()?;
@@ -407,7 +432,13 @@ impl VirtualClients {
             ));
         }
 
-        require_base_matches_native()?;
+        let profile = require_base_matches_native()?;
+        let native = profile.native.ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "Native Minecraft Education version could not be detected",
+            )
+        })?;
 
         let _lock = OperationLock::acquire()?;
         cleanup_staging()?;
@@ -419,6 +450,7 @@ impl VirtualClients {
         })?;
 
         provider.reprovision(client)?;
+        write_client_profile(client, &native.version)?;
         let working_sets = provider.host_working_sets_mb()?;
         let native_profile = native_minecraft_profile();
         client_status(
@@ -447,6 +479,7 @@ impl VirtualClients {
             minecraft_version: native_profile
                 .as_ref()
                 .map(|profile| profile.version.clone()),
+            lineage_parity: None,
             version_parity: None,
             identity: None,
         });
@@ -474,6 +507,7 @@ impl VirtualClients {
                     guest_agent_ready: None,
                     guest_agent_version: None,
                     minecraft_version: None,
+                    lineage_parity: Some(ProfileParity::Unknown),
                     version_parity: Some(ProfileParity::Unknown),
                     identity: Some(IdentityState::Unknown),
                 });
@@ -579,6 +613,7 @@ impl VirtualClients {
         let mut started_by_batch: Vec<(ClientId, ClientState)> = Vec::new();
 
         for (index, client) in targets.into_iter().enumerate() {
+            require_client_matches_native(client)?;
             let original_state = provider.status(client)?;
 
             if original_state != ClientState::Running {
@@ -774,6 +809,7 @@ impl VirtualClients {
         }
 
         require_base_matches_native()?;
+        require_client_matches_native(client)?;
 
         let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
