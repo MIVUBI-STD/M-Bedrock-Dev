@@ -94,6 +94,7 @@
       <div><span>Memory</span><strong>{basePreflight.configuredMemoryMb ? `${basePreflight.configuredMemoryMb} MB` : "—"}</strong></div>
       <div><span>3D acceleration</span><strong>{basePreflight.graphics3dEnabled === true ? "Enabled" : basePreflight.graphics3dEnabled === false ? "Disabled" : "Unknown"}</strong></div>
       <div><span>Network</span><strong>{basePreflight.networkPresent === true ? "Present" : basePreflight.networkPresent === false ? "Missing" : "Unknown"}</strong></div>
+      <div><span>Network mode</span><strong>{basePreflight.networkConnectionType ?? "Unknown"}</strong></div>
     </div>
     {#if basePreflight.baseExpectedPath}
       <div class="preflight-tools">
