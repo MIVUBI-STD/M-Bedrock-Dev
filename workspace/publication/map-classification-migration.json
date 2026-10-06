@@ -1,0 +1,561 @@
+{
+  "schemaVersion": 1,
+  "authority": "DERIVED",
+  "policy": "map-classification-migration",
+  "canonicalOwner": "GameDesignSpec.classification",
+  "sourceInputs": [
+    {
+      "path": "workspace/project-registry.json",
+      "sha": "df04ea8645ac88aaaecccc8772d24fe104de152e"
+    },
+    {
+      "path": "workspace/reports/Build-and-Decode-v1.1.1-BugReport.json",
+      "sha": "abbc31a61dfc2ef854230062224f49c25fa70c71"
+    },
+    {
+      "path": "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json",
+      "sha": "1836cc7babb704b288ec6363416942b63493d239"
+    },
+    {
+      "path": "workspace/reports/Composite-Challenge-v1.1.1-BugReport.json",
+      "sha": "cb412f870d7d373846fbc83b66930dfa38c69d93"
+    },
+    {
+      "path": "workspace/reports/The-Circuit-v1.0.2-BugReport.json",
+      "sha": "af82fae1c0ca493f9f068b8bfca5876f8c64def7"
+    },
+    {
+      "path": "workspace/reports/The-Gauntlet-v1.0.2-BugReport.json",
+      "sha": "99b5cf5e252852b2ce523d442e0788254c476fb4"
+    },
+    {
+      "path": "workspace/reports/Manhunt-v1.0.0-BugReport.json",
+      "sha": "244d5ef54c9ba3b75e2eb478306394899a40abd8"
+    },
+    {
+      "path": "workspace/reports/Fall-of-the-Pillager-L1-v1.1.0-BugReport.json",
+      "sha": "9e21340ad000bb0ac47eaad85d69a1158d851a28"
+    },
+    {
+      "path": "workspace/reports/Orb-of-the-Illusioner-L2-v1.1.0-BugReport.json",
+      "sha": "9e21d78257330dce69205ab4fd6b54b50deea9bb"
+    },
+    {
+      "path": "workspace/reports/Five-Nights-at-Z-Village-L1-v1.1.0-BugReport.json",
+      "sha": "c15aa60096c2e28036fb384c914b83ea8e58a72e"
+    }
+  ],
+  "summary": {
+    "projects": 22,
+    "resolved": 3,
+    "unresolved": 19,
+    "mapTypeResolved": 20,
+    "playerModeResolved": 3
+  },
+  "entries": [
+    {
+      "projectId": "aftershock",
+      "projectName": "Aftershock",
+      "mapVersion": "1.0.4",
+      "legacyLabel": "Skills - Aftershock",
+      "classification": {
+        "mapType": "SKILL_COURSE",
+        "playerMode": null,
+        "mechanicTags": [],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#aftershock"
+        ]
+      },
+      "rationale": [
+        "Legacy project label supports a partial canonical Map Type only.",
+        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+      ]
+    },
+    {
+      "projectId": "attack-challenge",
+      "projectName": "Attack Challenge",
+      "mapVersion": "1.1.1",
+      "legacyLabel": "Challenge - Attack Map",
+      "classification": {
+        "mapType": "CHALLENGE_COURSE",
+        "playerMode": null,
+        "mechanicTags": [],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#attack-challenge"
+        ]
+      },
+      "rationale": [
+        "Legacy project label supports a partial canonical Map Type only.",
+        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+      ]
+    },
+    {
+      "projectId": "beach-bedwars",
+      "projectName": "Beach Bedwars",
+      "mapVersion": "1.1.0",
+      "legacyLabel": "PvP - Beach Bedwars",
+      "classification": {
+        "mapType": "COMBAT",
+        "playerMode": null,
+        "mechanicTags": [],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#beach-bedwars"
+        ]
+      },
+      "rationale": [
+        "Legacy project label supports a partial canonical Map Type only.",
+        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+      ]
+    },
+    {
+      "projectId": "blitzbuild",
+      "projectName": "Builder's Memory / BlitzBuild",
+      "mapVersion": "1.0.3",
+      "legacyLabel": "Build - Builder's Memory",
+      "classification": {
+        "mapType": "BUILDING",
+        "playerMode": null,
+        "mechanicTags": [
+          "BUILD"
+        ],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#blitzbuild"
+        ]
+      },
+      "rationale": [
+        "Legacy project label supports a partial canonical Map Type only.",
+        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+      ]
+    },
+    {
+      "projectId": "build-and-decode",
+      "projectName": "Build & Decode",
+      "mapVersion": "1.1.1",
+      "legacyLabel": "Build - Build & Decode",
+      "classification": {
+        "mapType": "BUILDING",
+        "playerMode": "ASYMMETRIC",
+        "mechanicTags": [
+          "BUILD",
+          "PROGRESSION"
+        ],
+        "classificationStatus": "RESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#build-and-decode",
+          "workspace/reports/Build-and-Decode-v1.1.1-BugReport.json#BUG-BAD-LOBBY-CREATIVE-SPAWN",
+          "workspace/reports/Build-and-Decode-v1.1.1-BugReport.json#BUG-BAD-FINAL-RESULT-PRESENTATION"
+        ]
+      },
+      "rationale": [
+        "Project registry legacy label proves BUILDING.",
+        "Current report distinguishes an active Builder role from guesser/non-builder roles, supporting ASYMMETRIC Player Mode.",
+        "Match completion/final standings provides progression evidence."
+      ]
+    },
+    {
+      "projectId": "clockwork-vault",
+      "projectName": "The Clockwork Vault",
+      "mapVersion": "1.0.1",
+      "legacyLabel": "Skills - The Clockwork Vault",
+      "classification": {
+        "mapType": "SKILL_COURSE",
+        "playerMode": null,
+        "mechanicTags": [],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#clockwork-vault"
+        ]
+      },
+      "rationale": [
+        "Legacy project label supports a partial canonical Map Type only.",
+        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+      ]
+    },
+    {
+      "projectId": "composite-challenge",
+      "projectName": "Composite Challenge",
+      "mapVersion": "1.1.1",
+      "legacyLabel": "Challenge - Composite Map",
+      "classification": {
+        "mapType": "CHALLENGE_COURSE",
+        "playerMode": null,
+        "mechanicTags": [
+          "CAPTURE_OBJECTIVE",
+          "ENTITY_AI",
+          "MULTI_ARENA",
+          "RECONNECT",
+          "WORLD_RESET"
+        ],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#composite-challenge",
+          "workspace/reports/Composite-Challenge-v1.1.1-BugReport.json#BUG-CMP-CROSS-ARENA-FLAG",
+          "workspace/reports/Composite-Challenge-v1.1.1-BugReport.json#BUG-CMP-TICKING-AREAS",
+          "workspace/reports/Composite-Challenge-v1.1.1-BugReport.json#BUG-CMP-ASYNC-RESET",
+          "workspace/reports/Composite-Challenge-v1.1.1-BugReport.json#BUG-CMP-PRELOAD-INVENTORY"
+        ]
+      },
+      "rationale": [
+        "Project registry legacy label proves CHALLENGE_COURSE.",
+        "Flag carrier, concurrent arenas, entity simulation, reconnect and asynchronous reset are directly evidenced.",
+        "Player Mode remains unresolved because current report does not prove whether players cooperate, compete, or occupy asymmetric sides."
+      ]
+    },
+    {
+      "projectId": "dark-crystal",
+      "projectName": "Dark Crystal",
+      "mapVersion": "1.0.0",
+      "legacyLabel": "PvP - DarkCrystal",
+      "classification": {
+        "mapType": "COMBAT",
+        "playerMode": null,
+        "mechanicTags": [],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#dark-crystal"
+        ]
+      },
+      "rationale": [
+        "Legacy project label supports a partial canonical Map Type only.",
+        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+      ]
+    },
+    {
+      "projectId": "defense-challenge",
+      "projectName": "Defense Challenge",
+      "mapVersion": "1.1.1",
+      "legacyLabel": "Challenge - Defense Map",
+      "classification": {
+        "mapType": "CHALLENGE_COURSE",
+        "playerMode": "COOPERATIVE",
+        "mechanicTags": [
+          "ENTITY_AI",
+          "MULTI_ARENA",
+          "PROGRESSION",
+          "RECONNECT",
+          "RESPAWN",
+          "WAVE_DEFENSE",
+          "WORLD_RESET"
+        ],
+        "classificationStatus": "RESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#defense-challenge",
+          "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json#BUG-DEF-WAVE-RETRY",
+          "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json#BUG-DEF-RESPAWN-RECONNECT",
+          "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json#BUG-DEF-LEASE-RESET",
+          "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json#DM-DEF-ARENA-CAPACITY"
+        ]
+      },
+      "rationale": [
+        "Project registry legacy label proves CHALLENGE_COURSE.",
+        "Current report describes valid parties jointly running an arena against enemy waves, supporting COOPERATIVE Player Mode.",
+        "Wave, enemy-spawn, six-arena concurrency, respawn/reconnect and world-reset mechanics are directly evidenced."
+      ]
+    },
+    {
+      "projectId": "fall-of-the-pillager-l1",
+      "projectName": "Fall of the Pillager Level 1",
+      "mapVersion": "1.1.0",
+      "legacyLabel": "PvP - Fall of the Pillager / Level 1",
+      "classification": {
+        "mapType": "COMBAT",
+        "playerMode": "COOPERATIVE",
+        "mechanicTags": [
+          "TEAM_COMBAT"
+        ],
+        "classificationStatus": "RESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#fall-of-the-pillager-l1",
+          "workspace/reports/Fall-of-the-Pillager-L1-v1.1.0-BugReport.json#FOP1-NEW-001"
+        ]
+      },
+      "rationale": [
+        "Project registry legacy label proves COMBAT.",
+        "Current report explicitly states players are assigned to the same cooperative offense session, proving COOPERATIVE Player Mode.",
+        "Teammate damage proves team-combat relationship is audit-relevant."
+      ]
+    },
+    {
+      "projectId": "fall-of-the-pillager-l2",
+      "projectName": "Fall of the Pillager Level 2",
+      "mapVersion": "2.2.2",
+      "legacyLabel": "PvP - Fall of the Pillager / Level 2",
+      "classification": {
+        "mapType": "COMBAT",
+        "playerMode": null,
+        "mechanicTags": [],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#fall-of-the-pillager-l2"
+        ]
+      },
+      "rationale": [
+        "Legacy project label supports a partial canonical Map Type only.",
+        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+      ]
+    },
+    {
+      "projectId": "five-nights-z-village-l1",
+      "projectName": "Five Nights at Z Village Level 1",
+      "mapVersion": "1.1.0",
+      "legacyLabel": "Five Nights at Z Village - Level 1",
+      "classification": {
+        "mapType": null,
+        "playerMode": null,
+        "mechanicTags": [
+          "RECONNECT",
+          "RESOURCE_ECONOMY",
+          "WORLD_RESET"
+        ],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/reports/Five-Nights-at-Z-Village-L1-v1.1.0-BugReport.json#BUG-FNZ1-CINEMATIC-COINS"
+        ]
+      },
+      "rationale": [
+        "Current report proves party/session economy, reconnect and fresh-session reset behavior.",
+        "Repository evidence does not safely prove primary Map Type or Player Mode, so both remain unresolved."
+      ]
+    },
+    {
+      "projectId": "five-nights-z-village-l2",
+      "projectName": "Five Nights at Z Village Level 2",
+      "mapVersion": "1.2.2",
+      "legacyLabel": "PvP - Five Nights at Z Village / Level 2",
+      "classification": {
+        "mapType": "COMBAT",
+        "playerMode": null,
+        "mechanicTags": [],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#five-nights-z-village-l2"
+        ]
+      },
+      "rationale": [
+        "Legacy project label supports a partial canonical Map Type only.",
+        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+      ]
+    },
+    {
+      "projectId": "manhunt",
+      "projectName": "Manhunt",
+      "mapVersion": "1.0.0",
+      "legacyLabel": "PvP - Manhunt",
+      "classification": {
+        "mapType": "COMBAT",
+        "playerMode": null,
+        "mechanicTags": [
+          "MULTI_ARENA"
+        ],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#manhunt",
+          "workspace/reports/Manhunt-v1.0.0-BugReport.json#DM-MAN-ARENA6-REPLICA"
+        ]
+      },
+      "rationale": [
+        "Project registry legacy label proves COMBAT.",
+        "Current report proves multiple playable arena replicas.",
+        "Manhunt naming alone is not used to force ASYMMETRIC Player Mode."
+      ]
+    },
+    {
+      "projectId": "marathon-test-of-tactics-l2",
+      "projectName": "Marathon Test of Tactics Level 2",
+      "mapVersion": "2.2.0",
+      "legacyLabel": "Minigame - Marathon Test of Tactics / Level 2",
+      "classification": {
+        "mapType": null,
+        "playerMode": null,
+        "mechanicTags": [],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#marathon-test-of-tactics-l2"
+        ]
+      },
+      "rationale": [
+        "Legacy project label does not map safely to one canonical Map Type.",
+        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+      ]
+    },
+    {
+      "projectId": "mysteries-biomes-l1",
+      "projectName": "Mysteries of Biomes Level 1",
+      "mapVersion": "1.0.4",
+      "legacyLabel": "Find The Button - Mysteries of Biomes / Level 1",
+      "classification": {
+        "mapType": "SEARCH_PUZZLE",
+        "playerMode": null,
+        "mechanicTags": [
+          "PUZZLE",
+          "SEARCH"
+        ],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#mysteries-biomes-l1"
+        ]
+      },
+      "rationale": [
+        "Legacy project label supports a partial canonical Map Type only.",
+        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+      ]
+    },
+    {
+      "projectId": "mysteries-biomes-l2",
+      "projectName": "Mysteries of Biomes Level 2",
+      "mapVersion": "2.1.1",
+      "legacyLabel": "Find The Button - Mysteries of Biomes / Level 2",
+      "classification": {
+        "mapType": "SEARCH_PUZZLE",
+        "playerMode": null,
+        "mechanicTags": [
+          "PUZZLE",
+          "SEARCH"
+        ],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#mysteries-biomes-l2"
+        ]
+      },
+      "rationale": [
+        "Legacy project label supports a partial canonical Map Type only.",
+        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+      ]
+    },
+    {
+      "projectId": "orb-illusioner-l1",
+      "projectName": "Orb of the Illusioner Level 1",
+      "mapVersion": "1.2.1",
+      "legacyLabel": "PvP - Orb of the Illusioner / Level 1",
+      "classification": {
+        "mapType": "COMBAT",
+        "playerMode": null,
+        "mechanicTags": [],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#orb-illusioner-l1"
+        ]
+      },
+      "rationale": [
+        "Legacy project label supports a partial canonical Map Type only.",
+        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+      ]
+    },
+    {
+      "projectId": "orb-illusioner-l2",
+      "projectName": "Orb of the Illusioner Level 2",
+      "mapVersion": "1.1.0",
+      "legacyLabel": "PvP - Orb of the Illusioner / Level 2",
+      "classification": {
+        "mapType": "COMBAT",
+        "playerMode": null,
+        "mechanicTags": [
+          "MULTI_STAGE",
+          "PERSISTENCE",
+          "RESOURCE_ECONOMY",
+          "SHOP",
+          "WORLD_RESET"
+        ],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#orb-illusioner-l2",
+          "workspace/reports/Orb-of-the-Illusioner-L2-v1.1.0-BugReport.json#BUG-ORB2-UPGRADE-MATERIAL",
+          "workspace/reports/Orb-of-the-Illusioner-L2-v1.1.0-BugReport.json#BUG-ORB2-RELOAD-BARRICADES"
+        ]
+      },
+      "rationale": [
+        "Project registry legacy label proves COMBAT.",
+        "Coin-funded upgrade UI proves economy/shop behavior.",
+        "Active-game reload recovery and stage barricades prove persistence, reset and multi-stage behavior.",
+        "Player Mode remains unresolved."
+      ]
+    },
+    {
+      "projectId": "raid-arena-classic",
+      "projectName": "Raid Arena Classic",
+      "mapVersion": "1.1.0",
+      "legacyLabel": "PvP - Raid Arena Classic",
+      "classification": {
+        "mapType": "COMBAT",
+        "playerMode": null,
+        "mechanicTags": [],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#raid-arena-classic"
+        ]
+      },
+      "rationale": [
+        "Legacy project label supports a partial canonical Map Type only.",
+        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+      ]
+    },
+    {
+      "projectId": "the-circuit",
+      "projectName": "The Circuit",
+      "mapVersion": "1.0.2",
+      "legacyLabel": "Challenge - The Circuit",
+      "classification": {
+        "mapType": "CHALLENGE_COURSE",
+        "playerMode": null,
+        "mechanicTags": [
+          "CAPTURE_OBJECTIVE",
+          "ENTITY_AI",
+          "LOADOUT",
+          "MULTI_STAGE",
+          "RECONNECT",
+          "RESOURCE_ECONOMY",
+          "WORLD_RESET"
+        ],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/project-registry.json#the-circuit",
+          "workspace/reports/The-Circuit-v1.0.2-BugReport.json#BUG-CIR-ST4-CHEST-RESET",
+          "workspace/reports/The-Circuit-v1.0.2-BugReport.json#BUG-CIR-ST4-SPRUCE-GATE",
+          "workspace/reports/The-Circuit-v1.0.2-BugReport.json#BUG-CIR-CAPTURE-FLAG-DISCONNECT",
+          "workspace/reports/The-Circuit-v1.0.2-BugReport.json#BUG-CIR-CINEMATIC-DISCONNECT-ADVANCE"
+        ]
+      },
+      "rationale": [
+        "Project registry legacy label proves CHALLENGE_COURSE.",
+        "Stations 3/4/5 prove a multi-stage course with loadout economy, capture objective, entity route behavior, reconnect and reset boundaries.",
+        "Player Mode remains unresolved in repository evidence."
+      ]
+    },
+    {
+      "projectId": "the-gauntlet",
+      "projectName": "The Gauntlet",
+      "mapVersion": "1.0.2",
+      "legacyLabel": "Minigame - The Gauntlet",
+      "classification": {
+        "mapType": "CHALLENGE_COURSE",
+        "playerMode": null,
+        "mechanicTags": [
+          "ENTITY_AI",
+          "MULTI_ARENA",
+          "MULTI_STAGE",
+          "PARKOUR",
+          "PROGRESSION",
+          "RESPAWN",
+          "ROUND_TIMER",
+          "WORLD_RESET"
+        ],
+        "classificationStatus": "UNRESOLVED",
+        "evidenceRefs": [
+          "workspace/reports/The-Gauntlet-v1.0.2-BugReport.json#BUG-GNT-L6-RESPAWN-UI-LOCK",
+          "workspace/reports/The-Gauntlet-v1.0.2-BugReport.json#BUG-GNT-L9-POST-COMPLETE-FALL",
+          "workspace/reports/The-Gauntlet-v1.0.2-BugReport.json#BUG-GNT-L15-ENTITY-RESET",
+          "workspace/reports/The-Gauntlet-v1.0.2-BugReport.json#BUG-GNT-CROSS-ARENA-PROGRESSION-GATE"
+        ]
+      },
+      "rationale": [
+        "Current report proves distinct Level 6 Dropper, Level 9 parkour and Level 15 boss stages, so generic legacy Minigame is replaced by CHALLENGE_COURSE.",
+        "Progression, timed levels, multiple arena replicas, respawn recovery, entity combat and reset/reuse are directly evidenced.",
+        "Player Mode remains unresolved."
+      ]
+    }
+  ]
+}
