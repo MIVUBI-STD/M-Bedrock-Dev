@@ -8,8 +8,11 @@ use crate::{
 use serde::Serialize;
 use std::{
     fs, io,
+    path::Path,
     time::{SystemTime, UNIX_EPOCH},
 };
+
+const SUPPORT_BUNDLE_LIMIT: usize = 10;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -84,6 +87,7 @@ pub(crate) fn write_support_bundle(
     let json = serde_json::to_string_pretty(&bundle)
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
     write_text_transactional(&path, &format!("{json}\n"))?;
+    let _ = prune_support_bundles(&root);
 
     Ok(SupportBundleResult {
         captured_at_unix_ms,
@@ -91,9 +95,37 @@ pub(crate) fn write_support_bundle(
     })
 }
 
+fn prune_support_bundles(root: &Path) -> io::Result<()> {
+    let mut bundles = fs::read_dir(root)?
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| {
+            path.is_file()
+                && path
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .is_some_and(|name| name.starts_with("support-") && name.ends_with(".json"))
+        })
+        .collect::<Vec<_>>();
+
+    bundles.sort();
+    if bundles.len() > SUPPORT_BUNDLE_LIMIT {
+        let remove_count = bundles.len() - SUPPORT_BUNDLE_LIMIT;
+        for path in bundles.into_iter().take(remove_count) {
+            let _ = fs::remove_file(path);
+        }
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
-    use super::SupportPrivacy;
+    use super::{SupportPrivacy, SUPPORT_BUNDLE_LIMIT};
+
+    #[test]
+    fn support_bundle_retention_is_bounded() {
+        assert_eq!(SUPPORT_BUNDLE_LIMIT, 10);
+    }
 
     #[test]
     fn support_privacy_contract_excludes_sensitive_content() {

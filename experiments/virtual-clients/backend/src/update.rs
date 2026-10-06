@@ -240,7 +240,23 @@ pub fn stage_update() -> io::Result<StagedUpdate> {
         authenticode_thumbprint: actual_thumbprint,
     };
     write_staged_update(&staged)?;
+    let _ = cleanup_obsolete_update_versions(&version_root);
     Ok(staged)
+}
+
+fn cleanup_obsolete_update_versions(keep: &Path) -> io::Result<()> {
+    let root = update_staging_root()?;
+    if !root.is_dir() {
+        return Ok(());
+    }
+
+    for entry in fs::read_dir(root)? {
+        let path = entry?.path();
+        if path.is_dir() && path != keep {
+            let _ = fs::remove_dir_all(path);
+        }
+    }
+    Ok(())
 }
 
 fn fetch_manifest(policy: &ReleaseChannel) -> io::Result<UpdateManifest> {
