@@ -1,4 +1,4 @@
-name: Runtime Lab Backend
+name: Virtual Clients Backend
 
 on:
   workflow_dispatch:
@@ -6,14 +6,14 @@ on:
     branches:
       - Experimental
     paths:
-      - "experiments/runtime-lab/backend/**"
-      - ".github/workflows/runtime-lab.yml"
+      - "experiments/virtual-clients/backend/**"
+      - ".github/workflows/virtual-clients.yml"
 
 permissions:
   contents: read
 
 concurrency:
-  group: runtime-lab-${{ github.ref }}
+  group: virtual-clients-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: experiments/runtime-lab/backend
+        working-directory: experiments/virtual-clients/backend
 
     steps:
       - name: Checkout
