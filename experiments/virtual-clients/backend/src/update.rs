@@ -310,7 +310,13 @@ fn publisher_certificate_thumbprint() -> io::Result<&'static str> {
 fn authenticode_thumbprint(path: &Path) -> io::Result<String> {
     let script = r#"$s=Get-AuthenticodeSignature -LiteralPath $args[0]; if ($s.Status -ne 'Valid' -or $null -eq $s.SignerCertificate) { [Console]::Error.Write([string]$s.Status); exit 41 }; [Console]::Out.Write($s.SignerCertificate.Thumbprint)"#;
     let output = Command::new("powershell.exe")
-        .args(["-NoLogo", "-NoProfile", "-NonInteractive", "-Command", script])
+        .args([
+            "-NoLogo",
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            script,
+        ])
         .arg(path)
         .output()?;
 
