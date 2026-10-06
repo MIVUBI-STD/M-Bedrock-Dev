@@ -34,6 +34,11 @@ function catalogIds(root) {
 }
 
 const failures = [];
+let knowledgeCoverage = {
+  known: 0,
+  bound: 0,
+  unbound: 0,
+};
 if (!existsSync(registryPath)) {
   failures.push("Missing knowledge-detector binding registry.");
 } else {
@@ -112,6 +117,17 @@ if (!existsSync(registryPath)) {
         }
       }
     }
+
+    const unboundIds = [...knownIds]
+      .filter((id) => !boundIds.has(id))
+      .sort();
+    knowledgeCoverage = {
+      known: knownIds.size,
+      bound: [...knownIds]
+        .filter((id) => boundIds.has(id))
+        .length,
+      unbound: unboundIds.length,
+    };
   }
 }
 
@@ -123,4 +139,13 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log("Knowledge-detector binding verification passed.");
+console.log(
+  "Knowledge-detector binding verification passed. " +
+    "Coverage: " +
+    knowledgeCoverage.bound +
+    "/" +
+    knowledgeCoverage.known +
+    " bound; " +
+    knowledgeCoverage.unbound +
+    " unbound knowledge id(s) remain for consumption review.",
+);

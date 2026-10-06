@@ -3,40 +3,39 @@
   "semantics": "Coverage bindings connect high-value knowledge/engineering facts to the production analyzer/check that consumes them and to a dedicated proof specification. This registry is a verification projection, not semantic authority.",
   "bindings": [
     {
-      "knowledgeId": "permissions-policy.role-capability-matrix",
-      "consumer": "player-capability-surface-analysis",
+      "knowledgeId": "cleanup-policy.capability-mutation-footprint",
+      "consumer": "arena-cleanup-surface-analysis",
       "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
         "engine/packages/orchestrator/src/inspection/capability-mutation-footprint-analysis.ts",
-        "engine/packages/orchestrator/src/inspection/hidden-gameplay-defect-analysis.ts",
-        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts"
+        "engine/packages/orchestrator/src/inspection/inventory-lifecycle-analysis.ts"
       ],
       "proofPaths": [
-        "engine/packages/diagnostic-reasoning/test/crosscheck-scenario-routing.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts",
         "engine/packages/orchestrator/test/inspection/capability-mutation-footprint-analysis.test.ts",
-        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
+        "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
       ]
     },
     {
-      "knowledgeId": "permissions-policy.live-arena-maintenance-scope",
-      "consumer": "player-capability-surface-analysis",
+      "knowledgeId": "cleanup-policy.inventory-clear-not-equipment-proof",
+      "consumer": "inventory-lifecycle-analysis",
       "analyzerPaths": [
-        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts",
-        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+        "engine/packages/orchestrator/src/inspection/inventory-lifecycle-analysis.ts"
       ],
       "proofPaths": [
-        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
+        "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
       ]
     },
     {
-      "knowledgeId": "permissions-policy.guard-must-be-active",
-      "consumer": "capability-exposure",
+      "knowledgeId": "cleanup-policy.player-normal-form",
+      "consumer": "arena-cleanup-surface-analysis",
       "analyzerPaths": [
-        "engine/packages/diagnostic-reasoning/src/capability-exposure.ts",
-        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts"
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inventory-lifecycle-analysis.ts"
       ],
       "proofPaths": [
-        "engine/packages/diagnostic-reasoning/test/capability-guard-activation.test.ts",
-        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
       ]
     },
     {
@@ -62,27 +61,84 @@
       ]
     },
     {
-      "knowledgeId": "cleanup-policy.capability-mutation-footprint",
-      "consumer": "arena-cleanup-surface-analysis",
-      "analyzerPaths": [
-        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
-        "engine/packages/orchestrator/src/inspection/capability-mutation-footprint-analysis.ts",
-        "engine/packages/orchestrator/src/inspection/inventory-lifecycle-analysis.ts"
-      ],
-      "proofPaths": [
-        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts",
-        "engine/packages/orchestrator/test/inspection/capability-mutation-footprint-analysis.test.ts",
-        "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
-      ]
-    },
-    {
-      "knowledgeId": "cleanup-policy.inventory-clear-not-equipment-proof",
+      "knowledgeId": "inventory.equipment-separate-surface",
       "consumer": "inventory-lifecycle-analysis",
       "analyzerPaths": [
         "engine/packages/orchestrator/src/inspection/inventory-lifecycle-analysis.ts"
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "inventory.getitem-returns-copy",
+      "consumer": "inventory-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/inventory-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "permissions-policy.guard-must-be-active",
+      "consumer": "capability-exposure",
+      "analyzerPaths": [
+        "engine/packages/diagnostic-reasoning/src/capability-exposure.ts",
+        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/diagnostic-reasoning/test/capability-guard-activation.test.ts",
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "permissions-policy.live-arena-maintenance-scope",
+      "consumer": "player-capability-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "permissions-policy.player-normal-form",
+      "consumer": "player-capability-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "permissions-policy.role-capability-matrix",
+      "consumer": "player-capability-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/capability-mutation-footprint-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/hidden-gameplay-defect-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/diagnostic-reasoning/test/crosscheck-scenario-routing.test.ts",
+        "engine/packages/orchestrator/test/inspection/capability-mutation-footprint-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "permissions.role-surfaces-independent",
+      "consumer": "player-capability-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/capability-mutation-footprint-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/capability-mutation-footprint-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
       ]
     },
     {
@@ -106,18 +162,6 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/world-rule-authority-analysis.test.ts"
-      ]
-    },
-    {
-      "knowledgeId": "permissions.role-surfaces-independent",
-      "consumer": "player-capability-surface-analysis",
-      "analyzerPaths": [
-        "engine/packages/orchestrator/src/inspection/capability-mutation-footprint-analysis.ts",
-        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts"
-      ],
-      "proofPaths": [
-        "engine/packages/orchestrator/test/inspection/capability-mutation-footprint-analysis.test.ts",
-        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
       ]
     }
   ]
