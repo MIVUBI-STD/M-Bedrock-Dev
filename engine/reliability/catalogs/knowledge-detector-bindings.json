@@ -1777,6 +1777,17 @@
       ]
     },
     {
+      "knowledgeId": "observability.script-events-cross-system",
+      "consumer": "script-event-symbol-diagnostics",
+      "analyzerPaths": [
+        "engine/packages/compatibility/src/script-event-matrix.ts",
+        "engine/analyzers/diagnostics/src/script/script-event-findings.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/diagnostics/test/script/script-event-findings.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "performance.entity-query-filtering-preferred",
       "consumer": "script-performance-analysis",
       "analyzerPaths": [
