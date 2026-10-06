@@ -423,16 +423,13 @@ fn valid_guest_token(token: &str) -> bool {
 }
 
 pub(crate) fn vm_identity_key(vmx: &Path) -> io::Result<Option<String>> {
-    let uuid = read_vmx_value(vmx, "uuid.bios")?;
-    let mac = read_vmx_value(vmx, "ethernet0.generatedAddress")?;
+    let uuid = read_vmx_value(vmx, "uuid.bios")?.filter(|value| !value.trim().is_empty());
+    let mac =
+        read_vmx_value(vmx, "ethernet0.generatedAddress")?.filter(|value| !value.trim().is_empty());
 
     Ok(match (uuid, mac) {
-        (None, None) => None,
-        (uuid, mac) => Some(format!(
-            "{}|{}",
-            uuid.unwrap_or_default(),
-            mac.unwrap_or_default()
-        )),
+        (Some(uuid), Some(mac)) => Some(format!("{uuid}|{mac}")),
+        _ => None,
     })
 }
 
@@ -529,6 +526,35 @@ mod tests {
             Some("192.168.10.42".into())
         );
         assert_eq!(parse_guest_ip("Error: Tools not ready"), None);
+    }
+
+    #[test]
+    fn vm_identity_requires_both_uuid_and_mac() {
+        let root = unique_temp_dir("vm-identity");
+        fs::create_dir_all(&root).unwrap();
+
+        let vmx = root.join("Virtual-01.vmx");
+        fs::write(
+            &vmx,
+            "uuid.bios = \"uuid-1\"\nethernet0.generatedAddress = \"00:50:56:AA:BB:CC\"\n",
+        )
+        .unwrap();
+        assert_eq!(
+            super::vm_identity_key(&vmx).unwrap().as_deref(),
+            Some("uuid-1|00:50:56:AA:BB:CC")
+        );
+
+        fs::write(&vmx, "uuid.bios = \"uuid-1\"\n").unwrap();
+        assert_eq!(super::vm_identity_key(&vmx).unwrap(), None);
+
+        fs::write(
+            &vmx,
+            "ethernet0.generatedAddress = \"00:50:56:AA:BB:CC\"\n",
+        )
+        .unwrap();
+        assert_eq!(super::vm_identity_key(&vmx).unwrap(), None);
+
+        fs::remove_dir_all(root).unwrap();
     }
 
     #[test]

@@ -218,7 +218,34 @@ pub fn load_client_profile(client: ClientId) -> io::Result<ClientProfile> {
             ),
         ));
     }
+
+    validate_client_profile_identities(&profile)?;
     Ok(profile)
+}
+
+fn valid_identity_fingerprint(value: &str) -> bool {
+    value.len() == 64 && value.chars().all(|character| character.is_ascii_hexdigit())
+}
+
+fn validate_client_profile_identities(profile: &ClientProfile) -> io::Result<()> {
+    for (name, value) in [
+        ("verifiedVmIdentity", profile.verified_vm_identity.as_deref()),
+        (
+            "verifiedWindowsIdentity",
+            profile.verified_windows_identity.as_deref(),
+        ),
+    ] {
+        if let Some(value) = value {
+            if !valid_identity_fingerprint(value) {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    format!("client profile {name} fingerprint is invalid"),
+                ));
+            }
+        }
+    }
+
+    Ok(())
 }
 
 pub fn require_client_matches_native(client: ClientId) -> io::Result<ClientProfile> {
@@ -451,6 +478,26 @@ mod tests {
         assert_eq!(profile.schema, CLIENT_PROFILE_SCHEMA);
         assert_eq!(profile.verified_vm_identity, None);
         assert_eq!(profile.verified_windows_identity, None);
+    }
+
+    #[test]
+    fn client_profile_identity_fingerprints_are_strict() {
+        let mut profile = ClientProfile {
+            schema: CLIENT_PROFILE_SCHEMA,
+            base_minecraft_version: "1.21.120.0".into(),
+            created_by: "0.1.0".into(),
+            verified_vm_identity: Some("a".repeat(64)),
+            verified_windows_identity: Some("b".repeat(64)),
+        };
+        super::validate_client_profile_identities(&profile).unwrap();
+
+        profile.verified_windows_identity = Some("short".into());
+        assert_eq!(
+            super::validate_client_profile_identities(&profile)
+                .unwrap_err()
+                .kind(),
+            std::io::ErrorKind::InvalidData
+        );
     }
 
     #[test]
