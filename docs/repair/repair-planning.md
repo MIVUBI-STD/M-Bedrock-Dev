@@ -2,7 +2,7 @@
 id: document.repair.repair-planning
 class: DOCUMENT
 domain: repair
-role: REFERENCE
+role: WORKFLOW
 authority: CANONICAL
 lifecycle: ACTIVE
 ---
