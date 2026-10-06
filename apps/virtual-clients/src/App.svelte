@@ -48,7 +48,7 @@
   let error: RuntimeErrorPresentation | undefined;
   let supportPath = "";
   let arrangeMessage = "";
-  let page: Page = "setup";
+  let page: Page = "clients";
   let pageChosen = false;
 
   $: clients = snapshot?.diagnostics.runtime.clients ?? [];
@@ -94,8 +94,7 @@
       basePreflight = nextBasePreflight;
       actions = nextActions;
 
-      if (!pageChosen) page = nextSnapshot.doctor.nextSetupAction === "READY" ? "clients" : "setup";
-      if (page === "setup" && nextSnapshot.doctor.nextSetupAction === "READY" && pageChosen) page = "clients";
+      if (!pageChosen) page = "clients";
     } catch (value) {
       snapshot = undefined;
       basePreflight = undefined;
@@ -307,12 +306,8 @@
 <div class="app-shell">
   <AppSidebar
     {page}
-    {setupComplete}
     {runningVirtuals}
-    {readyVirtuals}
     blockerCount={blockers.length}
-    provider={snapshot?.doctor.provider}
-    setupAction={snapshot?.doctor.nextSetupAction}
     {loading}
     {busy}
     onSelect={selectPage}
@@ -322,12 +317,11 @@
   <main>
     <header class="topbar">
       <div>
-        <span class="eyebrow">M-BEDROCK / VIRTUAL CLIENTS</span>
-        <h1>{page === "setup" ? "Setup" : page === "clients" ? "Clients" : page === "settings" ? "Settings" : "Help & Support"}</h1>
+        <h1>{page === "clients" ? "Virtual Clients" : page === "settings" ? "Settings" : "Help"}</h1>
       </div>
       {#if snapshot}
         <div class="ready-state" class:attention={!setupComplete || blockers.length > 0}>
-          {setupComplete && blockers.length === 0 ? "Setup complete" : blockers.length ? "Needs attention" : "Setup required"}
+          {setupComplete && blockers.length === 0 ? "Ready" : blockers.length ? "Needs attention" : "Setup required"}
         </div>
       {/if}
     </header>
@@ -378,7 +372,7 @@
         <strong>Checking Virtual Clients…</strong>
       </section>
     {:else if snapshot}
-      {#if page === "setup"}
+      {#if page === "clients" && !setupComplete}
         <SetupSurface
           {snapshot}
           {basePreflight}
@@ -397,7 +391,6 @@
           {snapshot}
           {policy}
           {actions}
-          {native}
           {virtuals}
           blockerCount={blockers.length}
           setupAction={snapshot.doctor.nextSetupAction}

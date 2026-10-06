@@ -19,16 +19,16 @@
   $: phaseIndex = setupPhaseIndex(action);
 </script>
 
-<section class="hero">
-  <span class="eyebrow">FIRST-TIME SETUP</span>
-  <h2>Get your virtual Minecraft clients ready</h2>
-  <p>Virtual Clients handles every safe app-owned step. It asks for your input only when Windows, VMware, or account setup requires a person.</p>
+<section class="hero setup-intro">
+  <span class="eyebrow">SETUP · STEP {Math.min(phaseIndex + 1, 4)} OF 4</span>
+  <h2>Let's get your clients ready</h2>
+  <p>Follow one step at a time. Virtual Clients checks each result before continuing.</p>
 </section>
 
 <section class="setup-focus">
   <div class="step-number">{experience.owner === "APP" ? "→" : experience.owner === "BLOCKED" ? "!" : "•"}</div>
   <div class="setup-copy">
-    <span class="eyebrow">{experience.owner === "APP" ? "READY TO CONTINUE" : experience.owner === "CLIENTS" ? "CONTINUE IN CLIENTS" : experience.owner === "BLOCKED" ? "NEEDS ATTENTION" : "NEEDS YOU"}</span>
+    <span class="eyebrow">{experience.owner === "BLOCKED" ? "NEEDS ATTENTION" : "CURRENT STEP"}</span>
     <h2>{experience.title}</h2>
     <p>{experience.description}</p>
     {#if experience.steps.length}
@@ -43,7 +43,7 @@
         {busy === "setup" ? "Working…" : experience.primaryLabel}
       </button>
     {:else if experience.owner === "CLIENTS" || action === "READY"}
-      <button class="primary large" on:click={onOpenClients}>{experience.primaryLabel}</button>
+      <button class="primary large" on:click={onOpenClients}>{action === "READY" ? "Finish setup" : experience.primaryLabel}</button>
     {:else if experience.owner === "BLOCKED"}
       <button class="secondary large" on:click={onSupport}>{experience.primaryLabel}</button>
     {:else}

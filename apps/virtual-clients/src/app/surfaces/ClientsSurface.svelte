@@ -7,14 +7,12 @@
     clientDisplayName,
     primaryClientAction,
     primaryClientBlocker,
-    recoveryLabel,
     stateLabel,
   } from "../../view-model.js";
 
   export let snapshot: EngineSnapshot;
   export let policy: EnginePolicy | undefined;
   export let actions: readonly ClientLifecycleActions[];
-  export let native: ClientStatus | undefined;
   export let virtuals: ClientStatus[];
   export let blockerCount: number;
   export let setupAction: SetupAction;
@@ -33,16 +31,14 @@
   export let onSupport: () => void;
   export let onVerifyIdentities: () => void | Promise<void>;
   $: canStopAll = hasStoppableClient(virtuals, actions);
-  $: canStartAll = virtuals.length > 0 &&
-    virtuals.every((client) => actionForClient(actions, client.id)?.start.allowed === true);
+  $: startableVirtuals = virtuals.filter((client) => actionForClient(actions, client.id)?.start.allowed === true).length;
   $: pausedVirtuals = virtuals.filter((client) => client.state === "SUSPENDED").length;
-  $: stoppedVirtuals = virtuals.filter((client) => client.state === "STOPPED").length;
 </script>
 
 <section class="hero compact">
   <span class="eyebrow">CLIENTS</span>
   <h2>Virtual Minecraft clients</h2>
-  <p>Start, resume, and open clients from one place. Recovery tools stay in each client\'s menu until you need them.</p>
+  <p>Start, resume, and open clients from one place. Recovery tools stay in each client's menu until you need them.</p>
 </section>
 
 {#if setupAction === "VERIFY_IDENTITIES"}
@@ -77,37 +73,29 @@
 
 <section class="batch-bar">
   <div>
-    <strong>{runningVirtuals === 0 ? "No virtual clients running" : `${runningVirtuals} running`}{pausedVirtuals ? ` · ${pausedVirtuals} paused` : ""}{stoppedVirtuals ? ` · ${stoppedVirtuals} stopped` : ""}</strong>
-    <small>{snapshot.diagnostics.runtime.pressure.canStartVirtual ? "Resource protection is active" : "New starts are paused to protect this PC"}</small>
+    <strong>{runningVirtuals ? `${runningVirtuals} running` : "All clients are stopped"}{pausedVirtuals ? ` · ${pausedVirtuals} paused` : ""}</strong>
+    {#if !snapshot.diagnostics.runtime.pressure.canStartVirtual}<small>New starts are paused to protect this PC.</small>{/if}
   </div>
   <div class="batch-actions">
-    {#if setupAction !== "VERIFY_IDENTITIES"}
-    <button class="primary" disabled={Boolean(busy) || !canStartAll || !policy} on:click={onStartAll}>
-      {busy === "start-all" ? "Starting…" : "Start all"}
-    </button>
+    {#if setupAction !== "VERIFY_IDENTITIES" && startableVirtuals > 0}
+      <button class="primary" disabled={Boolean(busy) || !policy} on:click={onStartAll}>
+        {busy === "start-all" ? "Starting…" : startableVirtuals === virtuals.length ? "Start all" : "Start remaining"}
+      </button>
     {/if}
-    <button class="secondary" disabled={Boolean(busy) || runningVirtuals === 0} on:click={onArrange}>
-      {busy === "arrange" ? "Arranging…" : "Arrange"}
-    </button>
-    <button class="secondary" disabled={Boolean(busy) || !canStopAll} on:click={onStopAll}>
-      {busy === "stop-all" ? "Stopping…" : "Stop all"}
-    </button>
+    {#if runningVirtuals > 0}
+      <button class="secondary" disabled={Boolean(busy)} on:click={onArrange}>
+        {busy === "arrange" ? "Arranging…" : "Arrange windows"}
+      </button>
+    {/if}
+    {#if canStopAll}
+      <button class="secondary" disabled={Boolean(busy)} on:click={onStopAll}>
+        {busy === "stop-all" ? "Stopping…" : "Stop all"}
+      </button>
+    {/if}
   </div>
 </section>
 
 <section class="client-list">
-  {#if native}
-    <article class="client-row native">
-      <div class="client-icon">PC</div>
-      <div class="client-main">
-        <span class="client-kind">PHYSICAL CLIENT</span>
-        <h3>{clientDisplayName(native.id)}</h3>
-        <small>Minecraft Education {native.minecraftVersion ?? "version unknown"} · Version reference</small>
-      </div>
-      <span class="state">{stateLabel(native.state)}</span>
-      <div class="row-action"><span class="managed">Managed on this PC</span></div>
-    </article>
-  {/if}
 
   {#each virtuals as client}
     {@const available = actionForClient(actions, client.id)}
@@ -115,11 +103,10 @@
     <article class="client-row">
       <div class="client-icon">{Number(client.id.slice(-2))}</div>
       <div class="client-main">
-        <span class="client-kind">VIRTUAL CLIENT</span>
         <h3>{clientDisplayName(client.id)}</h3>
-        <small>{client.minecraftVersion ? `Minecraft Education ${client.minecraftVersion}` : "Minecraft Education"} · {recoveryLabel(client.readySnapshot)}</small>
+        <small>{stateLabel(client.state)}</small>
       </div>
-      <span class="state {client.state.toLowerCase()}">{stateLabel(client.state)}</span>
+      <span class="state-dot {client.state.toLowerCase()}" aria-hidden="true"></span>
       <div class="row-action">
         {#if available && primary}
           <button class="primary" disabled={Boolean(busy)} on:click={() => onPrimary(client, available)}>
