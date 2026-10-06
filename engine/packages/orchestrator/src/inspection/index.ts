@@ -68,7 +68,7 @@ export * from "./reward-source-analysis.js";
 export * from "./route-mutation-analysis.js";
 export * from "./route-navigation-environment-analysis.js";
 export * from "./route-navigation-environment-load.js";
-export * from "./script-api-usage.js";
+export * from "./script-api-usage.js";\nexport * from "./script-performance-analysis.js";
 export * from "./script-command-transaction-analysis.js";
 export * from "./script-dataflow-context.js";
 export * from "./script-safe-config-analysis.js";
