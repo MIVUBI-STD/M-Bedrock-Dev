@@ -163,6 +163,7 @@ fn execute_value(command: &str, args: &[String]) -> io::Result<Value> {
         "set-ready" => to_value(app.set_ready(parse_client(one_arg(command, args)?)?)?),
         "reset" => to_value(app.reset(parse_client(one_arg(command, args)?)?)?),
         "open" => to_value(app.open(parse_client(one_arg(command, args)?)?)?),
+        "launch-minecraft" => to_value(app.launch_minecraft(parse_client(one_arg(command, args)?)?)?),
         _ => Err(input_error(format!("unknown command: {command}"))),
     }
 }
