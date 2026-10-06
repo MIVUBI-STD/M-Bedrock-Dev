@@ -56,6 +56,10 @@ export interface ChunkLifecycleAnalysis {
   zeroTickDeferredChunkWork: number;
   boundedDeferredChunkRetries: number;
   unboundedDeferredChunkRetries: number;
+  deduplicatedSpawnRetryPaths: number;
+  spawnRetryDedupGaps: number;
+  serializedTickingAreaAllocations: number;
+  unserializedTickingAreaAllocations: number;
   spawnRecoveryRoutes: number;
   unloadedSpecificSpawnRecoveryRoutes: number;
   broadSpawnRecoveryRisks: number;
@@ -377,6 +381,227 @@ function unguardedDeferredChunkWorkFor(
 }
 
 
+
+
+function functionRegion(
+  node: ts.Node,
+  file: ts.SourceFile,
+): string {
+  let current:
+    ts.Node | undefined = node;
+  while (current) {
+    if (
+      ts.isFunctionDeclaration(
+        current,
+      ) &&
+      current.name
+    ) {
+      return (
+        "function:" +
+        current.name.text
+      );
+    }
+    if (
+      ts.isMethodDeclaration(current)
+    ) {
+      const name = current.name;
+      if (
+        ts.isIdentifier(name) ||
+        ts.isStringLiteralLike(name)
+      ) {
+        return (
+          "function:" +
+          name.text
+        );
+      }
+    }
+    current = current.parent;
+  }
+  return "module";
+}
+
+function chunkRecoveryStaticProofs(
+  script: ParsedScriptFile,
+): {
+  spawnRetryPaths: number;
+  deduplicatedSpawnRetryPaths: number;
+  tickingAreaAllocations: number;
+  serializedTickingAreaAllocations: number;
+} {
+  const file = ts.createSourceFile(
+    script.source.relativePath,
+    script.text,
+    ts.ScriptTarget.Latest,
+    true,
+    script.source.relativePath.endsWith(
+      ".ts",
+    )
+      ? ts.ScriptKind.TS
+      : ts.ScriptKind.JS,
+  );
+  const spawnRegions =
+    new Set<string>();
+  const dedupGuardRegions =
+    new Set<string>();
+  const allocationRegions =
+    new Set<string>();
+  const serializedRegions =
+    new Set<string>();
+
+  const terminalExit = (
+    node: ts.Node,
+  ): boolean => {
+    let found = false;
+    const scan = (
+      current: ts.Node,
+    ): void => {
+      if (
+        ts.isReturnStatement(current) ||
+        ts.isThrowStatement(current)
+      ) {
+        found = true;
+        return;
+      }
+      if (!found) {
+        ts.forEachChild(
+          current,
+          scan,
+        );
+      }
+    };
+    scan(node);
+    return found;
+  };
+
+  const bodyTextForRegion =
+    new Map<string, string>();
+  const collectBodies = (
+    node: ts.Node,
+  ): void => {
+    if (
+      (
+        ts.isFunctionDeclaration(
+          node,
+        ) ||
+        ts.isMethodDeclaration(node)
+      ) &&
+      node.body
+    ) {
+      bodyTextForRegion.set(
+        functionRegion(node, file),
+        node.body.getText(file),
+      );
+    }
+    ts.forEachChild(
+      node,
+      collectBodies,
+    );
+  };
+  collectBodies(file);
+
+  const visit = (node: ts.Node): void => {
+    const region =
+      functionRegion(node, file);
+
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(
+        node.expression,
+      )
+    ) {
+      const method =
+        node.expression.name.text;
+      if (method === "spawnEntity") {
+        spawnRegions.add(region);
+      }
+      if (
+        method ===
+        "createTickingArea"
+      ) {
+        allocationRegions.add(
+          region,
+        );
+      }
+    }
+
+    if (
+      ts.isIfStatement(node) &&
+      terminalExit(
+        node.thenStatement,
+      )
+    ) {
+      const text =
+        node.expression.getText(file);
+      if (
+        /(?:getEntities|getEntity|\.has\s*\(|\.get\s*\()/i.test(
+          text,
+        ) &&
+        /(?:entity|spawn|role|registry|target|existing)/i.test(
+          text,
+        )
+      ) {
+        dedupGuardRegions.add(
+          region,
+        );
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+
+  for (
+    const region of
+      allocationRegions
+  ) {
+    const text =
+      bodyTextForRegion.get(region) ??
+      "";
+    const hasLockGuard =
+      /if\s*\([^)]*(?:lock|busy|allocating|inflight|inFlight)[^)]*\)\s*(?:return|throw)/i.test(
+        text,
+      );
+    const hasLockAcquire =
+      /(?:lock|busy|allocating|inflight|inFlight)\s*=\s*true/i.test(
+        text,
+      ) ||
+      /(?:lock|mutex|queue)\.(?:acquire|lock|runExclusive)\s*\(/i.test(
+        text,
+      );
+    const hasLockRelease =
+      /(?:lock|busy|allocating|inflight|inFlight)\s*=\s*false/i.test(
+        text,
+      ) ||
+      /(?:lock|mutex)\.(?:release|unlock)\s*\(/i.test(
+        text,
+      );
+    if (
+      hasLockGuard &&
+      hasLockAcquire &&
+      hasLockRelease
+    ) {
+      serializedRegions.add(
+        region,
+      );
+    }
+  }
+
+  return {
+    spawnRetryPaths:
+      spawnRegions.size,
+    deduplicatedSpawnRetryPaths:
+      [...spawnRegions].filter(
+        (region) =>
+          dedupGuardRegions.has(
+            region,
+          ),
+      ).length,
+    tickingAreaAllocations:
+      allocationRegions.size,
+    serializedTickingAreaAllocations:
+      serializedRegions.size,
+  };
+}
 
 function retryBudgetGuardRegions(
   script: ParsedScriptFile,
@@ -1083,6 +1308,36 @@ export function analyzeChunkLifecycle(
         ),
       0,
     );
+  const staticRecoveryProofs =
+    scripts.reduce(
+      (summary, script) => {
+        const current =
+          chunkRecoveryStaticProofs(
+            script,
+          );
+        return {
+          spawnRetryPaths:
+            summary.spawnRetryPaths +
+            current.spawnRetryPaths,
+          deduplicatedSpawnRetryPaths:
+            summary.deduplicatedSpawnRetryPaths +
+            current.deduplicatedSpawnRetryPaths,
+          tickingAreaAllocations:
+            summary.tickingAreaAllocations +
+            current.tickingAreaAllocations,
+          serializedTickingAreaAllocations:
+            summary.serializedTickingAreaAllocations +
+            current.serializedTickingAreaAllocations,
+        };
+      },
+      {
+        spawnRetryPaths: 0,
+        deduplicatedSpawnRetryPaths: 0,
+        tickingAreaAllocations: 0,
+        serializedTickingAreaAllocations: 0,
+      },
+    );
+
   const deferredChunkRetryBudget =
     scripts.reduce(
       (summary, script) => {
@@ -1169,6 +1424,22 @@ export function analyzeChunkLifecycle(
       deferredChunkRetryBudget.bounded,
     unboundedDeferredChunkRetries:
       deferredChunkRetryBudget.unbounded,
+    deduplicatedSpawnRetryPaths:
+      staticRecoveryProofs.deduplicatedSpawnRetryPaths,
+    spawnRetryDedupGaps:
+      Math.max(
+        0,
+        staticRecoveryProofs.spawnRetryPaths -
+          staticRecoveryProofs.deduplicatedSpawnRetryPaths,
+      ),
+    serializedTickingAreaAllocations:
+      staticRecoveryProofs.serializedTickingAreaAllocations,
+    unserializedTickingAreaAllocations:
+      Math.max(
+        0,
+        staticRecoveryProofs.tickingAreaAllocations -
+          staticRecoveryProofs.serializedTickingAreaAllocations,
+      ),
     spawnRecoveryRoutes:
       spawnRecoveryRouting.routes,
     unloadedSpecificSpawnRecoveryRoutes:

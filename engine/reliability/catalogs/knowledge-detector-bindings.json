@@ -91,6 +91,17 @@
       ]
     },
     {
+      "knowledgeId": "chunk-policy.spawn-retry-deduplicate",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "chunk-policy.spawn-retry-specific-error",
       "consumer": "chunk-lifecycle-analysis",
       "analyzerPaths": [
@@ -107,6 +118,17 @@
       "consumer": "chunk-lifecycle-analysis",
       "analyzerPaths": [
         "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunk-policy.tickingarea-serialized-allocation",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"

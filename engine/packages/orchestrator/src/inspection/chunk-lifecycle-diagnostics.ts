@@ -24,6 +24,8 @@ export function chunkLifecycleDiagnostics(
     analysis.unguardedDeferredChunkWork > 0 ||
     analysis.zeroTickDeferredChunkWork > 0 ||
     analysis.unboundedDeferredChunkRetries > 0 ||
+    analysis.spawnRetryDedupGaps > 0 ||
+    analysis.unserializedTickingAreaAllocations > 0 ||
     analysis.broadSpawnRecoveryRisks > 0 ||
     analysis.entityRemoveTerminalizationRisks > 0 ||
     analysis.unresolvedResidencyStateMachines > 0 ||
@@ -67,6 +69,14 @@ export function chunkLifecycleDiagnostics(
           analysis.boundedDeferredChunkRetries,
         unboundedDeferredChunkRetries:
           analysis.unboundedDeferredChunkRetries,
+        deduplicatedSpawnRetryPaths:
+          analysis.deduplicatedSpawnRetryPaths,
+        spawnRetryDedupGaps:
+          analysis.spawnRetryDedupGaps,
+        serializedTickingAreaAllocations:
+          analysis.serializedTickingAreaAllocations,
+        unserializedTickingAreaAllocations:
+          analysis.unserializedTickingAreaAllocations,
         spawnRecoveryRoutes:
           analysis.spawnRecoveryRoutes,
         unloadedSpecificSpawnRecoveryRoutes:

@@ -367,6 +367,108 @@ describe("chunk lifecycle analysis", () => {
     ).toBe(1);
   });
 
+  it("proves spawn retry deduplication from an existence guard", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function retrySpawn(dimension, registry, role) {",
+        "  if (registry.has(role)) return;",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(
+      result.deduplicatedSpawnRetryPaths,
+    ).toBe(1);
+    expect(
+      result.spawnRetryDedupGaps,
+    ).toBe(0);
+  });
+
+  it("keeps an unguarded spawn path explicit as a deduplication gap", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function retrySpawn(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    expect(
+      analyzeChunkLifecycle([
+        script,
+      ]).spawnRetryDedupGaps,
+    ).toBe(1);
+  });
+
+  it("proves serialized ticking-area allocation from an explicit critical section", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "let allocatorBusy = false;",
+        "async function allocate(manager, options) {",
+        "  if (allocatorBusy) return;",
+        "  allocatorBusy = true;",
+        "  try {",
+        "    if (!manager.hasCapacity(options)) return;",
+        "    await manager.createTickingArea('arena:lease', options);",
+        "  } finally {",
+        "    allocatorBusy = false;",
+        "  }",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(
+      result.serializedTickingAreaAllocations,
+    ).toBe(1);
+    expect(
+      result.unserializedTickingAreaAllocations,
+    ).toBe(0);
+  });
+
+  it("does not treat hasCapacity as a serialized reservation", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "async function allocate(manager, options) {",
+        "  if (!manager.hasCapacity(options)) return;",
+        "  await manager.createTickingArea('arena:lease', options);",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    expect(
+      analyzeChunkLifecycle([
+        script,
+      ]).unserializedTickingAreaAllocations,
+    ).toBe(1);
+  });
+
   it("accepts unloaded-chunk-specific spawn recovery routing", () => {
     const script = parseScriptFile(
       "main",
