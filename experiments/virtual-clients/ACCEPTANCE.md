@@ -62,7 +62,11 @@ Guest Agent security proof also requires:
 
 ```text
 provision
-→ unique Virtual identities
+→ start 3
+→ verify-identities
+→ vmIdentity = UNIQUE for all three
+→ windowsIdentity = UNIQUE for all three
+→ stop all
 → start 1
 → Virtual-01 RUNNING
 → guestToolsReady
@@ -96,8 +100,11 @@ Required observations:
 - each Virtual uses its own account session and does not inherit another Virtual's session;
 - `start`, `stop`, `restart`, `suspend`, resume and `open` preserve the selected Virtual's guest/account state;
 - repeated daily starts do not require sign-in again while the Microsoft/Minecraft session remains valid;
+- `verify-identities` persists only identity fingerprints into client provenance, never account/session secrets;
+- `set-ready` rejects a Virtual without verified VM + Windows identity provenance;
 - `QA_READY` is created after account setup and reset restores that configured checkpoint;
-- `reprovision` is explicitly destructive to the selected Virtual's saved account session;
+- `reset` restores `QA_READY`, boots the selected Virtual, and returns `RUNNING`;
+- `reprovision` is explicitly destructive to the selected Virtual's saved account session and requires explicit destruction confirmation;
 - no Microsoft password/token/session secret is written into Virtual Clients runtime/profile data;
 - all four clients remain manually controllable;
 - all clients run exactly the same Minecraft Education version;
@@ -105,7 +112,7 @@ Required observations:
 - network path supports peer-to-peer multiplayer;
 - Base remains unchanged;
 - clone UUID/MAC identities remain unique;
-- with Virtual-01/02/03 running together, each reports `guestMachineIdentity = UNIQUE`;
+- with Virtual-01/02/03 running together, each reports `windowsIdentity = UNIQUE`;
 - 4 GB is treated as a ceiling, not measured resident use;
 - host working-set telemetry is plausible;
 - CRITICAL pressure blocks new starts without killing existing clients;

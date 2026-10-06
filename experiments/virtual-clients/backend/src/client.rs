@@ -53,6 +53,11 @@ pub enum IdentityState {
     Duplicate,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DestructiveConfirmation {
+    ReprovisionAccountState,
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClientStatus {
@@ -68,6 +73,6 @@ pub struct ClientStatus {
     pub minecraft_version: Option<String>,
     pub lineage_parity: Option<ProfileParity>,
     pub version_parity: Option<ProfileParity>,
-    pub identity: Option<IdentityState>,
-    pub guest_machine_identity: Option<IdentityState>,
+    pub vm_identity: Option<IdentityState>,
+    pub windows_identity: Option<IdentityState>,
 }

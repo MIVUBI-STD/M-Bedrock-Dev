@@ -116,7 +116,8 @@ Virtual Clients never silently kills existing running clients because of host pr
 - Live Virtual/Native version parity gate.
 - Guest Agent/backend version parity gate.
 - Unique VM UUID/MAC identity check.
-- Guest OS machine-identity fingerprint check across all running Virtual instances.
+- VM identity and Windows machine-identity proof across all three running Virtual instances.
+- Verified identity fingerprints are stored only as client provenance for later QA_READY gating.
 - Base Microsoft device-registration preflight rejects Entra/Workplace-joined source images.
 - Pressure-aware staggered boot.
 - Batch rollback on start failure.
@@ -142,9 +143,9 @@ Virtual Clients never stores Microsoft passwords, access tokens, refresh tokens,
 
 Normal lifecycle operations (`start`, `stop`, `restart`, `suspend`, resume through `start`, and `open`) must not revert a snapshot, recreate the VM, or otherwise replace the selected Virtual's persistent guest disk.
 
-`QA_READY` is created after that Virtual completes one-time account setup. `reset` therefore returns to the configured checkpoint. Microsoft/Minecraft may still invalidate or expire a session independently; that is a real account condition, not backend state.
+`QA_READY` is created only after `verify-identities` has persisted verified VM + Windows identity fingerprints and that Virtual completes one-time account setup. `reset` therefore returns to the configured checkpoint. Microsoft/Minecraft may still invalidate or expire a session independently; that is a real account condition, not backend state.
 
-`reprovision` is destructive to the selected Virtual's guest/account state because it creates a fresh clone from Base. It is recovery/setup, not normal daily lifecycle.
+`reprovision` is destructive to the selected Virtual's guest/account state because it creates a fresh clone from Base. The public runtime contract requires an explicit destructive confirmation, and the CLI requires `--destroy-account-state`. It is recovery/setup, not normal daily lifecycle.
 
 ## Disk policy
 
@@ -154,9 +155,11 @@ Safe cleanup:
 
 ```text
 fully stop Virtual
-→ reprovision Virtual
+→ reprovision Virtual --destroy-account-state
 → rebuild from Base
 ```
+
+`reset` is non-destructive to the intended QA baseline: it restores `QA_READY`, boots the selected Virtual, and returns `RUNNING`.
 
 ## Emulator feature gate
 

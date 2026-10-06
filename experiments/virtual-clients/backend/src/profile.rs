@@ -49,6 +49,10 @@ pub struct ClientProfile {
     pub schema: u32,
     pub base_minecraft_version: String,
     pub created_by: String,
+    #[serde(default)]
+    pub verified_vm_identity: Option<String>,
+    #[serde(default)]
+    pub verified_windows_identity: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -161,7 +165,14 @@ pub fn write_client_profile(client: ClientId, base_version: &str) -> io::Result<
         schema: CLIENT_PROFILE_SCHEMA,
         base_minecraft_version: base_version.to_string(),
         created_by: env!("CARGO_PKG_VERSION").to_string(),
+        verified_vm_identity: None,
+        verified_windows_identity: None,
     };
+    write_client_profile_data(client, &profile)?;
+    Ok(profile)
+}
+
+fn write_client_profile_data(client: ClientId, profile: &ClientProfile) -> io::Result<()> {
     let path = client_profile_path(client.as_str())?;
     let parent = path.parent().ok_or_else(|| {
         io::Error::new(
@@ -171,10 +182,21 @@ pub fn write_client_profile(client: ClientId, base_version: &str) -> io::Result<
     })?;
     fs::create_dir_all(parent)?;
     let temporary = path.with_extension("json.tmp");
-    let json = serde_json::to_string_pretty(&profile)
+    let json = serde_json::to_string_pretty(profile)
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
     fs::write(&temporary, format!("{json}\n"))?;
-    fs::rename(temporary, path)?;
+    fs::rename(temporary, path)
+}
+
+pub fn write_verified_client_identities(
+    client: ClientId,
+    vm_identity: &str,
+    windows_identity: &str,
+) -> io::Result<ClientProfile> {
+    let mut profile = load_client_profile(client)?;
+    profile.verified_vm_identity = Some(vm_identity.to_string());
+    profile.verified_windows_identity = Some(windows_identity.to_string());
+    write_client_profile_data(client, &profile)?;
     Ok(profile)
 }
 
@@ -392,7 +414,7 @@ fn normalized_version(value: &str) -> Option<String> {
 mod tests {
     use super::{
         normalized_version, BaseProfile, BaseProfileSource, MinecraftInstallType, MinecraftProfile,
-        BASE_PROFILE_SCHEMA,
+        ClientProfile, BASE_PROFILE_SCHEMA, CLIENT_PROFILE_SCHEMA,
     };
     use crate::guest::GUEST_STATUS_SCHEMA;
 
@@ -420,6 +442,15 @@ mod tests {
         let json = serde_json::to_string(&profile).unwrap();
         let decoded: BaseProfile = serde_json::from_str(&json).unwrap();
         assert_eq!(decoded, profile);
+    }
+
+    #[test]
+    fn legacy_client_profile_without_identity_proof_is_compatible() {
+        let json = r#"{"schema":1,"baseMinecraftVersion":"1.21.120.0","createdBy":"0.1.0"}"#;
+        let profile: ClientProfile = serde_json::from_str(json).unwrap();
+        assert_eq!(profile.schema, CLIENT_PROFILE_SCHEMA);
+        assert_eq!(profile.verified_vm_identity, None);
+        assert_eq!(profile.verified_windows_identity, None);
     }
 
     #[test]

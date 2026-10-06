@@ -12,6 +12,9 @@ doctor
 register-base
 provision
 
+start 3
+verify-identities
+
 start 1
 → configure Virtual-01
 → sign in once with its own test identity
@@ -43,8 +46,10 @@ Normal daily lifecycle preserves the complete guest disk. A Virtual that was sig
 
 ```text
 reset Virtual-01
-reprovision Virtual-01
+reprovision Virtual-01 --destroy-account-state
 ```
+
+`reset` restores `QA_READY` and boots the selected Virtual immediately, so its resulting lifecycle state is `RUNNING`. `reprovision` is destructive and requires the explicit `--destroy-account-state` confirmation.
 
 Native is host-managed. Virtual Clients never starts, stops, or restarts Native.
 
@@ -103,6 +108,7 @@ It exposes only:
 agent version
 Minecraft Education version
 Minecraft installation type
+SHA-256 Windows machine-identity fingerprint
 ```
 
 It does not control gameplay, input, worlds, inventory, or multiplayer actions.
@@ -177,6 +183,7 @@ provision
 status
 resources <1-3>
 start <1-3>
+verify-identities
 
 open <Virtual-01|Virtual-02|Virtual-03>
 suspend [Virtual-01|Virtual-02|Virtual-03]
@@ -185,7 +192,7 @@ stop [Virtual-01|Virtual-02|Virtual-03]
 restart <Virtual-01|Virtual-02|Virtual-03>
 set-ready <Virtual-01|Virtual-02|Virtual-03>
 reset <Virtual-01|Virtual-02|Virtual-03>
-reprovision <Virtual-01|Virtual-02|Virtual-03>
+reprovision <Virtual-01|Virtual-02|Virtual-03> --destroy-account-state
 ```
 
 Frontend remains deferred until backend and real-machine acceptance are complete.

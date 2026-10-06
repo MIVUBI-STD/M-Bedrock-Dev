@@ -16,6 +16,7 @@ pub struct DoctorClient {
     pub provisioned: bool,
     pub ready_snapshot: bool,
     pub lineage_parity: ProfileParity,
+    pub identity_provenance: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -28,6 +29,7 @@ pub enum SetupAction {
     RegisterBase,
     ProvisionVirtuals,
     ReprovisionVirtuals,
+    VerifyIdentities,
     Ready,
 }
 
@@ -134,11 +136,19 @@ pub fn doctor() -> DoctorReport {
                 _ => ProfileParity::Unknown,
             };
 
+            let identity_provenance = load_client_profile(client)
+                .ok()
+                .is_some_and(|profile| {
+                    profile.verified_vm_identity.is_some()
+                        && profile.verified_windows_identity.is_some()
+                });
+
             DoctorClient {
                 id: client.as_str(),
                 provisioned,
                 ready_snapshot,
                 lineage_parity,
+                identity_provenance,
             }
         })
         .collect();
@@ -163,6 +173,8 @@ pub fn doctor() -> DoctorReport {
         .any(|client| client.lineage_parity != ProfileParity::Match)
     {
         SetupAction::ReprovisionVirtuals
+    } else if clients.iter().any(|client| !client.identity_provenance) {
+        SetupAction::VerifyIdentities
     } else {
         SetupAction::Ready
     };

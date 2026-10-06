@@ -1,5 +1,7 @@
 use crate::{
-    client::{ClientId, ClientState, ClientStatus, IdentityState},
+    client::{
+        ClientId, ClientState, ClientStatus, DestructiveConfirmation, IdentityState,
+    },
     diagnostics::{collect as collect_diagnostics, DiagnosticsReport},
     doctor::{doctor, DoctorReport},
     guest::{query_guest_status, GuestStatus},
@@ -7,7 +9,8 @@ use crate::{
     profile::{
         current_base_vmx_path, load_client_profile, native_minecraft_profile, profile_status,
         require_base_matches_native, require_client_matches_native, write_client_profile,
-        write_verified_base_profile, BaseProfile, MinecraftProfile, ProfileParity, ProfileStatus,
+        write_verified_base_profile, write_verified_client_identities, BaseProfile, MinecraftProfile,
+        ProfileParity, ProfileStatus,
     },
     provider::{
         cleanup_staging, current_platform_provider, ensure_guest_token_for_path, guest_token,
@@ -19,6 +22,7 @@ use crate::{
 };
 use fs2::FileExt;
 use serde::Serialize;
+use sha2::{Digest, Sha256};
 use std::{
     fs::{self, File, OpenOptions},
     io, thread,
@@ -88,7 +92,7 @@ impl Drop for OperationLock {
     }
 }
 
-fn identity_state(provider: &dyn Provider, client: ClientId) -> IdentityState {
+fn vm_identity_state(provider: &dyn Provider, client: ClientId) -> IdentityState {
     let Ok(Some(identity)) = provider.identity_key(client) else {
         return IdentityState::Unknown;
     };
@@ -199,6 +203,18 @@ fn wait_for_guest_compatibility(
                     )
                 })?;
 
+                if status.agent_version != env!("CARGO_PKG_VERSION") {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        format!(
+                            "{} Guest Agent version {} does not match backend {}",
+                            client.as_str(),
+                            status.agent_version,
+                            env!("CARGO_PKG_VERSION")
+                        ),
+                    ));
+                }
+
                 if guest.version != native.version {
                     return Err(io::Error::new(
                         io::ErrorKind::InvalidData,
@@ -230,7 +246,7 @@ fn wait_for_guest_compatibility(
     }
 }
 
-fn guest_machine_identity_state(
+fn windows_identity_state(
     provider: &dyn Provider,
     client: ClientId,
     guest: Option<&GuestStatus>,
@@ -257,6 +273,136 @@ fn guest_machine_identity_state(
     }
 
     IdentityState::Unique
+}
+
+fn identity_fingerprint(value: &str) -> String {
+    format!("{:x}", Sha256::digest(value.as_bytes()))
+}
+
+fn verify_identity_provenance(
+    provider: &dyn Provider,
+) -> io::Result<Vec<ClientStatus>> {
+    let native = native_minecraft_profile();
+
+    let mut vm_identities = Vec::with_capacity(3);
+    let mut windows_identities = Vec::with_capacity(3);
+    let mut guests = Vec::with_capacity(3);
+
+    for client in ClientId::VIRTUAL {
+        require_client_matches_native(client)?;
+        if provider.status(client)? != ClientState::Running {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "all Virtual instances must be RUNNING before verify-identities",
+            ));
+        }
+
+        let vm_identity = provider.identity_key(client)?.ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("{} VM identity is unavailable", client.as_str()),
+            )
+        })?;
+        let guest = wait_for_guest_compatibility(provider, client, Duration::from_secs(30))?;
+        let windows_identity = guest.machine_identity.clone().ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("{} Windows identity is unavailable", client.as_str()),
+            )
+        })?;
+
+        vm_identities.push((client, vm_identity));
+        windows_identities.push((client, windows_identity));
+        guests.push((client, guest));
+    }
+
+    for left in 0..ClientId::VIRTUAL.len() {
+        for right in (left + 1)..ClientId::VIRTUAL.len() {
+            if vm_identities[left].1 == vm_identities[right].1 {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    format!(
+                        "{} and {} share the same VM identity",
+                        vm_identities[left].0.as_str(),
+                        vm_identities[right].0.as_str()
+                    ),
+                ));
+            }
+            if windows_identities[left].1 == windows_identities[right].1 {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    format!(
+                        "{} and {} share the same Windows identity",
+                        windows_identities[left].0.as_str(),
+                        windows_identities[right].0.as_str()
+                    ),
+                ));
+            }
+        }
+    }
+
+    for index in 0..ClientId::VIRTUAL.len() {
+        write_verified_client_identities(
+            ClientId::VIRTUAL[index],
+            &identity_fingerprint(&vm_identities[index].1),
+            &windows_identities[index].1,
+        )?;
+    }
+
+    let working_sets = provider.host_working_sets_mb()?;
+    let mut result = Vec::with_capacity(3);
+    for (client, _) in guests {
+        result.push(client_status(
+            provider,
+            &working_sets,
+            native.as_ref(),
+            client,
+        )?);
+    }
+    Ok(result)
+}
+
+fn require_verified_identity_provenance(
+    provider: &dyn Provider,
+    client: ClientId,
+) -> io::Result<()> {
+    let profile = require_client_matches_native(client)?;
+    let expected_vm = profile.verified_vm_identity.ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::InvalidInput,
+            format!(
+                "{} identity proof is missing. Run start 3 then verify-identities before set-ready.",
+                client.as_str()
+            ),
+        )
+    })?;
+    if profile.verified_windows_identity.is_none() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            format!(
+                "{} Windows identity proof is missing. Run start 3 then verify-identities before set-ready.",
+                client.as_str()
+            ),
+        ));
+    }
+
+    let current_vm = provider.identity_key(client)?.ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!("{} VM identity is unavailable", client.as_str()),
+        )
+    })?;
+    if identity_fingerprint(&current_vm) != expected_vm {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!(
+                "{} VM identity changed after verification. Run verify-identities again.",
+                client.as_str()
+            ),
+        ));
+    }
+
+    Ok(())
 }
 
 fn working_set_for(working_sets: &[(ClientId, u64)], client: ClientId) -> Option<u64> {
@@ -286,8 +432,8 @@ fn client_status(
             minecraft_version: None,
             lineage_parity: Some(ProfileParity::Unknown),
             version_parity: Some(ProfileParity::Unknown),
-            identity: Some(IdentityState::Unknown),
-            guest_machine_identity: Some(IdentityState::Unknown),
+            vm_identity: Some(IdentityState::Unknown),
+            windows_identity: Some(IdentityState::Unknown),
         });
     }
 
@@ -315,8 +461,8 @@ fn client_status(
         minecraft_version,
         lineage_parity: Some(lineage_parity(native, client)),
         version_parity: Some(parity),
-        identity: Some(identity_state(provider, client)),
-        guest_machine_identity: Some(guest_machine_identity_state(
+        vm_identity: Some(vm_identity_state(provider, client)),
+        windows_identity: Some(windows_identity_state(
             provider,
             client,
             guest.as_ref(),
@@ -467,11 +613,21 @@ impl VirtualClients {
         Ok(result)
     }
 
-    pub fn reprovision(&self, client: ClientId) -> io::Result<ClientStatus> {
+    pub fn reprovision(
+        &self,
+        client: ClientId,
+        confirmation: DestructiveConfirmation,
+    ) -> io::Result<ClientStatus> {
         if client.is_native() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "Native cannot be reprovisioned",
+            ));
+        }
+        if confirmation != DestructiveConfirmation::ReprovisionAccountState {
+            return Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
+                "reprovision requires explicit account-state destruction confirmation",
             ));
         }
 
@@ -504,6 +660,18 @@ impl VirtualClients {
         )
     }
 
+    pub fn verify_identities(&self) -> io::Result<Vec<ClientStatus>> {
+        require_base_matches_native()?;
+        let _lock = OperationLock::acquire()?;
+        let provider = current_platform_provider().ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "virtualization provider is unavailable",
+            )
+        })?;
+        verify_identity_provenance(provider.as_ref())
+    }
+
     pub fn status(&self) -> io::Result<RuntimeStatus> {
         let provider = current_platform_provider();
         let mut clients = Vec::with_capacity(ClientId::ALL.len());
@@ -524,8 +692,8 @@ impl VirtualClients {
                 .map(|profile| profile.version.clone()),
             lineage_parity: None,
             version_parity: None,
-            identity: None,
-            guest_machine_identity: None,
+            vm_identity: None,
+            windows_identity: None,
         });
 
         if let Some(provider) = provider.as_ref() {
@@ -553,8 +721,8 @@ impl VirtualClients {
                     minecraft_version: None,
                     lineage_parity: Some(ProfileParity::Unknown),
                     version_parity: Some(ProfileParity::Unknown),
-                    identity: Some(IdentityState::Unknown),
-                    guest_machine_identity: Some(IdentityState::Unknown),
+                    vm_identity: Some(IdentityState::Unknown),
+                    windows_identity: Some(IdentityState::Unknown),
                 });
             }
         }
@@ -677,7 +845,7 @@ impl VirtualClients {
                 }
             }
 
-            if identity_state(provider.as_ref(), client) == IdentityState::Duplicate {
+            if vm_identity_state(provider.as_ref(), client) == IdentityState::Duplicate {
                 let rollback_failed = restore_batch_state(provider.as_ref(), &started_by_batch);
                 let error = io::Error::new(
                     io::ErrorKind::InvalidData,
@@ -695,7 +863,7 @@ impl VirtualClients {
                 started_by_batch.push((client, original_state));
             }
 
-            if identity_state(provider.as_ref(), client) == IdentityState::Duplicate {
+            if vm_identity_state(provider.as_ref(), client) == IdentityState::Duplicate {
                 let mut rollback_failed = Vec::new();
                 if provider.stop(client).is_err() {
                     rollback_failed.push(client.as_str());
@@ -902,6 +1070,7 @@ impl VirtualClients {
                 "virtualization provider is unavailable",
             )
         })?;
+        require_verified_identity_provenance(provider.as_ref(), client)?;
         provider.set_ready(client)?;
         let working_sets = provider.host_working_sets_mb()?;
         let native_profile = native_minecraft_profile();
