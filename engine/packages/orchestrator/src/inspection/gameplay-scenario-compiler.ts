@@ -409,6 +409,35 @@ function runtimeEdgeState(
 ): Pick<GameplayCausalLink, "status" | "reason"> {
   switch (componentId) {
     case "runtime:world-rules": {
+      if (
+        world.arenas.detected &&
+        world.arenas.globalState
+          .unleasedArenaMutations > 0
+      ) {
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Arena-owned gameplay mutates world-global state without a matching global ownership/lease path. A world-level gamerule or environment change cannot be treated as arena-local, so concurrent sessions can interfere without any player playtest being required to establish the ownership defect.",
+        };
+      }
+      if (
+        world.arenas.detected &&
+        (
+          world.arenas.globalState
+            .unauditedArenaMutations > 0 ||
+          world.arenas.globalState.assessments.some(
+            (item) =>
+              item.status ===
+                "partial-lease-evidence",
+          )
+        )
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Arena-owned world-global mutation has only partial ownership/audit evidence. Keep it explicitly unresolved and complete the source-side lease/arbitration proof before requesting Minecraft runtime validation.",
+        };
+      }
       if (world.worldRules.conflicts > 0) {
         return {
           status: "DETECTION_GAP",
