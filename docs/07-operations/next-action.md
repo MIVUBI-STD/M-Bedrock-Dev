@@ -4,24 +4,16 @@ REMOTE_GITHUB source now has a narrow authenticated Minecraft launch capability
 for Virtual guests and an idempotent Native desktop launcher.
 
 Before adding a Start Session convenience action, prove the launch boundary:
-- confirm the installed Guest Agent execution account/session can start Minecraft
-  Education in the interactive Windows user session; a session-0/service launch
-  that creates no visible app is a blocker;
-- confirm actual Start-menu/AppID and process naming for the canonical Minecraft
-  Education package;
+- prove per-user self-registration (`--register-interactive-launcher`) after OOBE and confirm the Startup entry launches in the same Windows session as Explorer;
+- prove the SYSTEM Guest Agent can reach the helper only through loopback `127.0.0.1:47832`, and that the helper is not reachable from VMware/LAN interfaces;
+- confirm actual Start-menu/AppID and process naming for the canonical Minecraft Education package;
 - confirm repeated launch requests do not create duplicate Minecraft instances;
-- confirm Start/Resume, Restart and QA_READY Reset open Minecraft and the VM
-  console while first-time OOBE Start remains manual;
-- confirm protocol-v1 guests remain diagnosable but are routed to the existing
-  rebuild/reprovision path because protocol v2 is required for daily auto-launch;
-- confirm launch failure leaves the verified VM running and presents Launch
-  Minecraft retry rather than rolling back the VM.
+- confirm Start/Resume, Restart and QA_READY Reset open Minecraft and the VM console while first-time OOBE Start remains manual;
+- confirm protocol-v1 guests remain diagnosable but are routed to the existing rebuild/reprovision path because protocol v2 is required for daily auto-launch;
+- confirm launch failure leaves the verified VM running and presents Launch Minecraft retry rather than rolling back the VM.
 
 Do not introduce a generic remote shell, arbitrary executable launch endpoint,
-credential automation, or background launcher daemon. If interactive-session
-launch fails, fix that Windows-session boundary in the Guest Agent owner with the
-smallest explicit mechanism supported by observed target-machine evidence.
-
+credential automation, filesystem IPC/ACL layer, or background launcher daemon.
 ## Virtual Clients desktop orchestration continuation
 
 Window Layout and Screen Overlay now have one source owner chain:
