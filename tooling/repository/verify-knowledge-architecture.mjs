@@ -133,6 +133,65 @@ try {
       failures.push("Non-DOCUMENT resource must not declare role: " + resource.id);
     }
 
+    if (resource.class === "DOCUMENT") {
+      const expectedDomain =
+        resource.path === "docs/README.md"
+          ? "docs"
+          : resource.path.split("/")[1];
+
+      if (resource.domain !== expectedDomain) {
+        failures.push(
+          "DOCUMENT domain/path mismatch: " +
+            resource.id +
+            " metadata=" +
+            resource.domain +
+            " path-domain=" +
+            expectedDomain,
+        );
+      }
+
+      const expectedIdPrefix =
+        "document." + expectedDomain + ".";
+      if (!resource.id.startsWith(expectedIdPrefix)) {
+        failures.push(
+          "DOCUMENT id/domain mismatch: " +
+            resource.id +
+            " expected prefix " +
+            expectedIdPrefix,
+        );
+      }
+
+      const isRouter =
+        resource.path === "docs/README.md" ||
+        resource.path.endsWith("/README.md");
+
+      if (isRouter && resource.role !== "ROUTER") {
+        failures.push(
+          "Documentation README must use ROUTER role: " +
+            resource.path,
+        );
+      }
+      if (!isRouter && resource.role === "ROUTER") {
+        failures.push(
+          "Only documentation README files may use ROUTER role: " +
+            resource.path,
+        );
+      }
+
+      const expectedAuthority =
+        expectedDomain === "examples"
+          ? "REFERENCE"
+          : "CANONICAL";
+      if (resource.authority !== expectedAuthority) {
+        failures.push(
+          "DOCUMENT authority/domain mismatch: " +
+            resource.id +
+            " expected " +
+            expectedAuthority,
+        );
+      }
+    }
+
     byId.set(resource.id, resource);
   }
 
