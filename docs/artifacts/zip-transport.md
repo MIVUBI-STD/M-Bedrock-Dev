@@ -1,3 +1,12 @@
+---
+id: document.artifacts.zip-transport
+class: DOCUMENT
+domain: artifacts
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # ZIP Transport
 
 ZIP mechanics are isolated behind the archive safety policy.

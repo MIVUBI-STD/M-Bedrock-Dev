@@ -1,3 +1,12 @@
+---
+id: document.artifacts.leveldb
+class: DOCUMENT
+domain: artifacts
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Bedrock LevelDB Boundary
 
 Minecraft Bedrock stores world data in LevelDB rather than Java Edition's Anvil format. Microsoft world-package documentation shows the db/ directory containing binary table/log/manifest files.

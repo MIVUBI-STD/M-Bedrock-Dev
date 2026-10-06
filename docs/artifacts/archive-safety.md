@@ -1,3 +1,12 @@
+---
+id: document.artifacts.archive-safety
+class: DOCUMENT
+domain: artifacts
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Archive Safety
 
 User-supplied Bedrock archives are untrusted input.

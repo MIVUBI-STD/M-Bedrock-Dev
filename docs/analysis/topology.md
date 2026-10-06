@@ -1,3 +1,12 @@
+---
+id: document.analysis.topology
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Coordinate Context and Derived Topology
 
 Topology is derived analysis, not a core Bedrock primitive.

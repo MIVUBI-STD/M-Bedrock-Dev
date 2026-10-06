@@ -1,3 +1,12 @@
+---
+id: document.analysis.vital-gameplay-knowledge-closure
+class: DOCUMENT
+domain: analysis
+role: CONTRACT
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Vital Gameplay Knowledge Closure
 
 ## Purpose

@@ -1,3 +1,12 @@
+---
+id: document.analysis.user-input-translation-contract
+class: DOCUMENT
+domain: analysis
+role: CONTRACT
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # User Input Translation Contract
 
 ## Purpose

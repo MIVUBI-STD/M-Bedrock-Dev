@@ -1,3 +1,12 @@
+---
+id: document.examples.router
+class: DOCUMENT
+domain: examples
+role: ROUTER
+authority: REFERENCE
+lifecycle: ACTIVE
+---
+
 # Examples
 
 Non-canonical examples and reference outputs used to illustrate repository contracts.

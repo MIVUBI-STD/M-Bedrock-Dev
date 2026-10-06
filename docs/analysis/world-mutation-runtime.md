@@ -1,3 +1,12 @@
+---
+id: document.analysis.world-mutation-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Structure Loading and World Mutation Transactions
 
 ## Core problem

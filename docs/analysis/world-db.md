@@ -1,3 +1,12 @@
+---
+id: document.analysis.world-db
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # World Database Analysis
 
 Initial world-database analysis is intentionally conservative.

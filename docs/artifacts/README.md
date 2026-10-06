@@ -1,3 +1,12 @@
+---
+id: document.artifacts.router
+class: DOCUMENT
+domain: artifacts
+role: ROUTER
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Artifacts
 
 Canonical artifact/container/workspace policy.

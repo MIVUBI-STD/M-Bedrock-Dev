@@ -1,3 +1,12 @@
+---
+id: document.artifacts.nbt-and-mcstructure
+class: DOCUMENT
+domain: artifacts
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # NBT and mcstructure Boundary
 
 Bedrock `.mcstructure` is treated as a specialized binary artifact rather than generic ZIP content. Microsoft documents it as a structure file exported/imported through Structure Blocks, containing structure content that may include blocks and entities. citeturn490291search0turn490291search2

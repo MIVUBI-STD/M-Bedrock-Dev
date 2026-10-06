@@ -1,3 +1,12 @@
+---
+id: document.analysis.teleport-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Teleport, Dimension Transfer, and Spawn Safety
 
 ## Core problem

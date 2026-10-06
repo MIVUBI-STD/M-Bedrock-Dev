@@ -1,3 +1,12 @@
+---
+id: document.analysis.world-state-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # World Rules, Difficulty, Daylight, Weather, and Global State Isolation
 
 ## Core problem

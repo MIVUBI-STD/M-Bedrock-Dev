@@ -1,3 +1,12 @@
+---
+id: document.analysis.state-authority-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # State Authority and Data Consistency
 
 ## Goal

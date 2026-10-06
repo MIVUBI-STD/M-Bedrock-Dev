@@ -1,3 +1,12 @@
+---
+id: document.examples.defense-challenge-v1.1.1-audit-reference
+class: DOCUMENT
+domain: examples
+role: REFERENCE
+authority: REFERENCE
+lifecycle: ACTIVE
+---
+
 # Defense Challenge v1.1.1 Audit Reference
 
 Format/quality reference for gameplay-first selected-map audit.
