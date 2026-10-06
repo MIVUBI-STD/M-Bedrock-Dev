@@ -766,13 +766,19 @@ export function compileContextPack(
     ).sort(),
   };
 
+  const resourceSelectionTruncated =
+    (resources?.omitted ?? 0) > 0;
+  const sectionSelectionTruncated =
+    (sections?.omitted ?? 0) > 0;
   const optionalTruncated =
     semanticSelection.omitted > 0 ||
     semanticEdgeSelection.omitted > 0 ||
     nodeSelection.omitted > 0 ||
     invariantSelection.omitted > 0 ||
     unknownSelection.omitted > 0 ||
-    evidenceSelection.omitted > 0;
+    evidenceSelection.omitted > 0 ||
+    resourceSelectionTruncated ||
+    sectionSelectionTruncated;
   const semanticScopeExplicit =
     requestedSemanticIds.size > 0;
   const intentScopeExplicit =
@@ -1200,6 +1206,16 @@ export function compileContextPack(
       noExplicitIntentScope
         ? "No explicit intent subject/invariant scope was supplied; intent nodes are conservatively included within budget."
         : "Intent context uses only explicitly requested subjects/invariants and their directly referenced evidence.",
+      resourceSelectionTruncated
+        ? "Resource Context omitted " +
+          String(resources?.omitted ?? 0) +
+          " ranked resource(s); narrow Retrieval or raise resourceLimit."
+        : "Resource Context did not omit ranked resources.",
+      sectionSelectionTruncated
+        ? "Section Context omitted " +
+          String(sections?.omitted ?? 0) +
+          " ranked section(s); narrow Section Retrieval or raise sectionLimit."
+        : "Section Context did not omit ranked sections.",
       optionalTruncated
         ? complete
           ? "Context budget truncated only optional surrounding context; explicitly required scope remains complete."
