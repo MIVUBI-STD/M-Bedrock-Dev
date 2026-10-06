@@ -62,6 +62,12 @@ pub fn query_guest_status(ip: &str, token: &str, timeout: Duration) -> io::Resul
     let status: GuestStatus = serde_json::from_str(body.trim())
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
 
+    validate_guest_status(&status)?;
+
+    Ok(status)
+}
+
+fn validate_guest_status(status: &GuestStatus) -> io::Result<()> {
     if status.schema != GUEST_STATUS_SCHEMA {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
@@ -72,13 +78,46 @@ pub fn query_guest_status(ip: &str, token: &str, timeout: Duration) -> io::Resul
         ));
     }
 
-    Ok(status)
+    if let Some(identity) = status.machine_identity.as_deref() {
+        if identity.len() != 64 || !identity.chars().all(|character| character.is_ascii_hexdigit()) {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "guest Windows identity fingerprint is invalid",
+            ));
+        }
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{GuestStatus, GUEST_STATUS_SCHEMA};
+    use super::{validate_guest_status, GuestStatus, GUEST_STATUS_SCHEMA};
+    use std::io;
     use crate::profile::{MinecraftInstallType, MinecraftProfile};
+
+    #[test]
+    fn guest_identity_fingerprint_format_is_strict() {
+        let mut status = GuestStatus {
+            schema: GUEST_STATUS_SCHEMA,
+            agent_version: "0.1.0".into(),
+            minecraft: None,
+            machine_identity: Some("a".repeat(64)),
+        };
+        validate_guest_status(&status).unwrap();
+
+        status.machine_identity = Some("short".into());
+        assert_eq!(
+            validate_guest_status(&status).unwrap_err().kind(),
+            io::ErrorKind::InvalidData
+        );
+
+        status.machine_identity = Some("z".repeat(64));
+        assert_eq!(
+            validate_guest_status(&status).unwrap_err().kind(),
+            io::ErrorKind::InvalidData
+        );
+    }
 
     #[test]
     fn guest_status_round_trips() {
