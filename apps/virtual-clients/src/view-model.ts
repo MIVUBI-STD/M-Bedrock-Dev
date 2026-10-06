@@ -108,20 +108,23 @@ export function blockerLabel(value: string | null | undefined, reason?: string):
 
 export function primaryClientAction(
   actions: ClientLifecycleActions | undefined,
-  state: ClientStatus["state"],
+  client: ClientStatus,
 ): { kind: "open" | "start" | "start-setup" | "launch-minecraft"; label: string } | undefined {
   if (!actions) return undefined;
 
-  if (state === "RUNNING" && actions.open.allowed) {
+  if (client.state === "RUNNING" && client.minecraftRunning === false) {
+    return { kind: "launch-minecraft", label: "Launch Minecraft" };
+  }
+  if (client.state === "RUNNING" && actions.open.allowed) {
     return { kind: "open", label: "Open" };
   }
-  if ((state === "STOPPED" || state === "SUSPENDED") && actions.startSetup) {
+  if ((client.state === "STOPPED" || client.state === "SUSPENDED") && actions.startSetup) {
     return actions.startSetup.allowed ? { kind: "start-setup", label: "Start first-time setup" } : undefined;
   }
-  if (state === "SUSPENDED" && actions.start.allowed) {
+  if (client.state === "SUSPENDED" && actions.start.allowed) {
     return { kind: "start", label: "Resume" };
   }
-  if (state === "STOPPED" && actions.start.allowed) {
+  if (client.state === "STOPPED" && actions.start.allowed) {
     return { kind: "start", label: "Start" };
   }
 
