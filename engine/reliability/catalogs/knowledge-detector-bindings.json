@@ -155,6 +155,17 @@
       ]
     },
     {
+      "knowledgeId": "blockstate.vanilla-open-bit",
+      "consumer": "interactive-block-state-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/spatial/spatial-world-mutation.ts",
+        "engine/packages/orchestrator/src/inspection/interactive-block-state-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interactive-block-state-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "chunk-policy.continuous-lease-journal",
       "consumer": "chunk-lifecycle-analysis",
       "analyzerPaths": [
