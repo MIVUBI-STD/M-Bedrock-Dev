@@ -132,6 +132,61 @@ fn vm_identity_state(provider: &dyn Provider, client: ClientId) -> IdentityState
     )
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum LifecycleAction {
+    Restart,
+    SetReady,
+    Reset,
+    Reprovision,
+}
+
+fn validate_lifecycle_action(
+    client: ClientId,
+    action: LifecycleAction,
+    state: ClientState,
+    ready_snapshot: bool,
+) -> io::Result<()> {
+    if client.is_native() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "Native lifecycle is host-managed",
+        ));
+    }
+
+    let valid = match action {
+        LifecycleAction::Restart => state == ClientState::Running,
+        LifecycleAction::SetReady => state == ClientState::Stopped && !ready_snapshot,
+        LifecycleAction::Reset => {
+            matches!(
+                state,
+                ClientState::Stopped | ClientState::Suspended | ClientState::Running
+            ) && ready_snapshot
+        }
+        LifecycleAction::Reprovision => state == ClientState::Stopped,
+    };
+
+    if valid {
+        return Ok(());
+    }
+
+    let action_name = match action {
+        LifecycleAction::Restart => "restart",
+        LifecycleAction::SetReady => "set-ready",
+        LifecycleAction::Reset => "reset",
+        LifecycleAction::Reprovision => "reprovision",
+    };
+
+    Err(io::Error::new(
+        io::ErrorKind::InvalidInput,
+        format!(
+            "{} cannot {} from state {:?} with QA_READY={ready_snapshot}",
+            client.as_str(),
+            action_name,
+            state
+        ),
+    ))
+}
+
 fn restore_batch_state(
     provider: &dyn Provider,
     started: &[(ClientId, ClientState)],
@@ -787,6 +842,12 @@ impl VirtualClients {
                 "virtualization provider is unavailable",
             )
         })?;
+        validate_lifecycle_action(
+            client,
+            LifecycleAction::Reprovision,
+            provider.status(client)?,
+            provider.has_ready(client).unwrap_or(false),
+        )?;
 
         provider.reprovision(client)?;
         write_client_profile(client, &native.version)?;
@@ -1176,6 +1237,12 @@ impl VirtualClients {
             )
         })?;
         require_verified_vm_identity(provider.as_ref(), client)?;
+        validate_lifecycle_action(
+            client,
+            LifecycleAction::Restart,
+            provider.status(client)?,
+            provider.has_ready(client).unwrap_or(false),
+        )?;
         provider.restart(client)?;
         if let Err(error) =
             wait_for_guest_compatibility(provider.as_ref(), client, Duration::from_secs(90), true)
@@ -1216,6 +1283,12 @@ impl VirtualClients {
             )
         })?;
         require_verified_identity_provenance(provider.as_ref(), client)?;
+        validate_lifecycle_action(
+            client,
+            LifecycleAction::SetReady,
+            provider.status(client)?,
+            provider.has_ready(client)?,
+        )?;
         provider.set_ready(client)?;
         let working_sets = provider.host_working_sets_mb()?;
         let native_profile = native_minecraft_profile();
@@ -1246,6 +1319,12 @@ impl VirtualClients {
             )
         })?;
         require_verified_vm_identity(provider.as_ref(), client)?;
+        validate_lifecycle_action(
+            client,
+            LifecycleAction::Reset,
+            provider.status(client)?,
+            provider.has_ready(client)?,
+        )?;
         provider.reset(client)?;
         if let Err(error) =
             wait_for_guest_compatibility(provider.as_ref(), client, Duration::from_secs(90), true)
@@ -1300,7 +1379,7 @@ impl VirtualClients {
 mod tests {
     use super::{
         classify_identity_state, guest_probe_error_is_terminal, restore_batch_state,
-        vm_identity_state,
+        validate_lifecycle_action, vm_identity_state, LifecycleAction,
     };
     use crate::{
         client::{ClientId, ClientState, IdentityState},
@@ -1516,6 +1595,76 @@ mod tests {
             classify_identity_state(None, [Some("vm-b"), Some("vm-c")]),
             IdentityState::Unknown
         );
+    }
+
+    #[test]
+    fn lifecycle_matrix_rejects_illegal_transitions_without_provider_mutation() {
+        assert!(validate_lifecycle_action(
+            ClientId::Virtual01,
+            LifecycleAction::Restart,
+            ClientState::Running,
+            false,
+        )
+        .is_ok());
+        assert!(validate_lifecycle_action(
+            ClientId::Virtual01,
+            LifecycleAction::Restart,
+            ClientState::Stopped,
+            false,
+        )
+        .is_err());
+
+        assert!(validate_lifecycle_action(
+            ClientId::Virtual01,
+            LifecycleAction::SetReady,
+            ClientState::Stopped,
+            false,
+        )
+        .is_ok());
+        assert!(validate_lifecycle_action(
+            ClientId::Virtual01,
+            LifecycleAction::SetReady,
+            ClientState::Stopped,
+            true,
+        )
+        .is_err());
+        assert!(validate_lifecycle_action(
+            ClientId::Virtual01,
+            LifecycleAction::SetReady,
+            ClientState::Suspended,
+            false,
+        )
+        .is_err());
+
+        assert!(validate_lifecycle_action(
+            ClientId::Virtual01,
+            LifecycleAction::Reset,
+            ClientState::Running,
+            true,
+        )
+        .is_ok());
+        assert!(validate_lifecycle_action(
+            ClientId::Virtual01,
+            LifecycleAction::Reset,
+            ClientState::Stopped,
+            false,
+        )
+        .is_err());
+
+        assert!(validate_lifecycle_action(
+            ClientId::Virtual01,
+            LifecycleAction::Reprovision,
+            ClientState::Stopped,
+            true,
+        )
+        .is_ok());
+        assert!(validate_lifecycle_action(
+            ClientId::Virtual01,
+            LifecycleAction::Reprovision,
+            ClientState::Suspended,
+            true,
+        )
+        .is_err());
     }
 
     #[test]
