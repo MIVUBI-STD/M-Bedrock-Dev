@@ -14,23 +14,74 @@ const graphPath = "engine/schemas/knowledge-architecture/graph.v1.schema.json";
 const namingPath = "docs/system/canonical-naming.md";
 const authorityPath = "docs/system/authority-model.md";
 const architecturePath = "docs/system/architecture.md";
+const retrievalTypesPath = "engine/packages/analysis-planner/src/retrieval.ts";
+const documentMetadataPath = "tooling/repository/document-metadata.mjs";
 
-for (const path of [catalogPath, graphPath, namingPath, authorityPath, architecturePath]) {
+for (const path of [
+  catalogPath,
+  graphPath,
+  namingPath,
+  authorityPath,
+  architecturePath,
+  retrievalTypesPath,
+  documentMetadataPath,
+]) {
   if (!existsSync(path)) failures.push("Missing knowledge architecture owner: " + path);
 }
+
+const expectedClasses = [
+  "DOCUMENT",
+  "KNOWLEDGE",
+  "SOURCE",
+  "RELIABILITY",
+  "SCHEMA",
+  "EXAMPLE",
+];
+const expectedRoles = [
+  "ROUTER",
+  "WORKFLOW",
+  "CONTRACT",
+  "DOMAIN",
+  "ARCHITECTURE",
+  "GUIDE",
+];
+const expectedAuthorities = [
+  "CANONICAL",
+  "REFERENCE",
+  "HISTORICAL",
+  "DERIVED",
+];
+const expectedLifecycle = [
+  "ACTIVE",
+  "RETIRED",
+];
+const expectedGraphRelations = [
+  "ROUTES_TO",
+  "OWNS",
+  "IMPLEMENTS",
+  "USES",
+  "DEPENDS_ON",
+  "VALIDATES",
+  "RELATES_TO",
+  "DERIVED_FROM",
+];
 
 function sameSet(actual, expected) {
   return JSON.stringify([...actual].sort()) === JSON.stringify([...expected].sort());
 }
 
+function quotedVocabulary(text, pattern, label) {
+  const match = text.match(pattern);
+  if (!match) {
+    failures.push("Unable to read " + label + " vocabulary.");
+    return [];
+  }
+  return [...match[1].matchAll(/"([A-Z_]+)"/g)].map((item) => item[1]);
+}
+
 if (existsSync(catalogPath)) {
   const schema = JSON.parse(readFileSync(catalogPath, "utf8"));
   const resource = schema?.$defs?.resource?.properties ?? {};
-
-  const expectedClasses = ["DOCUMENT","KNOWLEDGE","SOURCE","RELIABILITY","SCHEMA","EXAMPLE"];
-  const expectedRoles = ["ROUTER","WORKFLOW","CONTRACT","DOMAIN","ARCHITECTURE","GUIDE"];
-  const expectedAuthorities = ["CANONICAL","REFERENCE","HISTORICAL","DERIVED"];
-  const expectedLifecycle = ["ACTIVE","RETIRED"];
 
   if (!sameSet(resource.class?.enum ?? [], expectedClasses)) {
     failures.push("Resource Catalog class vocabulary drift.");
@@ -80,18 +131,82 @@ if (existsSync(catalogPath)) {
 if (existsSync(graphPath)) {
   const schema = JSON.parse(readFileSync(graphPath, "utf8"));
   const actual = schema?.$defs?.edge?.properties?.type?.enum ?? [];
-  const expected = [
-    "ROUTES_TO",
-    "OWNS",
-    "IMPLEMENTS",
-    "USES",
-    "DEPENDS_ON",
-    "VALIDATES",
-    "RELATES_TO",
-    "DERIVED_FROM",
-  ];
-  if (!sameSet(actual, expected)) {
+  if (!sameSet(actual, expectedGraphRelations)) {
     failures.push("Graph relation vocabulary drift.");
+  }
+}
+
+if (existsSync(retrievalTypesPath)) {
+  const text = readFileSync(retrievalTypesPath, "utf8");
+  const sourceVocabularies = [
+    [
+      "CatalogResourceClass",
+      /export type CatalogResourceClass =([\s\S]*?);/,
+      expectedClasses,
+    ],
+    [
+      "DocumentRole",
+      /export type DocumentRole =([\s\S]*?);/,
+      expectedRoles,
+    ],
+    [
+      "ResourceAuthority",
+      /export type ResourceAuthority =([\s\S]*?);/,
+      expectedAuthorities,
+    ],
+    [
+      "ResourceLifecycle",
+      /export type ResourceLifecycle =([\s\S]*?);/,
+      expectedLifecycle,
+    ],
+    [
+      "GraphRelationType",
+      /export type GraphRelationType =([\s\S]*?);/,
+      expectedGraphRelations,
+    ],
+  ];
+
+  for (const [name, pattern, expected] of sourceVocabularies) {
+    const actual = quotedVocabulary(
+      text,
+      pattern,
+      "analysis-planner " + name,
+    );
+    if (!sameSet(actual, expected)) {
+      failures.push("Analysis-planner source vocabulary drift: " + name + ".");
+    }
+  }
+}
+
+if (existsSync(documentMetadataPath)) {
+  const text = readFileSync(documentMetadataPath, "utf8");
+  const metadataVocabularies = [
+    [
+      "Document Role",
+      /const DOCUMENT_ROLES = new Set\(\[([\s\S]*?)\]\);/,
+      expectedRoles,
+    ],
+    [
+      "Authority",
+      /const AUTHORITIES = new Set\(\[([\s\S]*?)\]\);/,
+      expectedAuthorities,
+    ],
+    [
+      "Lifecycle",
+      /const LIFECYCLE = new Set\(\[([\s\S]*?)\]\);/,
+      expectedLifecycle,
+    ],
+  ];
+
+  for (const [name, pattern, expected] of metadataVocabularies) {
+    const actual = quotedVocabulary(
+      text,
+      pattern,
+      "document metadata " + name,
+    );
+    if (!sameSet(actual, expected)) {
+      failures.push("Document metadata vocabulary drift: " + name + ".");
+    }
   }
 }
 

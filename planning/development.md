@@ -15,7 +15,10 @@ Current and future work that improves M-Bedrock-Dev itself.
 - validation consolidated into canonical proof/search/retest owners;
 - repair consolidated into transaction and planning owners;
 - analysis compatibility pointers removed after their content was absorbed;
-- repository/documentation/path/coverage verifiers aligned with the final structure.
+- repository/documentation/path/coverage verifiers aligned with the final structure;
+- repository knowledge access consolidated into one Router → Catalog → Graph → Retrieval → Context path;
+- Resource Catalog, Graph, source types, document metadata, and canonical vocabulary synchronized under one verification contract;
+- stale information-architecture migration work removed from operations planning after reconciliation.
 
 Canonical documentation domains:
 
