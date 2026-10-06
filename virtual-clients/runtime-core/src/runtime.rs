@@ -1636,6 +1636,12 @@ impl VirtualClients {
             };
             return Err(with_rollback_context(error, &failed));
         }
+        if let Err(error) = ensure_minecraft_running(provider.as_ref(), client) {
+            return Err(io::Error::new(
+                error.kind(),
+                format!("{} is running, but Minecraft Education could not be opened: {error}", client.as_str()),
+            ));
+        }
         let working_sets = provider.host_working_sets_mb()?;
         let native_profile = native_minecraft_profile();
         client_status(
@@ -1699,6 +1705,12 @@ impl VirtualClients {
                 Vec::new()
             };
             return Err(with_rollback_context(error, &failed));
+        }
+        if let Err(error) = ensure_minecraft_running(provider.as_ref(), client) {
+            return Err(io::Error::new(
+                error.kind(),
+                format!("{} is running, but Minecraft Education could not be opened: {error}", client.as_str()),
+            ));
         }
         let working_sets = provider.host_working_sets_mb()?;
         let native_profile = native_minecraft_profile();
