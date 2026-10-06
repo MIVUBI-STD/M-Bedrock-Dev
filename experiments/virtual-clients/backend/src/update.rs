@@ -9,6 +9,9 @@ use std::{
     time::Duration,
 };
 
+#[cfg(target_os = "windows")]
+use std::process::Command;
+
 use url::Url;
 
 use crate::{
@@ -45,7 +48,8 @@ struct UpdateManifest {
 
 #[derive(Debug, Clone, Deserialize)]
 struct PlatformManifest {
-    signature: String,
+    #[serde(rename = "authenticodeThumbprint")]
+    authenticode_thumbprint: String,
     url: String,
     sha256: String,
 }
@@ -78,7 +82,7 @@ pub struct StagedUpdate {
     pub platform: String,
     pub installer_path: String,
     pub sha256: String,
-    pub signature: String,
+    pub authenticode_thumbprint: String,
 }
 
 pub fn check_update() -> io::Result<UpdateCheck> {
@@ -191,6 +195,14 @@ pub fn stage_update() -> io::Result<StagedUpdate> {
     let final_path = version_root.join(installer_name);
     let temporary = final_path.with_extension("download");
 
+    let publisher_thumbprint = publisher_certificate_thumbprint()?;
+    if !publisher_thumbprint.eq_ignore_ascii_case(&platform.authenticode_thumbprint) {
+        return Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            "update manifest signer does not match the embedded publisher certificate",
+        ));
+    }
+
     download_to(&platform.url, &temporary, MAX_INSTALLER_BYTES)?;
     let actual = sha256_file(&temporary)?;
     if !actual.eq_ignore_ascii_case(&platform.sha256) {
@@ -204,6 +216,15 @@ pub fn stage_update() -> io::Result<StagedUpdate> {
         ));
     }
 
+    let actual_thumbprint = authenticode_thumbprint(&temporary)?;
+    if !actual_thumbprint.eq_ignore_ascii_case(publisher_thumbprint) {
+        let _ = fs::remove_file(&temporary);
+        return Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            "update installer Authenticode signer does not match the embedded publisher certificate",
+        ));
+    }
+
     if final_path.exists() {
         fs::remove_file(&final_path)?;
     }
@@ -214,7 +235,7 @@ pub fn stage_update() -> io::Result<StagedUpdate> {
         platform: current_platform().to_string(),
         installer_path: final_path.display().to_string(),
         sha256: actual,
-        signature: platform.signature.clone(),
+        authenticode_thumbprint: actual_thumbprint,
     };
     write_staged_update(&staged)?;
     Ok(staged)
@@ -272,6 +293,55 @@ fn fetch_bytes(url: &str, max_bytes: u64) -> io::Result<Vec<u8>> {
 fn download_to(url: &str, path: &Path, max_bytes: u64) -> io::Result<()> {
     let bytes = fetch_bytes(url, max_bytes)?;
     fs::write(path, bytes)
+}
+
+fn publisher_certificate_thumbprint() -> io::Result<&'static str> {
+    let value = option_env!("VIRTUAL_CLIENTS_PUBLISHER_CERT_THUMBPRINT").unwrap_or("");
+    if value.len() != 40 || !value.chars().all(|character| character.is_ascii_hexdigit()) {
+        return Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            "trusted publisher certificate is not configured in this build",
+        ));
+    }
+    Ok(value)
+}
+
+#[cfg(target_os = "windows")]
+fn authenticode_thumbprint(path: &Path) -> io::Result<String> {
+    let script = r#"$s=Get-AuthenticodeSignature -LiteralPath $args[0]; if ($s.Status -ne 'Valid' -or $null -eq $s.SignerCertificate) { [Console]::Error.Write([string]$s.Status); exit 41 }; [Console]::Out.Write($s.SignerCertificate.Thumbprint)"#;
+    let output = Command::new("powershell.exe")
+        .args(["-NoLogo", "-NoProfile", "-NonInteractive", "-Command", script])
+        .arg(path)
+        .output()?;
+
+    if !output.status.success() {
+        let detail = String::from_utf8_lossy(&output.stderr).trim().to_string();
+        return Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            format!("update installer Authenticode verification failed: {detail}"),
+        ));
+    }
+
+    let thumbprint = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if thumbprint.len() != 40
+        || !thumbprint
+            .chars()
+            .all(|character| character.is_ascii_hexdigit())
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "update installer signer thumbprint is invalid",
+        ));
+    }
+    Ok(thumbprint)
+}
+
+#[cfg(not(target_os = "windows"))]
+fn authenticode_thumbprint(_path: &Path) -> io::Result<String> {
+    Err(io::Error::new(
+        io::ErrorKind::Unsupported,
+        "Authenticode verification is available only on Windows",
+    ))
 }
 
 fn sha256_file(path: &Path) -> io::Result<String> {
@@ -362,10 +432,15 @@ fn validate_platform_manifest(
         ));
     }
 
-    if platform.signature.trim().is_empty() || platform.signature.len() > 16_384 {
+    if platform.authenticode_thumbprint.len() != 40
+        || !platform
+            .authenticode_thumbprint
+            .chars()
+            .all(|character| character.is_ascii_hexdigit())
+    {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
-            "update signature metadata is invalid",
+            "update Authenticode thumbprint metadata is invalid",
         ));
     }
 
@@ -560,7 +635,7 @@ mod tests {
     fn release_url_requires_exact_version_tag_boundary() {
         let policy = release_channel().unwrap();
         let valid = PlatformManifest {
-            signature: "signed".into(),
+            authenticode_thumbprint: "a".repeat(40),
             url: "https://github.com/MIVUBI-STD/M-Bedrock-Dev/releases/download/virtual-clients-v1.2.3/Virtual-Clients-1.2.3.exe".into(),
             sha256: "a".repeat(64),
         };

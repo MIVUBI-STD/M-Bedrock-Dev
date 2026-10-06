@@ -37,8 +37,8 @@ A trusted Windows release must eventually contain:
 
 ```text
 installer.exe
-installer.exe.sig
 latest.json
+signing-proof.json
 SHA256SUMS.txt
 build-provenance.json
 ```
@@ -48,7 +48,7 @@ Required proof:
 - exact source SHA;
 - exact semantic version;
 - Authenticode-valid installer;
-- Tauri updater signature;
+- Authenticode signer thumbprint pinned into the release backend;
 - SHA-256 checksums;
 - runtime-schema compatibility;
 - backend Windows acceptance;
@@ -88,10 +88,11 @@ Current backend distribution now includes:
 - read-only startup update check;
 - internal HTTPS transport using the operating-system trust store;
 - installer staging with SHA-256 verification;
+- trusted builds can pin a publisher certificate thumbprint and require matching Authenticode verification before staging;
 - staged-update metadata stored under Runtime data;
 - apply readiness requiring compatible runtime schema and all Virtual instances fully stopped.
 
-Runtime self-apply remains disabled until trusted installer signing and signature verification are accepted.
+Runtime self-apply remains disabled until trusted installer signing, Authenticode verification, and apply orchestration are accepted.
 
 ## Update staging flow
 

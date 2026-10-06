@@ -120,6 +120,8 @@ Windows distribution acceptance requires:
 - update check performs no install or runtime mutation;
 - staged installer URL matches the configured GitHub release channel;
 - staged installer SHA-256 matches manifest metadata;
+- trusted build embeds the expected publisher certificate thumbprint;
+- staged installer Authenticode status is Valid and signer thumbprint matches both embedded publisher identity and manifest metadata;
 - update apply remains unavailable while any Virtual is RUNNING or SUSPENDED;
 - update staging never changes Native/Base/Virtual Minecraft lineage;
 - self-update remains disabled until trusted signature verification is implemented and accepted.
