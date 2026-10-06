@@ -5,4 +5,4 @@ pub mod provider;
 pub mod resources;
 pub mod runtime;
 
-pub use runtime::RuntimeLab;
+pub use runtime::VirtualClients;
