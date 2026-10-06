@@ -305,9 +305,15 @@ impl VirtualClients {
         }
 
         let working_sets = provider.host_working_sets_mb()?;
+        let native_profile = native_minecraft_profile();
         let mut result = Vec::with_capacity(3);
         for client in ClientId::VIRTUAL {
-            result.push(client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)?);
+            result.push(client_status(
+                provider.as_ref(),
+                &working_sets,
+                native_profile.as_ref(),
+                client,
+            )?);
         }
         Ok(result)
     }
@@ -333,7 +339,13 @@ impl VirtualClients {
 
         provider.reprovision(client)?;
         let working_sets = provider.host_working_sets_mb()?;
-        client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)
+        let native_profile = native_minecraft_profile();
+        client_status(
+            provider.as_ref(),
+            &working_sets,
+            native_profile.as_ref(),
+            client,
+        )
     }
 
     pub fn status(&self) -> io::Result<RuntimeStatus> {
@@ -359,7 +371,12 @@ impl VirtualClients {
         if let Some(provider) = provider.as_ref() {
             let working_sets = provider.host_working_sets_mb()?;
             for client in ClientId::VIRTUAL {
-                clients.push(client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)?);
+                clients.push(client_status(
+                    provider.as_ref(),
+                    &working_sets,
+                    native_profile.as_ref(),
+                    client,
+                )?);
             }
         } else {
             for client in ClientId::VIRTUAL {
@@ -474,6 +491,7 @@ impl VirtualClients {
         })?;
 
         let targets: Vec<ClientId> = ClientId::VIRTUAL.into_iter().take(count).collect();
+        let native_profile = native_minecraft_profile();
         let mut result = Vec::with_capacity(count);
         let mut started_by_batch: Vec<(ClientId, ClientState)> = Vec::new();
 
@@ -531,8 +549,29 @@ impl VirtualClients {
                 return Err(with_rollback_context(error, &rollback_failed));
             }
 
+            if let Err(error) =
+                wait_for_guest_compatibility(provider.as_ref(), client, Duration::from_secs(90))
+            {
+                if original_state == ClientState::Running {
+                    return Err(error);
+                }
+
+                let mut rollback_failed = Vec::new();
+                if provider.stop(client).is_err() {
+                    rollback_failed.push(client.as_str());
+                }
+                started_by_batch.retain(|(started, _)| *started != client);
+                rollback_failed.extend(restore_batch_state(provider.as_ref(), &started_by_batch));
+                return Err(with_rollback_context(error, &rollback_failed));
+            }
+
             let working_sets = provider.host_working_sets_mb()?;
-            result.push(client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)?);
+            result.push(client_status(
+                provider.as_ref(),
+                &working_sets,
+                native_profile.as_ref(),
+                client,
+            )?);
 
             if index + 1 < count {
                 let delay = start_delay_secs(current_host_pressure().level);
@@ -547,7 +586,7 @@ impl VirtualClients {
         if client.is_some_and(ClientId::is_native) {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "Native cannot be suspended by Runtime Lab",
+                "Native cannot be suspended by Virtual Clients",
             ));
         }
 
@@ -589,8 +628,14 @@ impl VirtualClients {
         }
 
         let working_sets = provider.host_working_sets_mb()?;
+        let native_profile = native_minecraft_profile();
         for client in targets {
-            result.push(client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)?);
+            result.push(client_status(
+                provider.as_ref(),
+                &working_sets,
+                native_profile.as_ref(),
+                client,
+            )?);
         }
         Ok(result)
     }
@@ -625,8 +670,14 @@ impl VirtualClients {
         }
 
         let working_sets = provider.host_working_sets_mb()?;
+        let native_profile = native_minecraft_profile();
         for client in targets {
-            result.push(client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)?);
+            result.push(client_status(
+                provider.as_ref(),
+                &working_sets,
+                native_profile.as_ref(),
+                client,
+            )?);
         }
         Ok(result)
     }
@@ -649,8 +700,24 @@ impl VirtualClients {
             )
         })?;
         provider.restart(client)?;
+        if let Err(error) =
+            wait_for_guest_compatibility(provider.as_ref(), client, Duration::from_secs(90))
+        {
+            let failed = if provider.stop(client).is_err() {
+                vec![client.as_str()]
+            } else {
+                Vec::new()
+            };
+            return Err(with_rollback_context(error, &failed));
+        }
         let working_sets = provider.host_working_sets_mb()?;
-        client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)
+        let native_profile = native_minecraft_profile();
+        client_status(
+            provider.as_ref(),
+            &working_sets,
+            native_profile.as_ref(),
+            client,
+        )
     }
 
     pub fn set_ready(&self, client: ClientId) -> io::Result<ClientStatus> {
@@ -670,7 +737,13 @@ impl VirtualClients {
         })?;
         provider.set_ready(client)?;
         let working_sets = provider.host_working_sets_mb()?;
-        client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)
+        let native_profile = native_minecraft_profile();
+        client_status(
+            provider.as_ref(),
+            &working_sets,
+            native_profile.as_ref(),
+            client,
+        )
     }
 
     pub fn reset(&self, client: ClientId) -> io::Result<ClientStatus> {
@@ -691,8 +764,24 @@ impl VirtualClients {
             )
         })?;
         provider.reset(client)?;
+        if let Err(error) =
+            wait_for_guest_compatibility(provider.as_ref(), client, Duration::from_secs(90))
+        {
+            let failed = if provider.stop(client).is_err() {
+                vec![client.as_str()]
+            } else {
+                Vec::new()
+            };
+            return Err(with_rollback_context(error, &failed));
+        }
         let working_sets = provider.host_working_sets_mb()?;
-        client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)
+        let native_profile = native_minecraft_profile();
+        client_status(
+            provider.as_ref(),
+            &working_sets,
+            native_profile.as_ref(),
+            client,
+        )
     }
 
     pub fn open(&self, client: ClientId) -> io::Result<ClientStatus> {
@@ -711,6 +800,12 @@ impl VirtualClients {
         })?;
         provider.open(client)?;
         let working_sets = provider.host_working_sets_mb()?;
-        client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)
+        let native_profile = native_minecraft_profile();
+        client_status(
+            provider.as_ref(),
+            &working_sets,
+            native_profile.as_ref(),
+            client,
+        )
     }
 }
