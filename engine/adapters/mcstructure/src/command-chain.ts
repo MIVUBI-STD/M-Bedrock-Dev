@@ -101,3 +101,47 @@ export function analyzeCommandBlockChains(
     ),
   };
 }
+
+export interface CommandBlockRuntimeAssessment {
+  flatIndex: number;
+  mode: "impulse" | "chain" | "repeating" | "unknown";
+  activation: "always-active" | "redstone-required" | "unresolved";
+  executeOnFirstTick?: boolean;
+  tickDelay?: number;
+  conditional: boolean;
+  timingStatus: "explicit" | "partial";
+}
+
+export function analyzeCommandBlockRuntime(
+  blocks: readonly EmbeddedCommandBlock[],
+): readonly CommandBlockRuntimeAssessment[] {
+  return blocks.map((block) => {
+    const mode =
+      block.paletteName === "minecraft:command_block"
+        ? "impulse" as const
+        : block.paletteName === "minecraft:chain_command_block"
+          ? "chain" as const
+          : block.paletteName === "minecraft:repeating_command_block"
+            ? "repeating" as const
+            : "unknown" as const;
+    return {
+      flatIndex: block.flatIndex,
+      mode,
+      activation:
+        block.auto === true
+          ? "always-active" as const
+          : block.auto === false
+            ? "redstone-required" as const
+            : "unresolved" as const,
+      ...(block.executeOnFirstTick === undefined ? {} : { executeOnFirstTick: block.executeOnFirstTick }),
+      ...(block.tickDelay === undefined ? {} : { tickDelay: block.tickDelay }),
+      conditional: block.conditional === true,
+      timingStatus:
+        mode === "repeating" &&
+        block.executeOnFirstTick !== undefined &&
+        block.tickDelay !== undefined
+          ? "explicit" as const
+          : "partial" as const,
+    };
+  }).sort((a, b) => a.flatIndex - b.flatIndex);
+}

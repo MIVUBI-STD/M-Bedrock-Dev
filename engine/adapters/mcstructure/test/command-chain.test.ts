@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { analyzeCommandBlockChains } from "../src/command-chain.js";
+import { analyzeCommandBlockChains, analyzeCommandBlockRuntime } from "../src/command-chain.js";
 
 describe("command block chain topology", () => {
   it("connects command blocks according to facing direction", () => {
