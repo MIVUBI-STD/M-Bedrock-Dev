@@ -131,6 +131,15 @@
     }
   }
 
+  async function openSetupTools() {
+    error = undefined;
+    try {
+      await desktop.openSetupTools();
+    } catch (value) {
+      error = presentRuntimeError(value);
+    }
+  }
+
   async function arrangeWindows() {
     busy = "arrange";
     error = undefined;
@@ -244,6 +253,7 @@
           onOpenClients={() => selectPage("clients")}
           onSupport={() => selectPage("support")}
           onOpenBaseLocation={openBaseLocation}
+          onOpenSetupTools={openSetupTools}
         />
       {:else if page === "clients"}
         <ClientsSurface

@@ -21,7 +21,7 @@ pub fn open_base_location() -> io::Result<()> {
 }
 
 #[cfg(target_os = "windows")]
-fn open_folder(path: &Path) -> io::Result<()> {
+pub pub fn open_folder(path: &Path) -> io::Result<()> {
     Command::new("explorer.exe").arg(path).spawn()?;
     Ok(())
 }
@@ -33,7 +33,7 @@ fn open_folder(path: &Path) -> io::Result<()> {
 }
 
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]
-fn open_folder(_path: &Path) -> io::Result<()> {
+pub fn open_folder(_path: &Path) -> io::Result<()> {
     Err(io::Error::new(
         io::ErrorKind::Unsupported,
         "opening the Base location is unsupported on this platform",

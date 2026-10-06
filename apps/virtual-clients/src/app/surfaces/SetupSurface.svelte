@@ -11,6 +11,7 @@
   export let onOpenClients: () => void;
   export let onSupport: () => void;
   export let onOpenBaseLocation: () => void | Promise<void>;
+  export let onOpenSetupTools: () => void | Promise<void>;
 
   $: action = snapshot.doctor.nextSetupAction;
   $: experience = setupExperience(action);
@@ -91,6 +92,7 @@
     {#if basePreflight.baseExpectedPath}
       <div class="preflight-tools">
         <button class="secondary" on:click={onOpenBaseLocation}>Open Base location</button>
+        <button class="secondary" on:click={onOpenSetupTools}>Open setup tools</button>
       </div>
       <details class="preflight-path">
         <summary>Expected Base location</summary>
