@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "M-Bedrock Virtual Clients",
+  "version": "0.1.0",
+  "identifier": "com.mivubi.mbedrock.virtualclients",
+  "build": {
+    "beforeDevCommand": "npm run dev:frontend",
+    "devUrl": "http://127.0.0.1:1421",
+    "beforeBuildCommand": "npm run build:frontend",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [{
+      "label": "main",
+      "title": "M-Bedrock Virtual Clients",
+      "width": 1180,
+      "height": 760,
+      "minWidth": 920,
+      "minHeight": 620,
+      "resizable": true,
+      "fullscreen": false
+    }],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' ipc: http://ipc.localhost; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "category": "Utility",
+    "publisher": "MIVUBI-STD",
+    "shortDescription": "Desktop manager for multiple Minecraft Education virtual clients.",
+    "targets": ["nsis"],
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.ico"],
+    "externalBin": ["binaries/virtual-clients", "binaries/virtual-guest-agent"],
+    "resources": {
+      "../../../experiments/virtual-clients/guest/windows/": "guest/windows/",
+      "../../../experiments/virtual-clients/acceptance/windows/": "acceptance/windows/",
+      "../../../experiments/virtual-clients/distribution/release-channel.json": "distribution/release-channel.json"
+    },
+    "windows": {
+      "allowDowngrades": false,
+      "webviewInstallMode": { "type": "downloadBootstrapper", "silent": true },
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["English"],
+        "displayLanguageSelector": false,
+        "installerIcon": "icons/icon.ico"
+      }
+    }
+  }
+}

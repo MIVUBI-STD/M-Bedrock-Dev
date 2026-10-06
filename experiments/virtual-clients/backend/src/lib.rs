@@ -1,6 +1,5 @@
 #![forbid(unsafe_code)]
 
-mod bridge;
 mod client;
 mod command;
 mod contract;
@@ -20,10 +19,6 @@ mod schema;
 mod support;
 mod update;
 
-pub use bridge::{
-    handle_bridge_line, BridgeRequest, BridgeResponse, BRIDGE_MAX_MESSAGE_BYTES,
-    BRIDGE_PROTOCOL_SCHEMA,
-};
 pub use client::{
     ActionAvailability, ClientId, ClientLifecycleActions, ClientState, ClientStatus,
     DestructiveConfirmation, IdentityState, LifecycleBlocker,

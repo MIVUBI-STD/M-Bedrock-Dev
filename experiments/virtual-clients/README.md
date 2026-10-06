@@ -219,7 +219,7 @@ reset <Virtual-01|Virtual-02|Virtual-03>
 reprovision <Virtual-01|Virtual-02|Virtual-03> --destroy-account-state
 ```
 
-Frontend runtime controls are implemented as a thin projection of the Rust public contract. On Windows, `virtual-clients-app.exe` hosts the packaged UI on a randomized loopback-only session, injects `window.virtualClients.invoke`, and forwards requests through `virtual-clients-bridge.exe`. Lifecycle/setup/resource authority remains in the Rust backend.
+Frontend runtime controls are implemented as a thin Svelte projection inside a Tauri 2 desktop application. Typed Tauri commands call the existing Rust public command boundary directly; there is no browser HTTP bridge or second runtime authority. Desktop-native window arrangement belongs to the Tauri desktop engine, while lifecycle/setup/resource authority remains in this Rust backend.
 
 
 ## Acceptance evidence

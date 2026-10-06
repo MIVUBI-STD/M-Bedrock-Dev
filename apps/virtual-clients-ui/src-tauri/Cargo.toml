@@ -1,0 +1,21 @@
+[package]
+name = "m-bedrock-virtual-clients"
+version = "0.1.0"
+description = "M-Bedrock Virtual Clients desktop manager"
+authors = ["MIVUBI-STD"]
+edition = "2021"
+rust-version = "1.98"
+publish = false
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2", features = [] }
+virtual-clients-core = { package = "m-bedrock-virtual-clients-core", path = "../../../experiments/virtual-clients/backend" }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

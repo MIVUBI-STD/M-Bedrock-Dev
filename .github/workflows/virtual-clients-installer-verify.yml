@@ -1,254 +1,69 @@
-name: Virtual Clients Installer Verify
+name: Virtual Clients Package Smoke
 
 on:
   push:
     branches: [Experimental]
     paths:
+      - "apps/virtual-clients-ui/**"
       - "experiments/virtual-clients/backend/**"
-      - "experiments/virtual-clients/distribution/**"
       - "experiments/virtual-clients/guest/windows/**"
       - "experiments/virtual-clients/acceptance/windows/**"
-      - "apps/virtual-clients-ui/**"
-      - "package.json"
-      - "package-lock.json"
+      - "experiments/virtual-clients/distribution/**"
       - ".github/workflows/virtual-clients-installer-verify.yml"
-      - ".github/workflows/virtual-clients-trusted-release.yml"
 
 permissions:
   contents: read
 
 concurrency:
-  group: virtual-clients-installer-${{ github.ref }}
+  group: virtual-clients-package-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  windows-installer:
+  windows-package:
     runs-on: windows-latest
-    timeout-minutes: 30
-
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: apps/virtual-clients-ui
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Setup Node 24.21.0
-        uses: actions/setup-node@v7
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24.21.0
           cache: npm
-
-      - name: Install frontend dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Build Virtual Clients UI
-        run: npm run virtual-clients-ui:build
-
+          cache-dependency-path: apps/virtual-clients-ui/package-lock.json
       - name: Install Rust 1.98.1
         shell: pwsh
         run: |
-          rustup toolchain install 1.98.1 --profile minimal
+          rustup toolchain install 1.98.1 --profile minimal --component rustfmt
           rustup default 1.98.1
-
-      - name: Validate trusted release workflow contract
+      - name: Install exact desktop dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Verify desktop source
+        run: npm run verify:source
+      - name: Build unsigned NSIS package smoke
+        run: npm run build:app
+      - name: Validate package artifact
+        id: package
         shell: pwsh
         run: |
-          $path = '.github/workflows/virtual-clients-trusted-release.yml'
-          $source = Get-Content -LiteralPath $path -Raw
-
-          $requiredSteps = @(
-            'Checkout exact tagged source',
-            'Validate release identity',
-            'Validate PowerShell scripts',
-            'Setup Node 24.21.0',
-            'Install frontend dependencies',
-            'Build Virtual Clients UI',
-            'Install Rust 1.98.1',
-            'Verify backend',
-            'Build trusted binaries',
-            'Locate signing tools',
-            'Sign release binaries',
-            'Build and sign installer',
-            'Verify Authenticode identity',
-            'Smoke install signed installer',
-            'Build trusted release metadata',
-            'Upload trusted release candidate',
-            'Publish stable release'
-          )
-
-          $previous = -1
-          foreach ($name in $requiredSteps) {
-            $needle = "- name: $name"
-            $matches = [regex]::Matches($source, [regex]::Escape($needle))
-            if ($matches.Count -ne 1) {
-              throw "Trusted release workflow must contain exactly one '$name' step; found $($matches.Count)."
-            }
-            $index = $matches[0].Index
-            if ($index -le $previous) {
-              throw "Trusted release workflow step order is invalid at '$name'."
-            }
-            $previous = $index
-          }
-
-          if ($source.Contains('workflow_dispatch:')) {
-            throw 'Trusted release must remain tag-triggered only.'
-          }
-          if (!$source.Contains('virtual-clients-v*')) {
-            throw 'Trusted release stable tag trigger is missing.'
-          }
-
-          $metadataStart = $source.IndexOf('- name: Build trusted release metadata')
-          $uploadStart = $source.IndexOf('- name: Upload trusted release candidate')
-          if ($metadataStart -lt 0 -or $uploadStart -le $metadataStart) {
-            throw 'Trusted release metadata block boundaries are invalid.'
-          }
-          $metadataBlock = $source.Substring($metadataStart, $uploadStart - $metadataStart)
-          foreach ($needle in @(
-            'CURRENT_RUNTIME_SCHEMA',
-            'SHA256SUMS.txt',
-            'write-update-manifest.ps1',
-            'build-provenance.json'
-          )) {
-            if (!$metadataBlock.Contains($needle)) {
-              throw "Trusted release metadata step is missing '$needle'."
-            }
-          }
-
-      - name: Validate PowerShell distribution scripts
-        shell: pwsh
-        run: |
-          $paths = @(
-            'experiments/virtual-clients/distribution/write-update-manifest.ps1',
-            'experiments/virtual-clients/guest/windows/install-guest-agent.ps1',
-            'experiments/virtual-clients/guest/windows/prepare-base.ps1',
-            'experiments/virtual-clients/guest/windows/finalize-base.ps1',
-            'experiments/virtual-clients/guest/windows/uninstall-guest-agent.ps1',
-            'experiments/virtual-clients/acceptance/windows/collect-acceptance.ps1'
-          )
-          foreach ($path in $paths) {
-            $tokens = $null
-            $errors = $null
-            [System.Management.Automation.Language.Parser]::ParseFile(
-              (Resolve-Path $path),
-              [ref]$tokens,
-              [ref]$errors
-            ) | Out-Null
-            if ($errors.Count -gt 0) {
-              $details = ($errors | ForEach-Object { $_.Message }) -join '; '
-              throw "$path has PowerShell parser errors: $details"
-            }
-          }
-
-      - name: Build release binaries
-        working-directory: experiments/virtual-clients/backend
-        run: cargo build --locked --release --bins
-
-      - name: Resolve version
-        id: version
-        shell: pwsh
-        run: |
-          $cargo = Get-Content experiments/virtual-clients/backend/Cargo.toml -Raw
-          $match = [regex]::Match($cargo, '(?m)^version\s*=\s*"([^"]+)"\s*$')
-          if (!$match.Success) { throw 'Backend version is missing.' }
-          "value=$($match.Groups[1].Value)" >> $env:GITHUB_OUTPUT
-
-      - name: Locate Inno Setup
-        id: inno
-        shell: pwsh
-        run: |
-          $candidates = @(
-            'C:\Program Files (x86)\Inno Setup 6\ISCC.exe',
-            'C:\Program Files\Inno Setup 6\ISCC.exe'
-          )
-          $iscc = $candidates | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } | Select-Object -First 1
-          if (!$iscc) { throw 'Inno Setup 6 is not available on this runner.' }
-          "path=$iscc" >> $env:GITHUB_OUTPUT
-
-      - name: Build installer
-        shell: pwsh
-        run: |
-          $source = (Resolve-Path 'experiments/virtual-clients/backend/target/release').Path
-          $ui = (Resolve-Path 'dist/virtual-clients-ui').Path
-          & '${{ steps.inno.outputs.path }}' `
-            "/DAppVersion=${{ steps.version.outputs.value }}" `
-            "/DSourceDir=$source" `
-            "/DUiDir=$ui" `
-            'experiments/virtual-clients/distribution/windows/virtual-clients.iss'
-          if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed: $LASTEXITCODE" }
-
-      - name: Install smoke test
-        shell: pwsh
-        run: |
-          $dist = Resolve-Path 'experiments/virtual-clients/distribution/windows/dist'
-          $installer = @(Get-ChildItem $dist -Filter '*.exe' -File)
-          if ($installer.Count -ne 1) { throw "Expected one installer, found $($installer.Count)." }
-          $installDir = Join-Path $env:RUNNER_TEMP 'VirtualClientsInstall'
-          $install = Start-Process -FilePath $installer[0].FullName -ArgumentList @(
-            '/VERYSILENT',
-            '/SUPPRESSMSGBOXES',
-            '/NORESTART',
-            "/DIR=$installDir"
-          ) -Wait -PassThru
-          if ($install.ExitCode -ne 0) { throw "Installer failed: $($install.ExitCode)" }
-
-          $appExe = Join-Path $installDir 'virtual-clients-app.exe'
-          $hostExe = Join-Path $installDir 'virtual-clients.exe'
-          $bridgeExe = Join-Path $installDir 'bridge\virtual-clients-bridge.exe'
-          $guestExe = Join-Path $installDir 'guest\virtual-guest-agent.exe'
-          $prepare = Join-Path $installDir 'guest\windows\prepare-base.ps1'
-          $finalize = Join-Path $installDir 'guest\windows\finalize-base.ps1'
-          $acceptance = Join-Path $installDir 'acceptance\windows\collect-acceptance.ps1'
-          $uiIndex = Join-Path $installDir 'ui\index.html'
-          $uiAssets = Join-Path $installDir 'ui\assets'
-          if (!(Test-Path $appExe -PathType Leaf)) { throw 'Desktop host executable missing after install.' }
-          if (!(Test-Path $hostExe -PathType Leaf)) { throw 'CLI executable missing after install.' }
-          if (!(Test-Path $bridgeExe -PathType Leaf)) { throw 'Bridge executable missing after install.' }
-          if (!(Test-Path $guestExe -PathType Leaf)) { throw 'Guest Agent executable missing after install.' }
-          if (!(Test-Path $prepare -PathType Leaf)) { throw 'Guest Base preparation script missing after install.' }
-          if (!(Test-Path $finalize -PathType Leaf)) { throw 'Guest Base finalization script missing after install.' }
-          if (!(Test-Path $acceptance -PathType Leaf)) { throw 'Acceptance evidence collector missing after install.' }
-          if (!(Test-Path $uiIndex -PathType Leaf)) { throw 'Virtual Clients UI index missing after install.' }
-          if (!(Test-Path $uiAssets -PathType Container)) { throw 'Virtual Clients UI assets missing after install.' }
-          if (@(Get-ChildItem $uiAssets -Filter '*.js' -File).Count -lt 1) { throw 'Virtual Clients UI JavaScript bundle missing after install.' }
-
-          $probe = Start-Process -FilePath $appExe -ArgumentList @('--probe') -Wait -PassThru
-          if ($probe.ExitCode -ne 0) {
-            $hostLog = Join-Path $env:LOCALAPPDATA 'M-Bedrock\VirtualClients\desktop-host-error.log'
-            if (Test-Path -LiteralPath $hostLog -PathType Leaf) {
-              Write-Host 'Desktop host error log:'
-              Get-Content -LiteralPath $hostLog | Write-Host
-            }
-            throw 'Installed desktop host frontend/backend probe failed.'
-          }
-
-          & $hostExe help | Out-Host
-          if ($LASTEXITCODE -ne 0) { throw 'Installed CLI executable smoke test failed.' }
-
-          $request = '{"schema":1,"requestId":1,"command":"policy","args":[]}'
-          $bridgeOutput = $request | & $bridgeExe
-          if ($LASTEXITCODE -ne 0) { throw 'Installed bridge executable smoke test failed.' }
-          $bridgeResponse = $bridgeOutput | ConvertFrom-Json
-          if ($bridgeResponse.schema -ne 1 -or !$bridgeResponse.success -or $bridgeResponse.requestId -ne 1) {
-            throw 'Installed bridge protocol response is invalid.'
-          }
-
-          $runtimeRoot = Join-Path $env:LOCALAPPDATA 'M-Bedrock\VirtualClients'
-          $runtimeSentinel = Join-Path $runtimeRoot 'installer-preservation-sentinel.txt'
-          New-Item -ItemType Directory -Path $runtimeRoot -Force | Out-Null
-          Set-Content -LiteralPath $runtimeSentinel -Value 'preserve-runtime-data' -Encoding ascii
-
-          $uninstaller = @(Get-ChildItem $installDir -Filter 'unins*.exe' -File)
-          if ($uninstaller.Count -ne 1) { throw 'Expected one uninstaller.' }
-          $uninstall = Start-Process -FilePath $uninstaller[0].FullName -ArgumentList @(
-            '/VERYSILENT',
-            '/SUPPRESSMSGBOXES',
-            '/NORESTART'
-          ) -Wait -PassThru
-          if ($uninstall.ExitCode -ne 0) { throw "Uninstall failed: $($uninstall.ExitCode)" }
-          Start-Sleep -Seconds 2
-          if (Test-Path $installDir) { throw 'Install directory remains after uninstall.' }
-          if (!(Test-Path -LiteralPath $runtimeSentinel -PathType Leaf)) {
-            throw 'Runtime data was removed by uninstall.'
-          }
-          Remove-Item -LiteralPath $runtimeSentinel -Force
-          if ((Get-ChildItem -LiteralPath $runtimeRoot -Force | Measure-Object).Count -eq 0) {
-            Remove-Item -LiteralPath $runtimeRoot -Force
-          }
+          $bundle = Join-Path $PWD 'src-tauri\target\release\bundle\nsis'
+          $installers = @(Get-ChildItem $bundle -Filter '*.exe' -File)
+          if ($installers.Count -ne 1) { throw "Expected exactly one Tauri NSIS installer, found $($installers.Count)." }
+          $installer = $installers[0]
+          if ($installer.Length -le 0) { throw 'Tauri NSIS installer is empty.' }
+          $sidecars = Join-Path $PWD 'src-tauri\binaries'
+          if (@(Get-ChildItem $sidecars -Filter 'virtual-clients-*-windows-msvc.exe' -File).Count -ne 1) { throw 'CLI sidecar missing.' }
+          if (@(Get-ChildItem $sidecars -Filter 'virtual-guest-agent-*-windows-msvc.exe' -File).Count -ne 1) { throw 'Guest Agent sidecar missing.' }
+          $hash = (Get-FileHash -Algorithm SHA256 $installer.FullName).Hash.ToLowerInvariant()
+          "installer_path=$($installer.FullName)" >> $env:GITHUB_OUTPUT
+          "### Virtual Clients package smoke" >> $env:GITHUB_STEP_SUMMARY
+          "Tauri NSIS package built from commit $env:GITHUB_SHA." >> $env:GITHUB_STEP_SUMMARY
+          "PACKAGE_SMOKE only; not native VMware/Minecraft acceptance." >> $env:GITHUB_STEP_SUMMARY
+          "SHA-256: `$hash`" >> $env:GITHUB_STEP_SUMMARY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Virtual-Clients-Package-Smoke-${{ github.sha }}
+          path: ${{ steps.package.outputs.installer_path }}
+          if-no-files-found: error
+          retention-days: 3

@@ -39,11 +39,12 @@
     "bug-report-html": "tsx tooling/bug-report-documents/render.ts",
     "verify:audit-entrypoint": "node tooling/repository/verify-selected-map-audit-entrypoint.mjs",
     "verify:knowledge-bindings": "node tooling/repository/verify-knowledge-detector-bindings.mjs",
-    "virtual-clients-ui:dev": "vite --config apps/virtual-clients-ui/vite.config.mjs",
-    "virtual-clients-ui:build": "vite build --config apps/virtual-clients-ui/vite.config.mjs",
-    "virtual-clients-ui:preview": "vite preview --config apps/virtual-clients-ui/vite.config.mjs",
+    "virtual-clients-ui:dev": "npm --prefix apps/virtual-clients-ui run dev:app",
+    "virtual-clients-ui:build": "npm --prefix apps/virtual-clients-ui run build:frontend",
+    "virtual-clients-ui:preview": "npm --prefix apps/virtual-clients-ui run preview:frontend",
     "virtual-clients-ui:test": "vitest run apps/virtual-clients-ui/test",
-    "virtual-clients-ui:typecheck": "tsc -p apps/virtual-clients-ui/tsconfig.json"
+    "virtual-clients-ui:typecheck": "npm --prefix apps/virtual-clients-ui run typecheck",
+    "virtual-clients-ui:app": "npm --prefix apps/virtual-clients-ui run build:app"
   },
   "dependencies": {
     "@8crafter/leveldb-zlib": "1.6.0",

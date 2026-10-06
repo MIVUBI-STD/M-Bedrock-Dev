@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { backend, desktop, BackendBridgeError } from "./bridge.js";
+  import { backend, desktop, BackendBridgeError } from "./app/bridge/virtualClientsApi.js";
   import type {
     ClientLifecycleActions,
     ClientStatus,
