@@ -63,10 +63,20 @@ if (!(Test-Path -LiteralPath $agentInstaller -PathType Leaf)) {
 }
 & $agentInstaller -AgentSource $GuestAgentSource
 
+$finalizeSource = Join-Path $PSScriptRoot 'finalize-base.ps1'
+if (!(Test-Path -LiteralPath $finalizeSource -PathType Leaf)) {
+  throw "Base finalization script is missing: $finalizeSource"
+}
+$guestRoot = Join-Path $env:ProgramData 'M-Bedrock\VirtualClients'
+New-Item -ItemType Directory -Path $guestRoot -Force | Out-Null
+$finalizeDestination = Join-Path $guestRoot 'finalize-base.ps1'
+Copy-Item -LiteralPath $finalizeSource -Destination $finalizeDestination -Force
+
 [ordered]@{
   minecraftVersion = [string]$version
   installType = 'DESKTOP'
   independentUpdaterEnabled = $false
   guestAgentInstalled = $true
+  finalizeBasePath = $finalizeDestination
   microsoftDeviceRegistrationClean = $true
 } | ConvertTo-Json

@@ -11,7 +11,7 @@ doctor
 → prepare Base with the same Minecraft Education version as Native
 register-base
 → Base state = REGISTERED
-→ run finalize-base.ps1 -ConfirmGeneralize inside Base
+→ run C:\ProgramData\M-Bedrock\VirtualClients\finalize-base.ps1 -ConfirmGeneralize inside Base
 → Sysprep generalize + shutdown
 → Base state = FINALIZED
 provision

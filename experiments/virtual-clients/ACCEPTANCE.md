@@ -23,7 +23,7 @@ doctor
 → register-base
 → baseState = REGISTERED
 → runtimeProfile.parity = MATCH
-→ finalize-base.ps1 -ConfirmGeneralize
+→ C:\ProgramData\M-Bedrock\VirtualClients\finalize-base.ps1 -ConfirmGeneralize
 → Sysprep /generalize /oobe /mode:vm
 → Base shuts down
 → baseState = FINALIZED
@@ -56,7 +56,8 @@ Base lifecycle proof also requires:
 
 - `register-base` refuses to boot a Base already marked `FINALIZED`;
 - `provision` and `reprovision` refuse any Base whose canonical state is not `FINALIZED`;
-- `finalize-base.ps1` requires explicit `-ConfirmGeneralize`, a `REGISTERED` Base, clean Microsoft device registration, VMware Tools, and successful Sysprep;
+- `prepare-base.ps1` copies `finalize-base.ps1` into `C:\ProgramData\M-Bedrock\VirtualClients` so finalization does not depend on temporary setup media;
+- the persisted `finalize-base.ps1` requires explicit `-ConfirmGeneralize`, a `REGISTERED` Base, clean Microsoft device registration, VMware Tools, and successful Sysprep;
 - the pre-existing `guestinfo.virtualclients.baseState` value changes `REGISTERED → FINALIZING → FINALIZED` and remains `FINALIZED` after shutdown;
 - a failed Sysprep attempt must not produce `FINALIZED`;
 - missing/legacy Base state routes back to `REGISTER_BASE`;
