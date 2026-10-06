@@ -7,6 +7,7 @@ use sha2::{Digest, Sha256};
 use std::{
     io::{self, Read, Write},
     net::{TcpListener, TcpStream},
+    time::Duration,
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -26,6 +27,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn handle(mut stream: TcpStream, token: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let timeout = Some(Duration::from_secs(2));
+    stream.set_read_timeout(timeout)?;
+    stream.set_write_timeout(timeout)?;
+
     let mut request = [0_u8; 4096];
     let size = stream.read(&mut request)?;
     let request = String::from_utf8_lossy(&request[..size]);
