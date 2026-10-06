@@ -238,9 +238,85 @@ function literalString(
 const ACTIVE_STATE_LITERAL =
   /^(?:active|running|combat|wave|round|playing|in_progress|in-progress)$/i;
 
+const INACTIVE_OR_TERMINAL_STATE_LITERAL =
+  /^(?:idle|waiting|wait|ready|setup|preparing|prepare|lobby|complete|completed|finish|finished|done|victory|defeat|ended|end|stopped|stop|aborted|abort)$/i;
+
+export function deriveProgressionActiveStateValues(
+  transitions:
+    readonly {
+      readonly from: string;
+      readonly to: readonly string[];
+    }[],
+): string[] {
+  const adjacency =
+    new Map<string, Set<string>>();
+  const states = new Set<string>();
+
+  for (const transition of transitions) {
+    states.add(transition.from);
+    const next =
+      adjacency.get(transition.from) ??
+      new Set<string>();
+    for (const target of transition.to) {
+      next.add(target);
+      states.add(target);
+    }
+    adjacency.set(
+      transition.from,
+      next,
+    );
+  }
+
+  const active =
+    new Set(
+      [...states].filter((state) =>
+        ACTIVE_STATE_LITERAL.test(state)
+      ),
+    );
+  const queue = [...active];
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    for (
+      const next of
+        adjacency.get(current) ?? []
+    ) {
+      if (
+        active.has(next) ||
+        INACTIVE_OR_TERMINAL_STATE_LITERAL.test(
+          next,
+        )
+      ) {
+        continue;
+      }
+      active.add(next);
+      queue.push(next);
+    }
+  }
+
+  return [...active].sort();
+}
+
+function isActiveStateValue(
+  value: string,
+  activeStateValues:
+    readonly string[],
+): boolean {
+  return (
+    ACTIVE_STATE_LITERAL.test(value) ||
+    activeStateValues.some(
+      (candidate) =>
+        candidate.toLowerCase() ===
+        value.toLowerCase(),
+    )
+  );
+}
+
 function conditionProvesActiveState(
   expression: ts.Expression,
   file: ts.SourceFile,
+  activeStateValues:
+    readonly string[] = [],
 ): boolean {
   if (
     ts.isParenthesizedExpression(expression)
@@ -248,6 +324,7 @@ function conditionProvesActiveState(
     return conditionProvesActiveState(
       expression.expression,
       file,
+      activeStateValues,
     );
   }
 
@@ -273,7 +350,10 @@ function conditionProvesActiveState(
           literalString(literal);
         if (
           value === undefined ||
-          !ACTIVE_STATE_LITERAL.test(value)
+          !isActiveStateValue(
+            value,
+            activeStateValues,
+          )
         ) {
           return false;
         }
@@ -302,10 +382,12 @@ function conditionProvesActiveState(
       conditionProvesActiveState(
         expression.left,
         file,
+        activeStateValues,
       ) ||
       conditionProvesActiveState(
         expression.right,
         file,
+        activeStateValues,
       )
     );
   }
@@ -316,6 +398,8 @@ function conditionProvesActiveState(
 function isInsideActiveGuard(
   node: ts.Node,
   file: ts.SourceFile,
+  activeStateValues:
+    readonly string[] = [],
 ): boolean {
   let current: ts.Node | undefined =
     node.parent;
@@ -332,6 +416,7 @@ function isInsideActiveGuard(
         conditionProvesActiveState(
           current.expression,
           file,
+          activeStateValues,
         )
       ) {
         return true;
@@ -878,6 +963,8 @@ function transitionOwnedCallsAndEvents(
 export function deriveScriptProgressionActiveTransitionEvidence(
   text: string,
   source: SourceRef,
+  activeStateValues:
+    readonly string[] = [],
 ): {
   readonly calls:
     ScriptProgressionActiveCallEvidence[];
@@ -912,8 +999,9 @@ export function deriveScriptProgressionActiveTransitionEvidence(
       if (assignment) {
         if (
           assignment.value !== undefined &&
-          ACTIVE_STATE_LITERAL.test(
+          isActiveStateValue(
             assignment.value,
+            activeStateValues,
           )
         ) {
           activeTargets.add(
@@ -994,6 +1082,8 @@ export function deriveScriptProgressionActiveTransitionEvidence(
 export function deriveScriptProgressionActiveCallEvidence(
   text: string,
   source: SourceRef,
+  activeStateValues:
+    readonly string[] = [],
 ): ScriptProgressionActiveCallEvidence[] {
   const file = ts.createSourceFile(
     source.relativePath,
@@ -1008,7 +1098,11 @@ export function deriveScriptProgressionActiveCallEvidence(
   const visit = (node: ts.Node): void => {
     if (
       ts.isCallExpression(node) &&
-      isInsideActiveGuard(node, file)
+      isInsideActiveGuard(
+        node,
+        file,
+        activeStateValues,
+      )
     ) {
       let targetName:
         string | undefined;
@@ -1083,6 +1177,8 @@ export function deriveScriptProgressionActiveCallEvidence(
 export function deriveScriptProgressionActiveEventEvidence(
   text: string,
   source: SourceRef,
+  activeStateValues:
+    readonly string[] = [],
 ): ScriptProgressionActiveEventEvidence[] {
   const file = ts.createSourceFile(
     source.relativePath,
@@ -1097,7 +1193,11 @@ export function deriveScriptProgressionActiveEventEvidence(
   const visit = (node: ts.Node): void => {
     if (
       ts.isCallExpression(node) &&
-      isInsideActiveGuard(node, file)
+      isInsideActiveGuard(
+        node,
+        file,
+        activeStateValues,
+      )
     ) {
       if (
         ts.isPropertyAccessExpression(

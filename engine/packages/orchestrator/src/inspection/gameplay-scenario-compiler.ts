@@ -828,7 +828,7 @@ function runtimeEdgeState(
           reason:
             "Selected-artifact source proves counted actor type(s) can activate minecraft:instant_despawn under an active gameplay state guard while no matching entity-remove reconciliation reaches the actor counter: " +
             actors.join(", ") +
-            ". Active-state ownership may come from a direct guard, a source-proven active-state transition followed by calls/events in the same sequential block, or propagation through the source call graph; this is an active-wave counter convergence contradiction and does not require runtime reproduction.",
+            ". Active-state ownership may come from a direct guard, a parser-declared state-machine state reachable from an explicit active anchor, a source-proven active-state transition followed by calls/events in the same sequential block, or propagation through the source call graph; this is an active-wave counter convergence contradiction and does not require runtime reproduction.",
         };
       }
       if (

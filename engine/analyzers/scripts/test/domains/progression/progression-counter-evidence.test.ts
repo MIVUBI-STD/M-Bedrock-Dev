@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   deriveScriptProgressionActiveCallEvidence,
   deriveScriptProgressionActiveEventEvidence,
+  deriveProgressionActiveStateValues,
   deriveScriptProgressionActiveTransitionEvidence,
 } from "../../../src/domains/progression/progression-counter-evidence.js";
 
@@ -104,6 +105,69 @@ describe("progression active event evidence", () => {
 
     expect(result.calls).toEqual([]);
     expect(result.events).toEqual([]);
+  });
+
+  it("derives active aliases from declared transitions and stops before terminal states", () => {
+    const values =
+      deriveProgressionActiveStateValues([
+        {
+          from: "preparing",
+          to: ["active"],
+        },
+        {
+          from: "active",
+          to: ["combat_live"],
+        },
+        {
+          from: "combat_live",
+          to: ["victory"],
+        },
+      ]);
+
+    expect(values).toEqual([
+      "active",
+      "combat_live",
+    ]);
+  });
+
+  it("uses a declared active alias in guards and direct state transitions", () => {
+    const aliases = ["combat_live"];
+
+    const calls =
+      deriveScriptProgressionActiveCallEvidence(
+        [
+          "function tick(entity, waveState) {",
+          "  if (waveState === 'combat_live') {",
+          "    maybeDespawn(entity);",
+          "  }",
+          "}",
+        ].join("\n"),
+        source,
+        aliases,
+      );
+    const transition =
+      deriveScriptProgressionActiveTransitionEvidence(
+        [
+          "function enterCombat(entity) {",
+          "  waveState = 'combat_live';",
+          "  maybeDespawn(entity);",
+          "}",
+        ].join("\n"),
+        source,
+        aliases,
+      );
+
+    expect(calls).toEqual([
+      expect.objectContaining({
+        targetName: "maybeDespawn",
+      }),
+    ]);
+    expect(transition.calls).toEqual([
+      expect.objectContaining({
+        targetName: "maybeDespawn",
+        basis: "transition",
+      }),
+    ]);
   });
 
 });

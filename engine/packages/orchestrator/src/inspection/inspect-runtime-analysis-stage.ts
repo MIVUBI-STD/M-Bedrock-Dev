@@ -63,6 +63,7 @@ import {
   deriveEntityEventExternalEvidence,
 } from "./entity-event-evidence.js";
 import {
+  deriveProgressionActiveStateValues,
   deriveScriptProgressionActiveCallEvidence,
   deriveScriptProgressionActiveEventEvidence,
   deriveScriptProgressionActiveTransitionEvidence,
@@ -288,23 +289,39 @@ export function analyzeInspectionRuntimeState(
       parsedScriptModels,
     );
   const progressionActiveEventEvidence =
-    input.parsedScripts.flatMap((item) =>
-      item.text === undefined
-        ? []
-        : deriveScriptProgressionActiveEventEvidence(
-            item.text,
-            item.node.source,
-          )
-    );
+    input.parsedScripts.flatMap((item) => {
+      if (item.text === undefined) {
+        return [];
+      }
+      const activeStateValues =
+        deriveProgressionActiveStateValues(
+          item.parsed
+            .transitionDeclarations ??
+            [],
+        );
+      return deriveScriptProgressionActiveEventEvidence(
+        item.text,
+        item.node.source,
+        activeStateValues,
+      );
+    });
   const progressionActiveCallEvidence =
-    input.parsedScripts.flatMap((item) =>
-      item.text === undefined
-        ? []
-        : deriveScriptProgressionActiveCallEvidence(
-            item.text,
-            item.node.source,
-          )
-    );
+    input.parsedScripts.flatMap((item) => {
+      if (item.text === undefined) {
+        return [];
+      }
+      const activeStateValues =
+        deriveProgressionActiveStateValues(
+          item.parsed
+            .transitionDeclarations ??
+            [],
+        );
+      return deriveScriptProgressionActiveCallEvidence(
+        item.text,
+        item.node.source,
+        activeStateValues,
+      );
+    });
   const progressionActiveTransitionEvidence =
     input.parsedScripts.flatMap((item) =>
       item.text === undefined
@@ -316,6 +333,11 @@ export function analyzeInspectionRuntimeState(
               deriveScriptProgressionActiveTransitionEvidence(
                 item.text,
                 item.node.source,
+                deriveProgressionActiveStateValues(
+                  item.parsed
+                    .transitionDeclarations ??
+                    [],
+                ),
               ),
           }]
     );

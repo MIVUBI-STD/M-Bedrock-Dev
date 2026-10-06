@@ -382,6 +382,7 @@ export interface GameplayWorldModel {
       provenActiveInstantDespawnWithoutReconciliation: number;
       activeInterproceduralProofs: number;
       activeTransitionProofs: number;
+      declaredActiveStateAliases: number;
       unresolvedCounters: number;
       reconciledFromMatchedActorLifecycle: number;
       details: readonly {
@@ -2024,6 +2025,9 @@ export function deriveGameplayWorldModel(
         activeTransitionProofs:
           source.progressionActorAccounting
             ?.activeTransitionProofs ?? 0,
+        declaredActiveStateAliases:
+          source.progressionActorAccounting
+            ?.declaredActiveStateAliases ?? 0,
         unresolvedCounters:
           source.progressionActorAccounting
             ?.unresolvedCounters ?? 0,

@@ -2,6 +2,7 @@ import type {
   CrossFileCallEdge,
   ParsedScriptFile,
   ScriptProgressionCounterEvidence,
+  deriveProgressionActiveStateValues,
 } from "../../../../analyzers/scripts/src/index.js";
 import {
   analyzeEntityTransitionReachability,
@@ -128,6 +129,7 @@ export interface ProgressionActorAccountingAnalysis {
   readonly provenActiveInstantDespawnWithoutReconciliation: number;
   readonly activeInterproceduralProofs: number;
   readonly activeTransitionProofs: number;
+  readonly declaredActiveStateAliases: number;
   readonly reconciledFromMatchedActorLifecycle: number;
   readonly unresolvedCounters: number;
 }
@@ -2498,6 +2500,16 @@ export function analyzeProgressionActorAccounting(
           item.basis ===
           "transition",
       ).length,
+    declaredActiveStateAliases:
+      new Set(
+        scripts.flatMap((script) =>
+          deriveProgressionActiveStateValues(
+            script.parsed
+              .transitionDeclarations ??
+              [],
+          )
+        ),
+      ).size,
     reconciledFromMatchedActorLifecycle:
       counters.filter(
         (item) =>
