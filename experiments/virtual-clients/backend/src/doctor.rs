@@ -1,7 +1,9 @@
 use crate::{
     client::{ClientId, ClientState},
     profile::{profile_status, ProfileParity, ProfileStatus},
-    provider::{base_vmx_path, current_platform_provider, runtime_root},
+    paths::runtime_root,
+    profile::current_base_vmx_path,
+    provider::current_platform_provider,
     schema::{inspect_runtime_schema, SchemaStatus},
 };
 use serde::Serialize;
@@ -59,7 +61,7 @@ fn recommended_by_cpu(logical_cpus: usize) -> usize {
 
 pub fn doctor() -> DoctorReport {
     let provider = current_platform_provider();
-    let base = base_vmx_path().ok();
+    let base = current_base_vmx_path().ok();
 
     let mut system = System::new();
     system.refresh_memory();
