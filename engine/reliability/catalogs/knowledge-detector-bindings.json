@@ -2227,6 +2227,18 @@
       ]
     },
     {
+      "knowledgeId": "spatial.relation-position-requires-dimension",
+      "consumer": "script-spatial-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/spatial/spatial-mutation-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/script-spatial-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/spatial/spatial-mutation-evidence.test.ts",
+        "engine/packages/orchestrator/test/inspection/script-spatial-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "spatial.teleport-can-change-dimension",
       "consumer": "script-spatial-analysis",
       "analyzerPaths": [
@@ -2404,6 +2416,28 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/teleport-transaction-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "teleport.relation-spawnpoint-does-not-replace-teleport",
+      "consumer": "script-api-usage",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/inspection/script-api-usage.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/script-api-usage.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "teleport.spawnpoint-is-separate-from-teleport",
+      "consumer": "script-api-usage",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/inspection/script-api-usage.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/script-api-usage.test.ts"
       ]
     },
     {
