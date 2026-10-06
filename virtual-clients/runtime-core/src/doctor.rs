@@ -3,8 +3,8 @@ use crate::{
     paths::runtime_root,
     profile::current_base_vmx_path,
     profile::{
-        load_client_profile, profile_status, BaseProfile, BaseState, ClientProfile,
-        MinecraftProfile, ProfileParity, ProfileStatus,
+        client_lineage_parity, load_client_profile, profile_status, BaseState,
+        ProfileParity, ProfileStatus,
     },
     provider::{base_state_for_path, current_platform_provider},
     schema::{inspect_runtime_schema, SchemaStatus},
@@ -118,29 +118,6 @@ fn recommended_by_cpu(logical_cpus: usize) -> usize {
         1
     } else {
         0
-    }
-}
-
-fn client_lineage_parity(
-    native: Option<&MinecraftProfile>,
-    base: Option<&BaseProfile>,
-    client: Option<&ClientProfile>,
-    provisioned: bool,
-) -> ProfileParity {
-    if !provisioned {
-        return ProfileParity::Unknown;
-    }
-
-    match (native, base, client) {
-        (Some(native), Some(base), Some(client))
-            if native.version == base.minecraft_version
-                && native.version == client.base_minecraft_version
-                && base.base_generation_id == client.base_generation_id =>
-        {
-            ProfileParity::Match
-        }
-        (Some(_), Some(_), Some(_)) => ProfileParity::Mismatch,
-        _ => ProfileParity::Unknown,
     }
 }
 
@@ -447,7 +424,7 @@ pub fn doctor() -> DoctorReport {
 #[cfg(test)]
 mod tests {
     use super::{
-        client_lineage_parity, collect_health_issues, recommended_by_cpu, recommended_by_memory,
+        collect_health_issues, recommended_by_cpu, recommended_by_memory,
         schema_allows_provisioning, select_setup_action, DoctorClient, HealthIssueCode,
         HealthSeverity, SetupAction,
     };
@@ -502,7 +479,7 @@ mod tests {
             verified_windows_identity: None,
         };
         assert_eq!(
-            client_lineage_parity(Some(&native), Some(&base), Some(&current), true),
+            crate::profile::client_lineage_parity(Some(&native), Some(&base), Some(&current), true),
             ProfileParity::Match
         );
 
@@ -511,11 +488,11 @@ mod tests {
             ..current
         };
         assert_eq!(
-            client_lineage_parity(Some(&native), Some(&base), Some(&stale), true),
+            crate::profile::client_lineage_parity(Some(&native), Some(&base), Some(&stale), true),
             ProfileParity::Mismatch
         );
         assert_eq!(
-            client_lineage_parity(Some(&native), Some(&base), Some(&stale), false),
+            crate::profile::client_lineage_parity(Some(&native), Some(&base), Some(&stale), false),
             ProfileParity::Unknown
         );
     }

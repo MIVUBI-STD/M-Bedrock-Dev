@@ -326,6 +326,29 @@ fn validate_client_profile_identities(profile: &ClientProfile) -> io::Result<()>
     Ok(())
 }
 
+pub fn client_lineage_parity(
+    native: Option<&MinecraftProfile>,
+    base: Option<&BaseProfile>,
+    client: Option<&ClientProfile>,
+    provisioned: bool,
+) -> ProfileParity {
+    if !provisioned {
+        return ProfileParity::Unknown;
+    }
+
+    match (native, base, client) {
+        (Some(native), Some(base), Some(client))
+            if native.version == base.minecraft_version
+                && native.version == client.base_minecraft_version
+                && base.base_generation_id == client.base_generation_id =>
+        {
+            ProfileParity::Match
+        }
+        (Some(_), Some(_), Some(_)) => ProfileParity::Mismatch,
+        _ => ProfileParity::Unknown,
+    }
+}
+
 pub fn require_client_matches_native(client: ClientId) -> io::Result<ClientProfile> {
     let native = native_minecraft_profile().ok_or_else(|| {
         io::Error::new(

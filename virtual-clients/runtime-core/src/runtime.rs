@@ -17,8 +17,8 @@ use crate::{
     paths::runtime_root,
     policy::{engine_policy, EnginePolicy, MAX_VIRTUAL_CLIENTS},
     profile::{
-        current_base_vmx_path, identity_fingerprint, load_base_profile, load_client_profile,
-        native_minecraft_profile, profile_status,
+        client_lineage_parity, current_base_vmx_path, identity_fingerprint, load_base_profile,
+        load_client_profile, native_minecraft_profile, profile_status,
         require_base_matches_native, require_client_matches_native, write_client_profile,
         write_verified_base_profile, write_verified_client_identities, BaseProfile, BaseState,
         MinecraftProfile, ProfileParity, ProfileStatus,
@@ -265,10 +265,12 @@ fn collect_lifecycle_facts(provider: &dyn Provider, client: ClientId) -> io::Res
     let identity_verified = client_profile.as_ref().is_some_and(|profile| {
         profile.identity_provenance_matches(current_vm.as_deref())
     });
-    let client_compatible = match (profile.native.as_ref(), client_profile.as_ref()) {
-        (Some(native), Some(client)) => native.version == client.base_minecraft_version,
-        _ => false,
-    };
+    let client_compatible = client_lineage_parity(
+        profile.native.as_ref(),
+        profile.base.as_ref(),
+        client_profile.as_ref(),
+        state != ClientState::NotProvisioned,
+    ) == ProfileParity::Match;
     let base_finalized_and_stopped = current_base_vmx_path().ok().is_some_and(|path| {
         base_state_for_path(&path).ok().flatten() == Some(BaseState::Finalized)
             && provider.is_running_path(&path).ok() == Some(false)
@@ -408,17 +410,14 @@ fn guest_status_once(provider: &dyn Provider, client: ClientId) -> Option<GuestS
 }
 
 fn lineage_parity(native: Option<&MinecraftProfile>, client: ClientId) -> ProfileParity {
-    match (native, load_base_profile().ok(), load_client_profile(client).ok()) {
-        (Some(native), Some(base), Some(profile))
-            if native.version == profile.base_minecraft_version
-                && native.version == base.minecraft_version
-                && profile.base_generation_id == base.base_generation_id =>
-        {
-            ProfileParity::Match
-        }
-        (Some(_), Some(_), Some(_)) => ProfileParity::Mismatch,
-        _ => ProfileParity::Unknown,
-    }
+    let base = load_base_profile().ok();
+    let client_profile = load_client_profile(client).ok();
+    client_lineage_parity(
+        native,
+        base.as_ref(),
+        client_profile.as_ref(),
+        client_profile.is_some(),
+    )
 }
 
 fn version_parity(native: Option<&MinecraftProfile>, guest: Option<&GuestStatus>) -> ProfileParity {
