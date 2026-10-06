@@ -2,6 +2,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { buildResourceCatalog } from "./resource-catalog.mjs";
 import { buildGraph, documentGraphRootId } from "./graph.mjs";
 import { buildDocumentSectionIndex } from "./document-sections.mjs";
+import {
+  scoreResourcesLexically,
+  scoreSectionsLexically,
+} from "./lexical-retrieval.mjs";
 
 const failures = [];
 
@@ -262,6 +266,45 @@ try {
     if (!section.heading.trim() || !section.anchor.trim()) {
       failures.push("Document Section lacks heading/anchor: " + section.id);
     }
+  }
+
+  const resourceLexicalScores =
+    scoreResourcesLexically(
+      catalog.resources,
+      "inventory reconnect lifecycle",
+    );
+  for (const id of Object.keys(resourceLexicalScores)) {
+    if (!byId.has(id)) {
+      failures.push(
+        "Lexical Resource score references unknown id: " + id,
+      );
+    }
+  }
+  if (Object.keys(resourceLexicalScores).length === 0) {
+    failures.push(
+      "Lexical Resource Retrieval produced no result for baseline query.",
+    );
+  }
+
+  const sectionLexicalScores =
+    scoreSectionsLexically(
+      sectionIndex.sections,
+      "proof validation",
+    );
+  const knownSectionIds = new Set(
+    sectionIndex.sections.map((section) => section.id),
+  );
+  for (const id of Object.keys(sectionLexicalScores)) {
+    if (!knownSectionIds.has(id)) {
+      failures.push(
+        "Lexical Section score references unknown id: " + id,
+      );
+    }
+  }
+  if (Object.keys(sectionLexicalScores).length === 0) {
+    failures.push(
+      "Lexical Section Retrieval produced no result for baseline query.",
+    );
   }
 
   const edgeKeys = new Set();
