@@ -82,7 +82,7 @@ export * from "./state-authority-analysis.js";
 export * from "./structure-proof-analysis.js";
 export * from "./structure-runtime-evidence.js";
 export * from "./structure-transition-residue.js";
-export * from "./topology-analysis.js";
+export * from "./topology-analysis.js";\nexport * from "./teleport-transaction-analysis.js";
 export * from "./version-aware-comparison.js";
 export * from "./world-db-diff.js";
 export * from "./world-db-runtime-evidence.js";
