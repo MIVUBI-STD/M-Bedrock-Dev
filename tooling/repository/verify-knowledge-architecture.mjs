@@ -22,8 +22,8 @@ if (existsSync(catalogPath)) {
   const schema = JSON.parse(readFileSync(catalogPath, "utf8"));
   const resource = schema?.$defs?.resource?.properties ?? {};
 
-  const expectedClasses = ["DOCUMENT","KNOWLEDGE","SOURCE","RELIABILITY","WORKFLOW","SCHEMA"];
-  const expectedRoles = ["ROUTER","WORKFLOW","CONTRACT","REFERENCE","ARCHITECTURE","GUIDE"];
+  const expectedClasses = ["DOCUMENT","KNOWLEDGE","SOURCE","RELIABILITY","SCHEMA"];
+  const expectedRoles = ["ROUTER","WORKFLOW","CONTRACT","DOMAIN","ARCHITECTURE","GUIDE"];
   const expectedAuthorities = ["CANONICAL","REFERENCE","HISTORICAL","DERIVED"];
   const expectedLifecycle = ["ACTIVE","RETIRED"];
 
@@ -98,7 +98,7 @@ if (existsSync(architecturePath)) {
 
 
 const resourceIdPattern =
-  /^(document|knowledge|source|reliability|workflow|schema)\.[a-z0-9]+(?:[.-][a-z0-9]+)*$/;
+  /^(document|knowledge|source|reliability|schema)\.[a-z0-9]+(?:[.-][a-z0-9]+)*$/;
 
 try {
   const catalog = buildResourceCatalog();
