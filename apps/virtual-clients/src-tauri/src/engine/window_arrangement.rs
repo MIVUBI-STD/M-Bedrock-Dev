@@ -216,10 +216,10 @@ $screens = @([System.Windows.Forms.Screen]::AllScreens)
 if ($DisplayIndex -lt 0 -or $DisplayIndex -ge $screens.Count) { throw "Selected display is unavailable." }
 $area = $screens[$DisplayIndex].WorkingArea
 $targets = @(
-  @{ id = 'Native'; patterns = @('Minecraft Education'); requireMinecraft = $true },
-  @{ id = 'Virtual-01'; patterns = @('Virtual-01'); requireMinecraft = $false },
-  @{ id = 'Virtual-02'; patterns = @('Virtual-02'); requireMinecraft = $false },
-  @{ id = 'Virtual-03'; patterns = @('Virtual-03'); requireMinecraft = $false }
+  @{ id = 'Native'; patterns = @('Minecraft Education'); processKind = 'minecraft' },
+  @{ id = 'Virtual-01'; patterns = @('Virtual-01'); processKind = 'vmware' },
+  @{ id = 'Virtual-02'; patterns = @('Virtual-02'); processKind = 'vmware' },
+  @{ id = 'Virtual-03'; patterns = @('Virtual-03'); processKind = 'vmware' }
 )
 $deadline = [DateTime]::UtcNow.AddSeconds(5)
 $found = @{}
@@ -230,10 +230,9 @@ do {
       foreach ($pattern in $target.patterns) {
         $titleMatches = $process.MainWindowTitle -like "*$pattern*"
         if (-not $titleMatches) { continue }
-        if ($target.requireMinecraft) {
-          $name = $process.ProcessName.ToLowerInvariant()
-          if ($name -notlike "*minecraft*" -and $name -notlike "*education*") { continue }
-        }
+        $name = $process.ProcessName.ToLowerInvariant()
+        if ($target.processKind -eq 'minecraft' -and $name -notlike "*minecraft*" -and $name -notlike "*education*") { continue }
+        if ($target.processKind -eq 'vmware' -and $name -notlike "*vmware*") { continue }
         $found[$target.id] = [uint64]$process.MainWindowHandle
         break
       }
