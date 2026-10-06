@@ -39,6 +39,7 @@ pub enum BaseProfileSource {
 pub struct BaseProfile {
     pub schema: u32,
     pub minecraft_version: String,
+    pub native_install_type: MinecraftInstallType,
     pub guest_status_schema: u32,
     pub guest_agent_version: String,
     pub source: BaseProfileSource,
@@ -126,6 +127,7 @@ pub fn write_verified_base_profile(
     let profile = BaseProfile {
         schema: BASE_PROFILE_SCHEMA,
         minecraft_version: native.version.clone(),
+        native_install_type: native.install_type.clone(),
         guest_status_schema: GUEST_STATUS_SCHEMA,
         guest_agent_version: guest_agent_version.to_string(),
         source: BaseProfileSource::LiveVerified,
@@ -324,7 +326,7 @@ fn windows_native_profile() -> Option<MinecraftProfile> {
             "-NoProfile",
             "-NonInteractive",
             "-Command",
-            "(Get-AppxPackage *MinecraftEducation* | Sort-Object Version -Descending | Select-Object -First 1 -ExpandProperty Version).ToString()",
+            "(Get-AppxPackage -Name Microsoft.MinecraftEducationEdition -ErrorAction SilentlyContinue | Sort-Object Version -Descending | Select-Object -First 1 -ExpandProperty Version).ToString()",
         ])
         .output()
         .ok();
@@ -407,6 +409,7 @@ mod tests {
         let profile = BaseProfile {
             schema: BASE_PROFILE_SCHEMA,
             minecraft_version: "1.21.120.0".into(),
+            native_install_type: MinecraftInstallType::Desktop,
             guest_status_schema: GUEST_STATUS_SCHEMA,
             guest_agent_version: "0.1.0".into(),
             source: BaseProfileSource::LiveVerified,
