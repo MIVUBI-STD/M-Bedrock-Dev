@@ -64,6 +64,10 @@ function host(): HostBridge {
 async function invoke<T>(command: BackendCommand, args: readonly string[] = []): Promise<T> {
   try {
     const raw = await host().invoke(command, args);
+    const report = parseErrorEnvelope(raw);
+    if (report) {
+      throw new BackendBridgeError(report.code, report.message, report.retryable);
+    }
     return parseSuccessEnvelope<T>(raw);
   } catch (error) {
     if (error instanceof BackendBridgeError) throw error;

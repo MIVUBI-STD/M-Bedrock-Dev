@@ -129,6 +129,7 @@ jobs:
         run: |
           $targets = @(
             'experiments/virtual-clients/backend/target/release/virtual-clients.exe',
+            'experiments/virtual-clients/backend/target/release/virtual-clients-bridge.exe',
             'experiments/virtual-clients/backend/target/release/virtual-guest-agent.exe'
           )
           foreach ($target in $targets) {
@@ -164,6 +165,7 @@ jobs:
           $expected = $env:VIRTUAL_CLIENTS_PUBLISHER_CERT_THUMBPRINT
           $targets = @(
             'experiments/virtual-clients/backend/target/release/virtual-clients.exe',
+            'experiments/virtual-clients/backend/target/release/virtual-clients-bridge.exe',
             'experiments/virtual-clients/backend/target/release/virtual-guest-agent.exe',
             '${{ steps.installer.outputs.path }}'
           )
@@ -199,17 +201,26 @@ jobs:
           if ($install.ExitCode -ne 0) { throw "Signed installer failed: $($install.ExitCode)" }
 
           $hostExe = Join-Path $installDir 'virtual-clients.exe'
+          $bridgeExe = Join-Path $installDir 'bridge\virtual-clients-bridge.exe'
           $guestExe = Join-Path $installDir 'guest\virtual-guest-agent.exe'
           $prepare = Join-Path $installDir 'guest\windows\prepare-base.ps1'
           $finalize = Join-Path $installDir 'guest\windows\finalize-base.ps1'
           $acceptance = Join-Path $installDir 'acceptance\windows\collect-acceptance.ps1'
           $releaseChannel = Join-Path $installDir 'distribution\release-channel.json'
-          foreach ($path in @($hostExe, $guestExe, $prepare, $finalize, $acceptance, $releaseChannel)) {
+          foreach ($path in @($hostExe, $bridgeExe, $guestExe, $prepare, $finalize, $acceptance, $releaseChannel)) {
             if (!(Test-Path -LiteralPath $path -PathType Leaf)) { throw "Installed file missing: $path" }
           }
 
           & $hostExe help | Out-Host
           if ($LASTEXITCODE -ne 0) { throw 'Installed host executable smoke test failed.' }
+
+          $request = '{"schema":1,"requestId":1,"command":"policy","args":[]}'
+          $bridgeOutput = $request | & $bridgeExe
+          if ($LASTEXITCODE -ne 0) { throw 'Installed bridge executable smoke test failed.' }
+          $bridgeResponse = $bridgeOutput | ConvertFrom-Json
+          if ($bridgeResponse.schema -ne 1 -or !$bridgeResponse.success -or $bridgeResponse.requestId -ne 1) {
+            throw 'Installed bridge protocol response is invalid.'
+          }
 
           $runtimeRoot = Join-Path $env:LOCALAPPDATA 'M-Bedrock\VirtualClients'
           $runtimeSentinel = Join-Path $runtimeRoot 'trusted-release-preservation-sentinel.txt'

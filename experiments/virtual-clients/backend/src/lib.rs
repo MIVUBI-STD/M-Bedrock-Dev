@@ -1,6 +1,8 @@
 #![forbid(unsafe_code)]
 
+mod bridge;
 mod client;
+mod command;
 mod contract;
 mod diagnostics;
 mod doctor;
@@ -18,10 +20,15 @@ mod schema;
 mod support;
 mod update;
 
+pub use bridge::{
+    handle_bridge_line, BridgeRequest, BridgeResponse, BRIDGE_MAX_MESSAGE_BYTES,
+    BRIDGE_PROTOCOL_SCHEMA,
+};
 pub use client::{
     ActionAvailability, ClientId, ClientLifecycleActions, ClientState, ClientStatus,
     DestructiveConfirmation, IdentityState, LifecycleBlocker,
 };
+pub use command::{execute_public_command, PublicCommandResult};
 pub use contract::{SuccessReport, PUBLIC_CONTRACT_SCHEMA};
 pub use diagnostics::{
     DiagnosticsReport, HostDiagnostics, ProviderDiagnostics, VirtualHardwareDiagnostics,

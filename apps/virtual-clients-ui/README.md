@@ -32,3 +32,22 @@ npm run virtual-clients-ui:dev
 npm run virtual-clients-ui:build
 npm run virtual-clients-ui:preview
 ```
+
+
+## Native bridge protocol
+
+The installed backend includes `bridge/virtual-clients-bridge.exe`.
+
+The process uses newline-delimited JSON on stdin/stdout:
+
+```json
+{"schema":1,"requestId":1,"command":"policy","args":[]}
+```
+
+Response:
+
+```json
+{"schema":1,"requestId":1,"success":true,"payload":"{...public contract JSON...}"}
+```
+
+The desktop window host is responsible only for correlating `requestId` and exposing the returned `payload` through `window.virtualClients.invoke`. It must not interpret lifecycle policy or backend data.
