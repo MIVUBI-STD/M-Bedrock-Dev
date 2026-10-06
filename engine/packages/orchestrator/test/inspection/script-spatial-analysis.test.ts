@@ -36,6 +36,22 @@ describe("script spatial analysis", () => {
     ]);
   });
 
+  it("preserves teleport destination policy in resolved source evidence", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "const P = { x: 1, y: 2, z: 3 };",
+        "player.teleport(P, { dimension: nether, checkForBlocks: true });",
+      ].join("\n"),
+      { artifactId: "fixture", relativePath: "scripts/main.ts" },
+    );
+    const result = analyzeScriptSpatialMutations([script]);
+    expect(result.resolvedEffectSources[0]).toMatchObject({
+      dimensionExpression: "nether",
+      checkForBlocks: true,
+    });
+  });
+
   it("keeps runtime-dynamic block identity out of topology proof", () => {
     const script = parseScriptFile(
       "main",

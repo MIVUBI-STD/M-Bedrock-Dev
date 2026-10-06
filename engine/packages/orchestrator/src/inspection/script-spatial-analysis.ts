@@ -256,6 +256,14 @@ export function analyzeScriptSpatialMutations(
           executionRegion:
             mutation.executionRegion,
           source: mutation.source,
+          ...(mutation.kind !== "teleport" ||
+          mutation.dimensionExpression === undefined
+            ? {}
+            : { dimensionExpression: mutation.dimensionExpression }),
+          ...(mutation.kind !== "teleport" ||
+          mutation.checkForBlocks === undefined
+            ? {}
+            : { checkForBlocks: mutation.checkForBlocks }),
         });
       } else {
         failures.push(resolved.failure);
