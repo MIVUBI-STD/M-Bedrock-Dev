@@ -386,6 +386,28 @@ export interface GameplayWorldModel {
       validStateTransitions: number;
       invalidStateTransitions: number;
       unresolvedStateTransitions: number;
+      completeStateMachines: number;
+      deadEndStateMachines: number;
+      unresolvedStateMachines: number;
+      sourceEnteredDeadEndStates: number;
+      stateMachines: readonly {
+        scriptId: string;
+        tableName: string;
+        stateType?: string;
+        status:
+          | "complete"
+          | "dead-end"
+          | "unresolved";
+        activeStates:
+          readonly string[];
+        terminalStates:
+          readonly string[];
+        deadEndStates:
+          readonly string[];
+        sourceEnteredDeadEndStates:
+          readonly string[];
+        reason: string;
+      }[];
       stateTransitions: readonly {
         scriptId: string;
         target: string;
@@ -2054,6 +2076,40 @@ export function deriveGameplayWorldModel(
         unresolvedStateTransitions:
           source.progressionActorAccounting
             ?.unresolvedStateTransitions ?? 0,
+        completeStateMachines:
+          source.progressionActorAccounting
+            ?.completeStateMachines ?? 0,
+        deadEndStateMachines:
+          source.progressionActorAccounting
+            ?.deadEndStateMachines ?? 0,
+        unresolvedStateMachines:
+          source.progressionActorAccounting
+            ?.unresolvedStateMachines ?? 0,
+        sourceEnteredDeadEndStates:
+          source.progressionActorAccounting
+            ?.sourceEnteredDeadEndStates ?? 0,
+        stateMachines:
+          source.progressionActorAccounting
+            ?.stateMachines.map((item) => ({
+              scriptId: item.scriptId,
+              tableName: item.tableName,
+              ...(item.stateType === undefined
+                ? {}
+                : {
+                    stateType:
+                      item.stateType,
+                  }),
+              status: item.status,
+              activeStates:
+                [...item.activeStates],
+              terminalStates:
+                [...item.terminalStates],
+              deadEndStates:
+                [...item.deadEndStates],
+              sourceEnteredDeadEndStates:
+                [...item.sourceEnteredDeadEndStates],
+              reason: item.reason,
+            })) ?? [],
         stateTransitions:
           source.progressionActorAccounting
             ?.stateTransitions.map((item) => ({

@@ -812,6 +812,41 @@ function runtimeEdgeState(
         scenarioLabel ===
           "progression-wave-integrity" &&
         world.progression.actorAccounting
+          .deadEndStateMachines > 0
+      ) {
+        const machines =
+          world.progression.actorAccounting
+            .stateMachines
+            .filter((item) =>
+              item.status === "dead-end"
+            )
+            .map((item) =>
+              item.tableName +
+              " dead-end=[" +
+              item.deadEndStates.join(",") +
+              "]" +
+              (
+                item.sourceEnteredDeadEndStates
+                  .length > 0
+                  ? " source-entered=[" +
+                    item.sourceEnteredDeadEndStates.join(",") +
+                    "]"
+                  : ""
+              )
+            )
+            .sort();
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Authored progression state-machine contract contains active-reachable state(s) with no legal path to a recognized completion/terminal state: " +
+            machines.join("; ") +
+            ". This is a static progression dead-end/design mismatch; source-entered dead-end states are called out when present, and runtime reproduction is not required.",
+        };
+      }
+      if (
+        scenarioLabel ===
+          "progression-wave-integrity" &&
+        world.progression.actorAccounting
           .invalidStateTransitions > 0
       ) {
         const transitions =

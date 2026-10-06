@@ -1029,6 +1029,135 @@ describe(
       ).toBeGreaterThan(0);
     });
 
+    it("proves an authored active-reachable state-machine dead-end", () => {
+      const source = [
+        "type WaveState = 'active' | 'combat_stuck' | 'victory';",
+        "const waveTransitions: Record<WaveState, readonly WaveState[]> = {",
+        "  active: ['combat_stuck', 'victory'],",
+        "  combat_stuck: [],",
+        "  victory: [],",
+        "};",
+      ].join("\n");
+      const input = parsed(source);
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+        );
+
+      expect(
+        result.deadEndStateMachines,
+      ).toBe(1);
+      expect(
+        result.stateMachines[0],
+      ).toMatchObject({
+        tableName:
+          "waveTransitions",
+        status: "dead-end",
+        activeStates: [
+          "active",
+          "combat_stuck",
+        ],
+        terminalStates: [
+          "victory",
+        ],
+        deadEndStates: [
+          "combat_stuck",
+        ],
+      });
+    });
+
+    it("accepts an authored active state-machine with a legal terminal path", () => {
+      const source = [
+        "type WaveState = 'active' | 'combat_live' | 'victory';",
+        "const waveTransitions: Record<WaveState, readonly WaveState[]> = {",
+        "  active: ['combat_live'],",
+        "  combat_live: ['victory'],",
+        "  victory: [],",
+        "};",
+      ].join("\n");
+      const input = parsed(source);
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+        );
+
+      expect(
+        result.completeStateMachines,
+      ).toBe(1);
+      expect(
+        result.deadEndStateMachines,
+      ).toBe(0);
+    });
+
+    it("keeps a progression-like table unresolved when no terminal state is authored", () => {
+      const source = [
+        "type WaveState = 'active' | 'combat_live';",
+        "const waveTransitions: Record<WaveState, readonly WaveState[]> = {",
+        "  active: ['combat_live'],",
+        "  combat_live: [],",
+        "};",
+      ].join("\n");
+      const input = parsed(source);
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+        );
+
+      expect(
+        result.unresolvedStateMachines,
+      ).toBe(1);
+      expect(
+        result.deadEndStateMachines,
+      ).toBe(0);
+    });
+
+    it("records when valid source flow enters an authored dead-end state", () => {
+      const source = [
+        "type WaveState = 'active' | 'combat_stuck' | 'victory';",
+        "const waveTransitions: Record<WaveState, readonly WaveState[]> = {",
+        "  active: ['combat_stuck', 'victory'],",
+        "  combat_stuck: [],",
+        "  victory: [],",
+        "};",
+        "function advance(waveState) {",
+        "  if (waveState === 'active') {",
+        "    waveState = 'combat_stuck';",
+        "  }",
+        "}",
+      ].join("\n");
+      const input = parsed(source);
+      const actual =
+        deriveScriptProgressionStateTransitionEvidence(
+          source,
+          input.parsed.source,
+        );
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+          [],
+          [],
+          undefined,
+          [],
+          [],
+          [],
+          actual,
+        );
+
+      expect(
+        result.sourceEnteredDeadEndStates,
+      ).toBe(1);
+      expect(
+        result.stateMachines[0]
+          ?.sourceEnteredDeadEndStates,
+      ).toEqual([
+        "combat_stuck",
+      ]);
+    });
+
     it("proves a guarded transition that skips the authored state-machine contract", () => {
       const source = [
         "type WaveState = 'preparing' | 'active' | 'combat_live' | 'victory';",

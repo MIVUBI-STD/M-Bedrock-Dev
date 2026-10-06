@@ -128,6 +128,25 @@ export interface ProgressionStateTransitionAssessment {
   readonly reason: string;
 }
 
+export interface ProgressionStateMachineAssessment {
+  readonly scriptId: string;
+  readonly tableName: string;
+  readonly stateType?: string;
+  readonly status:
+    | "complete"
+    | "dead-end"
+    | "unresolved";
+  readonly activeStates:
+    readonly string[];
+  readonly terminalStates:
+    readonly string[];
+  readonly deadEndStates:
+    readonly string[];
+  readonly sourceEnteredDeadEndStates:
+    readonly string[];
+  readonly reason: string;
+}
+
 export interface ProgressionActorAccountingAnalysis {
   readonly counters:
     readonly ProgressionCounterAssessment[];
@@ -151,6 +170,12 @@ export interface ProgressionActorAccountingAnalysis {
   readonly validStateTransitions: number;
   readonly invalidStateTransitions: number;
   readonly unresolvedStateTransitions: number;
+  readonly stateMachines:
+    readonly ProgressionStateMachineAssessment[];
+  readonly completeStateMachines: number;
+  readonly deadEndStateMachines: number;
+  readonly unresolvedStateMachines: number;
+  readonly sourceEnteredDeadEndStates: number;
   readonly reconciledFromMatchedActorLifecycle: number;
   readonly unresolvedCounters: number;
 }
@@ -1844,6 +1869,217 @@ function stateTransitionAssessments(
     );
 }
 
+const TERMINAL_GAMEPLAY_STATE =
+  /^(?:complete|completed|finish|finished|done|victory|defeat|ended|end|success|successful|failure|failed|win|won|loss|lost|abort|aborted)$/i;
+
+const PROGRESSION_MACHINE_OWNER =
+  /(?:wave|round|level|stage|phase|game|match|progress|combat)/i;
+
+function stateCanReachTerminal(
+  start: string,
+  outgoing:
+    ReadonlyMap<
+      string,
+      ReadonlySet<string>
+    >,
+  terminals:
+    ReadonlySet<string>,
+): boolean {
+  const seen =
+    new Set<string>([start]);
+  const queue = [start];
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    if (terminals.has(current)) {
+      return true;
+    }
+    for (
+      const next of
+        outgoing.get(current) ?? []
+    ) {
+      if (seen.has(next)) continue;
+      seen.add(next);
+      queue.push(next);
+    }
+  }
+
+  return false;
+}
+
+function stateMachineAssessments(
+  scripts: readonly NormalizedScript[],
+  actual:
+    readonly ProgressionStateTransitionAssessment[],
+): ProgressionStateMachineAssessment[] {
+  const output:
+    ProgressionStateMachineAssessment[] = [];
+
+  for (const script of scripts) {
+    const declarations =
+      script.parsed
+        .transitionDeclarations ?? [];
+    const byTable =
+      new Map<
+        string,
+        typeof declarations
+      >();
+
+    for (const declaration of declarations) {
+      const list =
+        byTable.get(
+          declaration.tableName,
+        ) ?? [];
+      byTable.set(
+        declaration.tableName,
+        [...list, declaration],
+      );
+    }
+
+    for (
+      const [tableName, table] of
+        byTable
+    ) {
+      const stateType =
+        table.find(
+          (item) =>
+            item.stateType !== undefined,
+        )?.stateType;
+      const material =
+        PROGRESSION_MACHINE_OWNER.test(
+          tableName,
+        ) ||
+        (
+          stateType !== undefined &&
+          PROGRESSION_MACHINE_OWNER.test(
+            stateType,
+          )
+        );
+      if (!material) continue;
+
+      const states =
+        new Set<string>();
+      const outgoing =
+        new Map<
+          string,
+          Set<string>
+        >();
+
+      for (const item of table) {
+        states.add(item.from);
+        const next =
+          outgoing.get(item.from) ??
+          new Set<string>();
+        for (const target of item.to) {
+          states.add(target);
+          next.add(target);
+        }
+        outgoing.set(
+          item.from,
+          next,
+        );
+      }
+
+      const activeStates =
+        deriveProgressionActiveStateValues(
+          table,
+        );
+      const terminalStates =
+        [...states]
+          .filter((state) =>
+            TERMINAL_GAMEPLAY_STATE.test(
+              state,
+            )
+          )
+          .sort();
+
+      if (
+        activeStates.length === 0 ||
+        terminalStates.length === 0
+      ) {
+        output.push({
+          scriptId:
+            script.parsed.identifier,
+          tableName,
+          ...(stateType === undefined
+            ? {}
+            : { stateType }),
+          status: "unresolved",
+          activeStates,
+          terminalStates,
+          deadEndStates: [],
+          sourceEnteredDeadEndStates: [],
+          reason:
+            activeStates.length === 0
+              ? "The authored progression-like transition table has no explicit active anchor from which completion reachability can be proven."
+              : "The authored progression-like transition table has no recognizable terminal/completion state, so absence of a legal completion path cannot be proven safely.",
+        });
+        continue;
+      }
+
+      const terminals =
+        new Set(terminalStates);
+      const deadEndStates =
+        activeStates
+          .filter((state) =>
+            !stateCanReachTerminal(
+              state,
+              outgoing,
+              terminals,
+            )
+          )
+          .sort();
+      const deadEndSet =
+        new Set(deadEndStates);
+      const sourceEnteredDeadEndStates =
+        actual
+          .filter((item) =>
+            item.scriptId ===
+              script.parsed.identifier &&
+            item.tableName ===
+              tableName &&
+            item.status === "valid" &&
+            deadEndSet.has(item.to)
+          )
+          .map((item) => item.to)
+          .filter((state, index, all) =>
+            all.indexOf(state) === index
+          )
+          .sort();
+
+      output.push({
+        scriptId:
+          script.parsed.identifier,
+        tableName,
+        ...(stateType === undefined
+          ? {}
+          : { stateType }),
+        status:
+          deadEndStates.length > 0
+            ? "dead-end"
+            : "complete",
+        activeStates,
+        terminalStates,
+        deadEndStates,
+        sourceEnteredDeadEndStates,
+        reason:
+          deadEndStates.length > 0
+            ? "Active-reachable authored state(s) have no legal path to any recognized terminal/completion state in this transition table."
+            : "Every active-reachable authored state has at least one legal path to a recognized terminal/completion state.",
+      });
+    }
+  }
+
+  return output.sort((a, b) =>
+    a.scriptId.localeCompare(
+      b.scriptId,
+    ) ||
+    a.tableName.localeCompare(
+      b.tableName,
+    )
+  );
+}
+
 export function analyzeProgressionActorAccounting(
   inputs:
     readonly ProgressionActorAccountingInput[],
@@ -1868,6 +2104,11 @@ export function analyzeProgressionActorAccounting(
     stateTransitionAssessments(
       scripts,
       stateTransitionEvidence,
+    );
+  const stateMachines =
+    stateMachineAssessments(
+      scripts,
+      stateTransitions,
     );
   const evidence = scripts.flatMap(
     (script) => [
@@ -2693,6 +2934,30 @@ export function analyzeProgressionActorAccounting(
         (item) =>
           item.status === "unresolved",
       ).length,
+    stateMachines,
+    completeStateMachines:
+      stateMachines.filter(
+        (item) =>
+          item.status === "complete",
+      ).length,
+    deadEndStateMachines:
+      stateMachines.filter(
+        (item) =>
+          item.status === "dead-end",
+      ).length,
+    unresolvedStateMachines:
+      stateMachines.filter(
+        (item) =>
+          item.status === "unresolved",
+      ).length,
+    sourceEnteredDeadEndStates:
+      stateMachines.reduce(
+        (count, item) =>
+          count +
+          item.sourceEnteredDeadEndStates
+            .length,
+        0,
+      ),
     reconciledFromMatchedActorLifecycle:
       counters.filter(
         (item) =>
