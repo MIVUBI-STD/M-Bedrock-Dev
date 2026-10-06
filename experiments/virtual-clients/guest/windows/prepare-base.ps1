@@ -19,81 +19,18 @@ if (!(Test-Path -LiteralPath $GuestAgentSource -PathType Leaf)) {
   throw "Virtual Guest Agent not found: $GuestAgentSource"
 }
 
-$dsreg = & "$env:SystemRoot\System32\dsregcmd.exe" /status 2>$null
+$dsregPath = Join-Path $env:SystemRoot 'System32\dsregcmd.exe'
+if (!(Test-Path -LiteralPath $dsregPath -PathType Leaf)) {
+  throw 'Windows device-registration inspector is unavailable.'
+}
+
+$dsreg = & $dsregPath /status 2>$null
 if ($LASTEXITCODE -ne 0) {
   throw 'Windows device-registration status could not be inspected.'
 }
-$azureAdJoined = [regex]::IsMatch(($dsreg -join [Environment]::NewLine), '(?im)^\s*AzureAdJoined\s*:\s*YES\s* @(Get-AppxPackage -AllUsers *MinecraftEducation* -ErrorAction SilentlyContinue)
-if ($store.Count -gt 0) {
-  throw 'Microsoft Store Minecraft Education is installed. Remove it before preparing a managed Desktop Base.'
-}
-
-$arguments = @('/qn', 'INSTALL_UPDATER="NONE"')
-$process = Start-Process -FilePath $MinecraftInstaller -ArgumentList $arguments -Wait -PassThru
-if ($process.ExitCode -ne 0) {
-  throw "Minecraft Education installer failed with exit code $($process.ExitCode)."
-}
-
-$updaterTask = Get-ScheduledTask -TaskName 'Minecraft Education Automatic Updater' -ErrorAction SilentlyContinue
-if ($updaterTask) {
-  Disable-ScheduledTask -InputObject $updaterTask | Out-Null
-}
-
-$registryPath = 'HKLM:\SOFTWARE\Microsoft\Microsoft Studios\Minecraft Education Edition'
-$version = (Get-ItemProperty -LiteralPath $registryPath -Name Version -ErrorAction Stop).Version
-if (!$version -or $version -notmatch '^\d+(\.\d+)+$') {
-  throw 'Minecraft Education desktop version could not be verified after installation.'
-}
-
-$agentInstaller = Join-Path $PSScriptRoot 'install-guest-agent.ps1'
-if (!(Test-Path -LiteralPath $agentInstaller -PathType Leaf)) {
-  throw "Guest Agent installer script is missing: $agentInstaller"
-}
-& $agentInstaller -AgentSource $GuestAgentSource
-
-[ordered]@{
-  minecraftVersion = [string]$version
-  installType = 'DESKTOP'
-  independentUpdaterEnabled = $false
-  guestAgentInstalled = $true
-  microsoftDeviceRegistrationClean = $true
-} | ConvertTo-Json
-)
-$workplaceJoined = [regex]::IsMatch(($dsreg -join [Environment]::NewLine), '(?im)^\s*WorkplaceJoined\s*:\s*YES\s* @(Get-AppxPackage -AllUsers *MinecraftEducation* -ErrorAction SilentlyContinue)
-if ($store.Count -gt 0) {
-  throw 'Microsoft Store Minecraft Education is installed. Remove it before preparing a managed Desktop Base.'
-}
-
-$arguments = @('/qn', 'INSTALL_UPDATER="NONE"')
-$process = Start-Process -FilePath $MinecraftInstaller -ArgumentList $arguments -Wait -PassThru
-if ($process.ExitCode -ne 0) {
-  throw "Minecraft Education installer failed with exit code $($process.ExitCode)."
-}
-
-$updaterTask = Get-ScheduledTask -TaskName 'Minecraft Education Automatic Updater' -ErrorAction SilentlyContinue
-if ($updaterTask) {
-  Disable-ScheduledTask -InputObject $updaterTask | Out-Null
-}
-
-$registryPath = 'HKLM:\SOFTWARE\Microsoft\Microsoft Studios\Minecraft Education Edition'
-$version = (Get-ItemProperty -LiteralPath $registryPath -Name Version -ErrorAction Stop).Version
-if (!$version -or $version -notmatch '^\d+(\.\d+)+$') {
-  throw 'Minecraft Education desktop version could not be verified after installation.'
-}
-
-$agentInstaller = Join-Path $PSScriptRoot 'install-guest-agent.ps1'
-if (!(Test-Path -LiteralPath $agentInstaller -PathType Leaf)) {
-  throw "Guest Agent installer script is missing: $agentInstaller"
-}
-& $agentInstaller -AgentSource $GuestAgentSource
-
-[ordered]@{
-  minecraftVersion = [string]$version
-  installType = 'DESKTOP'
-  independentUpdaterEnabled = $false
-  guestAgentInstalled = $true
-} | ConvertTo-Json
-)
+$dsregText = $dsreg -join [Environment]::NewLine
+$azureAdJoined = [regex]::IsMatch($dsregText, '(?im)^\s*AzureAdJoined\s*:\s*YES\s*$')
+$workplaceJoined = [regex]::IsMatch($dsregText, '(?im)^\s*WorkplaceJoined\s*:\s*YES\s*$')
 if ($azureAdJoined -or $workplaceJoined) {
   throw 'Base must not be Microsoft Entra joined or Workplace joined before cloning.'
 }
@@ -131,4 +68,5 @@ if (!(Test-Path -LiteralPath $agentInstaller -PathType Leaf)) {
   installType = 'DESKTOP'
   independentUpdaterEnabled = $false
   guestAgentInstalled = $true
+  microsoftDeviceRegistrationClean = $true
 } | ConvertTo-Json
