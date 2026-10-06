@@ -1933,6 +1933,98 @@
       ]
     },
     {
+      "knowledgeId": "structure.block-save-entities",
+      "consumer": "structure-runtime-analysis",
+      "analyzerPaths": [
+        "engine/adapters/mcstructure/src/runtime-content.ts",
+        "engine/packages/orchestrator/src/inspection/structure-runtime-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/structure-runtime-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "structure.command-block-facing-state",
+      "consumer": "command-block-chain-analysis",
+      "analyzerPaths": [
+        "engine/adapters/mcstructure/src/command-chain.ts"
+      ],
+      "proofPaths": [
+        "engine/adapters/mcstructure/test/command-chain.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "structure.command-chain-directional",
+      "consumer": "command-block-chain-analysis",
+      "analyzerPaths": [
+        "engine/adapters/mcstructure/src/command-chain.ts"
+      ],
+      "proofPaths": [
+        "engine/adapters/mcstructure/test/command-chain.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "structure.load.blocks-default-true",
+      "consumer": "structure-load-semantics",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/structure-semantics.ts",
+        "engine/packages/orchestrator/src/inspection/structure-runtime-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/commands/test/structure-tickingarea.test.ts",
+        "engine/packages/orchestrator/test/structure-runtime-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "structure.load.entities-default-true",
+      "consumer": "structure-load-semantics",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/structure-semantics.ts",
+        "engine/packages/orchestrator/src/inspection/structure-runtime-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/commands/test/structure-tickingarea.test.ts",
+        "engine/packages/orchestrator/test/structure-runtime-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "structure.load.integrity-probabilistic",
+      "consumer": "structure-runtime-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/structure-semantics.ts",
+        "engine/packages/orchestrator/src/inspection/structure-runtime-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/commands/test/structure-tickingarea.test.ts",
+        "engine/packages/orchestrator/test/structure-runtime-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "structure.load.seed-integrity",
+      "consumer": "structure-load-semantics",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/structure-semantics.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/commands/test/structure-tickingarea.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "structure.load.transform",
+      "consumer": "structure-placement-transform",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/structure-semantics.ts",
+        "engine/adapters/mcstructure/src/placement-transform.ts",
+        "engine/packages/orchestrator/src/inspection/structure-placement-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/structure-runtime-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/commands/test/structure-tickingarea.test.ts",
+        "engine/adapters/mcstructure/test/placement-transform.test.ts",
+        "engine/packages/orchestrator/test/structure-runtime-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "world-policy.logical-bounds-not-collision-proof",
       "consumer": "arena-barrier-enclosure-proof",
       "analyzerPaths": [
