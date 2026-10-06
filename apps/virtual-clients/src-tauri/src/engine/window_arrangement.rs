@@ -48,6 +48,83 @@ fn validate_request(request: &WindowLayoutRequest) -> io::Result<()> {
     Ok(())
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct Rect {
+    x: i32,
+    y: i32,
+    width: i32,
+    height: i32,
+}
+
+fn calculate_slots(layout: &WindowLayout, area: Rect, count: usize) -> Vec<Rect> {
+    if count == 0 { return Vec::new(); }
+    if count == 1 { return vec![area]; }
+
+    match layout {
+        WindowLayout::Columns => {
+            let width = area.width / count as i32;
+            (0..count).map(|index| {
+                let x = area.x + index as i32 * width;
+                Rect {
+                    x,
+                    y: area.y,
+                    width: if index + 1 == count { area.x + area.width - x } else { width },
+                    height: area.height,
+                }
+            }).collect()
+        }
+        WindowLayout::Focus => {
+            let main_width = (area.width as f64 * 0.68).floor() as i32;
+            let side_width = area.width - main_width;
+            let side_count = count - 1;
+            let side_height = area.height / side_count as i32;
+            let mut slots = vec![Rect { x: area.x, y: area.y, width: main_width, height: area.height }];
+            slots.extend((0..side_count).map(|index| {
+                let y = area.y + index as i32 * side_height;
+                Rect {
+                    x: area.x + main_width,
+                    y,
+                    width: side_width,
+                    height: if index + 1 == side_count { area.y + area.height - y } else { side_height },
+                }
+            }));
+            slots
+        }
+        WindowLayout::Grid if count == 2 => {
+            let width = area.width / 2;
+            vec![
+                Rect { x: area.x, y: area.y, width, height: area.height },
+                Rect { x: area.x + width, y: area.y, width: area.width - width, height: area.height },
+            ]
+        }
+        WindowLayout::Grid if count == 3 => {
+            let width = area.width / 2;
+            let height = area.height / 2;
+            vec![
+                Rect { x: area.x, y: area.y, width, height },
+                Rect { x: area.x + width, y: area.y, width: area.width - width, height },
+                Rect { x: area.x, y: area.y + height, width: area.width, height: area.height - height },
+            ]
+        }
+        WindowLayout::Grid => {
+            let width = area.width / 2;
+            let height = area.height / 2;
+            (0..count.min(4)).map(|index| {
+                let column = index % 2;
+                let row = index / 2;
+                let x = area.x + column as i32 * width;
+                let y = area.y + row as i32 * height;
+                Rect {
+                    x,
+                    y,
+                    width: if column == 1 { area.x + area.width - x } else { width },
+                    height: if row == 1 { area.y + area.height - y } else { height },
+                }
+            }).collect()
+        }
+    }
+}
+
 #[cfg(target_os = "windows")]
 pub fn displays() -> io::Result<Vec<DisplayInfo>> {
     use std::process::Command;
@@ -213,7 +290,24 @@ pub fn arrange(request: WindowLayoutRequest) -> io::Result<WindowArrangementResu
 
 #[cfg(test)]
 mod tests {
-    use super::{validate_request, WindowLayout, WindowLayoutRequest};
+    use super::{calculate_slots, validate_request, Rect, WindowLayout, WindowLayoutRequest};
+
+    #[test]
+    fn layout_geometry_is_adaptive_and_gap_free() {
+        let area = Rect { x: 0, y: 0, width: 1200, height: 800 };
+        let grid = calculate_slots(&WindowLayout::Grid, area, 3);
+        assert_eq!(grid.len(), 3);
+        assert_eq!(grid[2], Rect { x: 0, y: 400, width: 1200, height: 400 });
+
+        let focus = calculate_slots(&WindowLayout::Focus, area, 4);
+        assert_eq!(focus.len(), 4);
+        assert_eq!(focus[0].height, 800);
+        assert_eq!(focus.iter().skip(1).map(|slot| slot.height).sum::<i32>(), 800);
+
+        let columns = calculate_slots(&WindowLayout::Columns, area, 4);
+        assert_eq!(columns.len(), 4);
+        assert_eq!(columns.iter().map(|slot| slot.width).sum::<i32>(), 1200);
+    }
 
     #[test]
     fn focus_requires_known_main_window() {
