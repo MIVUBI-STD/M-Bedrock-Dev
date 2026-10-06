@@ -25,7 +25,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "provision" => print_json(&lab.provision()?)?,
         "status" => print_json(&lab.status()?)?,
         "resources" => {
-            let count = args.next().ok_or("virtual client count is required")?.parse::<usize>()?;
+            let count = args
+                .next()
+                .ok_or("virtual client count is required")?
+                .parse::<usize>()?;
             print_json(&lab.resources(count)?)?;
         }
         "reprovision" => {
@@ -33,7 +36,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             print_json(&lab.reprovision(client)?)?;
         }
         "start" => {
-            let count = args.next().ok_or("virtual client count is required")?.parse::<usize>()?;
+            let count = args
+                .next()
+                .ok_or("virtual client count is required")?
+                .parse::<usize>()?;
             print_json(&lab.start(count)?)?;
         }
         "suspend" => {
