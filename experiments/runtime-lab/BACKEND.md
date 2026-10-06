@@ -104,3 +104,22 @@ No parallel state database exists.
 ## Frontend boundary
 
 A future Svelte/Tauri layer must consume this Rust core. It must not duplicate lifecycle, pressure, identity, or provider policy.
+
+
+## Disk policy
+
+Runtime Lab does not automatically shrink or compact Virtual disks.
+
+Virtual instances are linked clones and also use the `QA_READY` snapshot. VMware disk shrink/cleanup has snapshot-related constraints and interruption risk, so automatic compaction is intentionally outside the normal lifecycle.
+
+The safe cleanup path is:
+
+```text
+fully stop Virtual
+→ reprovision Virtual
+→ rebuild a fresh linked clone from Base
+→ configure instance identity/session again
+→ set-ready
+```
+
+This keeps disk hygiene aligned with the disposable-instance model instead of mutating a live snapshot chain.
