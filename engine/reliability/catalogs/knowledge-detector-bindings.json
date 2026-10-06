@@ -348,6 +348,19 @@
       ]
     },
     {
+      "knowledgeId": "round-policy.participant-set-authoritative",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/arena/arena-authority-evidence.ts",
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/arena/arena-authority-evidence.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "round-policy.single-terminal-owner",
       "consumer": "arena-lifecycle-analysis",
       "analyzerPaths": [
