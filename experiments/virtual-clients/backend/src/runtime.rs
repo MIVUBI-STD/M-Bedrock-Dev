@@ -14,7 +14,7 @@ use std::{
 };
 
 #[derive(Debug, Default)]
-pub struct RuntimeLab;
+pub struct VirtualClients;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -58,7 +58,7 @@ impl OperationLock {
             if error.kind() == io::ErrorKind::WouldBlock {
                 io::Error::new(
                     io::ErrorKind::WouldBlock,
-                    "another Runtime Lab operation is already running",
+                    "another Virtual Clients operation is already running",
                 )
             } else {
                 error
@@ -167,7 +167,7 @@ fn client_status(
     })
 }
 
-impl RuntimeLab {
+impl VirtualClients {
     pub fn doctor(&self) -> DoctorReport {
         doctor()
     }
