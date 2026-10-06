@@ -4,6 +4,9 @@ use m_bedrock_virtual_clients_core::{
     guest_agent_minecraft_profile, GuestStatus, GUEST_AGENT_PORT,
     GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA,
 };
+
+const INTERACTIVE_LAUNCHER_ADDRESS: &str = INTERACTIVE_LAUNCHER_ADDRESS;
+const INTERACTIVE_LAUNCH_TIMEOUT: Duration = INTERACTIVE_LAUNCH_TIMEOUT;
 #[cfg(target_os = "windows")]
 use sha2::{Digest, Sha256};
 use std::{
@@ -38,7 +41,7 @@ const INTERACTIVE_LAUNCHER_PORT: u16 = 47832;
 
 #[cfg(target_os = "windows")]
 fn interactive_launcher_ready() -> bool {
-    let Ok(address) = "127.0.0.1:47832".parse() else { return false; };
+    let Ok(address) = INTERACTIVE_LAUNCHER_ADDRESS.parse() else { return false; };
     let Ok(mut stream) = TcpStream::connect_timeout(&address, Duration::from_millis(150)) else { return false; };
     let request_id = "0000000000000000";
     if stream.set_read_timeout(Some(Duration::from_millis(250))).is_err()
@@ -59,10 +62,10 @@ fn request_interactive_minecraft_launch() -> Result<m_bedrock_virtual_clients_co
         return Ok(MinecraftLaunchResult { schema: 1, state: MinecraftLaunchState::AlreadyRunning });
     }
 
-    let address = "127.0.0.1:47832".parse()?;
+    let address = INTERACTIVE_LAUNCHER_ADDRESS.parse()?;
     let mut stream = TcpStream::connect_timeout(&address, Duration::from_secs(1))
         .map_err(|_| io::Error::new(io::ErrorKind::NotConnected, "Interactive launcher is not active for the signed-in Windows user"))?;
-    stream.set_read_timeout(Some(Duration::from_secs(35)))?;
+    stream.set_read_timeout(Some(INTERACTIVE_LAUNCH_TIMEOUT))?;
     stream.set_write_timeout(Some(Duration::from_secs(2)))?;
 
     let request_id = format!("{:016x}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_nanos());
@@ -114,7 +117,7 @@ fn run_interactive_launcher() -> Result<(), Box<dyn std::error::Error>> {
     for incoming in listener.incoming() {
         let Ok(mut stream) = incoming else { continue; };
         stream.set_read_timeout(Some(Duration::from_secs(2)))?;
-        stream.set_write_timeout(Some(Duration::from_secs(35)))?;
+        stream.set_write_timeout(Some(INTERACTIVE_LAUNCH_TIMEOUT))?;
         let mut request = String::new();
         stream.read_to_string(&mut request)?;
         if request.trim().is_empty() { continue; }
