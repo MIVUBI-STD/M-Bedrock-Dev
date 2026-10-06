@@ -52,7 +52,7 @@ Native Minecraft
 
 A mismatch is not a warning-only state for boot operations.
 
-Boot paths require:
+Verified daily boot paths require:
 
 1. Native version detectable;
 2. registered Base profile present;
@@ -294,3 +294,42 @@ Machine-facing schema-1 command names, state enums and QA_READY snapshot identit
 remain unchanged. Presentation labels translate those identifiers; no command
 aliases or second persisted state are introduced. Backend-origin progress events
 and measured lightweight status performance remain separate pending work.
+
+## First-time setup boot and command activity
+
+`start-setup <Virtual-01..03>` is the explicit first-boot operation for a fresh
+client. It uses the same operation lock, admission policy, provider startup and
+rollback owner as daily startup. It requires a readable client profile with both
+identity proofs absent, independently unique VM identity, no recovery point, a
+finalized stopped compatible Base, current client lineage, and memory admission.
+Partial/unreadable provenance is not treated as a fresh profile.
+
+The operation starts/resumes the selected VM and opens its VMware window. It
+returns observed power state with unknown Guest Agent/Minecraft/Windows identity
+status, without waiting for OOBE or writing identity proof. Missing Guest Agent
+during this explicit setup operation does not trigger the daily 90-second
+verification rollback. Actual provider start/open failures still use rollback;
+a pre-existing running client remains running on UI-open failure.
+
+`verify-identities` remains the only identity-proof writer and still requires
+all three running guests to pass live compatibility and uniqueness checks.
+Normal Start/Resume/Restart/Reset verification remains unchanged. The desktop
+shows first-time setup from optional `actions.startSetup` availability, prevents
+fallback to daily Start when that setup action is blocked, and keeps batch daily
+Start out of the identity-setup screen. The host's recommendation is displayed
+beside the all-three-running requirement; it is not a capacity guarantee.
+
+Command activity has an optional, per-invocation observer and versioned DTO:
+schema 1, phase EXECUTING / SUCCEEDED / FAILED. It reports command dispatch and
+serialized result only, not internal VM stages or percentage completion.
+The existing CLI entry delegates to the same implementation without an observer.
+The Tauri adapter forwards at most two messages through a per-invocation Channel;
+channel-send failure cannot fail or retry the operation. The frontend validates
+messages, ignores late callbacks after settlement, and keeps busy until normal
+result parsing and state reconciliation finish. Invalid telemetry means progress
+unavailable, not operation failure. No global event bus or persistent progress
+state is introduced. See the [Tauri channel API](https://v2.tauri.app/develop/calling-frontend/).
+
+Source implementation is not build, OOBE, transport-delivery or multiplayer proof.
+Detailed internal stages, measured read-performance, and target acceptance remain
+pending.

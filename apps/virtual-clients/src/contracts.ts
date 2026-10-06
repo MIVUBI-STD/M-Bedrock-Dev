@@ -44,6 +44,7 @@ export interface ActionAvailability {
 export interface ClientLifecycleActions {
   id: Exclude<ClientId, "Native">;
   start: ActionAvailability;
+  startSetup?: ActionAvailability;
   suspend: ActionAvailability;
   stop: ActionAvailability;
   open: ActionAvailability;
@@ -152,6 +153,11 @@ export interface EnginePolicy {
   readySnapshotName: string;
   nativeIsVersionAuthority: boolean;
   runtimeSelfUpdateEnabled: boolean;
+}
+
+export interface OperationProgress {
+  schema: 1;
+  phase: "EXECUTING" | "SUCCEEDED" | "FAILED";
 }
 
 export interface OperationRecord {

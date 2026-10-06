@@ -81,6 +81,13 @@ describe("Backend payload shapes", () => {
     expect(lifecycleActions([all[0], all[0], all[2]])).toBe(false);
   });
 
+  it("validates optional setup action availability without requiring it from older responses", () => {
+    const all = ["Virtual-01", "Virtual-02", "Virtual-03"].map(actionsFor);
+    expect(lifecycleActions(all)).toBe(true);
+    expect(lifecycleActions(all.map((item) => ({ ...item, startSetup: allowed })))).toBe(true);
+    expect(lifecycleActions(all.map((item) => ({ ...item, startSetup: { allowed: "yes" } })))).toBe(false);
+  });
+
   it("checks the allowed/blocker invariant and optional explanation", () => {
     expect(actionAvailability(allowed)).toBe(true);
     expect(actionAvailability({ allowed: false, blocker: "INVALID_STATE", reason: "Memory pressure" })).toBe(true);
@@ -117,7 +124,7 @@ describe("Frontend boundary wiring", () => {
     const source = readFileSync(new URL("../src/app/bridge/virtualClientsApi.ts", import.meta.url), "utf8");
     expect(source).toContain("parseSuccessEnvelope<T>(raw, validate)");
     const commands = source.match(/invokePublic<[^>]+>\("virtual_clients_[^"]+", payload\.[A-Za-z]+/g) ?? [];
-    expect(commands.length).toBe(21);
+    expect(commands.length).toBe(22);
   });
 
   it("refreshes on return without introducing a diagnostic polling loop", () => {

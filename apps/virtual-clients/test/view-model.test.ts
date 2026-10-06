@@ -128,3 +128,18 @@ describe("Admission presentation", () => {
     expect(blockerLabel(blocked.blocker, blocked.reason)).toBe(blocked.reason);
   });
 });
+
+describe("First-time setup action", () => {
+  it("uses backend setup availability before daily start", () => {
+    const available = { ...actions[0], start: allow, startSetup: allow };
+    expect(primaryClientAction(available, "STOPPED")).toEqual({ kind: "start-setup", label: "Start first-time setup" });
+    expect(primaryClientAction(available, "RUNNING")).toEqual({ kind: "open", label: "Open" });
+  });
+
+  it("does not bypass blocked setup with daily Start", () => {
+    const blocked = { ...deny, reason: "VM identity is unknown." };
+    const available = { ...actions[0], start: allow, startSetup: blocked };
+    expect(primaryClientAction(available, "STOPPED")).toBeUndefined();
+    expect(primaryClientBlocker(available, "STOPPED")).toBe(blocked.reason);
+  });
+});

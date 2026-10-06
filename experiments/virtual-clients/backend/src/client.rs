@@ -78,6 +78,8 @@ pub struct ActionAvailability {
 pub struct ClientLifecycleActions {
     pub id: &'static str,
     pub start: ActionAvailability,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub start_setup: Option<ActionAvailability>,
     pub suspend: ActionAvailability,
     pub stop: ActionAvailability,
     pub open: ActionAvailability,

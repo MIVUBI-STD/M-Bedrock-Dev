@@ -20,6 +20,7 @@ fn print_help() {
     println!("  verify-identities");
     println!("  reprovision <Virtual-01..03> --destroy-account-state");
     println!("  start <1-3>");
+    println!("  start-setup <Virtual-01..03>");
     println!("  open <Virtual-01..03>");
     println!("  suspend [Virtual-01..03]");
     println!("  restart <Virtual-01..03>");

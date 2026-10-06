@@ -9,6 +9,7 @@ use std::io;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum LifecycleAction {
     Start,
+    StartSetup,
     Suspend,
     Stop,
     Open,
@@ -32,7 +33,7 @@ pub(super) fn validate_power_state(
     }
 
     let valid = match action {
-        LifecycleAction::Start => matches!(
+        LifecycleAction::Start | LifecycleAction::StartSetup => matches!(
             state,
             ClientState::Stopped | ClientState::Suspended | ClientState::Running
         ),
@@ -64,6 +65,7 @@ pub(super) fn validate_power_state(
 
     let action_name = match action {
         LifecycleAction::Start => "start",
+        LifecycleAction::StartSetup => "start-setup",
         LifecycleAction::Suspend => "suspend",
         LifecycleAction::Stop => "stop",
         LifecycleAction::Open => "open",
@@ -127,6 +129,8 @@ pub(super) struct LifecycleFacts {
     pub(super) saved_vm_identity_matches: bool,
     pub(super) vm_identity_duplicate: bool,
     pub(super) identity_verified: bool,
+    pub(super) fresh_client_profile: bool,
+    pub(super) vm_identity_unique: bool,
     pub(super) base_finalized_and_stopped: bool,
     pub(super) can_start: bool,
 }
@@ -139,7 +143,7 @@ pub(super) fn evaluate_lifecycle_admission(
     facts: &LifecycleFacts,
 ) -> ActionAvailability {
     if !client.is_native()
-        && matches!(action, LifecycleAction::SetReady | LifecycleAction::Reset)
+        && matches!(action, LifecycleAction::SetReady | LifecycleAction::Reset | LifecycleAction::StartSetup)
         && facts.ready_snapshot.is_none()
     {
         return ActionAvailability {
@@ -191,10 +195,15 @@ pub(super) fn evaluate_lifecycle_admission(
     if facts.vm_identity_duplicate {
         return blocked("A VM UUID or MAC address is shared with another client.");
     }
+    if action == LifecycleAction::StartSetup
+        && (!facts.fresh_client_profile || facts.ready_snapshot != Some(false) || !facts.vm_identity_unique || !facts.base_finalized_and_stopped)
+    {
+        return blocked("First-time setup requires a fresh client, unique VM identity, no recovery point, and a finalized stopped Base.");
+    }
     if action == LifecycleAction::SetReady && !facts.identity_verified {
         return blocked("Verify client identities before saving a recovery point.");
     }
-    if matches!(action, LifecycleAction::Start | LifecycleAction::Reset)
+    if matches!(action, LifecycleAction::Start | LifecycleAction::Reset | LifecycleAction::StartSetup)
         && facts.state != ClientState::Running
         && !facts.can_start
     {
@@ -401,6 +410,8 @@ mod tests {
             saved_vm_identity_matches: true,
             vm_identity_duplicate: false,
             identity_verified: true,
+            fresh_client_profile: false,
+            vm_identity_unique: true,
             base_finalized_and_stopped: true,
             can_start: true,
         }
@@ -413,7 +424,7 @@ mod tests {
             ClientState::Suspended, ClientState::Running, ClientState::Error,
         ] {
             for action in [
-                LifecycleAction::Start, LifecycleAction::Suspend, LifecycleAction::Stop,
+                LifecycleAction::Start, LifecycleAction::StartSetup, LifecycleAction::Suspend, LifecycleAction::Stop,
                 LifecycleAction::Open, LifecycleAction::Restart, LifecycleAction::SetReady,
                 LifecycleAction::Reset, LifecycleAction::Reprovision,
             ] {
@@ -517,7 +528,7 @@ mod tests {
     fn native_client_never_receives_vm_lifecycle_permission() {
         let facts = admitted_facts(ClientState::Running);
         for action in [
-            LifecycleAction::Start, LifecycleAction::Suspend, LifecycleAction::Stop,
+            LifecycleAction::Start, LifecycleAction::StartSetup, LifecycleAction::Suspend, LifecycleAction::Stop,
             LifecycleAction::Open, LifecycleAction::Restart, LifecycleAction::SetReady,
             LifecycleAction::Reset, LifecycleAction::Reprovision,
         ] {
@@ -538,6 +549,33 @@ mod tests {
             let result = super::evaluate_lifecycle_admission(ClientId::Virtual01, action, &facts);
             assert!(!result.allowed);
             assert_eq!(result.reason, Some("Runtime data is incompatible with this application."));
+        }
+    }
+
+    #[test]
+    fn first_boot_requires_fresh_profile_unique_vm_and_no_recovery_point() {
+        let base = super::LifecycleFacts {
+            identity_verified: false,
+            fresh_client_profile: true,
+            ..admitted_facts(ClientState::Stopped)
+        };
+        assert!(super::evaluate_lifecycle_admission(
+            ClientId::Virtual01, LifecycleAction::StartSetup, &base,
+        ).allowed);
+        for facts in [
+            super::LifecycleFacts { fresh_client_profile: false, ..base.clone() },
+            super::LifecycleFacts { vm_identity_unique: false, ..base.clone() },
+            super::LifecycleFacts { ready_snapshot: Some(true), ..base.clone() },
+            super::LifecycleFacts { ready_snapshot: None, ..base.clone() },
+            super::LifecycleFacts { can_start: false, ..base.clone() },
+            super::LifecycleFacts { client_compatible: false, ..base.clone() },
+            super::LifecycleFacts { base_compatible: false, ..base.clone() },
+            super::LifecycleFacts { schema_ready: false, ..base.clone() },
+            super::LifecycleFacts { base_finalized_and_stopped: false, ..base.clone() },
+        ] {
+            assert!(!super::evaluate_lifecycle_admission(
+                ClientId::Virtual01, LifecycleAction::StartSetup, &facts,
+            ).allowed);
         }
     }
 

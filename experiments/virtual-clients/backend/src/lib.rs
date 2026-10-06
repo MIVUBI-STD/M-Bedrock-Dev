@@ -26,7 +26,10 @@ pub use client::{
     ActionAvailability, ClientId, ClientLifecycleActions, ClientState, ClientStatus,
     DestructiveConfirmation, IdentityState, LifecycleBlocker,
 };
-pub use command::{execute_public_command, PublicCommandResult};
+pub use command::{
+    execute_public_command, execute_public_command_with_progress, OperationPhase, OperationProgress,
+    PublicCommandResult,
+};
 pub use contract::{SuccessReport, PUBLIC_CONTRACT_SCHEMA};
 pub use diagnostics::{
     DiagnosticsReport, HostDiagnostics, ProviderDiagnostics, VirtualHardwareDiagnostics,

@@ -199,6 +199,27 @@ This is a bounded maintainability delivery, not closure of remaining Stage 2
 observability. Backend-origin progress, measured status-read performance,
 first-boot usability and compatibility work remain pending as listed above.
 
+### First-boot and command-activity checkpoint (2026-10-06)
+
+User continuation now requests completing implementation without repeated
+continuation prompts. Preserve no-Codex/Work and no-CI execution constraints.
+
+Implemented source in the current pass:
+- Explicit per-client start-setup with backend-owned optional action availability.
+- Fresh profile/no-checkpoint/unique-VM/finalized-Base/memory gates under lock.
+- Existing startup rollback reused; no OOBE wait or premature identity proof.
+- Daily startup verification and all-three identity verification remain intact.
+- Frontend setup action, capacity disclosure, command routing and payload validation.
+- Per-invocation backend command activity through Tauri Channel to Svelte.
+- Activity cannot release busy or substitute for final result/reconciliation.
+- Fourteen new regression cases written (six Rust, eight frontend), not executed.
+
+Next bounded source work: reconcile Doctor's stored identity milestone with
+current VM identity evidence, and fix update staging state when its installer is
+missing. Do not relax exact Guest Agent compatibility without a proven protocol
+matrix. Remaining detailed progress, performance and real-machine acceptance must
+be named explicitly rather than marked complete by source inspection.
+
 ### Source-grounded findings (review baseline, before Stage 1 changes)
 
 1. **Incomplete batch failure cleanup.**

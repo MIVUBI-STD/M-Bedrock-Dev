@@ -1,3 +1,5 @@
+import { Channel } from "@tauri-apps/api/core";
+import { isOperationProgress, type ProgressObserver } from "../operationProgress.js";
 import {
   parseErrorEnvelope,
   parseSuccessEnvelope,
@@ -26,9 +28,14 @@ export class BackendBridgeError extends Error {
   }
 }
 
-async function invokePublic<T>(tauriCommand: string, validate: PayloadValidator<T>, args?: Record<string, unknown>): Promise<T> {
+async function invokePublic<T>(tauriCommand: string, validate: PayloadValidator<T>, args?: Record<string, unknown>, onProgress?: ProgressObserver): Promise<T> {
+  let active = true;
+  const channel = onProgress ? new Channel<unknown>() : undefined;
+  if (channel) channel.onmessage = (event) => {
+    if (active) onProgress?.(isOperationProgress(event) ? event : undefined);
+  };
   try {
-    const raw = await invokeRuntime<string>(tauriCommand, args);
+    const raw = await invokeRuntime<string>(tauriCommand, channel ? { ...args, onProgress: channel } : args);
     const report = parseErrorEnvelope(raw);
     if (report) throw new BackendBridgeError(report.code, report.message, report.retryable);
     return parseSuccessEnvelope<T>(raw, validate);
@@ -41,6 +48,9 @@ async function invokePublic<T>(tauriCommand: string, validate: PayloadValidator<
     }
     if (error instanceof Error) throw new BackendBridgeError("TAURI_COMMAND_FAILED", error.message, false);
     throw new BackendBridgeError("TAURI_COMMAND_FAILED", String(error), false);
+  } finally {
+    active = false;
+    if (channel) channel.onmessage = () => {};
   }
 }
 
@@ -68,20 +78,21 @@ export const backend = {
   snapshot: () => invokePublic<EngineSnapshot>("virtual_clients_snapshot", payload.engineSnapshot),
   actions: () => invokePublic<ClientLifecycleActions[]>("virtual_clients_actions", payload.lifecycleActions),
   history: () => invokePublic<OperationRecord[]>("virtual_clients_history", payload.operationHistory),
-  supportBundle: () => invokePublic<SupportBundleResult>("virtual_clients_support_bundle", payload.supportBundle),
+  supportBundle: (onProgress?: ProgressObserver) => invokePublic<SupportBundleResult>("virtual_clients_support_bundle", payload.supportBundle, undefined, onProgress),
   checkUpdate: () => invokePublic<UpdateCheck>("virtual_clients_check_update", payload.updateCheck),
-  registerBase: () => invokePublic<unknown>("virtual_clients_register_base", payload.baseProfile),
-  openBaseFinalization: () => invokePublic<unknown>("virtual_clients_open_base_finalization", payload.openedBase),
-  provision: () => invokePublic<unknown>("virtual_clients_provision", payload.clientList),
-  verifyIdentities: () => invokePublic<unknown>("virtual_clients_verify_identities", payload.clientList),
-  stageUpdate: () => invokePublic<unknown>("virtual_clients_stage_update", payload.stagedUpdate),
-  start: (count: number) => invokePublic<unknown>("virtual_clients_start", payload.clientList, { count }),
-  startClient: (client: ClientId) => invokePublic<unknown>("virtual_clients_start_client", payload.clientStatus, { client }),
-  suspend: (client?: ClientId) => invokePublic<unknown>("virtual_clients_suspend", payload.clientList, { client }),
-  stop: (client?: ClientId) => invokePublic<unknown>("virtual_clients_stop", payload.clientList, { client }),
-  restart: (client: ClientId) => invokePublic<unknown>("virtual_clients_restart", payload.clientStatus, { client }),
-  setReady: (client: ClientId) => invokePublic<unknown>("virtual_clients_set_ready", payload.clientStatus, { client }),
-  reset: (client: ClientId) => invokePublic<unknown>("virtual_clients_reset", payload.clientStatus, { client }),
-  open: (client: ClientId) => invokePublic<unknown>("virtual_clients_open", payload.clientStatus, { client }),
-  reprovision: (client: ClientId) => invokePublic<unknown>("virtual_clients_reprovision", payload.clientStatus, { client })
+  registerBase: (onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_register_base", payload.baseProfile, undefined, onProgress),
+  openBaseFinalization: (onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_open_base_finalization", payload.openedBase, undefined, onProgress),
+  provision: (onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_provision", payload.clientList, undefined, onProgress),
+  verifyIdentities: (onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_verify_identities", payload.clientList, undefined, onProgress),
+  stageUpdate: (onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_stage_update", payload.stagedUpdate, undefined, onProgress),
+  start: (count: number, onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_start", payload.clientList, { count }, onProgress),
+  startSetup: (client: ClientId, onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_start_setup", payload.clientStatus, { client }, onProgress),
+  startClient: (client: ClientId, onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_start_client", payload.clientStatus, { client }, onProgress),
+  suspend: (client?: ClientId, onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_suspend", payload.clientList, { client }, onProgress),
+  stop: (client?: ClientId, onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_stop", payload.clientList, { client }, onProgress),
+  restart: (client: ClientId, onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_restart", payload.clientStatus, { client }, onProgress),
+  setReady: (client: ClientId, onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_set_ready", payload.clientStatus, { client }, onProgress),
+  reset: (client: ClientId, onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_reset", payload.clientStatus, { client }, onProgress),
+  open: (client: ClientId, onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_open", payload.clientStatus, { client }, onProgress),
+  reprovision: (client: ClientId, onProgress?: ProgressObserver) => invokePublic<unknown>("virtual_clients_reprovision", payload.clientStatus, { client }, onProgress)
 };

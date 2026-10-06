@@ -9,6 +9,7 @@
   import SupportSurface from "./app/surfaces/SupportSurface.svelte";
   import RecreateClientDialog from "./app/components/RecreateClientDialog.svelte";
   import RestoreRecoveryPointDialog from "./app/components/RestoreRecoveryPointDialog.svelte";
+  import { operationProgressLabel, type ProgressObserver } from "./app/operationProgress.js";
   import { settleMutation } from "./app/mutation.js";
   import SaveRecoveryPointDialog from "./app/components/SaveRecoveryPointDialog.svelte";
   import type {
@@ -39,6 +40,11 @@
   let confirmSetReady: ClientStatus["id"] | undefined;
   let loading = true;
   let busy = "";
+  let operationStatus = "";
+  let disposed = false;
+  const reportProgress: ProgressObserver = (progress) => {
+    if (!disposed) operationStatus = operationProgressLabel(progress);
+  };
   let error: RuntimeErrorPresentation | undefined;
   let supportPath = "";
   let arrangeMessage = "";
@@ -119,25 +125,36 @@
   }
 
   async function stageApplicationUpdate() {
+    if (busy || loading || refreshRunning) return;
+    operationStatus = "Waiting for backend confirmation…";
     busy = "stage-update";
     error = undefined;
     try {
-      await backend.stageUpdate();
+      await backend.stageUpdate(reportProgress);
+      operationStatus = "Checking update state…";
       update = await backend.checkUpdate();
     } catch (value) {
       error = presentRuntimeError(value);
     } finally {
       busy = "";
+      operationStatus = "";
     }
   }
 
-  async function mutate(label: string, operation: () => Promise<unknown>) {
+  async function mutate(label: string, operation: (onProgress: ProgressObserver) => Promise<unknown>) {
     if (busy || loading) return;
     busy = label;
+    operationStatus = "Waiting for backend confirmation…";
     error = undefined;
     refreshFailed = false;
     try {
-      const result = await settleMutation(operation, loadState);
+      const result = await settleMutation(
+        () => operation(reportProgress),
+        async () => {
+          operationStatus = "Refreshing current client state…";
+          await loadState();
+        },
+      );
       refreshFailed = !result.refresh.ok;
       if (!result.operation.ok) {
         error = presentRuntimeError(result.operation.error);
@@ -146,6 +163,7 @@
       }
     } finally {
       busy = "";
+      operationStatus = "";
     }
   }
 
@@ -164,14 +182,15 @@
   async function runPrimaryClientAction(client: ClientStatus, available: ClientLifecycleActions) {
     const primary = primaryClientAction(available, client.state);
     if (!primary) return;
-    if (primary.kind === "open") return mutate(`open-${client.id}`, () => backend.open(client.id));
-    return mutate(`start-${client.id}`, () => backend.startClient(client.id));
+    if (primary.kind === "start-setup") return mutate(`setup-${client.id}`, (onProgress) => backend.startSetup(client.id, onProgress));
+    if (primary.kind === "open") return mutate(`open-${client.id}`, (onProgress) => backend.open(client.id, onProgress));
+    return mutate(`start-${client.id}`, (onProgress) => backend.startClient(client.id, onProgress));
   }
 
   async function startAll() {
     if (!policy) return;
     const count = policy.maxVirtualClients;
-    await mutate("start-all", () => backend.start(count));
+    await mutate("start-all", (onProgress) => backend.start(count, onProgress));
   }
 
   async function openBaseFinalization() {
@@ -197,14 +216,17 @@
   }
 
   async function arrangeWindows() {
+    if (busy || loading || refreshRunning) return;
+    operationStatus = "Waiting for backend confirmation…";
     busy = "arrange";
     error = undefined;
     arrangeMessage = "";
     try {
       for (const client of virtuals) {
         const available = clientActions(client);
-        if (client.state === "RUNNING" && available?.open.allowed) await backend.open(client.id);
+        if (client.state === "RUNNING" && available?.open.allowed) await backend.open(client.id, reportProgress);
       }
+      operationStatus = "Arranging client windows…";
       const result = await desktop.arrangeWindows();
       if (result.arranged.length === 0) {
         throw new BackendBridgeError("WINDOWS_NOT_FOUND", "No Minecraft client windows are currently open.", true);
@@ -215,20 +237,25 @@
       error = presentRuntimeError(value);
     } finally {
       busy = "";
+      operationStatus = "";
     }
   }
 
   async function createSupportBundle() {
+    if (busy || loading || refreshRunning) return;
+    operationStatus = "Waiting for backend confirmation…";
     busy = "support";
     error = undefined;
     try {
-      const result = await backend.supportBundle();
+      const result = await backend.supportBundle(reportProgress);
       supportPath = result.path;
+      operationStatus = "Reading operation history…";
       history = await backend.history();
     } catch (value) {
       error = presentRuntimeError(value);
     } finally {
       busy = "";
+      operationStatus = "";
     }
   }
 
@@ -236,21 +263,21 @@
     const client = confirmSetReady;
     if (!client || client === "Native") return;
     confirmSetReady = undefined;
-    await mutate(`ready-${client}`, () => backend.setReady(client));
+    await mutate(`ready-${client}`, (onProgress) => backend.setReady(client, onProgress));
   }
 
   async function resetConfirmed() {
     const client = confirmReset;
     if (!client || client === "Native" || busy || loading) return;
     confirmReset = undefined;
-    await mutate(`reset-${client}`, () => backend.reset(client));
+    await mutate(`reset-${client}`, (onProgress) => backend.reset(client, onProgress));
   }
 
   async function reprovisionConfirmed() {
     const client = confirmReprovision;
     if (!client || client === "Native") return;
     confirmReprovision = undefined;
-    await mutate(`reprovision-${client}`, () => backend.reprovision(client));
+    await mutate(`reprovision-${client}`, (onProgress) => backend.reprovision(client, onProgress));
   }
 
   onMount(() => {
@@ -264,6 +291,7 @@
     window.addEventListener("focus", refreshVisibleClients);
     document.addEventListener("visibilitychange", refreshVisibleClients);
     return () => {
+      disposed = true;
       window.removeEventListener("focus", refreshVisibleClients);
       document.removeEventListener("visibilitychange", refreshVisibleClients);
     };
@@ -297,6 +325,15 @@
         </div>
       {/if}
     </header>
+
+    {#if busy}
+      <section class="notice" role="status" aria-live="polite">
+        <div>
+          <strong>Operation in progress</strong>
+          <span>{operationStatus || "Working…"}</span>
+        </div>
+      </section>
+    {/if}
 
     {#if error}
       <ErrorBanner
@@ -362,11 +399,11 @@
           {busy}
           onStartAll={startAll}
           onArrange={arrangeWindows}
-          onStopAll={() => mutate("stop-all", () => backend.stop())}
+          onStopAll={() => mutate("stop-all", (onProgress) => backend.stop(undefined, onProgress))}
           onPrimary={runPrimaryClientAction}
-          onRestart={(client) => mutate(`restart-${client}`, () => backend.restart(client))}
-          onSuspend={(client) => mutate(`suspend-${client}`, () => backend.suspend(client))}
-          onStop={(client) => mutate(`stop-${client}`, () => backend.stop(client))}
+          onRestart={(client) => mutate(`restart-${client}`, (onProgress) => backend.restart(client, onProgress))}
+          onSuspend={(client) => mutate(`suspend-${client}`, (onProgress) => backend.suspend(client, onProgress))}
+          onStop={(client) => mutate(`stop-${client}`, (onProgress) => backend.stop(client, onProgress))}
           onSetReady={(client) => { confirmSetReady = client; }}
           onReset={(client) => { confirmReset = client; }}
           onReprovision={(client) => { confirmReprovision = client; }}

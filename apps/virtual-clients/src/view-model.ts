@@ -109,11 +109,14 @@ export function blockerLabel(value: string | null | undefined, reason?: string):
 export function primaryClientAction(
   actions: ClientLifecycleActions | undefined,
   state: ClientStatus["state"],
-): { kind: "open" | "start"; label: string } | undefined {
+): { kind: "open" | "start" | "start-setup"; label: string } | undefined {
   if (!actions) return undefined;
 
   if (state === "RUNNING" && actions.open.allowed) {
     return { kind: "open", label: "Open" };
+  }
+  if ((state === "STOPPED" || state === "SUSPENDED") && actions.startSetup) {
+    return actions.startSetup.allowed ? { kind: "start-setup", label: "Start first-time setup" } : undefined;
   }
   if (state === "SUSPENDED" && actions.start.allowed) {
     return { kind: "start", label: "Resume" };
@@ -153,6 +156,6 @@ export function primaryClientBlocker(
   state: ClientStatus["state"],
 ): string {
   if (!actions) return "Action availability could not be verified.";
-  const action = state === "RUNNING" ? actions.open : actions.start;
+  const action = state === "RUNNING" ? actions.open : (actions.startSetup ?? actions.start);
   return blockerLabel(action.blocker, action.reason);
 }

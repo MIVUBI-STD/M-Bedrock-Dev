@@ -214,6 +214,11 @@ fn collect_lifecycle_facts(provider: &dyn Provider, client: ClientId) -> io::Res
             && provider.is_running_path(&path).ok() == Some(false)
     });
 
+    let vm_identity = vm_identity_state(provider, client);
+    let fresh_client_profile = client_profile.as_ref().is_some_and(|profile| {
+        profile.verified_vm_identity.is_none() && profile.verified_windows_identity.is_none()
+    });
+
     Ok(LifecycleFacts {
         state,
         ready_snapshot,
@@ -221,7 +226,9 @@ fn collect_lifecycle_facts(provider: &dyn Provider, client: ClientId) -> io::Res
         base_compatible: profile.parity == ProfileParity::Match,
         client_compatible,
         saved_vm_identity_matches,
-        vm_identity_duplicate: vm_identity_state(provider, client) == IdentityState::Duplicate,
+        vm_identity_duplicate: vm_identity == IdentityState::Duplicate,
+        vm_identity_unique: vm_identity == IdentityState::Unique,
+        fresh_client_profile,
         identity_verified,
         base_finalized_and_stopped,
         can_start: current_host_pressure().can_start_virtual,
@@ -319,6 +326,19 @@ fn execute_start_batch<T>(
             Err(with_rollback_context(error, &failed))
         }
     }
+}
+
+// Setup reuses startup rollback but intentionally does not probe a guest that
+// may still be waiting for user input in Windows OOBE.
+fn execute_setup_start(
+    provider: &dyn Provider,
+    client: ClientId,
+    prepare: impl FnMut(ClientId, ClientState) -> io::Result<()>,
+) -> io::Result<ClientState> {
+    let mut states = execute_start_batch(provider, &[client], prepare, |client| provider.open(client))?;
+    states.pop().ok_or_else(|| {
+        io::Error::new(io::ErrorKind::Other, "first-time setup returned no client state")
+    })
 }
 
 fn guest_status_once(provider: &dyn Provider, client: ClientId) -> Option<GuestStatus> {
@@ -669,6 +689,7 @@ impl VirtualClients {
                     ClientLifecycleActions {
                         id: client.as_str(),
                         start: blocked(),
+                        start_setup: Some(blocked()),
                         suspend: blocked(),
                         stop: blocked(),
                         open: blocked(),
@@ -689,6 +710,7 @@ impl VirtualClients {
                 Ok(ClientLifecycleActions {
                     id: client.as_str(),
                     start: action(LifecycleAction::Start),
+                    start_setup: facts.fresh_client_profile.then(|| action(LifecycleAction::StartSetup)),
                     suspend: action(LifecycleAction::Suspend),
                     stop: action(LifecycleAction::Stop),
                     open: action(LifecycleAction::Open),
@@ -760,6 +782,14 @@ impl VirtualClients {
             OperationKind::Start,
             Some(format!("count:{count}")),
             self.start_inner(count),
+        )
+    }
+
+    pub fn start_setup(&self, client: ClientId) -> io::Result<ClientStatus> {
+        self.record(
+            OperationKind::Start,
+            Some(format!("first-boot:{}", client.as_str())),
+            self.start_setup_inner(client),
         )
     }
 
@@ -1277,6 +1307,38 @@ impl VirtualClients {
         })
     }
 
+
+    fn start_setup_inner(&self, client: ClientId) -> io::Result<ClientStatus> {
+        let _lock = OperationLock::acquire()?;
+        let provider = current_platform_provider().ok_or_else(|| {
+            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+        })?;
+        check_action_admission(provider.as_ref(), client, LifecycleAction::StartSetup)?;
+        // Reuse the same mutation/rollback owner. Missing Guest Agent during
+        // interactive Windows first boot is not a failed daily-start verification.
+        let state = execute_setup_start(provider.as_ref(), client, |client, _| {
+            check_action_admission(provider.as_ref(), client, LifecycleAction::StartSetup)
+        })?;
+        // Return power observations only. Do not write identity provenance or
+        // claim guest/version readiness before verify-identities completes.
+        Ok(ClientStatus {
+            id: client.as_str(),
+            native: false,
+            state,
+            ready_snapshot: Some(false),
+            memory_limit_mb: provider.memory_limit_mb(client).ok(),
+            host_working_set_mb: None,
+            guest_tools_ready: None,
+            guest_agent_ready: None,
+            guest_agent_version: None,
+            minecraft_version: None,
+            lineage_parity: Some(ProfileParity::Match),
+            version_parity: Some(ProfileParity::Unknown),
+            vm_identity: Some(vm_identity_state(provider.as_ref(), client)),
+            windows_identity: Some(IdentityState::Unknown),
+        })
+    }
+
     fn start_targets(&self, targets: Vec<ClientId>) -> io::Result<Vec<ClientStatus>> {
         let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
@@ -1576,6 +1638,7 @@ mod tests {
         identities: [Option<&'static str>; 3],
         fail_start: Option<ClientId>,
         fail_after_start: bool,
+        fail_open: bool,
         fail_stop: Option<ClientId>,
         fail_suspend: Option<ClientId>,
         identity_error: Option<ClientId>,
@@ -1588,6 +1651,7 @@ mod tests {
                 identities,
                 fail_start: None,
                 fail_after_start: false,
+                fail_open: false,
                 fail_stop: None,
                 fail_suspend: None,
                 identity_error: None,
@@ -1720,6 +1784,9 @@ mod tests {
         }
 
         fn open(&self, client: ClientId) -> io::Result<ClientState> {
+            if self.fail_open {
+                return Err(io::Error::new(io::ErrorKind::Other, "injected UI open failure"));
+            }
             self.state(client)
         }
 
@@ -2107,6 +2174,37 @@ mod tests {
             |_| Err(io::Error::new(io::ErrorKind::InvalidData, "guest mismatch")),
         );
         assert!(result.is_err());
+        assert_eq!(*provider.states.borrow(), [ClientState::Stopped; 3]);
+    }
+
+    #[test]
+    fn setup_start_returns_running_without_a_guest_agent() {
+        let provider = stopped_provider();
+        for client in ClientId::VIRTUAL {
+            assert_eq!(
+                super::execute_setup_start(&provider, client, |_, _| Ok(())).unwrap(),
+                ClientState::Running,
+            );
+        }
+        assert_eq!(*provider.states.borrow(), [ClientState::Running; 3]);
+    }
+
+    #[test]
+    fn setup_open_failure_stops_only_a_newly_started_client() {
+        let provider = FakeProvider { fail_open: true, ..stopped_provider() };
+        assert!(super::execute_setup_start(&provider, ClientId::Virtual01, |_, _| Ok(())).is_err());
+        assert_eq!(*provider.states.borrow(), [ClientState::Stopped; 3]);
+        provider.set_state(ClientId::Virtual01, ClientState::Running).unwrap();
+        assert!(super::execute_setup_start(&provider, ClientId::Virtual01, |_, _| Ok(())).is_err());
+        assert_eq!(provider.state(ClientId::Virtual01).unwrap(), ClientState::Running);
+    }
+
+    #[test]
+    fn setup_admission_failure_does_not_start_a_client() {
+        let provider = stopped_provider();
+        assert!(super::execute_setup_start(&provider, ClientId::Virtual01, |_, _| {
+            Err(io::Error::new(io::ErrorKind::InvalidInput, "not a fresh client"))
+        }).is_err());
         assert_eq!(*provider.states.borrow(), [ClientState::Stopped; 3]);
     }
 

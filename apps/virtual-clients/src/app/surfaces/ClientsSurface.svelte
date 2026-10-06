@@ -48,7 +48,8 @@
     <div>
       <span class="eyebrow">SETUP · CLIENT CHECK</span>
       <strong>Finish Windows first boot on all three clients</strong>
-      <small>Start the clients, complete any Windows first-run screens, then check that each client has a unique identity.</small>
+      <small>Use Start first-time setup on each client, complete Windows first-run screens, then use Check clients. Guests remain running while you complete setup; compatibility is verified by Check clients.</small>
+      <small>Identity verification requires all three clients running together. This PC is recommended for {snapshot.doctor.maxRecommendedVirtualClients} simultaneous virtual clients; this recommendation is not a guarantee of available memory.</small>
     </div>
     <button class="primary" disabled={Boolean(busy) || runningVirtuals < 3} on:click={onVerifyIdentities}>
       {busy === "verify-identities" ? "Checking…" : "Check clients"}
@@ -78,9 +79,11 @@
     <small>{snapshot.diagnostics.runtime.pressure.canStartVirtual ? "Automatic resource protection is active" : "This PC is under resource pressure; new starts are paused"}</small>
   </div>
   <div class="batch-actions">
+    {#if setupAction !== "VERIFY_IDENTITIES"}
     <button class="primary" disabled={Boolean(busy) || !canStartAll || !policy} on:click={onStartAll}>
       {busy === "start-all" ? "Starting…" : "Start all"}
     </button>
+    {/if}
     <button class="secondary" disabled={Boolean(busy) || runningVirtuals === 0} on:click={onArrange}>
       {busy === "arrange" ? "Arranging…" : "Arrange"}
     </button>

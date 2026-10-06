@@ -105,9 +105,9 @@ const flows: Record<SetupAction, SetupExperience> = {
     description: "Each virtual client must finish Windows first boot before Virtual Clients can confirm that all client identities are unique.",
     primaryLabel: "Open clients",
     steps: [
-      "Start the virtual clients.",
+      "Use Start first-time setup on each virtual client; its VMware window opens for Windows setup.",
       "Complete Windows first-run setup in each client if Windows asks.",
-      "When all three clients are running, use Check clients.",
+      "Keep all three clients running together, then use Check clients after Windows setup completes.",
     ],
   },
   CREATE_READY_SNAPSHOTS: {

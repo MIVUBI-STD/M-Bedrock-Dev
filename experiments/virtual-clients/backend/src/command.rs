@@ -141,6 +141,7 @@ fn execute_value(command: &str, args: &[String]) -> io::Result<Value> {
                 .map_err(|_| input_error("virtual client count must be an integer"))?;
             to_value(app.start(count)?)
         }
+        "start-setup" => to_value(app.start_setup(parse_client(one_arg(command, args)?)?)?),
         "start-client" => to_value(app.start_client(parse_client(one_arg(command, args)?)?)?),
         "suspend" => {
             let client = match args {
@@ -174,7 +175,42 @@ fn serialize_error(error: &io::Error) -> String {
     })
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum OperationPhase {
+    Executing,
+    Succeeded,
+    Failed,
+}
+
+#[derive(Debug, Clone, Copy, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationProgress {
+    pub schema: u32,
+    pub phase: OperationPhase,
+}
+
+// A per-invocation observation hook. It cannot authorize, cancel or replace an
+// operation, and carries no arguments, paths, credentials or persisted state.
+pub fn execute_public_command_with_progress(
+    command: &str,
+    args: &[String],
+    mut report: impl FnMut(OperationProgress),
+) -> PublicCommandResult {
+    report(OperationProgress { schema: 1, phase: OperationPhase::Executing });
+    let result = execute_public_command_result(command, args);
+    report(OperationProgress {
+        schema: 1,
+        phase: if result.success { OperationPhase::Succeeded } else { OperationPhase::Failed },
+    });
+    result
+}
+
 pub fn execute_public_command(command: &str, args: &[String]) -> PublicCommandResult {
+    execute_public_command_with_progress(command, args, |_| {})
+}
+
+fn execute_public_command_result(command: &str, args: &[String]) -> PublicCommandResult {
     match execute_value(command, args) {
         Ok(value) => match serde_json::to_string_pretty(&SuccessReport::new(&value)) {
             Ok(json) => PublicCommandResult {
@@ -215,4 +251,29 @@ mod tests {
         assert_eq!(json["schema"], 1);
         assert_eq!(json["data"]["maxVirtualClients"], 3);
     }
+    #[test]
+    fn progress_reports_real_dispatch_and_terminal_result() {
+        let mut phases = Vec::new();
+        let result = super::execute_public_command_with_progress("policy", &[], |event| {
+            assert_eq!(event.schema, 1);
+            phases.push(event.phase);
+        });
+        assert!(result.success);
+        assert_eq!(phases, vec![super::OperationPhase::Executing, super::OperationPhase::Succeeded]);
+        assert_eq!(result.json, execute_public_command("policy", &[]).json);
+    }
+
+    #[test]
+    fn progress_reports_failure_without_leaking_arguments() {
+        let mut events = Vec::new();
+        let result = super::execute_public_command_with_progress(
+            "policy", &["private-input".into()], |event| events.push(event),
+        );
+        assert!(!result.success);
+        assert_eq!(events.len(), 2);
+        assert_eq!(events[1].phase, super::OperationPhase::Failed);
+        let json = serde_json::to_string(&events).unwrap();
+        assert!(!json.contains("private-input"));
+    }
+
 }

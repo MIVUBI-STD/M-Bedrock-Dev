@@ -31,4 +31,10 @@ describe("Virtual Clients first-run presentation", () => {
     expect(actionLabel("READY")).toBe("Setup complete");
     expect(setupExperience("READY").title).toBe(actionLabel("READY"));
   });
+  it("directs first boot through explicit setup startup and all-three verification", () => {
+    const steps = setupExperience("VERIFY_IDENTITIES").steps.join(" ");
+    expect(steps).toContain("Start first-time setup");
+    expect(steps).toContain("all three clients running together");
+    expect(steps).toContain("Check clients");
+  });
 });

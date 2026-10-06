@@ -1,6 +1,38 @@
 ## 2026-10-06 — Virtual Clients action admission and payload validation
 
 
+## Virtual Clients first boot and command activity — source implementation (2026-10-06)
+
+Baseline: Experimental `022c0fa049d07e4b47f7156fdb6ad3f595bea5e6`.
+Context: REMOTE_GITHUB, connector source edits, skip-ci.
+
+First wrong owner: daily start's mandatory 90-second guest verification is not
+suitable for explicit interactive Windows first boot. A distinct start-setup
+operation now has narrow backend admission, reuses the existing startup rollback
+executor, opens the selected guest, and returns unknown guest readiness without
+persisting identity proof. Daily Start/Resume/Restart/Reset remain fail-closed.
+The UI uses optional backend startSetup availability and does not bypass a denied
+setup action by selecting daily Start. Three-client verification remains required.
+
+Command activity uses a bounded two-event core observer, optional per-invocation
+Tauri Channel, validated frontend events and ephemeral display. Final command
+results remain authoritative. No event enables controls, claims VM readiness,
+creates percentages, or replaces post-mutation reconciliation.
+
+Fourteen regressions added: six Rust (dispatch success/error, setup admission,
+guest-independent setup startup, provider-open rollback, admission rejection);
+eight frontend (progress contract/wiring, setup projection/no bypass, setup
+instructions, optional availability validation). Existing payload wiring count
+updated from 21 to 22 public commands. No test execution is claimed.
+
+NOT RUN: Cargo fmt/check/test, frontend typecheck/build/Vitest, Tauri channel
+runtime delivery, repeated-click/navigation UI interaction, VMware OOBE,
+three-client gameplay, resource performance and installer acceptance. This pass
+does not establish an application-ready or package-ready result. Detailed
+per-client internal-stage progress remains beyond the implemented command activity.
+
+
+
 ## Virtual Clients naming and admission modularity — source review (2026-10-06)
 
 Baseline: Experimental `47b86efc62933c34da56af9d3a428baf634d58cb`.

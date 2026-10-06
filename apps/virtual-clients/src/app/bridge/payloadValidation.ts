@@ -48,7 +48,7 @@ export const actionAvailability: PayloadValidator<ActionAvailability> = (value):
 
 const actions = shape<ClientLifecycleActions>({
   id: virtualId,
-  start: actionAvailability, suspend: actionAvailability, stop: actionAvailability,
+  start: actionAvailability, startSetup: optional(actionAvailability), suspend: actionAvailability, stop: actionAvailability,
   open: actionAvailability, restart: actionAvailability, setReady: actionAvailability,
   reset: actionAvailability, reprovision: actionAvailability,
 });
