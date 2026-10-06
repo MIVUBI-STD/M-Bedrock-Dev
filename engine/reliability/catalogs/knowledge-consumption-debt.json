@@ -483,6 +483,12 @@
       "nextEvidenceOwner": "entity-behavior-semantic-analysis"
     },
     {
+      "knowledgeId": "entity.spawn-event-summon-difference",
+      "status": "static-capability-gap",
+      "reason": "Summon-vs-natural entity spawn-event activation is not modeled by current entity event graph.",
+      "nextEvidenceOwner": "entity-spawn-lifecycle-analysis"
+    },
+    {
       "knowledgeId": "entity.stalk-pounce-needs-target-attack",
       "status": "static-capability-gap",
       "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
@@ -885,6 +891,12 @@
       "nextEvidenceOwner": "runtime-player-session"
     },
     {
+      "knowledgeId": "scoreboard.persistent-fake-player",
+      "status": "static-capability-gap",
+      "reason": "Fake-player scoreboard persistence/scope is not structurally distinguished by current state-authority analysis.",
+      "nextEvidenceOwner": "scoreboard-state-analysis"
+    },
+    {
       "knowledgeId": "spatial.custom-dimension-travel-needs-loaded-arrival",
       "status": "runtime-required",
       "reason": "Arrival readiness is a runtime residency condition.",
@@ -915,6 +927,12 @@
       "nextEvidenceOwner": "runtime-domain-validation"
     },
     {
+      "knowledgeId": "state.relation-scoreboard-identity-validates-handle",
+      "status": "runtime-required",
+      "reason": "ScoreboardIdentity validity/entity resolution is a live handle property.",
+      "nextEvidenceOwner": "runtime-player-session"
+    },
+    {
       "knowledgeId": "state.scoreboard-identity-can-be-invalid",
       "status": "runtime-required",
       "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
@@ -925,6 +943,18 @@
       "status": "runtime-required",
       "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
       "nextEvidenceOwner": "runtime-domain-validation"
+    },
+    {
+      "knowledgeId": "teleport.spawn-entity-unloaded-chunk-error",
+      "status": "runtime-required",
+      "reason": "spawnEntity unloaded-chunk failure depends on live chunk state.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "teleport.teleport-can-throw",
+      "status": "runtime-required",
+      "reason": "Teleport exceptions depend on live destination/entity/world state.",
+      "nextEvidenceOwner": "runtime-spatial-state"
     },
     {
       "knowledgeId": "tick.cross-entity-event-order-variable",

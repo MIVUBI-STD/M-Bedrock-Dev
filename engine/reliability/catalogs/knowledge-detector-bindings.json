@@ -1350,6 +1350,50 @@
       ]
     },
     {
+      "knowledgeId": "education.npc.dialogue-change-player-scope",
+      "consumer": "dialogue-command-graph",
+      "analyzerPaths": [
+        "engine/analyzers/dialogue/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/dialogue-graph.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/dialogue/test/parse.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "education.npc.initiator-only-dialogue-context",
+      "consumer": "dialogue-command-graph",
+      "analyzerPaths": [
+        "engine/analyzers/dialogue/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/dialogue-graph.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/dialogue/test/parse.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "education.npc.initiator-selector",
+      "consumer": "dialogue-command-graph",
+      "analyzerPaths": [
+        "engine/analyzers/dialogue/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/dialogue-graph.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/dialogue/test/parse.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "education.npc.multiple-commands-order",
+      "consumer": "dialogue-command-graph",
+      "analyzerPaths": [
+        "engine/analyzers/dialogue/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/dialogue-graph.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/dialogue/test/parse.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "effects-policy.baseline-contract",
       "consumer": "arena-cleanup-surface-analysis",
       "analyzerPaths": [
@@ -1741,6 +1785,28 @@
       "proofPaths": [
         "engine/packages/orchestrator/test/repair/mutation-transaction-analysis.test.ts",
         "engine/packages/orchestrator/test/repair/script-mutation-transaction-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "execute.entity-condition",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/selectors.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "execute.score-condition",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/selectors.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
       ]
     },
     {
@@ -4042,6 +4108,17 @@
       ]
     },
     {
+      "knowledgeId": "selector.no-match-command-fails",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/selectors.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "spatial-policy.arena-volume-contract",
       "consumer": "spatial-authority-analysis",
       "analyzerPaths": [
@@ -4285,6 +4362,17 @@
         "engine/analyzers/commands/test/structure-tickingarea.test.ts",
         "engine/adapters/mcstructure/test/placement-transform.test.ts",
         "engine/packages/orchestrator/test/structure-runtime-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "teleport.destination-single-target",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/selectors.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
       ]
     },
     {
