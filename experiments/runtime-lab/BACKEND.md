@@ -1,5 +1,10 @@
 # Runtime Lab Backend
 
+## Product boundary
+
+Runtime Lab is a local, interactive multi-instance environment for Minecraft Education. Player input and gameplay remain manual. Runtime Lab owns the Virtual environment around the player; Native remains host-managed.
+
+
 ## Canonical architecture
 
 ```text
@@ -64,11 +69,26 @@ hostWorkingSetMb
 
 ```text
 RUNNING → SUSPENDED → start → RUNNING
-
-`suspend` without an instance applies the same operation to all Virtual instances.
 ```
 
+`suspend` without an instance applies the same operation to all Virtual instances.
+
 This is separate from `STOPPED` and from the `QA_READY` clean checkpoint.
+
+### State model
+
+```text
+NOT_PROVISIONED
+STOPPED
+SUSPENDED
+RUNNING
+ERROR
+
+Native:
+MANUAL
+```
+
+`QA_READY` is a checkpoint, not a lifecycle state.
 
 ### Instance identity
 
