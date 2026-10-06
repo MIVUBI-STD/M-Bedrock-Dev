@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, join, relative } from "node:path";
 
-const DOC_DOMAINS = ["product", "artifacts", "analysis", "repair", "validation", "system"];
+const DOC_DOMAINS = ["product", "artifacts", "analysis", "repair", "validation", "system", "examples"];
 
 const DOCUMENT_ROLE = new Map([
   ["docs/product/flow.md", "WORKFLOW"],
@@ -88,7 +88,7 @@ function catalogDocuments(resources, seen) {
         class: "DOCUMENT",
         domain,
         role: documentRole(path),
-        authority: "CANONICAL",
+        authority: domain === "examples" ? "REFERENCE" : "CANONICAL",
         path,
         lifecycle: "ACTIVE",
       });
