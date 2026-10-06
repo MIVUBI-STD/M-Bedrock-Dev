@@ -2,7 +2,7 @@
 id: document.system.implementation-map
 class: DOCUMENT
 domain: system
-role: REFERENCE
+role: GUIDE
 authority: CANONICAL
 lifecycle: ACTIVE
 ---
