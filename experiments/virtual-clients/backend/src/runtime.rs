@@ -1859,6 +1859,10 @@ mod tests {
             self.state(client)
         }
 
+        fn open_vm_ui(&self, _vmx: &Path) -> io::Result<()> {
+            Self::unsupported()
+        }
+
         fn is_running_path(&self, _vmx: &Path) -> io::Result<bool> {
             Self::unsupported()
         }
