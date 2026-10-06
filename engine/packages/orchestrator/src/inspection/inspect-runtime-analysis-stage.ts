@@ -68,6 +68,9 @@ import {
   entityPopulationSourceDiagnostics,
 } from "./entity-population-analysis.js";
 import {
+  analyzeInteractionLifecycle,
+} from "./interaction-lifecycle-analysis.js";
+import {
   deriveEntityEventExternalEvidence,
 } from "./entity-event-evidence.js";
 import {
@@ -250,6 +253,11 @@ export function analyzeInspectionRuntimeState(
             : { text: item.text }),
         }))
       : [];
+  const interactionLifecycle =
+    analyzeInteractionLifecycle(
+      input.scripts,
+    );
+
   const entityPopulation =
     analyzeEntityPopulationSources(
       input.parsedEntities.map(
@@ -746,6 +754,7 @@ export function analyzeInspectionRuntimeState(
     playerCapabilitySurfaces,
     entityAiStack,
     entityPopulation,
+    interactionLifecycle,
     routeNavigationEnvironment,
     structureRuntime,
     scriptStructureLoads,

@@ -621,6 +621,105 @@
       ]
     },
     {
+      "knowledgeId": "interaction-policy.actor-target-scope-proof",
+      "consumer": "interaction-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "interaction-policy.cancel-is-terminal-nonaction",
+      "consumer": "interaction-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "interaction-policy.first-event-for-single-action",
+      "consumer": "interaction-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "interaction-policy.form-response-revalidate-state",
+      "consumer": "interaction-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "interaction-policy.input-lock-reference-count-or-owner-set",
+      "consumer": "interaction-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "interaction-policy.relation-firstevent-gates-singlepress",
+      "consumer": "interaction-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "interaction-policy.relation-input-owner-set-gates-restore",
+      "consumer": "interaction-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "interaction-policy.restore-on-lifecycle-boundary",
+      "consumer": "interaction-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "interaction-policy.ui-not-authority",
+      "consumer": "interaction-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "inventory-policy.copy-writeback-required",
       "consumer": "inventory-lifecycle-analysis",
       "analyzerPaths": [
