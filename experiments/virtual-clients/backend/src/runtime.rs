@@ -168,18 +168,6 @@ fn wait_for_guest_compatibility(
     loop {
         if let Some(ip) = provider.guest_ip_address(client)? {
             if let Ok(status) = query_guest_status(&ip, Duration::from_secs(2)) {
-                if status.agent_version != env!("CARGO_PKG_VERSION") {
-                    return Err(io::Error::new(
-                        io::ErrorKind::InvalidData,
-                        format!(
-                            "{} Guest Agent version {} does not match host backend {}",
-                            client.as_str(),
-                            status.agent_version,
-                            env!("CARGO_PKG_VERSION")
-                        ),
-                    ));
-                }
-
                 let guest = status.minecraft.as_ref().ok_or_else(|| {
                     io::Error::new(
                         io::ErrorKind::NotFound,
