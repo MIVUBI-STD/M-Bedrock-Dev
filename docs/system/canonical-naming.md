@@ -225,7 +225,17 @@ KNOWLEDGE
 SOURCE
 RELIABILITY
 SCHEMA
+EXAMPLE
 ```
+
+Class meanings:
+
+- `DOCUMENT` — human-facing Markdown knowledge/documentation.
+- `KNOWLEDGE` — structured platform or engineering knowledge.
+- `SOURCE` — executable/implementation owner.
+- `RELIABILITY` — regression, corpus, history, or reliability data owner.
+- `SCHEMA` — structural data contract.
+- `EXAMPLE` — non-authoritative illustrative artifact such as a serialized example payload.
 
 Do not add synonymous classes such as NOTE, PAGE, ARTICLE, RESOURCE, CONTENT, or DOC_NODE.
 
