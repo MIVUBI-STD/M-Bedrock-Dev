@@ -58,3 +58,13 @@ Required observations:
 - reprovision affects only the selected fully stopped Virtual.
 
 Frontend work starts only after the primary platform passes this backend acceptance.
+
+
+## Failure recovery proof
+
+Acceptance must also verify:
+
+- a failed multi-instance start restores Virtual instances already changed by that batch;
+- a failed batch suspend resumes Virtual instances that were parked by that batch;
+- if any rollback action itself fails, the failure is surfaced with the affected Virtual name;
+- after any partial failure, `status` accurately reports the remaining runtime state.
