@@ -16,9 +16,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if std::env::args().any(|argument| argument == "--register-interactive-launcher") {
         return register_interactive_launcher();
     }
-    if std::env::args().any(|argument| argument == "--register-interactive-launcher") {
-        return register_interactive_launcher();
-    }
     if std::env::args().any(|argument| argument == "--interactive-launcher") {
         return run_interactive_launcher();
     }
