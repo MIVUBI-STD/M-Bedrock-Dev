@@ -228,7 +228,6 @@
           onContinue={continueSetup}
           onOpenClients={() => selectPage("clients")}
           onSupport={() => selectPage("support")}
-          onVerifyIdentities={() => mutate("verify-identities", backend.verifyIdentities)}
         />
       {:else if page === "clients"}
         <ClientsSurface
@@ -252,6 +251,7 @@
           onReset={(client) => mutate(`reset-${client}`, () => backend.reset(client))}
           onReprovision={(client) => (confirmReprovision = client)}
           onSupport={() => selectPage("support")}
+          onVerifyIdentities={() => mutate("verify-identities", backend.verifyIdentities)}
         />
       {:else if page === "settings"}
         <SettingsSurface
