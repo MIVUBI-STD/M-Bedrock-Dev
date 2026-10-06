@@ -133,6 +133,15 @@ try {
       failures.push("Non-DOCUMENT resource must not declare role: " + resource.id);
     }
 
+    if (resource.class === "EXAMPLE") {
+      if (resource.domain !== "examples") {
+        failures.push("EXAMPLE resource must use examples domain: " + resource.id);
+      }
+      if (resource.authority !== "REFERENCE") {
+        failures.push("EXAMPLE resource must use REFERENCE authority: " + resource.id);
+      }
+    }
+
     if (resource.class === "DOCUMENT") {
       const expectedDomain =
         resource.path === "docs/README.md"
@@ -235,7 +244,9 @@ try {
     }
 
     for (const resource of catalog.resources.filter(
-      (item) => item.class === "DOCUMENT" && item.lifecycle === "ACTIVE",
+      (item) =>
+        (item.class === "DOCUMENT" || item.class === "EXAMPLE") &&
+        item.lifecycle === "ACTIVE",
     )) {
       if (!reachable.has(resource.id)) {
         failures.push("Active DOCUMENT is not reachable from docs Router: " + resource.id);
