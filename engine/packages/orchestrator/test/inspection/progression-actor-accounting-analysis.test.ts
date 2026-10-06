@@ -352,6 +352,101 @@ describe(
         });
     });
 
+    it("keeps scripted non-death removal without counter reconciliation as explicit gray-zone evidence", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function cleanupEntity(entity) {",
+        "  if (entity.typeId === 'demo:enemy') entity.remove();",
+        "}",
+        "function maybeAdvance() { if (remainingEnemies === 0) nextWave(); }",
+      ].join("\n");
+
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed(source),
+        ]);
+
+      expect(
+        result.scriptedRemovalCoverageGaps,
+      ).toBe(1);
+      expect(result.counters[0])
+        .toMatchObject({
+          scriptedRemovalCoverage:
+            "uncovered",
+          scriptedRemovalActorIdentifiers: [
+            "demo:enemy",
+          ],
+          uncoveredScriptedRemovalActorIdentifiers: [
+            "demo:enemy",
+          ],
+        });
+    });
+
+    it("closes scripted removal coverage when entityRemove for the same actor reaches decrement", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "world.afterEvents.entityRemove.subscribe((event) => {",
+        "  if (event.entity.typeId === 'demo:enemy') decrementRemaining();",
+        "});",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function cleanupEntity(entity) {",
+        "  if (entity.typeId === 'demo:enemy') entity.remove();",
+        "}",
+        "function decrementRemaining() { remainingEnemies--; }",
+        "function maybeAdvance() { if (remainingEnemies === 0) nextWave(); }",
+      ].join("\n");
+
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed(source),
+        ]);
+
+      expect(
+        result.scriptedRemovalCoverageGaps,
+      ).toBe(0);
+      expect(result.counters[0])
+        .toMatchObject({
+          scriptedRemovalCoverage:
+            "covered",
+          removeLifecycleActorIdentifiers: [
+            "demo:enemy",
+          ],
+        });
+    });
+
+    it("detects exact kill-selector disappearance for counted actor type", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function cleanup(dimension) {",
+        "  dimension.runCommand('kill @e[type=demo:enemy]');",
+        "}",
+        "function maybeAdvance() { if (remainingEnemies === 0) nextWave(); }",
+      ].join("\n");
+
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed(source),
+        ]);
+
+      expect(
+        result.scriptedRemovalCoverageGaps,
+      ).toBe(1);
+      expect(result.counters[0]
+        ?.scriptedRemovalActorIdentifiers)
+        .toEqual(["demo:enemy"]);
+    });
+
     it("proves matched actor reconciliation across imported counter helpers", () => {
       const mainText = [
         'import { decrementRemaining } from "./counter.js";',

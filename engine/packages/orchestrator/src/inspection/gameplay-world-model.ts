@@ -371,6 +371,7 @@ export interface GameplayWorldModel {
       provenMissingReconciliation: number;
       provenActorIdentityMismatch: number;
       provenSpawnQuantityMismatch: number;
+      scriptedRemovalCoverageGaps: number;
       unresolvedCounters: number;
       reconciledFromMatchedActorLifecycle: number;
       details: readonly {
@@ -386,6 +387,19 @@ export interface GameplayWorldModel {
         removeLinkedDecrements: number;
         reconciliationLifecycleKinds:
           readonly ("death" | "remove")[];
+        deathLifecycleActorIdentifiers:
+          readonly string[];
+        removeLifecycleActorIdentifiers:
+          readonly string[];
+        scriptedRemovalActorIdentifiers:
+          readonly string[];
+        uncoveredScriptedRemovalActorIdentifiers:
+          readonly string[];
+        scriptedRemovalCoverage:
+          | "covered"
+          | "uncovered"
+          | "none"
+          | "unresolved";
         quantityComparableGrowths: number;
         quantityMatchedGrowths: number;
         quantityMismatchGrowths: number;
@@ -1936,6 +1950,9 @@ export function deriveGameplayWorldModel(
         provenSpawnQuantityMismatch:
           source.progressionActorAccounting
             ?.provenSpawnQuantityMismatch ?? 0,
+        scriptedRemovalCoverageGaps:
+          source.progressionActorAccounting
+            ?.scriptedRemovalCoverageGaps ?? 0,
         unresolvedCounters:
           source.progressionActorAccounting
             ?.unresolvedCounters ?? 0,
@@ -1964,6 +1981,16 @@ export function deriveGameplayWorldModel(
                 item.removeLinkedDecrements,
               reconciliationLifecycleKinds:
                 [...item.reconciliationLifecycleKinds],
+              deathLifecycleActorIdentifiers:
+                [...item.deathLifecycleActorIdentifiers],
+              removeLifecycleActorIdentifiers:
+                [...item.removeLifecycleActorIdentifiers],
+              scriptedRemovalActorIdentifiers:
+                [...item.scriptedRemovalActorIdentifiers],
+              uncoveredScriptedRemovalActorIdentifiers:
+                [...item.uncoveredScriptedRemovalActorIdentifiers],
+              scriptedRemovalCoverage:
+                item.scriptedRemovalCoverage,
               quantityComparableGrowths:
                 item.quantityComparableGrowths,
               quantityMatchedGrowths:

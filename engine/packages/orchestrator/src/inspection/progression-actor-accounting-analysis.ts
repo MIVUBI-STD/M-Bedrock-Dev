@@ -28,6 +28,19 @@ export interface ProgressionCounterAssessment {
   readonly removeLinkedDecrements: number;
   readonly reconciliationLifecycleKinds:
     readonly ("death" | "remove")[];
+  readonly deathLifecycleActorIdentifiers:
+    readonly string[];
+  readonly removeLifecycleActorIdentifiers:
+    readonly string[];
+  readonly scriptedRemovalActorIdentifiers:
+    readonly string[];
+  readonly uncoveredScriptedRemovalActorIdentifiers:
+    readonly string[];
+  readonly scriptedRemovalCoverage:
+    | "covered"
+    | "uncovered"
+    | "none"
+    | "unresolved";
   readonly quantityComparableGrowths: number;
   readonly quantityMatchedGrowths: number;
   readonly quantityMismatchGrowths: number;
@@ -58,6 +71,7 @@ export interface ProgressionActorAccountingAnalysis {
   readonly provenMissingReconciliation: number;
   readonly provenActorIdentityMismatch: number;
   readonly provenSpawnQuantityMismatch: number;
+  readonly scriptedRemovalCoverageGaps: number;
   readonly reconciledFromMatchedActorLifecycle: number;
   readonly unresolvedCounters: number;
 }
@@ -109,6 +123,16 @@ interface LifecycleActorGuard {
   readonly scriptPath: string;
   readonly executionRegion: string;
   readonly actorIdentifier: string;
+}
+
+interface ScriptedRemovalEvidence {
+  readonly scriptPath: string;
+  readonly executionRegion: string;
+  readonly actorIdentifier: string;
+  readonly mechanism:
+    | "entity-remove"
+    | "entity-kill"
+    | "command-kill";
 }
 
 const ACTOR_COUNTER_NAME =
@@ -538,6 +562,167 @@ function lifecycleActorGuards(
   );
 }
 
+function scriptedRemovalEvidence(
+  scripts: readonly NormalizedScript[],
+  guards: readonly LifecycleActorGuard[],
+): ScriptedRemovalEvidence[] {
+  const output:
+    ScriptedRemovalEvidence[] = [];
+
+  for (const script of scripts) {
+    const path =
+      script.parsed.source.relativePath;
+    const regionGuards = new Map<
+      string,
+      string[]
+    >();
+
+    for (
+      const guard of guards.filter(
+        (item) =>
+          item.scriptPath === path,
+      )
+    ) {
+      regionGuards.set(
+        guard.executionRegion,
+        [
+          ...(regionGuards.get(
+            guard.executionRegion,
+          ) ?? []),
+          guard.actorIdentifier,
+        ],
+      );
+    }
+
+    for (
+      const call of
+        script.parsed.methodCalls
+    ) {
+      if (
+        call.executionRegion ===
+          undefined ||
+        (
+          call.method !== "remove" &&
+          call.method !== "kill"
+        ) ||
+        (
+          call.receiverType !== "Entity" &&
+          call.receiverType !== "Player"
+        )
+      ) {
+        continue;
+      }
+
+      const actorIds =
+        regionGuards.get(
+          call.executionRegion,
+        ) ?? [];
+      for (const actorIdentifier of actorIds) {
+        output.push({
+          scriptPath: path,
+          executionRegion:
+            call.executionRegion,
+          actorIdentifier,
+          mechanism:
+            call.method === "remove"
+              ? "entity-remove"
+              : "entity-kill",
+        });
+      }
+    }
+
+    for (
+      const command of
+        script.parsed.commandLiterals
+    ) {
+      const normalized =
+        command.command
+          .trim()
+          .replace(/^\//, "");
+      const kill =
+        /^kill\s+@e\[([^\]]+)\]/i.exec(
+          normalized,
+        );
+      if (!kill?.[1]) continue;
+      const typeMatch =
+        /(?:^|,)\s*type\s*=\s*([^,!\s\]]+)/i.exec(
+          kill[1],
+        );
+      if (
+        !typeMatch?.[1] ||
+        typeMatch[1].startsWith("!")
+      ) {
+        continue;
+      }
+      output.push({
+        scriptPath: path,
+        executionRegion:
+          command.executionRegion ??
+          "module",
+        actorIdentifier:
+          normalizeActorIdentifier(
+            typeMatch[1],
+          ),
+        mechanism: "command-kill",
+      });
+    }
+  }
+
+  return output
+    .filter((item, index, all) =>
+      all.findIndex((candidate) =>
+        candidate.scriptPath ===
+          item.scriptPath &&
+        candidate.executionRegion ===
+          item.executionRegion &&
+        candidate.actorIdentifier ===
+          item.actorIdentifier &&
+        candidate.mechanism ===
+          item.mechanism
+      ) === index
+    )
+    .sort((a, b) =>
+      a.actorIdentifier.localeCompare(
+        b.actorIdentifier,
+      ) ||
+      a.executionRegion.localeCompare(
+        b.executionRegion,
+      )
+    );
+}
+
+function directRemovalCanReachDecrement(
+  removal: ScriptedRemovalEvidence,
+  decrements:
+    readonly CounterEvidenceRecord[],
+  graph:
+    ReadonlyMap<
+      string,
+      ReadonlySet<string>
+    >,
+): boolean {
+  const from =
+    localNode(
+      removal.scriptPath,
+      removal.executionRegion,
+    );
+  return decrements.some((item) => {
+    const to =
+      localNode(
+        item.scriptPath,
+        item.executionRegion,
+      );
+    return (
+      from === to ||
+      reaches(
+        from,
+        to,
+        graph,
+      )
+    );
+  });
+}
+
 function actorIdsForGrowth(
   item: CounterEvidenceRecord,
   spawns: readonly SpawnEvidenceRecord[],
@@ -753,6 +938,11 @@ export function analyzeProgressionActorAccounting(
     spawnEvidence(scripts);
   const guards =
     lifecycleActorGuards(scripts);
+  const scriptedRemovals =
+    scriptedRemovalEvidence(
+      scripts,
+      guards,
+    );
 
   const grouped =
     new Map<
@@ -877,18 +1067,38 @@ export function analyzeProgressionActorAccounting(
               ),
             ),
           ].sort();
-        const lifecycleActorIdentifiers =
+        const deathLifecycleActorIdentifiers =
           [
             ...new Set(
               decrements.flatMap((item) =>
                 actorIdsForDecrement(
                   item,
                   guards,
-                  lifecycleReachable,
+                  deathReachable,
                   graph,
                 )
               ),
             ),
+          ].sort();
+        const removeLifecycleActorIdentifiers =
+          [
+            ...new Set(
+              decrements.flatMap((item) =>
+                actorIdsForDecrement(
+                  item,
+                  guards,
+                  removeReachable,
+                  graph,
+                )
+              ),
+            ),
+          ].sort();
+        const lifecycleActorIdentifiers =
+          [
+            ...new Set([
+              ...deathLifecycleActorIdentifiers,
+              ...removeLifecycleActorIdentifiers,
+            ]),
           ].sort();
         const lifecycleSet =
           new Set(
@@ -900,6 +1110,75 @@ export function analyzeProgressionActorAccounting(
               lifecycleSet.has(id)
             )
             .sort();
+        const spawnActorSet =
+          new Set(
+            spawnLinkedActorIdentifiers,
+          );
+        const scriptedRemovalActorIdentifiers =
+          [
+            ...new Set(
+              scriptedRemovals
+                .filter((item) =>
+                  spawnActorSet.has(
+                    item.actorIdentifier,
+                  )
+                )
+                .map((item) =>
+                  item.actorIdentifier
+                ),
+            ),
+          ].sort();
+        const removeLifecycleSet =
+          new Set(
+            removeLifecycleActorIdentifiers,
+          );
+        const uncoveredScriptedRemovalActorIdentifiers =
+          scriptedRemovalActorIdentifiers
+            .filter((actorIdentifier) => {
+              if (
+                removeLifecycleSet.has(
+                  actorIdentifier,
+                )
+              ) {
+                return false;
+              }
+              return scriptedRemovals
+                .filter((item) =>
+                  item.actorIdentifier ===
+                    actorIdentifier,
+                )
+                .every((item) =>
+                  !directRemovalCanReachDecrement(
+                    item,
+                    decrements,
+                    graph,
+                  ),
+                );
+            })
+            .sort();
+        const scriptedRemovalCoverage =
+          scriptedRemovalActorIdentifiers
+              .length === 0
+            ? "none" as const
+            : uncoveredScriptedRemovalActorIdentifiers
+                .length > 0
+              ? "uncovered" as const
+              : removeLifecycleActorIdentifiers
+                    .length > 0 ||
+                  scriptedRemovals.some(
+                    (item) =>
+                      scriptedRemovalActorIdentifiers
+                        .includes(
+                          item.actorIdentifier,
+                        ) &&
+                      directRemovalCanReachDecrement(
+                        item,
+                        decrements,
+                        graph,
+                      ),
+                  )
+                ? "covered" as const
+                : "unresolved" as const;
 
         const missingReconciliation =
           actorAccountingCandidate &&
@@ -971,6 +1250,11 @@ export function analyzeProgressionActorAccounting(
           deathLinkedDecrements,
           removeLinkedDecrements,
           reconciliationLifecycleKinds,
+          deathLifecycleActorIdentifiers,
+          removeLifecycleActorIdentifiers,
+          scriptedRemovalActorIdentifiers,
+          uncoveredScriptedRemovalActorIdentifiers,
+          scriptedRemovalCoverage,
           quantityComparableGrowths,
           quantityMatchedGrowths,
           quantityMismatchGrowths,
@@ -1062,6 +1346,12 @@ export function analyzeProgressionActorAccounting(
         (item) =>
           item.status ===
           "spawn-quantity-mismatch",
+      ).length,
+    scriptedRemovalCoverageGaps:
+      counters.filter(
+        (item) =>
+          item.scriptedRemovalCoverage ===
+          "uncovered",
       ).length,
     reconciledFromMatchedActorLifecycle:
       counters.filter(

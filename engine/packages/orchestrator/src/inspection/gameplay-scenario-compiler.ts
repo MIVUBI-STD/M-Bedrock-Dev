@@ -895,6 +895,29 @@ function runtimeEdgeState(
         scenarioLabel ===
           "progression-wave-integrity" &&
         world.progression.actorAccounting
+          .scriptedRemovalCoverageGaps > 0
+      ) {
+        const actors =
+          world.progression.actorAccounting.details
+            .flatMap((item) =>
+              item.uncoveredScriptedRemovalActorIdentifiers
+            )
+            .filter((id, index, all) =>
+              all.indexOf(id) === index
+            )
+            .sort();
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Selected-artifact source proves counted actor type(s) can be removed/killed by a non-death scripted disappearance path without a source-linked remove reconciliation or direct counter decrement: " +
+            actors.join(", ") +
+            ". This is explicit progression gray-zone evidence, not an automatic bug: determine whether the removal is terminal-only or can occur while progression still depends on the actor before any runtime test.",
+        };
+      }
+      if (
+        scenarioLabel ===
+          "progression-wave-integrity" &&
+        world.progression.actorAccounting
           .unresolvedCounters > 0
       ) {
         return {
