@@ -17,6 +17,11 @@ export type CommandRelativeContextStatus =
   | "proven"
   | "unresolved";
 
+export type ScriptCommandExecutionContext =
+  | "dimension-explicit"
+  | "entity-bound"
+  | "unknown";
+
 export interface CommandContextAssessment {
   readonly scriptId: string;
   readonly executionRegion: string;
@@ -29,6 +34,11 @@ export interface CommandContextAssessment {
     readonly string[];
   readonly relativeContext:
     CommandRelativeContextStatus;
+  readonly executionContext:
+    ScriptCommandExecutionContext;
+  readonly receiverType?:
+    "Dimension" | "Player" | "Entity";
+  readonly receiverHint?: string;
 }
 
 export interface CommandContextAnalysis {
@@ -37,6 +47,9 @@ export interface CommandContextAnalysis {
   readonly bareGlobalMutationCandidates: number;
   readonly tagOnlyMembershipCandidates: number;
   readonly relativeContextUnresolved: number;
+  readonly explicitDimensionCommands: number;
+  readonly entityBoundCommands: number;
+  readonly unknownExecutionContext: number;
   readonly assessments:
     readonly CommandContextAssessment[];
 }
@@ -137,6 +150,125 @@ function tagOnly(
   );
 }
 
+
+function sourceLine(
+  value: {
+    readonly source: {
+      readonly range?: {
+        readonly lineStart?: number;
+      };
+    };
+  },
+): number | undefined {
+  return value.source.range?.lineStart;
+}
+
+function scriptCommandExecutionContext(
+  script: ParsedScriptFile,
+  literal:
+    ParsedScriptFile["commandLiterals"][number],
+): {
+  readonly status:
+    ScriptCommandExecutionContext;
+  readonly receiverType?:
+    "Dimension" | "Player" | "Entity";
+  readonly receiverHint?: string;
+} {
+  if (
+    literal.mechanism !== "runCommand" &&
+    literal.mechanism !==
+      "runCommandAsync"
+  ) {
+    return { status: "unknown" };
+  }
+
+  const candidates =
+    script.methodCalls.filter(
+      (call) =>
+        call.method ===
+          literal.mechanism &&
+        call.executionRegion ===
+          literal.executionRegion &&
+        (
+          literal.receiverHint ===
+            undefined ||
+          call.receiverHint ===
+            literal.receiverHint
+        ) &&
+        (
+          sourceLine(call) ===
+            undefined ||
+          sourceLine(literal) ===
+            undefined ||
+          sourceLine(call) ===
+            sourceLine(literal)
+        ),
+    );
+
+  if (candidates.length !== 1) {
+    return {
+      status: "unknown",
+      ...(literal.receiverHint ===
+        undefined
+        ? {}
+        : {
+            receiverHint:
+              literal.receiverHint,
+          }),
+    };
+  }
+
+  const receiver = candidates[0]!;
+  if (
+    receiver.receiverType ===
+    "Dimension"
+  ) {
+    return {
+      status:
+        "dimension-explicit",
+      receiverType: "Dimension",
+      ...(receiver.receiverHint ===
+        undefined
+        ? {}
+        : {
+            receiverHint:
+              receiver.receiverHint,
+          }),
+    };
+  }
+
+  if (
+    receiver.receiverType ===
+      "Player" ||
+    receiver.receiverType ===
+      "Entity"
+  ) {
+    return {
+      status: "entity-bound",
+      receiverType:
+        receiver.receiverType,
+      ...(receiver.receiverHint ===
+        undefined
+        ? {}
+        : {
+            receiverHint:
+              receiver.receiverHint,
+          }),
+    };
+  }
+
+  return {
+    status: "unknown",
+    ...(receiver.receiverHint ===
+      undefined
+      ? {}
+      : {
+          receiverHint:
+            receiver.receiverHint,
+        }),
+  };
+}
+
 export function analyzeCommandContext(
   scripts: readonly ParsedScriptFile[],
   multiArena: boolean,
@@ -233,6 +365,12 @@ export function analyzeCommandContext(
           "anchored",
         );
 
+      const executionContext =
+        scriptCommandExecutionContext(
+          script,
+          literal,
+        );
+
       const relativeContext:
         CommandRelativeContextStatus =
         !usesRelative && !usesLocal
@@ -268,6 +406,22 @@ export function analyzeCommandContext(
         bareGlobalSelectors,
         tagOnlySelectors,
         relativeContext,
+        executionContext:
+          executionContext.status,
+        ...(executionContext.receiverType ===
+          undefined
+          ? {}
+          : {
+              receiverType:
+                executionContext.receiverType,
+            }),
+        ...(executionContext.receiverHint ===
+          undefined
+          ? {}
+          : {
+              receiverHint:
+                executionContext.receiverHint,
+            }),
       });
     }
   }
@@ -298,6 +452,24 @@ export function analyzeCommandContext(
         (item) =>
           item.relativeContext ===
           "unresolved",
+      ).length,
+    explicitDimensionCommands:
+      assessments.filter(
+        (item) =>
+          item.executionContext ===
+          "dimension-explicit",
+      ).length,
+    entityBoundCommands:
+      assessments.filter(
+        (item) =>
+          item.executionContext ===
+          "entity-bound",
+      ).length,
+    unknownExecutionContext:
+      assessments.filter(
+        (item) =>
+          item.executionContext ===
+          "unknown",
       ).length,
     assessments,
   };
@@ -358,6 +530,47 @@ export function commandContextDiagnostics(
               [...item.tagOnlySelectors],
             command:
               item.command,
+          },
+        }),
+      );
+    }
+
+    if (
+      item.executionContext ===
+        "unknown" &&
+      flattenCommandEffects(
+        analyzeCommand(
+          item.command,
+          {
+            artifactId:
+              "command-context",
+            relativePath:
+              item.scriptId,
+          },
+        ),
+      ).some(mutatingEffect)
+    ) {
+      output.push(
+        createDiagnostic({
+          code:
+            "COMMAND_DIMENSION_CONTEXT_UNKNOWN",
+          severity: "info",
+          message:
+            "A mutating script-issued command has no uniquely correlated typed Dimension or Entity/Player receiver; execution dimension ownership remains unknown.",
+          data: {
+            scriptId:
+              item.scriptId,
+            executionRegion:
+              item.executionRegion,
+            command:
+              item.command,
+            ...(item.receiverHint ===
+              undefined
+              ? {}
+              : {
+                  receiverHint:
+                    item.receiverHint,
+                }),
           },
         }),
       );

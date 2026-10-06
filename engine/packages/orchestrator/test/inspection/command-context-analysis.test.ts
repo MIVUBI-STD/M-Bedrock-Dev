@@ -87,3 +87,74 @@ describe("command context analysis", () => {
     ).toBe(1);
   });
 });
+
+
+describe("typed script command execution context", () => {
+  it("proves Dimension.runCommand as explicit dimension execution", () => {
+    const result =
+      analyzeCommandContext([
+        script([
+          "import { world } from '@minecraft/server';",
+          "const dimension = world.getDimension('overworld');",
+          "dimension.runCommand('setblock 1 2 3 minecraft:stone');",
+        ].join("\n")),
+      ], false);
+
+    expect(
+      result.explicitDimensionCommands,
+    ).toBe(1);
+    expect(
+      result.assessments[0],
+    ).toMatchObject({
+      executionContext:
+        "dimension-explicit",
+      receiverType: "Dimension",
+      receiverHint: "dimension",
+    });
+  });
+
+  it("proves entity-bound command execution from typed Entity receiver", () => {
+    const result =
+      analyzeCommandContext([
+        script([
+          "function apply(entity: Entity) {",
+          "  entity.runCommandAsync('tp @s 1 2 3');",
+          "}",
+        ].join("\n")),
+      ], false);
+
+    expect(
+      result.entityBoundCommands,
+    ).toBe(1);
+    expect(
+      result.assessments[0],
+    ).toMatchObject({
+      executionContext:
+        "entity-bound",
+      receiverType: "Entity",
+      receiverHint: "entity",
+    });
+  });
+
+  it("keeps untyped command receivers explicit as unknown", () => {
+    const result =
+      analyzeCommandContext([
+        script(
+          "dimension.runCommand('setblock 1 2 3 minecraft:stone');",
+        ),
+      ], false);
+
+    expect(
+      result.unknownExecutionContext,
+    ).toBe(1);
+    expect(
+      commandContextDiagnostics(
+        result,
+      ).some(
+        (item) =>
+          item.code ===
+          "COMMAND_DIMENSION_CONTEXT_UNKNOWN",
+      ),
+    ).toBe(true);
+  });
+});
