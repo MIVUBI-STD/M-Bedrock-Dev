@@ -812,6 +812,35 @@ function runtimeEdgeState(
         scenarioLabel ===
           "progression-wave-integrity" &&
         world.progression.actorAccounting
+          .provenActorIdentityMismatch > 0
+      ) {
+        const counters =
+          world.progression.actorAccounting.details
+            .filter((item) =>
+              item.status ===
+                "actor-identity-mismatch"
+            )
+            .map((item) =>
+              item.counterId +
+              " spawn=[" +
+              item.spawnLinkedActorIdentifiers.join(",") +
+              "] reconcile=[" +
+              item.lifecycleActorIdentifiers.join(",") +
+              "]"
+            )
+            .sort();
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Selected-artifact actor accounting proves counter growth is linked to one actor identity while the lifecycle-linked decrement is guarded for a different actor identity: " +
+            counters.join("; ") +
+            ". The counted actor has no matching reconciliation path, so runtime reproduction is not required to establish the identity mismatch.",
+        };
+      }
+      if (
+        scenarioLabel ===
+          "progression-wave-integrity" &&
+        world.progression.actorAccounting
           .provenMissingReconciliation > 0
       ) {
         const counters =

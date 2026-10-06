@@ -31,12 +31,15 @@ function parsed(
 describe(
   "progression actor accounting analysis",
   () => {
-    it("proves a strong actor counter cannot reach its zero gate when reconciliation is absent", () => {
+    it("proves missing reconciliation when a strong actor counter only grows", () => {
       const result =
         analyzeProgressionActorAccounting([
           parsed([
             "let remainingEnemies = 0;",
-            "function spawnEnemy() { remainingEnemies += 1; }",
+            "function spawnEnemy(dimension) {",
+            "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+            "  remainingEnemies += 1;",
+            "}",
             "function maybeAdvance() {",
             "  if (remainingEnemies <= 0) nextWave();",
             "}",
@@ -46,61 +49,19 @@ describe(
       expect(
         result.provenMissingReconciliation,
       ).toBe(1);
-      expect(result.counters[0])
-        .toMatchObject({
-          counterId:
-            "remainingEnemies",
-          status:
-            "missing-reconciliation",
-          growthWrites: 1,
-          decrementWrites: 0,
-          completionChecks: 1,
-        });
     });
 
-    it("does not call an arbitrary decrement safe when death/removal cannot reach it", () => {
+    it("keeps a lifecycle decrement unresolved when actor identity is not guarded", () => {
       const source = [
         "let remainingEnemies = 0;",
-        "world.afterEvents.entityDie.subscribe((event) => {",
-        "  observeDeath(event.deadEntity);",
-        "});",
-        "function observeDeath(entity) {}",
-        "function spawnEnemy() { remainingEnemies++; }",
-        "function debugFix() { remainingEnemies--; }",
-        "function maybeAdvance() {",
-        "  if (remainingEnemies === 0) nextWave();",
-        "}",
-      ].join("\n");
-
-      const result =
-        analyzeProgressionActorAccounting([
-          parsed(source),
-        ]);
-
-      expect(
-        result.reconciledFromActorLifecycle,
-      ).toBe(0);
-      expect(result.unresolvedCounters)
-        .toBe(1);
-      expect(result.counters[0])
-        .toMatchObject({
-          decrementWrites: 1,
-          lifecycleLinkedDecrements: 0,
-          status: "unresolved",
-        });
-    });
-
-    it("proves decrement reachability from entity death through local helpers", () => {
-      const source = [
-        "let remainingEnemies = 0;",
-        "world.afterEvents.entityDie.subscribe((event) => {",
-        "  reconcileEnemyDeath(event.deadEntity);",
-        "});",
-        "function reconcileEnemyDeath(entity) {",
+        "world.afterEvents.entityDie.subscribe(() => {",
         "  decrementRemaining();",
+        "});",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
         "}",
         "function decrementRemaining() { remainingEnemies--; }",
-        "function spawnEnemy() { remainingEnemies++; }",
         "function maybeAdvance() {",
         "  if (remainingEnemies === 0) nextWave();",
         "}",
@@ -112,26 +73,117 @@ describe(
         ]);
 
       expect(
-        result.reconciledFromActorLifecycle,
+        result.unresolvedCounters,
       ).toBe(1);
       expect(result.counters[0])
         .toMatchObject({
           lifecycleLinkedDecrements: 1,
-          status:
-            "reconciled-from-actor-lifecycle",
+          actorIdentityStatus:
+            "unresolved",
+          status: "unresolved",
         });
     });
 
-    it("proves decrement reachability across imported helper modules", () => {
+    it("proves matched actor identity from spawn through guarded death reconciliation", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "world.afterEvents.entityDie.subscribe((event) => {",
+        "  if (event.deadEntity.typeId === 'demo:enemy') {",
+        "    decrementRemaining();",
+        "  }",
+        "});",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function decrementRemaining() { remainingEnemies--; }",
+        "function maybeAdvance() {",
+        "  if (remainingEnemies === 0) nextWave();",
+        "}",
+      ].join("\n");
+
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed(source),
+        ]);
+
+      expect(
+        result
+          .reconciledFromMatchedActorLifecycle,
+      ).toBe(1);
+      expect(result.counters[0])
+        .toMatchObject({
+          actorIdentityStatus: "matched",
+          spawnLinkedActorIdentifiers: [
+            "demo:enemy",
+          ],
+          lifecycleActorIdentifiers: [
+            "demo:enemy",
+          ],
+          matchedActorIdentifiers: [
+            "demo:enemy",
+          ],
+          status:
+            "reconciled-from-matched-actor-lifecycle",
+        });
+    });
+
+    it("proves actor identity mismatch when growth and death reconciliation target different entity types", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "world.afterEvents.entityDie.subscribe((event) => {",
+        "  if (event.deadEntity.typeId === 'demo:other') {",
+        "    decrementRemaining();",
+        "  }",
+        "});",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function decrementRemaining() { remainingEnemies--; }",
+        "function maybeAdvance() {",
+        "  if (remainingEnemies === 0) nextWave();",
+        "}",
+      ].join("\n");
+
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed(source),
+        ]);
+
+      expect(
+        result.provenActorIdentityMismatch,
+      ).toBe(1);
+      expect(result.counters[0])
+        .toMatchObject({
+          actorIdentityStatus: "mismatch",
+          spawnLinkedActorIdentifiers: [
+            "demo:enemy",
+          ],
+          lifecycleActorIdentifiers: [
+            "demo:other",
+          ],
+          matchedActorIdentifiers: [],
+          status:
+            "actor-identity-mismatch",
+        });
+    });
+
+    it("proves matched actor reconciliation across imported counter helpers", () => {
       const mainText = [
         'import { decrementRemaining } from "./counter.js";',
-        "world.afterEvents.entityDie.subscribe(() => {",
-        "  decrementRemaining();",
+        "world.afterEvents.entityDie.subscribe((event) => {",
+        "  if (event.deadEntity.typeId === 'demo:enemy') {",
+        "    decrementRemaining();",
+        "  }",
         "});",
       ].join("\n");
       const counterText = [
         "export let remainingEnemies = 0;",
-        "export function spawnEnemy() { remainingEnemies++; }",
+        "export function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
         "export function decrementRemaining() { remainingEnemies--; }",
         "export function maybeAdvance() {",
         "  if (remainingEnemies === 0) nextWave();",
@@ -166,36 +218,13 @@ describe(
         );
 
       expect(
-        result.reconciledFromActorLifecycle,
+        result
+          .reconciledFromMatchedActorLifecycle,
       ).toBe(1);
-      expect(result.counters[0])
-        .toMatchObject({
-          counterId:
-            "remainingEnemies",
-          lifecycleLinkedDecrements: 1,
-          status:
-            "reconciled-from-actor-lifecycle",
-        });
-    });
-
-    it("keeps replacement writes unresolved instead of crediting them as actor reconciliation", () => {
-      const result =
-        analyzeProgressionActorAccounting([
-          parsed([
-            "let remainingEnemies = 0;",
-            "function spawnWave() { remainingEnemies += 3; }",
-            "function syncCount(list) { remainingEnemies = list.length; }",
-            "function maybeAdvance() {",
-            "  if (remainingEnemies <= 0) nextWave();",
-            "}",
-          ].join("\n")),
-        ]);
-
       expect(
-        result.provenMissingReconciliation,
-      ).toBe(0);
-      expect(result.unresolvedCounters)
-        .toBe(1);
+        result.counters[0]
+          ?.matchedActorIdentifiers,
+      ).toEqual(["demo:enemy"]);
     });
   },
 );

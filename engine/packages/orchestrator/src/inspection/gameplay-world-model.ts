@@ -369,8 +369,9 @@ export interface GameplayWorldModel {
     actorAccounting: {
       counters: number;
       provenMissingReconciliation: number;
+      provenActorIdentityMismatch: number;
       unresolvedCounters: number;
-      reconciledFromActorLifecycle: number;
+      reconciledFromMatchedActorLifecycle: number;
       details: readonly {
         scriptId: string;
         counterId: string;
@@ -379,8 +380,21 @@ export interface GameplayWorldModel {
         decrementWrites: number;
         replacementWrites: number;
         completionChecks: number;
+        lifecycleLinkedDecrements: number;
+        actorIdentityStatus:
+          | "matched"
+          | "mismatch"
+          | "unresolved"
+          | "not-applicable";
+        spawnLinkedActorIdentifiers:
+          readonly string[];
+        lifecycleActorIdentifiers:
+          readonly string[];
+        matchedActorIdentifiers:
+          readonly string[];
         status:
-          | "reconciled-from-actor-lifecycle"
+          | "reconciled-from-matched-actor-lifecycle"
+          | "actor-identity-mismatch"
           | "missing-reconciliation"
           | "unresolved";
       }[];
@@ -1902,12 +1916,15 @@ export function deriveGameplayWorldModel(
         provenMissingReconciliation:
           source.progressionActorAccounting
             ?.provenMissingReconciliation ?? 0,
+        provenActorIdentityMismatch:
+          source.progressionActorAccounting
+            ?.provenActorIdentityMismatch ?? 0,
         unresolvedCounters:
           source.progressionActorAccounting
             ?.unresolvedCounters ?? 0,
-        reconciledFromActorLifecycle:
+        reconciledFromMatchedActorLifecycle:
           source.progressionActorAccounting
-            ?.reconciledFromActorLifecycle ?? 0,
+            ?.reconciledFromMatchedActorLifecycle ?? 0,
         details:
           source.progressionActorAccounting
             ?.counters.map((item) => ({
@@ -1922,6 +1939,16 @@ export function deriveGameplayWorldModel(
                 item.replacementWrites,
               completionChecks:
                 item.completionChecks,
+              lifecycleLinkedDecrements:
+                item.lifecycleLinkedDecrements,
+              actorIdentityStatus:
+                item.actorIdentityStatus,
+              spawnLinkedActorIdentifiers:
+                [...item.spawnLinkedActorIdentifiers],
+              lifecycleActorIdentifiers:
+                [...item.lifecycleActorIdentifiers],
+              matchedActorIdentifiers:
+                [...item.matchedActorIdentifiers],
               status: item.status,
             })) ?? [],
       },
