@@ -1,81 +1,76 @@
-# Runtime Lab Backend
+# Virtual Clients Backend
 
 ## Product boundary
 
-Runtime Lab is a local, interactive multi-instance environment for Minecraft Education. Player input and gameplay remain manual. Runtime Lab owns the Virtual environment around the player; Native remains host-managed.
+M-Bedrock Virtual Clients is a local multi-instance environment for Minecraft Education.
 
-
-## Canonical architecture
+Player input and gameplay remain manual.
 
 ```text
-CLI now / Tauri later
+Native
+→ authority
+
+VirtualClients
+├── Runtime Profile
+├── Lifecycle
+├── Resource Pressure
+├── Runtime Telemetry
+├── Identity Health
+└── Guest Compatibility
         ↓
-RuntimeLab
-        ├── Lifecycle
-        ├── Resource Pressure
-        └── Identity Health
-                ↓
-             Provider
-                ↓
+     Provider
+        ↓
 VMware Workstation / VMware Fusion
 ```
 
 Rust owns runtime truth.
 
-## Emulator principles adopted
+## Ownership
 
-### Immutable template + per-instance delta
+- `runtime.rs` — lifecycle orchestration and mutation serialization.
+- `profile.rs` — Native Minecraft detection, Base provenance and version parity.
+- `guest.rs` — read-only Guest Agent protocol.
+- `resources.rs` — host pressure policy.
+- `client.rs` — public instance/status contract.
+- `doctor.rs` — provider, Base, capacity and parity readiness.
+- `provider/` — VMware mechanics and VMX inspection.
+- `virtual-guest-agent` — guest-side read-only runtime probe.
+- `virtual-clients` — thin operator CLI.
 
-`Base` is not used as a player instance. Virtual instances are linked clones with their own writable state.
+No parallel runtime state database exists.
 
-### Stable guest ceiling
+## Version invariant
 
-Each Virtual has:
-
-```text
-memory limit = 4096 MB
-vCPU         = 2
-```
-
-Runtime Lab does not resize running instances and no longer predicts a different `memsize` before each boot.
-
-### Host-pressure admission
-
-`resources.rs` owns only pressure evaluation:
+Native is the version authority.
 
 ```text
-host total RAM
-+ host available RAM
-→ NORMAL / PRESSURE / CRITICAL
-→ canStartVirtual
+Native Minecraft
+= registered Base Minecraft
+= live Virtual Minecraft
 ```
 
-At CRITICAL pressure, inactive Virtual instances are not started. Runtime Lab never automatically kills or resizes an existing running instance.
+A mismatch is not a warning-only state for boot operations.
 
-### Runtime telemetry
+Boot paths require:
 
-A Virtual status may expose:
+1. Native version detectable;
+2. registered Base profile present;
+3. Native/Base versions equal;
+4. Guest Agent reachable after boot;
+5. Guest Agent version equals backend version;
+6. Virtual Minecraft version equals Native.
 
-```text
-memoryLimitMb
-hostWorkingSetMb
-```
+## Base provenance
 
-`hostWorkingSetMb` is best-effort process resident memory, not guest configured memory. `resources` aggregates observed working-set values separately from the 4096 MB guest ceiling. `guestToolsReady` reports whether VMware Tools is observable as running; it intentionally does not create a new lifecycle state.
+`register-base` records the currently detected Native Minecraft version beside the stopped Base.
 
-### Warm state
+That record means:
 
-`suspend` is a first-class lifecycle state:
+> this Base was intentionally prepared for this Native version.
 
-```text
-RUNNING → SUSPENDED → start → RUNNING
-```
+It is not live guest proof. Live Virtual proof comes from the Guest Agent after boot.
 
-`suspend` without an instance applies the same operation to all Virtual instances.
-
-This is separate from `STOPPED` and from the `QA_READY` clean checkpoint.
-
-### State model
+## Runtime states
 
 ```text
 NOT_PROVISIONED
@@ -90,82 +85,70 @@ MANUAL
 
 `QA_READY` is a checkpoint, not a lifecycle state.
 
-### Instance identity
+## Resource policy
 
-Provider VMX identity is inspected from UUID and generated MAC data. Runtime health classifies each Virtual as `UNKNOWN`, `UNIQUE`, or `DUPLICATE`. Duplicate identity is never silently treated as healthy.
+Each Virtual:
 
-## Ownership
+```text
+memory ceiling = 4096 MB
+vCPU           = 2
+```
 
-- `runtime.rs` — application lifecycle, pressure admission, identity health.
-- `resources.rs` — host-pressure policy only.
-- `client.rs` — public runtime identity/state contract.
-- `doctor.rs` — host/provider/Base readiness and capacity.
-- `provider/` — VMware mechanics and VMX inspection.
-- CLI — thin operator adapter.
+Runtime telemetry keeps configured memory separate from observed process resident memory.
 
-No parallel state database exists.
+Host pressure:
+
+```text
+NORMAL
+PRESSURE
+CRITICAL
+```
+
+Virtual Clients never silently kills existing running clients because of host pressure.
 
 ## Reliability
 
-- OS-level mutation lock.
+- OS-level operation lock.
 - Transactional linked-clone staging.
-- Automatic cleanup of abandoned staging data after an interrupted provisioning run.
+- Cleanup of abandoned staging data.
 - Immutable Base requirement.
-- Provider command timeout.
-- Pressure-aware multi-instance boot: 2s spacing under NORMAL pressure and 5s under PRESSURE.
+- Native/Base version parity gate.
+- Live Virtual/Native version parity gate.
+- Guest Agent/backend version parity gate.
+- Unique VM UUID/MAC identity check.
+- Pressure-aware staggered boot.
+- Batch rollback on start failure.
+- Rollback failure visibility.
 - Graceful stop with bounded hard fallback.
-- Suspend / fast-resume path.
-- Clean `QA_READY` reset path.
-- Selected-instance reprovision only.
-- Identity duplicate detection.
-- Actual host-pressure observation.
-- Batch-start rollback restores newly started instances to their prior STOPPED/SUSPENDED state when a later start fails.
-
-## Frontend boundary
-
-A future Svelte/Tauri layer must consume this Rust core. It must not duplicate lifecycle, pressure, identity, or provider policy.
-
+- Long timeout for clone/suspend/resume/snapshot operations.
+- Suspend/fast-resume path.
+- Clean QA_READY reset.
+- Selected-instance reprovision.
 
 ## Disk policy
 
-Runtime Lab does not automatically shrink or compact Virtual disks.
+Do not automatically shrink or compact Virtual disks while snapshot chains exist.
 
-Virtual instances are linked clones and also use the `QA_READY` snapshot. VMware disk shrink/cleanup has snapshot-related constraints and interruption risk, so automatic compaction is intentionally outside the normal lifecycle.
-
-The safe cleanup path is:
+Safe cleanup:
 
 ```text
 fully stop Virtual
 → reprovision Virtual
-→ rebuild a fresh linked clone from Base
-→ configure instance identity/session again
-→ set-ready
+→ rebuild from Base
 ```
-
-This keeps disk hygiene aligned with the disposable-instance model instead of mutating a live snapshot chain.
-
 
 ## Emulator feature gate
 
-Runtime Lab borrows behavior from mature emulator managers only when the underlying provider can enforce it measurably.
+Do not expose a feature unless a provider primitive can enforce it measurably.
 
-Do not add a user-facing feature unless the backend has a real primitive for it.
+Not exposed today:
 
-Examples intentionally not exposed today:
+- fake Eco mode;
+- live RAM resize;
+- automatic kill under pressure;
+- automatic snapshot-chain disk shrink;
+- unverifiable FPS/GPU throttles.
 
-- fake Eco/Low Power modes without measurable CPU/GPU control;
-- live RAM resizing while a Virtual is running;
-- automatic killing of running Virtual instances under pressure;
-- automatic disk shrink while snapshot chains are present;
-- FPS/audio throttles unless the provider can apply and verify them safely.
+## Frontend boundary
 
-When a future optimization is added, it must have one owner, one execution path, observable effect, and acceptance proof on the target machine.
-
-
-## Batch recovery contract
-
-Batch lifecycle operations are best-effort transactional.
-
-If a batch start or suspend fails after changing earlier Virtual instances, Runtime Lab attempts to restore those instances to their previous state.
-
-Rollback failures are never hidden. The returned error names every Virtual instance that could not be restored and instructs the operator to run `status` before taking another action.
+Future Tauri/Svelte code must consume this Rust core. It must not duplicate provider, lifecycle, parity, update, or resource policy.
