@@ -201,7 +201,7 @@ try {
             npm run cli -- plan @paths
         }
         "finalize-local" {
-            npm run verify:ready
+            npm run verify:local-ready
         }
         default {
             Write-Host "M-Bedrock-Dev"
