@@ -110,7 +110,17 @@ fn restore_batch_state(provider: &dyn Provider, started: &[(ClientId, ClientStat
     }
 }
 
-fn client_status(provider: &dyn Provider, client: ClientId) -> io::Result<ClientStatus> {
+fn working_set_for(working_sets: &[(ClientId, u64)], client: ClientId) -> Option<u64> {
+    working_sets
+        .iter()
+        .find_map(|(candidate, memory_mb)| (*candidate == client).then_some(*memory_mb))
+}
+
+fn client_status(
+    provider: &dyn Provider,
+    working_sets: &[(ClientId, u64)],
+    client: ClientId,
+) -> io::Result<ClientStatus> {
     let state = provider.status(client)?;
     if state == ClientState::NotProvisioned {
         return Ok(ClientStatus {
@@ -130,7 +140,7 @@ fn client_status(provider: &dyn Provider, client: ClientId) -> io::Result<Client
         state,
         ready_snapshot: Some(provider.has_ready(client).unwrap_or(false)),
         memory_limit_mb: provider.memory_limit_mb(client).ok(),
-        host_working_set_mb: provider.host_working_set_mb(client).ok().flatten(),
+        host_working_set_mb: working_set_for(working_sets, client),
         identity: Some(identity_state(provider, client)),
     })
 }
@@ -147,10 +157,14 @@ impl RuntimeLab {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
 
-        let mut result = Vec::with_capacity(3);
         for client in ClientId::VIRTUAL {
             provider.provision(client)?;
-            result.push(client_status(provider.as_ref(), client)?);
+        }
+
+        let working_sets = provider.host_working_sets_mb()?;
+        let mut result = Vec::with_capacity(3);
+        for client in ClientId::VIRTUAL {
+            result.push(client_status(provider.as_ref(), &working_sets, client)?);
         }
         Ok(result)
     }
@@ -170,7 +184,8 @@ impl RuntimeLab {
         })?;
 
         provider.reprovision(client)?;
-        client_status(provider.as_ref(), client)
+        let working_sets = provider.host_working_sets_mb()?;
+        client_status(provider.as_ref(), &working_sets, client)
     }
 
     pub fn status(&self) -> io::Result<RuntimeStatus> {
@@ -188,8 +203,9 @@ impl RuntimeLab {
         });
 
         if let Some(provider) = provider.as_ref() {
+            let working_sets = provider.host_working_sets_mb()?;
             for client in ClientId::VIRTUAL {
-                clients.push(client_status(provider.as_ref(), client)?);
+                clients.push(client_status(provider.as_ref(), &working_sets, client)?);
             }
         } else {
             for client in ClientId::VIRTUAL {
@@ -230,6 +246,7 @@ impl RuntimeLab {
         let mut running = 0;
         let mut suspended = 0;
         let mut stopped = 0;
+        let working_sets = provider.host_working_sets_mb()?;
         let mut observed_working_set_mb = 0;
         let mut observed_working_set_instances = 0;
 
@@ -252,7 +269,7 @@ impl RuntimeLab {
                 }
             }
 
-            if let Some(memory_mb) = provider.host_working_set_mb(client)? {
+            if let Some(memory_mb) = working_set_for(&working_sets, client) {
                 observed_working_set_mb += memory_mb;
                 observed_working_set_instances += 1;
             }
@@ -343,7 +360,8 @@ impl RuntimeLab {
                 ));
             }
 
-            result.push(client_status(provider.as_ref(), client)?);
+            let working_sets = provider.host_working_sets_mb()?;
+            result.push(client_status(provider.as_ref(), &working_sets, client)?);
 
             if index + 1 < count {
                 let delay = start_delay_secs(current_host_pressure().level);
@@ -380,7 +398,8 @@ impl RuntimeLab {
         let mut suspended_by_batch = Vec::new();
         let mut result = Vec::with_capacity(targets.len());
 
-        for client in targets {
+        for client in &targets {
+            let client = *client;
             let original_state = provider.status(client)?;
             if let Err(error) = provider.suspend(client) {
                 for suspended in suspended_by_batch.into_iter().rev() {
@@ -392,7 +411,11 @@ impl RuntimeLab {
             if original_state == ClientState::Running {
                 suspended_by_batch.push(client);
             }
-            result.push(client_status(provider.as_ref(), client)?);
+        }
+
+        let working_sets = provider.host_working_sets_mb()?;
+        for client in targets {
+            result.push(client_status(provider.as_ref(), &working_sets, client)?);
         }
         Ok(result)
     }
@@ -425,9 +448,13 @@ impl RuntimeLab {
         };
 
         let mut result = Vec::with_capacity(targets.len());
+        for client in &targets {
+            provider.stop(*client)?;
+        }
+
+        let working_sets = provider.host_working_sets_mb()?;
         for client in targets {
-            provider.stop(client)?;
-            result.push(client_status(provider.as_ref(), client)?);
+            result.push(client_status(provider.as_ref(), &working_sets, client)?);
         }
         Ok(result)
     }
@@ -445,7 +472,8 @@ impl RuntimeLab {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
         provider.restart(client)?;
-        client_status(provider.as_ref(), client)
+        let working_sets = provider.host_working_sets_mb()?;
+        client_status(provider.as_ref(), &working_sets, client)
     }
 
     pub fn set_ready(&self, client: ClientId) -> io::Result<ClientStatus> {
@@ -461,7 +489,8 @@ impl RuntimeLab {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
         provider.set_ready(client)?;
-        client_status(provider.as_ref(), client)
+        let working_sets = provider.host_working_sets_mb()?;
+        client_status(provider.as_ref(), &working_sets, client)
     }
 
     pub fn reset(&self, client: ClientId) -> io::Result<ClientStatus> {
@@ -477,7 +506,8 @@ impl RuntimeLab {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
         provider.reset(client)?;
-        client_status(provider.as_ref(), client)
+        let working_sets = provider.host_working_sets_mb()?;
+        client_status(provider.as_ref(), &working_sets, client)
     }
 
     pub fn open(&self, client: ClientId) -> io::Result<ClientStatus> {
@@ -497,6 +527,7 @@ impl RuntimeLab {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
         })?;
         provider.open(client)?;
-        client_status(provider.as_ref(), client)
+        let working_sets = provider.host_working_sets_mb()?;
+        client_status(provider.as_ref(), &working_sets, client)
     }
 }
