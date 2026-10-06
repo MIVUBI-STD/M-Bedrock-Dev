@@ -1,6 +1,6 @@
 use crate::{
     client::{ClientId, ClientState, ClientStatus, IdentityState},
-    doctor::doctor,
+    doctor::{doctor, DoctorReport},
     provider::{cleanup_staging, current_platform_provider, runtime_root, MemoryMode, Provider},
     resources::{current_host_pressure, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
 };
