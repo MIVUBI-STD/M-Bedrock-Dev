@@ -335,6 +335,41 @@
       ]
     },
     {
+      "knowledgeId": "round-policy.objective-progress-idempotent",
+      "consumer": "progression-actor-accounting-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/progression/progression-counter-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/progression-actor-accounting-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/progression/progression-counter-evidence.test.ts",
+        "engine/packages/orchestrator/test/inspection/progression-actor-accounting-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "round-policy.single-terminal-owner",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "round-policy.timer-generation-bound",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "state-policy.authority-version-or-generation",
       "consumer": "state-authority-analysis",
       "analyzerPaths": [

@@ -569,4 +569,37 @@ describe("arena lifecycle convergence", () => {
         "readyCount=arena.readyPlayers",
     });
   });
+
+  it("accepts a round timer callback that revalidates timer generation before terminal mutation", () => {
+    const source = [
+      "let resultCommitted = false;",
+      "let timerGeneration = 9;",
+      "const capturedTimerGeneration = timerGeneration;",
+      "system.runTimeout(() => {",
+      "  if (capturedTimerGeneration !== timerGeneration) return;",
+      "  resultCommitted = true;",
+      "}, 200);",
+    ].join("\n");
+    const script = parseScriptFile(
+      "main",
+      source,
+      {
+        artifactId: "fixture",
+        relativePath:
+          "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeArenaLifecycleConvergence(
+        [script],
+      );
+
+    expect(
+      result.protectedDeferredMutations,
+    ).toBe(1);
+    expect(
+      result.unresolvedDeferredMutations,
+    ).toBe(0);
+  });
 });
