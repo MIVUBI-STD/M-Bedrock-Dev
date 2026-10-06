@@ -746,6 +746,49 @@
       ]
     },
     {
+      "knowledgeId": "environment.before-events-restricted",
+      "consumer": "script-restricted-execution-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/inspection/script-api-usage.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/script-api-usage.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "environment.damage-sensor-can-suppress-or-modify",
+      "consumer": "environment-hazard-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/environment-hazard-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/environment-hazard-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "environment.explosion-before-can-cancel-or-filter-blocks",
+      "consumer": "environment-hazard-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/environment-hazard-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/environment-hazard-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "environment.hurt-condition-per-tick",
+      "consumer": "environment-hazard-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/environment-hazard-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/environment-hazard-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "event-policy.after-event-not-global-consistency-barrier",
       "consumer": "mutation-transaction-analysis",
       "analyzerPaths": [
