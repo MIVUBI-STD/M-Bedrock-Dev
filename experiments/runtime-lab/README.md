@@ -83,7 +83,7 @@ Rust is the only backend authority.
 
 Each Virtual is configured with a 4 GB guest memory ceiling. This is a guest-visible limit, not a claim that the host permanently consumes 4 GB of resident physical RAM.
 
-Runtime Lab observes host total memory, host available memory, host pressure, configured Virtual memory limit, and best-effort resident working set for each running Virtual. `resources` also reports the total observed working set for the requested Virtual set when process mapping is available.
+Runtime Lab observes host total memory, host available memory, host pressure, configured Virtual memory limit, and best-effort resident working set for each running Virtual. `resources` also reports the total observed working set for the requested Virtual set when process mapping is available. `status` exposes `guestToolsReady` when VMware Tools readiness can be observed.
 
 ```text
 NORMAL    >= 25% host RAM available
@@ -167,5 +167,7 @@ set-ready <Virtual-01|Virtual-02|Virtual-03>
 reset <Virtual-01|Virtual-02|Virtual-03>
 reprovision <Virtual-01|Virtual-02|Virtual-03>
 ```
+
+`guestToolsReady=true` means VMware Tools is running; it does not claim Minecraft itself has finished loading.
 
 Frontend work remains deferred until backend acceptance is proven.
