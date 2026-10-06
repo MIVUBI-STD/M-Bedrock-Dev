@@ -1,0 +1,259 @@
+export type RetrievalResourceClass =
+  | "DOCUMENT"
+  | "KNOWLEDGE"
+  | "SOURCE"
+  | "RELIABILITY"
+  | "WORKFLOW"
+  | "SCHEMA";
+
+export type RetrievalDocumentRole =
+  | "ROUTER"
+  | "WORKFLOW"
+  | "CONTRACT"
+  | "REFERENCE"
+  | "ARCHITECTURE"
+  | "GUIDE";
+
+export type RetrievalAuthority =
+  | "CANONICAL"
+  | "REFERENCE"
+  | "HISTORICAL"
+  | "DERIVED";
+
+export type RetrievalLifecycle =
+  | "ACTIVE"
+  | "RETIRED";
+
+export type RetrievalRelationType =
+  | "ROUTES_TO"
+  | "OWNS"
+  | "IMPLEMENTS"
+  | "USES"
+  | "DEPENDS_ON"
+  | "VALIDATES"
+  | "RELATES_TO"
+  | "DERIVED_FROM";
+
+export interface RetrievalResource {
+  id: string;
+  class: RetrievalResourceClass;
+  domain: string;
+  role?: RetrievalDocumentRole;
+  authority: RetrievalAuthority;
+  path: string;
+  lifecycle: RetrievalLifecycle;
+}
+
+export interface RetrievalGraphEdge {
+  from: string;
+  type: RetrievalRelationType;
+  to: string;
+}
+
+export interface RetrievalQuery {
+  text: string;
+  domains?: readonly string[];
+  classes?: readonly RetrievalResourceClass[];
+  authorities?: readonly RetrievalAuthority[];
+  seedIds?: readonly string[];
+  semanticScores?: Readonly<Record<string, number>>;
+  limit?: number;
+}
+
+export interface RetrievalScore {
+  routing: number;
+  graph: number;
+  structural: number;
+  semantic: number;
+  authority: number;
+  total: number;
+}
+
+export interface RetrievalResult {
+  resource: RetrievalResource;
+  score: RetrievalScore;
+  reasons: readonly string[];
+}
+
+const AUTHORITY_SCORE: Readonly<Record<RetrievalAuthority, number>> = {
+  CANONICAL: 20,
+  REFERENCE: 10,
+  HISTORICAL: 0,
+  DERIVED: 2,
+};
+
+const RELATION_SCORE: Readonly<Record<RetrievalRelationType, number>> = {
+  ROUTES_TO: 30,
+  OWNS: 28,
+  IMPLEMENTS: 26,
+  USES: 22,
+  DEPENDS_ON: 20,
+  VALIDATES: 20,
+  DERIVED_FROM: 18,
+  RELATES_TO: 12,
+};
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function tokens(value: string): readonly string[] {
+  return [
+    ...new Set(
+      value
+        .toLowerCase()
+        .split(/[^a-z0-9]+/g)
+        .map((item) => item.trim())
+        .filter((item) => item.length >= 2),
+    ),
+  ];
+}
+
+function structuralScore(
+  resource: RetrievalResource,
+  queryTokens: readonly string[],
+): number {
+  if (queryTokens.length === 0) return 0;
+
+  const resourceTokens = new Set(
+    tokens([
+      resource.id,
+      resource.domain,
+      resource.class,
+      resource.role ?? "",
+      resource.path,
+    ].join(" ")),
+  );
+
+  let overlap = 0;
+  for (const token of queryTokens) {
+    if (resourceTokens.has(token)) overlap += 1;
+  }
+
+  return Math.min(40, overlap * 8);
+}
+
+function graphScores(
+  edges: readonly RetrievalGraphEdge[],
+  seedIds: ReadonlySet<string>,
+): Map<string, number> {
+  const scores = new Map<string, number>();
+
+  for (const seedId of seedIds) {
+    scores.set(seedId, 50);
+  }
+
+  for (const edge of edges) {
+    if (seedIds.has(edge.from)) {
+      scores.set(
+        edge.to,
+        Math.max(scores.get(edge.to) ?? 0, RELATION_SCORE[edge.type]),
+      );
+    }
+    if (seedIds.has(edge.to)) {
+      scores.set(
+        edge.from,
+        Math.max(
+          scores.get(edge.from) ?? 0,
+          Math.max(1, RELATION_SCORE[edge.type] - 4),
+        ),
+      );
+    }
+  }
+
+  return scores;
+}
+
+function candidateResources(
+  resources: readonly RetrievalResource[],
+  graphScore: ReadonlyMap<string, number>,
+  domains: ReadonlySet<string>,
+): readonly RetrievalResource[] {
+  if (domains.size === 0 && graphScore.size === 0) {
+    return resources;
+  }
+
+  return resources.filter(
+    (resource) =>
+      domains.has(resource.domain) ||
+      graphScore.has(resource.id),
+  );
+}
+
+export function retrieveResources(
+  resources: readonly RetrievalResource[],
+  edges: readonly RetrievalGraphEdge[],
+  query: RetrievalQuery,
+): readonly RetrievalResult[] {
+  const domains = new Set(query.domains ?? []);
+  const classes = new Set(query.classes ?? []);
+  const authorities = new Set(query.authorities ?? []);
+  const seedIds = new Set(query.seedIds ?? []);
+  const queryTokens = tokens(query.text);
+  const graphScore = graphScores(edges, seedIds);
+  const semanticScores = query.semanticScores ?? {};
+  const limit = clamp(query.limit ?? 12, 1, 50);
+
+  return candidateResources(resources, graphScore, domains)
+    .filter((resource) => resource.lifecycle === "ACTIVE")
+    .filter(
+      (resource) =>
+        classes.size === 0 ||
+        classes.has(resource.class),
+    )
+    .filter(
+      (resource) =>
+        authorities.size === 0 ||
+        authorities.has(resource.authority),
+    )
+    .map((resource): RetrievalResult => {
+      const routing =
+        domains.size > 0 && domains.has(resource.domain)
+          ? 30
+          : 0;
+      const graph = graphScore.get(resource.id) ?? 0;
+      const structural = structuralScore(resource, queryTokens);
+      const semantic = Math.round(
+        clamp(semanticScores[resource.id] ?? 0, 0, 1) * 30,
+      );
+      const authority = AUTHORITY_SCORE[resource.authority];
+      const total =
+        routing +
+        graph +
+        structural +
+        semantic +
+        authority;
+
+      const reasons = [
+        ...(routing > 0 ? ["domain-route"] : []),
+        ...(graph > 0 ? ["graph-relation"] : []),
+        ...(structural > 0 ? ["structural-match"] : []),
+        ...(semantic > 0 ? ["semantic-rank"] : []),
+        "authority:" + resource.authority,
+      ];
+
+      return {
+        resource,
+        score: {
+          routing,
+          graph,
+          structural,
+          semantic,
+          authority,
+          total,
+        },
+        reasons,
+      };
+    })
+    .filter(
+      (result) =>
+        result.score.total > AUTHORITY_SCORE[result.resource.authority] ||
+        queryTokens.length === 0,
+    )
+    .sort(
+      (left, right) =>
+        right.score.total - left.score.total ||
+        left.resource.id.localeCompare(right.resource.id),
+    )
+    .slice(0, limit);
+}
