@@ -1,3 +1,12 @@
+---
+id: document.system.skill-routing
+class: DOCUMENT
+domain: system
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Skill Routing
 
 Skills are routed on **two dimensions**:

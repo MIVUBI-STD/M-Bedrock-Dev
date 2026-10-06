@@ -1,3 +1,12 @@
+---
+id: document.validation.package-proof
+class: DOCUMENT
+domain: validation
+role: CONTRACT
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Package Proof
 
 Package proof is distinct from Minecraft runtime proof.

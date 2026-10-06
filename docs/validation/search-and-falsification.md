@@ -1,3 +1,12 @@
+---
+id: document.validation.search-and-falsification
+class: DOCUMENT
+domain: validation
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Search and Falsification
 
 ## Purpose

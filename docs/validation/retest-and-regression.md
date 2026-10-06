@@ -1,3 +1,12 @@
+---
+id: document.validation.retest-and-regression
+class: DOCUMENT
+domain: validation
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Retest and Regression
 
 ## Purpose

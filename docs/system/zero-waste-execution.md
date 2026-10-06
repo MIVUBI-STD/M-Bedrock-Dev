@@ -1,3 +1,12 @@
+---
+id: document.system.zero-waste-execution
+class: DOCUMENT
+domain: system
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Zero-Waste Execution
 
 M-Bedrock uses minimum sufficient execution rather than broad rescans.

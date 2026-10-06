@@ -1,3 +1,12 @@
+---
+id: document.validation.router
+class: DOCUMENT
+domain: validation
+role: ROUTER
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Validation
 
 Canonical proof and evidence policy for product behavior.

@@ -1,3 +1,12 @@
+---
+id: document.validation.repair-validation
+class: DOCUMENT
+domain: validation
+role: CONTRACT
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Repair Validation
 
 Filesystem mutation success is not repair acceptance.

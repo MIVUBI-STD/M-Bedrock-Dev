@@ -1,3 +1,12 @@
+---
+id: document.validation.runtime-proof
+class: DOCUMENT
+domain: validation
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Runtime Proof
 
 ## Purpose

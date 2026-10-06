@@ -1,3 +1,12 @@
+---
+id: document.system.project-lifecycle
+class: DOCUMENT
+domain: system
+role: CONTRACT
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Project Lifecycle and Publication
 
 ## Purpose
