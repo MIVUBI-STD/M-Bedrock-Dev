@@ -401,6 +401,8 @@ export interface GameplayWorldModel {
       deterministicItemRestores: number;
       unknownIdentityGrants: number;
       multipleRestoreOwners: number;
+      initialSessionDuplicateOwners: number;
+      initialSessionOverlapUnresolved: number;
     };
     policy: {
       configured: boolean;
@@ -425,6 +427,14 @@ export interface GameplayWorldModel {
     restoreConflicts: readonly {
       lifecycleEvent: "player-spawn" | "player-join" | "entity-die";
       itemIdentifier: string;
+      ownerCallbackRegions: readonly string[];
+    }[];
+    crossLifecycleRestoreConflicts: readonly {
+      itemIdentifier: string;
+      lifecycleEvents: readonly [
+        "player-join",
+        "player-spawn",
+      ];
       ownerCallbackRegions: readonly string[];
     }[];
   };
@@ -1920,6 +1930,12 @@ export function deriveGameplayWorldModel(
         multipleRestoreOwners:
           source.inventoryRestoreOwnership
             ?.multipleRestoreOwners ?? 0,
+        initialSessionDuplicateOwners:
+          source.inventoryRestoreOwnership
+            ?.initialSessionDuplicateOwners ?? 0,
+        initialSessionOverlapUnresolved:
+          source.inventoryRestoreOwnership
+            ?.initialSessionOverlapUnresolved ?? 0,
       },
       policy: {
         configured:
@@ -1957,6 +1973,18 @@ export function deriveGameplayWorldModel(
           itemIdentifier: item.itemIdentifier,
           ownerCallbackRegions: [...item.ownerCallbackRegions],
         })) ?? [],
+      crossLifecycleRestoreConflicts:
+        source.inventoryRestoreOwnership?.crossLifecycleConflicts.map(
+          (item) => ({
+            itemIdentifier: item.itemIdentifier,
+            lifecycleEvents: [...item.lifecycleEvents] as [
+              "player-join",
+              "player-spawn",
+            ],
+            ownerCallbackRegions:
+              [...item.ownerCallbackRegions],
+          }),
+        ) ?? [],
     },
     worldRules: {
       writes:

@@ -44,6 +44,107 @@ describe("inventory restore ownership analysis", () => {
     ).toHaveLength(2);
   });
 
+  it("proves duplicate initial-session restore ownership across playerJoin and unguarded playerSpawn", () => {
+    const entry = {
+      parsed: parseScriptFile(
+        "main",
+        [
+          "world.afterEvents.playerJoin.subscribe((event) => {",
+          "  restoreJoin(event.playerId);",
+          "});",
+          "world.afterEvents.playerSpawn.subscribe((event) => {",
+          "  restoreSpawn(event.player);",
+          "});",
+          "function restoreJoin(player) {",
+          "  const sword = new ItemStack('minecraft:diamond_sword');",
+          "  player.getComponent('inventory').container.addItem(sword);",
+          "}",
+          "function restoreSpawn(player) {",
+          "  const sword = new ItemStack('minecraft:diamond_sword');",
+          "  player.getComponent('inventory').container.addItem(sword);",
+          "}",
+        ].join("\n"),
+        {
+          artifactId: "fixture",
+          relativePath: "scripts/main.ts",
+        },
+      ),
+      text: [
+        "world.afterEvents.playerJoin.subscribe((event) => {",
+        "  restoreJoin(event.playerId);",
+        "});",
+        "world.afterEvents.playerSpawn.subscribe((event) => {",
+        "  restoreSpawn(event.player);",
+        "});",
+        "function restoreJoin(player) {",
+        "  const sword = new ItemStack('minecraft:diamond_sword');",
+        "  player.getComponent('inventory').container.addItem(sword);",
+        "}",
+        "function restoreSpawn(player) {",
+        "  const sword = new ItemStack('minecraft:diamond_sword');",
+        "  player.getComponent('inventory').container.addItem(sword);",
+        "}",
+      ].join("\n"),
+    };
+
+    const result =
+      analyzeInventoryRestoreOwnership([entry]);
+
+    expect(
+      result.initialSessionDuplicateOwners,
+    ).toBe(1);
+    expect(result.multipleRestoreOwners).toBe(1);
+    expect(
+      result.crossLifecycleConflicts[0],
+    ).toMatchObject({
+      itemIdentifier:
+        "minecraft:diamond_sword",
+      lifecycleEvents: [
+        "player-join",
+        "player-spawn",
+      ],
+    });
+  });
+
+  it("does not treat a respawn-only playerSpawn restore as an initial-session duplicate", () => {
+    const source = [
+      "world.afterEvents.playerJoin.subscribe((event) => {",
+      "  restoreJoin(event.playerId);",
+      "});",
+      "world.afterEvents.playerSpawn.subscribe((event) => {",
+      "  if (event.initialSpawn) return;",
+      "  restoreSpawn(event.player);",
+      "});",
+      "function restoreJoin(player) {",
+      "  const sword = new ItemStack('minecraft:diamond_sword');",
+      "  player.getComponent('inventory').container.addItem(sword);",
+      "}",
+      "function restoreSpawn(player) {",
+      "  const sword = new ItemStack('minecraft:diamond_sword');",
+      "  player.getComponent('inventory').container.addItem(sword);",
+      "}",
+    ].join("\n");
+    const result =
+      analyzeInventoryRestoreOwnership([{
+        parsed: parseScriptFile(
+          "main",
+          source,
+          {
+            artifactId: "fixture",
+            relativePath: "scripts/main.ts",
+          },
+        ),
+        text: source,
+      }]);
+
+    expect(
+      result.initialSessionDuplicateOwners,
+    ).toBe(0);
+    expect(
+      result.initialSessionOverlapUnresolved,
+    ).toBe(0);
+  });
+
   it("keeps runtime-dynamic restore items unresolved rather than grouping them", () => {
     const script = parseScriptFile(
       "main",

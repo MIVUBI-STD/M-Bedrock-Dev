@@ -8,6 +8,12 @@ export type InventoryRestoreLifecycleEvent =
   | "player-join"
   | "entity-die";
 
+export type PlayerSpawnRestoreScope =
+  | "initial-only"
+  | "respawn-only"
+  | "all-spawns"
+  | "unknown";
+
 export interface InventoryRestorePathway {
   scriptId: string;
   lifecycleEvent: InventoryRestoreLifecycleEvent;
@@ -17,11 +23,23 @@ export interface InventoryRestorePathway {
   grantRegions: readonly string[];
   itemIdentifiers: readonly string[];
   unknownIdentityGrants: number;
+  playerSpawnScope?: PlayerSpawnRestoreScope;
 }
 
 export interface InventoryRestoreOwnerConflict {
   lifecycleEvent: InventoryRestoreLifecycleEvent;
   itemIdentifier: string;
+  ownerCallbackRegions: readonly string[];
+  sourceEvents: readonly string[];
+  reason: string;
+}
+
+export interface InventoryRestoreCrossLifecycleConflict {
+  itemIdentifier: string;
+  lifecycleEvents: readonly [
+    "player-join",
+    "player-spawn",
+  ];
   ownerCallbackRegions: readonly string[];
   sourceEvents: readonly string[];
   reason: string;
@@ -33,7 +51,11 @@ export interface InventoryRestoreOwnershipAnalysis {
   deterministicItemRestores: number;
   unknownIdentityGrants: number;
   multipleRestoreOwners: number;
+  initialSessionDuplicateOwners: number;
+  initialSessionOverlapUnresolved: number;
   conflicts: readonly InventoryRestoreOwnerConflict[];
+  crossLifecycleConflicts:
+    readonly InventoryRestoreCrossLifecycleConflict[];
 }
 
 function lifecycleEvent(
@@ -53,6 +75,66 @@ function lifecycleEvent(
     return "entity-die";
   }
   return undefined;
+}
+
+type InventoryRestoreScriptInput =
+  | ParsedScriptFile
+  | {
+      parsed: ParsedScriptFile;
+      text?: string;
+    };
+
+function normalizedScriptInput(
+  input: InventoryRestoreScriptInput,
+): {
+  parsed: ParsedScriptFile;
+  text?: string;
+} {
+  return "parsed" in input
+    ? input
+    : { parsed: input };
+}
+
+function sourceTextForEvent(
+  text: string | undefined,
+  event: ParsedScriptFile["events"][number],
+): string {
+  if (!text) return "";
+  const source =
+    event.callbackSource ?? event.source;
+  const lines = text.split(/\r?\n/);
+  const start = Math.max(
+    0,
+    (source.range?.lineStart ?? 1) - 1,
+  );
+  const end = Math.min(
+    lines.length,
+    source.range?.lineEnd ?? lines.length,
+  );
+  return lines.slice(start, end).join("\n");
+}
+
+function playerSpawnScope(
+  text: string,
+): PlayerSpawnRestoreScope {
+  if (!text.trim()) return "unknown";
+  if (!/\.initialSpawn\b/.test(text)) {
+    return "all-spawns";
+  }
+
+  const initialOnly =
+    /if\s*\(\s*!\s*[A-Za-z_$][\w$]*\.initialSpawn\s*\)\s*(?:\{\s*)?return\b/s.test(
+      text,
+    );
+  if (initialOnly) return "initial-only";
+
+  const respawnOnly =
+    /if\s*\(\s*[A-Za-z_$][\w$]*\.initialSpawn\s*\)\s*(?:\{\s*)?return\b/s.test(
+      text,
+    );
+  if (respawnOnly) return "respawn-only";
+
+  return "unknown";
 }
 
 function graphFor(
@@ -101,8 +183,10 @@ function grantEvidence(
 }
 
 function analyzeScript(
-  script: ParsedScriptFile,
+  input: InventoryRestoreScriptInput,
 ): InventoryRestorePathway[] {
+  const { parsed: script, text } =
+    normalizedScriptInput(input);
   const graph = graphFor(script);
   const grants = grantEvidence(script);
   const output: InventoryRestorePathway[] = [];
@@ -161,6 +245,17 @@ function analyzeScript(
           (grant) =>
             grant.itemIdentifier === undefined,
         ).length,
+      ...(classified === "player-spawn"
+        ? {
+            playerSpawnScope:
+              playerSpawnScope(
+                sourceTextForEvent(
+                  text,
+                  event,
+                ),
+              ),
+          }
+        : {}),
     });
   }
 
@@ -168,7 +263,7 @@ function analyzeScript(
 }
 
 export function analyzeInventoryRestoreOwnership(
-  scripts: readonly ParsedScriptFile[],
+  scripts: readonly InventoryRestoreScriptInput[],
 ): InventoryRestoreOwnershipAnalysis {
   const pathways = scripts
     .flatMap(analyzeScript)
@@ -247,6 +342,96 @@ export function analyzeInventoryRestoreOwnership(
         )
       );
 
+  const joinPathways = pathways.filter(
+    (item) =>
+      item.lifecycleEvent === "player-join",
+  );
+  const spawnPathways = pathways.filter(
+    (item) =>
+      item.lifecycleEvent === "player-spawn",
+  );
+  const crossLifecycleConflicts:
+    InventoryRestoreCrossLifecycleConflict[] = [];
+  let initialSessionOverlapUnresolved = 0;
+
+  const allItems = [
+    ...new Set(
+      joinPathways.flatMap(
+        (item) => item.itemIdentifiers,
+      ),
+    ),
+  ].sort();
+
+  for (const itemIdentifier of allItems) {
+    const joins = joinPathways.filter(
+      (item) =>
+        item.itemIdentifiers.includes(
+          itemIdentifier,
+        ),
+    );
+    const spawns = spawnPathways.filter(
+      (item) =>
+        item.itemIdentifiers.includes(
+          itemIdentifier,
+        ),
+    );
+    if (joins.length === 0 || spawns.length === 0) {
+      continue;
+    }
+
+    const provenInitialSpawns = spawns.filter(
+      (item) =>
+        item.playerSpawnScope ===
+          "initial-only" ||
+        item.playerSpawnScope ===
+          "all-spawns",
+    );
+    const unresolvedInitialSpawns =
+      spawns.filter(
+        (item) =>
+          item.playerSpawnScope ===
+          "unknown",
+      );
+
+    if (provenInitialSpawns.length > 0) {
+      crossLifecycleConflicts.push({
+        itemIdentifier,
+        lifecycleEvents: [
+          "player-join",
+          "player-spawn",
+        ],
+        ownerCallbackRegions: [
+          ...new Set([
+            ...joins.map(
+              (item) =>
+                item.callbackRegion,
+            ),
+            ...provenInitialSpawns.map(
+              (item) =>
+                item.callbackRegion,
+            ),
+          ]),
+        ].sort(),
+        sourceEvents: [
+          ...new Set([
+            ...joins.map(
+              (item) => item.sourceEvent,
+            ),
+            ...provenInitialSpawns.map(
+              (item) => item.sourceEvent,
+            ),
+          ]),
+        ].sort(),
+        reason:
+          "The same deterministic item is granted from playerJoin and from a playerSpawn path that includes initial spawn. Both lifecycle events occur in one initial connection lifecycle, so the item has duplicate restore/grant ownership unless another source-proven idempotency guard prevents the second grant.",
+      });
+    } else if (
+      unresolvedInitialSpawns.length > 0
+    ) {
+      initialSessionOverlapUnresolved += 1;
+    }
+  }
+
   return {
     pathways,
     restorePathways: pathways.length,
@@ -265,7 +450,12 @@ export function analyzeInventoryRestoreOwnership(
         0,
       ),
     multipleRestoreOwners:
-      conflicts.length,
+      conflicts.length +
+      crossLifecycleConflicts.length,
+    initialSessionDuplicateOwners:
+      crossLifecycleConflicts.length,
+    initialSessionOverlapUnresolved,
     conflicts,
+    crossLifecycleConflicts,
   };
 }

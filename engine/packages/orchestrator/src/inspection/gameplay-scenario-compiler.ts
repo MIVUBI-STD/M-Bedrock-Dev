@@ -911,12 +911,14 @@ function runtimeEdgeState(
       if (contamination) return contamination;
       if (
         world.inventory.unresolvedEquipmentSlotEvidence > 0 ||
-        world.inventory.restoreOwnership.unknownIdentityGrants > 0
+        world.inventory.restoreOwnership.unknownIdentityGrants > 0 ||
+        world.inventory.restoreOwnership
+          .initialSessionOverlapUnresolved > 0
       ) {
         return {
           status: "DETECTION_GAP",
           reason:
-            "Inventory identity/equipment evidence remains unresolved.",
+            "Inventory identity/equipment or initial-session restore ownership remains unresolved. Resolve the source-side initialSpawn guard/ownership before requesting a reconnect playtest.",
         };
       }
       return {

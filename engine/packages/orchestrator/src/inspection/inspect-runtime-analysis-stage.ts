@@ -213,6 +213,17 @@ export function analyzeInspectionRuntimeState(
     demanded.has(domain)
       ? parsedScriptModels
       : [];
+  const scriptInputsFor = (
+    domain: import("../../../analysis-planner/src/index.js").AnalysisKnowledgeDomain,
+  ) =>
+    demanded.has(domain)
+      ? input.parsedScripts.map((item) => ({
+          parsed: item.parsed,
+          ...(item.text === undefined
+            ? {}
+            : { text: item.text }),
+        }))
+      : [];
   const entityAiStack =
     input.entityAiStack;
   const routeNavigationEnvironment =
@@ -286,7 +297,7 @@ export function analyzeInspectionRuntimeState(
     );
   const inventoryRestoreOwnership =
     analyzeInventoryRestoreOwnership(
-      scriptsFor("inventory-state"),
+      scriptInputsFor("inventory-state"),
     );
   const capabilityMutationFootprint =
     analyzeCapabilityMutationFootprint({
