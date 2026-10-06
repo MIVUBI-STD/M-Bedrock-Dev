@@ -191,6 +191,16 @@ fn version_parity(native: Option<&MinecraftProfile>, guest: Option<&GuestStatus>
     }
 }
 
+fn guest_probe_error_is_terminal(error: &io::Error) -> bool {
+    matches!(
+        error.kind(),
+        io::ErrorKind::InvalidData
+            | io::ErrorKind::InvalidInput
+            | io::ErrorKind::PermissionDenied
+            | io::ErrorKind::Other
+    )
+}
+
 fn wait_for_guest_compatibility(
     provider: &dyn Provider,
     client: ClientId,
@@ -213,69 +223,78 @@ fn wait_for_guest_compatibility(
 
     loop {
         if let Some(ip) = provider.guest_ip_address(client)? {
-            if let Ok(status) = query_guest_status(&ip, &token, Duration::from_secs(2)) {
-                let guest = status.minecraft.as_ref().ok_or_else(|| {
-                    io::Error::new(
-                        io::ErrorKind::NotFound,
-                        format!(
-                            "{} Guest Agent cannot detect Minecraft Education",
-                            client.as_str()
-                        ),
-                    )
-                })?;
+            match query_guest_status(&ip, &token, Duration::from_secs(2)) {
+                Ok(status) => {
+                    let guest = status.minecraft.as_ref().ok_or_else(|| {
+                        io::Error::new(
+                            io::ErrorKind::NotFound,
+                            format!(
+                                "{} Guest Agent cannot detect Minecraft Education",
+                                client.as_str()
+                            ),
+                        )
+                    })?;
 
-                if status.agent_version != env!("CARGO_PKG_VERSION") {
-                    return Err(io::Error::new(
-                        io::ErrorKind::InvalidData,
-                        format!(
-                            "{} Guest Agent version {} does not match backend {}",
-                            client.as_str(),
-                            status.agent_version,
-                            env!("CARGO_PKG_VERSION")
-                        ),
-                    ));
-                }
+                    if status.agent_version != env!("CARGO_PKG_VERSION") {
+                        return Err(io::Error::new(
+                            io::ErrorKind::InvalidData,
+                            format!(
+                                "{} Guest Agent version {} does not match backend {}",
+                                client.as_str(),
+                                status.agent_version,
+                                env!("CARGO_PKG_VERSION")
+                            ),
+                        ));
+                    }
 
-                if enforce_verified_windows_identity {
-                    if let Some(expected_windows_identity) = load_client_profile(client)
-                        .ok()
-                        .and_then(|profile| profile.verified_windows_identity)
-                    {
-                        let current_windows_identity =
-                            status.machine_identity.as_deref().ok_or_else(|| {
-                                io::Error::new(
+                    if enforce_verified_windows_identity {
+                        if let Some(expected_windows_identity) = load_client_profile(client)
+                            .ok()
+                            .and_then(|profile| profile.verified_windows_identity)
+                        {
+                            let current_windows_identity =
+                                status.machine_identity.as_deref().ok_or_else(|| {
+                                    io::Error::new(
+                                        io::ErrorKind::InvalidData,
+                                        format!(
+                                            "{} Windows identity cannot be verified against saved provenance",
+                                            client.as_str()
+                                        ),
+                                    )
+                                })?;
+                            if current_windows_identity != expected_windows_identity {
+                                return Err(io::Error::new(
                                     io::ErrorKind::InvalidData,
                                     format!(
-                                        "{} Windows identity cannot be verified against saved provenance",
+                                        "{} Windows identity changed after verification; reprovision or run verify-identities after resolving the identity change",
                                         client.as_str()
                                     ),
-                                )
-                            })?;
-                        if current_windows_identity != expected_windows_identity {
-                            return Err(io::Error::new(
-                                io::ErrorKind::InvalidData,
-                                format!(
-                                    "{} Windows identity changed after verification; reprovision or run verify-identities after resolving the identity change",
-                                    client.as_str()
-                                ),
-                            ));
+                                ));
+                            }
                         }
                     }
-                }
 
-                if guest.version != native.version {
+                    if guest.version != native.version {
+                        return Err(io::Error::new(
+                            io::ErrorKind::InvalidData,
+                            format!(
+                                "{} Minecraft Education version {} does not match Native {}",
+                                client.as_str(),
+                                guest.version,
+                                native.version
+                            ),
+                        ));
+                    }
+
+                    return Ok(status);
+                }
+                Err(error) if guest_probe_error_is_terminal(&error) => {
                     return Err(io::Error::new(
-                        io::ErrorKind::InvalidData,
-                        format!(
-                            "{} Minecraft Education version {} does not match Native {}",
-                            client.as_str(),
-                            guest.version,
-                            native.version
-                        ),
+                        error.kind(),
+                        format!("{} Guest Agent probe failed: {error}", client.as_str()),
                     ));
                 }
-
-                return Ok(status);
+                Err(_) => {}
             }
         }
 
@@ -607,23 +626,32 @@ impl VirtualClients {
             let started = std::time::Instant::now();
             loop {
                 if let Some(ip) = provider.guest_ip_for_path(&base)? {
-                    if let Ok(status) = query_guest_status(&ip, &token, Duration::from_secs(2)) {
-                        let minecraft = status.minecraft.as_ref().ok_or_else(|| {
-                            io::Error::new(
-                                io::ErrorKind::NotFound,
-                                "Base Guest Agent cannot detect Minecraft Education",
-                            )
-                        })?;
-                        if minecraft.version != native.version {
+                    match query_guest_status(&ip, &token, Duration::from_secs(2)) {
+                        Ok(status) => {
+                            let minecraft = status.minecraft.as_ref().ok_or_else(|| {
+                                io::Error::new(
+                                    io::ErrorKind::NotFound,
+                                    "Base Guest Agent cannot detect Minecraft Education",
+                                )
+                            })?;
+                            if minecraft.version != native.version {
+                                return Err(io::Error::new(
+                                    io::ErrorKind::InvalidData,
+                                    format!(
+                                        "Base Minecraft Education version {} does not match Native {}",
+                                        minecraft.version, native.version
+                                    ),
+                                ));
+                            }
+                            return Ok(status);
+                        }
+                        Err(error) if guest_probe_error_is_terminal(&error) => {
                             return Err(io::Error::new(
-                                io::ErrorKind::InvalidData,
-                                format!(
-                                    "Base Minecraft Education version {} does not match Native {}",
-                                    minecraft.version, native.version
-                                ),
+                                error.kind(),
+                                format!("Base Guest Agent probe failed: {error}"),
                             ));
                         }
-                        return Ok(status);
+                        Err(_) => {}
                     }
                 }
 
@@ -1260,8 +1288,30 @@ impl VirtualClients {
 
 #[cfg(test)]
 mod tests {
-    use super::classify_identity_state;
+    use super::{classify_identity_state, guest_probe_error_is_terminal};
     use crate::client::IdentityState;
+    use std::io;
+
+    #[test]
+    fn guest_probe_protocol_errors_fail_fast() {
+        for kind in [
+            io::ErrorKind::InvalidData,
+            io::ErrorKind::InvalidInput,
+            io::ErrorKind::PermissionDenied,
+            io::ErrorKind::Other,
+        ] {
+            assert!(guest_probe_error_is_terminal(&io::Error::new(kind, "terminal")));
+        }
+
+        for kind in [
+            io::ErrorKind::TimedOut,
+            io::ErrorKind::ConnectionRefused,
+            io::ErrorKind::WouldBlock,
+            io::ErrorKind::NotConnected,
+        ] {
+            assert!(!guest_probe_error_is_terminal(&io::Error::new(kind, "retry")));
+        }
+    }
 
     #[test]
     fn vm_identity_classification_is_fail_closed() {
