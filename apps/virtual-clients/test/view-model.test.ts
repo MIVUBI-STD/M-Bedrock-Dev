@@ -17,7 +17,7 @@ import type { ClientLifecycleActions, ClientStatus } from "../src/contracts.js";
 
 const allow = { allowed: true, blocker: null } as const;
 const deny = { allowed: false, blocker: "INVALID_STATE" } as const;
-const clientStatus = (state: ClientStatus["state"], minecraftRunning: boolean | null = null): ClientStatus => ({
+const clientStatus = (state: ClientStatus["state"], minecraftRunning: boolean | null = null, interactiveLauncherReady: boolean | null = null): ClientStatus => ({
   id: "Virtual-01",
   native: false,
   state,
@@ -67,7 +67,11 @@ describe("Virtual Clients presentation projection", () => {
   });
 
   it("offers Minecraft launch when the VM is running but Minecraft is closed", () => {
-    expect(primaryClientAction(actions[0], clientStatus("RUNNING", false))).toEqual({ kind: "launch-minecraft", label: "Launch Minecraft" });
+    expect(primaryClientAction(actions[0], clientStatus("RUNNING", false, true))).toEqual({ kind: "launch-minecraft", label: "Launch Minecraft" });
+  });
+
+  it("does not offer an impossible Minecraft launch when the interactive launcher is unavailable", () => {
+    expect(primaryClientAction(actions[0], clientStatus("RUNNING", false, false))).toEqual({ kind: "open", label: "Open" });
   });
 
   it("presents internal states in user-facing language", () => {
