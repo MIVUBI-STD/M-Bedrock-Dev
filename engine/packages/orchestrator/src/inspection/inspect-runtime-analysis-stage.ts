@@ -330,6 +330,7 @@ export function analyzeInspectionRuntimeState(
       input.parsedEntities.map(
         (item) => item.parsed,
       ),
+      arenaLifecycle,
     );
   const chunkLifecycle =
     analyzeChunkLifecycle(

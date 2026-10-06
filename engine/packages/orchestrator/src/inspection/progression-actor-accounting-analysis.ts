@@ -6,6 +6,10 @@ import type {
 import type {
   ParsedEntityDefinition,
 } from "../../../../analyzers/entities/src/index.js";
+import type {
+  ArenaLifecycleAnalysis,
+  ArenaLifecycleTerminalAssessment,
+} from "../arena-lifecycle-analysis.js";
 
 export type ProgressionCounterKind =
   | "variable"
@@ -45,6 +49,17 @@ export interface ProgressionCounterAssessment {
     | "uncovered"
     | "none"
     | "unresolved";
+  readonly terminalOnlyScriptedRemovalActorIdentifiers:
+    readonly string[];
+  readonly nonTerminalScriptedRemovalActorIdentifiers:
+    readonly string[];
+  readonly unresolvedScriptedRemovalActorIdentifiers:
+    readonly string[];
+  readonly scriptedRemovalScope:
+    | "terminal-only"
+    | "non-terminal"
+    | "unresolved"
+    | "none";
   readonly immediateDespawnActorIdentifiers:
     readonly string[];
   readonly conditionalDespawnActorIdentifiers:
@@ -84,6 +99,8 @@ export interface ProgressionActorAccountingAnalysis {
   readonly provenActorIdentityMismatch: number;
   readonly provenSpawnQuantityMismatch: number;
   readonly scriptedRemovalCoverageGaps: number;
+  readonly terminalOnlyScriptedRemovalCounters: number;
+  readonly nonTerminalScriptedRemovalCounters: number;
   readonly provenImmediateDespawnWithoutReconciliation: number;
   readonly conditionalDespawnUnknowns: number;
   readonly reconciledFromMatchedActorLifecycle: number;
@@ -713,6 +730,195 @@ function scriptedRemovalEvidence(
     );
 }
 
+function assessmentIncludesRegion(
+  assessment:
+    ArenaLifecycleTerminalAssessment,
+  removal: ScriptedRemovalEvidence,
+): boolean {
+  const qualified =
+    localNode(
+      removal.scriptPath,
+      removal.executionRegion,
+    );
+  return (
+    assessment.terminalRegion ===
+      removal.executionRegion ||
+    assessment.terminalRegion ===
+      qualified ||
+    assessment.reachableRegions.includes(
+      removal.executionRegion,
+    ) ||
+    assessment.reachableRegions.includes(
+      qualified,
+    )
+  );
+}
+
+function terminalReachableRegions(
+  lifecycle:
+    ArenaLifecycleAnalysis | undefined,
+): Set<string> {
+  const output = new Set<string>();
+  for (
+    const assessment of
+      lifecycle?.assessments ?? []
+  ) {
+    if (assessment.status !== "proven") {
+      continue;
+    }
+    output.add(
+      assessment.terminalRegion,
+    );
+    for (
+      const region of
+        assessment.reachableRegions
+    ) {
+      output.add(region);
+    }
+  }
+  return output;
+}
+
+function incomingCallers(
+  scripts: readonly NormalizedScript[],
+  crossFileCalls:
+    readonly CrossFileCallEdge[],
+): Map<string, Set<string>> {
+  const output =
+    new Map<string, Set<string>>();
+  const add = (
+    target: string,
+    caller: string,
+  ) => {
+    const values =
+      output.get(target) ??
+      new Set<string>();
+    values.add(caller);
+    output.set(target, values);
+  };
+
+  for (const script of scripts) {
+    const path =
+      script.parsed.source.relativePath;
+    for (
+      const call of
+        script.parsed.localFunctionCalls
+    ) {
+      add(
+        localNode(
+          path,
+          call.targetRegion,
+        ),
+        localNode(
+          path,
+          call.callerRegion,
+        ),
+      );
+    }
+  }
+
+  for (const call of crossFileCalls) {
+    if (
+      call.status !== "resolved" ||
+      call.targetModule === undefined
+    ) {
+      continue;
+    }
+    add(
+      localNode(
+        call.targetModule,
+        "function:" +
+          call.targetExport,
+      ),
+      localNode(
+        call.callerModule,
+        call.callerRegion,
+      ),
+    );
+  }
+
+  return output;
+}
+
+function scriptedRemovalScope(
+  removal: ScriptedRemovalEvidence,
+  lifecycle:
+    ArenaLifecycleAnalysis | undefined,
+  terminalRegions:
+    ReadonlySet<string>,
+  incoming:
+    ReadonlyMap<
+      string,
+      ReadonlySet<string>
+    >,
+): "terminal-only" | "non-terminal" | "unresolved" {
+  const node =
+    localNode(
+      removal.scriptPath,
+      removal.executionRegion,
+    );
+  const provenAssessments =
+    (lifecycle?.assessments ?? [])
+      .filter((assessment) =>
+        assessment.status === "proven"
+      );
+  const directTerminal =
+    provenAssessments.some(
+      (assessment) =>
+        assessmentIncludesRegion(
+          assessment,
+          removal,
+        ) &&
+        (
+          assessment.terminalRegion ===
+            removal.executionRegion ||
+          assessment.terminalRegion ===
+            node
+        ),
+    );
+
+  const callers =
+    incoming.get(node) ??
+    new Set<string>();
+  const anyTerminalPath =
+    provenAssessments.some(
+      (assessment) =>
+        assessmentIncludesRegion(
+          assessment,
+          removal,
+        ),
+    );
+
+  if (
+    directTerminal &&
+    [...callers].every((caller) =>
+      terminalRegions.has(caller)
+    )
+  ) {
+    return "terminal-only";
+  }
+
+  if (
+    anyTerminalPath &&
+    callers.size > 0 &&
+    [...callers].every((caller) =>
+      terminalRegions.has(caller)
+    )
+  ) {
+    return "terminal-only";
+  }
+
+  if (
+    [...callers].some((caller) =>
+      !terminalRegions.has(caller)
+    )
+  ) {
+    return "non-terminal";
+  }
+
+  return "unresolved";
+}
+
 function directRemovalCanReachDecrement(
   removal: ScriptedRemovalEvidence,
   decrements:
@@ -1014,6 +1220,8 @@ export function analyzeProgressionActorAccounting(
     readonly CrossFileCallEdge[] = [],
   entities:
     readonly ParsedEntityDefinition[] = [],
+  arenaLifecycle?:
+    ArenaLifecycleAnalysis,
 ): ProgressionActorAccountingAnalysis {
   const scripts =
     inputs.map(normalizedInput);
@@ -1053,6 +1261,15 @@ export function analyzeProgressionActorAccounting(
     scriptedRemovalEvidence(
       scripts,
       guards,
+    );
+  const terminalRegions =
+    terminalReachableRegions(
+      arenaLifecycle,
+    );
+  const incoming =
+    incomingCallers(
+      scripts,
+      crossFileCalls,
     );
   const despawnEvidence =
     entityDespawnEvidence(entities);
@@ -1227,28 +1444,103 @@ export function analyzeProgressionActorAccounting(
           new Set(
             spawnLinkedActorIdentifiers,
           );
+        const relevantScriptedRemovals =
+          scriptedRemovals
+            .filter((item) =>
+              spawnActorSet.has(
+                item.actorIdentifier,
+              )
+            );
         const scriptedRemovalActorIdentifiers =
           [
             ...new Set(
-              scriptedRemovals
+              relevantScriptedRemovals
+                .map((item) =>
+                  item.actorIdentifier
+                ),
+            ),
+          ].sort();
+        const terminalOnlyScriptedRemovalActorIdentifiers =
+          [
+            ...new Set(
+              relevantScriptedRemovals
                 .filter((item) =>
-                  spawnActorSet.has(
-                    item.actorIdentifier,
-                  )
+                  scriptedRemovalScope(
+                    item,
+                    arenaLifecycle,
+                    terminalRegions,
+                    incoming,
+                  ) ===
+                    "terminal-only",
                 )
                 .map((item) =>
                   item.actorIdentifier
                 ),
             ),
           ].sort();
+        const nonTerminalScriptedRemovalActorIdentifiers =
+          [
+            ...new Set(
+              relevantScriptedRemovals
+                .filter((item) =>
+                  scriptedRemovalScope(
+                    item,
+                    arenaLifecycle,
+                    terminalRegions,
+                    incoming,
+                  ) ===
+                    "non-terminal",
+                )
+                .map((item) =>
+                  item.actorIdentifier
+                ),
+            ),
+          ].sort();
+        const unresolvedScriptedRemovalActorIdentifiers =
+          [
+            ...new Set(
+              relevantScriptedRemovals
+                .filter((item) =>
+                  scriptedRemovalScope(
+                    item,
+                    arenaLifecycle,
+                    terminalRegions,
+                    incoming,
+                  ) ===
+                    "unresolved",
+                )
+                .map((item) =>
+                  item.actorIdentifier
+                ),
+            ),
+          ].sort();
+        const scriptedRemovalScopeStatus =
+          nonTerminalScriptedRemovalActorIdentifiers
+              .length > 0
+            ? "non-terminal" as const
+            : unresolvedScriptedRemovalActorIdentifiers
+                  .length > 0
+              ? "unresolved" as const
+              : terminalOnlyScriptedRemovalActorIdentifiers
+                    .length > 0
+                ? "terminal-only" as const
+                : "none" as const;
         const removeLifecycleSet =
           new Set(
             removeLifecycleActorIdentifiers,
           );
+        const riskyRemovalActorSet =
+          new Set([
+            ...nonTerminalScriptedRemovalActorIdentifiers,
+            ...unresolvedScriptedRemovalActorIdentifiers,
+          ]);
         const uncoveredScriptedRemovalActorIdentifiers =
           scriptedRemovalActorIdentifiers
             .filter((actorIdentifier) => {
               if (
+                !riskyRemovalActorSet.has(
+                  actorIdentifier,
+                ) ||
                 removeLifecycleSet.has(
                   actorIdentifier,
                 )
@@ -1421,6 +1713,11 @@ export function analyzeProgressionActorAccounting(
           deathLifecycleActorIdentifiers,
           removeLifecycleActorIdentifiers,
           scriptedRemovalActorIdentifiers,
+          terminalOnlyScriptedRemovalActorIdentifiers,
+          nonTerminalScriptedRemovalActorIdentifiers,
+          unresolvedScriptedRemovalActorIdentifiers,
+          scriptedRemovalScope:
+            scriptedRemovalScopeStatus,
           uncoveredScriptedRemovalActorIdentifiers,
           scriptedRemovalCoverage,
           immediateDespawnActorIdentifiers,
@@ -1530,6 +1827,18 @@ export function analyzeProgressionActorAccounting(
         (item) =>
           item.scriptedRemovalCoverage ===
           "uncovered",
+      ).length,
+    terminalOnlyScriptedRemovalCounters:
+      counters.filter(
+        (item) =>
+          item.scriptedRemovalScope ===
+          "terminal-only",
+      ).length,
+    nonTerminalScriptedRemovalCounters:
+      counters.filter(
+        (item) =>
+          item.scriptedRemovalScope ===
+          "non-terminal",
       ).length,
     provenImmediateDespawnWithoutReconciliation:
       counters.filter(

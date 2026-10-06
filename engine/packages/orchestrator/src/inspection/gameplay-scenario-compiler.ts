@@ -957,7 +957,7 @@ function runtimeEdgeState(
           reason:
             "Selected-artifact source proves counted actor type(s) can be removed/killed by a non-death scripted disappearance path without a source-linked remove reconciliation or direct counter decrement: " +
             actors.join(", ") +
-            ". This is explicit progression gray-zone evidence, not an automatic bug: determine whether the removal is terminal-only or can occur while progression still depends on the actor before any runtime test.",
+            ". Proven terminal-only cleanup paths are excluded from this gap; the remaining removal path is non-terminal or its lifecycle scope is unresolved. Keep it as gray-zone evidence until source-side lifecycle ownership closes it before any runtime test.",
         };
       }
       if (

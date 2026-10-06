@@ -13,6 +13,9 @@ import {
 import {
   analyzeProgressionActorAccounting,
 } from "../../src/inspection/progression-actor-accounting-analysis.js";
+import {
+  analyzeArenaLifecycleConvergence,
+} from "../../src/arena/arena-lifecycle-analysis.js";
 
 function parsed(
   text: string,
@@ -562,6 +565,104 @@ describe(
             "demo:enemy",
           ],
           status: "unresolved",
+        });
+    });
+
+    it("excludes proven terminal-only cleanup removal from progression coverage gaps", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function endGame(arena, player, entity) {",
+        "  cleanupArena(arena, player, entity);",
+        "}",
+        "function cleanupArena(arena, player, entity) {",
+        "  arena.players.delete(player);",
+        "  arena.generation++;",
+        "  if (entity.typeId === 'demo:enemy') entity.remove();",
+        "}",
+        "function maybeAdvance() { if (remainingEnemies === 0) nextWave(); }",
+      ].join("\n");
+      const input = parsed(source);
+      const lifecycle =
+        analyzeArenaLifecycleConvergence(
+          [input.parsed],
+        );
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+          [],
+          [],
+          lifecycle,
+        );
+
+      expect(
+        result.scriptedRemovalCoverageGaps,
+      ).toBe(0);
+      expect(
+        result.terminalOnlyScriptedRemovalCounters,
+      ).toBe(1);
+      expect(result.counters[0])
+        .toMatchObject({
+          scriptedRemovalScope:
+            "terminal-only",
+          terminalOnlyScriptedRemovalActorIdentifiers: [
+            "demo:enemy",
+          ],
+          uncoveredScriptedRemovalActorIdentifiers: [],
+        });
+    });
+
+    it("keeps a cleanup helper non-terminal when an active gameplay caller can also reach it", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "function spawnEnemy(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  remainingEnemies++;",
+        "}",
+        "function endGame(arena, player, entity) {",
+        "  cleanupArena(arena, player, entity);",
+        "}",
+        "function abortWave(arena, player, entity) {",
+        "  cleanupArena(arena, player, entity);",
+        "}",
+        "function cleanupArena(arena, player, entity) {",
+        "  arena.players.delete(player);",
+        "  arena.generation++;",
+        "  if (entity.typeId === 'demo:enemy') entity.remove();",
+        "}",
+        "function maybeAdvance() { if (remainingEnemies === 0) nextWave(); }",
+      ].join("\n");
+      const input = parsed(source);
+      const lifecycle =
+        analyzeArenaLifecycleConvergence(
+          [input.parsed],
+        );
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+          [],
+          [],
+          lifecycle,
+        );
+
+      expect(
+        result.scriptedRemovalCoverageGaps,
+      ).toBe(1);
+      expect(
+        result.nonTerminalScriptedRemovalCounters,
+      ).toBe(1);
+      expect(result.counters[0])
+        .toMatchObject({
+          scriptedRemovalScope:
+            "non-terminal",
+          nonTerminalScriptedRemovalActorIdentifiers: [
+            "demo:enemy",
+          ],
         });
     });
 

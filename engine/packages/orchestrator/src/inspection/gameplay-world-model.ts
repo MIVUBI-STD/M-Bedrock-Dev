@@ -372,6 +372,8 @@ export interface GameplayWorldModel {
       provenActorIdentityMismatch: number;
       provenSpawnQuantityMismatch: number;
       scriptedRemovalCoverageGaps: number;
+      terminalOnlyScriptedRemovalCounters: number;
+      nonTerminalScriptedRemovalCounters: number;
       provenImmediateDespawnWithoutReconciliation: number;
       conditionalDespawnUnknowns: number;
       unresolvedCounters: number;
@@ -395,6 +397,17 @@ export interface GameplayWorldModel {
           readonly string[];
         scriptedRemovalActorIdentifiers:
           readonly string[];
+        terminalOnlyScriptedRemovalActorIdentifiers:
+          readonly string[];
+        nonTerminalScriptedRemovalActorIdentifiers:
+          readonly string[];
+        unresolvedScriptedRemovalActorIdentifiers:
+          readonly string[];
+        scriptedRemovalScope:
+          | "terminal-only"
+          | "non-terminal"
+          | "unresolved"
+          | "none";
         uncoveredScriptedRemovalActorIdentifiers:
           readonly string[];
         scriptedRemovalCoverage:
@@ -1964,6 +1977,12 @@ export function deriveGameplayWorldModel(
         scriptedRemovalCoverageGaps:
           source.progressionActorAccounting
             ?.scriptedRemovalCoverageGaps ?? 0,
+        terminalOnlyScriptedRemovalCounters:
+          source.progressionActorAccounting
+            ?.terminalOnlyScriptedRemovalCounters ?? 0,
+        nonTerminalScriptedRemovalCounters:
+          source.progressionActorAccounting
+            ?.nonTerminalScriptedRemovalCounters ?? 0,
         provenImmediateDespawnWithoutReconciliation:
           source.progressionActorAccounting
             ?.provenImmediateDespawnWithoutReconciliation ?? 0,
@@ -2004,6 +2023,14 @@ export function deriveGameplayWorldModel(
                 [...item.removeLifecycleActorIdentifiers],
               scriptedRemovalActorIdentifiers:
                 [...item.scriptedRemovalActorIdentifiers],
+              terminalOnlyScriptedRemovalActorIdentifiers:
+                [...item.terminalOnlyScriptedRemovalActorIdentifiers],
+              nonTerminalScriptedRemovalActorIdentifiers:
+                [...item.nonTerminalScriptedRemovalActorIdentifiers],
+              unresolvedScriptedRemovalActorIdentifiers:
+                [...item.unresolvedScriptedRemovalActorIdentifiers],
+              scriptedRemovalScope:
+                item.scriptedRemovalScope,
               uncoveredScriptedRemovalActorIdentifiers:
                 [...item.uncoveredScriptedRemovalActorIdentifiers],
               scriptedRemovalCoverage:
