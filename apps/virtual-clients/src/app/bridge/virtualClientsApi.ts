@@ -12,7 +12,9 @@ import {
   type OperationRecord,
   type SupportBundleResult,
   type UpdateCheck,
+  type DisplayInfo,
   type WindowArrangementResult,
+  type WindowLayoutRequest,
 } from "../../contracts.js";
 import { invokeRuntime } from "./invokeRuntime.js";
 import * as payload from "./payloadValidation.js";
@@ -54,9 +56,9 @@ async function invokePublic<T>(tauriCommand: string, validate: PayloadValidator<
   }
 }
 
-async function invokeDesktop<T>(command: string, validate: PayloadValidator<T>): Promise<T> {
+async function invokeDesktop<T>(command: string, validate: PayloadValidator<T>, args?: Record<string, unknown>): Promise<T> {
   try {
-    const result = await invokeRuntime<unknown>(command);
+    const result = await invokeRuntime<unknown>(command, args);
     if (!validate(result)) throw new Error("Desktop response does not match its command contract.");
     return result;
   } catch (error) {
@@ -67,7 +69,8 @@ async function invokeDesktop<T>(command: string, validate: PayloadValidator<T>):
 
 export const desktop = {
   canArrangeWindows: () => true,
-  arrangeWindows: () => invokeDesktop<WindowArrangementResult>("window_arrange", payload.windowArrangement),
+  displays: () => invokeDesktop<DisplayInfo[]>("window_displays", payload.displayList),
+  arrangeWindows: (request: WindowLayoutRequest) => invokeDesktop<WindowArrangementResult>("window_arrange", payload.windowArrangement, { request }),
   openBaseLocation: () => invokeDesktop<void>("setup_open_base_location", payload.voidResult),
   openSetupTools: () => invokeDesktop<void>("setup_open_guest_tools", payload.voidResult)
 };
