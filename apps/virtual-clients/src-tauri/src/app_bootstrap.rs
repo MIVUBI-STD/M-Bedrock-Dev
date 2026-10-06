@@ -1,6 +1,16 @@
 use crate::commands;
+use crate::engine::app_instance;
+use rfd::{MessageButtons, MessageDialog, MessageLevel};
 
 pub fn run() {
+    let _instance_lease = match app_instance::acquire() {
+        Ok(lease) => lease,
+        Err(error) => {
+            show_startup_error(&error);
+            return;
+        }
+    };
+
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             commands::virtual_clients::virtual_clients_policy,
@@ -25,4 +35,13 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("failed to run M-Bedrock Virtual Clients desktop runtime");
+}
+
+fn show_startup_error(message: &str) {
+    let _ = MessageDialog::new()
+        .set_title("M-Bedrock Virtual Clients")
+        .set_description(message)
+        .set_level(MessageLevel::Info)
+        .set_buttons(MessageButtons::Ok)
+        .show();
 }
