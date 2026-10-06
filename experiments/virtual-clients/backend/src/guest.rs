@@ -18,7 +18,7 @@ pub struct GuestStatus {
     pub minecraft: Option<MinecraftProfile>,
 }
 
-pub fn query_guest_status(ip: &str, timeout: Duration) -> io::Result<GuestStatus> {
+pub fn query_guest_status(ip: &str, token: &str, timeout: Duration) -> io::Result<GuestStatus> {
     let address = (ip, GUEST_AGENT_PORT)
         .to_socket_addrs()?
         .next()
@@ -27,8 +27,16 @@ pub fn query_guest_status(ip: &str, timeout: Duration) -> io::Result<GuestStatus
     let mut stream = TcpStream::connect_timeout(&address, timeout)?;
     stream.set_read_timeout(Some(timeout))?;
     stream.set_write_timeout(Some(timeout))?;
-    stream
-        .write_all(b"GET /status HTTP/1.1\r\nHost: virtual-client\r\nConnection: close\r\n\r\n")?;
+    if token.len() != 64 || !token.chars().all(|character| character.is_ascii_hexdigit()) {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "guest agent token is invalid",
+        ));
+    }
+    let request = format!(
+        "GET /status HTTP/1.1\r\nHost: virtual-client\r\nX-Virtual-Clients-Token: {token}\r\nConnection: close\r\n\r\n"
+    );
+    stream.write_all(request.as_bytes())?;
 
     let mut response = Vec::new();
     stream.take(32 * 1024).read_to_end(&mut response)?;
