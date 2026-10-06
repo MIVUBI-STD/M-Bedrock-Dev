@@ -68,10 +68,15 @@ P0 interactive-auth boundary:
   listener and only one literal action: Minecraft Education;
 - local launch requests carry a short correlation ID so stale request/ack files
   cannot be accepted as current success;
-- a per-Virtual interactive-user task/registration is still NOT implemented in
-  repo because the write path for that scheduled-task script was blocked. Do not
-  call auto-launch target-machine-ready until this registration plus explicit
-  ProgramData IPC ACLs are implemented/proven;
+- per-Virtual registration is now implemented without a privileged scheduled
+  task: the Base exposes a public-desktop `Enable Virtual Clients Launcher`
+  shortcut; when the actual Virtual user runs it, the same Guest Agent binary
+  writes a per-user Startup entry and starts `--interactive-launcher`
+  immediately;
+- SYSTEM↔interactive handoff now uses a localhost-only listener on 127.0.0.1,
+  not a shared ProgramData request folder, so no cross-user writable IPC ACL is
+  required; readiness uses an explicit PING/READY handshake rather than merely
+  checking whether the port accepts connections;
 - user-specific interactive launcher registration belongs after each Virtual's
   OOBE, never in the generalized Base.
 
