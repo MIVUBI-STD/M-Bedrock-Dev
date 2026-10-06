@@ -34,7 +34,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "pattern": "^(document|knowledge|source|reliability|workflow|schema)\\.[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+          "pattern": "^(document|knowledge|source|reliability|schema)\\.[a-z0-9]+(?:[.-][a-z0-9]+)*$"
         },
         "class": {
           "enum": [
@@ -42,7 +42,6 @@
             "KNOWLEDGE",
             "SOURCE",
             "RELIABILITY",
-            "WORKFLOW",
             "SCHEMA"
           ]
         },
@@ -55,7 +54,7 @@
             "ROUTER",
             "WORKFLOW",
             "CONTRACT",
-            "REFERENCE",
+            "DOMAIN",
             "ARCHITECTURE",
             "GUIDE"
           ]
