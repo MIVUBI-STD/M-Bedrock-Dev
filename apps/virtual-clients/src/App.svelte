@@ -300,7 +300,7 @@
         throw new BackendBridgeError("WINDOWS_NOT_FOUND", "No Minecraft client windows are currently open.", true);
       }
       const missingNative = result.missing.includes("Native");
-      arrangeMessage = `${result.arranged.length} window${result.arranged.length === 1 ? "" : "s"} arranged${missingNative ? " · This PC was not open" : ""}`;
+      arrangeMessage = `${result.arranged.length} window${result.arranged.length === 1 ? "" : "s"} arranged${missingNative ? " · This PC was not open" : ""}${result.overlayWarning ? " · Screen Overlay could not be shown" : ""}`;
     } catch (value) {
       error = presentRuntimeError(value);
     } finally {
