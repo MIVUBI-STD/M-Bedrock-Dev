@@ -38,7 +38,9 @@ pub trait Provider {
     fn provision(&self, client: ClientId) -> io::Result<ClientState>;
     fn reprovision(&self, client: ClientId) -> io::Result<ClientState>;
     fn memory_limit_mb(&self, client: ClientId) -> io::Result<u64>;
-    fn host_working_set_mb(&self, client: ClientId) -> io::Result<Option<u64>>;
+    fn host_working_sets_mb(&self) -> io::Result<Vec<(ClientId, u64)>> {
+        Ok(host_working_sets_mb())
+    }
     fn identity_key(&self, client: ClientId) -> io::Result<Option<String>>;
     fn status(&self, client: ClientId) -> io::Result<ClientState>;
     fn start(&self, client: ClientId) -> io::Result<ClientState>;
@@ -343,22 +345,37 @@ fn set_vmx_value(lines: &mut Vec<String>, key: &str, value: &str) {
     }
 }
 
-pub(crate) fn host_working_set_mb(vmx: &Path) -> Option<u64> {
-    let target = vmx.to_string_lossy().to_ascii_lowercase();
+pub(crate) fn host_working_sets_mb() -> Vec<(ClientId, u64)> {
     let system = System::new_all();
+    let mut result = Vec::new();
 
-    let bytes = system
-        .processes()
-        .values()
-        .filter(|process| {
-            process.cmd().iter().any(|arg| {
-                arg.to_ascii_lowercase().contains(&target)
+    for client in ClientId::VIRTUAL {
+        let Ok(vmx) = client_vmx_path(client) else {
+            continue;
+        };
+        if !vmx.is_file() {
+            continue;
+        }
+
+        let target = vmx.to_string_lossy().to_ascii_lowercase();
+        let bytes = system
+            .processes()
+            .values()
+            .filter(|process| {
+                process
+                    .cmd()
+                    .iter()
+                    .any(|arg| arg.to_ascii_lowercase().contains(&target))
             })
-        })
-        .map(|process| process.memory())
-        .sum::<u64>();
+            .map(|process| process.memory())
+            .sum::<u64>();
 
-    (bytes > 0).then_some(bytes / 1024 / 1024)
+        if bytes > 0 {
+            result.push((client, bytes / 1024 / 1024));
+        }
+    }
+
+    result
 }
 
 #[cfg(test)]
