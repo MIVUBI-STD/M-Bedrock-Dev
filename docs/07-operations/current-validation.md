@@ -1,3 +1,39 @@
+## Interactive launcher registration closure — REMOTE_GITHUB (2026-10-07)
+
+The remaining remote registration/IPC gap is now narrowed without adding a new
+service or launcher framework:
+
+- the existing Guest Agent binary owns `--register-interactive-launcher` and
+  `--interactive-launcher` modes;
+- registration is per Windows user after OOBE and writes one Startup entry in
+  that user's profile; it also starts the helper immediately, so setup does not
+  require logoff/reboot;
+- Base installation places a generic `Enable Virtual Clients Launcher.cmd` on
+  the Public Desktop. It contains no username/account/session and only invokes
+  the per-user registration mode;
+- Setup presentation asks the user to double-click that helper once in each
+  Virtual, rather than typing command-line flags;
+- SYSTEM↔interactive IPC no longer uses ProgramData request/ack files, so there
+  is no shared-folder ACL owner. It uses a loopback-only Win32 TCP listener on
+  `127.0.0.1:47832`, never wildcard/LAN bind;
+- the loopback protocol accepts one literal action, carries a request ID, uses
+  request half-close before response, and exposes no executable/path/credential;
+- helper readiness is observed through loopback connectivity and projected as
+  `interactiveLauncherReady`;
+- Minecraft launch is offered only when the VM is running, Minecraft is closed,
+  and the interactive helper is explicitly ready. Otherwise the user gets Open
+  so they can repair the Virtual interactively;
+- the helper requires Explorer in its exact nonzero Windows session before
+  launching Minecraft UI.
+
+Remaining proof is target-machine behavior: Startup registration under the
+canonical Windows image, cross-account loopback between SYSTEM and the
+interactive Win32 helper, actual Minecraft UI/auth handoff, and persistence
+after guest reboot. No filesystem IPC/ACL layer or second network service should
+be introduced unless that proof identifies a concrete failure.
+
+---
+
 ## Interactive launcher registration/IPC refinement (2026-10-07)
 
 - Interactive launcher registration is now self-owned by the same Guest Agent
