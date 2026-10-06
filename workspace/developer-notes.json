@@ -126,6 +126,32 @@
         ]
       },
       "severity": null
+    },
+    {
+      "id": "DEV-GNT-HUNGER-ACTIVE-RUN",
+      "projectId": "the-gauntlet",
+      "type": "DEV_NOTE",
+      "title": "Keep Hunger Stable During Active Gauntlet Runs",
+      "problem": "Tester runtime shows hunger can decrease during an active run and affect sprint/movement even though the selected artifact does not establish hunger as an intended challenge mechanic.",
+      "action": "Decide and implement the intended active-run hunger policy. If hunger is not part of the design, maintain sufficient hunger/saturation throughout the run and reassert it after retry, level transition, reconnect and respawn.",
+      "evidence": {
+        "runtimeObservation": "Hunger decreases during normal Gauntlet gameplay and can affect sprint.",
+        "currentBehavior": "Vitals are restored at setup/transition points but are not continuously normalized during the run."
+      },
+      "severity": null
+    },
+    {
+      "id": "DEV-GNT-FINAL-WIN-FEEDBACK",
+      "projectId": "the-gauntlet",
+      "type": "DEV_NOTE",
+      "title": "Add Explicit Final Victory Feedback",
+      "problem": "Tester runtime shows the completed Gauntlet run returns the player through the terminal flow without a dedicated final Win/Victory acknowledgement. The selected artifact does not provide enough evidence to classify this as a gameplay defect.",
+      "action": "If the intended UX requires explicit terminal acknowledgement, add one authoritative final victory/result notification after the run result is committed and before the lobby transition completes.",
+      "evidence": {
+        "runtimeObservation": "No dedicated final Win/Victory notification was observed at full-run completion.",
+        "sourceObservation": "Level 15 completion presentation exists, while the whole-run terminal flow returns/reset players without a separate final victory surface."
+      },
+      "severity": null
     }
   ],
   "admissionRule": "DEV_NOTE requires concrete evidence, clear developer value, an actionable correction, and must not be speculative."
