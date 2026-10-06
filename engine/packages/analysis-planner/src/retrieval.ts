@@ -41,6 +41,7 @@ export interface CatalogResource {
   role?: DocumentRole;
   authority: ResourceAuthority;
   path: string;
+  locator?: string;
   lifecycle: ResourceLifecycle;
 }
 
@@ -126,6 +127,7 @@ function structuralScore(
       resource.class,
       resource.role ?? "",
       resource.path,
+      resource.locator ?? "",
     ].join(" ")),
   );
 
