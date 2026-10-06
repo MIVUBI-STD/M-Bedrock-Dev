@@ -27,7 +27,7 @@ pub struct MinecraftProfile {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum BaseProfileSource {
-    NativeRecorded,
+    LiveVerified,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -36,6 +36,7 @@ pub struct BaseProfile {
     pub schema: u32,
     pub minecraft_version: String,
     pub guest_status_schema: u32,
+    pub guest_agent_version: String,
     pub source: BaseProfileSource,
 }
 
@@ -98,14 +99,10 @@ pub fn load_base_profile() -> io::Result<BaseProfile> {
     Ok(profile)
 }
 
-pub fn register_base_from_native() -> io::Result<BaseProfile> {
-    let native = native_minecraft_profile().ok_or_else(|| {
-        io::Error::new(
-            io::ErrorKind::NotFound,
-            "Native Minecraft Education version could not be detected",
-        )
-    })?;
-
+pub fn write_verified_base_profile(
+    native: &MinecraftProfile,
+    guest_agent_version: &str,
+) -> io::Result<BaseProfile> {
     let base = base_vmx_path_for_version(&native.version)?;
     if !base.is_file() {
         return Err(io::Error::new(
@@ -116,12 +113,13 @@ pub fn register_base_from_native() -> io::Result<BaseProfile> {
 
     let profile = BaseProfile {
         schema: BASE_PROFILE_SCHEMA,
-        minecraft_version: native.version,
+        minecraft_version: native.version.clone(),
         guest_status_schema: GUEST_STATUS_SCHEMA,
-        source: BaseProfileSource::NativeRecorded,
+        guest_agent_version: guest_agent_version.to_string(),
+        source: BaseProfileSource::LiveVerified,
     };
 
-    let path = base_profile_path()?;
+    let path = base_profile_path_for_version(&native.version)?;
     let parent = path.parent().ok_or_else(|| {
         io::Error::new(
             io::ErrorKind::InvalidInput,
@@ -319,7 +317,8 @@ mod tests {
             schema: BASE_PROFILE_SCHEMA,
             minecraft_version: "1.21.120.0".into(),
             guest_status_schema: GUEST_STATUS_SCHEMA,
-            source: BaseProfileSource::NativeRecorded,
+            guest_agent_version: "0.1.0".into(),
+            source: BaseProfileSource::LiveVerified,
         };
 
         let json = serde_json::to_string(&profile).unwrap();
