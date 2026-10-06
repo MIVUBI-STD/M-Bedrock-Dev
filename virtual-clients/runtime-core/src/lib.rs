@@ -10,6 +10,7 @@ mod error;
 mod guest;
 mod journal;
 mod lifecycle_admission;
+mod minecraft_runtime;
 mod paths;
 mod persistence;
 mod policy;
