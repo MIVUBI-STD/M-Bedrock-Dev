@@ -68,6 +68,59 @@ impl Provider for VmwareFusionProvider {
         self.running(vmx)
     }
 
+    fn start_validation_vm(&self, vmx: &Path) -> io::Result<()> {
+        if self.running(vmx)? {
+            return Ok(());
+        }
+        command_output_with_timeout(
+            self.vmrun(),
+            ["-T", "fusion", "start", vmx.to_string_lossy().as_ref(), "nogui"],
+            DISK_STATE_TIMEOUT,
+        )?;
+        wait_for_state(|| self.running(vmx), true, DISK_STATE_TIMEOUT)
+    }
+
+    fn stop_validation_vm(&self, vmx: &Path) -> io::Result<()> {
+        if !self.running(vmx)? {
+            return Ok(());
+        }
+
+        command_output(
+            self.vmrun(),
+            ["-T", "fusion", "stop", vmx.to_string_lossy().as_ref(), "soft"],
+        )?;
+
+        if wait_for_state(|| self.running(vmx), false, Duration::from_secs(20)).is_err() {
+            command_output(
+                self.vmrun(),
+                ["-T", "fusion", "stop", vmx.to_string_lossy().as_ref(), "hard"],
+            )?;
+            wait_for_state(|| self.running(vmx), false, Duration::from_secs(10))?;
+        }
+
+        Ok(())
+    }
+
+    fn guest_ip_for_path(&self, vmx: &Path) -> io::Result<Option<String>> {
+        if !self.running(vmx)? {
+            return Ok(None);
+        }
+
+        match command_output_with_timeout(
+            self.vmrun(),
+            [
+                "-T",
+                "fusion",
+                "getGuestIPAddress",
+                vmx.to_string_lossy().as_ref(),
+            ],
+            Duration::from_secs(5),
+        ) {
+            Ok(output) => Ok(parse_guest_ip(&output)),
+            Err(_) => Ok(None),
+        }
+    }
+
     fn provision(&self, client: ClientId) -> io::Result<ClientState> {
         let target = client_vmx_path(client)?;
         if target.is_file() {
