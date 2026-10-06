@@ -609,6 +609,127 @@
       ]
     },
     {
+      "knowledgeId": "command-context.dimension-runcommand-dimension-context",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/selectors.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "command-context.entity-runcommand-entity-context",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/selectors.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "command-context.execute-as-changes-executor",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/selectors.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "command-context.execute-at-changes-position",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/selectors.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "command-context.execute-in-changes-dimension",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/selectors.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "command-context.positioned-and-rotated-independent",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/selectors.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "command-context.relation-execute-as-updates-s",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/selectors.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "command-context.relation-position-gates-relative-meaning",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/selectors.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "command-context.selector-a-all-online",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/selectors.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "command-context.selector-p-origin-sensitive",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/selectors.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "command-context.selector-radius-origin-sensitive",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/selectors.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "command-policy.dimension-explicit-for-script-command",
       "consumer": "command-context-analysis",
       "analyzerPaths": [
