@@ -814,6 +814,16 @@
       ]
     },
     {
+      "knowledgeId": "permissions-policy.dev-access-explicit",
+      "consumer": "player-capability-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "permissions-policy.guard-must-be-active",
       "consumer": "capability-exposure",
       "analyzerPaths": [
@@ -831,6 +841,16 @@
       "analyzerPaths": [
         "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts",
         "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "permissions-policy.operator-not-gameplay-authority",
+      "consumer": "player-capability-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts"
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
@@ -1195,6 +1215,36 @@
       "analyzerPaths": [
         "engine/packages/orchestrator/src/inspection/world-rule-authority-analysis.ts",
         "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/world-rule-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "worldstate-policy.conflict-arbitration",
+      "consumer": "world-rule-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/world-rule-authority-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/world-rule-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "worldstate-policy.no-arena-local-assumption",
+      "consumer": "world-rule-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/world-rule-authority-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/world-rule-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "worldstate-policy.prefer-local-emulation",
+      "consumer": "world-rule-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/world-rule-authority-analysis.ts"
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/world-rule-authority-analysis.test.ts"

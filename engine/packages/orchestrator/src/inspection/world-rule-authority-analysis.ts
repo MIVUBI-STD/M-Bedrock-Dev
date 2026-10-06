@@ -33,6 +33,9 @@ export interface WorldRuleAuthorityAnalysis {
   scriptSpawnEntityPaths: number;
   commandSummonPaths: number;
   manualEntitySpawnPaths: number;
+  globalRuleWrites: number;
+  conflictingGlobalRules: number;
+  arenaLocalWorldRuleWriteCandidates: number;
 }
 
 function normalized(command: string): string {
@@ -151,6 +154,14 @@ export function analyzeWorldRuleAuthority(
       rawSummonPaths,
     );
 
+  const arenaLocalWorldRuleWriteCandidates =
+    writes.filter(
+      (item) =>
+        /(?:arena|round|match|level|session)/i.test(
+          item.executionRegion,
+        ),
+    ).length;
+
   return {
     writes: writes.sort((a, b) =>
       a.rule.localeCompare(b.rule) ||
@@ -165,5 +176,9 @@ export function analyzeWorldRuleAuthority(
     commandSummonPaths,
     manualEntitySpawnPaths:
       scriptSpawnEntityPaths + commandSummonPaths,
+    globalRuleWrites: writes.length,
+    conflictingGlobalRules:
+      conflicts.length,
+    arenaLocalWorldRuleWriteCandidates,
   };
 }

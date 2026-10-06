@@ -18,6 +18,8 @@ export interface PlayerCapabilitySurfaceAnalysis {
   protectionDefinitions:
     readonly PlayerCapabilityProtectionDefinition[];
   inactiveProtectionDefinitions: number;
+  implicitDeveloperAuthorityRisks: number;
+  explicitDeveloperGuardEvidence: number;
 }
 
 function commandIsCapabilityWrite(command: string): boolean {
@@ -190,6 +192,13 @@ export function analyzePlayerCapabilitySurfaces(
         a.scriptId.localeCompare(b.scriptId)
       );
 
+  const explicitDeveloperGuardEvidence =
+    privilegedGuardReferences;
+  const implicitDeveloperAuthorityRisks =
+    creativeModeGrants +
+    commandPermissionWrites +
+    privilegedBypassReturns;
+
   return {
     gamemodeWrites,
     creativeModeGrants,
@@ -204,5 +213,7 @@ export function analyzePlayerCapabilitySurfaces(
       protectionDefinitions.filter(
         (item) => !item.instantiated,
       ).length,
+    implicitDeveloperAuthorityRisks,
+    explicitDeveloperGuardEvidence,
   };
 }
