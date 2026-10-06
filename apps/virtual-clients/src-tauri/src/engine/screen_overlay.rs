@@ -109,6 +109,7 @@ mod windows {
     fn sender() -> io::Result<&'static Sender<OverlayCommand>> {
         if let Some(sender) = SENDER.get() { return Ok(sender); }
         let (tx, rx) = mpsc::channel::<OverlayCommand>();
+        let (ready_tx, ready_rx) = mpsc::sync_channel::<io::Result<()>>(1);
         thread::Builder::new().name("screen-overlay".into()).spawn(move || unsafe {
             let class_name = wide("MIVUBI_VIRTUAL_CLIENTS_SCREEN_OVERLAY");
             let instance = GetModuleHandleW(null());
@@ -120,7 +121,11 @@ mod windows {
                 lpszClassName: class_name.as_ptr(),
                 ..std::mem::zeroed()
             };
-            if RegisterClassW(&class) == 0 { return; }
+            if RegisterClassW(&class) == 0 {
+                let _ = ready_tx.send(Err(io::Error::last_os_error()));
+                return;
+            }
+            let _ = ready_tx.send(Ok(()));
             let mut windows: Vec<OverlayWindow> = Vec::new();
             let mut running = true;
             while running {
@@ -171,6 +176,7 @@ mod windows {
                 thread::sleep(std::time::Duration::from_millis(16));
             }
         }).map_err(|error| io::Error::new(io::ErrorKind::Other, format!("failed to start Screen Overlay thread: {error}")))?;
+        ready_rx.recv().map_err(|_| io::Error::new(io::ErrorKind::BrokenPipe, "Screen Overlay thread stopped during startup"))??;
         let _ = SENDER.set(tx);
         SENDER.get().ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Screen Overlay channel unavailable"))
     }
