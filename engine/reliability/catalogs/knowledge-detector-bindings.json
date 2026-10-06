@@ -733,6 +733,19 @@
       ]
     },
     {
+      "knowledgeId": "effects.component-group-replaces-same-type",
+      "consumer": "entity-state-graph",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/parse.ts",
+        "engine/analyzers/entities/src/state-graph.ts",
+        "engine/packages/orchestrator/src/inspection/entity-knowledge-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/entities/test/entity.test.ts",
+        "engine/packages/orchestrator/test/inspection/entity-knowledge-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "event-policy.after-event-not-global-consistency-barrier",
       "consumer": "mutation-transaction-analysis",
       "analyzerPaths": [
