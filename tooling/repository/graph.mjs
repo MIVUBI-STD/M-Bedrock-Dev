@@ -30,12 +30,10 @@ function addKnowledgeBindingEdges(catalog, edges, seen) {
     const knowledgeId = "knowledge." + binding.knowledgeId;
 
     if (!byId.has(knowledgeId)) {
-      addEdge(edges, seen, {
-        from: "source.package.orchestrator",
-        type: "USES",
-        to: knowledgeId,
-      });
-      continue;
+      throw new Error(
+        "Knowledge binding references unregistered fact: " +
+          binding.knowledgeId,
+      );
     }
 
     for (const analyzerPath of binding.analyzerPaths ?? []) {
