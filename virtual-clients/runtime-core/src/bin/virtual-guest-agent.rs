@@ -84,6 +84,11 @@ fn register_interactive_launcher() -> Result<(), Box<dyn std::error::Error>> {
     let launcher = startup.join("M-Bedrock Virtual Interactive Launcher.cmd");
     let command = format!("@echo off\r\nstart \"\" /min \"{}\" --interactive-launcher\r\n", executable.display());
     std::fs::write(&launcher, command)?;
+    if !interactive_launcher_ready() {
+        std::process::Command::new(&executable)
+            .arg("--interactive-launcher")
+            .spawn()?;
+    }
     println!("{}", launcher.display());
     Ok(())
 }
