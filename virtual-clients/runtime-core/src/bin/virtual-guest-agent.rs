@@ -8,7 +8,7 @@ use m_bedrock_virtual_clients_core::{
 use sha2::{Digest, Sha256};
 use std::{
     io::{self, Read, Write},
-    net::{TcpListener, TcpStream},
+    net::{Shutdown, TcpListener, TcpStream},
     time::Duration,
 };
 
@@ -60,6 +60,7 @@ fn request_interactive_minecraft_launch() -> Result<m_bedrock_virtual_clients_co
 
     let request_id = format!("{:016x}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_nanos());
     stream.write_all(format!("MINECRAFT_EDUCATION {request_id}\n").as_bytes())?;
+    stream.shutdown(Shutdown::Write)?;
     let mut response = String::new();
     stream.read_to_string(&mut response)?;
 
