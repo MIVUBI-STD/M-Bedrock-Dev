@@ -149,10 +149,7 @@ fn guest_status_once(provider: &dyn Provider, client: ClientId) -> Option<GuestS
     query_guest_status(&ip, &token, Duration::from_secs(1)).ok()
 }
 
-fn lineage_parity(
-    native: Option<&MinecraftProfile>,
-    client: ClientId,
-) -> ProfileParity {
+fn lineage_parity(native: Option<&MinecraftProfile>, client: ClientId) -> ProfileParity {
     match (native, load_client_profile(client).ok()) {
         (Some(native), Some(profile)) if native.version == profile.base_minecraft_version => {
             ProfileParity::Match
@@ -382,17 +379,13 @@ impl VirtualClients {
             (Ok(_), Err(stop_error)) => {
                 return Err(io::Error::new(
                     stop_error.kind(),
-                    format!(
-                        "Base proof succeeded but Base could not be stopped: {stop_error}"
-                    ),
+                    format!("Base proof succeeded but Base could not be stopped: {stop_error}"),
                 ))
             }
             (Err(proof_error), Err(stop_error)) => {
                 return Err(io::Error::new(
                     proof_error.kind(),
-                    format!(
-                        "{proof_error}; Base stop also failed: {stop_error}"
-                    ),
+                    format!("{proof_error}; Base stop also failed: {stop_error}"),
                 ))
             }
         };

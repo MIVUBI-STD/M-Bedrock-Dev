@@ -74,7 +74,13 @@ impl Provider for VmwareFusionProvider {
         }
         command_output_with_timeout(
             self.vmrun(),
-            ["-T", "fusion", "start", vmx.to_string_lossy().as_ref(), "nogui"],
+            [
+                "-T",
+                "fusion",
+                "start",
+                vmx.to_string_lossy().as_ref(),
+                "nogui",
+            ],
             DISK_STATE_TIMEOUT,
         )?;
         wait_for_state(|| self.running(vmx), true, DISK_STATE_TIMEOUT)
@@ -87,13 +93,25 @@ impl Provider for VmwareFusionProvider {
 
         command_output(
             self.vmrun(),
-            ["-T", "fusion", "stop", vmx.to_string_lossy().as_ref(), "soft"],
+            [
+                "-T",
+                "fusion",
+                "stop",
+                vmx.to_string_lossy().as_ref(),
+                "soft",
+            ],
         )?;
 
         if wait_for_state(|| self.running(vmx), false, Duration::from_secs(20)).is_err() {
             command_output(
                 self.vmrun(),
-                ["-T", "fusion", "stop", vmx.to_string_lossy().as_ref(), "hard"],
+                [
+                    "-T",
+                    "fusion",
+                    "stop",
+                    vmx.to_string_lossy().as_ref(),
+                    "hard",
+                ],
             )?;
             wait_for_state(|| self.running(vmx), false, Duration::from_secs(10))?;
         }

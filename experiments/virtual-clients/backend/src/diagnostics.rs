@@ -1,11 +1,7 @@
 use serde::Serialize;
 use std::{io, process::Command};
 
-use crate::{
-    client::ClientId,
-    provider::current_platform_provider,
-    runtime::RuntimeStatus,
-};
+use crate::{client::ClientId, provider::current_platform_provider, runtime::RuntimeStatus};
 use sysinfo::System;
 
 #[derive(Debug, Clone, Serialize)]
@@ -172,7 +168,13 @@ fn graphics_summary() -> Vec<String> {
 fn windows_virtualization_state() -> Option<(bool, Option<u32>)> {
     let script = r#"$h=(Get-CimInstance Win32_ComputerSystem).HypervisorPresent; $v=(Get-CimInstance -Namespace root\Microsoft\Windows\DeviceGuard -ClassName Win32_DeviceGuard -ErrorAction SilentlyContinue).VirtualizationBasedSecurityStatus; Write-Output "$h|$v""#;
     let output = Command::new("powershell.exe")
-        .args(["-NoLogo", "-NoProfile", "-NonInteractive", "-Command", script])
+        .args([
+            "-NoLogo",
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            script,
+        ])
         .output()
         .ok()?;
 

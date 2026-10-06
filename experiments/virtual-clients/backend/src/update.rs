@@ -108,7 +108,10 @@ pub fn check_update() -> io::Result<UpdateCheck> {
                 latest_version: None,
                 can_apply_now: false,
                 self_update_enabled: policy.self_update_runtime_enabled,
-                staged_path: staged_update().ok().flatten().map(|item| item.installer_path),
+                staged_path: staged_update()
+                    .ok()
+                    .flatten()
+                    .map(|item| item.installer_path),
                 reason: Some(error.to_string()),
             })
         }

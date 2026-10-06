@@ -5,7 +5,6 @@ use m_bedrock_virtual_clients_core::{
 use std::{
     io::{self, Read, Write},
     net::{TcpListener, TcpStream},
-    process::Command,
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -98,7 +97,7 @@ fn guest_agent_token() -> io::Result<String> {
         ));
     }
 
-    let output = Command::new(vmtoolsd)
+    let output = std::process::Command::new(vmtoolsd)
         .args(["--cmd", "info-get guestinfo.virtualclients.token"])
         .output()?;
     if !output.status.success() {

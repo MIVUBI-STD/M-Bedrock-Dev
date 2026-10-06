@@ -121,7 +121,9 @@ pub fn doctor() -> DoctorReport {
 
             let lineage_parity = match (
                 runtime_profile.native.as_ref(),
-                provisioned.then(|| load_client_profile(client).ok()).flatten(),
+                provisioned
+                    .then(|| load_client_profile(client).ok())
+                    .flatten(),
             ) {
                 (Some(native), Some(profile))
                     if native.version == profile.base_minecraft_version =>

@@ -4,9 +4,7 @@ use std::{fs, io, path::PathBuf, process::Command};
 use crate::{
     client::ClientId,
     guest::GUEST_STATUS_SCHEMA,
-    paths::{
-        base_profile_path_for_version, base_vmx_path_for_version, client_profile_path,
-    },
+    paths::{base_profile_path_for_version, base_vmx_path_for_version, client_profile_path},
 };
 
 pub const BASE_PROFILE_SCHEMA: u32 = 2;
@@ -166,7 +164,10 @@ pub fn write_client_profile(client: ClientId, base_version: &str) -> io::Result<
     };
     let path = client_profile_path(client.as_str())?;
     let parent = path.parent().ok_or_else(|| {
-        io::Error::new(io::ErrorKind::InvalidInput, "client profile path has no parent")
+        io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "client profile path has no parent",
+        )
     })?;
     fs::create_dir_all(parent)?;
     let temporary = path.with_extension("json.tmp");
@@ -389,11 +390,11 @@ fn normalized_version(value: &str) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use crate::guest::GUEST_STATUS_SCHEMA;
     use super::{
         normalized_version, BaseProfile, BaseProfileSource, MinecraftInstallType, MinecraftProfile,
         BASE_PROFILE_SCHEMA,
     };
+    use crate::guest::GUEST_STATUS_SCHEMA;
 
     #[test]
     fn version_normalization_is_strict() {
