@@ -1,3 +1,25 @@
+## Virtual Clients Window Layout continuation
+
+REMOTE_GITHUB source now has Window Layout v2 through the desktop boundary:
+Grid / Focus / Columns, display discovery, semantic request contracts, Rust-owned
+adaptive geometry, remembered defaults, and the quick configuration surface.
+
+Next source unit is **Screen Overlay native ownership**, not another layout
+system. Requirements:
+- consume the exact arranged slot/window identity result from Window Layout;
+- transparent, click-through, non-focusable and topmost relative to its target;
+- default content is Screen number + label;
+- custom labels remain presentation preference only;
+- Identify screens is a temporary mode of the same overlay owner;
+- overlay disappears when its target disappears and is recreated only through
+  explicit Arrange/re-apply, not a permanent auto-rearrange daemon;
+- cleanup must be deterministic when the app exits or layout is reapplied;
+- no Minecraft pack/HUD modification and no PowerShell polling daemon.
+
+Do not add custom coordinates, drag-and-drop layout editing, overlay themes,
+font editors, animation, macros or additional layout presets without observed
+need.
+
 # Next Action
 
 ## Current lane — Real Map Audit / Detection Benchmark
