@@ -63,8 +63,8 @@ pub fn doctor() -> DoctorReport {
     let logical_cpus = system.cpus().len();
     let total_memory_gb = system.total_memory() as f64 / 1024.0 / 1024.0 / 1024.0;
     let available_memory_gb = system.available_memory() as f64 / 1024.0 / 1024.0 / 1024.0;
-    let max_recommended_virtual_clients = recommended_by_memory(total_memory_gb)
-        .min(recommended_by_cpu(logical_cpus));
+    let max_recommended_virtual_clients =
+        recommended_by_memory(total_memory_gb).min(recommended_by_cpu(logical_cpus));
 
     let base_vm_present = base.as_ref().is_some_and(|path| path.is_file());
     let base_vm_stopped = match (provider.as_ref(), base.as_ref()) {
@@ -77,7 +77,9 @@ pub fn doctor() -> DoctorReport {
     let clients = ClientId::VIRTUAL
         .into_iter()
         .map(|client| {
-            let state = provider.as_ref().and_then(|provider| provider.status(client).ok());
+            let state = provider
+                .as_ref()
+                .and_then(|provider| provider.status(client).ok());
             let provisioned = state.is_some_and(|state| state != ClientState::NotProvisioned);
             let ready_snapshot = if provisioned {
                 provider
