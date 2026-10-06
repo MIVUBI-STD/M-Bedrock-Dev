@@ -125,7 +125,7 @@ fn graphics_summary() -> Vec<String> {
             "-NoProfile",
             "-NonInteractive",
             "-Command",
-            "Get-CimInstance Win32_VideoController | ForEach-Object { "$($_.Name)|$($_.DriverVersion)" }",
+            r#"Get-CimInstance Win32_VideoController | ForEach-Object { "$($_.Name)|$($_.DriverVersion)" }"#,
         ])
         .output();
 
@@ -170,7 +170,7 @@ fn graphics_summary() -> Vec<String> {
 
 #[cfg(target_os = "windows")]
 fn windows_virtualization_state() -> Option<(bool, Option<u32>)> {
-    let script = "$h=(Get-CimInstance Win32_ComputerSystem).HypervisorPresent; $v=(Get-CimInstance -Namespace root\Microsoft\Windows\DeviceGuard -ClassName Win32_DeviceGuard -ErrorAction SilentlyContinue).VirtualizationBasedSecurityStatus; Write-Output "$h|$v"";
+    let script = r#"$h=(Get-CimInstance Win32_ComputerSystem).HypervisorPresent; $v=(Get-CimInstance -Namespace root\Microsoft\Windows\DeviceGuard -ClassName Win32_DeviceGuard -ErrorAction SilentlyContinue).VirtualizationBasedSecurityStatus; Write-Output "$h|$v""#;
     let output = Command::new("powershell.exe")
         .args(["-NoLogo", "-NoProfile", "-NonInteractive", "-Command", script])
         .output()
