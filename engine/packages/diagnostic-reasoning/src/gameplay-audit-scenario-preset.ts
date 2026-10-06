@@ -116,6 +116,7 @@ export function buildGameplayAuditScenarioPreset(
         "Can two terminal conditions become true in the same tick/window?",
         "Which owner wins and are all other pending mutations invalidated?",
         "Can reward, respawn, timeout, or cleanup commit after terminal ownership changes?",
+        "Can an ordinary player trigger more than one terminal path for the same session/arena generation, and are terminal scopes guarded by exactly-once ownership?",
       ],
     }),
   ];

@@ -76,6 +76,49 @@ describe("conditional gameplay knowledge dependencies", () => {
     );
   });
 
+  it("keeps chunk-simulation mandatory for simulation-distance even when no ticking mechanism exists", () => {
+    const input = world();
+    const noChunkMechanism = {
+      ...input,
+      chunks: {
+        ...input.chunks,
+        tickingAreaAcquires: 0,
+        tickingAreaReadinessStates: 0,
+        readinessProbes: 0,
+        entityResidencyObservability: "absent",
+      },
+    } as GameplayWorldModel;
+
+    const domains =
+      requiredKnowledgeDomainsForPreset(
+        "simulation-distance",
+        noChunkMechanism,
+      );
+
+    expect(domains).toContain(
+      "chunk-simulation",
+    );
+    expect(domains).toContain(
+      "platform-constraints",
+    );
+  });
+
+  it("routes transaction atomicity into inventory/economy/temporal proof instead of state-flow only", () => {
+    const domains =
+      requiredKnowledgeDomainsForPreset(
+        "transaction-atomicity",
+        world(),
+      );
+
+    expect(domains).toEqual(
+      expect.arrayContaining([
+        "inventory-state",
+        "economy-reward",
+        "temporal-ownership",
+      ]),
+    );
+  });
+
   it("does not require economy knowledge when no economy surface exists", () => {
     const input = world();
     const withoutEconomy = {

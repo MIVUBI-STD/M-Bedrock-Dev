@@ -656,6 +656,7 @@ function scenarioSurfaceSignals(
 
 function auditScenarioPresetFromModel(
   input: {
+    readonly intent: GameplayIntentModel;
     readonly semanticIr: SemanticIr;
     readonly world: GameplayWorldModel;
     readonly defectResolutions?: readonly GameplayDefectResolution[];
@@ -687,12 +688,19 @@ function auditScenarioPresetFromModel(
       input.world.arenas.detected,
     hasTransactionalGameplay:
       input.world.economy.paths.length > 0 ||
-      input.world.inventory.lifecyclePaths.length > 0,
+      input.world.inventory.regions > 0 ||
+      input.world.inventory.grantRegions > 0 ||
+      input.world.inventory.dropRegions > 0,
     hasSimulationDistanceDependency:
       input.world.entities.definitions > 0 &&
       (
         input.world.chunks.leases.length > 0 ||
-        input.world.spatial.resolvedScriptEffects > 0
+        input.world.spatial.resolvedScriptEffects > 0 ||
+        input.intent.nodes.some(
+          (node) =>
+            node.kind === "spatial-region" ||
+            node.kind === "objective",
+        )
       ),
     hasPlayerFeedbackSurface:
       input.intent.evidence.some((item) =>
@@ -955,12 +963,19 @@ export function refreshHiddenGameplayDefectsForWorld(
         world.arenas.detected,
       hasTransactionalGameplay:
         world.economy.paths.length > 0 ||
-        world.inventory.lifecyclePaths.length > 0,
+        world.inventory.regions > 0 ||
+        world.inventory.grantRegions > 0 ||
+        world.inventory.dropRegions > 0,
       hasSimulationDistanceDependency:
         world.entities.definitions > 0 &&
         (
           world.chunks.leases.length > 0 ||
-          world.spatial.resolvedScriptEffects > 0
+          world.spatial.resolvedScriptEffects > 0 ||
+          (intent?.nodes.some(
+            (node) =>
+              node.kind === "spatial-region" ||
+              node.kind === "objective",
+          ) ?? false)
         ),
       hasPlayerFeedbackSurface:
         intent?.evidence.some((item) =>

@@ -673,6 +673,28 @@ export function requiredKnowledgeDomainsForPreset(
       addIfApplicable("economy-reward");
       addIfApplicable("arena-lifecycle");
       break;
+    case "transaction-atomicity":
+      addIfApplicable("economy-reward");
+      addIfApplicable("inventory-state");
+      addIfApplicable("persistence-recovery");
+      add(domains, "temporal-ownership");
+      break;
+    case "simulation-distance":
+      // The scenario itself proves that simulation ownership is material.
+      // Missing ticking/readiness evidence must remain visible rather than
+      // making the domain appear not applicable.
+      add(domains, "chunk-simulation");
+      add(domains, "platform-constraints");
+      addIfApplicable("entity-behavior");
+      addIfApplicable("arena-lifecycle");
+      addIfApplicable("spatial-authority");
+      break;
+    case "information-correctness":
+      addIfApplicable("economy-reward");
+      addIfApplicable("inventory-state");
+      addIfApplicable("persistence-recovery");
+      addIfApplicable("arena-lifecycle");
+      break;
     case "player-capability-integrity":
       addIfApplicable("arena-lifecycle");
       addIfApplicable("spatial-authority");
