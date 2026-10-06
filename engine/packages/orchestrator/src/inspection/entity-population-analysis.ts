@@ -96,6 +96,25 @@ export interface EntityPopulationSourceAnalysis {
     readonly SpawnCommitAssessment[];
   readonly verifiedSpawnCommits: number;
   readonly unresolvedSpawnCommits: number;
+  readonly persistencePolicyEntities: number;
+  readonly criticalPersistenceStatus:
+    | "explicit"
+    | "registry-recoverable"
+    | "unresolved";
+  readonly authoredSpawnBudgets:
+    readonly {
+      scriptId: string;
+      name: string;
+      limit: number;
+    }[];
+  readonly maxStaticSpawnBurst: number;
+  readonly spawnBudgetStatus:
+    | "within-authored-budget"
+    | "budget-exceeded"
+    | "unresolved";
+  readonly capPressureDiagnosticStatus:
+    | "budget-observable"
+    | "unresolved";
 }
 
 function autonomousSpawnKind(
@@ -445,6 +464,116 @@ function spawnCommitAssessments(
   );
 }
 
+
+function authoredSpawnBudgets(
+  scripts: readonly ParsedScriptFile[],
+): {
+  scriptId: string;
+  name: string;
+  limit: number;
+}[] {
+  const output: {
+    scriptId: string;
+    name: string;
+    limit: number;
+  }[] = [];
+
+  for (const script of scripts) {
+    const file = ts.createSourceFile(
+      script.source.relativePath,
+      script.text,
+      ts.ScriptTarget.Latest,
+      true,
+      script.source.relativePath.endsWith(".ts")
+        ? ts.ScriptKind.TS
+        : ts.ScriptKind.JS,
+    );
+    const visit = (node: ts.Node): void => {
+      if (
+        ts.isVariableDeclaration(node) &&
+        ts.isIdentifier(node.name) &&
+        /(?:spawnBudget|maxSpawnPerTick|entityBudget|maxEntitiesPerTick|maxSpawnBurst)/i.test(
+          node.name.text,
+        ) &&
+        node.initializer &&
+        ts.isNumericLiteral(node.initializer)
+      ) {
+        output.push({
+          scriptId: script.identifier,
+          name: node.name.text,
+          limit: Number(
+            node.initializer.text,
+          ),
+        });
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(file);
+  }
+
+  return output.sort((a, b) =>
+    a.scriptId.localeCompare(b.scriptId) ||
+    a.name.localeCompare(b.name)
+  );
+}
+
+function maxStaticSpawnBurst(
+  scripts: readonly ParsedScriptFile[],
+): number {
+  let maximum = 0;
+  for (const script of scripts) {
+    const file = ts.createSourceFile(
+      script.source.relativePath,
+      script.text,
+      ts.ScriptTarget.Latest,
+      true,
+      script.source.relativePath.endsWith(".ts")
+        ? ts.ScriptKind.TS
+        : ts.ScriptKind.JS,
+    );
+    const visit = (node: ts.Node): void => {
+      if (
+        ts.isForStatement(node) &&
+        node.condition &&
+        ts.isBinaryExpression(
+          node.condition,
+        ) &&
+        ts.isNumericLiteral(
+          node.condition.right,
+        )
+      ) {
+        const limit = Number(
+          node.condition.right.text,
+        );
+        let spawnCalls = 0;
+        const scan = (
+          current: ts.Node,
+        ): void => {
+          if (
+            ts.isCallExpression(current) &&
+            ts.isPropertyAccessExpression(
+              current.expression,
+            ) &&
+            current.expression.name.text ===
+              "spawnEntity"
+          ) {
+            spawnCalls += 1;
+          }
+          ts.forEachChild(current, scan);
+        };
+        scan(node.statement);
+        maximum = Math.max(
+          maximum,
+          limit * spawnCalls,
+        );
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(file);
+  }
+  return maximum;
+}
+
 export function analyzeEntityPopulationSources(
   entities:
     readonly ParsedEntityDefinition[],
@@ -469,6 +598,10 @@ export function analyzeEntityPopulationSources(
     lineageInheritanceEvidence(
       scripts,
     );
+  const spawnBudgets =
+    authoredSpawnBudgets(scripts);
+  const staticSpawnBurst =
+    maxStaticSpawnBurst(scripts);
 
   for (const entity of entities) {
     for (
@@ -709,6 +842,73 @@ export function analyzeEntityPopulationSources(
           item.status !==
           "verified-before-registration",
       ).length,
+    persistencePolicyEntities:
+      entities.filter(
+        (entity) =>
+          entity.baseComponents.some(
+            (component) =>
+              /(?:persistent|despawn)/i.test(
+                component,
+              ),
+          ) ||
+          Object.values(
+            entity.componentGroups,
+          ).some((components) =>
+            components.some(
+              (component) =>
+                /(?:persistent|despawn)/i.test(
+                  component,
+                ),
+            )
+          ),
+      ).length,
+    criticalPersistenceStatus:
+      entities.some(
+        (entity) =>
+          entity.baseComponents.some(
+            (component) =>
+              /(?:persistent|despawn)/i.test(
+                component,
+              ),
+          ) ||
+          Object.values(
+            entity.componentGroups,
+          ).some((components) =>
+            components.some(
+              (component) =>
+                /(?:persistent|despawn)/i.test(
+                  component,
+                ),
+            )
+          ),
+      )
+        ? "explicit"
+        : (
+            options.generationBoundRegistryAuthorities ??
+            0
+          ) > 0
+          ? "registry-recoverable"
+          : "unresolved",
+    authoredSpawnBudgets:
+      spawnBudgets,
+    maxStaticSpawnBurst:
+      staticSpawnBurst,
+    spawnBudgetStatus:
+      spawnBudgets.length === 0
+        ? "unresolved"
+        : staticSpawnBurst <=
+            Math.min(
+              ...spawnBudgets.map(
+                (item) =>
+                  item.limit,
+              ),
+            )
+          ? "within-authored-budget"
+          : "budget-exceeded",
+    capPressureDiagnosticStatus:
+      spawnBudgets.length > 0
+        ? "budget-observable"
+        : "unresolved",
   };
 }
 

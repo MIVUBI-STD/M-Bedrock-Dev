@@ -417,3 +417,97 @@ describe("spawn commit transaction", () => {
     );
   });
 });
+
+
+describe("critical persistence and spawn performance policy", () => {
+  it("accepts explicit entity persistence/despawn policy evidence", () => {
+    const entity =
+      parseEntityDefinition({
+        "minecraft:entity": {
+          description: {
+            identifier:
+              "demo:objective",
+          },
+          components: {
+            "minecraft:persistent": {},
+          },
+        },
+      }, source);
+
+    const result =
+      analyzeEntityPopulationSources([
+        entity,
+      ]);
+
+    expect(
+      result.criticalPersistenceStatus,
+    ).toBe("explicit");
+  });
+
+  it("accepts generation-bound registry recovery as persistence tolerance", () => {
+    expect(
+      analyzeEntityPopulationSources(
+        [],
+        [],
+        {
+          generationBoundRegistryAuthorities:
+            1,
+        },
+      ).criticalPersistenceStatus,
+    ).toBe("registry-recoverable");
+  });
+
+  it("compares static burst spawning only against an authored budget", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "const maxSpawnPerTick = 4;",
+        "function spawnWave(dimension) {",
+        "  for (let i = 0; i < 3; i++) {",
+        "    dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  }",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeEntityPopulationSources(
+        [],
+        [script],
+      );
+
+    expect(
+      result.maxStaticSpawnBurst,
+    ).toBe(3);
+    expect(
+      result.spawnBudgetStatus,
+    ).toBe(
+      "within-authored-budget",
+    );
+    expect(
+      result.capPressureDiagnosticStatus,
+    ).toBe("budget-observable");
+  });
+
+  it("keeps spawn performance unresolved without an authored budget", () => {
+    const script = parseScriptFile(
+      "main",
+      "dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    expect(
+      analyzeEntityPopulationSources(
+        [],
+        [script],
+      ).spawnBudgetStatus,
+    ).toBe("unresolved");
+  });
+});

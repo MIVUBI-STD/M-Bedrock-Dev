@@ -1402,6 +1402,18 @@
       ]
     },
     {
+      "knowledgeId": "population-policy.cap-pressure-diagnostic",
+      "consumer": "entity-population-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/entity-population-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/progression-actor-accounting-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/progression-actor-accounting-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "population-policy.cleanup-owned-population",
       "consumer": "arena-reset-closure-analysis",
       "analyzerPaths": [
@@ -1412,6 +1424,18 @@
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts",
         "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "population-policy.critical-entity-persistence",
+      "consumer": "entity-population-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/entity-population-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/progression-actor-accounting-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/progression-actor-accounting-analysis.test.ts"
       ]
     },
     {
@@ -1510,6 +1534,18 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "population-policy.spawn-budget",
+      "consumer": "entity-population-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/entity-population-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/progression-actor-accounting-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/progression-actor-accounting-analysis.test.ts"
       ]
     },
     {
