@@ -933,6 +933,14 @@ impl VirtualClients {
         )
     }
 
+    pub fn launch_minecraft(&self, client: ClientId) -> io::Result<ClientStatus> {
+        self.record(
+            OperationKind::Open,
+            Some(format!("minecraft:{}", client.as_str())),
+            self.launch_minecraft_inner(client),
+        )
+    }
+
     pub fn open(&self, client: ClientId) -> io::Result<ClientStatus> {
         self.record(
             OperationKind::Open,
@@ -1720,6 +1728,23 @@ impl VirtualClients {
             native_profile.as_ref(),
             client,
         )
+    }
+
+    fn launch_minecraft_inner(&self, client: ClientId) -> io::Result<ClientStatus> {
+        if client.is_native() {
+            return Err(io::Error::new(io::ErrorKind::InvalidInput, "Native Minecraft is launched by the desktop app"));
+        }
+        let _lock = OperationLock::acquire()?;
+        let provider = current_platform_provider().ok_or_else(|| {
+            io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
+        })?;
+        if provider.status(client)? != ClientState::Running {
+            return Err(io::Error::new(io::ErrorKind::InvalidInput, "Virtual client must be running before Minecraft can be launched"));
+        }
+        ensure_minecraft_running(provider.as_ref(), client)?;
+        let working_sets = provider.host_working_sets_mb()?;
+        let native_profile = native_minecraft_profile();
+        client_status(provider.as_ref(), &working_sets, native_profile.as_ref(), client)
     }
 
     fn open_inner(&self, client: ClientId) -> io::Result<ClientStatus> {
