@@ -9,12 +9,48 @@
       "sha": "95bf318070b3948f0a0d1d093bae2f7b1a3a37e4d94e94d2adfc4d80a501ccba"
     },
     {
+      "path": "drive:1bET36z9mdi3-GYEdHrbKet5QLPZpMq87",
+      "sha": "1802103da030b448c4a91e98eeef6f53d95235abda761b35fc0ab4b8453f7c1d"
+    },
+    {
+      "path": "drive:1ELPTLlxFiyLhd0Wv3PHnnXO2PD9VHyJq",
+      "sha": "189a4a85e704a03a244d9bf42abf289039198831a1d2d933276a49db05a4d79b"
+    },
+    {
+      "path": "drive:1eSlTNBhoWslPs8xUlxsK0FVEkBe3uGz1",
+      "sha": "b8bff14da9e71bf58f9d3b277408ec00d51d1193cee5c8eb1b3f7644584fbab9"
+    },
+    {
       "path": "drive:1gaHKkT-VrYVNehLLT_xiTHtpgNJ7BxQe",
       "sha": "c666000de5cd052288b00953baf9dc00410a65c6da53c16fb1e31b8e396025f3"
     },
     {
       "path": "drive:1hFF8MaIgsVFBXgh_ll6f2Uoo2Cv3Y_Rr",
       "sha": "c7a208ccb943d214de6bb6d2f15f265f8dba2b794ae56da40a11bef24162776a"
+    },
+    {
+      "path": "drive:1hU8Mvg8Ty1uB2C-MlDjaon-YqEf3Rffo",
+      "sha": "7557e129a7cc148d1a610fac7a65f90a240debdcca7fbec989414f9c43274444"
+    },
+    {
+      "path": "drive:1jgOHXyLfV0qcbYYPCTPwoXrSS-NCacqQ",
+      "sha": "fcfde94b403a8281bf8b2fd589658e74dd4becf7d941e7b3db9b66261ace75ae"
+    },
+    {
+      "path": "drive:1JNNZpRPj6IYE3nMgOC01p-9P-Ct8pSWC",
+      "sha": "97b4b143d674b37763501c82d63ba2f7ba0602d44e71f30cde6e5a23a08979c8"
+    },
+    {
+      "path": "drive:1kkqaqb9FQIkAzorCNzVe8vyHgoFoHJWu",
+      "sha": "c212fb9e7b401ab081b14a062cc24a9d0e03b95202641cf53020a48e216d1ac3"
+    },
+    {
+      "path": "drive:1m9JnjTHqUP39OWQVpmWGpmetUTx6Vqaa",
+      "sha": "9b66dab3550d45a2e1b16aebaaabca85676e969179e2a2f3f557f973abe43889"
+    },
+    {
+      "path": "drive:1npTapvqtd_Yyd1gOch6U03SIPzkY-pUK",
+      "sha": "6910cb83e6d5866896e29553398b3a889e3942f553f9a0423b365f0799018bf2"
     },
     {
       "path": "drive:1o6LDmNJZfCPqQzQRmDILIFz0PDzVYcuv",
@@ -27,6 +63,22 @@
     {
       "path": "drive:1oH2nPJJzgg5SRgORMYV_wzMkiSK9GRGS",
       "sha": "19e2eb038b0b01fe756715c725df7e39d74e8cf2de8c45705d1897ea3ffb6151"
+    },
+    {
+      "path": "drive:1pk4tqSJNY9UkHeSW94PeXaQjGdSTdeIE",
+      "sha": "e7dba9f91b1562c84fe6ce8d3229d52ca7229f54fa2c6085c0bde636be4ad247"
+    },
+    {
+      "path": "drive:1v-7t1gvcPoIxZuaexUnWKxUqtv-ezB8S",
+      "sha": "d515dcf21bc1665f41c0ae8d3b316721d1ef9ee4ba4ed0212ad7f0d36017d96b"
+    },
+    {
+      "path": "drive:1WyB9P4kjirf-ft34Fcq2q6jR4wRkjqX8",
+      "sha": "163b85be6d350fe9ea3cb1dce553c046593375f7c901392cb83a29f8c5b77482"
+    },
+    {
+      "path": "drive:1Z8HrS3UhVRj4r-WAi1wtpqs900xYy7QE",
+      "sha": "d3a7082af1c2e5f8ded862f801eaa3880f02beb323280648a243d31e574e5504"
     },
     {
       "path": "workspace/project-registry.json",
@@ -75,10 +127,10 @@
   ],
   "summary": {
     "projects": 22,
-    "resolved": 9,
-    "unresolved": 13,
-    "mapTypeResolved": 20,
-    "playerModeResolved": 9
+    "resolved": 22,
+    "unresolved": 0,
+    "mapTypeResolved": 22,
+    "playerModeResolved": 22
   },
   "entries": [
     {
@@ -88,16 +140,21 @@
       "legacyLabel": "Skills - Aftershock",
       "classification": {
         "mapType": "SKILL_COURSE",
-        "playerMode": null,
-        "mechanicTags": [],
-        "classificationStatus": "UNRESOLVED",
+        "playerMode": "SOLO",
+        "mechanicTags": [
+          "MULTI_STAGE",
+          "PERSISTENCE",
+          "PROGRESSION"
+        ],
+        "classificationStatus": "RESOLVED",
         "evidenceRefs": [
-          "workspace/project-registry.json#aftershock"
+          "workspace/project-registry.json#aftershock",
+          "drive:1eSlTNBhoWslPs8xUlxsK0FVEkBe3uGz1#behavior_packs/BP/scripts/main.js"
         ]
       },
       "rationale": [
-        "Legacy project label supports a partial canonical Map Type only.",
-        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+        "Current artifact fingerprint b8bff14da9e71bf58f9d3b277408ec00d51d1193cee5c8eb1b3f7644584fbab9 matches Project Registry.",
+        "Current artifact owns each active session by one playerId and one arena lease, with per-player objective/progression state rather than party/team gameplay."
       ]
     },
     {
@@ -136,16 +193,23 @@
       "legacyLabel": "PvP - Beach Bedwars",
       "classification": {
         "mapType": "COMBAT",
-        "playerMode": null,
-        "mechanicTags": [],
-        "classificationStatus": "UNRESOLVED",
+        "playerMode": "TEAM_COMPETITIVE",
+        "mechanicTags": [
+          "BASE_DEFENSE",
+          "RESOURCE_ECONOMY",
+          "RESPAWN",
+          "SHOP",
+          "TEAM_COMBAT"
+        ],
+        "classificationStatus": "RESOLVED",
         "evidenceRefs": [
-          "workspace/project-registry.json#beach-bedwars"
+          "workspace/project-registry.json#beach-bedwars",
+          "drive:1JNNZpRPj6IYE3nMgOC01p-9P-Ct8pSWC#behavior_packs/Beach_Bedwars_BP/scripts/main.js"
         ]
       },
       "rationale": [
-        "Legacy project label supports a partial canonical Map Type only.",
-        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+        "Current artifact fingerprint 97b4b143d674b37763501c82d63ba2f7ba0602d44e71f30cde6e5a23a08979c8 matches Project Registry.",
+        "Current artifact explicitly defines red/green/blue/yellow player teams, team-owned beds, team capacity, and a winning remaining team."
       ]
     },
     {
@@ -155,18 +219,21 @@
       "legacyLabel": "Build - Builder's Memory",
       "classification": {
         "mapType": "BUILDING",
-        "playerMode": null,
+        "playerMode": "TEAM_COMPETITIVE",
         "mechanicTags": [
-          "BUILD"
+          "BUILD",
+          "MEMORY",
+          "PROGRESSION"
         ],
-        "classificationStatus": "UNRESOLVED",
+        "classificationStatus": "RESOLVED",
         "evidenceRefs": [
-          "workspace/project-registry.json#blitzbuild"
+          "workspace/project-registry.json#blitzbuild",
+          "drive:1Z8HrS3UhVRj4r-WAi1wtpqs900xYy7QE#behavior_packs/blitzbuild_bp/scripts/main.js"
         ]
       },
       "rationale": [
-        "Legacy project label supports a partial canonical Map Type only.",
-        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+        "Current artifact fingerprint d3a7082af1c2e5f8ded862f801eaa3880f02beb323280648a243d31e574e5504 matches Project Registry.",
+        "Current artifact assigns players to teams, tracks team completion order/position bonuses and team scoring/rankings; builder/guesser responsibilities occur inside team competition rather than defining fixed asymmetric sides."
       ]
     },
     {
@@ -201,16 +268,17 @@
       "legacyLabel": "Skills - The Clockwork Vault",
       "classification": {
         "mapType": "SKILL_COURSE",
-        "playerMode": null,
+        "playerMode": "SOLO",
         "mechanicTags": [],
-        "classificationStatus": "UNRESOLVED",
+        "classificationStatus": "RESOLVED",
         "evidenceRefs": [
-          "workspace/project-registry.json#clockwork-vault"
+          "workspace/project-registry.json#clockwork-vault",
+          "drive:1bET36z9mdi3-GYEdHrbKet5QLPZpMq87#behavior_packs/BP/scripts/main.js"
         ]
       },
       "rationale": [
-        "Legacy project label supports a partial canonical Map Type only.",
-        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+        "Current artifact fingerprint 1802103da030b448c4a91e98eeef6f53d95235abda761b35fc0ab4b8453f7c1d matches Project Registry.",
+        "Current artifact binds arena/session ownership to one playerId and persists occupied arena state per player rather than a party or opposing team."
       ]
     },
     {
@@ -251,16 +319,17 @@
       "legacyLabel": "PvP - DarkCrystal",
       "classification": {
         "mapType": "COMBAT",
-        "playerMode": null,
+        "playerMode": "ASYMMETRIC",
         "mechanicTags": [],
-        "classificationStatus": "UNRESOLVED",
+        "classificationStatus": "RESOLVED",
         "evidenceRefs": [
-          "workspace/project-registry.json#dark-crystal"
+          "workspace/project-registry.json#dark-crystal",
+          "drive:1ELPTLlxFiyLhd0Wv3PHnnXO2PD9VHyJq#behavior_packs/BP/scripts/main.js"
         ]
       },
       "rationale": [
-        "Legacy project label supports a partial canonical Map Type only.",
-        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+        "Current artifact fingerprint 189a4a85e704a03a244d9bf42abf289039198831a1d2d933276a49db05a4d79b matches Project Registry.",
+        "Current artifact explicitly assigns hunter and survivor player roles and resolves winning conditions differently for those roles."
       ]
     },
     {
@@ -325,16 +394,22 @@
       "legacyLabel": "PvP - Fall of the Pillager / Level 2",
       "classification": {
         "mapType": "COMBAT",
-        "playerMode": null,
-        "mechanicTags": [],
-        "classificationStatus": "UNRESOLVED",
+        "playerMode": "COOPERATIVE",
+        "mechanicTags": [
+          "CAPTURE_OBJECTIVE",
+          "MULTI_STAGE",
+          "RESOURCE_ECONOMY",
+          "SHOP"
+        ],
+        "classificationStatus": "RESOLVED",
         "evidenceRefs": [
-          "workspace/project-registry.json#fall-of-the-pillager-l2"
+          "workspace/project-registry.json#fall-of-the-pillager-l2",
+          "drive:1m9JnjTHqUP39OWQVpmWGpmetUTx6Vqaa#behavior_packs/Offense_Fall_Pillager_v2_BP/scripts/main.js"
         ]
       },
       "rationale": [
-        "Legacy project label supports a partial canonical Map Type only.",
-        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+        "Current artifact fingerprint 9b66dab3550d45a2e1b16aebaaabca85676e969179e2a2f3f557f973abe43889 matches Project Registry.",
+        "Current artifact owns one offense party/team per arena and shared offense team score/kills/deaths while gameplay opposition is NPC/objective driven rather than another player team."
       ]
     },
     {
@@ -343,21 +418,27 @@
       "mapVersion": "1.1.0",
       "legacyLabel": "Five Nights at Z Village - Level 1",
       "classification": {
-        "mapType": null,
-        "playerMode": null,
+        "mapType": "SURVIVAL",
+        "playerMode": "COOPERATIVE",
         "mechanicTags": [
+          "ENTITY_AI",
+          "PROGRESSION",
           "RECONNECT",
           "RESOURCE_ECONOMY",
+          "SHOP",
+          "SURVIVAL_TIMER",
+          "WAVE_DEFENSE",
           "WORLD_RESET"
         ],
-        "classificationStatus": "UNRESOLVED",
+        "classificationStatus": "RESOLVED",
         "evidenceRefs": [
-          "workspace/reports/Five-Nights-at-Z-Village-L1-v1.1.0-BugReport.json#BUG-FNZ1-CINEMATIC-COINS"
+          "workspace/reports/Five-Nights-at-Z-Village-L1-v1.1.0-BugReport.json#BUG-FNZ1-CINEMATIC-COINS",
+          "drive:1npTapvqtd_Yyd1gOch6U03SIPzkY-pUK#behavior_packs/defense-fnazv_bp/scripts/main.js"
         ]
       },
       "rationale": [
-        "Current report proves party/session economy, reconnect and fresh-session reset behavior.",
-        "Repository evidence does not safely prove primary Map Type or Player Mode, so both remain unresolved."
+        "Current artifact fingerprint 6910cb83e6d5866896e29553398b3a889e3942f553f9a0423b365f0799018bf2 matches Project Registry.",
+        "Current artifact models one shared arena party of up to five players progressing through zombie waves/night survival with shared session state and scoring."
       ]
     },
     {
@@ -366,17 +447,23 @@
       "mapVersion": "1.2.2",
       "legacyLabel": "PvP - Five Nights at Z Village / Level 2",
       "classification": {
-        "mapType": "COMBAT",
-        "playerMode": null,
-        "mechanicTags": [],
-        "classificationStatus": "UNRESOLVED",
+        "mapType": "SURVIVAL",
+        "playerMode": "COOPERATIVE",
+        "mechanicTags": [
+          "CAPTURE_OBJECTIVE",
+          "ENTITY_AI",
+          "PROGRESSION",
+          "WAVE_DEFENSE"
+        ],
+        "classificationStatus": "RESOLVED",
         "evidenceRefs": [
-          "workspace/project-registry.json#five-nights-z-village-l2"
+          "workspace/project-registry.json#five-nights-z-village-l2",
+          "drive:1v-7t1gvcPoIxZuaexUnWKxUqtv-ezB8S#behavior_packs/defense-level-2-multi-arena_bp/scripts/main.js"
         ]
       },
       "rationale": [
-        "Legacy project label supports a partial canonical Map Type only.",
-        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+        "Current artifact fingerprint d515dcf21bc1665f41c0ae8d3b316721d1ef9ee4ba4ed0212ad7f0d36017d96b matches Project Registry.",
+        "Current artifact keeps one member set per arena/session, requires all members ready, and runs cooperative enemy-wave/flag-defense progression against spawned attackers."
       ]
     },
     {
@@ -410,17 +497,23 @@
       "mapVersion": "2.2.0",
       "legacyLabel": "Minigame - Marathon Test of Tactics / Level 2",
       "classification": {
-        "mapType": null,
-        "playerMode": null,
-        "mechanicTags": [],
-        "classificationStatus": "UNRESOLVED",
+        "mapType": "CHALLENGE_COURSE",
+        "playerMode": "COMPETITIVE",
+        "mechanicTags": [
+          "BUILD",
+          "MELEE_COMBAT",
+          "MULTI_ARENA",
+          "TEAM_COMBAT"
+        ],
+        "classificationStatus": "RESOLVED",
         "evidenceRefs": [
-          "workspace/project-registry.json#marathon-test-of-tactics-l2"
+          "workspace/project-registry.json#marathon-test-of-tactics-l2",
+          "drive:1WyB9P4kjirf-ft34Fcq2q6jR4wRkjqX8#behavior_packs/mtt_bp/scripts/config/arenas.js"
         ]
       },
       "rationale": [
-        "Legacy project label does not map safely to one canonical Map Type.",
-        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+        "Current artifact fingerprint 163b85be6d350fe9ea3cb1dce553c046593375f7c901392cb83a29f8c5b77482 matches Project Registry.",
+        "Current artifact is a multi-mode trial set (TNT Run, TNT Tag, Bridge, Sumo, Duels). Some modes are free-for-all and others red-vs-blue team modes, so COMPETITIVE is the correct map-wide Player Mode rather than TEAM_COMPETITIVE."
       ]
     },
     {
@@ -430,19 +523,21 @@
       "legacyLabel": "Find The Button - Mysteries of Biomes / Level 1",
       "classification": {
         "mapType": "SEARCH_PUZZLE",
-        "playerMode": null,
+        "playerMode": "SOLO",
         "mechanicTags": [
+          "PROGRESSION",
           "PUZZLE",
           "SEARCH"
         ],
-        "classificationStatus": "UNRESOLVED",
+        "classificationStatus": "RESOLVED",
         "evidenceRefs": [
-          "workspace/project-registry.json#mysteries-biomes-l1"
+          "workspace/project-registry.json#mysteries-biomes-l1",
+          "drive:1jgOHXyLfV0qcbYYPCTPwoXrSS-NCacqQ#behavior_packs/mysteries-of-biomes_bp/scripts/main.js"
         ]
       },
       "rationale": [
-        "Legacy project label supports a partial canonical Map Type only.",
-        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+        "Current artifact fingerprint fcfde94b403a8281bf8b2fd589658e74dd4becf7d941e7b3db9b66261ace75ae matches Project Registry.",
+        "Current artifact creates one session per playerId, assigns an arena resource to that player session, and advances that player's independent button-search levels."
       ]
     },
     {
@@ -452,19 +547,21 @@
       "legacyLabel": "Find The Button - Mysteries of Biomes / Level 2",
       "classification": {
         "mapType": "SEARCH_PUZZLE",
-        "playerMode": null,
+        "playerMode": "SOLO",
         "mechanicTags": [
+          "PROGRESSION",
           "PUZZLE",
           "SEARCH"
         ],
-        "classificationStatus": "UNRESOLVED",
+        "classificationStatus": "RESOLVED",
         "evidenceRefs": [
-          "workspace/project-registry.json#mysteries-biomes-l2"
+          "workspace/project-registry.json#mysteries-biomes-l2",
+          "drive:1pk4tqSJNY9UkHeSW94PeXaQjGdSTdeIE#behavior_packs/BP/scripts/main.js"
         ]
       },
       "rationale": [
-        "Legacy project label supports a partial canonical Map Type only.",
-        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+        "Current artifact fingerprint e7dba9f91b1562c84fe6ce8d3229d52ca7229f54fa2c6085c0bde636be4ad247 matches Project Registry.",
+        "Current artifact allocates each arena exclusively to one playerId and stores level/checkpoint/stat progression per player session."
       ]
     },
     {
@@ -474,16 +571,21 @@
       "legacyLabel": "PvP - Orb of the Illusioner / Level 1",
       "classification": {
         "mapType": "COMBAT",
-        "playerMode": null,
-        "mechanicTags": [],
-        "classificationStatus": "UNRESOLVED",
+        "playerMode": "COOPERATIVE",
+        "mechanicTags": [
+          "MULTI_STAGE",
+          "PROGRESSION",
+          "RESOURCE_ECONOMY"
+        ],
+        "classificationStatus": "RESOLVED",
         "evidenceRefs": [
-          "workspace/project-registry.json#orb-illusioner-l1"
+          "workspace/project-registry.json#orb-illusioner-l1",
+          "drive:1hU8Mvg8Ty1uB2C-MlDjaon-YqEf3Rffo#behavior_packs/Arena_BP/scripts/main.js"
         ]
       },
       "rationale": [
-        "Legacy project label supports a partial canonical Map Type only.",
-        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+        "Current artifact fingerprint 7557e129a7cc148d1a610fac7a65f90a240debdcca7fbec989414f9c43274444 matches Project Registry.",
+        "Current artifact maintains one arena party of up to five members, collectively starts/finishes the shared arena run, and has no second opposing player-team authority."
       ]
     },
     {
@@ -523,16 +625,21 @@
       "legacyLabel": "PvP - Raid Arena Classic",
       "classification": {
         "mapType": "COMBAT",
-        "playerMode": null,
-        "mechanicTags": [],
-        "classificationStatus": "UNRESOLVED",
+        "playerMode": "COMPETITIVE",
+        "mechanicTags": [
+          "MELEE_COMBAT",
+          "RESPAWN",
+          "ROUND_TIMER"
+        ],
+        "classificationStatus": "RESOLVED",
         "evidenceRefs": [
-          "workspace/project-registry.json#raid-arena-classic"
+          "workspace/project-registry.json#raid-arena-classic",
+          "drive:1kkqaqb9FQIkAzorCNzVe8vyHgoFoHJWu#behavior_packs/Raid_Classic_BP/scripts/main.js"
         ]
       },
       "rationale": [
-        "Legacy project label supports a partial canonical Map Type only.",
-        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+        "Current artifact fingerprint c212fb9e7b401ab081b14a062cc24a9d0e03b95202641cf53020a48e216d1ac3 matches Project Registry.",
+        "Current artifact resolves winners as the last remaining player or highest-kill player at time limit, with per-player stats rather than team winner ownership."
       ]
     },
     {
