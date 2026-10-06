@@ -123,3 +123,10 @@ Damage policy and knockback, impulse, fire, status effects, projectile block dam
 8. Is this hurt or terminal death?
 9. Is score/reward idempotent?
 10. Are knockback/status/block-damage effects governed by the same intended policy?
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [Combat](../../engine/knowledge/entity-runtime/combat-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
