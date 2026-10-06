@@ -88,6 +88,16 @@ Load only when the canonical procedure activates the concern:
 
 None of these documents may authorize continuation independently of the Mandatory Audit Procedure receipt.
 
+## Specialist audit contracts
+
+Load only when the canonical audit flow activates the concern:
+
+- [User Input Translation Contract](./user-input-translation-contract.md) — translates user/client wording into bounded non-authoritative audit search guidance.
+- [Hidden Gameplay Defect Analysis](./hidden-gameplay-defect-analysis.md) — higher-order contradiction and latent gameplay-defect reasoning.
+- [Vital Gameplay Knowledge Closure](./vital-gameplay-knowledge-closure.md) — read-only closure projection for the eight vital gameplay domains.
+- [Runtime Telemetry Contract](./runtime-telemetry-contract.md) — trace/evidence envelope for runtime observation and diagnostics.
+- [Developer Note Coverage](./developer-note-coverage.md) — engineering-note admission and separation from BUG / DESIGN_MISMATCH.
+
 ## Analysis domains
 
 ### Core models and graphs
