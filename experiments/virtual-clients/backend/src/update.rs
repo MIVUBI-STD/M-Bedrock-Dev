@@ -117,6 +117,7 @@ pub fn check_update() -> io::Result<UpdateCheck> {
                 staged_path: staged_update()
                     .ok()
                     .flatten()
+                    .filter(|item| Path::new(&item.installer_path).is_file())
                     .map(|item| item.installer_path),
                 reason: Some(error.to_string()),
             })
@@ -506,8 +507,8 @@ fn update_apply_readiness() -> ApplyReadiness {
 
     let Some(provider) = current_platform_provider() else {
         return ApplyReadiness {
-            ready: true,
-            reason: None,
+            ready: false,
+            reason: Some("virtualization provider state is unavailable".into()),
         };
     };
 
@@ -558,6 +559,7 @@ fn validate_policy(policy: &ReleaseChannel) -> io::Result<()> {
         || policy.manifest_endpoint != expected_manifest_endpoint
         || policy.check_mode != "startup-once"
         || policy.apply_gate != "all-virtuals-stopped"
+        || policy.self_update_runtime_enabled
     {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
@@ -606,6 +608,8 @@ fn parse_version(value: &str) -> io::Result<(u64, u64, u64)> {
 
 #[cfg(test)]
 mod tests {
+    use std::io;
+
     use super::{
         apply_permission, parse_version, release_channel, validate_platform_manifest,
         validate_policy, ApplyReadiness, PlatformManifest,
@@ -616,6 +620,16 @@ mod tests {
         let policy = release_channel().unwrap();
         validate_policy(&policy).unwrap();
         assert!(!policy.self_update_runtime_enabled);
+    }
+
+    #[test]
+    fn policy_cannot_enable_runtime_self_update_by_configuration_only() {
+        let mut policy = release_channel().unwrap();
+        policy.self_update_runtime_enabled = true;
+        assert_eq!(
+            validate_policy(&policy).unwrap_err().kind(),
+            io::ErrorKind::InvalidData
+        );
     }
 
     #[test]

@@ -10,7 +10,7 @@ Stable release authority is one signed tag:
 virtual-clients-vMAJOR.MINOR.PATCH
 ```
 
-The tag must point at the exact `Experimental` commit to release. That tag is the only release trigger for Virtual Clients. Release source, installer version, Rust package version, and future Tauri version must be identical.
+The tag must point at the exact `Experimental` commit to release. That tag is the only release trigger for Virtual Clients. Release source, installer version, and Rust package version must be identical.
 
 ## Update policy
 
@@ -29,7 +29,7 @@ all Virtual instances STOPPED
 + runtime schema compatible
 ```
 
-Runtime self-update remains disabled until the signed installer/Tauri layer is implemented and accepted.
+Runtime self-update remains disabled until an explicit reviewed apply implementation exists. Configuration alone must never enable it.
 
 ## Trusted release assets
 
@@ -92,7 +92,7 @@ Current backend distribution now includes:
 - staged-update metadata stored under Runtime data;
 - apply readiness requiring compatible runtime schema and all Virtual instances fully stopped.
 
-Runtime self-apply remains disabled until trusted installer signing, Authenticode verification, and apply orchestration are accepted.
+Runtime self-apply remains disabled. Enabling it requires a separate source change, review, and acceptance proof; changing release-channel JSON alone is rejected.
 
 ## Update staging flow
 
@@ -103,6 +103,7 @@ check-update
 → download installer from configured GitHub release
 → verify release-channel URL
 → verify SHA-256
+→ verify Authenticode status + pinned publisher thumbprint
 → atomic stage
 → UPDATE_STAGED
 ```
@@ -125,3 +126,16 @@ detect Native
 ```
 
 If Native Minecraft changed independently, the application remains healthy but Virtual boot is blocked until a matching Base is prepared, registered, and the affected Virtual instances are reprovisioned.
+
+
+## Fail-closed update readiness
+
+Apply readiness is never inferred from missing provider state.
+
+```text
+provider unavailable
+→ Virtual power state unknown
+→ apply readiness = false
+```
+
+A staged path is surfaced only while the staged installer file still exists. Missing staged files are not presented as usable update state.
