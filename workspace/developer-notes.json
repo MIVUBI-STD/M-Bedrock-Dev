@@ -69,6 +69,63 @@
         "finding": "AntiCheatManager subscribes to playerGameModeChange/playerSpawn, but main.js creates ArenaService, SetupManager, WorldManager, EventCommandManager, HologramManager and WelcomeManager only."
       },
       "severity": null
+    },
+    {
+      "id": "DEV-GNT-CHANGELOG-VERSION",
+      "projectId": "the-gauntlet",
+      "type": "DEV_NOTE",
+      "title": "Gauntlet Changelog Still Identifies v1.0.1 as Current",
+      "problem": "The selected current world is The Gauntlet v1.0.2 and both behavior/resource pack manifests identify version 1.0.2, while the Drive changelog still states v1.0.1 is the current version.",
+      "action": "Update the changelog/version documentation to identify v1.0.2 as the current release and preserve the older entries as history.",
+      "evidence": {
+        "currentWorld": "The Gauntlet v1.0.2.mcworld",
+        "artifactFingerprint": "sha256:d53363c5e9e909e6c5c1e9ffde37354b2c2444c8ed31708d93759a955acced95",
+        "manifestVersion": "1.0.2",
+        "changelogCurrentVersion": "1.0.1"
+      },
+      "severity": null
+    },
+    {
+      "id": "DEV-GNT-WORLD-BASELINE",
+      "projectId": "the-gauntlet",
+      "type": "DEV_NOTE",
+      "title": "Explicitly Own the Gauntlet World Gamerule Baseline",
+      "problem": "The production world setup explicitly normalizes only a limited gamerule set. The map has scripted combat, building/breaking and custom recovery, so leaving relevant world-interaction rules implicit increases the chance that imported/world-edited state changes gameplay unexpectedly.",
+      "action": "Define one canonical Gauntlet world-baseline owner and explicitly review/set every gameplay-relevant gamerule required for deterministic operation, including mob griefing, mob/entity/tile drops, fire tick and projectile block breaking where compatible with authored mechanics. Re-verify the baseline at safe lifecycle boundaries such as world bootstrap/session start rather than relying on prior world state. Keep doImmediateRespawn only after the Level 6 recovery race is fixed and verified.",
+      "evidence": {
+        "configuredRules": [
+          "keepInventory",
+          "doDayLightCycle",
+          "doMobSpawning",
+          "doWeatherCycle",
+          "showCoordinates",
+          "showTags",
+          "tntExplodes",
+          "doImmediateRespawn"
+        ],
+        "relatedRuntimeFinding": "Level 6 lethal Dropper failure can enter native immediate-respawn and custom recovery concurrently."
+      },
+      "severity": null
+    },
+    {
+      "id": "DEV-GNT-DEV-EVENT-AUTHORITY",
+      "projectId": "the-gauntlet",
+      "type": "DEV_NOTE",
+      "title": "Clarify Operator Versus Developer Authority for Gauntlet Script Events",
+      "problem": "Several developer script-event handlers rely on command/operator access but do not consistently re-check the Gauntlet internal developer permission before mutating progression or arena state.",
+      "action": "Define whether Roommaster/operator authority is intentionally equivalent to Gauntlet Developer. If not, route all developer script-event mutations through the existing internal developer-permission owner. Do not change behavior until that authority decision is explicit.",
+      "evidence": {
+        "internalPermissionOwner": "isPlayerDeveloper()",
+        "examples": [
+          "gauntlet:skip_level",
+          "gauntlet:retry_level",
+          "gauntlet:start_level",
+          "gauntlet:active_game_time",
+          "arena-party:reset",
+          "arena-party:dev_skip_countdown"
+        ]
+      },
+      "severity": null
     }
   ],
   "admissionRule": "DEV_NOTE requires concrete evidence, clear developer value, an actionable correction, and must not be speculative."
