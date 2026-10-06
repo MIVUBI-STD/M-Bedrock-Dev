@@ -5,7 +5,7 @@
  * Use ../map-audit-pipeline.ts. Direct inspection exports exist for focused
  * engine development and diagnostics only.
  */
-export * from "./chunk-lifecycle-analysis.js";
+export * from "./chunk-lifecycle-analysis.js";\nexport * from "./cinematic-control-analysis.js";
 export * from "./chunk-lifecycle-diagnostics.js";
 export * from "./chunk-readiness-runtime-classification.js";
 export * from "./combat-contract-analysis.js";
