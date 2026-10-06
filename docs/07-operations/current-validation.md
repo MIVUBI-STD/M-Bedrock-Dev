@@ -1,3 +1,35 @@
+## Virtual Clients desktop orchestration contradiction sweep (2026-10-07)
+
+REMOTE_GITHUB cleanup after Window Layout/Screen Overlay implementation:
+- Removed obsolete public `window_arrange` and `window_clear_overlay` mutation
+  paths. UI and Tauri now expose one layout mutation path:
+  `window_apply_layout`; Overlay OFF is handled by that same operation.
+- Removed the unused persisted-reset API; Reset in the dialog is draft-only and
+  Apply remains the single persistence point.
+- Added structural regression coverage so legacy layout mutation commands cannot
+  silently return.
+- Added explicit Implementation Map owners for Window Layout geometry/HWND
+  adapter, Screen Overlay lifecycle and DPI initialization.
+- Added canonical Window Layout acceptance covering Grid/Focus/Columns,
+  multi-display fallback, overlay focus/click-through, Identify, missing clients,
+  app-exit cleanup and mixed DPI.
+- Fixed a cross-platform source contradiction: the non-Windows stub now matches
+  the atomic command's `arrange_with_slots` internal API.
+- Removed raw HWND values from the global overlay text registry and serialized
+  first-time overlay-thread startup to reduce Send/Sync and double-start risks.
+- Virtual window discovery now requires both Virtual-01/02/03 title identity and
+  a VMware-like host process; Native requires Minecraft/Education-like title +
+  process. Ambiguous candidates remain missing rather than guessed.
+- Added IPC-side Screen Overlay validation for opacity, known client IDs and the
+  32-character label bound instead of trusting localStorage/UI validation alone.
+
+Proof ceiling remains REMOTE_GITHUB source/static review. No CI/local build was
+run. Desktop dependency resolution remains unlocked under the repository's
+existing policy; do not describe the new windows-sys surface as compiled or
+fully pinned until the canonical checkpoint proves it.
+
+---
+
 ## Window Layout remote hardening follow-up (2026-10-07)
 
 Additional source hardening:
