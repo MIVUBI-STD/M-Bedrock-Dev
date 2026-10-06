@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  deriveScriptProgressionActiveCallEvidence,
   deriveScriptProgressionActiveEventEvidence,
 } from "../../../src/domains/progression/progression-counter-evidence.js";
 
@@ -32,4 +33,26 @@ describe("progression active event evidence", () => {
       }),
     ]);
   });
+  it("captures helper calls made under a direct active state guard", () => {
+    const result =
+      deriveScriptProgressionActiveCallEvidence(
+        [
+          "function tick(entity, waveState) {",
+          "  if (waveState === 'active') {",
+          "    maybeDespawn(entity);",
+          "  }",
+          "}",
+          "function maybeDespawn(entity) {}",
+        ].join("\n"),
+        source,
+      );
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        callerRegion: "function:tick",
+        targetName: "maybeDespawn",
+      }),
+    ]);
+  });
+
 });

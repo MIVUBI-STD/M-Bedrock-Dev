@@ -45,6 +45,12 @@ export interface ScriptProgressionActiveEventEvidence {
   readonly source: SourceRef;
 }
 
+export interface ScriptProgressionActiveCallEvidence {
+  readonly callerRegion: string;
+  readonly targetName: string;
+  readonly source: SourceRef;
+}
+
 const COUNTER_NAME =
   /(?:wave|enemy|enemies|mob|mobs|remaining|alive|objective|progress|count)/i;
 
@@ -697,6 +703,94 @@ export function deriveScriptProgressionCounterEvidence(
         b.counterId,
       ) ||
       a.kind.localeCompare(b.kind)
+    );
+}
+
+export function deriveScriptProgressionActiveCallEvidence(
+  text: string,
+  source: SourceRef,
+): ScriptProgressionActiveCallEvidence[] {
+  const file = ts.createSourceFile(
+    source.relativePath,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    scriptKind(source.relativePath),
+  );
+  const output:
+    ScriptProgressionActiveCallEvidence[] = [];
+
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isCallExpression(node) &&
+      isInsideActiveGuard(node, file)
+    ) {
+      let targetName:
+        string | undefined;
+      if (
+        ts.isIdentifier(
+          node.expression,
+        )
+      ) {
+        targetName =
+          node.expression.text;
+      } else if (
+        ts.isPropertyAccessExpression(
+          node.expression,
+        ) &&
+        node.expression.expression.kind ===
+          ts.SyntaxKind.ThisKeyword
+      ) {
+        targetName =
+          node.expression.name.text;
+      }
+
+      if (
+        targetName &&
+        !/^(?:triggerEvent|runCommand|runCommandAsync|spawnEntity)$/i.test(
+          targetName,
+        )
+      ) {
+        output.push({
+          callerRegion:
+            executionRegion(
+              node,
+              file,
+            ),
+          targetName,
+          source:
+            nodeSource(
+              file,
+              node,
+              source,
+            ),
+        });
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(file);
+
+  return output
+    .filter((item, index, all) =>
+      all.findIndex((candidate) =>
+        candidate.callerRegion ===
+          item.callerRegion &&
+        candidate.targetName ===
+          item.targetName &&
+        candidate.source.range?.lineStart ===
+          item.source.range?.lineStart
+      ) === index
+    )
+    .sort((a, b) =>
+      a.callerRegion.localeCompare(
+        b.callerRegion,
+      ) ||
+      a.targetName.localeCompare(
+        b.targetName,
+      )
     );
 }
 

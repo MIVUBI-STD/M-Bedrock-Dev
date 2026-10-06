@@ -11,6 +11,7 @@ import type {
   EntityEventExternalEvidence,
 } from "./entity-event-evidence.js";
 import type {
+  ScriptProgressionActiveCallEvidence,
   ScriptProgressionActiveEventEvidence,
 } from "../../../../analyzers/scripts/src/index.js";
 import type {
@@ -125,6 +126,7 @@ export interface ProgressionActorAccountingAnalysis {
   readonly terminalOnlyConditionalDespawnCounters: number;
   readonly inactiveConditionalDespawnCounters: number;
   readonly provenActiveInstantDespawnWithoutReconciliation: number;
+  readonly activeInterproceduralProofs: number;
   readonly reconciledFromMatchedActorLifecycle: number;
   readonly unresolvedCounters: number;
 }
@@ -1161,6 +1163,75 @@ function lifecycleScopeForRegion(
   );
 }
 
+function activeReachableRegions(
+  scripts: readonly NormalizedScript[],
+  crossFileCalls:
+    readonly CrossFileCallEdge[],
+  activeCalls:
+    readonly ScriptProgressionActiveCallEvidence[],
+  graph:
+    ReadonlyMap<
+      string,
+      ReadonlySet<string>
+    >,
+): Set<string> {
+  const roots = new Set<string>();
+
+  for (const active of activeCalls) {
+    const path =
+      active.source.relativePath;
+    const script =
+      scripts.find(
+        (item) =>
+          item.parsed.source.relativePath ===
+          path,
+      );
+
+    const localTargets =
+      script?.parsed.localFunctionCalls
+        .filter((call) =>
+          call.callerRegion ===
+            active.callerRegion &&
+          call.targetName ===
+            active.targetName,
+        ) ?? [];
+    for (const call of localTargets) {
+      roots.add(
+        localNode(
+          path,
+          call.targetRegion,
+        ),
+      );
+    }
+
+    for (const call of crossFileCalls) {
+      if (
+        call.status !== "resolved" ||
+        call.targetModule === undefined ||
+        call.callerModule !== path ||
+        call.callerRegion !==
+          active.callerRegion ||
+        call.localName !==
+          active.targetName
+      ) {
+        continue;
+      }
+      roots.add(
+        localNode(
+          call.targetModule,
+          "function:" +
+            call.targetExport,
+        ),
+      );
+    }
+  }
+
+  return reachableFrom(
+    roots,
+    graph,
+  );
+}
+
 function conditionalDespawnReachabilityForActor(
   actorIdentifier: string,
   entities:
@@ -1623,6 +1694,8 @@ export function analyzeProgressionActorAccounting(
     readonly EntityEventExternalEvidence[] = [],
   activeEventEvidence:
     readonly ScriptProgressionActiveEventEvidence[] = [],
+  activeCallEvidence:
+    readonly ScriptProgressionActiveCallEvidence[] = [],
 ): ProgressionActorAccountingAnalysis {
   const scripts =
     inputs.map(normalizedInput);
@@ -1636,6 +1709,13 @@ export function analyzeProgressionActorAccounting(
     callGraph(
       scripts,
       crossFileCalls,
+    );
+  const activeReachable =
+    activeReachableRegions(
+      scripts,
+      crossFileCalls,
+      activeCallEvidence,
+      graph,
     );
   const lifecycleRoots =
     lifecycleRootsByKind(scripts);
@@ -2090,16 +2170,28 @@ export function analyzeProgressionActorAccounting(
                     kinds.get(item.event) ===
                       "mixed"
                   ) &&
-                  activeEventEvidence.some(
-                    (active) =>
-                      active.event ===
-                        item.event &&
-                      active.source
-                        .relativePath ===
-                        item.source
-                          .relativePath &&
-                      active.executionRegion ===
-                        item.executionRegion,
+                  (
+                    activeEventEvidence.some(
+                      (active) =>
+                        active.event ===
+                          item.event &&
+                        active.source
+                          .relativePath ===
+                          item.source
+                            .relativePath &&
+                        active.executionRegion ===
+                          item.executionRegion,
+                    ) ||
+                    (
+                      item.executionRegion !==
+                        undefined &&
+                      activeReachable.has(
+                        localNode(
+                          item.source.relativePath,
+                          item.executionRegion,
+                        ),
+                      )
+                    )
                   ),
               );
             })
@@ -2392,6 +2484,8 @@ export function analyzeProgressionActorAccounting(
           item.status ===
           "active-instant-despawn-without-reconciliation",
       ).length,
+    activeInterproceduralProofs:
+      activeReachable.size,
     reconciledFromMatchedActorLifecycle:
       counters.filter(
         (item) =>

@@ -63,6 +63,7 @@ import {
   deriveEntityEventExternalEvidence,
 } from "./entity-event-evidence.js";
 import {
+  deriveScriptProgressionActiveCallEvidence,
   deriveScriptProgressionActiveEventEvidence,
 } from "../../../../analyzers/scripts/src/index.js";
 
@@ -294,6 +295,15 @@ export function analyzeInspectionRuntimeState(
             item.node.source,
           )
     );
+  const progressionActiveCallEvidence =
+    input.parsedScripts.flatMap((item) =>
+      item.text === undefined
+        ? []
+        : deriveScriptProgressionActiveCallEvidence(
+            item.text,
+            item.node.source,
+          )
+    );
 
   const arenaLifecycle =
     analyzeArenaLifecycleConvergence(
@@ -354,6 +364,7 @@ export function analyzeInspectionRuntimeState(
       arenaLifecycle,
       entityEventEvidence,
       progressionActiveEventEvidence,
+      progressionActiveCallEvidence,
     );
   const chunkLifecycle =
     analyzeChunkLifecycle(
