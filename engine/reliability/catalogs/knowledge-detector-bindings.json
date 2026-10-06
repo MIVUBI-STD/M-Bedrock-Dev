@@ -673,6 +673,17 @@
       ]
     },
     {
+      "knowledgeId": "effects.add-effect-updates-existing",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "event-policy.after-event-not-global-consistency-barrier",
       "consumer": "mutation-transaction-analysis",
       "analyzerPaths": [
@@ -1354,6 +1365,16 @@
       ]
     },
     {
+      "knowledgeId": "objective.death-event-can-drive-counts",
+      "consumer": "entity-population-disappearance-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/entity-population-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "permissions-policy.dev-access-explicit",
       "consumer": "player-capability-surface-analysis",
       "analyzerPaths": [
@@ -1490,6 +1511,17 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "physics.knockback-adds-velocity",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
       ]
     },
     {
