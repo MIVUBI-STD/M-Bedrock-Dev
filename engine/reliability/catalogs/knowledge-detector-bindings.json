@@ -164,6 +164,17 @@
       ]
     },
     {
+      "knowledgeId": "multiplayer-policy.countdown-generation-bound",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "permissions-policy.guard-must-be-active",
       "consumer": "capability-exposure",
       "analyzerPaths": [
@@ -254,6 +265,17 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "player-policy.connection-generation",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
       ]
     },
     {

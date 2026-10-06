@@ -461,4 +461,76 @@ describe("arena lifecycle convergence", () => {
       status: "protected",
     });
   });
+
+  it("accepts explicit connection-session generation revalidation before deferred mutation", () => {
+    const source = [
+      "let score = 0;",
+      "let sessionId = 7;",
+      "const capturedSessionId = sessionId;",
+      "system.run(() => {",
+      "  if (capturedSessionId !== sessionId) return;",
+      "  score++;",
+      "});",
+    ].join("\n");
+    const script = parseScriptFile(
+      "main",
+      source,
+      {
+        artifactId: "fixture",
+        relativePath:
+          "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeArenaLifecycleConvergence(
+        [script],
+      );
+
+    expect(
+      result.protectedDeferredMutations,
+    ).toBe(1);
+    expect(
+      result.deferredMutations[0]
+        ?.guardIdentifiers,
+    ).toEqual(
+      expect.arrayContaining([
+        "capturedSessionId",
+        "sessionId",
+      ]),
+    );
+  });
+
+  it("accepts explicit countdown generation revalidation before delayed start mutation", () => {
+    const source = [
+      "let started = false;",
+      "let countdownGeneration = 4;",
+      "const capturedGeneration = countdownGeneration;",
+      "system.runTimeout(() => {",
+      "  if (capturedGeneration !== countdownGeneration) return;",
+      "  started = true;",
+      "}, 20);",
+    ].join("\n");
+    const script = parseScriptFile(
+      "main",
+      source,
+      {
+        artifactId: "fixture",
+        relativePath:
+          "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeArenaLifecycleConvergence(
+        [script],
+      );
+
+    expect(
+      result.protectedDeferredMutations,
+    ).toBe(1);
+    expect(
+      result.unresolvedDeferredMutations,
+    ).toBe(0);
+  });
 });
