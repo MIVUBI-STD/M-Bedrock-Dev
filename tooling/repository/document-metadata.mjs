@@ -3,7 +3,6 @@ const RESOURCE_CLASSES = new Set([
   "KNOWLEDGE",
   "SOURCE",
   "RELIABILITY",
-  "WORKFLOW",
   "SCHEMA",
 ]);
 
@@ -11,7 +10,7 @@ const DOCUMENT_ROLES = new Set([
   "ROUTER",
   "WORKFLOW",
   "CONTRACT",
-  "REFERENCE",
+  "DOMAIN",
   "ARCHITECTURE",
   "GUIDE",
 ]);
@@ -29,7 +28,7 @@ const LIFECYCLE = new Set([
 ]);
 
 const ID_PATTERN =
-  /^(document|knowledge|source|reliability|workflow|schema)\.[a-z0-9]+(?:[.-][a-z0-9]+)*$/;
+  /^(document|knowledge|source|reliability|schema)\.[a-z0-9]+(?:[.-][a-z0-9]+)*$/;
 
 function parseLines(block) {
   const result = {};
