@@ -16,6 +16,7 @@ export type BackendCommand =
   | "actions"
   | "history"
   | "support-bundle"
+  | "check-update"
   | "register-base"
   | "provision"
   | "verify-identities"
