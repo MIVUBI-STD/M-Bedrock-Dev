@@ -141,3 +141,21 @@ changed file
 Avoid duplicate summaries, repeated stable graph/manifest payloads, unrelated rescans, and separate caches with different authorities.
 
 Efficiency is measured as cost to a correct accepted result, not minimum context at the expense of proof.
+
+## Catalog / Graph / Retrieval
+
+Repository knowledge access follows the same minimum-sufficient rule:
+
+```text
+Router
+→ Catalog identity
+→ Graph expansion
+→ structural + lexical ranking
+→ optional semantic ranking
+→ Section Retrieval when needed
+→ bounded Context
+```
+
+History remains opt-in. Planning and Workspace are current-state owners selected directly by Router, not default knowledge-search material.
+
+Large documents remain single canonical owners; Section Retrieval loads only the relevant heading/range instead of forcing file fragmentation or full-file context.
