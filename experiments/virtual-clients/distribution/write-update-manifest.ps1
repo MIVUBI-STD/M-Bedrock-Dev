@@ -32,11 +32,14 @@ if ($policy.schema -ne 1 -or $policy.channel -ne 'stable') {
   throw 'Virtual Clients release-channel policy is invalid.'
 }
 
+$expectedManifestEndpoint = "https://github.com/$($policy.repository)/releases/latest/download/$($policy.manifestAsset)"
+
 if (
   $policy.repository -ne 'MIVUBI-STD/M-Bedrock-Dev' -or
   $policy.releaseTagPrefix -ne 'virtual-clients-v' -or
   $policy.platform -ne 'windows-x86_64' -or
   $policy.manifestAsset -ne 'latest.json' -or
+  $policy.manifestEndpoint -ne $expectedManifestEndpoint -or
   $policy.checkMode -ne 'startup-once' -or
   $policy.applyGate -ne 'all-virtuals-stopped'
 ) {

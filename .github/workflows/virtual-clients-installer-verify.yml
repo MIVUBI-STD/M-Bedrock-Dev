@@ -32,6 +32,30 @@ jobs:
           rustup toolchain install 1.98.1 --profile minimal
           rustup default 1.98.1
 
+      - name: Validate trusted release workflow structure
+        shell: pwsh
+        run: |
+          $path = '.github/workflows/virtual-clients-trusted-release.yml'
+          $source = Get-Content -LiteralPath $path -Raw
+          $markers = @(
+            'name: Virtual Clients Trusted Release',
+            '- name: Validate release identity',
+            '- name: Smoke install signed installer',
+            '- name: Publish stable release'
+          )
+          foreach ($marker in $markers) {
+            $count = ([regex]::Matches($source, [regex]::Escape($marker))).Count
+            if ($count -ne 1) {
+              throw "$path must contain exactly one '$marker'; found $count."
+            }
+          }
+          if ($source.Contains('workflow_dispatch:')) {
+            throw "$path must use the signed tag as its only release trigger."
+          }
+          if (!$source.Contains('virtual-clients-v*')) {
+            throw "$path stable tag trigger is missing."
+          }
+
       - name: Validate PowerShell distribution scripts
         shell: pwsh
         run: |
