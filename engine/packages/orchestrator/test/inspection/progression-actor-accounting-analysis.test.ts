@@ -2063,6 +2063,8 @@ describe(
           "unresolved",
         deferredSpawnGenerationStatus:
           "unresolved",
+        deferredSpawnQuantityStatus:
+          "unresolved",
       });
     });
 
@@ -2107,6 +2109,12 @@ describe(
           "covered-before-defer",
         deferredSpawnGenerationStatus:
           "generation-guarded",
+        deferredSpawnQuantityStatus:
+          "matched",
+        actorIdentityStatus: "matched",
+        spawnQuantityStatus: "matched",
+        status:
+          "reconciled-from-matched-actor-lifecycle",
       });
     });
 

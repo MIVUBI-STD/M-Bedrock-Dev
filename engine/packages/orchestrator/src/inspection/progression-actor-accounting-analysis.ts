@@ -124,6 +124,11 @@ export interface ProgressionCounterAssessment {
     | "generation-guarded"
     | "unresolved"
     | "none";
+  readonly deferredSpawnQuantityStatus:
+    | "matched"
+    | "mismatch"
+    | "unresolved"
+    | "none";
   readonly status: ProgressionCounterStatus;
   readonly reasons: readonly string[];
 }
@@ -732,6 +737,11 @@ interface DeferredSpawnAccountingAssessment {
     | "generation-guarded"
     | "unresolved"
     | "none";
+  readonly quantityStatus:
+    | "matched"
+    | "mismatch"
+    | "unresolved"
+    | "none";
 }
 
 function deferredSpawnAccountingAssessment(
@@ -747,6 +757,10 @@ function deferredSpawnAccountingAssessment(
     actorIdentifier: string;
     reservationCovered: boolean;
     generationGuarded: boolean;
+    quantityStatus:
+      | "matched"
+      | "mismatch"
+      | "unresolved";
   }[] = [];
 
   for (const script of scripts) {
@@ -776,8 +790,8 @@ function deferredSpawnAccountingAssessment(
       const schedulerLine =
         deferred.source.range?.lineStart;
 
-      const preReserved =
-        growth.some((item) =>
+      const preReservationItems =
+        growth.filter((item) =>
           item.scriptPath === path &&
           item.executionRegion ===
             deferred.callerRegion &&
@@ -785,36 +799,61 @@ function deferredSpawnAccountingAssessment(
           schedulerLine !== undefined &&
           item.sourceLine < schedulerLine
         );
-
-      for (const spawn of spawns) {
-        if (
-          !reachable.has(
+      const preReserved =
+        preReservationItems.length > 0;
+      const reachableSpawns =
+        spawns.filter((spawn) =>
+          reachable.has(
             localNode(
               spawn.scriptPath,
               spawn.executionRegion,
             ),
           )
-        ) {
-          continue;
-        }
+        );
+      const materializationGrowth =
+        growth.some((item) =>
+          reachable.has(
+            localNode(
+              item.scriptPath,
+              item.executionRegion,
+            ),
+          )
+        );
 
-        const materializationGrowth =
-          growth.some((item) =>
-            reachable.has(
-              localNode(
-                item.scriptPath,
-                item.executionRegion,
-              ),
+      if (
+        !preReserved &&
+        !materializationGrowth
+      ) {
+        continue;
+      }
+
+      const reservationAmounts =
+        preReservationItems.map(
+          (item) => item.amount,
+        );
+      const quantityStatus =
+        !preReserved
+          ? "unresolved" as const
+          : reservationAmounts.some(
+              (amount) =>
+                amount === undefined,
+            ) ||
+            reachableSpawns.some(
+              (spawn) =>
+                spawn.executionShape !==
+                "single",
             )
-          );
+            ? "unresolved" as const
+            : reservationAmounts.reduce(
+                (sum, amount) =>
+                  sum + (amount ?? 0),
+                0,
+              ) ===
+              reachableSpawns.length
+              ? "matched" as const
+              : "mismatch" as const;
 
-        if (
-          !preReserved &&
-          !materializationGrowth
-        ) {
-          continue;
-        }
-
+      for (const spawn of reachableSpawns) {
         relevant.push({
           actorIdentifier:
             spawn.actorIdentifier,
@@ -823,6 +862,7 @@ function deferredSpawnAccountingAssessment(
           generationGuarded:
             deferred.guardEvidence ===
             "explicit-generation-check",
+          quantityStatus,
         });
       }
     }
@@ -834,6 +874,7 @@ function deferredSpawnAccountingAssessment(
       callbacks: 0,
       reservationStatus: "none",
       generationStatus: "none",
+      quantityStatus: "none",
     };
   }
 
@@ -858,6 +899,16 @@ function deferredSpawnAccountingAssessment(
       )
         ? "generation-guarded"
         : "unresolved",
+    quantityStatus:
+      relevant.some((item) =>
+        item.quantityStatus === "mismatch"
+      )
+        ? "mismatch"
+        : relevant.every((item) =>
+            item.quantityStatus === "matched"
+          )
+          ? "matched"
+          : "unresolved",
   };
 }
 
@@ -3088,17 +3139,42 @@ export function analyzeProgressionActorAccounting(
               item.status === "mismatch",
           ).length;
 
+        const deferredSpawnAccounting =
+          actorAccountingCandidate &&
+          completionChecks > 0
+            ? deferredSpawnAccountingAssessment(
+                scripts,
+                growth,
+                spawns,
+                graph,
+              )
+            : {
+                actorIdentifiers: [],
+                callbacks: 0,
+                reservationStatus:
+                  "none" as const,
+                generationStatus:
+                  "none" as const,
+                quantityStatus:
+                  "none" as const,
+              };
         const spawnLinkedActorIdentifiers =
           [
-            ...new Set(
-              growth.flatMap((item) =>
+            ...new Set([
+              ...growth.flatMap((item) =>
                 actorIdsForGrowth(
                   item,
                   spawns,
                   graph,
                 )
               ),
-            ),
+              ...(deferredSpawnAccounting
+                    .reservationStatus ===
+                    "covered-before-defer"
+                ? deferredSpawnAccounting
+                    .actorIdentifiers
+                : []),
+            ]),
           ].sort();
         const deathLifecycleActorIdentifiers =
           [
@@ -3470,23 +3546,7 @@ export function analyzeProgressionActorAccounting(
           matchedActorIdentifiers.length > 0 &&
           linkedDecrements > 0;
 
-        const deferredSpawnAccounting =
-          actorAccountingCandidate &&
-          completionChecks > 0
-            ? deferredSpawnAccountingAssessment(
-                scripts,
-                growth,
-                spawns,
-                graph,
-              )
-            : {
-                actorIdentifiers: [],
-                callbacks: 0,
-                reservationStatus:
-                  "none" as const,
-                generationStatus:
-                  "none" as const,
-              };
+
         const deferredSpawnAccountingUnproven =
           actorAccountingCandidate &&
           completionChecks > 0 &&
@@ -3508,14 +3568,36 @@ export function analyzeProgressionActorAccounting(
               : identityMismatch
                 ? "mismatch" as const
                 : "unresolved" as const;
+        const deferredQuantityMismatch =
+          deferredSpawnAccounting
+            .quantityStatus ===
+            "mismatch";
+        const directQuantityMatched =
+          quantityComparableGrowths > 0 &&
+          quantityMatchedGrowths ===
+            quantityComparableGrowths;
+        const deferredQuantityMatched =
+          deferredSpawnAccounting.callbacks > 0 &&
+          deferredSpawnAccounting
+            .quantityStatus === "matched";
         const spawnQuantityStatus =
           !actorAccountingCandidate
             ? "not-applicable" as const
-            : quantityMismatchGrowths > 0
+            : quantityMismatchGrowths > 0 ||
+                deferredQuantityMismatch
               ? "mismatch" as const
-              : quantityComparableGrowths > 0 &&
-                  quantityMatchedGrowths ===
-                    quantityComparableGrowths
+              : (
+                    quantityComparableGrowths === 0 ||
+                    directQuantityMatched
+                  ) &&
+                  (
+                    deferredSpawnAccounting.callbacks === 0 ||
+                    deferredQuantityMatched
+                  ) &&
+                  (
+                    quantityComparableGrowths > 0 ||
+                    deferredSpawnAccounting.callbacks > 0
+                  )
                 ? "matched" as const
                 : "unresolved" as const;
         const quantityMismatch =
@@ -3595,6 +3677,8 @@ export function analyzeProgressionActorAccounting(
             deferredSpawnAccounting.reservationStatus,
           deferredSpawnGenerationStatus:
             deferredSpawnAccounting.generationStatus,
+          deferredSpawnQuantityStatus:
+            deferredSpawnAccounting.quantityStatus,
           status:
             missingReconciliation
               ? "missing-reconciliation" as const

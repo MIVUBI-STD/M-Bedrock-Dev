@@ -632,6 +632,11 @@ export interface GameplayWorldModel {
           | "generation-guarded"
           | "unresolved"
           | "none";
+        deferredSpawnQuantityStatus:
+          | "matched"
+          | "mismatch"
+          | "unresolved"
+          | "none";
         spawnLinkedActorIdentifiers:
           readonly string[];
         lifecycleActorIdentifiers:
@@ -2512,6 +2517,8 @@ export function deriveGameplayWorldModel(
                 item.deferredSpawnReservationStatus,
               deferredSpawnGenerationStatus:
                 item.deferredSpawnGenerationStatus,
+              deferredSpawnQuantityStatus:
+                item.deferredSpawnQuantityStatus,
               spawnLinkedActorIdentifiers:
                 [...item.spawnLinkedActorIdentifiers],
               lifecycleActorIdentifiers:
