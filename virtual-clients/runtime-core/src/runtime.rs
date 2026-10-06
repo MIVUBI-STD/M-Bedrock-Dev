@@ -1664,6 +1664,12 @@ impl VirtualClients {
                 format!("{} is running, but Minecraft Education could not be opened: {error}", client.as_str()),
             ));
         }
+        if let Err(error) = provider.open(client) {
+            return Err(io::Error::new(
+                error.kind(),
+                format!("{} and Minecraft Education are running, but the client window could not be opened: {error}", client.as_str()),
+            ));
+        }
         let working_sets = provider.host_working_sets_mb()?;
         let native_profile = native_minecraft_profile();
         client_status(
@@ -1732,6 +1738,12 @@ impl VirtualClients {
             return Err(io::Error::new(
                 error.kind(),
                 format!("{} is running, but Minecraft Education could not be opened: {error}", client.as_str()),
+            ));
+        }
+        if let Err(error) = provider.open(client) {
+            return Err(io::Error::new(
+                error.kind(),
+                format!("{} and Minecraft Education are running, but the client window could not be opened: {error}", client.as_str()),
             ));
         }
         let working_sets = provider.host_working_sets_mb()?;
