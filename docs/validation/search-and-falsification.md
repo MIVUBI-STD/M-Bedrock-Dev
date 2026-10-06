@@ -2,7 +2,7 @@
 id: document.validation.search-and-falsification
 class: DOCUMENT
 domain: validation
-role: REFERENCE
+role: GUIDE
 authority: CANONICAL
 lifecycle: ACTIVE
 ---
