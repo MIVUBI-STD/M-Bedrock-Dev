@@ -187,9 +187,25 @@ export interface UpdateCheck {
   reason: string | null;
 }
 
+export type WindowLayout = "GRID" | "FOCUS" | "COLUMNS";
+
+export interface WindowLayoutRequest {
+  layout: WindowLayout;
+  displayIndex: number;
+  mainWindow: ClientId | null;
+}
+
+export interface DisplayInfo {
+  index: number;
+  primary: boolean;
+  width: number;
+  height: number;
+}
+
 export interface WindowArrangementResult {
-  schema: 1;
-  layout: "SINGLE" | "SIDE_BY_SIDE" | "GRID_2X2";
+  schema: 2;
+  layout: WindowLayout;
+  displayIndex: number;
   arranged: ClientId[];
   missing: ClientId[];
 }
