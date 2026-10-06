@@ -1,9 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::{
-    fs, io,
-    path::PathBuf,
-    process::Command,
-};
+use std::{fs, io, path::PathBuf, process::Command};
 
 use crate::paths::{base_profile_path_for_version, base_vmx_path_for_version};
 
