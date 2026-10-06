@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 use m_bedrock_virtual_clients_core::{
     guest_agent_minecraft_profile, GuestStatus, GUEST_AGENT_PORT, GUEST_STATUS_SCHEMA,
 };

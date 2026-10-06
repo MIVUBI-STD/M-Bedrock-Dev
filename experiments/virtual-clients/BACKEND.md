@@ -204,3 +204,28 @@ Failure:
 ```
 
 Internal provider, path, schema-storage, guest-wire and persistence modules are not public API. Frontend code must consume the exported root contract only.
+
+
+## Backend v1 freeze
+
+Public contract schema `1` is frozen before frontend work.
+
+Allowed before real-machine acceptance:
+
+- correctness fixes backed by a failing test or concrete audit finding;
+- security hardening;
+- deterministic provider simulation;
+- persistence/recovery fixes;
+- verifier and documentation corrections.
+
+Not allowed without new evidence:
+
+- new runtime state owners;
+- alternate lifecycle entrypoints;
+- duplicate terminology/aliases;
+- speculative provider features;
+- automatic account handling;
+- frontend-owned policy;
+- compatibility shims for contracts that have no real consumer yet.
+
+A public-contract breaking change must increment `PUBLIC_CONTRACT_SCHEMA`. A runtime-data format breaking change must increment `CURRENT_RUNTIME_SCHEMA`. These are separate version domains.

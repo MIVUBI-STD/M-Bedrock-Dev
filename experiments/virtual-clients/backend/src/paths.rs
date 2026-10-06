@@ -1,7 +1,4 @@
-use std::{
-    env, io,
-    path::{Path, PathBuf},
-};
+use std::{env, io, path::PathBuf};
 
 pub fn runtime_root() -> io::Result<PathBuf> {
     #[cfg(target_os = "windows")]
@@ -92,9 +89,6 @@ pub fn update_staging_root() -> io::Result<PathBuf> {
     Ok(runtime_root()?.join("updates"))
 }
 
-pub fn lock_path(root: &Path) -> PathBuf {
-    root.join(".operation.lock")
-}
 
 #[cfg(test)]
 mod tests {

@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 use m_bedrock_virtual_clients_core::{
     ClientId, DestructiveConfirmation, ErrorReport, SuccessReport, VirtualClients,
 };
