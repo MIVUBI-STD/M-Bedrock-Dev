@@ -304,6 +304,18 @@ impl RuntimeLab {
             }
 
             provider.start(client)?;
+
+            if identity_state(provider.as_ref(), client) == IdentityState::Duplicate {
+                let _ = provider.stop(client);
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    format!(
+                        "{} received duplicate VM identity after start and was stopped",
+                        client.as_str()
+                    ),
+                ));
+            }
+
             result.push(client_status(provider.as_ref(), client)?);
 
             if index + 1 < count {
