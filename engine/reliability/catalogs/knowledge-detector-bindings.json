@@ -857,6 +857,17 @@
       ]
     },
     {
+      "knowledgeId": "command.coordinate.relative-origin",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/selectors.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "effects-policy.baseline-contract",
       "consumer": "arena-cleanup-surface-analysis",
       "analyzerPaths": [
@@ -927,6 +938,71 @@
       "proofPaths": [
         "engine/analyzers/entities/test/entity.test.ts",
         "engine/packages/orchestrator/test/inspection/entity-knowledge-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.ai-priority-lower-number-higher",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.component-groups-event-driven",
+      "consumer": "entity-state-graph",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/parse.ts",
+        "engine/analyzers/entities/src/state-graph.ts",
+        "engine/packages/orchestrator/src/inspection/entity-knowledge-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/entities/test/entity.test.ts",
+        "engine/packages/orchestrator/test/inspection/entity-knowledge-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.events-change-active-components",
+      "consumer": "entity-state-graph",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/parse.ts",
+        "engine/analyzers/entities/src/state-graph.ts",
+        "engine/packages/orchestrator/src/inspection/entity-knowledge-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/entities/test/entity.test.ts",
+        "engine/packages/orchestrator/test/inspection/entity-knowledge-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.navigation-generic-capabilities",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.navigation-required-for-pathing",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
       ]
     },
     {
@@ -1923,6 +1999,58 @@
       ]
     },
     {
+      "knowledgeId": "permissions.command-permission-level-runtime",
+      "consumer": "player-capability-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "permissions.gamemode-mutates-player",
+      "consumer": "player-capability-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "permissions.input-permissions-independent",
+      "consumer": "interaction-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "permissions.operator-needed-for-commands",
+      "consumer": "player-capability-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "permissions.relation-gamemode-not-input-authority",
+      "consumer": "interaction-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "permissions.role-surfaces-independent",
       "consumer": "player-capability-surface-analysis",
       "analyzerPaths": [
@@ -2490,6 +2618,17 @@
       ]
     },
     {
+      "knowledgeId": "selector.base-semantics",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/selectors.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "spatial-policy.arena-volume-contract",
       "consumer": "spatial-authority-analysis",
       "analyzerPaths": [
@@ -2872,6 +3011,66 @@
     },
     {
       "knowledgeId": "worldstate-policy.prefer-local-emulation",
+      "consumer": "world-rule-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/world-rule-authority-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/world-rule-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "worldstate.domobspawning-global",
+      "consumer": "world-rule-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/world-rule-authority-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/world-rule-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "worldstate.gamerules-global-world-settings",
+      "consumer": "world-rule-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/world-rule-authority-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/world-rule-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "worldstate.keepinventory-global",
+      "consumer": "world-rule-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/world-rule-authority-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/world-rule-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "worldstate.pvp-global",
+      "consumer": "world-rule-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/world-rule-authority-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/world-rule-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "worldstate.relation-global-pvp-requires-local-filter",
+      "consumer": "world-rule-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/world-rule-authority-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/world-rule-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "worldstate.relation-global-setting-affects-all-arenas",
       "consumer": "world-rule-authority-analysis",
       "analyzerPaths": [
         "engine/packages/orchestrator/src/inspection/world-rule-authority-analysis.ts"
