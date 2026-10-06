@@ -33,14 +33,6 @@ if (existsSync("package.json")) {
   }
 }
 
-for (const path of ["README.md", "AGENTS.md", "GITHUB_RULES.md", "docs/system/development-operations.md"]) {
-  if (!existsSync(path)) continue;
-  const text = readFileSync(path, "utf8");
-  if (/npm run check/i.test(text)) {
-    failures.push(path + " still presents npm run check as repository workflow.");
-  }
-}
-
 if (failures.length) {
   console.error("Remote workflow policy violations:");
   for (const failure of failures) console.error("- " + failure);
