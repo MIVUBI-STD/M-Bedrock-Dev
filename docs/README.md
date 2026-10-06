@@ -127,6 +127,14 @@ For a developer with a checkout, the same architecture is available through one 
 npm run retrieve:repository -- "inventory reconnect" --domain analysis
 ```
 
+Open one exact resource by stable ID and inspect its typed incoming/outgoing relationships plus document sections:
+
+```text
+npm run retrieve:repository -- --id document.analysis.player-lifecycle
+```
+
+This is the repository-native equivalent of backlinks: it operates on typed Graph edges rather than untyped note references.
+
 Broad cross-domain discovery must be explicit:
 
 ```text
