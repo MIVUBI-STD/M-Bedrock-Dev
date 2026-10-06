@@ -4,3 +4,4 @@ pub mod window_arrangement;
 
 pub mod screen_overlay;
 pub mod dpi;
+pub mod native_minecraft;
