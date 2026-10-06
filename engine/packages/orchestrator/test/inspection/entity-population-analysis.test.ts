@@ -199,3 +199,133 @@ describe("population path and disappearance classification", () => {
     ).toBe("registry-isolated");
   });
 });
+
+
+describe("spawn intent and replacement lineage", () => {
+  it("accepts only a structurally complete spawn intent token", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "const intent = {",
+        "  arenaGeneration: 2,",
+        "  waveGeneration: 4,",
+        "  spawnOperationId: 'wave-4-a',",
+        "  expectedEntityType: 'demo:enemy',",
+        "  expectedCount: 3,",
+        "};",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeEntityPopulationSources(
+        [],
+        [script],
+      );
+
+    expect(
+      result.completeSpawnIntents,
+    ).toBe(1);
+    expect(
+      result.spawnIntents[0]
+        ?.missingFields,
+    ).toEqual([]);
+  });
+
+  it("keeps partial intent-like objects unresolved", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "const intent = {",
+        "  arenaGeneration: 2,",
+        "  expectedCount: 3,",
+        "};",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeEntityPopulationSources(
+        [],
+        [script],
+      );
+
+    expect(
+      result.incompleteSpawnIntents,
+    ).toBe(1);
+    expect(
+      result.spawnIntents[0]
+        ?.missingFields,
+    ).toContain(
+      "spawnOperationId",
+    );
+  });
+
+  it("keeps autonomous replacement lineage unresolved without explicit inheritance metadata", () => {
+    const entity =
+      parseEntityDefinition({
+        "minecraft:entity": {
+          description: {
+            identifier:
+              "demo:parent",
+          },
+          components: {
+            "minecraft:spawn_on_death": {
+              entity_type:
+                "demo:child",
+            },
+          },
+        },
+      }, source);
+
+    expect(
+      analyzeEntityPopulationSources([
+        entity,
+      ]).replacementLineage,
+    ).toBe(
+      "declared-but-inheritance-unproven",
+    );
+  });
+
+  it("accepts explicit parent-generation-role inheritance evidence", () => {
+    const entity =
+      parseEntityDefinition({
+        "minecraft:entity": {
+          description: {
+            identifier:
+              "demo:parent",
+          },
+          components: {
+            "minecraft:spawn_on_death": {},
+          },
+        },
+      }, source);
+    const script = parseScriptFile(
+      "main",
+      [
+        "const lineage = {",
+        "  parentEntityId,",
+        "  arenaGeneration,",
+        "  objectiveRole,",
+        "};",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    expect(
+      analyzeEntityPopulationSources(
+        [entity],
+        [script],
+      ).replacementLineage,
+    ).toBe("explicit");
+  });
+});

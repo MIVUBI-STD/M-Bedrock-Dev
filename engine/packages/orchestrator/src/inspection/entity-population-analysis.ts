@@ -1,3 +1,4 @@
+import ts from "typescript";
 import type {
   ParsedEntityDefinition,
 } from "../../../../analyzers/entities/src/index.js";
@@ -46,6 +47,17 @@ export interface EntityDisappearanceClassification {
     | "absent";
 }
 
+export interface SpawnIntentAssessment {
+  readonly scriptId: string;
+  readonly objectName: string;
+  readonly fields: readonly string[];
+  readonly status:
+    | "complete"
+    | "incomplete";
+  readonly missingFields:
+    readonly string[];
+}
+
 export interface EntityPopulationSourceAnalysis {
   readonly autonomousSpawnSources:
     readonly AutonomousEntitySpawnSource[];
@@ -59,6 +71,16 @@ export interface EntityPopulationSourceAnalysis {
     | "registry-isolated"
     | "natural-spawn-disabled"
     | "unresolved";
+  readonly spawnIntents:
+    readonly SpawnIntentAssessment[];
+  readonly completeSpawnIntents: number;
+  readonly incompleteSpawnIntents: number;
+  readonly autonomousReplacementSources: number;
+  readonly lineageInheritanceEvidence: number;
+  readonly replacementLineage:
+    | "explicit"
+    | "declared-but-inheritance-unproven"
+    | "not-applicable";
 }
 
 function autonomousSpawnKind(
@@ -83,6 +105,140 @@ function autonomousSpawnKind(
   return undefined;
 }
 
+
+const REQUIRED_SPAWN_INTENT_FIELDS = [
+  "arenaGeneration",
+  "waveGeneration",
+  "spawnOperationId",
+  "expectedEntityType",
+  "expectedCount",
+] as const;
+
+function spawnIntentAssessments(
+  scripts: readonly ParsedScriptFile[],
+): SpawnIntentAssessment[] {
+  const output:
+    SpawnIntentAssessment[] = [];
+
+  for (const script of scripts) {
+    const file = ts.createSourceFile(
+      script.source.relativePath,
+      script.text,
+      ts.ScriptTarget.Latest,
+      true,
+      script.source.relativePath.endsWith(
+        ".ts",
+      )
+        ? ts.ScriptKind.TS
+        : ts.ScriptKind.JS,
+    );
+
+    const visit = (node: ts.Node): void => {
+      if (
+        ts.isVariableDeclaration(node) &&
+        ts.isIdentifier(node.name) &&
+        node.initializer &&
+        ts.isObjectLiteralExpression(
+          node.initializer,
+        )
+      ) {
+        const fields =
+          node.initializer.properties
+            .flatMap((property) => {
+              if (
+                ts.isPropertyAssignment(
+                  property,
+                ) ||
+                ts.isShorthandPropertyAssignment(
+                  property,
+                )
+              ) {
+                const name =
+                  property.name;
+                if (
+                  ts.isIdentifier(name) ||
+                  ts.isStringLiteralLike(
+                    name,
+                  )
+                ) {
+                  return [name.text];
+                }
+              }
+              return [];
+            });
+        const matched =
+          REQUIRED_SPAWN_INTENT_FIELDS
+            .filter((field) =>
+              fields.includes(field)
+            );
+        if (matched.length >= 2) {
+          const missingFields =
+            REQUIRED_SPAWN_INTENT_FIELDS
+              .filter(
+                (field) =>
+                  !fields.includes(field),
+              );
+          output.push({
+            scriptId:
+              script.identifier,
+            objectName:
+              node.name.text,
+            fields:
+              [...fields].sort(),
+            status:
+              missingFields.length === 0
+                ? "complete"
+                : "incomplete",
+            missingFields,
+          });
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(file);
+  }
+
+  return output.sort((a, b) =>
+    a.scriptId.localeCompare(
+      b.scriptId,
+    ) ||
+    a.objectName.localeCompare(
+      b.objectName,
+    )
+  );
+}
+
+function lineageInheritanceEvidence(
+  scripts: readonly ParsedScriptFile[],
+): number {
+  return scripts.reduce(
+    (sum, script) => {
+      const text = script.text;
+      const hasParentChildIdentity =
+        /(?:parentEntityId|sourceEntityId|replacementOf|spawnedFrom)/.test(
+          text,
+        );
+      const hasGeneration =
+        /(?:arenaGeneration|entityGeneration|waveGeneration)/.test(
+          text,
+        );
+      const hasRole =
+        /(?:objectiveRole|scoringRole|arenaRole|objectiveMembership)/.test(
+          text,
+        );
+      return sum +
+        (
+          hasParentChildIdentity &&
+          hasGeneration &&
+          hasRole
+            ? 1
+            : 0
+        );
+    },
+    0,
+  );
+}
+
 export function analyzeEntityPopulationSources(
   entities:
     readonly ParsedEntityDefinition[],
@@ -99,6 +255,12 @@ export function analyzeEntityPopulationSources(
 ): EntityPopulationSourceAnalysis {
   const sources:
     AutonomousEntitySpawnSource[] = [];
+  const spawnIntents =
+    spawnIntentAssessments(scripts);
+  const lineageEvidence =
+    lineageInheritanceEvidence(
+      scripts,
+    );
 
   for (const entity of entities) {
     for (
@@ -305,6 +467,27 @@ export function analyzeEntityPopulationSources(
             "disabled"
           ? "natural-spawn-disabled"
           : "unresolved",
+    spawnIntents,
+    completeSpawnIntents:
+      spawnIntents.filter(
+        (item) =>
+          item.status === "complete",
+      ).length,
+    incompleteSpawnIntents:
+      spawnIntents.filter(
+        (item) =>
+          item.status === "incomplete",
+      ).length,
+    autonomousReplacementSources:
+      sources.length,
+    lineageInheritanceEvidence:
+      lineageEvidence,
+    replacementLineage:
+      sources.length === 0
+        ? "not-applicable"
+        : lineageEvidence > 0
+          ? "explicit"
+          : "declared-but-inheritance-unproven",
   };
 }
 
