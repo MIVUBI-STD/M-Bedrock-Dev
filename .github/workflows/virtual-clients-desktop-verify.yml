@@ -5,7 +5,7 @@ on:
     branches: [Experimental]
     paths:
       - "apps/virtual-clients/**"
-      - "apps/virtual-clients/runtime-core/src/**"
+      - "virtual-clients/runtime-core/src/**"
       - ".github/workflows/virtual-clients-desktop-verify.yml"
 
 permissions:

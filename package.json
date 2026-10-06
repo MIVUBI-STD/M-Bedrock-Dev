@@ -44,7 +44,7 @@
     "virtual-clients:preview": "npm --prefix apps/virtual-clients run preview:frontend",
     "virtual-clients:test": "vitest run apps/virtual-clients/test",
     "virtual-clients:typecheck": "npm --prefix apps/virtual-clients run typecheck",
-    "virtual-clients:verify": "npm run virtual-clients:test && npm --prefix apps/virtual-clients run verify:source && cargo check --locked --all-targets --manifest-path apps/virtual-clients/runtime-core/Cargo.toml && cargo test --locked --all-targets --manifest-path apps/virtual-clients/runtime-core/Cargo.toml && cargo fmt --manifest-path apps/virtual-clients/runtime-core/Cargo.toml --all --check",
+    "virtual-clients:verify": "npm run virtual-clients:test && npm --prefix apps/virtual-clients run verify:source && cargo check --locked --all-targets --manifest-path virtual-clients/runtime-core/Cargo.toml && cargo test --locked --all-targets --manifest-path virtual-clients/runtime-core/Cargo.toml && cargo fmt --manifest-path virtual-clients/runtime-core/Cargo.toml --all --check",
     "virtual-clients:app": "npm --prefix apps/virtual-clients run build:app"
   },
   "dependencies": {

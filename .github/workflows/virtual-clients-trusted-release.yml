@@ -36,7 +36,7 @@ jobs:
           $version = $Matches[1]
           $experimentalHead = (gh api "repos/$env:GITHUB_REPOSITORY/branches/Experimental" --jq '.commit.sha').Trim()
           if ($experimentalHead -ne $env:GITHUB_SHA) { throw "Trusted release tag must point at current Experimental HEAD." }
-          $cargo = Get-Content (Join-Path $env:GITHUB_WORKSPACE 'apps/virtual-clients/runtime-core/Cargo.toml') -Raw
+          $cargo = Get-Content (Join-Path $env:GITHUB_WORKSPACE 'virtual-clients/runtime-core/Cargo.toml') -Raw
           $match = [regex]::Match($cargo, '(?m)^version\s*=\s*"([^"]+)"\s*$')
           if (!$match.Success -or $match.Groups[1].Value -ne $version) { throw "Tag version does not match backend Cargo version." }
           $package = Get-Content package.json -Raw | ConvertFrom-Json
@@ -100,11 +100,11 @@ jobs:
           $installer = Get-Item '${{ steps.installer.outputs.path }}'
           $dist = '${{ steps.installer.outputs.dir }}'
           $hash = (Get-FileHash -Algorithm SHA256 $installer.FullName).Hash.ToLowerInvariant()
-          $schemaSource = Get-Content 'apps/virtual-clients/runtime-core/src/schema.rs' -Raw
+          $schemaSource = Get-Content 'virtual-clients/runtime-core/src/schema.rs' -Raw
           $schemaMatch = [regex]::Match($schemaSource, '(?m)^pub const CURRENT_RUNTIME_SCHEMA:\s*u32\s*=\s*(\d+);\s*$')
           if (!$schemaMatch.Success) { throw 'CURRENT_RUNTIME_SCHEMA could not be resolved.' }
           "$hash  $($installer.Name)" | Set-Content -Encoding ascii (Join-Path $dist 'SHA256SUMS.txt')
-          & 'apps/virtual-clients/distribution/write-update-manifest.ps1' `
+          & 'virtual-clients/distribution/write-update-manifest.ps1' `
             -Version '${{ steps.release.outputs.version }}' `
             -InstallerName $installer.Name `
             -AuthenticodeThumbprint $env:VIRTUAL_CLIENTS_PUBLISHER_CERT_THUMBPRINT `

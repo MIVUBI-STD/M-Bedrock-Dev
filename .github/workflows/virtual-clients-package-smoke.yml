@@ -5,10 +5,10 @@ on:
     branches: [Experimental]
     paths:
       - "apps/virtual-clients/**"
-      - "apps/virtual-clients/runtime-core/**"
-      - "apps/virtual-clients/guest/windows/**"
-      - "apps/virtual-clients/acceptance/windows/**"
-      - "apps/virtual-clients/distribution/**"
+      - "virtual-clients/runtime-core/**"
+      - "virtual-clients/guest/windows/**"
+      - "virtual-clients/acceptance/windows/**"
+      - "virtual-clients/distribution/**"
       - ".github/workflows/virtual-clients-package-smoke.yml"
 
 permissions:

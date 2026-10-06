@@ -150,7 +150,7 @@ describe("Frontend boundary wiring", () => {
     const facade = readFileSync(new URL("../src/app/bridge/virtualClientsApi.ts", import.meta.url), "utf8");
     const adapters = readFileSync(new URL("../src-tauri/src/commands/virtual_clients.rs", import.meta.url), "utf8");
     const bootstrap = readFileSync(new URL("../src-tauri/src/app_bootstrap.rs", import.meta.url), "utf8");
-    const core = readFileSync(new URL("../runtime-core/src/command.rs", import.meta.url), "utf8");
+    const core = readFileSync(new URL("../../../virtual-clients/runtime-core/src/command.rs", import.meta.url), "utf8");
     const commands = [...facade.matchAll(/invokePublic<[^>]+>\("([^"]+)"/g)].map((match) => match[1]);
     expect(commands).toHaveLength(22);
     for (const command of commands) {

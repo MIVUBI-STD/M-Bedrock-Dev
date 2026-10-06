@@ -112,6 +112,7 @@ Canonical details: `docs/06-system/project-lifecycle.md`.
 
 ```text
 apps/          user-facing executable/UI surfaces
+virtual-clients/ durable Virtual Clients runtime, guest, distribution, and acceptance product domain
 docs/          canonical product, system, and operations documentation
 engine/        Bedrock analysis and repair engine
 experiments/   bounded non-authoritative research

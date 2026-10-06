@@ -1,6 +1,6 @@
 # Virtual Clients Desktop
 
-Canonical product source for M-Bedrock Virtual Clients.
+Canonical user-facing desktop source for M-Bedrock Virtual Clients. Non-UI product authority lives under `../../virtual-clients/`.
 
 ## Stack
 
@@ -33,7 +33,7 @@ src/                         presentation + ephemeral UI state
 src/app/bridge/              typed Tauri boundary
 src-tauri/src/commands/      thin adapters
 src-tauri/src/engine/        desktop-native behavior only
-runtime-core/
+../../virtual-clients/runtime-core/
                              VM lifecycle/domain authority
 ```
 

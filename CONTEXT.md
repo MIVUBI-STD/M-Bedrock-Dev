@@ -63,6 +63,7 @@ The Task Graph never upgrades semantic or runtime proof and never owns Minecraft
 ```text
 DEV.cmd        sole repository-level developer entrypoint
 apps/          user-facing surfaces only
+virtual-clients/ durable Virtual Clients non-UI product authority
 engine/packages/      reusable deterministic engine/control-plane owners
 engine/adapters/      external/source format adapters
 engine/analyzers/     semantic derivation and diagnostics

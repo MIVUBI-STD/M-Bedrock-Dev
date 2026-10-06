@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 
 const appRoot = resolve(import.meta.dirname, "..");
 const repoRoot = resolve(appRoot, "..", "..");
-const backendRoot = resolve(appRoot, "runtime-core");
+const backendRoot = resolve(repoRoot, "virtual-clients", "runtime-core");
 const manifest = resolve(backendRoot, "Cargo.toml");
 const binaries = resolve(appRoot, "src-tauri", "binaries");
 const guestResources = resolve(appRoot, "src-tauri", "package-resources", "guest", "windows");
