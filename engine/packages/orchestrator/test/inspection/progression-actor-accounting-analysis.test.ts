@@ -1993,6 +1993,66 @@ describe(
         result.counters[0]
           ?.matchedActorIdentifiers,
       ).toEqual(["demo:enemy"]);
+    
+    it("accepts a complete authored result lifecycle transaction", () => {
+      const source = [
+        "type ResultState = 'active' | 'terminal_candidate' | 'resolving' | 'result_committed' | 'rewarding' | 'cleanup' | 'complete';",
+        "const resultTransitions: Record<ResultState, readonly ResultState[]> = {",
+        "  active: ['terminal_candidate'],",
+        "  terminal_candidate: ['resolving'],",
+        "  resolving: ['result_committed'],",
+        "  result_committed: ['rewarding'],",
+        "  rewarding: ['cleanup'],",
+        "  cleanup: ['complete'],",
+        "  complete: [],",
+        "};",
+      ].join("\n");
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed(source),
+        ]);
+
+      expect(
+        result.completeStateMachines,
+      ).toBe(1);
+      expect(
+        result.stateMachines[0],
+      ).toMatchObject({
+        tableName: "resultTransitions",
+        status: "complete",
+      });
     });
+
+    it("keeps an authored result lifecycle unresolved when a required reward phase is omitted", () => {
+      const source = [
+        "type ResultState = 'active' | 'terminal_candidate' | 'resolving' | 'result_committed' | 'cleanup' | 'complete';",
+        "const resultTransitions: Record<ResultState, readonly ResultState[]> = {",
+        "  active: ['terminal_candidate'],",
+        "  terminal_candidate: ['resolving'],",
+        "  resolving: ['result_committed'],",
+        "  result_committed: ['cleanup'],",
+        "  cleanup: ['complete'],",
+        "  complete: [],",
+        "};",
+      ].join("\n");
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed(source),
+        ]);
+
+      expect(
+        result.unresolvedStateMachines,
+      ).toBe(1);
+      expect(
+        result.stateMachines[0],
+      ).toMatchObject({
+        tableName: "resultTransitions",
+        status: "unresolved",
+      });
+      expect(
+        result.stateMachines[0]?.reason,
+      ).toMatch(/rewarding/);
+    });
+});
   },
 );

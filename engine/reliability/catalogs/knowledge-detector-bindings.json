@@ -361,6 +361,17 @@
       ]
     },
     {
+      "knowledgeId": "round-policy.result-state-machine",
+      "consumer": "progression-actor-accounting-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/progression-actor-accounting-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/progression-actor-accounting-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "round-policy.reward-after-result-commit",
       "consumer": "economy-contract-analysis",
       "analyzerPaths": [

@@ -1663,6 +1663,26 @@ function runtimeEdgeState(
       };
     }
     case "runtime:economy": {
+      const scopedResultMachines = scopedByScript(
+        world.progression.actorAccounting.stateMachines.filter(
+          (item) =>
+            /(?:result|terminal)/i.test(item.tableName) ||
+            item.reason.includes("Authored result lifecycle"),
+        ),
+        sourceLocators,
+      );
+      if (
+        scopedResultMachines.some(
+          (item) => item.status === "unresolved",
+        )
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Result lifecycle ordering is unresolved before reward/cleanup commit.",
+        };
+      }
+
       const scopedPaths = scopedByScript(
         world.economy.paths,
         sourceLocators,

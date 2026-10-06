@@ -2369,6 +2369,24 @@ const TERMINAL_GAMEPLAY_STATE =
 const PROGRESSION_MACHINE_OWNER =
   /(?:wave|round|level|stage|phase|game|match|progress|combat)/i;
 
+const RESULT_LIFECYCLE_PHASES = [
+  "active",
+  "terminalcandidate",
+  "resolving",
+  "resultcommitted",
+  "rewarding",
+  "cleanup",
+  "complete",
+] as const;
+
+function normalizedLifecycleState(
+  value: string,
+): string {
+  return value
+    .replace(/[^A-Za-z0-9]/g, "")
+    .toLowerCase();
+}
+
 function stateCanReachTerminal(
   start: string,
   outgoing:
@@ -2486,6 +2504,123 @@ function stateMachineAssessments(
             )
           )
           .sort();
+
+      const normalizedStates =
+        new Set(
+          [...states].map(
+            normalizedLifecycleState,
+          ),
+        );
+      const resultLifecycle =
+        /(?:result|terminal)/i.test(
+          tableName,
+        ) ||
+        (
+          stateType !== undefined &&
+          /(?:result|terminal)/i.test(
+            stateType,
+          )
+        ) ||
+        [
+          "terminalcandidate",
+          "resolving",
+          "resultcommitted",
+          "rewarding",
+          "cleanup",
+        ].some((state) =>
+          normalizedStates.has(state)
+        );
+
+      if (resultLifecycle) {
+        const normalizedOutgoing =
+          new Map<string, Set<string>>();
+        for (
+          const [from, targets] of
+            outgoing
+        ) {
+          normalizedOutgoing.set(
+            normalizedLifecycleState(
+              from,
+            ),
+            new Set(
+              [...targets].map(
+                normalizedLifecycleState,
+              ),
+            ),
+          );
+        }
+
+        const missingPhases =
+          RESULT_LIFECYCLE_PHASES
+            .filter(
+              (phase) =>
+                !normalizedStates.has(
+                  phase,
+                ),
+            );
+        const orderingViolations:
+          string[] = [];
+
+        for (
+          let index = 0;
+          index <
+            RESULT_LIFECYCLE_PHASES.length -
+              1;
+          index += 1
+        ) {
+          const from =
+            RESULT_LIFECYCLE_PHASES[
+              index
+            ]!;
+          const to =
+            RESULT_LIFECYCLE_PHASES[
+              index + 1
+            ]!;
+          if (
+            !normalizedStates.has(from) ||
+            !normalizedStates.has(to)
+          ) {
+            continue;
+          }
+          if (
+            !stateCanReachTerminal(
+              from,
+              normalizedOutgoing,
+              new Set([to]),
+            )
+          ) {
+            orderingViolations.push(
+              from + " !-> " + to,
+            );
+          }
+        }
+
+        if (
+          missingPhases.length > 0 ||
+          orderingViolations.length > 0
+        ) {
+          output.push({
+            scriptId:
+              script.parsed.identifier,
+            tableName,
+            ...(stateType === undefined
+              ? {}
+              : { stateType }),
+            status: "unresolved",
+            activeStates,
+            terminalStates,
+            deadEndStates: [],
+            sourceEnteredDeadEndStates: [],
+            reason:
+              "Authored result lifecycle does not close the required ACTIVE -> TERMINAL_CANDIDATE -> RESOLVING -> RESULT_COMMITTED -> REWARDING -> CLEANUP -> COMPLETE contract. Missing=[" +
+              missingPhases.join(",") +
+              "] ordering=[" +
+              orderingViolations.join(",") +
+              "].",
+          });
+          continue;
+        }
+      }
 
       if (
         activeStates.length === 0 ||
