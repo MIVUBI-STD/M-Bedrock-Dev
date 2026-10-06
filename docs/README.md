@@ -127,6 +127,14 @@ For a developer with a checkout, the same architecture is available through one 
 npm run retrieve:repository -- "inventory reconnect" --domain analysis
 ```
 
+Inspect overall knowledge-architecture health:
+
+```text
+npm run retrieve:repository -- --summary
+```
+
+The summary reports Resource counts by class/domain/authority/lifecycle, Graph edges by type, and document-section count.
+
 Open one exact resource by stable ID and inspect its typed incoming/outgoing relationships plus document sections:
 
 ```text
