@@ -19,9 +19,9 @@ closed without adding another subsystem:
   before Minecraft sign-in;
 - one Virtual is defined to own one interactive Windows user session; concurrent
   RDP/multi-user sessions are outside the accepted launcher routing model;
-- the unused public Native Minecraft launch Tauri command was removed. The
-  Native launcher engine remains internal until a proven Start Session workflow
-  has a real consumer;
+- the unused Native Minecraft launch command and engine were removed entirely;
+  reintroduce Native launch only when a proven Start Session workflow has a real
+  consumer and target-machine evidence;
 - VMware network connection type is observable but NAT/bridged policy remains
   evidence-driven;
 - multi-Virtual Minecraft renderer launches reuse the existing pressure-aware
