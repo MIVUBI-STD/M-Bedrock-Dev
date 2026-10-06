@@ -61,6 +61,28 @@ function modulesFromOwnership(path, field) {
   return result;
 }
 
+
+function catalogExamples(resources, seen) {
+  const root = "docs/examples";
+  if (!existsSync(root)) return;
+
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    if (!entry.isFile()) continue;
+    if (entry.name === "README.md") continue;
+    if (entry.name.endsWith(".md")) continue;
+
+    const path = join(root, entry.name).replaceAll("\\", "/");
+    addResource(resources, seen, {
+      id: "example.examples." + slug(entry.name.replace(/\.example(?=\.)/i, "")),
+      class: "EXAMPLE",
+      domain: "examples",
+      authority: "REFERENCE",
+      path,
+      lifecycle: "ACTIVE",
+    });
+  }
+}
+
 function catalogSourceModules(resources, seen) {
   const groups = [
     ["package", "engine/packages", "engine/packages/ownership.json", "modules"],
@@ -181,6 +203,7 @@ export function buildResourceCatalog() {
   const seen = new Set();
 
   catalogDocuments(resources, seen);
+  catalogExamples(resources, seen);
   catalogSourceModules(resources, seen);
   catalogKnowledge(resources, seen);
   catalogEngineeringContracts(resources, seen);
