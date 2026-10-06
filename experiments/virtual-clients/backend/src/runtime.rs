@@ -2,11 +2,13 @@ use crate::{
     client::{ClientId, ClientState, ClientStatus, IdentityState},
     doctor::{doctor, DoctorReport},
     guest::{query_guest_status, GuestStatus},
+    paths::runtime_root,
     profile::{
-        native_minecraft_profile, profile_status, register_base_from_native,
-        require_base_matches_native, BaseProfile, MinecraftProfile, ProfileParity, ProfileStatus,
+        current_base_vmx_path, native_minecraft_profile, profile_status,
+        register_base_from_native, require_base_matches_native, BaseProfile, MinecraftProfile,
+        ProfileParity, ProfileStatus,
     },
-    provider::{cleanup_staging, current_platform_provider, runtime_root, Provider},
+    provider::{cleanup_staging, current_platform_provider, Provider},
     resources::{current_host_pressure, start_delay_secs, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
     schema::ensure_runtime_schema,
 };
@@ -288,6 +290,19 @@ impl VirtualClients {
 
     pub fn register_base(&self) -> io::Result<BaseProfile> {
         let _lock = OperationLock::acquire()?;
+        let provider = current_platform_provider().ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "virtualization provider is unavailable",
+            )
+        })?;
+        let base = current_base_vmx_path()?;
+        if provider.is_running_path(&base)? {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Base must be fully stopped before registration",
+            ));
+        }
         register_base_from_native()
     }
 
