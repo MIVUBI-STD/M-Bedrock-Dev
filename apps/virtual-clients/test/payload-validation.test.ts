@@ -135,7 +135,7 @@ describe("Backend payload shapes", () => {
     expect(updateCheck({ state: "READY" })).toBe(false);
     expect(displayList([{ index: 0, primary: true, width: 1920, height: 1080 }])).toBe(true);
     expect(displayList([{ index: 0, primary: true, width: 0, height: 1080 }])).toBe(false);
-    expect(windowArrangement({ schema: 2, layout: "GRID", displayIndex: 0, arranged: ["Native"], missing: [] })).toBe(true);
+    expect(windowArrangement({ schema: 2, layout: "GRID", displayIndex: 0, arranged: ["Native"], missing: [], overlayApplied: true, overlayWarning: null })).toBe(true);
     expect(windowArrangement({ schema: 2, layout: "SURPRISE", displayIndex: 0, arranged: [], missing: [] })).toBe(false);
   });
 });
