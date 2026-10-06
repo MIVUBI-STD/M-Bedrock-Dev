@@ -3,8 +3,9 @@ use super::{
     command_output_with_timeout, ensure_parent, guest_tools_state_ready, has_suspend_state,
     listed_as_running, parse_guest_ip, promote_staging_vm, read_vmx_memory, remove_vm_container,
     snapshot_list_contains, staging_client_vmx_path, vm_identity_key, wait_for_state, Provider,
-    DISK_STATE_TIMEOUT, READY_SNAPSHOT,
+    DISK_STATE_TIMEOUT,
 };
+use crate::policy::READY_SNAPSHOT_NAME;
 use crate::client::{ClientId, ClientState};
 use std::{
     io,
@@ -385,7 +386,7 @@ impl Provider for VmwareWorkstationProvider {
             self.require_vmrun()?,
             ["-T", "ws", "listSnapshots", vmx.to_string_lossy().as_ref()],
         )?;
-        Ok(snapshot_list_contains(&output, READY_SNAPSHOT))
+        Ok(snapshot_list_contains(&output, READY_SNAPSHOT_NAME))
     }
 
     fn set_ready(&self, client: ClientId) -> io::Result<ClientState> {
@@ -413,7 +414,7 @@ impl Provider for VmwareWorkstationProvider {
                 "ws",
                 "snapshot",
                 vmx.to_string_lossy().as_ref(),
-                READY_SNAPSHOT,
+                READY_SNAPSHOT_NAME,
             ],
             DISK_STATE_TIMEOUT,
         )?;
@@ -440,7 +441,7 @@ impl Provider for VmwareWorkstationProvider {
                 "ws",
                 "revertToSnapshot",
                 vmx.to_string_lossy().as_ref(),
-                READY_SNAPSHOT,
+                READY_SNAPSHOT_NAME,
             ],
             DISK_STATE_TIMEOUT,
         )?;

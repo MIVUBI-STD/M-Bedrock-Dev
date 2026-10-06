@@ -75,7 +75,7 @@ impl OperationLock {
 
     fn acquire() -> io::Result<Self> {
         let (root, file) = Self::open()?;
-        file.try_lock_exclusive().map_err(|error| {
+        FileExt::try_lock_exclusive(&file).map_err(|error| {
             if error.kind() == io::ErrorKind::WouldBlock {
                 io::Error::new(
                     io::ErrorKind::WouldBlock,
@@ -91,7 +91,7 @@ impl OperationLock {
 
     fn acquire_shared() -> io::Result<Self> {
         let (_, file) = Self::open()?;
-        file.try_lock_shared().map_err(|error| {
+        FileExt::try_lock_shared(&file).map_err(|error| {
             if error.kind() == io::ErrorKind::WouldBlock {
                 io::Error::new(
                     io::ErrorKind::WouldBlock,
@@ -107,7 +107,7 @@ impl OperationLock {
 
 impl Drop for OperationLock {
     fn drop(&mut self) {
-        let _ = self.file.unlock();
+        let _ = FileExt::unlock(&self.file);
     }
 }
 

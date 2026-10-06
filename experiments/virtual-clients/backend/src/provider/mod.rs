@@ -4,7 +4,7 @@ mod workstation;
 use crate::{
     client::{ClientId, ClientState},
     paths::{client_root, staging_root},
-    policy::{READY_SNAPSHOT_NAME_NAME, VIRTUAL_VCPUS},
+    policy::{READY_SNAPSHOT_NAME, VIRTUAL_VCPUS},
     profile::{current_base_vmx_path, BaseState},
     resources::VIRTUAL_MEMORY_LIMIT_MB,
 };
@@ -574,7 +574,7 @@ mod tests {
 
         super::set_base_state_for_path(&vmx, BaseState::Registered).unwrap();
         assert_eq!(
-            super::base_state_for_path(&vmx).unwrap().as_deref(),
+            super::base_state_for_path(&vmx).unwrap(),
             Some(BaseState::Registered)
         );
         assert!(fs::read_to_string(&vmx).unwrap().contains(BASE_STATE_KEY));
@@ -613,7 +613,7 @@ mod tests {
             Some(inherited.as_str())
         );
         assert_eq!(
-            super::base_state_for_path(&base).unwrap().as_deref(),
+            super::base_state_for_path(&base).unwrap(),
             Some(BaseState::Finalized)
         );
         assert_ne!(virtual_tokens[0], virtual_tokens[1]);

@@ -94,7 +94,7 @@ pub(crate) fn record_operation<T>(
     else {
         return;
     };
-    if lock.try_lock_exclusive().is_err() {
+    if FileExt::try_lock_exclusive(&lock).is_err() {
         return;
     }
 
@@ -137,7 +137,7 @@ pub(crate) fn record_operation<T>(
         return;
     };
     let _ = write_text_transactional(&path, &format!("{json}\n"));
-    let _ = lock.unlock();
+    let _ = FileExt::unlock(&lock);
 }
 
 #[cfg(test)]
