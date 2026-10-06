@@ -37,7 +37,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce5d3ddc6d3fa000eb1536d85e147bfe31aacaba692ed6a876f95cb7c855be78"
 
 [[package]]
-name = "m-bedrock-runtime-lab-core"
+name = "m-bedrock-virtual-clients-core"
 version = "0.1.0"
 dependencies = [
  "fs2",
