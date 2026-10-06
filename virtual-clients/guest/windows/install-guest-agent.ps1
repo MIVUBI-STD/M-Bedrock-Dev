@@ -25,6 +25,23 @@ $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccou
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit ([TimeSpan]::Zero)
 Register-ScheduledTask -TaskName 'M-Bedrock Virtual Guest Agent' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null
 
+$publicDesktop = [Environment]::GetFolderPath('CommonDesktopDirectory')
+$interactiveSetup = Join-Path $publicDesktop 'Enable Virtual Clients Launcher.cmd'
+@"
+@echo off
+"$agent" --register-interactive-launcher
+if errorlevel 1 (
+  echo.
+  echo Virtual Clients launcher setup failed.
+  pause
+  exit /b 1
+)
+echo.
+echo Virtual Clients launcher is enabled for this Windows user.
+echo Sign out and back in once before continuing account setup.
+pause
+"@ | Set-Content -LiteralPath $interactiveSetup -Encoding ASCII
+
 $rule = Get-NetFirewallRule -DisplayName 'M-Bedrock Virtual Guest Agent' -ErrorAction SilentlyContinue
 if ($rule) {
   $rule | Remove-NetFirewallRule
