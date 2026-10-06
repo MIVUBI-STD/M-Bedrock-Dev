@@ -1,4 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
+import { buildResourceCatalog } from "./resource-catalog.mjs";
+import { buildGraph, documentGraphRootId } from "./graph.mjs";
 
 const failures = [];
 
@@ -92,6 +94,100 @@ if (existsSync(architecturePath)) {
   if (!text.includes("Task / Question") || !text.includes("→ Router") || !text.includes("→ Retrieval")) {
     failures.push("Architecture missing canonical knowledge access flow.");
   }
+}
+
+
+const resourceIdPattern =
+  /^(document|knowledge|source|reliability|workflow|schema)\.[a-z0-9]+(?:[.-][a-z0-9]+)*$/;
+
+try {
+  const catalog = buildResourceCatalog();
+  const graph = buildGraph();
+
+  const ids = new Set();
+  const paths = new Set();
+  const byId = new Map();
+
+  for (const resource of catalog.resources) {
+    if (!resourceIdPattern.test(resource.id)) {
+      failures.push("Invalid Resource Catalog id: " + resource.id);
+    }
+    if (ids.has(resource.id)) {
+      failures.push("Duplicate Resource Catalog id: " + resource.id);
+    }
+    ids.add(resource.id);
+
+    if (paths.has(resource.path)) {
+      failures.push("Multiple active resources use the same path: " + resource.path);
+    }
+    paths.add(resource.path);
+
+    if (!existsSync(resource.path)) {
+      failures.push("Resource Catalog path does not exist: " + resource.path);
+    }
+
+    if (resource.class === "DOCUMENT" && !resource.role) {
+      failures.push("DOCUMENT resource lacks role: " + resource.id);
+    }
+    if (resource.class !== "DOCUMENT" && resource.role !== undefined) {
+      failures.push("Non-DOCUMENT resource must not declare role: " + resource.id);
+    }
+
+    byId.set(resource.id, resource);
+  }
+
+  const edgeKeys = new Set();
+  for (const edge of graph.edges) {
+    const key = edge.from + "|" + edge.type + "|" + edge.to;
+    if (edgeKeys.has(key)) {
+      failures.push("Duplicate Graph edge: " + key);
+    }
+    edgeKeys.add(key);
+
+    if (!byId.has(edge.from)) {
+      failures.push("Graph edge source is not registered: " + edge.from);
+    }
+    if (!byId.has(edge.to)) {
+      failures.push("Graph edge target is not registered: " + edge.to);
+    }
+  }
+
+  const routeAdjacency = new Map();
+  for (const edge of graph.edges.filter((item) => item.type === "ROUTES_TO")) {
+    const list = routeAdjacency.get(edge.from) ?? [];
+    list.push(edge.to);
+    routeAdjacency.set(edge.from, list);
+  }
+
+  const rootId = documentGraphRootId();
+  if (!byId.has(rootId)) {
+    failures.push("Root documentation Router is not registered: " + rootId);
+  } else {
+    const reachable = new Set([rootId]);
+    const queue = [rootId];
+
+    while (queue.length) {
+      const current = queue.shift();
+      for (const next of routeAdjacency.get(current) ?? []) {
+        if (reachable.has(next)) continue;
+        reachable.add(next);
+        queue.push(next);
+      }
+    }
+
+    for (const resource of catalog.resources.filter(
+      (item) => item.class === "DOCUMENT" && item.lifecycle === "ACTIVE",
+    )) {
+      if (!reachable.has(resource.id)) {
+        failures.push("Active DOCUMENT is not reachable from docs Router: " + resource.id);
+      }
+    }
+  }
+} catch (error) {
+  failures.push(
+    "Unable to build Resource Catalog / Graph: " +
+      (error instanceof Error ? error.message : String(error)),
+  );
 }
 
 if (failures.length) {
