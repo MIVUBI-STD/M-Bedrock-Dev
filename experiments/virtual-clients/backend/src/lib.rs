@@ -1,6 +1,7 @@
 mod client;
 mod diagnostics;
 mod doctor;
+mod error;
 mod guest;
 mod paths;
 mod profile;
@@ -17,6 +18,7 @@ pub use diagnostics::{
     DiagnosticsReport, HostDiagnostics, ProviderDiagnostics, VirtualHardwareDiagnostics,
 };
 pub use doctor::{DoctorClient, DoctorReport, SetupAction};
+pub use error::{ErrorCode, ErrorReport, PUBLIC_CONTRACT_SCHEMA};
 pub use profile::{
     BaseProfile, BaseProfileSource, MinecraftInstallType, MinecraftProfile, ProfileParity,
     ProfileStatus,

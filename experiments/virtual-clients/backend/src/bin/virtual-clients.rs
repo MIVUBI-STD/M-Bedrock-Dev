@@ -1,23 +1,44 @@
 use m_bedrock_virtual_clients_core::{
-    ClientId, DestructiveConfirmation, VirtualClients,
+    ClientId, DestructiveConfirmation, ErrorReport, VirtualClients,
 };
+use std::io;
 
-fn parse_client(value: &str) -> Result<ClientId, String> {
+fn input_error(message: impl Into<String>) -> io::Error {
+    io::Error::new(io::ErrorKind::InvalidInput, message.into())
+}
+
+fn parse_client(value: &str) -> io::Result<ClientId> {
     match value {
         "Native" => Ok(ClientId::Native),
         "Virtual-01" => Ok(ClientId::Virtual01),
         "Virtual-02" => Ok(ClientId::Virtual02),
         "Virtual-03" => Ok(ClientId::Virtual03),
-        _ => Err(format!("unknown client: {value}")),
+        _ => Err(input_error(format!("unknown client: {value}"))),
     }
 }
 
-fn print_json<T: serde::Serialize>(value: &T) -> Result<(), Box<dyn std::error::Error>> {
-    println!("{}", serde_json::to_string_pretty(value)?);
+fn print_json<T: serde::Serialize>(value: &T) -> io::Result<()> {
+    let json = serde_json::to_string_pretty(value)
+        .map_err(|error| io::Error::new(io::ErrorKind::Other, error))?;
+    println!("{json}");
     Ok(())
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() {
+    if let Err(error) = run() {
+        let report = ErrorReport::from_io(&error);
+        match serde_json::to_string(&report) {
+            Ok(json) => eprintln!("{json}"),
+            Err(_) => eprintln!(
+                "{}",
+                r#"{"schema":1,"code":"IO_FAILURE","message":"error serialization failed","retryable":false}"#
+            ),
+        }
+        std::process::exit(1);
+    }
+}
+
+fn run() -> io::Result<()> {
     let app = VirtualClients;
     let mut args = std::env::args().skip(1);
     let command = args.next().unwrap_or_else(|| "help".to_string());
@@ -33,20 +54,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "resources" => {
             let count = args
                 .next()
-                .ok_or("virtual client count is required")?
-                .parse::<usize>()?;
+                .ok_or_else(|| input_error("virtual client count is required"))?
+                .parse::<usize>()
+                .map_err(|_| input_error("virtual client count must be an integer"))?;
             print_json(&app.resources(count)?)?;
         }
         "reprovision" => {
-            let client = parse_client(&args.next().ok_or("client id is required")?)?;
-            let confirmation = args
-                .next()
-                .ok_or("reprovision is destructive; pass --destroy-account-state to continue")?;
+            let client = parse_client(
+                &args
+                    .next()
+                    .ok_or_else(|| input_error("client id is required"))?,
+            )?;
+            let confirmation = args.next().ok_or_else(|| {
+                input_error("reprovision is destructive; pass --destroy-account-state to continue")
+            })?;
             if confirmation != "--destroy-account-state" || args.next().is_some() {
-                return Err(
-                    "reprovision requires exactly --destroy-account-state after the client id"
-                        .into(),
-                );
+                return Err(input_error(
+                    "reprovision requires exactly --destroy-account-state after the client id",
+                ));
             }
             print_json(
                 &app.reprovision(client, DestructiveConfirmation::ReprovisionAccountState)?,
@@ -56,8 +81,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "start" => {
             let count = args
                 .next()
-                .ok_or("virtual client count is required")?
-                .parse::<usize>()?;
+                .ok_or_else(|| input_error("virtual client count is required"))?
+                .parse::<usize>().map_err(|_| input_error("virtual client count must be an integer"))?;
             print_json(&app.start(count)?)?;
         }
         "suspend" => {
@@ -69,19 +94,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             print_json(&app.stop(client)?)?;
         }
         "restart" => {
-            let client = parse_client(&args.next().ok_or("client id is required")?)?;
+            let client = parse_client(
+                &args
+                    .next()
+                    .ok_or_else(|| input_error("client id is required"))?,
+            )?;
             print_json(&app.restart(client)?)?;
         }
         "set-ready" => {
-            let client = parse_client(&args.next().ok_or("client id is required")?)?;
+            let client = parse_client(
+                &args
+                    .next()
+                    .ok_or_else(|| input_error("client id is required"))?,
+            )?;
             print_json(&app.set_ready(client)?)?;
         }
         "reset" => {
-            let client = parse_client(&args.next().ok_or("client id is required")?)?;
+            let client = parse_client(
+                &args
+                    .next()
+                    .ok_or_else(|| input_error("client id is required"))?,
+            )?;
             print_json(&app.reset(client)?)?;
         }
         "open" => {
-            let client = parse_client(&args.next().ok_or("client id is required")?)?;
+            let client = parse_client(
+                &args
+                    .next()
+                    .ok_or_else(|| input_error("client id is required"))?,
+            )?;
             print_json(&app.open(client)?)?;
         }
         _ => {
