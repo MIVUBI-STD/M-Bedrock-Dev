@@ -334,7 +334,8 @@ pub(crate) fn apply_virtual_hardware_policy(vmx: &Path) -> io::Result<()> {
 
     let mut output = lines.join("\n");
     output.push('\n');
-    fs::write(vmx, output)
+    fs::write(vmx, output)?;
+    ensure_guest_token_for_path(vmx).map(|_| ())
 }
 
 pub(crate) fn read_vmx_value(vmx: &Path, key: &str) -> io::Result<Option<String>> {
