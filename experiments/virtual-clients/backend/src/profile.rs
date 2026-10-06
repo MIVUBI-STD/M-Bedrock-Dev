@@ -5,7 +5,7 @@ use std::{
     process::Command,
 };
 
-use crate::provider::{base_vmx_path, current_platform_provider};
+use crate::paths::{base_profile_path_for_version, base_vmx_path_for_version};
 
 pub const BASE_PROFILE_SCHEMA: u32 = 1;
 
@@ -55,12 +55,24 @@ pub struct ProfileStatus {
     pub parity: ProfileParity,
 }
 
-pub fn base_profile_path() -> io::Result<PathBuf> {
-    let base = base_vmx_path()?;
-    let parent = base.parent().ok_or_else(|| {
-        io::Error::new(io::ErrorKind::InvalidInput, "Base VMX has no parent directory")
+pub fn current_base_vmx_path() -> io::Result<PathBuf> {
+    let native = native_minecraft_profile().ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::NotFound,
+            "Native Minecraft Education version could not be detected",
+        )
     })?;
-    Ok(parent.join("base-profile.json"))
+    base_vmx_path_for_version(&native.version)
+}
+
+pub fn base_profile_path() -> io::Result<PathBuf> {
+    let native = native_minecraft_profile().ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::NotFound,
+            "Native Minecraft Education version could not be detected",
+        )
+    })?;
+    base_profile_path_for_version(&native.version)
 }
 
 pub fn load_base_profile() -> io::Result<BaseProfile> {
@@ -94,24 +106,11 @@ pub fn register_base_from_native() -> io::Result<BaseProfile> {
         )
     })?;
 
-    let base = base_vmx_path()?;
+    let base = base_vmx_path_for_version(&native.version)?;
     if !base.is_file() {
         return Err(io::Error::new(
             io::ErrorKind::NotFound,
             format!("Base VM is missing: {}", base.display()),
-        ));
-    }
-
-    let provider = current_platform_provider().ok_or_else(|| {
-        io::Error::new(
-            io::ErrorKind::NotFound,
-            "virtualization provider is unavailable",
-        )
-    })?;
-    if provider.is_running_path(&base)? {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            "Base must be fully stopped before registration",
         ));
     }
 
