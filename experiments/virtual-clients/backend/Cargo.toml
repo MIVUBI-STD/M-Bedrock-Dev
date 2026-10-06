@@ -1,7 +1,7 @@
 [package]
-name = "m-bedrock-runtime-lab-core"
+name = "m-bedrock-virtual-clients-core"
 version = "0.1.0"
-description = "Experimental M-Bedrock Runtime Lab backend core"
+description = "Experimental M-Bedrock Virtual Clients backend core"
 authors = ["MIVUBI-STD"]
 edition = "2021"
 rust-version = "1.77"
