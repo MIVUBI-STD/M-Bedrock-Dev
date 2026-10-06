@@ -103,6 +103,97 @@
       ]
     },
     {
+      "knowledgeId": "ai.control-flags-compete",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "ai.goal-priority-lower-number-higher",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "ai.move-target-requires-target",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "ai.navigation-generic-capability-flags",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "ai.navigation-requires-navigation-component",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "ai.relation-navigation-requires-movement-stack",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "ai.target-acquisition-separate-goal",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "automation.chain-conditional-depends-previous",
       "consumer": "command-block-chain-analysis",
       "analyzerPaths": [
@@ -1371,6 +1462,19 @@
       ]
     },
     {
+      "knowledgeId": "entity.move-target-needs-target",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "entity.navigation-generic-capabilities",
       "consumer": "entity-ai-stack-analysis",
       "analyzerPaths": [
@@ -1385,6 +1489,84 @@
     },
     {
       "knowledgeId": "entity.navigation-required-for-pathing",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.navigation.generic-multimodal",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.navigation.walk-flags",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.target.entity-types-valid-set",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.target.is-family",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.target.must-reach-path-gate",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.target.must-see-visibility-gate",
       "consumer": "entity-ai-stack-analysis",
       "analyzerPaths": [
         "engine/analyzers/entities/src/ai-stack.ts",
