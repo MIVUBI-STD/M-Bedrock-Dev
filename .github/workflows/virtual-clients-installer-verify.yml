@@ -57,7 +57,7 @@ jobs:
 
       - name: Build release binaries
         working-directory: experiments/virtual-clients/backend
-        run: cargo build --release --bins
+        run: cargo build --locked --release --bins
 
       - name: Resolve version
         id: version

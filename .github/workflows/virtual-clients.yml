@@ -42,17 +42,14 @@ jobs:
           rustup toolchain install 1.98.1 --profile minimal --component rustfmt
           rustup override set 1.98.1
 
-      - name: Generate dependency lock
-        run: cargo generate-lockfile
-
       - name: Check
         run: cargo check --locked --all-targets
 
       - name: Test
         run: cargo test --locked --all-targets
 
-      - name: Format source
-        run: cargo fmt --all
+      - name: Format
+        run: cargo fmt --all --check
 
       - name: Export canonical backend
         if: matrix.os == 'macos-latest'

@@ -48,8 +48,7 @@ pub trait Provider {
 
     fn graphics_3d_enabled(&self, client: ClientId) -> io::Result<Option<bool>> {
         let vmx = client_vmx_path(client)?;
-        Ok(read_vmx_value(&vmx, "mks.enable3d")?
-            .map(|value| value.eq_ignore_ascii_case("TRUE")))
+        Ok(read_vmx_value(&vmx, "mks.enable3d")?.map(|value| value.eq_ignore_ascii_case("TRUE")))
     }
     fn status(&self, client: ClientId) -> io::Result<ClientState>;
     fn start(&self, client: ClientId) -> io::Result<ClientState>;

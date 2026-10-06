@@ -74,7 +74,9 @@ fn timing_safe_token_eq(candidate: &str, expected: &str) -> bool {
         .as_bytes()
         .iter()
         .zip(expected.as_bytes())
-        .fold(0_u8, |difference, (left, right)| difference | (left ^ right))
+        .fold(0_u8, |difference, (left, right)| {
+            difference | (left ^ right)
+        })
         == 0
 }
 
@@ -89,15 +91,15 @@ fn guest_agent_token() -> io::Result<String> {
     if !vmtoolsd.is_file() {
         return Err(io::Error::new(
             io::ErrorKind::NotFound,
-            format!("VMware Tools vmtoolsd.exe is missing: {}", vmtoolsd.display()),
+            format!(
+                "VMware Tools vmtoolsd.exe is missing: {}",
+                vmtoolsd.display()
+            ),
         ));
     }
 
     let output = Command::new(vmtoolsd)
-        .args([
-            "--cmd",
-            "info-get guestinfo.virtualclients.token",
-        ])
+        .args(["--cmd", "info-get guestinfo.virtualclients.token"])
         .output()?;
     if !output.status.success() {
         return Err(io::Error::new(
