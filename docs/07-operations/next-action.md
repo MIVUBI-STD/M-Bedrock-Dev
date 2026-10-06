@@ -98,16 +98,19 @@ A blocking PROVE checkpoint is different: it requires `RESOLVE_DEFECTS` before r
 - benchmark promotion until exact artifact identity and frozen expectations exist.
 
 
-## Virtual Clients — source-review handoff (2026-10-06)
+## Virtual Clients — implementation and readiness (2026-10-06)
 
-This is a separate, user-requested Product Development planning handoff for
-`Experimental`. It does not reopen or change the Real Map Audit lane above.
+This is separate, user-requested Product Development on `Experimental`. It does
+not reopen or change the Real Map Audit lane above. Current continuation is the
+[readiness consistency checkpoint](#readiness-consistency-checkpoint-2026-10-06)
+below; earlier checkpoints retain their historical proof limits. The user asks
+to continue until the system is ready, not merely until a source commit exists.
 
-### Scope and evidence
+### Initial review baseline (historical)
 
 - Reviewed source: `6e87cdfadaefa0714f547f5824747806499fa897`.
 - Execution context: `REMOTE_GITHUB`; source review and existing workflow reads only.
-- Current delivery: review and implementation specification. No runtime behavior
+- Initial delivery: review and implementation specification. No runtime behavior
   was changed and no new build, test, CI run, or Minecraft session was initiated.
 - User constraint: ordinary chat plus the GitHub connector; do not start
   Codex/Work execution for this work.
@@ -129,8 +132,9 @@ The items below are engineering findings and proposals, not gameplay bug reports
 ### Stage 1 source implementation checkpoint (2026-10-06)
 
 The user subsequently authorized code changes and a commit to Experimental
-through the GitHub connector. No Codex/Work task, local build/test execution,
-or new CI run is authorized by that request.
+through the GitHub connector. That Stage 1 delivery created no Codex/Work task,
+ran no build/tests, and triggered no CI. Later focused Node execution is recorded
+in the readiness consistency checkpoint and Current Validation.
 
 Stage 1 source changes now implement:
 - a shared production start-batch executor with one failure/rollback exit;
@@ -164,14 +168,14 @@ Twenty-one regression cases were added (six Rust, fifteen frontend); none were
 executed in this pass. Existing Base preflight parser tests were adapted to the
 required payload validator. See Current Validation for the proof ceiling.
 
-Remaining Stage 2 scope: measured lightweight status performance and
-backend-origin per-operation progress events. Do not invent percentage/stage
-progress in the frontend. Focus/visibility refresh is not continuous runtime
-monitoring and does not prove live interactive behavior.
+At this checkpoint, command activity and first boot had not yet been implemented;
+the later checkpoints below supersede that status. Current Stage 2 residue is
+measured lightweight status performance and detailed internal-stage progress.
+Command-boundary backend activity is now implemented. Focus/visibility refresh
+is not continuous runtime monitoring or live interactive proof.
 
-Stages 3–4 remain unimplemented. Execution verification remains pending for
-Stages 1–2.
-Do not automatically expand scope beyond this bounded source delivery.
+Stages 3–4 now have partial source implementation described below. Full build,
+Rust/frontend suites and target-machine acceptance remain open.
 
 ### Naming and admission ownership checkpoint (2026-10-06)
 
@@ -195,9 +199,9 @@ modular without adding a new runtime system.
 - STOP: one atomic source commit and exact remote content verification. No
   runtime/build/test execution or CI run is included.
 
-This is a bounded maintainability delivery, not closure of remaining Stage 2
-observability. Backend-origin progress, measured status-read performance,
-first-boot usability and compatibility work remain pending as listed above.
+This was a bounded maintainability delivery. Subsequent first-boot and
+command-activity work is recorded below; it does not establish measured status
+performance, detailed VM-stage progress, full compatibility or runtime acceptance.
 
 ### First-boot and command-activity checkpoint (2026-10-06)
 
@@ -428,7 +432,9 @@ simultaneous players. Report this coverage limit explicitly.
 
 The initial documentation handoff was committed as
 `b100769a9091790688bbc8dafd203ca20039c7b6`.
-The subsequent Stage 1 delivery stops after the source commit and remote content
-are verified on Experimental. Source delivery is not test, package, or live
-acceptance, and is not a free-usage guarantee. Respect the user's no-Codex/Work
-constraint; leave execution proof and the remaining Stage 2 work plus Stages 3–4 explicitly pending.
+Stage 1, admission/naming, first-boot/activity and readiness-consistency source
+commits are now delivered. Fifteen focused Node checks passed; full compilation,
+repository test suites, packaging and target-machine acceptance did not run.
+The overall request remains open at the readiness gates above. Source delivery
+is not package/live acceptance or a free-usage guarantee. Preserve the user's
+no-Codex/Work constraint and do not silently start an execution task or CI.
