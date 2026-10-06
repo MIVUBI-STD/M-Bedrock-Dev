@@ -426,6 +426,15 @@ fn ensure_minecraft_running(provider: &dyn Provider, client: ClientId) -> io::Re
             ),
         ));
     }
+    if status.interactive_launcher_ready != Some(true) {
+        return Err(io::Error::new(
+            io::ErrorKind::NotConnected,
+            format!(
+                "{} interactive launcher is not active; complete per-user launcher setup inside that Virtual",
+                client.as_str()
+            ),
+        ));
+    }
     launch_guest_minecraft(&ip, &token, Duration::from_secs(35)).map(|_| ())
 }
 
