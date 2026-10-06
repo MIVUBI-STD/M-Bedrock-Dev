@@ -192,10 +192,11 @@
   }
 
   async function runPrimaryClientAction(client: ClientStatus, available: ClientLifecycleActions) {
-    const primary = primaryClientAction(available, client.state);
+    const primary = primaryClientAction(available, client);
     if (!primary) return;
     if (primary.kind === "start-setup") return mutate(`setup-${client.id}`, (onProgress) => backend.startSetup(client.id, onProgress));
     if (primary.kind === "open") return mutate(`open-${client.id}`, (onProgress) => backend.open(client.id, onProgress));
+    if (primary.kind === "launch-minecraft") return mutate(`minecraft-${client.id}`, (onProgress) => backend.launchMinecraft(client.id, onProgress));
     return mutate(`start-${client.id}`, (onProgress) => backend.startClient(client.id, onProgress));
   }
 
