@@ -173,6 +173,7 @@ pub fn write_client_profile(client: ClientId, base_version: &str) -> io::Result<
 }
 
 fn write_client_profile_data(client: ClientId, profile: &ClientProfile) -> io::Result<()> {
+    validate_client_profile_identities(profile)?;
     let path = client_profile_path(client.as_str())?;
     let parent = path.parent().ok_or_else(|| {
         io::Error::new(

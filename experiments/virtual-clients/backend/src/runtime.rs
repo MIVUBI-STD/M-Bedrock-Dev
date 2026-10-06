@@ -1114,6 +1114,7 @@ impl VirtualClients {
                 "virtualization provider is unavailable",
             )
         })?;
+        require_verified_vm_identity(provider.as_ref(), client)?;
         provider.restart(client)?;
         if let Err(error) =
             wait_for_guest_compatibility(provider.as_ref(), client, Duration::from_secs(90), true)
@@ -1183,6 +1184,7 @@ impl VirtualClients {
                 "virtualization provider is unavailable",
             )
         })?;
+        require_verified_vm_identity(provider.as_ref(), client)?;
         provider.reset(client)?;
         if let Err(error) =
             wait_for_guest_compatibility(provider.as_ref(), client, Duration::from_secs(90), true)
