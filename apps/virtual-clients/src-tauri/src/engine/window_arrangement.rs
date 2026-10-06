@@ -161,27 +161,43 @@ pub fn displays() -> io::Result<Vec<DisplayInfo>> {
     Err(io::Error::new(io::ErrorKind::Unsupported, "Window Layout is currently available on Windows only"))
 }
 
-#[cfg(target_os = "windows")]
-pub fn arrange(request: WindowLayoutRequest) -> io::Result<WindowArrangementResult> {
-    use std::process::Command;
-    validate_request(&request)?;
-    let request_json = serde_json::to_string(&request)
-        .map_err(|error| io::Error::new(io::ErrorKind::InvalidInput, error.to_string()))?;
-    const SCRIPT: &str = r#"
-param([string]$RequestJson)
-Add-Type -AssemblyName System.Windows.Forms
-Add-Type @"
-using System;
-using System.Runtime.InteropServices;
-public static class VirtualClientsWindowNative {
-  [DllImport("user32.dll", SetLastError=true)]
-  public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int Width, int Height, bool Repaint);
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DiscoveredWindow {
+    id: String,
+    handle: u64,
 }
-"@
-$request = $RequestJson | ConvertFrom-Json
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct WindowDiscovery {
+    area_x: i32,
+    area_y: i32,
+    area_width: i32,
+    area_height: i32,
+    windows: Vec<DiscoveredWindow>,
+    missing: Vec<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct WindowMove {
+    handle: u64,
+    x: i32,
+    y: i32,
+    width: i32,
+    height: i32,
+}
+
+#[cfg(target_os = "windows")]
+fn discover_windows(display_index: usize) -> io::Result<WindowDiscovery> {
+    use std::process::Command;
+    const SCRIPT: &str = r#"
+param([int]$DisplayIndex)
+Add-Type -AssemblyName System.Windows.Forms
 $screens = @([System.Windows.Forms.Screen]::AllScreens)
-if ($request.displayIndex -lt 0 -or $request.displayIndex -ge $screens.Count) { throw "Selected display is unavailable." }
-$area = $screens[$request.displayIndex].WorkingArea
+if ($DisplayIndex -lt 0 -or $DisplayIndex -ge $screens.Count) { throw "Selected display is unavailable." }
+$area = $screens[$DisplayIndex].WorkingArea
 $targets = @(
   @{ id = 'Native'; patterns = @('Minecraft Education') },
   @{ id = 'Virtual-01'; patterns = @('Virtual-01') },
@@ -195,91 +211,112 @@ do {
     foreach ($target in $targets) {
       if ($found.ContainsKey($target.id)) { continue }
       foreach ($pattern in $target.patterns) {
-        if ($process.MainWindowTitle -like "*$pattern*") { $found[$target.id] = $process; break }
+        if ($process.MainWindowTitle -like "*$pattern*") {
+          $found[$target.id] = [uint64]$process.MainWindowHandle
+          break
+        }
       }
     }
   }
   if ($found.Count -ge 4) { break }
   Start-Sleep -Milliseconds 200
 } while ([DateTime]::UtcNow -lt $deadline)
-
-$ordered = @()
+$windows = @()
 $missing = @()
 foreach ($target in $targets) {
-  if ($found.ContainsKey($target.id)) { $ordered += [PSCustomObject]@{ id=$target.id; process=$found[$target.id] } }
-  else { $missing += $target.id }
-}
-if ($request.layout -eq 'FOCUS' -and $request.mainWindow) {
-  $ordered = @($ordered | Sort-Object @{ Expression = { if ($_.id -eq $request.mainWindow) { 0 } else { 1 } } })
-}
-$count = $ordered.Count
-function Move-Client($item, $x, $y, $w, $h) {
-  [VirtualClientsWindowNative]::MoveWindow($item.process.MainWindowHandle, $x, $y, $w, $h, $true) | Out-Null
-}
-if ($count -gt 0) {
-  if ($request.layout -eq 'COLUMNS') {
-    $width = [Math]::Floor($area.Width / $count)
-    for ($i=0; $i -lt $count; $i++) {
-      $x = $area.Left + ($i * $width)
-      $w = if ($i -eq $count - 1) { $area.Right - $x } else { $width }
-      Move-Client $ordered[$i] $x $area.Top $w $area.Height
-    }
-  } elseif ($request.layout -eq 'FOCUS' -and $count -gt 1) {
-    $mainWidth = [Math]::Floor($area.Width * 0.68)
-    $sideWidth = $area.Width - $mainWidth
-    Move-Client $ordered[0] $area.Left $area.Top $mainWidth $area.Height
-    $sideCount = $count - 1
-    $sideHeight = [Math]::Floor($area.Height / $sideCount)
-    for ($i=1; $i -lt $count; $i++) {
-      $y = $area.Top + (($i - 1) * $sideHeight)
-      $h = if ($i -eq $count - 1) { $area.Bottom - $y } else { $sideHeight }
-      Move-Client $ordered[$i] ($area.Left + $mainWidth) $y $sideWidth $h
-    }
-  } elseif ($count -eq 1) {
-    Move-Client $ordered[0] $area.Left $area.Top $area.Width $area.Height
-  } elseif ($count -eq 2) {
-    $width = [Math]::Floor($area.Width / 2)
-    Move-Client $ordered[0] $area.Left $area.Top $width $area.Height
-    Move-Client $ordered[1] ($area.Left + $width) $area.Top ($area.Width - $width) $area.Height
-  } elseif ($count -eq 3) {
-    $topWidth = [Math]::Floor($area.Width / 2)
-    $topHeight = [Math]::Floor($area.Height / 2)
-    Move-Client $ordered[0] $area.Left $area.Top $topWidth $topHeight
-    Move-Client $ordered[1] ($area.Left + $topWidth) $area.Top ($area.Width - $topWidth) $topHeight
-    Move-Client $ordered[2] $area.Left ($area.Top + $topHeight) $area.Width ($area.Height - $topHeight)
+  if ($found.ContainsKey($target.id)) {
+    $windows += [PSCustomObject]@{ id=$target.id; handle=$found[$target.id] }
   } else {
-    $cellWidth = [Math]::Floor($area.Width / 2)
-    $cellHeight = [Math]::Floor($area.Height / 2)
-    for ($i=0; $i -lt $count; $i++) {
-      $column = $i % 2
-      $row = [Math]::Floor($i / 2)
-      $x = $area.Left + ($column * $cellWidth)
-      $y = $area.Top + ($row * $cellHeight)
-      $w = if ($column -eq 1) { $area.Right - $x } else { $cellWidth }
-      $h = if ($row -eq 1) { $area.Bottom - $y } else { $cellHeight }
-      Move-Client $ordered[$i] $x $y $w $h
-    }
+    $missing += $target.id
   }
 }
 [PSCustomObject]@{
-  schema=2
-  layout=$request.layout
-  displayIndex=$request.displayIndex
-  arranged=@($ordered | ForEach-Object { $_.id })
-  missing=@($missing)
-} | ConvertTo-Json -Compress
+  areaX=$area.Left; areaY=$area.Top; areaWidth=$area.Width; areaHeight=$area.Height
+  windows=$windows; missing=$missing
+} | ConvertTo-Json -Depth 4 -Compress
 "#;
     let output = Command::new("powershell.exe")
-        .args(["-NoLogo", "-NoProfile", "-NonInteractive", "-Command", SCRIPT, "-RequestJson", &request_json])
+        .args([
+            "-NoLogo", "-NoProfile", "-NonInteractive", "-Command", SCRIPT,
+            "-DisplayIndex", &display_index.to_string(),
+        ])
         .output()?;
     if !output.status.success() {
         let detail = String::from_utf8_lossy(&output.stderr).trim().to_string();
-        return Err(io::Error::new(io::ErrorKind::Other, format!("window arrangement failed: {detail}")));
+        return Err(io::Error::new(io::ErrorKind::Other, format!("window discovery failed: {detail}")));
     }
     serde_json::from_slice(&output.stdout).map_err(|error| io::Error::new(
         io::ErrorKind::InvalidData,
-        format!("window arrangement returned invalid data: {error}")
+        format!("window discovery returned invalid data: {error}")
     ))
+}
+
+#[cfg(target_os = "windows")]
+fn apply_window_moves(moves: &[WindowMove]) -> io::Result<()> {
+    use std::process::Command;
+    let plan = serde_json::to_string(moves)
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidInput, error.to_string()))?;
+    const SCRIPT: &str = r#"
+param([string]$PlanJson)
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public static class VirtualClientsWindowNative {
+  [DllImport("user32.dll", SetLastError=true)]
+  public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int Width, int Height, bool Repaint);
+}
+"@
+$moves = @($PlanJson | ConvertFrom-Json)
+foreach ($move in $moves) {
+  [VirtualClientsWindowNative]::MoveWindow(
+    [IntPtr][uint64]$move.handle,
+    [int]$move.x, [int]$move.y, [int]$move.width, [int]$move.height, $true
+  ) | Out-Null
+}
+"#;
+    let output = Command::new("powershell.exe")
+        .args(["-NoLogo", "-NoProfile", "-NonInteractive", "-Command", SCRIPT, "-PlanJson", &plan])
+        .output()?;
+    if output.status.success() {
+        Ok(())
+    } else {
+        let detail = String::from_utf8_lossy(&output.stderr).trim().to_string();
+        Err(io::Error::new(io::ErrorKind::Other, format!("window placement failed: {detail}")))
+    }
+}
+
+#[cfg(target_os = "windows")]
+pub fn arrange(request: WindowLayoutRequest) -> io::Result<WindowArrangementResult> {
+    validate_request(&request)?;
+    let mut discovery = discover_windows(request.display_index)?;
+    if matches!(request.layout, WindowLayout::Focus) {
+        let main = request.main_window.as_deref().expect("validated Focus main window");
+        discovery.windows.sort_by_key(|window| if window.id == main { 0 } else { 1 });
+    }
+
+    let area = Rect {
+        x: discovery.area_x,
+        y: discovery.area_y,
+        width: discovery.area_width,
+        height: discovery.area_height,
+    };
+    let slots = calculate_slots(&request.layout, area, discovery.windows.len());
+    let moves: Vec<WindowMove> = discovery.windows.iter().zip(slots.iter()).map(|(window, slot)| WindowMove {
+        handle: window.handle,
+        x: slot.x,
+        y: slot.y,
+        width: slot.width,
+        height: slot.height,
+    }).collect();
+    apply_window_moves(&moves)?;
+
+    Ok(WindowArrangementResult {
+        schema: 2,
+        layout: request.layout,
+        display_index: request.display_index,
+        arranged: discovery.windows.into_iter().map(|window| window.id).collect(),
+        missing: discovery.missing,
+    })
 }
 
 #[cfg(not(target_os = "windows"))]
