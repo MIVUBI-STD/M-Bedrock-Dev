@@ -1,7 +1,7 @@
 use super::{
     apply_virtual_hardware_policy, base_vmx_path, client_vmx_path, command_output,
-    command_output_with_timeout, ensure_parent, guest_tools_state_ready, has_suspend_state, parse_guest_ip,
-    listed_as_running, promote_staging_vm, read_vmx_memory, remove_vm_container,
+    command_output_with_timeout, ensure_parent, guest_tools_state_ready, has_suspend_state,
+    listed_as_running, parse_guest_ip, promote_staging_vm, read_vmx_memory, remove_vm_container,
     snapshot_list_contains, staging_client_vmx_path, vm_identity_key, wait_for_state, Provider,
     DISK_STATE_TIMEOUT, READY_SNAPSHOT,
 };
@@ -200,7 +200,12 @@ impl Provider for VmwareWorkstationProvider {
 
         match command_output_with_timeout(
             self.require_vmrun()?,
-            ["-T", "ws", "getGuestIPAddress", vmx.to_string_lossy().as_ref()],
+            [
+                "-T",
+                "ws",
+                "getGuestIPAddress",
+                vmx.to_string_lossy().as_ref(),
+            ],
             Duration::from_secs(5),
         ) {
             Ok(output) => Ok(parse_guest_ip(&output)),
