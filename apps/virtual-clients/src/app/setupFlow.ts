@@ -43,9 +43,9 @@ const flows: Record<SetupAction, SetupExperience> = {
     description: "Create the reusable Windows environment that Virtual Clients will clone. This is the only infrastructure-heavy setup step.",
     primaryLabel: "Environment prepared",
     steps: [
-      "Create the Base VM with supported Windows and VMware Tools.",
-      "Install Minecraft Education without an independent updater.",
-      "Install the packaged Virtual Guest Agent and keep the Base signed out of Microsoft and Minecraft accounts.",
+      "Create the Base VM with supported Windows and VMware Tools at the Base location shown below.",
+      "Open setup tools, copy that folder into the Base, then run prepare-base.ps1 with the official Minecraft Education installer path.",
+      "Keep the Base signed out of Microsoft and Minecraft accounts.",
       "Shut down the Base, then continue.",
     ],
   },
