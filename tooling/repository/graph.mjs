@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { posix } from "node:path";
 import { buildResourceCatalog, resourceIdForDocumentPath } from "./resource-catalog.mjs";
+import { buildKnowledgeBindingEdges } from "./knowledge-binding-edges.mjs";
 
 const MARKDOWN_LINK = /\[[^\]]*\]\(([^)]+)\)/g;
 
@@ -57,6 +58,10 @@ export function buildGraph() {
         to: target.id,
       });
     }
+  }
+
+  for (const edge of buildKnowledgeBindingEdges(catalog.resources)) {
+    addEdge(edges, seen, edge);
   }
 
   edges.sort((a, b) => {
