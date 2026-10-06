@@ -114,6 +114,16 @@ impl Drop for OperationLock {
     }
 }
 
+fn require_base_finalization_state(state: Option<BaseState>) -> io::Result<()> {
+    if state == Some(BaseState::Registered) {
+        return Ok(());
+    }
+    Err(io::Error::new(
+        io::ErrorKind::InvalidInput,
+        "Base can be opened for finalization only while it is REGISTERED",
+    ))
+}
+
 fn classify_identity_state<'a>(
     current: Option<&'a str>,
     peers: impl IntoIterator<Item = Option<&'a str>>,
@@ -1032,12 +1042,7 @@ impl VirtualClients {
                 format!("Base VM is missing: {}", base.display()),
             ));
         }
-        if base_state_for_path(&base)? != Some(BaseState::Registered) {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "Base can be opened for finalization only while it is REGISTERED",
-            ));
-        }
+        require_base_finalization_state(base_state_for_path(&base)?)?;
 
         provider.start_validation_vm(&base)?;
         if let Err(open_error) = provider.open_vm_ui(&base) {
@@ -1695,6 +1700,7 @@ impl VirtualClients {
 
 #[cfg(test)]
 mod tests {
+    use crate::profile::BaseState;
     use super::{
         classify_identity_state, guest_probe_error_is_terminal, lifecycle_availability,
         restore_batch_state, validate_lifecycle_action, vm_identity_state, LifecycleAction,
@@ -1868,6 +1874,14 @@ mod tests {
         fn guest_ip_for_path(&self, _vmx: &Path) -> io::Result<Option<String>> {
             Self::unsupported()
         }
+    }
+
+    #[test]
+    fn base_finalization_open_requires_registered_state() {
+        assert!(super::require_base_finalization_state(Some(BaseState::Registered)).is_ok());
+        assert!(super::require_base_finalization_state(Some(BaseState::Finalizing)).is_err());
+        assert!(super::require_base_finalization_state(Some(BaseState::Finalized)).is_err());
+        assert!(super::require_base_finalization_state(None).is_err());
     }
 
     #[test]
