@@ -2,7 +2,7 @@ use crate::{
     client::{ClientId, ClientState},
     paths::runtime_root,
     profile::current_base_vmx_path,
-    profile::{profile_status, ProfileParity, ProfileStatus},
+    profile::{load_client_profile, profile_status, ProfileParity, ProfileStatus},
     provider::current_platform_provider,
     schema::{inspect_runtime_schema, SchemaStatus},
 };
@@ -15,6 +15,7 @@ pub struct DoctorClient {
     pub id: &'static str,
     pub provisioned: bool,
     pub ready_snapshot: bool,
+    pub lineage_parity: ProfileParity,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -26,6 +27,7 @@ pub enum SetupAction {
     PrepareBase,
     RegisterBase,
     ProvisionVirtuals,
+    ReprovisionVirtuals,
     Ready,
 }
 
@@ -117,10 +119,24 @@ pub fn doctor() -> DoctorReport {
                 false
             };
 
+            let lineage_parity = match (
+                runtime_profile.native.as_ref(),
+                provisioned.then(|| load_client_profile(client).ok()).flatten(),
+            ) {
+                (Some(native), Some(profile))
+                    if native.version == profile.base_minecraft_version =>
+                {
+                    ProfileParity::Match
+                }
+                (Some(_), Some(_)) => ProfileParity::Mismatch,
+                _ => ProfileParity::Unknown,
+            };
+
             DoctorClient {
                 id: client.as_str(),
                 provisioned,
                 ready_snapshot,
+                lineage_parity,
             }
         })
         .collect();
@@ -140,6 +156,11 @@ pub fn doctor() -> DoctorReport {
         SetupAction::RegisterBase
     } else if clients.iter().any(|client| !client.provisioned) {
         SetupAction::ProvisionVirtuals
+    } else if clients
+        .iter()
+        .any(|client| client.lineage_parity != ProfileParity::Match)
+    {
+        SetupAction::ReprovisionVirtuals
     } else {
         SetupAction::Ready
     };
