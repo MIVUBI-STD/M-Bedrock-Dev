@@ -45,6 +45,20 @@ Artifact identity → frozen expectation → current detector → freeze observe
 
 For blind acceptance, observed output must be frozen before expected results are revealed.
 
+### Blind acceptance contamination
+
+Blind acceptance is fail-closed.
+
+If the current evaluator, agent session, or implementation-development context has already seen the acceptance expectation semantics before the observed detector output is frozen:
+
+- do not claim or score that run as blind acceptance;
+- do not use the exposed expectation to modify production detection capability;
+- do not rewrite, relabel, or promote the contaminated case to make the run admissible;
+- limit the contaminated context to corpus/readiness/static review;
+- use an independent evaluator/context that has not seen the expectation, or a fresh acceptance case whose expectation remains hidden, for the actual blind score.
+
+Contamination invalidates only the blind claim; it does not invalidate the frozen fixture or expectation themselves.
+
 ## Contracts
 
 Expectation schema: `../../schemas/benchmark-expectation.schema.json`
