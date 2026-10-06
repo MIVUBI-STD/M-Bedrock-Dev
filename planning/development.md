@@ -4,6 +4,7 @@ Current and future work that improves M-Bedrock-Dev itself.
 
 ## Completed repository consolidation
 
+- remote GitHub established as the primary ChatGPT repository workflow; local npm/DEV.cmd execution is optional stronger proof only;
 - semantic documentation domains established;
 - numbered documentation paths retired;
 - planning separated from workspace;
