@@ -1,7 +1,7 @@
 use crate::{
     client::{ClientId, ClientState, ClientStatus, IdentityState},
     doctor::{doctor, DoctorReport},
-    provider::{cleanup_staging, current_platform_provider, runtime_root, MemoryMode, Provider},
+    provider::{cleanup_staging, current_platform_provider, runtime_root, Provider},
     resources::{current_host_pressure, start_delay_secs, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
 };
 use fs2::FileExt;
@@ -20,7 +20,6 @@ pub struct RuntimeLab;
 #[serde(rename_all = "camelCase")]
 pub struct RuntimeStatus {
     pub provider: Option<&'static str>,
-    pub memory_mode: Option<MemoryMode>,
     pub pressure: HostPressure,
     pub clients: Vec<ClientStatus>,
 }
@@ -33,7 +32,6 @@ pub struct ResourceView {
     pub running_virtual_clients: usize,
     pub suspended_virtual_clients: usize,
     pub stopped_virtual_clients: usize,
-    pub memory_mode: MemoryMode,
     pub virtual_memory_limit_mb: u64,
     pub observed_working_set_mb: u64,
     pub observed_working_set_instances: usize,
@@ -227,7 +225,6 @@ impl RuntimeLab {
 
         Ok(RuntimeStatus {
             provider: provider.as_ref().map(|provider| provider.id()),
-            memory_mode: provider.as_ref().map(|provider| provider.memory_mode()),
             pressure: current_host_pressure(),
             clients,
         })
@@ -285,7 +282,6 @@ impl RuntimeLab {
             running_virtual_clients: running,
             suspended_virtual_clients: suspended,
             stopped_virtual_clients: stopped,
-            memory_mode: provider.memory_mode(),
             virtual_memory_limit_mb: VIRTUAL_MEMORY_LIMIT_MB,
             observed_working_set_mb,
             observed_working_set_instances,
