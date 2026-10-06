@@ -17,7 +17,8 @@ export function entityAiNavigationDiagnostics(
     aiStack.targetedStackIncomplete +
     aiStack.navigationWithoutMovement +
     aiStack.targetedWithoutNavigation +
-    aiStack.movementGoalWithoutNavigation;
+    aiStack.movementGoalWithoutNavigation +
+    aiStack.goalPriorityConflictStates;
 
   const environmentGaps =
     environment.incompatible +
@@ -53,6 +54,8 @@ export function entityAiNavigationDiagnostics(
           aiStack.targetedWithoutNavigation,
         movementGoalWithoutNavigation:
           aiStack.movementGoalWithoutNavigation,
+        goalPriorityConflictStates:
+          aiStack.goalPriorityConflictStates,
         routeEnvironmentIncompatible:
           environment.incompatible,
         routeEnvironmentStateDependent:

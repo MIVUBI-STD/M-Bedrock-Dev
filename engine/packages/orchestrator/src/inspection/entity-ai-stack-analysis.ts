@@ -14,6 +14,12 @@ export interface EntityAiStackStateAssessment {
   movementGoalCandidatePresent: boolean;
   attackBehaviorPresent: boolean;
   navigationCapabilities: readonly string[];
+  movementGoalPriorities: readonly {
+    component: string;
+    priority: number;
+  }[];
+  duplicateMovementGoalPriorities:
+    readonly number[];
   missingSurfaces: readonly (
     | "movement"
     | "navigation"
@@ -35,6 +41,7 @@ export interface EntityAiStackAnalysis {
   navigationWithoutMovement: number;
   targetedWithoutNavigation: number;
   movementGoalWithoutNavigation: number;
+  goalPriorityConflictStates: number;
   assessments: readonly EntityAiStackStateAssessment[];
 }
 
@@ -79,6 +86,73 @@ function assessEntity(
         );
       }
 
+      const movementGoalPriorities =
+        Object.entries(
+          state.components,
+        )
+          .filter(([component]) =>
+            /^minecraft:behavior\./.test(
+              component,
+            ) &&
+            /(?:move|melee_attack|ranged_attack|avoid|tempt|follow|stroll|random|charge|leap|float|swim|door|break)/i.test(
+              component,
+            )
+          )
+          .flatMap(
+            ([component, value]) => {
+              if (
+                !value ||
+                typeof value !== "object" ||
+                Array.isArray(value)
+              ) {
+                return [];
+              }
+              const priority =
+                (value as {
+                  priority?: unknown;
+                }).priority;
+              return typeof priority ===
+                "number"
+                ? [{
+                    component,
+                    priority,
+                  }]
+                : [];
+            },
+          )
+          .sort(
+            (a, b) =>
+              a.priority - b.priority ||
+              a.component.localeCompare(
+                b.component,
+              ),
+          );
+      const priorityCounts =
+        new Map<number, number>();
+      for (
+        const goal of
+          movementGoalPriorities
+      ) {
+        priorityCounts.set(
+          goal.priority,
+          (
+            priorityCounts.get(
+              goal.priority,
+            ) ?? 0
+          ) + 1,
+        );
+      }
+      const duplicateMovementGoalPriorities =
+        [...priorityCounts.entries()]
+          .filter(
+            ([, count]) =>
+              count > 1,
+          )
+          .map(([priority]) =>
+            priority
+          )
+          .sort((a, b) => a - b);
+
       const status:
         EntityAiStackStateAssessment["status"] =
           targeted
@@ -106,6 +180,8 @@ function assessEntity(
             .attackBehaviorPresent,
         navigationCapabilities:
           stack.navigation.capabilities,
+        movementGoalPriorities,
+        duplicateMovementGoalPriorities,
         missingSurfaces,
         status,
       };
@@ -157,6 +233,12 @@ export function analyzeEntityAiStacks(
         (item) =>
           item.movementGoalCandidatePresent &&
           !item.navigationPresent,
+      ).length,
+    goalPriorityConflictStates:
+      assessments.filter(
+        (item) =>
+          item.duplicateMovementGoalPriorities
+            .length > 0,
       ).length,
     assessments,
   };

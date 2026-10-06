@@ -3,6 +3,63 @@
   "semantics": "Coverage bindings connect high-value knowledge/engineering facts to the production analyzer/check that consumes them and to a dedicated proof specification. This registry is a verification projection, not semantic authority.",
   "bindings": [
     {
+      "knowledgeId": "ai-policy.ai-stack-contract",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-navigation-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/entity-ai-navigation-diagnostics.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "ai-policy.goal-priority-audit",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-navigation-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "ai-policy.nav-capability-environment-match",
+      "consumer": "route-navigation-environment-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "ai-policy.relation-target-gates-path-diagnosis",
+      "consumer": "entity-ai-navigation-diagnostics",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-navigation-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-navigation-diagnostics.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "ai-policy.target-proof",
+      "consumer": "entity-ai-stack-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/ai-stack.ts",
+        "engine/packages/orchestrator/src/inspection/entity-ai-stack-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "chunk-policy.continuous-lease-journal",
       "consumer": "chunk-lifecycle-analysis",
       "analyzerPaths": [
