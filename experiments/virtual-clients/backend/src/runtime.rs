@@ -8,6 +8,7 @@ use crate::{
     },
     provider::{cleanup_staging, current_platform_provider, runtime_root, Provider},
     resources::{current_host_pressure, start_delay_secs, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
+    schema::ensure_runtime_schema,
 };
 use fs2::FileExt;
 use serde::Serialize;
@@ -51,6 +52,7 @@ impl OperationLock {
     fn acquire() -> io::Result<Self> {
         let root = runtime_root()?;
         fs::create_dir_all(&root)?;
+        ensure_runtime_schema(&root)?;
         let path = root.join(".operation.lock");
         let file = OpenOptions::new()
             .read(true)
