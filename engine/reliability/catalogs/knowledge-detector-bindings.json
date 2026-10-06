@@ -1375,6 +1375,61 @@
       ]
     },
     {
+      "knowledgeId": "objective.deferred-timers-can-race-events",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "objective.relation-death-validates-enemy-decrement",
+      "consumer": "progression-actor-accounting-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/progression/progression-counter-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/progression-actor-accounting-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/progression-actor-accounting-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "objective.relation-terminal-evidence-gates-result",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "objective.scoreboard-is-state-surface",
+      "consumer": "state-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/state-authority-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-world-model.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/state-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "objective.scoreboard-write-not-terminal-proof",
+      "consumer": "state-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/state-authority-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-world-model.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/state-authority-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "permissions-policy.dev-access-explicit",
       "consumer": "player-capability-surface-analysis",
       "analyzerPaths": [
