@@ -18,8 +18,10 @@ use std::{
 };
 use sysinfo::System;
 
-pub use fusion::VmwareFusionProvider;
-pub use workstation::VmwareWorkstationProvider;
+#[cfg(target_os = "macos")]
+use fusion::VmwareFusionProvider;
+#[cfg(target_os = "windows")]
+use workstation::VmwareWorkstationProvider;
 
 pub(crate) const READY_SNAPSHOT: &str = "QA_READY";
 pub(crate) const GUEST_TOKEN_KEY: &str = "guestinfo.virtualclients.token";

@@ -46,7 +46,7 @@ pub fn inspect_runtime_schema(root: &Path) -> SchemaStatus {
         };
     }
 
-    let Ok(raw) = read_text_recovering(path) else {
+    let Ok(raw) = read_text_recovering(&path) else {
         return SchemaStatus {
             state: SchemaState::Invalid,
             schema: None,

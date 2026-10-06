@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::{fs, io, path::PathBuf, process::Command};
+use std::{io, path::PathBuf, process::Command};
 
 use crate::{
     client::ClientId,
