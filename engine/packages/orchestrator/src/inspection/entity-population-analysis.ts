@@ -1,6 +1,9 @@
 import type {
   ParsedEntityDefinition,
 } from "../../../../analyzers/entities/src/index.js";
+import type {
+  ParsedScriptFile,
+} from "../../../../analyzers/scripts/src/index.js";
 import {
   createDiagnostic,
   type DiagnosticFinding,
@@ -21,11 +24,41 @@ export interface AutonomousEntitySpawnSource {
   readonly componentGroup?: string;
 }
 
+export type EntitySpawnPathKind =
+  | "NATURAL_RULE"
+  | "SCRIPT_SPAWN"
+  | "COMMAND_SUMMON"
+  | "PARENT_SPAWN_ENTITY"
+  | "SPAWN_ON_DEATH";
+
+export interface EntitySpawnPathClassification {
+  readonly kind: EntitySpawnPathKind;
+  readonly count: number;
+}
+
+export interface EntityDisappearanceClassification {
+  readonly deathObservers: number;
+  readonly removeObservers: number;
+  readonly loadObservers: number;
+  readonly classification:
+    | "death-remove-load-separated"
+    | "partial"
+    | "absent";
+}
+
 export interface EntityPopulationSourceAnalysis {
   readonly autonomousSpawnSources:
     readonly AutonomousEntitySpawnSource[];
   readonly spawnEntitySources: number;
   readonly spawnOnDeathSources: number;
+  readonly spawnPaths:
+    readonly EntitySpawnPathClassification[];
+  readonly disappearance:
+    EntityDisappearanceClassification;
+  readonly naturalSpawnIsolation:
+    | "registry-isolated"
+    | "natural-spawn-disabled"
+    | "unresolved";
 }
 
 function autonomousSpawnKind(
@@ -53,6 +86,16 @@ function autonomousSpawnKind(
 export function analyzeEntityPopulationSources(
   entities:
     readonly ParsedEntityDefinition[],
+  scripts:
+    readonly ParsedScriptFile[] = [],
+  options: {
+    naturalMobSpawning?:
+      | "disabled"
+      | "enabled"
+      | "conflicted"
+      | "unresolved";
+    generationBoundRegistryAuthorities?: number;
+  } = {},
 ): EntityPopulationSourceAnalysis {
   const sources:
     AutonomousEntitySpawnSource[] = [];
@@ -130,6 +173,63 @@ export function analyzeEntityPopulationSources(
       )
   );
 
+  const scriptSpawnCount =
+    scripts.reduce(
+      (sum, script) =>
+        sum +
+        script.methodCalls.filter(
+          (call) =>
+            call.method ===
+            "spawnEntity",
+        ).length,
+      0,
+    );
+  const commandSummonCount =
+    scripts.reduce(
+      (sum, script) =>
+        sum +
+        script.commandLiterals.filter(
+          (command) =>
+            /^\/?summon\b/i.test(
+              command.command.trim(),
+            ),
+        ).length,
+      0,
+    );
+  const deathObservers =
+    scripts.reduce(
+      (sum, script) =>
+        sum +
+        script.eventSubscriptions.filter(
+          (item) =>
+            item.event ===
+            "entityDie",
+        ).length,
+      0,
+    );
+  const removeObservers =
+    scripts.reduce(
+      (sum, script) =>
+        sum +
+        script.eventSubscriptions.filter(
+          (item) =>
+            item.event ===
+            "entityRemove",
+        ).length,
+      0,
+    );
+  const loadObservers =
+    scripts.reduce(
+      (sum, script) =>
+        sum +
+        script.eventSubscriptions.filter(
+          (item) =>
+            item.event ===
+            "entityLoad",
+        ).length,
+      0,
+    );
+
   return {
     autonomousSpawnSources: sources,
     spawnEntitySources:
@@ -144,6 +244,67 @@ export function analyzeEntityPopulationSources(
           item.kind ===
           "spawn-on-death",
       ).length,
+    spawnPaths: [
+      {
+        kind: "NATURAL_RULE",
+        count:
+          options.naturalMobSpawning ===
+          "enabled"
+            ? 1
+            : 0,
+      },
+      {
+        kind: "SCRIPT_SPAWN",
+        count: scriptSpawnCount,
+      },
+      {
+        kind: "COMMAND_SUMMON",
+        count: commandSummonCount,
+      },
+      {
+        kind: "PARENT_SPAWN_ENTITY",
+        count:
+          sources.filter(
+            (item) =>
+              item.kind ===
+              "spawn-entity",
+          ).length,
+      },
+      {
+        kind: "SPAWN_ON_DEATH",
+        count:
+          sources.filter(
+            (item) =>
+              item.kind ===
+              "spawn-on-death",
+          ).length,
+      },
+    ],
+    disappearance: {
+      deathObservers,
+      removeObservers,
+      loadObservers,
+      classification:
+        deathObservers > 0 &&
+        removeObservers > 0 &&
+        loadObservers > 0
+          ? "death-remove-load-separated"
+          : deathObservers > 0 ||
+              removeObservers > 0 ||
+              loadObservers > 0
+            ? "partial"
+            : "absent",
+    },
+    naturalSpawnIsolation:
+      (
+        options.generationBoundRegistryAuthorities ??
+        0
+      ) > 0
+        ? "registry-isolated"
+        : options.naturalMobSpawning ===
+            "disabled"
+          ? "natural-spawn-disabled"
+          : "unresolved",
   };
 }
 

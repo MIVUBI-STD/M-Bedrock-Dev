@@ -263,6 +263,15 @@ export function analyzeInspectionRuntimeState(
       input.parsedEntities.map(
         (item) => item.parsed,
       ),
+      parsedScriptModels,
+      {
+        naturalMobSpawning:
+          worldRuleAuthority
+            .naturalMobSpawning,
+        generationBoundRegistryAuthorities:
+          progressionActorAccounting
+            .generationBoundRegistryAuthorities,
+      },
     );
   diagnostics.push(
     ...entityPopulationSourceDiagnostics(
