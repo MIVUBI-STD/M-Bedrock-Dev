@@ -73,6 +73,8 @@ REGISTERED → FINALIZING → FINALIZED
 
 `register-base` records the currently detected Native Minecraft version beside the stopped Base.
 
+`open-base-finalization` is the only app-owned path that intentionally reopens a registered Base. It requires the canonical state to be exactly `REGISTERED`, requires Native/Base parity, starts the VM through the provider, and opens the provider UI. A `FINALIZING` or `FINALIZED` Base is rejected. If provider UI launch fails after start, the backend attempts to stop the Base again.
+
 That record means:
 
 > this Base was intentionally prepared for this Native version.
