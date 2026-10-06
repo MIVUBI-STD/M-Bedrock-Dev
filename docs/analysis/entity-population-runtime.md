@@ -2,7 +2,7 @@
 id: document.analysis.entity-population-runtime
 class: DOCUMENT
 domain: analysis
-role: REFERENCE
+role: DOMAIN
 authority: CANONICAL
 lifecycle: ACTIVE
 ---

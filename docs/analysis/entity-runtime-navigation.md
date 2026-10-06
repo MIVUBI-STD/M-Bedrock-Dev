@@ -2,7 +2,7 @@
 id: document.analysis.entity-runtime-navigation
 class: DOCUMENT
 domain: analysis
-role: REFERENCE
+role: DOMAIN
 authority: CANONICAL
 lifecycle: ACTIVE
 ---
