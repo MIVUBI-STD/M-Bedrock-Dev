@@ -1,7 +1,7 @@
 import type {
   ActionAvailability, BasePreparationReport, ClientLifecycleActions,
   ClientStatus, EnginePolicy, EngineSnapshot, OperationRecord, PayloadValidator,
-  SupportBundleResult, UpdateCheck, WindowArrangementResult,
+  DisplayInfo, SupportBundleResult, UpdateCheck, WindowArrangementResult,
 } from "../../contracts.js";
 
 type Check = (value: unknown) => boolean;
@@ -158,8 +158,14 @@ export const stagedUpdate = shape<unknown>({
   version: text, platform: text, installerPath: text, sha256: text, authenticodeThumbprint: text,
 });
 export const openedBase = shape<unknown>({ opened: oneOf(true) });
+const displayInfo = shape<DisplayInfo>({
+  index: integer, primary: boolean, width: positiveInteger, height: positiveInteger,
+});
+export const displayList: PayloadValidator<DisplayInfo[]> = (value): value is DisplayInfo[] =>
+  Array.isArray(value) && value.length > 0 && value.every(displayInfo) &&
+  new Set(value.map((display) => display.index)).size === value.length;
 export const windowArrangement = shape<WindowArrangementResult>({
-  schema: oneOf(1), layout: oneOf("SINGLE", "SIDE_BY_SIDE", "GRID_2X2"),
+  schema: oneOf(2), layout: oneOf("GRID", "FOCUS", "COLUMNS"), displayIndex: integer,
   arranged: array(clientId), missing: array(clientId),
 });
 export const voidResult: PayloadValidator<void> = (value): value is void =>
