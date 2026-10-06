@@ -60,7 +60,7 @@ start 2 → Virtual-01 + Virtual-02
 start 3 → Virtual-01 + Virtual-02 + Virtual-03
 ```
 
-Gameplay remains manually controlled.
+Gameplay remains manually controlled. `Native` is entirely host-managed; Runtime Lab only reports it in status and never starts/stops/restarts it.
 
 ## Emulator architecture
 
@@ -158,9 +158,9 @@ status
 resources <1-3>
 start <1-3>
 
-open <Native|Virtual-01|Virtual-02|Virtual-03>
+open <Virtual-01|Virtual-02|Virtual-03>
 suspend [Virtual-01|Virtual-02|Virtual-03]
-stop [Native|Virtual-01|Virtual-02|Virtual-03]
+stop [Virtual-01|Virtual-02|Virtual-03]
 
 restart <Virtual-01|Virtual-02|Virtual-03>
 set-ready <Virtual-01|Virtual-02|Virtual-03>
