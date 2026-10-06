@@ -135,3 +135,10 @@ When a death/spawn component creates a child or replacement entity, define wheth
 8. Does the entity autonomously spawn children or replacements?
 9. Are arena enemy counts isolated from natural mobs?
 10. Does reset stop all spawn sources as well as remove their products?
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [Entity Population](../../engine/knowledge/entity-runtime/entity-population-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
