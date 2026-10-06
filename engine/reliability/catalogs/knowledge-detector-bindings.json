@@ -205,6 +205,17 @@
       ]
     },
     {
+      "knowledgeId": "player-policy.post-defer-validation",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "state-policy.authority-version-or-generation",
       "consumer": "state-authority-analysis",
       "analyzerPaths": [

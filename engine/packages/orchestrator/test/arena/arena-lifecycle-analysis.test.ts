@@ -390,4 +390,75 @@ describe("arena lifecycle convergence", () => {
     ).toBe("partial");
   });
 
+
+  it("keeps an unguarded deferred gameplay mutation visible as unresolved ownership", () => {
+    const source = [
+      "let remainingEnemies = 0;",
+      "system.runTimeout(() => {",
+      "  remainingEnemies++;",
+      "}, 20);",
+    ].join("\n");
+    const script = parseScriptFile(
+      "main",
+      source,
+      {
+        artifactId: "fixture",
+        relativePath:
+          "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeArenaLifecycleConvergence(
+        [script],
+      );
+
+    expect(
+      result.unresolvedDeferredMutations,
+    ).toBe(1);
+    expect(
+      result.deferredMutations[0],
+    ).toMatchObject({
+      scheduler: "runTimeout",
+      status: "unresolved",
+    });
+  });
+
+  it("closes deferred mutation ownership when a generation comparison is explicit", () => {
+    const source = [
+      "let remainingEnemies = 0;",
+      "let arenaGeneration = 3;",
+      "const capturedGeneration = arenaGeneration;",
+      "system.runTimeout(() => {",
+      "  if (capturedGeneration !== arenaGeneration) return;",
+      "  remainingEnemies++;",
+      "}, 20);",
+    ].join("\n");
+    const script = parseScriptFile(
+      "main",
+      source,
+      {
+        artifactId: "fixture",
+        relativePath:
+          "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeArenaLifecycleConvergence(
+        [script],
+      );
+
+    expect(
+      result.protectedDeferredMutations,
+    ).toBe(1);
+    expect(
+      result.unresolvedDeferredMutations,
+    ).toBe(0);
+    expect(
+      result.deferredMutations[0],
+    ).toMatchObject({
+      status: "protected",
+    });
+  });
 });

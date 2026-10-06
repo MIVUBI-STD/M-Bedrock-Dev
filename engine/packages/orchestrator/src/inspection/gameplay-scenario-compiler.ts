@@ -612,6 +612,34 @@ function runtimeEdgeState(
     }
     case "runtime:arena": {
       if (
+        scenarioLabel === "deferred-ownership" &&
+        world.arenas.lifecycle
+          .unresolvedDeferredMutations > 0
+      ) {
+        const deferred =
+          world.arenas.lifecycle
+            .deferredMutations
+            .filter((item) =>
+              item.status === "unresolved"
+            )
+            .map((item) =>
+              item.scriptId +
+              ":" +
+              item.callbackRegion +
+              " -> " +
+              item.mutationRegions.join(" | ")
+            )
+            .sort();
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Deferred gameplay mutation reaches mutable session/arena state without source-proven generation/session revalidation: " +
+            deferred.join("; ") +
+            ". Keep ownership unresolved until a generation/session guard or a blocking exclusion is proven.",
+        };
+      }
+
+      if (
         scenarioLabel === "terminal-collision" &&
         world.arenas.lifecycle
           .provenTerminalRaces > 0

@@ -75,6 +75,21 @@ export interface ArenaTerminalRaceAssessment {
   readonly reason: string;
 }
 
+export interface ArenaDeferredMutationAssessment {
+  readonly scriptId: string;
+  readonly scheduler:
+    | "run"
+    | "runTimeout"
+    | "runInterval"
+    | "runJob";
+  readonly callbackRegion: string;
+  readonly mutationRegions: readonly string[];
+  readonly guardIdentifiers: readonly string[];
+  readonly status:
+    | "protected"
+    | "unresolved";
+}
+
 export interface ArenaLifecycleAnalysis {
   terminalCandidates: number;
   proven: number;
@@ -88,6 +103,10 @@ export interface ArenaLifecycleAnalysis {
   protectedTerminalRaces: number;
   provenTerminalRaces: number;
   unresolvedTerminalRaces: number;
+  protectedDeferredMutations: number;
+  unresolvedDeferredMutations: number;
+  deferredMutations:
+    readonly ArenaDeferredMutationAssessment[];
   assessments: readonly ArenaLifecycleTerminalAssessment[];
   crossFileCalls?: number;
 }
@@ -1314,6 +1333,252 @@ function terminalRaceAssessments(
   );
 }
 
+
+const ARENA_MUTATION_KINDS =
+  new Set([
+    "membership-commit",
+    "membership-release",
+    "generation-invalidate",
+    "start-owner-acquire",
+    "start-state-commit",
+  ]);
+
+const INVENTORY_MUTATION_KINDS =
+  new Set([
+    "inventory-clear-all",
+    "inventory-clear-slot",
+    "equipment-clear-slot",
+    "item-grant",
+    "equipment-set",
+    "item-writeback",
+    "item-drop",
+    "item-world-spawn",
+  ]);
+
+const ECONOMY_MUTATION_KINDS =
+  new Set([
+    "inventory-grant",
+    "world-drop",
+    "score-credit",
+    "score-debit",
+    "score-adjust",
+    "score-write",
+    "item-consume",
+  ]);
+
+const COMBAT_MUTATION_KINDS =
+  new Set([
+    "damage-apply",
+    "knockback",
+    "effect-apply",
+    "ignite",
+    "projectile-spawn",
+    "projectile-remove",
+  ]);
+
+const CHUNK_MUTATION_KINDS =
+  new Set([
+    "ticking-area-acquire",
+    "ticking-area-release",
+  ]);
+
+const PROGRESSION_MUTATION_KINDS =
+  new Set([
+    "growth",
+    "decrement",
+    "replacement",
+  ]);
+
+function materialMutationRegions(
+  script: ParsedScriptFile,
+): string[] {
+  return [
+    ...new Set([
+      ...(script.stateMutations ?? [])
+        .map((item) =>
+          item.executionRegion
+        ),
+      ...(script.arenaAuthorityEvidence ?? [])
+        .filter((item) =>
+          ARENA_MUTATION_KINDS.has(
+            item.kind,
+          )
+        )
+        .map((item) =>
+          item.executionRegion
+        ),
+      ...(script.inventoryLifecycleEvidence ?? [])
+        .filter((item) =>
+          INVENTORY_MUTATION_KINDS.has(
+            item.kind,
+          )
+        )
+        .map((item) =>
+          item.executionRegion
+        ),
+      ...(script.economyEvidence ?? [])
+        .filter((item) =>
+          ECONOMY_MUTATION_KINDS.has(
+            item.kind,
+          )
+        )
+        .map((item) =>
+          item.executionRegion
+        ),
+      ...(script.combatLifecycleEvidence ?? [])
+        .filter((item) =>
+          COMBAT_MUTATION_KINDS.has(
+            item.kind,
+          )
+        )
+        .map((item) =>
+          item.executionRegion
+        ),
+      ...(script.chunkLifecycleEvidence ?? [])
+        .filter((item) =>
+          CHUNK_MUTATION_KINDS.has(
+            item.kind,
+          )
+        )
+        .map((item) =>
+          item.executionRegion
+        ),
+      ...(script.progressionCounterEvidence ?? [])
+        .filter((item) =>
+          PROGRESSION_MUTATION_KINDS.has(
+            item.kind,
+          )
+        )
+        .map((item) =>
+          item.executionRegion
+        ),
+      ...(script.progressionActorSpawnEvidence ?? [])
+        .map((item) =>
+          item.executionRegion
+        ),
+      ...script.entityEventTriggers.map(
+        (item) =>
+          item.executionRegion ??
+          "module",
+      ),
+    ]),
+  ].sort();
+}
+
+function deferredMutationAssessments(
+  scripts: readonly ParsedScriptFile[],
+  crossFileCalls:
+    readonly CrossFileCallEdge[],
+): ArenaDeferredMutationAssessment[] {
+  const projectGraph =
+    crossFileCalls.length === 0
+      ? undefined
+      : composeQualifiedScriptLifecycleProjectGraph(
+          scripts.map((script) => ({
+            fileId:
+              script.source.relativePath,
+            localFunctionCalls:
+              script.localFunctionCalls,
+          })),
+          crossFileCalls,
+        );
+
+  const projectMutationRegions =
+    new Set(
+      scripts.flatMap((script) =>
+        materialMutationRegions(script)
+          .map((region) =>
+            qualifiedRegion(
+              script,
+              region,
+            )
+          )
+      ),
+    );
+
+  const output:
+    ArenaDeferredMutationAssessment[] =
+      [];
+
+  for (const script of scripts) {
+    const localMutations =
+      new Set(
+        materialMutationRegions(
+          script,
+        ),
+      );
+    const localGraph =
+      graphFor(script);
+
+    for (
+      const callback of
+        script.deferredCallbacks
+    ) {
+      if (!callback.callbackRegion) {
+        continue;
+      }
+
+      const reachableRegions =
+        projectGraph
+          ? projectReachable(
+              projectGraph.callEdges,
+              qualifiedRegion(
+                script,
+                callback.callbackRegion,
+              ),
+              false,
+            )
+          : reachable(
+              localGraph,
+              callback.callbackRegion,
+            );
+
+      const mutationRegions =
+        reachableRegions.filter(
+          (region) =>
+            projectGraph
+              ? projectMutationRegions
+                  .has(region)
+              : localMutations
+                  .has(region),
+        );
+
+      if (
+        mutationRegions.length === 0
+      ) {
+        continue;
+      }
+
+      output.push({
+        scriptId:
+          script.identifier,
+        scheduler:
+          callback.scheduler,
+        callbackRegion:
+          callback.callbackRegion,
+        mutationRegions:
+          [...mutationRegions].sort(),
+        guardIdentifiers:
+          [...callback.guardIdentifiers],
+        status:
+          callback.guardEvidence ===
+            "explicit-generation-check"
+            ? "protected"
+            : "unresolved",
+      });
+    }
+  }
+
+  return output.sort((a, b) =>
+    a.scriptId.localeCompare(
+      b.scriptId,
+    ) ||
+    a.callbackRegion.localeCompare(
+      b.callbackRegion,
+    )
+  );
+}
+
 export function analyzeArenaLifecycleConvergence(
   scripts: readonly ParsedScriptFile[],
   crossFileCalls:
@@ -1346,6 +1611,11 @@ export function analyzeArenaLifecycleConvergence(
       crossFileCalls,
       assessments,
       terminalIdempotencyEvidence,
+    );
+  const deferredMutations =
+    deferredMutationAssessments(
+      scripts,
+      crossFileCalls,
     );
 
   return {
@@ -1393,6 +1663,19 @@ export function analyzeArenaLifecycleConvergence(
           item.status ===
             "unresolved",
       ).length,
+    protectedDeferredMutations:
+      deferredMutations.filter(
+        (item) =>
+          item.status ===
+            "protected",
+      ).length,
+    unresolvedDeferredMutations:
+      deferredMutations.filter(
+        (item) =>
+          item.status ===
+            "unresolved",
+      ).length,
+    deferredMutations,
     assessments,
     ...(crossFileCalls.length === 0
       ? {}
