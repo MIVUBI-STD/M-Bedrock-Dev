@@ -58,6 +58,13 @@ function normalizeEquipmentSlot(
       tail.slice(1).toLowerCase();
 }
 
+export interface LoadoutTransactionAssessment {
+  scriptId: string;
+  tableName: string;
+  status: "complete" | "unresolved";
+  missingPhases: readonly string[];
+}
+
 export interface InventoryLifecycleAnalysis {
   regions: number;
   resetCandidates: number;
@@ -69,6 +76,9 @@ export interface InventoryLifecycleAnalysis {
   dropRegions: number;
   knownEquipmentSlots: readonly string[];
   unresolvedEquipmentSlotEvidence: number;
+  loadoutTransactions: readonly LoadoutTransactionAssessment[];
+  completeLoadoutTransactions: number;
+  unresolvedLoadoutTransactions: number;
   assessments: readonly InventoryLifecycleRegionAssessment[];
 }
 
@@ -221,6 +231,89 @@ function assessRegion(
   };
 }
 
+
+const LOADOUT_TRANSACTION_PHASES = [
+  "snapshot",
+  "plan",
+  "clearorreplace",
+  "apply",
+  "verify",
+  "commit",
+] as const;
+
+function normalizeLoadoutPhase(
+  value: string,
+): string {
+  return value
+    .replace(/[^A-Za-z0-9]/g, "")
+    .toLowerCase();
+}
+
+function loadoutTransactionsFor(
+  script: ParsedScriptFile,
+): LoadoutTransactionAssessment[] {
+  const declarations =
+    script.transitionDeclarations ?? [];
+  const tables = new Map<
+    string,
+    typeof declarations
+  >();
+
+  for (const declaration of declarations) {
+    const owner =
+      declaration.tableName +
+      " " +
+      (declaration.stateType ?? "");
+    const states = [
+      declaration.from,
+      ...declaration.to,
+    ].map(normalizeLoadoutPhase);
+    if (
+      !/(?:loadout|kit|inventory)/i.test(owner) &&
+      !states.some((state) =>
+        LOADOUT_TRANSACTION_PHASES.includes(
+          state as typeof LOADOUT_TRANSACTION_PHASES[number],
+        )
+      )
+    ) {
+      continue;
+    }
+    const current =
+      tables.get(declaration.tableName) ?? [];
+    tables.set(
+      declaration.tableName,
+      [...current, declaration],
+    );
+  }
+
+  return [...tables.entries()]
+    .map(([tableName, table]) => {
+      const states = new Set(
+        table.flatMap((item) => [
+          item.from,
+          ...item.to,
+        ]).map(normalizeLoadoutPhase),
+      );
+      const missingPhases =
+        LOADOUT_TRANSACTION_PHASES.filter(
+          (phase) => !states.has(phase),
+        );
+      return {
+        scriptId: script.identifier,
+        tableName,
+        status:
+          missingPhases.length === 0
+            ? "complete" as const
+            : "unresolved" as const,
+        missingPhases,
+      };
+    })
+    .sort((a,b)=>
+      a.scriptId.localeCompare(b.scriptId) ||
+      a.tableName.localeCompare(b.tableName)
+    );
+}
+
 export function analyzeInventoryLifecycle(
   scripts: readonly ParsedScriptFile[],
   options: InventoryLifecycleAnalysisOptions = {},
@@ -251,6 +344,11 @@ export function analyzeInventoryLifecycle(
         ) &&
         item.slotExpression === undefined,
     ).length;
+
+  const loadoutTransactions =
+    scripts.flatMap(
+      loadoutTransactionsFor,
+    );
 
   const assessments = scripts.flatMap((script) =>
     [...byRegion(script).entries()].map(
@@ -310,6 +408,15 @@ export function analyzeInventoryLifecycle(
     ).length,
     knownEquipmentSlots,
     unresolvedEquipmentSlotEvidence,
+    loadoutTransactions,
+    completeLoadoutTransactions:
+      loadoutTransactions.filter(
+        (item) => item.status === "complete",
+      ).length,
+    unresolvedLoadoutTransactions:
+      loadoutTransactions.filter(
+        (item) => item.status === "unresolved",
+      ).length,
     assessments,
   };
 }

@@ -95,6 +95,72 @@ describe("inventory lifecycle analysis", () => {
     });
   });
 
+  it("proves a complete authored loadout transaction", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "type LoadoutState = 'SNAPSHOT' | 'PLAN' | 'CLEAR_OR_REPLACE' | 'APPLY' | 'VERIFY' | 'COMMIT';",
+        "const loadoutTransitions: Record<LoadoutState, readonly LoadoutState[]> = {",
+        "  SNAPSHOT: ['PLAN'],",
+        "  PLAN: ['CLEAR_OR_REPLACE'],",
+        "  CLEAR_OR_REPLACE: ['APPLY'],",
+        "  APPLY: ['VERIFY'],",
+        "  VERIFY: ['COMMIT'],",
+        "  COMMIT: [],",
+        "};",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeInventoryLifecycle([script]);
+
+    expect(
+      result.completeLoadoutTransactions,
+    ).toBe(1);
+    expect(
+      result.unresolvedLoadoutTransactions,
+    ).toBe(0);
+  });
+
+  it("keeps loadout commit unresolved when clear or verify is skipped", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "type KitState = 'SNAPSHOT' | 'PLAN' | 'APPLY' | 'COMMIT';",
+        "const kitTransitions: Record<KitState, readonly KitState[]> = {",
+        "  SNAPSHOT: ['PLAN'],",
+        "  PLAN: ['APPLY'],",
+        "  APPLY: ['COMMIT'],",
+        "  COMMIT: [],",
+        "};",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeInventoryLifecycle([script]);
+
+    expect(
+      result.unresolvedLoadoutTransactions,
+    ).toBe(1);
+    expect(
+      result.loadoutTransactions[0]
+        ?.missingPhases,
+    ).toEqual(
+      expect.arrayContaining([
+        "clearorreplace",
+        "verify",
+      ]),
+    );
+  });
+
   it("flags a mutated ItemStack copy without writeback", () => {
     const script = parseScriptFile(
       "main",

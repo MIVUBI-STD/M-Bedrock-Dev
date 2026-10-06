@@ -643,6 +643,26 @@
       ]
     },
     {
+      "knowledgeId": "inventory-policy.loadout-transaction",
+      "consumer": "inventory-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/inventory-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "inventory-policy.relation-clear-apply-verify",
+      "consumer": "inventory-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/inventory-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "inventory-policy.respawn-single-restore-owner",
       "consumer": "inventory-restore-ownership-analysis",
       "analyzerPaths": [
