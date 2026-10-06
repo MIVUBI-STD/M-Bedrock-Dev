@@ -1,9 +1,10 @@
 use crate::{
     client::{ClientId, ClientState, ClientStatus, IdentityState},
     doctor::{doctor, DoctorReport},
+    guest::{query_guest_status, GuestStatus},
     profile::{
-        profile_status, register_base_from_native, require_base_matches_native, BaseProfile,
-        ProfileStatus,
+        native_minecraft_profile, profile_status, register_base_from_native,
+        require_base_matches_native, BaseProfile, MinecraftProfile, ProfileParity, ProfileStatus,
     },
     provider::{cleanup_staging, current_platform_provider, runtime_root, Provider},
     resources::{current_host_pressure, start_delay_secs, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
@@ -133,6 +134,94 @@ fn with_rollback_context(error: io::Error, failed: &[&'static str]) -> io::Error
     )
 }
 
+fn guest_status_once(provider: &dyn Provider, client: ClientId) -> Option<GuestStatus> {
+    let ip = provider.guest_ip_address(client).ok().flatten()?;
+    query_guest_status(&ip, Duration::from_secs(1)).ok()
+}
+
+fn version_parity(
+    native: Option<&MinecraftProfile>,
+    guest: Option<&GuestStatus>,
+) -> ProfileParity {
+    match (
+        native,
+        guest.and_then(|status| status.minecraft.as_ref()),
+    ) {
+        (Some(native), Some(guest)) if native.version == guest.version => ProfileParity::Match,
+        (Some(_), Some(_)) => ProfileParity::Mismatch,
+        _ => ProfileParity::Unknown,
+    }
+}
+
+fn wait_for_guest_compatibility(
+    provider: &dyn Provider,
+    client: ClientId,
+    timeout: Duration,
+) -> io::Result<GuestStatus> {
+    let native = native_minecraft_profile().ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::NotFound,
+            "Native Minecraft Education version could not be detected",
+        )
+    })?;
+    let started = std::time::Instant::now();
+
+    loop {
+        if let Some(ip) = provider.guest_ip_address(client)? {
+            if let Ok(status) = query_guest_status(&ip, Duration::from_secs(2)) {
+                if status.agent_version != env!("CARGO_PKG_VERSION") {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        format!(
+                            "{} Guest Agent version {} does not match host backend {}",
+                            client.as_str(),
+                            status.agent_version,
+                            env!("CARGO_PKG_VERSION")
+                        ),
+                    ));
+                }
+
+                let guest = status.minecraft.as_ref().ok_or_else(|| {
+                    io::Error::new(
+                        io::ErrorKind::NotFound,
+                        format!(
+                            "{} Guest Agent cannot detect Minecraft Education",
+                            client.as_str()
+                        ),
+                    )
+                })?;
+
+                if guest.version != native.version {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        format!(
+                            "{} Minecraft Education version {} does not match Native {}",
+                            client.as_str(),
+                            guest.version,
+                            native.version
+                        ),
+                    ));
+                }
+
+                return Ok(status);
+            }
+        }
+
+        if started.elapsed() >= timeout {
+            return Err(io::Error::new(
+                io::ErrorKind::TimedOut,
+                format!(
+                    "{} Guest Agent did not become ready within {}s",
+                    client.as_str(),
+                    timeout.as_secs()
+                ),
+            ));
+        }
+
+        thread::sleep(Duration::from_secs(1));
+    }
+}
+
 fn working_set_for(working_sets: &[(ClientId, u64)], client: ClientId) -> Option<u64> {
     working_sets
         .iter()
@@ -142,6 +231,7 @@ fn working_set_for(working_sets: &[(ClientId, u64)], client: ClientId) -> Option
 fn client_status(
     provider: &dyn Provider,
     working_sets: &[(ClientId, u64)],
+    native: Option<&MinecraftProfile>,
     client: ClientId,
 ) -> io::Result<ClientStatus> {
     let state = provider.status(client)?;
@@ -154,9 +244,24 @@ fn client_status(
             memory_limit_mb: None,
             host_working_set_mb: None,
             guest_tools_ready: None,
+            guest_agent_ready: None,
+            guest_agent_version: None,
+            minecraft_version: None,
+            version_parity: Some(ProfileParity::Unknown),
             identity: Some(IdentityState::Unknown),
         });
     }
+
+    let guest = if state == ClientState::Running {
+        guest_status_once(provider, client)
+    } else {
+        None
+    };
+    let minecraft_version = guest
+        .as_ref()
+        .and_then(|status| status.minecraft.as_ref())
+        .map(|minecraft| minecraft.version.clone());
+    let parity = version_parity(native, guest.as_ref());
 
     Ok(ClientStatus {
         id: client.as_str(),
@@ -166,6 +271,10 @@ fn client_status(
         memory_limit_mb: provider.memory_limit_mb(client).ok(),
         host_working_set_mb: working_set_for(working_sets, client),
         guest_tools_ready: provider.guest_tools_ready(client).ok().flatten(),
+        guest_agent_ready: Some(guest.is_some()),
+        guest_agent_version: guest.as_ref().map(|status| status.agent_version.clone()),
+        minecraft_version,
+        version_parity: Some(parity),
         identity: Some(identity_state(provider, client)),
     })
 }
@@ -198,7 +307,7 @@ impl VirtualClients {
         let working_sets = provider.host_working_sets_mb()?;
         let mut result = Vec::with_capacity(3);
         for client in ClientId::VIRTUAL {
-            result.push(client_status(provider.as_ref(), &working_sets, client)?);
+            result.push(client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)?);
         }
         Ok(result)
     }
@@ -224,13 +333,14 @@ impl VirtualClients {
 
         provider.reprovision(client)?;
         let working_sets = provider.host_working_sets_mb()?;
-        client_status(provider.as_ref(), &working_sets, client)
+        client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)
     }
 
     pub fn status(&self) -> io::Result<RuntimeStatus> {
         let provider = current_platform_provider();
         let mut clients = Vec::with_capacity(ClientId::ALL.len());
 
+        let native_profile = native_minecraft_profile();
         clients.push(ClientStatus {
             id: ClientId::Native.as_str(),
             native: true,
@@ -239,13 +349,17 @@ impl VirtualClients {
             memory_limit_mb: None,
             host_working_set_mb: None,
             guest_tools_ready: None,
+            guest_agent_ready: None,
+            guest_agent_version: None,
+            minecraft_version: native_profile.as_ref().map(|profile| profile.version.clone()),
+            version_parity: None,
             identity: None,
         });
 
         if let Some(provider) = provider.as_ref() {
             let working_sets = provider.host_working_sets_mb()?;
             for client in ClientId::VIRTUAL {
-                clients.push(client_status(provider.as_ref(), &working_sets, client)?);
+                clients.push(client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)?);
             }
         } else {
             for client in ClientId::VIRTUAL {
@@ -257,6 +371,10 @@ impl VirtualClients {
                     memory_limit_mb: None,
                     host_working_set_mb: None,
                     guest_tools_ready: None,
+                    guest_agent_ready: None,
+                    guest_agent_version: None,
+                    minecraft_version: None,
+                    version_parity: Some(ProfileParity::Unknown),
                     identity: Some(IdentityState::Unknown),
                 });
             }
@@ -414,7 +532,7 @@ impl VirtualClients {
             }
 
             let working_sets = provider.host_working_sets_mb()?;
-            result.push(client_status(provider.as_ref(), &working_sets, client)?);
+            result.push(client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)?);
 
             if index + 1 < count {
                 let delay = start_delay_secs(current_host_pressure().level);
@@ -472,7 +590,7 @@ impl VirtualClients {
 
         let working_sets = provider.host_working_sets_mb()?;
         for client in targets {
-            result.push(client_status(provider.as_ref(), &working_sets, client)?);
+            result.push(client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)?);
         }
         Ok(result)
     }
@@ -508,7 +626,7 @@ impl VirtualClients {
 
         let working_sets = provider.host_working_sets_mb()?;
         for client in targets {
-            result.push(client_status(provider.as_ref(), &working_sets, client)?);
+            result.push(client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)?);
         }
         Ok(result)
     }
@@ -532,7 +650,7 @@ impl VirtualClients {
         })?;
         provider.restart(client)?;
         let working_sets = provider.host_working_sets_mb()?;
-        client_status(provider.as_ref(), &working_sets, client)
+        client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)
     }
 
     pub fn set_ready(&self, client: ClientId) -> io::Result<ClientStatus> {
@@ -552,7 +670,7 @@ impl VirtualClients {
         })?;
         provider.set_ready(client)?;
         let working_sets = provider.host_working_sets_mb()?;
-        client_status(provider.as_ref(), &working_sets, client)
+        client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)
     }
 
     pub fn reset(&self, client: ClientId) -> io::Result<ClientStatus> {
@@ -574,7 +692,7 @@ impl VirtualClients {
         })?;
         provider.reset(client)?;
         let working_sets = provider.host_working_sets_mb()?;
-        client_status(provider.as_ref(), &working_sets, client)
+        client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)
     }
 
     pub fn open(&self, client: ClientId) -> io::Result<ClientStatus> {
@@ -593,6 +711,6 @@ impl VirtualClients {
         })?;
         provider.open(client)?;
         let working_sets = provider.host_working_sets_mb()?;
-        client_status(provider.as_ref(), &working_sets, client)
+        client_status(provider.as_ref(), &working_sets, native_minecraft_profile().as_ref(), client)
     }
 }
