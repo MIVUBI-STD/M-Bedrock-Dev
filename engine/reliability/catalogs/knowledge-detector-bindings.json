@@ -53,6 +53,26 @@
       ]
     },
     {
+      "knowledgeId": "chunk-policy.worldload-manager-activation",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunks.shutdown-restricted-cleanup",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "cleanup-policy.capability-mutation-footprint",
       "consumer": "arena-cleanup-surface-analysis",
       "analyzerPaths": [
@@ -202,6 +222,26 @@
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/capability-mutation-footprint-analysis.test.ts",
         "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "persistence.shutdown-restricted",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "persistence.worldload-is-recovery-entry",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
       ]
     },
     {
