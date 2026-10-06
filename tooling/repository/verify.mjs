@@ -76,6 +76,7 @@ const required = [
   "tooling/repository/resource-catalog.mjs",
   "tooling/repository/document-metadata.mjs",
   "tooling/repository/graph.mjs",
+  "tooling/repository/knowledge-binding-edges.mjs",
   "tooling/repository/verify-remote-workflow-policy.mjs",
   "tooling/repository/verify-documentation-ownership.mjs",
   "tooling/repository/verify-documentation-routing.mjs",
