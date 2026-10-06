@@ -51,6 +51,22 @@ Open more only for a concrete unresolved question. Truncation or partial output 
 
 Use `docs/system/implementation-map.md` before broad search for a known subsystem.
 
+## 3.1 Knowledge access
+
+When repository knowledge is needed:
+
+```text
+Router
+→ stable resource ID
+→ explicit Graph relationships
+→ selected owner
+→ targeted read
+```
+
+Do not substitute broad code search for ownership routing. Search is a bounded discovery/ranking tool after the initial owner/domain is known.
+
+For documentation, frontmatter `id` is identity and file path is location. Follow domain README links first. For knowledge/reliability data, preserve authority class and do not promote historical or derived material into current proof.
+
 ## 4. DIAGNOSE THE FIRST WRONG OWNER
 
 ```text
