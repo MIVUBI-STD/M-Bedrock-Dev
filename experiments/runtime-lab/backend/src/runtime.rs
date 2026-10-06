@@ -1,8 +1,8 @@
 use crate::{
     client::{ClientId, ClientState, ClientStatus, IdentityState},
-    doctor::{doctor, DoctorReport},
+    doctor::doctor,
     provider::{cleanup_staging, current_platform_provider, runtime_root, MemoryMode, Provider},
-    resources::{current_host_pressure, evaluate_pressure, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
+    resources::{current_host_pressure, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
 };
 use fs2::FileExt;
 use serde::Serialize;
@@ -74,13 +74,6 @@ impl Drop for OperationLock {
     fn drop(&mut self) {
         let _ = self.file.unlock();
     }
-}
-
-fn pressure(report: &DoctorReport) -> HostPressure {
-    evaluate_pressure(
-        (report.total_memory_gb * 1024.0).floor().max(0.0) as u64,
-        (report.available_memory_gb * 1024.0).floor().max(0.0) as u64,
-    )
 }
 
 fn identity_state(provider: &dyn Provider, client: ClientId) -> IdentityState {
