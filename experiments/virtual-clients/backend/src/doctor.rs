@@ -17,6 +17,18 @@ pub struct DoctorClient {
     pub ready_snapshot: bool,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum SetupAction {
+    RuntimeDataIncompatible,
+    InstallProvider,
+    InstallNativeMinecraft,
+    PrepareBase,
+    RegisterBase,
+    ProvisionVirtuals,
+    Ready,
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DoctorReport {
@@ -33,6 +45,7 @@ pub struct DoctorReport {
     pub runtime_profile: ProfileStatus,
     pub clients: Vec<DoctorClient>,
     pub ready_for_provisioning: bool,
+    pub next_setup_action: SetupAction,
 }
 
 fn recommended_by_memory(total_gb: f64) -> usize {
@@ -112,6 +125,25 @@ pub fn doctor() -> DoctorReport {
         })
         .collect();
 
+    let next_setup_action = if matches!(
+        runtime_schema.state,
+        crate::schema::SchemaState::Invalid | crate::schema::SchemaState::NewerThanApp
+    ) {
+        SetupAction::RuntimeDataIncompatible
+    } else if provider.is_none() {
+        SetupAction::InstallProvider
+    } else if runtime_profile.native.is_none() {
+        SetupAction::InstallNativeMinecraft
+    } else if !base_vm_present {
+        SetupAction::PrepareBase
+    } else if runtime_profile.parity != ProfileParity::Match {
+        SetupAction::RegisterBase
+    } else if clients.iter().any(|client| !client.provisioned) {
+        SetupAction::ProvisionVirtuals
+    } else {
+        SetupAction::Ready
+    };
+
     DoctorReport {
         platform: std::env::consts::OS,
         provider: provider.as_ref().map(|provider| provider.id()),
@@ -129,6 +161,7 @@ pub fn doctor() -> DoctorReport {
             && base_vm_present
             && base_vm_stopped == Some(true)
             && runtime_profile.parity == ProfileParity::Match,
+        next_setup_action,
     }
 }
 
