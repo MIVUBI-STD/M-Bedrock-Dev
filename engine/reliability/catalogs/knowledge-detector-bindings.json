@@ -103,6 +103,36 @@
       ]
     },
     {
+      "knowledgeId": "automation.chain-conditional-depends-previous",
+      "consumer": "command-block-chain-analysis",
+      "analyzerPaths": [
+        "engine/adapters/mcstructure/src/command-chain.ts"
+      ],
+      "proofPaths": [
+        "engine/adapters/mcstructure/test/command-chain.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "automation.relation-chain-success-gates-next",
+      "consumer": "command-block-chain-analysis",
+      "analyzerPaths": [
+        "engine/adapters/mcstructure/src/command-chain.ts"
+      ],
+      "proofPaths": [
+        "engine/adapters/mcstructure/test/command-chain.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "blockstate.relation-door-state-validates-route",
+      "consumer": "route-navigation-environment-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/route-navigation-environment-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/route-navigation-environment-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "chunk-policy.continuous-lease-journal",
       "consumer": "chunk-lifecycle-analysis",
       "analyzerPaths": [
