@@ -13,6 +13,7 @@ import { buildResourceCatalog } from "./resource-catalog.mjs";
 interface RetrievalCliOptions {
   query: string;
   id?: string;
+  summary: boolean;
   domains: string[];
   includeHistorical: boolean;
   allowAllDomains: boolean;
@@ -35,11 +36,17 @@ function parseArgs(argv: readonly string[]): RetrievalCliOptions {
   let includeHistorical = false;
   let allowAllDomains = false;
   let id: string | undefined;
+  let summary = false;
   let limit = 12;
   let sectionLimit = 8;
 
   for (let index = 0; index < argv.length; index += 1) {
     const value = argv[index]!;
+
+    if (value === "--summary") {
+      summary = true;
+      continue;
+    }
 
     if (value === "--id") {
       const resourceId = argv[index + 1];
@@ -88,13 +95,18 @@ function parseArgs(argv: readonly string[]): RetrievalCliOptions {
   }
 
   const query = queryParts.join(" ").trim();
-  if (!query && id === undefined) {
+  if (!query && id === undefined && !summary) {
     throw new Error(
       "Usage: npm run retrieve:repository -- <query> --domain <domain> OR npm run retrieve:repository -- --id <resource-id>",
     );
   }
 
-  if (id === undefined && domains.length === 0 && !allowAllDomains) {
+  if (
+    id === undefined &&
+    !summary &&
+    domains.length === 0 &&
+    !allowAllDomains
+  ) {
     throw new Error(
       "Retrieval requires Router scope. Pass --domain <domain>, or use --all explicitly for broad diagnostic discovery.",
     );
@@ -103,6 +115,7 @@ function parseArgs(argv: readonly string[]): RetrievalCliOptions {
   return {
     query,
     ...(id === undefined ? {} : { id }),
+    summary,
     domains: [...new Set(domains)].sort(),
     includeHistorical,
     allowAllDomains,
@@ -111,10 +124,72 @@ function parseArgs(argv: readonly string[]): RetrievalCliOptions {
   };
 }
 
+function countBy<T>(
+  values: readonly T[],
+  key: (value: T) => string,
+): Readonly<Record<string, number>> {
+  const counts = new Map<string, number>();
+
+  for (const value of values) {
+    const name = key(value);
+    counts.set(name, (counts.get(name) ?? 0) + 1);
+  }
+
+  return Object.fromEntries(
+    [...counts.entries()].sort(([left], [right]) =>
+      left.localeCompare(right),
+    ),
+  );
+}
+
 function main(): void {
   const options = parseArgs(process.argv.slice(2));
   const catalog = buildResourceCatalog();
   const graph = buildGraph();
+
+  if (options.summary) {
+    const sectionIndex = buildDocumentSectionIndex();
+
+    process.stdout.write(
+      JSON.stringify(
+        {
+          schemaVersion: 1,
+          resources: {
+            total: catalog.resources.length,
+            byClass: countBy(
+              catalog.resources,
+              (resource) => resource.class,
+            ),
+            byDomain: countBy(
+              catalog.resources,
+              (resource) => resource.domain,
+            ),
+            byAuthority: countBy(
+              catalog.resources,
+              (resource) => resource.authority,
+            ),
+            byLifecycle: countBy(
+              catalog.resources,
+              (resource) => resource.lifecycle,
+            ),
+          },
+          graph: {
+            totalEdges: graph.edges.length,
+            byType: countBy(
+              graph.edges,
+              (edge) => edge.type,
+            ),
+          },
+          sections: {
+            total: sectionIndex.sections.length,
+          },
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+    return;
+  }
 
   if (options.id !== undefined) {
     const resource = catalog.resources.find(
