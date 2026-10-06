@@ -350,7 +350,7 @@ pub fn arrange_with_slots(request: WindowLayoutRequest) -> io::Result<Arrangemen
 }
 
 #[cfg(not(target_os = "windows"))]
-pub fn arrange(request: WindowLayoutRequest) -> io::Result<WindowArrangementResult> {
+pub fn arrange_with_slots(request: WindowLayoutRequest) -> io::Result<ArrangementExecution> {
     validate_request(&request)?;
     Err(io::Error::new(io::ErrorKind::Unsupported, "Window Layout is currently available on Windows only"))
 }
