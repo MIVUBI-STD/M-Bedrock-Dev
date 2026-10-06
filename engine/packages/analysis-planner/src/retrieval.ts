@@ -57,6 +57,7 @@ export interface RetrievalQuery {
   authorities?: readonly ResourceAuthority[];
   includeHistorical?: boolean;
   seedIds?: readonly string[];
+  graphDepth?: 1 | 2;
   lexicalScores?: Readonly<Record<string, number>>;
   semanticScores?: Readonly<Record<string, number>>;
   limit?: number;
@@ -139,29 +140,59 @@ function structuralScore(
 function graphScores(
   edges: readonly GraphEdge[],
   seedIds: ReadonlySet<string>,
+  maximumDepth: 1 | 2,
 ): Map<string, number> {
   const scores = new Map<string, number>();
+  let frontier = new Map<string, number>();
 
   for (const seedId of seedIds) {
     scores.set(seedId, 50);
+    frontier.set(seedId, 50);
   }
 
-  for (const edge of edges) {
-    if (seedIds.has(edge.from)) {
-      scores.set(
-        edge.to,
-        Math.max(scores.get(edge.to) ?? 0, RELATION_SCORE[edge.type]),
+  for (let depth = 1; depth <= maximumDepth; depth += 1) {
+    const next = new Map<string, number>();
+    const decay = (depth - 1) * 6;
+
+    const offer = (
+      targetId: string,
+      parentScore: number,
+      relationScore: number,
+    ) => {
+      const candidate = Math.max(
+        1,
+        Math.min(parentScore, relationScore) - decay,
       );
-    }
-    if (seedIds.has(edge.to)) {
-      scores.set(
-        edge.from,
-        Math.max(
-          scores.get(edge.from) ?? 0,
+      if (candidate <= (scores.get(targetId) ?? 0)) return;
+      scores.set(targetId, candidate);
+      next.set(
+        targetId,
+        Math.max(next.get(targetId) ?? 0, candidate),
+      );
+    };
+
+    for (const edge of edges) {
+      const forwardParent = frontier.get(edge.from);
+      if (forwardParent !== undefined) {
+        offer(
+          edge.to,
+          forwardParent,
+          RELATION_SCORE[edge.type],
+        );
+      }
+
+      const reverseParent = frontier.get(edge.to);
+      if (reverseParent !== undefined) {
+        offer(
+          edge.from,
+          reverseParent,
           Math.max(1, RELATION_SCORE[edge.type] - 4),
-        ),
-      );
+        );
+      }
     }
+
+    frontier = next;
+    if (frontier.size === 0) break;
   }
 
   return scores;
@@ -196,7 +227,11 @@ export function retrieveResources(
     query.includeHistorical === true ||
     authorities.has("HISTORICAL");
   const queryTokens = tokens(query.text);
-  const graphScore = graphScores(edges, seedIds);
+  const graphScore = graphScores(
+    edges,
+    seedIds,
+    query.graphDepth ?? 1,
+  );
   const lexicalScores = query.lexicalScores ?? {};
   const semanticScores = query.semanticScores ?? {};
   const limit = clamp(query.limit ?? 12, 1, 50);
