@@ -60,3 +60,12 @@ Minecraft account sessions.
 Do not treat these as equivalent:
 `VM running`, `Minecraft process running`, `Minecraft menu usable`,
 `account signed in`, and `multiplayer ready`.
+
+## Resource interpretation
+
+The Virtual profile's 4 GB memory ceiling is an intentional concurrency/QA
+trade-off, not a claim that it matches Minecraft Education's recommended
+per-device memory. Keep the existing host-pressure authority and low-graphics
+profile until target-machine evidence shows that a different ceiling improves
+three-guest concurrency without destabilizing the host.
+
