@@ -11,23 +11,20 @@ main  → stable / release authority
 
 ## Start here
 
-Repository developer entrypoint:
+Primary repository workflow is remote GitHub work through the repository policies:
 
 ```text
-DEV.cmd
+AGENTS.md
+→ GITHUB_RULES.md
+→ canonical source/docs owner
+→ bounded GitHub read/write
+→ remote source verification
+→ STOP
 ```
 
-Common commands:
+A local checkout is **not required** for normal ChatGPT/GitHub repository work.
 
-```text
-DEV.cmd setup
-DEV.cmd doctor
-DEV.cmd audit
-DEV.cmd check
-DEV.cmd test
-DEV.cmd inspect <artifact>
-DEV.cmd finalize-local
-```
+`DEV.cmd` and npm scripts are optional local-developer conveniences only. They may provide stronger executable proof when a developer intentionally uses a local checkout, but they are not a completion prerequisite for remote repository work.
 
 Documentation starts at [docs/README.md](docs/README.md).
 
@@ -117,6 +114,6 @@ See [workspace/README.md](workspace/README.md) and [planning/README.md](planning
 
 Canonical toolchain policy is [toolchain.json](toolchain.json).
 
-Developer/build routing is owned by `tooling/windows-toolchain/`.
+Optional local developer/build routing is owned by `tooling/windows-toolchain/`. Remote GitHub work does not depend on this toolchain.
 
 Historical audit/run evidence belongs in `engine/reliability/history/`; reusable evaluation material belongs in `engine/reliability/corpus/`; superseded implementation detail remains in Git history.
