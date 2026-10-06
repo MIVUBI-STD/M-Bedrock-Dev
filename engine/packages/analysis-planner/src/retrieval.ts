@@ -56,6 +56,7 @@ export interface RetrievalQuery {
   classes?: readonly CatalogResourceClass[];
   authorities?: readonly ResourceAuthority[];
   seedIds?: readonly string[];
+  lexicalScores?: Readonly<Record<string, number>>;
   semanticScores?: Readonly<Record<string, number>>;
   limit?: number;
 }
@@ -64,6 +65,7 @@ export interface RetrievalScore {
   routing: number;
   graph: number;
   structural: number;
+  lexical: number;
   semantic: number;
   authority: number;
   total: number;
@@ -191,6 +193,7 @@ export function retrieveResources(
   const seedIds = new Set(query.seedIds ?? []);
   const queryTokens = tokens(query.text);
   const graphScore = graphScores(edges, seedIds);
+  const lexicalScores = query.lexicalScores ?? {};
   const semanticScores = query.semanticScores ?? {};
   const limit = clamp(query.limit ?? 12, 1, 50);
 
@@ -213,6 +216,9 @@ export function retrieveResources(
           : 0;
       const graph = graphScore.get(resource.id) ?? 0;
       const structural = structuralScore(resource, queryTokens);
+      const lexical = Math.round(
+        clamp(lexicalScores[resource.id] ?? 0, 0, 1) * 30,
+      );
       const semantic = Math.round(
         clamp(semanticScores[resource.id] ?? 0, 0, 1) * 30,
       );
@@ -221,6 +227,7 @@ export function retrieveResources(
         routing +
         graph +
         structural +
+        lexical +
         semantic +
         authority;
 
@@ -228,6 +235,7 @@ export function retrieveResources(
         ...(routing > 0 ? ["domain-route"] : []),
         ...(graph > 0 ? ["graph-relation"] : []),
         ...(structural > 0 ? ["structural-match"] : []),
+        ...(lexical > 0 ? ["lexical-rank"] : []),
         ...(semantic > 0 ? ["semantic-rank"] : []),
         "authority:" + resource.authority,
       ];
@@ -238,6 +246,7 @@ export function retrieveResources(
           routing,
           graph,
           structural,
+          lexical,
           semantic,
           authority,
           total,
