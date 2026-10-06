@@ -151,6 +151,12 @@
     }
   }
 
+  async function startAll() {
+    if (!policy) return;
+    const count = policy.maxVirtualClients;
+    await mutate("start-all", () => backend.start(count));
+  }
+
   async function arrangeWindows() {
     busy = "arrange";
     error = "";
@@ -338,7 +344,7 @@
             <button
               class="primary"
               disabled={Boolean(busy) || !snapshot.diagnostics.runtime.pressure.canStartVirtual || !policy}
-              on:click={() => policy && mutate("start-all", () => backend.start(policy.maxVirtualClients))}
+              on:click={startAll}
             >
               {busy === "start-all" ? "Starting…" : "Start all"}
             </button>
