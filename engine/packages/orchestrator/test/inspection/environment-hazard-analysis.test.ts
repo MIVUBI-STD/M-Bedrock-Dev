@@ -32,6 +32,42 @@ describe("environment hazard analysis", () => {
     });
   });
 
+  it("resolves explosion mutation authority only from explicit system mutate-blocks rules", () => {
+    const script = parseScriptFile(
+      "main",
+      "world.beforeEvents.explosion.subscribe(() => {});",
+      { artifactId: "fixture", relativePath: "scripts/main.ts" },
+    );
+    const result = analyzeEnvironmentHazards(
+      [script],
+      [],
+      {
+        regions: [{
+          id: "arena",
+          role: "mutable",
+          coordinateSpace: "absolute",
+          volume: {
+            min: { x: 0, y: 0, z: 0 },
+            max: { x: 10, y: 10, z: 10 },
+          },
+        }],
+        contract: {
+          schemaVersion: 1,
+          id: "hazard-policy",
+          rules: [{
+            id: "hazard-mutation",
+            regionId: "arena",
+            actor: "system",
+            action: "mutate-blocks",
+            decision: "allow",
+          }],
+        },
+        regionIds: ["arena"],
+      },
+    );
+    expect(result.explosionContainmentStatus).toBe("resolved");
+  });
+
   it("inventories environmental damage components across base and groups", () => {
     const entity = parseEntityDefinition(
       {

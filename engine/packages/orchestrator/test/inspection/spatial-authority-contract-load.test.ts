@@ -36,6 +36,21 @@ describe("spatial authority contract parser", () => {
     });
   });
 
+  it("accepts system block-mutation authority without aliasing it to player break-block", () => {
+    const parsed = parseSpatialAuthorityBehaviorContract({
+      schemaVersion: 1,
+      id: "hazard-policy",
+      rules: [{
+        id: "system-hazard-mutation",
+        regionId: "arena",
+        actor: "system",
+        action: "mutate-blocks",
+        decision: "allow",
+      }],
+    });
+    expect(parsed.rules[0]?.action).toBe("mutate-blocks");
+  });
+
   it("rejects duplicate rule ids at the parser boundary", () => {
     expect(() =>
       parseSpatialAuthorityBehaviorContract({

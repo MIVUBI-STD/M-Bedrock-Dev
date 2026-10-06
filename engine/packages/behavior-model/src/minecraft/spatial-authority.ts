@@ -18,7 +18,7 @@ export type SpatialAuthorityAction =
   | "use-container"
   | "teleport"
   | "spawn-entity"
-  | "place-structure";
+  | "place-structure"\n  | "mutate-blocks";
 
 export type SpatialAuthorityDecision =
   | "allow"

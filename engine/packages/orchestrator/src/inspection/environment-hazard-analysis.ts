@@ -1,5 +1,8 @@
 import type { ParsedEntityDefinition } from "../../../../analyzers/entities/src/index.js";
 import type { ParsedScriptFile } from "../../../../analyzers/scripts/src/index.js";
+import type { ArenaRegionContract } from "../../../project-model/src/index.js";
+import type { SpatialAuthorityBehaviorContract } from "../../../behavior-model/src/index.js";
+import { analyzeSpatialAuthorityCoverage } from "./spatial-authority-analysis.js";
 
 export interface EnvironmentHazardAnalysis {
   explosionBeforeHandlers: number;
