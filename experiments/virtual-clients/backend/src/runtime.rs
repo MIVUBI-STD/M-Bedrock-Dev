@@ -485,8 +485,8 @@ impl VirtualClients {
     }
 
     pub fn start(&self, count: usize) -> io::Result<Vec<ClientStatus>> {
-        require_base_matches_native()?;
         let resources = self.resources(count)?;
+        require_base_matches_native()?;
         let inactive = resources.suspended_virtual_clients + resources.stopped_virtual_clients;
 
         if inactive > 0 && !resources.pressure.can_start_virtual {
