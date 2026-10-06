@@ -62,8 +62,10 @@ task / question
 → docs/README.md
 → one domain README
 → one canonical owner
-→ specialist document only when activated
-→ source / proof owner
+→ Resource Retrieval
+→ Section Retrieval when the document is large
+→ specialist/source/proof only when activated
+→ Context
 → STOP
 ```
 
