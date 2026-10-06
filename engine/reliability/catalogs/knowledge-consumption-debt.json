@@ -69,6 +69,168 @@
       "nextEvidenceOwner": "runtime-block-state"
     },
     {
+      "knowledgeId": "chunks.chunk-size-horizontal",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.command-tickingarea-global-world-limit",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.command-tickingarea-requires-cheats",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.custom-dimensions-after-startup",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.dimension-height-range",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.dimension-is-chunk-loaded",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.entity-despawn-rules-independent-lifecycle",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.entity-id-world-instance-scope",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.entity-persistent-component",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.entity-query-unloaded-coverage-unspecified",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.entity-tick-world-loader",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.entity-transient-never-persists",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.loaded-not-semantic-quiescence",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.player-simulation-distance-configurable",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.relation.player-proximity-activates-simulation",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.schedule-on-area-loaded",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.schedule-on-area-loaded-not-loader",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.script-tickingarea-manager-added",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.script-tickingarea-manager-pack-scoped",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.simulation-distance-ticks",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.spectator-simulation-loading-unproven",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.tickingarea-does-not-create-player-spawn-context",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.tickingarea-does-not-prevent-all-despawn",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.tickingarea-exception",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.tickingarea-limits",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.tickingarea-moving-entity-exits-active-region",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
+      "knowledgeId": "chunks.try-teleport-unloaded-destination",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-chunk-lifecycle"
+    },
+    {
       "knowledgeId": "command-context.command-block-s-has-no-entity",
       "status": "runtime-required",
       "reason": "Command-block executor behavior requires command-block context evidence not currently modeled.",
@@ -277,6 +439,78 @@
       "status": "runtime-required",
       "reason": "GameTest is a runtime validation harness, not static source proof.",
       "nextEvidenceOwner": "runtime-validation"
+    },
+    {
+      "knowledgeId": "input.before-use-can-cancel",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-interaction"
+    },
+    {
+      "knowledgeId": "input.cooldown-category-shared",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-interaction"
+    },
+    {
+      "knowledgeId": "input.cooldown-runtime-query",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-interaction"
+    },
+    {
+      "knowledgeId": "input.relation-before-gates-use",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-interaction"
+    },
+    {
+      "knowledgeId": "input.relation-cooldown-gates-action",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-interaction"
+    },
+    {
+      "knowledgeId": "input.release-use-carries-duration",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-interaction"
+    },
+    {
+      "knowledgeId": "input.start-stop-release-distinct",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-interaction"
+    },
+    {
+      "knowledgeId": "input.start-use-on-first-block",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-interaction"
+    },
+    {
+      "knowledgeId": "input.stop-use-can-fire-on-dimension-change",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-interaction"
+    },
+    {
+      "knowledgeId": "interaction.entity-interact-exposes-before-after-item",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-interaction"
+    },
+    {
+      "knowledgeId": "interaction.form-show-restricted-illegal",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-interaction"
+    },
+    {
+      "knowledgeId": "interaction.input-permission-change-observable",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-interaction"
     },
     {
       "knowledgeId": "inventory.entity-component-container-invalid-on-removed",
@@ -495,6 +729,12 @@
       "nextEvidenceOwner": "runtime-world-mutation"
     },
     {
+      "knowledgeId": "world-mutation.relation-setblock-requires-loaded",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
+      "nextEvidenceOwner": "runtime-world-mutation"
+    },
+    {
       "knowledgeId": "world-mutation.setblock-can-fail-unloaded",
       "status": "runtime-required",
       "reason": "Loaded destination state is runtime chunk evidence.",
@@ -510,6 +750,12 @@
       "knowledgeId": "world-mutation.structure-manager-place-queues-unloaded",
       "status": "runtime-required",
       "reason": "Queued placement/materialization requires runtime chunk/readiness evidence.",
+      "nextEvidenceOwner": "runtime-world-mutation"
+    },
+    {
+      "knowledgeId": "world-mutation.structure-manager-restricted-execution",
+      "status": "runtime-required",
+      "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
       "nextEvidenceOwner": "runtime-world-mutation"
     },
     {
