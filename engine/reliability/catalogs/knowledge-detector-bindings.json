@@ -1342,6 +1342,41 @@
       ]
     },
     {
+      "knowledgeId": "mount.dismount-placement-policy",
+      "consumer": "mount-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/mounts.ts",
+        "engine/packages/orchestrator/src/inspection/mount-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/entities/test/mounts.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "mount.relation-seat-gates-control",
+      "consumer": "mount-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/mounts.ts",
+        "engine/packages/orchestrator/src/inspection/mount-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/entities/test/mounts.test.ts",
+        "engine/packages/orchestrator/test/inspection/mount-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "mount.rideable-seat-model",
+      "consumer": "mount-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/mounts.ts",
+        "engine/packages/orchestrator/src/inspection/mount-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/entities/test/mounts.test.ts",
+        "engine/packages/orchestrator/test/inspection/mount-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "multiplayer-policy.authoritative-ready-set",
       "consumer": "arena-lifecycle-analysis",
       "analyzerPaths": [
@@ -2271,6 +2306,39 @@
         "engine/analyzers/commands/test/structure-tickingarea.test.ts",
         "engine/adapters/mcstructure/test/placement-transform.test.ts",
         "engine/packages/orchestrator/test/structure-runtime-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "teleport.dimensionlocation-binds-dimension-and-position",
+      "consumer": "script-spatial-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/spatial/spatial-mutation-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/script-spatial-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/spatial/spatial-mutation-evidence.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "teleport.options-check-for-blocks",
+      "consumer": "script-spatial-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/spatial/spatial-mutation-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/script-spatial-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/spatial/spatial-mutation-evidence.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "teleport.options-dimension",
+      "consumer": "script-spatial-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/spatial/spatial-mutation-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/script-spatial-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/spatial/spatial-mutation-evidence.test.ts"
       ]
     },
     {
