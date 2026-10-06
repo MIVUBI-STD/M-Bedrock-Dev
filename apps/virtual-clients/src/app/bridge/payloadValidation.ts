@@ -137,7 +137,7 @@ export const operationHistory: PayloadValidator<OperationRecord[]> = (value): va
     operation: oneOf(
       "STAGE_UPDATE", "REGISTER_BASE", "OPEN_BASE_FINALIZATION", "PROVISION",
       "REPROVISION", "VERIFY_IDENTITIES", "START", "SUSPEND", "STOP",
-      "RESTART", "SET_READY", "RESET", "OPEN",
+      "RESTART", "SET_READY", "RESET", "OPEN", "LAUNCH_MINECRAFT",
     ),
     target: nullable(text), outcome: oneOf("SUCCESS", "FAILED"),
     errorCode: nullable(errorCode), retryable: boolean,
