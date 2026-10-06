@@ -11,12 +11,12 @@ Single entry point for human and AI documentation discovery.
 Resolve the task domain first, then load only the smallest canonical set.
 
 ```text
-PRODUCT / FLOW            → product/
-ARTIFACTS / PACKAGING     → artifacts/
-ANALYSIS / GRAPH          → analysis/
-REPAIR / MUTATION         → repair/
-VALIDATION / EVIDENCE     → validation/
-SYSTEM / OWNERSHIP        → system/
+PRODUCT / FLOW            → [product/](./product/README.md)
+ARTIFACTS / PACKAGING     → [artifacts/](./artifacts/README.md)
+ANALYSIS / GRAPH          → [analysis/](./analysis/README.md)
+REPAIR / MUTATION         → [repair/](./repair/README.md)
+VALIDATION / EVIDENCE     → [validation/](./validation/README.md)
+SYSTEM / OWNERSHIP        → [system/](./system/README.md)
 ```
 
 Core system documents answer different questions:
