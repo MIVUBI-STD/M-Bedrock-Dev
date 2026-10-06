@@ -441,6 +441,140 @@ mod tests {
     }
 
     #[test]
+    fn setup_action_precedence_is_deterministic() {
+        let ready_clients = vec![client(true, true), client(true, true), client(true, true)];
+
+        let invalid_schema = SchemaStatus {
+            state: SchemaState::Invalid,
+            schema: None,
+        };
+        assert_eq!(
+            select_setup_action(
+                &invalid_schema,
+                false,
+                false,
+                false,
+                ProfileParity::Unknown,
+                None,
+                &[],
+            ),
+            SetupAction::RuntimeDataIncompatible
+        );
+
+        assert_eq!(
+            select_setup_action(
+                &compatible_schema(),
+                false,
+                false,
+                false,
+                ProfileParity::Unknown,
+                None,
+                &[],
+            ),
+            SetupAction::InstallProvider
+        );
+
+        assert_eq!(
+            select_setup_action(
+                &compatible_schema(),
+                true,
+                false,
+                false,
+                ProfileParity::Unknown,
+                None,
+                &[],
+            ),
+            SetupAction::InstallNativeMinecraft
+        );
+
+        assert_eq!(
+            select_setup_action(
+                &compatible_schema(),
+                true,
+                true,
+                false,
+                ProfileParity::Unknown,
+                None,
+                &[],
+            ),
+            SetupAction::PrepareBase
+        );
+
+        let mut missing_virtual = ready_clients.clone();
+        missing_virtual[1].provisioned = false;
+        assert_eq!(
+            select_setup_action(
+                &compatible_schema(),
+                true,
+                true,
+                true,
+                ProfileParity::Match,
+                Some("FINALIZED"),
+                &missing_virtual,
+            ),
+            SetupAction::ProvisionVirtuals
+        );
+
+        let mut stale_lineage = ready_clients.clone();
+        stale_lineage[2].lineage_parity = ProfileParity::Unknown;
+        assert_eq!(
+            select_setup_action(
+                &compatible_schema(),
+                true,
+                true,
+                true,
+                ProfileParity::Match,
+                Some("FINALIZED"),
+                &stale_lineage,
+            ),
+            SetupAction::ReprovisionVirtuals
+        );
+
+        let mut no_identity = ready_clients.clone();
+        no_identity[0].identity_provenance = false;
+        assert_eq!(
+            select_setup_action(
+                &compatible_schema(),
+                true,
+                true,
+                true,
+                ProfileParity::Match,
+                Some("FINALIZED"),
+                &no_identity,
+            ),
+            SetupAction::VerifyIdentities
+        );
+
+        let mut no_ready = ready_clients.clone();
+        no_ready[0].ready_snapshot = false;
+        assert_eq!(
+            select_setup_action(
+                &compatible_schema(),
+                true,
+                true,
+                true,
+                ProfileParity::Match,
+                Some("FINALIZED"),
+                &no_ready,
+            ),
+            SetupAction::CreateReadySnapshots
+        );
+
+        assert_eq!(
+            select_setup_action(
+                &compatible_schema(),
+                true,
+                true,
+                true,
+                ProfileParity::Match,
+                Some("FINALIZED"),
+                &ready_clients,
+            ),
+            SetupAction::Ready
+        );
+    }
+
+    #[test]
     fn ready_requires_all_ready_snapshots() {
         let mut clients = vec![client(true, true), client(true, true), client(false, true)];
         assert_eq!(
