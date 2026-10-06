@@ -67,7 +67,10 @@ import {
 } from "../domains/progression/progression-counter-evidence.js";
 import { deriveScriptInventoryLifecycleEvidence } from "../domains/inventory/inventory-lifecycle-evidence.js";
 import { deriveScriptGlobalLeaseEvidence } from "../domains/arena/global-lease-evidence.js";
-import { derivePersistentDataLifecycleEvidence } from "../domains/persistence/persistent-data-lifecycle.js";
+import {
+  derivePersistentDataLifecycleEvidence,
+  deriveResultAuditRecordEvidence,
+} from "../domains/persistence/persistent-data-lifecycle.js";
 import { inferPersistentStateScopes } from "../domains/persistence/persistent-state-scope.js";
 import { inferPersistentStateLifetimes } from "../domains/persistence/persistent-state-lifetime.js";
 
@@ -1881,6 +1884,11 @@ export function parseScriptFile(
       text,
       source,
     );
+  const resultAuditRecordEvidence =
+    deriveResultAuditRecordEvidence(
+      text,
+      source,
+    );
   const topLevelFunctionNames = new Set(
     file.statements
       .filter(ts.isFunctionDeclaration)
@@ -2708,6 +2716,9 @@ export function parseScriptFile(
     ],
     persistentDataLifecycleEvidence: [
       ...persistentDataLifecycleEvidence,
+    ],
+    resultAuditRecordEvidence: [
+      ...resultAuditRecordEvidence,
     ],
     persistentStateScopes:
       inferPersistentStateScopes(

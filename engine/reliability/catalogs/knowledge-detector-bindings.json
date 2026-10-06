@@ -373,6 +373,18 @@
       ]
     },
     {
+      "knowledgeId": "round-policy.result-audit-record",
+      "consumer": "persistence-source-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/persistence/persistent-data-lifecycle.ts",
+        "engine/packages/orchestrator/src/inspection/persistence-source-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/persistence-source-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "round-policy.result-state-machine",
       "consumer": "progression-actor-accounting-analysis",
       "analyzerPaths": [

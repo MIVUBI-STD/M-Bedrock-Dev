@@ -45,8 +45,24 @@ export interface PersistenceReconnectRestoreRisk {
   reason: string;
 }
 
+export interface PersistenceResultAuditRecordAssessment {
+  readonly scriptId: string;
+  readonly propertyKey: string;
+  readonly status:
+    | "complete"
+    | "partial";
+  readonly semanticFields:
+    readonly string[];
+  readonly missingRequiredFields:
+    readonly string[];
+}
+
 export interface PersistenceSourceAnalysis {
   properties: readonly PersistenceSourceProperty[];
+  resultAuditRecords:
+    readonly PersistenceResultAuditRecordAssessment[];
+  completeResultAuditRecords: number;
+  partialResultAuditRecords: number;
   reconnectTransientRestoreRisks:
     readonly PersistenceReconnectRestoreRisk[];
   appendWithoutClear: number;
@@ -227,8 +243,40 @@ export function analyzePersistenceSource(
     )
   );
 
+  const resultAuditRecords =
+    scripts.flatMap((script) =>
+      (
+        script.resultAuditRecordEvidence ??
+        []
+      ).map((item) => ({
+        scriptId: script.identifier,
+        propertyKey: item.propertyKey,
+        status: item.status,
+        semanticFields:
+          [...item.semanticFields],
+        missingRequiredFields:
+          [...item.missingRequiredFields],
+      }))
+    ).sort((a, b) =>
+      a.scriptId.localeCompare(b.scriptId) ||
+      a.propertyKey.localeCompare(
+        b.propertyKey,
+      )
+    );
+
   return {
     properties,
+    resultAuditRecords,
+    completeResultAuditRecords:
+      resultAuditRecords.filter(
+        (item) =>
+          item.status === "complete",
+      ).length,
+    partialResultAuditRecords:
+      resultAuditRecords.filter(
+        (item) =>
+          item.status === "partial",
+      ).length,
     reconnectTransientRestoreRisks,
     appendWithoutClear:
       properties.filter(

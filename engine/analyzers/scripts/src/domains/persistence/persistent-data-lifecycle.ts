@@ -171,3 +171,341 @@ export function derivePersistentDataLifecycleEvidence(
     }))
     .sort((a, b) => a.propertyKey.localeCompare(b.propertyKey));
 }
+
+
+export type ResultAuditRecordSemanticField =
+  | "arena-generation"
+  | "result-id"
+  | "terminal-reason"
+  | "participant-snapshot-or-revision"
+  | "objective-evidence"
+  | "commit-tick"
+  | "reward-operation-id"
+  | "side";
+
+export interface ScriptResultAuditRecordEvidence {
+  readonly propertyKey: string;
+  readonly executionRegion: string;
+  readonly fields: readonly string[];
+  readonly semanticFields:
+    readonly ResultAuditRecordSemanticField[];
+  readonly missingRequiredFields:
+    readonly ResultAuditRecordSemanticField[];
+  readonly status: "complete" | "partial";
+  readonly source: SourceRef;
+}
+
+const RESULT_RECORD_KEY =
+  /(?:result|audit|journal)/i;
+
+const RESULT_FIELD_ALIASES: Readonly<
+  Record<
+    Exclude<
+      ResultAuditRecordSemanticField,
+      "side"
+    >,
+    readonly RegExp[]
+  >
+> = {
+  "arena-generation": [
+    /^(?:arena)?generation(?:id)?$/i,
+  ],
+  "result-id": [
+    /^result(?:id|token|operationid)?$/i,
+  ],
+  "terminal-reason": [
+    /^(?:terminal|result|outcome)?reason$/i,
+  ],
+  "participant-snapshot-or-revision": [
+    /^(?:participants?|participantids?|participantrevision|roster|members?)$/i,
+  ],
+  "objective-evidence": [
+    /^(?:objective|objectiveevidence|score|resultevidence)$/i,
+  ],
+  "commit-tick": [
+    /^(?:committick|committedattick|tick)$/i,
+  ],
+  "reward-operation-id": [
+    /^(?:rewardoperationid|rewardop|rewardid)$/i,
+  ],
+};
+
+function persistenceExecutionRegion(
+  node: ts.Node,
+  file: ts.SourceFile,
+): string {
+  let current: ts.Node | undefined =
+    node.parent;
+  while (current) {
+    if (
+      ts.isFunctionDeclaration(current) &&
+      current.name
+    ) {
+      return "function:" +
+        current.name.text;
+    }
+    if (ts.isMethodDeclaration(current)) {
+      const name = current.name;
+      if (
+        ts.isIdentifier(name) ||
+        ts.isStringLiteralLike(name)
+      ) {
+        return "function:" + name.text;
+      }
+    }
+    if (
+      ts.isArrowFunction(current) ||
+      ts.isFunctionExpression(current)
+    ) {
+      const start =
+        file.getLineAndCharacterOfPosition(
+          current.getStart(file),
+        );
+      return (
+        "callback@" +
+        (start.line + 1) +
+        ":" +
+        (start.character + 1)
+      );
+    }
+    current = current.parent;
+  }
+  return "module";
+}
+
+function objectFieldNames(
+  expression: ts.Expression | undefined,
+  objects: ReadonlyMap<
+    string,
+    ts.ObjectLiteralExpression
+  >,
+): string[] | undefined {
+  if (!expression) return undefined;
+
+  if (
+    ts.isCallExpression(expression) &&
+    ts.isPropertyAccessExpression(
+      expression.expression,
+    ) &&
+    expression.expression.expression.getText() ===
+      "JSON" &&
+    expression.expression.name.text ===
+      "stringify"
+  ) {
+    return objectFieldNames(
+      expression.arguments[0],
+      objects,
+    );
+  }
+
+  if (ts.isIdentifier(expression)) {
+    const resolved =
+      objects.get(expression.text);
+    return resolved
+      ? objectFieldNames(
+          resolved,
+          objects,
+        )
+      : undefined;
+  }
+
+  if (!ts.isObjectLiteralExpression(expression)) {
+    return undefined;
+  }
+
+  return expression.properties
+    .flatMap((property) => {
+      if (
+        !ts.isPropertyAssignment(property) &&
+        !ts.isShorthandPropertyAssignment(
+          property,
+        )
+      ) {
+        return [];
+      }
+      const name =
+        ts.isShorthandPropertyAssignment(
+          property,
+        )
+          ? property.name.text
+          : property.name &&
+              (
+                ts.isIdentifier(
+                  property.name,
+                ) ||
+                ts.isStringLiteralLike(
+                  property.name,
+                )
+              )
+            ? property.name.text
+            : undefined;
+      return name ? [name] : [];
+    })
+    .sort();
+}
+
+function semanticResultFields(
+  fields: readonly string[],
+): ResultAuditRecordSemanticField[] {
+  const output =
+    new Set<ResultAuditRecordSemanticField>();
+  for (const field of fields) {
+    const normalized =
+      field.replace(/[^A-Za-z0-9]/g, "");
+    for (
+      const [semantic, patterns] of
+        Object.entries(
+          RESULT_FIELD_ALIASES,
+        ) as [
+          Exclude<
+            ResultAuditRecordSemanticField,
+            "side"
+          >,
+          readonly RegExp[],
+        ][]
+    ) {
+      if (
+        patterns.some((pattern) =>
+          pattern.test(normalized)
+        )
+      ) {
+        output.add(semantic);
+      }
+    }
+    if (
+      /^(?:winner|winningSide|winnerId|loser|losingSide|teamId)$/i.test(
+        normalized,
+      )
+    ) {
+      output.add("side");
+    }
+  }
+  return [...output].sort();
+}
+
+const REQUIRED_RESULT_FIELDS:
+  readonly Exclude<
+    ResultAuditRecordSemanticField,
+    "side"
+  >[] = [
+    "arena-generation",
+    "result-id",
+    "terminal-reason",
+    "participant-snapshot-or-revision",
+    "objective-evidence",
+    "commit-tick",
+    "reward-operation-id",
+  ];
+
+export function deriveResultAuditRecordEvidence(
+  text: string,
+  source: SourceRef,
+): ScriptResultAuditRecordEvidence[] {
+  const file = ts.createSourceFile(
+    source.relativePath,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    scriptKind(source.relativePath),
+  );
+  const objects =
+    new Map<
+      string,
+      ts.ObjectLiteralExpression
+    >();
+
+  const collect = (node: ts.Node): void => {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.initializer &&
+      ts.isObjectLiteralExpression(
+        node.initializer,
+      )
+    ) {
+      objects.set(
+        node.name.text,
+        node.initializer,
+      );
+    }
+    ts.forEachChild(node, collect);
+  };
+  collect(file);
+
+  const output:
+    ScriptResultAuditRecordEvidence[] = [];
+
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(
+        node.expression,
+      ) &&
+      node.expression.name.text ===
+        "setDynamicProperty"
+    ) {
+      const key = node.arguments[0];
+      const propertyKey =
+        key &&
+        ts.isStringLiteralLike(key)
+          ? key.text
+          : undefined;
+      if (
+        propertyKey &&
+        RESULT_RECORD_KEY.test(
+          propertyKey,
+        )
+      ) {
+        const fields =
+          objectFieldNames(
+            node.arguments[1],
+            objects,
+          );
+        if (fields) {
+          const semanticFields =
+            semanticResultFields(fields);
+          const missingRequiredFields =
+            REQUIRED_RESULT_FIELDS
+              .filter(
+                (field) =>
+                  !semanticFields.includes(
+                    field,
+                  ),
+              );
+          output.push({
+            propertyKey,
+            executionRegion:
+              persistenceExecutionRegion(
+                node,
+                file,
+              ),
+            fields,
+            semanticFields,
+            missingRequiredFields,
+            status:
+              missingRequiredFields.length === 0
+                ? "complete"
+                : "partial",
+            source:
+              nodeSource(
+                file,
+                node,
+                source,
+              ),
+          });
+        }
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+
+  return output.sort((a, b) =>
+    a.propertyKey.localeCompare(
+      b.propertyKey,
+    ) ||
+    a.executionRegion.localeCompare(
+      b.executionRegion,
+    )
+  );
+}

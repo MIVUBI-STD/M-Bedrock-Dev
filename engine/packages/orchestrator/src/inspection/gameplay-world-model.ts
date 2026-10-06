@@ -323,6 +323,20 @@ export interface GameplayWorldModel {
     worldScopedAppendWithoutClear: number;
     unknownScope: number;
     unknownLifetime: number;
+    resultAuditRecords: number;
+    completeResultAuditRecords: number;
+    partialResultAuditRecords: number;
+    resultAuditRecordDetails: readonly {
+      scriptId: string;
+      propertyKey: string;
+      status:
+        | "complete"
+        | "partial";
+      semanticFields:
+        readonly string[];
+      missingRequiredFields:
+        readonly string[];
+    }[];
     reconnectTransientRestoreRiskCount: number;
     reconnectTransientRestoreRisks: readonly {
       scriptId: string;

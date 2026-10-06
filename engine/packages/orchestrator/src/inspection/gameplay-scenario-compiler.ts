@@ -1596,6 +1596,28 @@ function runtimeEdgeState(
         return reconnectContamination;
       }
 
+      const scopedResultRecords =
+        (world.persistence
+          ?.resultAuditRecordDetails ?? [])
+          .filter((item) =>
+            scriptMatchesScenarioScope(
+              item.scriptId,
+              sourceLocators,
+            )
+          );
+      if (
+        scopedResultRecords.some(
+          (item) =>
+            item.status === "partial",
+        )
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Durable result journal exists but does not carry the full recovery identity required for result/reward replay safety.",
+        };
+      }
+
       if (
         scopedProperties.some(
           (item) =>
@@ -1695,6 +1717,18 @@ function runtimeEdgeState(
         ),
         sourceLocators,
       );
+      if (
+        scopedResultMachines.length > 0 &&
+        (world.persistence
+          ?.completeResultAuditRecords ?? 0) === 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Result/terminal lifecycle is present but no complete durable result audit/recovery record is source-proven.",
+        };
+      }
+
       if (
         scopedResultMachines.some(
           (item) => item.status === "unresolved",

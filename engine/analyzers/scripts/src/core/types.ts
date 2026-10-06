@@ -8,7 +8,10 @@ import type { ScriptCombatLifecycleEvidence } from "../domains/combat/combat-lif
 import type { ScriptInventoryLifecycleEvidence } from "../domains/inventory/inventory-lifecycle-evidence.js";
 import type { ScriptGlobalLeaseEvidence } from "../domains/arena/global-lease-evidence.js";
 import type { ScriptCleanupResourceEvidence } from "../domains/cleanup/cleanup-resource-evidence.js";
-import type { PersistentDataLifecycleEvidence } from "../domains/persistence/persistent-data-lifecycle.js";
+import type {
+  PersistentDataLifecycleEvidence,
+  ScriptResultAuditRecordEvidence,
+} from "../domains/persistence/persistent-data-lifecycle.js";
 import type { PersistentStateScopeEvidence } from "../domains/persistence/persistent-state-scope.js";
 import type { PersistentStateLifetimeEvidence } from "../domains/persistence/persistent-state-lifetime.js";
 import type { ScriptSpatialMutationEvidence, ScriptSpatialMutationRejection } from "../domains/spatial/spatial-mutation-evidence.js";
@@ -476,6 +479,7 @@ export interface ParsedScriptFile {
   inventoryLifecycleEvidence?: ScriptInventoryLifecycleEvidence[];
   globalLeaseEvidence?: ScriptGlobalLeaseEvidence[];
   persistentDataLifecycleEvidence?: PersistentDataLifecycleEvidence[];
+  resultAuditRecordEvidence?: ScriptResultAuditRecordEvidence[];
   persistentStateScopes?: PersistentStateScopeEvidence[];
   persistentStateLifetimes?: PersistentStateLifetimeEvidence[];
   repairTransformHints?: RepairSourceTransformHint[];
