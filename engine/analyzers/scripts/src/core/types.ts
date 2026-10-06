@@ -373,7 +373,8 @@ export interface ScriptArenaAuthorityEvidence {
     | "generation-invalidate"
     | "start-owner-guard"
     | "start-owner-acquire"
-    | "start-state-commit";
+    | "start-state-commit"
+    | "ready-set-snapshot-risk";
   arenaExpression: string;
   subjectExpression?: string;
   membershipExpression?: string;
@@ -381,6 +382,8 @@ export interface ScriptArenaAuthorityEvidence {
   ownerExpression?: string;
   generationExpression?: string;
   stateExpression?: string;
+  snapshotExpression?: string;
+  revalidationExpression?: string;
   executionRegion: string;
   source: SourceRef;
 }

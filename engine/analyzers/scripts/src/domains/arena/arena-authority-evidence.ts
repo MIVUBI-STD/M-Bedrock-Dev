@@ -18,6 +18,8 @@ export interface ScriptTerminalIdempotencyEvidence {
 
 const MEMBERSHIP_PROPERTY =
   /^(?:members|players|participants|memberships)$/i;
+const READY_PROPERTY =
+  /^(?:ready|readyPlayers|readyMembers|readyParticipants)$/i;
 const CAPACITY_PROPERTY =
   /^(?:maxPlayers|maxParticipants|capacity)$/i;
 const GENERATION_PROPERTY =
@@ -678,6 +680,224 @@ function startStateCommitEvidence(
   };
 }
 
+
+function arenaCollectionCount(
+  expression: ts.Expression,
+  file: ts.SourceFile,
+): { arena: string; collection: string } | undefined {
+  if (
+    !ts.isPropertyAccessExpression(expression) ||
+    !["size", "length"].includes(expression.name.text) ||
+    !ts.isPropertyAccessExpression(expression.expression)
+  ) {
+    return undefined;
+  }
+  const collection = expression.expression;
+  if (
+    !MEMBERSHIP_PROPERTY.test(collection.name.text) &&
+    !READY_PROPERTY.test(collection.name.text)
+  ) {
+    return undefined;
+  }
+  return {
+    arena: collection.expression.getText(file),
+    collection: collection.getText(file),
+  };
+}
+
+function nodeContainsIdentifier(
+  node: ts.Node,
+  identifier: string,
+): boolean {
+  let found = false;
+  const visit = (current: ts.Node): void => {
+    if (found) return;
+    if (
+      ts.isIdentifier(current) &&
+      current.text === identifier
+    ) {
+      found = true;
+      return;
+    }
+    ts.forEachChild(current, visit);
+  };
+  visit(node);
+  return found;
+}
+
+function delayedReadySnapshotEvidence(
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptArenaAuthorityEvidence[] {
+  const snapshots = new Map<string, {
+    arena: string;
+    collection: string;
+    region: string;
+    start: number;
+  }>();
+
+  const collect = (node: ts.Node): void => {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.initializer
+    ) {
+      const count =
+        arenaCollectionCount(
+          node.initializer,
+          file,
+        );
+      if (count) {
+        snapshots.set(node.name.text, {
+          ...count,
+          region:
+            localExecutionRegionId(
+              node,
+              file,
+            ),
+          start:
+            node.getStart(file),
+        });
+      }
+    }
+    ts.forEachChild(node, collect);
+  };
+  collect(file);
+
+  const output:
+    ScriptArenaAuthorityEvidence[] = [];
+
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(
+        node.expression,
+      ) &&
+      node.expression.expression.getText(file) === "system" &&
+      /^(?:run|runTimeout|runInterval|runJob)$/.test(
+        node.expression.name.text,
+      )
+    ) {
+      const callback = node.arguments[0];
+      if (
+        callback &&
+        (
+          ts.isArrowFunction(callback) ||
+          ts.isFunctionExpression(callback)
+        )
+      ) {
+        let startCommit = false;
+        let liveArenaCount:
+          string | undefined;
+
+        const scan = (inner: ts.Node): void => {
+          const value =
+            assignment(inner);
+          if (value) {
+            const target =
+              directProperty(
+                value.left,
+              );
+            const state =
+              startStateValue(
+                value.right,
+              );
+            if (
+              target &&
+              START_STATE_PROPERTY.test(
+                target.property,
+              ) &&
+              state !== undefined &&
+              START_STATE_VALUE.test(
+                state,
+              )
+            ) {
+              startCommit = true;
+            }
+          }
+
+          if (
+            ts.isPropertyAccessExpression(
+              inner,
+            )
+          ) {
+            const count =
+              arenaCollectionCount(
+                inner,
+                file,
+              );
+            if (count) {
+              liveArenaCount ??=
+                count.arena;
+            }
+          }
+          ts.forEachChild(
+            inner,
+            scan,
+          );
+        };
+        scan(callback.body);
+
+        if (startCommit) {
+          const schedulerRegion =
+            localExecutionRegionId(
+              node,
+              file,
+            );
+          for (
+            const [binding, snapshot]
+              of snapshots
+          ) {
+            if (
+              snapshot.region !==
+                schedulerRegion ||
+              snapshot.start >=
+                node.getStart(file) ||
+              !nodeContainsIdentifier(
+                callback.body,
+                binding,
+              ) ||
+              liveArenaCount ===
+                snapshot.arena
+            ) {
+              continue;
+            }
+            output.push({
+              kind:
+                "ready-set-snapshot-risk",
+              arenaExpression:
+                snapshot.arena,
+              membershipExpression:
+                snapshot.collection,
+              subjectExpression:
+                binding,
+              snapshotExpression:
+                binding +
+                "=" +
+                snapshot.collection,
+              executionRegion:
+                localExecutionRegionId(
+                  callback,
+                  file,
+                ),
+              source:
+                lineSource(
+                  file,
+                  callback,
+                  source,
+                ),
+            });
+          }
+        }
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+
+  return output;
+}
+
 function evidenceKey(
   evidence: ScriptArenaAuthorityEvidence,
 ): string {
@@ -986,7 +1206,12 @@ export function deriveScriptArenaAuthorityEvidence(
     scriptKind(source.relativePath),
   );
 
-  const output: ScriptArenaAuthorityEvidence[] = [];
+  const output: ScriptArenaAuthorityEvidence[] = [
+    ...delayedReadySnapshotEvidence(
+      file,
+      source,
+    ),
+  ];
 
   const visit = (node: ts.Node): void => {
     const membership =

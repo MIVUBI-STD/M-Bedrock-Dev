@@ -105,6 +105,13 @@ export interface ArenaLifecycleAnalysis {
   unresolvedTerminalRaces: number;
   protectedDeferredMutations: number;
   unresolvedDeferredMutations: number;
+  staleReadySnapshotRisks: number;
+  readySetSnapshotRisks: readonly {
+    scriptId: string;
+    arenaExpression: string;
+    executionRegion: string;
+    snapshotExpression?: string;
+  }[];
   deferredMutations:
     readonly ArenaDeferredMutationAssessment[];
   assessments: readonly ArenaLifecycleTerminalAssessment[];
@@ -1617,6 +1624,36 @@ export function analyzeArenaLifecycleConvergence(
       scripts,
       crossFileCalls,
     );
+  const readySetSnapshotRisks =
+    scripts.flatMap((script) =>
+      (script.arenaAuthorityEvidence ?? [])
+        .filter(
+          (item) =>
+            item.kind ===
+              "ready-set-snapshot-risk",
+        )
+        .map((item) => ({
+          scriptId:
+            script.identifier,
+          arenaExpression:
+            item.arenaExpression,
+          executionRegion:
+            item.executionRegion,
+          ...(item.snapshotExpression === undefined
+            ? {}
+            : {
+                snapshotExpression:
+                  item.snapshotExpression,
+              }),
+        }))
+    ).sort((a, b) =>
+      a.scriptId.localeCompare(
+        b.scriptId,
+      ) ||
+      a.executionRegion.localeCompare(
+        b.executionRegion,
+      )
+    );
 
   return {
     terminalCandidates:
@@ -1675,6 +1712,9 @@ export function analyzeArenaLifecycleConvergence(
           item.status ===
             "unresolved",
       ).length,
+    staleReadySnapshotRisks:
+      readySetSnapshotRisks.length,
+    readySetSnapshotRisks,
     deferredMutations,
     assessments,
     ...(crossFileCalls.length === 0

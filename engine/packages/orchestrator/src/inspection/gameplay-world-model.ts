@@ -146,6 +146,13 @@ export interface GameplayWorldModel {
       unresolvedTerminalRaces: number;
       protectedDeferredMutations: number;
       unresolvedDeferredMutations: number;
+      staleReadySnapshotRisks: number;
+      readySetSnapshotRisks: readonly {
+        scriptId: string;
+        arenaExpression: string;
+        executionRegion: string;
+        snapshotExpression?: string;
+      }[];
       deferredMutations: readonly {
         scriptId: string;
         scheduler:
@@ -1732,6 +1739,27 @@ export function deriveGameplayWorldModel(
         unresolvedDeferredMutations:
           source.arena.lifecycle
             ?.unresolvedDeferredMutations ?? 0,
+        staleReadySnapshotRisks:
+          source.arena.lifecycle
+            ?.staleReadySnapshotRisks ?? 0,
+        readySetSnapshotRisks:
+          source.arena.lifecycle
+            ?.readySetSnapshotRisks.map(
+              (item) => ({
+                scriptId:
+                  item.scriptId,
+                arenaExpression:
+                  item.arenaExpression,
+                executionRegion:
+                  item.executionRegion,
+                ...(item.snapshotExpression === undefined
+                  ? {}
+                  : {
+                      snapshotExpression:
+                        item.snapshotExpression,
+                    }),
+              }),
+            ) ?? [],
         deferredMutations:
           source.arena.lifecycle
             ?.deferredMutations.map((item) => ({

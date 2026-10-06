@@ -533,4 +533,40 @@ describe("arena lifecycle convergence", () => {
       result.unresolvedDeferredMutations,
     ).toBe(0);
   });
+
+  it("surfaces delayed start callbacks that reuse a stale ready-set snapshot", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function beginCountdown(arena) {",
+        "  const readyCount = arena.readyPlayers.size;",
+        "  system.runTimeout(() => {",
+        "    if (readyCount < arena.maxPlayers) return;",
+        "    arena.state = 'active';",
+        "  }, 20);",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath:
+          "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeArenaLifecycleConvergence(
+        [script],
+      );
+
+    expect(
+      result.staleReadySnapshotRisks,
+    ).toBe(1);
+    expect(
+      result.readySetSnapshotRisks[0],
+    ).toMatchObject({
+      arenaExpression: "arena",
+      snapshotExpression:
+        "readyCount=arena.readyPlayers",
+    });
+  });
 });

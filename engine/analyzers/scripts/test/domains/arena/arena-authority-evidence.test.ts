@@ -142,4 +142,61 @@ describe("arena authority evidence", () => {
     expect(parsed.arenaAuthorityEvidence).toEqual([]);
     expect(parsed.arenaAuthorityPaths).toEqual([]);
   });
+
+  it("flags a ready-set snapshot reused by a delayed start callback", () => {
+    const parsed = parseScriptFile(
+      "arena",
+      [
+        "function beginCountdown(arena) {",
+        "  const readyCount = arena.readyPlayers.size;",
+        "  system.runTimeout(() => {",
+        "    if (readyCount < arena.maxPlayers) return;",
+        "    arena.state = 'active';",
+        "  }, 20);",
+        "}",
+      ].join("\n"),
+      source,
+    );
+
+    expect(
+      parsed.arenaAuthorityEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind:
+            "ready-set-snapshot-risk",
+          arenaExpression: "arena",
+          subjectExpression:
+            "readyCount",
+          membershipExpression:
+            "arena.readyPlayers",
+        }),
+      ]),
+    );
+  });
+
+  it("does not flag a delayed start that re-reads the current ready set", () => {
+    const parsed = parseScriptFile(
+      "arena",
+      [
+        "function beginCountdown(arena) {",
+        "  const readyCount = arena.readyPlayers.size;",
+        "  system.runTimeout(() => {",
+        "    if (arena.readyPlayers.size < arena.maxPlayers) return;",
+        "    arena.state = 'active';",
+        "  }, 20);",
+        "}",
+      ].join("\n"),
+      source,
+    );
+
+    expect(
+      parsed.arenaAuthorityEvidence
+        ?.some(
+          (item) =>
+            item.kind ===
+              "ready-set-snapshot-risk",
+        ),
+    ).toBe(false);
+  });
 });
