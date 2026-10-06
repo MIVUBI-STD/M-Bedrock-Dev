@@ -188,3 +188,11 @@ Player Lifecycle feeds:
 - cross-system checks for reconnect × inventory, reconnect × death/respawn, retry/recovery, terminal collision, and deferred ownership.
 
 It remains subordinate to the canonical selected-map audit and [Bug-Finding Coverage](./bug-finding-coverage.md).
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [Player Life](../../engine/knowledge/player-runtime/player-life-bedrock.json)
+- [Player Runtime](../../engine/knowledge/player-runtime/player-runtime-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
