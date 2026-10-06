@@ -4,6 +4,9 @@
 #ifndef SourceDir
   #error SourceDir is required
 #endif
+#ifndef UiDir
+  #error UiDir is required
+#endif
 
 [Setup]
 AppId={{9C43645A-B9CF-4D02-B0D7-8EA26D53BA42}
@@ -28,6 +31,7 @@ VersionInfoVersion={#AppVersion}
 Source: "{#SourceDir}\virtual-clients.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\virtual-clients-bridge.exe"; DestDir: "{app}\bridge"; Flags: ignoreversion
 Source: "{#SourceDir}\virtual-guest-agent.exe"; DestDir: "{app}\guest"; Flags: ignoreversion
+Source: "{#UiDir}\*"; DestDir: "{app}\ui"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\guest\windows\*.ps1"; DestDir: "{app}\guest\windows"; Flags: ignoreversion
 Source: "..\..\acceptance\windows\*.ps1"; DestDir: "{app}\acceptance\windows"; Flags: ignoreversion
 Source: "..\release-channel.json"; DestDir: "{app}\distribution"; Flags: ignoreversion

@@ -8,6 +8,9 @@ on:
       - "experiments/virtual-clients/distribution/**"
       - "experiments/virtual-clients/guest/windows/**"
       - "experiments/virtual-clients/acceptance/windows/**"
+      - "apps/virtual-clients-ui/**"
+      - "package.json"
+      - "package-lock.json"
       - ".github/workflows/virtual-clients-installer-verify.yml"
       - ".github/workflows/virtual-clients-trusted-release.yml"
 
@@ -27,6 +30,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Setup Node 24.21.0
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.21.0
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build Virtual Clients UI
+        run: npm run virtual-clients-ui:build
+
       - name: Install Rust 1.98.1
         shell: pwsh
         run: |
@@ -43,6 +58,9 @@ jobs:
             'Checkout exact tagged source',
             'Validate release identity',
             'Validate PowerShell scripts',
+            'Setup Node 24.21.0',
+            'Install frontend dependencies',
+            'Build Virtual Clients UI',
             'Install Rust 1.98.1',
             'Verify backend',
             'Build trusted binaries',
@@ -148,9 +166,11 @@ jobs:
         shell: pwsh
         run: |
           $source = (Resolve-Path 'experiments/virtual-clients/backend/target/release').Path
+          $ui = (Resolve-Path 'dist/virtual-clients-ui').Path
           & '${{ steps.inno.outputs.path }}' `
             "/DAppVersion=${{ steps.version.outputs.value }}" `
             "/DSourceDir=$source" `
+            "/DUiDir=$ui" `
             'experiments/virtual-clients/distribution/windows/virtual-clients.iss'
           if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed: $LASTEXITCODE" }
 
@@ -175,12 +195,17 @@ jobs:
           $prepare = Join-Path $installDir 'guest\windows\prepare-base.ps1'
           $finalize = Join-Path $installDir 'guest\windows\finalize-base.ps1'
           $acceptance = Join-Path $installDir 'acceptance\windows\collect-acceptance.ps1'
+          $uiIndex = Join-Path $installDir 'ui\index.html'
+          $uiAssets = Join-Path $installDir 'ui\assets'
           if (!(Test-Path $hostExe -PathType Leaf)) { throw 'Host executable missing after install.' }
           if (!(Test-Path $bridgeExe -PathType Leaf)) { throw 'Bridge executable missing after install.' }
           if (!(Test-Path $guestExe -PathType Leaf)) { throw 'Guest Agent executable missing after install.' }
           if (!(Test-Path $prepare -PathType Leaf)) { throw 'Guest Base preparation script missing after install.' }
           if (!(Test-Path $finalize -PathType Leaf)) { throw 'Guest Base finalization script missing after install.' }
           if (!(Test-Path $acceptance -PathType Leaf)) { throw 'Acceptance evidence collector missing after install.' }
+          if (!(Test-Path $uiIndex -PathType Leaf)) { throw 'Virtual Clients UI index missing after install.' }
+          if (!(Test-Path $uiAssets -PathType Container)) { throw 'Virtual Clients UI assets missing after install.' }
+          if (@(Get-ChildItem $uiAssets -Filter '*.js' -File).Count -lt 1) { throw 'Virtual Clients UI JavaScript bundle missing after install.' }
 
           & $hostExe help | Out-Host
           if ($LASTEXITCODE -ne 0) { throw 'Installed host executable smoke test failed.' }
