@@ -403,6 +403,8 @@ export interface GameplayWorldModel {
     broadSpawnRecoveryRisks: number;
     otherSpecificSpawnRecoveryRoutes: number;
     entityRemoveTerminalizationRisks: number;
+    completeResidencyStateMachines: number;
+    unresolvedResidencyStateMachines: number;
     entityResidencyObservability:
       "complete" | "partial" | "absent";
     leases: readonly {
@@ -2245,6 +2247,10 @@ export function deriveGameplayWorldModel(
         source.chunkLifecycle?.otherSpecificSpawnRecoveryRoutes ?? 0,
       entityRemoveTerminalizationRisks:
         source.chunkLifecycle?.entityRemoveTerminalizationRisks ?? 0,
+      completeResidencyStateMachines:
+        source.chunkLifecycle?.completeResidencyStateMachines ?? 0,
+      unresolvedResidencyStateMachines:
+        source.chunkLifecycle?.unresolvedResidencyStateMachines ?? 0,
       entityResidencyObservability:
         source.chunkLifecycle?.entityResidencyObservability ?? "absent",
       leases:

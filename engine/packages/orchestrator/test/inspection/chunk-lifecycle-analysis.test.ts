@@ -520,6 +520,72 @@ describe("chunk lifecycle analysis", () => {
     ).toBe("complete");
   });
 
+  it("accepts an explicit complete entity residency state machine", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "type ResidencyState = 'RESIDENT' | 'UNLOADED_OR_REMOVED' | 'DEAD_CONFIRMED' | 'EXPLICITLY_REMOVED' | 'MISSING_CANDIDATE' | 'UNKNOWN';",
+        "const residencyTransitions: Record<ResidencyState, readonly ResidencyState[]> = {",
+        "  RESIDENT: ['UNLOADED_OR_REMOVED', 'DEAD_CONFIRMED', 'EXPLICITLY_REMOVED'],",
+        "  UNLOADED_OR_REMOVED: ['RESIDENT', 'MISSING_CANDIDATE', 'DEAD_CONFIRMED'],",
+        "  DEAD_CONFIRMED: [],",
+        "  EXPLICITLY_REMOVED: [],",
+        "  MISSING_CANDIDATE: ['RESIDENT', 'DEAD_CONFIRMED', 'EXPLICITLY_REMOVED', 'UNKNOWN'],",
+        "  UNKNOWN: ['RESIDENT', 'MISSING_CANDIDATE'],",
+        "};",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(
+      result.completeResidencyStateMachines,
+    ).toBe(1);
+    expect(
+      result.unresolvedResidencyStateMachines,
+    ).toBe(0);
+  });
+
+  it("keeps a found-missing style residency machine unresolved", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "type ResidencyState = 'RESIDENT' | 'MISSING_CANDIDATE';",
+        "const residencyTransitions: Record<ResidencyState, readonly ResidencyState[]> = {",
+        "  RESIDENT: ['MISSING_CANDIDATE'],",
+        "  MISSING_CANDIDATE: ['RESIDENT'],",
+        "};",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(
+      result.unresolvedResidencyStateMachines,
+    ).toBe(1);
+    expect(
+      result.residencyStateMachines[0]
+        ?.missingStates,
+    ).toEqual(
+      expect.arrayContaining([
+        "unloadedorremoved",
+        "deadconfirmed",
+        "explicitlyremoved",
+        "unknown",
+      ]),
+    );
+  });
+
   it("reports partial entity residency observability when only load is observed", () => {
     const script = parseScriptFile(
       "main",

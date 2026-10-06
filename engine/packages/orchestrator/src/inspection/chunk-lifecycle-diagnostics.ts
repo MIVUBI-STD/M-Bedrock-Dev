@@ -25,6 +25,12 @@ export function chunkLifecycleDiagnostics(
     analysis.zeroTickDeferredChunkWork > 0 ||
     analysis.broadSpawnRecoveryRisks > 0 ||
     analysis.entityRemoveTerminalizationRisks > 0 ||
+    analysis.unresolvedResidencyStateMachines > 0 ||
+    (
+      analysis.entityResidencyObservability !==
+        "absent" &&
+      analysis.completeResidencyStateMachines === 0
+    ) ||
     worldLoadReconciliationMissing;
 
   if (!strongRisk && !reviewRisk) {
@@ -70,6 +76,10 @@ export function chunkLifecycleDiagnostics(
           analysis.entityDieObservers,
         entitySpawnObservers:
           analysis.entitySpawnObservers,
+        completeResidencyStateMachines:
+          analysis.completeResidencyStateMachines,
+        unresolvedResidencyStateMachines:
+          analysis.unresolvedResidencyStateMachines,
         worldLoadReconciliationMissing,
         dynamicLeaseKeys:
           analysis.dynamicLeaseKeys,

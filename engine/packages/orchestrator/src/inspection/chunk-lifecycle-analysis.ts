@@ -20,6 +20,16 @@ export interface ChunkLeaseAssessment {
     | "readiness-unverified";
 }
 
+export interface EntityResidencyStateMachineAssessment {
+  readonly scriptId: string;
+  readonly tableName: string;
+  readonly status:
+    | "complete"
+    | "unresolved";
+  readonly missingStates:
+    readonly string[];
+}
+
 export interface ChunkLifecycleAnalysis {
   worldLoadObservers: number;
   entityLoadObservers: number;
@@ -53,6 +63,10 @@ export interface ChunkLifecycleAnalysis {
     | "complete"
     | "partial"
     | "absent";
+  residencyStateMachines:
+    readonly EntityResidencyStateMachineAssessment[];
+  completeResidencyStateMachines: number;
+  unresolvedResidencyStateMachines: number;
   leases: readonly ChunkLeaseAssessment[];
 }
 
@@ -399,6 +413,100 @@ function zeroTickDeferredChunkWorkFor(
 
 
 
+
+const REQUIRED_RESIDENCY_STATES = [
+  "resident",
+  "unloadedorremoved",
+  "deadconfirmed",
+  "explicitlyremoved",
+  "missingcandidate",
+  "unknown",
+] as const;
+
+function normalizedResidencyState(
+  value: string,
+): string {
+  return value
+    .replace(/[^A-Za-z0-9]/g, "")
+    .toLowerCase();
+}
+
+function residencyStateMachinesFor(
+  script: ParsedScriptFile,
+): EntityResidencyStateMachineAssessment[] {
+  const declarations =
+    script.transitionDeclarations ?? [];
+  const byTable =
+    new Map<
+      string,
+      typeof declarations
+    >();
+
+  for (const declaration of declarations) {
+    const states = [
+      declaration.from,
+      ...declaration.to,
+    ].map(
+      normalizedResidencyState,
+    );
+    const recognized =
+      states.filter((state) =>
+        REQUIRED_RESIDENCY_STATES.includes(
+          state as typeof REQUIRED_RESIDENCY_STATES[number],
+        )
+      ).length;
+    if (recognized === 0) {
+      continue;
+    }
+
+    const list =
+      byTable.get(
+        declaration.tableName,
+      ) ?? [];
+    byTable.set(
+      declaration.tableName,
+      [...list, declaration],
+    );
+  }
+
+  return [...byTable.entries()]
+    .map(([tableName, table]) => {
+      const states =
+        new Set(
+          table.flatMap(
+            (item) => [
+              item.from,
+              ...item.to,
+            ],
+          ).map(
+            normalizedResidencyState,
+          ),
+        );
+      const missingStates =
+        REQUIRED_RESIDENCY_STATES
+          .filter(
+            (state) =>
+              !states.has(state),
+          );
+
+      return {
+        scriptId:
+          script.identifier,
+        tableName,
+        status:
+          missingStates.length === 0
+            ? "complete" as const
+            : "unresolved" as const,
+        missingStates,
+      };
+    })
+    .sort((a, b) =>
+      a.tableName.localeCompare(
+        b.tableName,
+      )
+    );
+}
+
 function entityRemoveTerminalizationRisksFor(
   script: ParsedScriptFile,
 ): number {
@@ -722,6 +830,11 @@ export function analyzeChunkLifecycle(
       },
     );
 
+  const residencyStateMachines =
+    scripts.flatMap(
+      residencyStateMachinesFor,
+    );
+
   const entityRemoveTerminalizationRisks =
     scripts.reduce(
       (sum, script) =>
@@ -842,6 +955,19 @@ export function analyzeChunkLifecycle(
       spawnRecoveryRouting.otherSpecific,
     entityRemoveTerminalizationRisks,
     entityResidencyObservability,
+    residencyStateMachines,
+    completeResidencyStateMachines:
+      residencyStateMachines.filter(
+        (item) =>
+          item.status ===
+          "complete",
+      ).length,
+    unresolvedResidencyStateMachines:
+      residencyStateMachines.filter(
+        (item) =>
+          item.status ===
+          "unresolved",
+      ).length,
     leases,
   };
 }
