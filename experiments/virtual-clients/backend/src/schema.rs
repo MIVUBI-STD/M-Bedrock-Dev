@@ -128,14 +128,98 @@ fn write_schema_atomically(path: &Path, schema: &RuntimeSchema) -> io::Result<()
 
 #[cfg(test)]
 mod tests {
-    use super::{inspect_runtime_schema, SchemaState};
-    use std::{fs, path::PathBuf};
+    use super::{
+        ensure_runtime_schema, inspect_runtime_schema, SchemaState, CURRENT_RUNTIME_SCHEMA,
+        SCHEMA_FILE,
+    };
+    use std::{
+        fs,
+        path::PathBuf,
+        time::{SystemTime, UNIX_EPOCH},
+    };
 
     #[test]
     fn missing_schema_is_explicit() {
-        let root = PathBuf::from("__virtual_clients_missing_schema_test__");
-        let _ = fs::remove_dir_all(&root);
+        let root = unique_temp_dir("missing-schema");
         let status = inspect_runtime_schema(&root);
         assert_eq!(status.state, SchemaState::Missing);
+    }
+
+    #[test]
+    fn current_newer_older_and_malformed_schema_are_distinct() {
+        let root = unique_temp_dir("schema-states");
+        fs::create_dir_all(&root).unwrap();
+        let path = root.join(SCHEMA_FILE);
+
+        fs::write(
+            &path,
+            format!(
+                "{{\"schema\":{},\"createdBy\":\"0.1.0\",\"lastMigratedBy\":\"0.1.0\"}}",
+                CURRENT_RUNTIME_SCHEMA
+            ),
+        )
+        .unwrap();
+        assert_eq!(inspect_runtime_schema(&root).state, SchemaState::Ready);
+
+        fs::write(
+            &path,
+            format!(
+                "{{\"schema\":{},\"createdBy\":\"0.1.0\",\"lastMigratedBy\":\"0.1.0\"}}",
+                CURRENT_RUNTIME_SCHEMA + 1
+            ),
+        )
+        .unwrap();
+        assert_eq!(
+            inspect_runtime_schema(&root).state,
+            SchemaState::NewerThanApp
+        );
+        assert_eq!(
+            ensure_runtime_schema(&root).unwrap_err().kind(),
+            std::io::ErrorKind::InvalidData
+        );
+
+        if CURRENT_RUNTIME_SCHEMA > 0 {
+            fs::write(
+                &path,
+                format!(
+                    "{{\"schema\":{},\"createdBy\":\"0.1.0\",\"lastMigratedBy\":\"0.1.0\"}}",
+                    CURRENT_RUNTIME_SCHEMA - 1
+                ),
+            )
+            .unwrap();
+            assert_eq!(inspect_runtime_schema(&root).state, SchemaState::Invalid);
+            assert_eq!(
+                ensure_runtime_schema(&root).unwrap_err().kind(),
+                std::io::ErrorKind::InvalidData
+            );
+        }
+
+        fs::write(&path, "{not-json").unwrap();
+        assert_eq!(inspect_runtime_schema(&root).state, SchemaState::Invalid);
+
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn ensure_schema_creates_current_schema_once() {
+        let root = unique_temp_dir("schema-create");
+        let created = ensure_runtime_schema(&root).unwrap();
+        assert_eq!(created.schema, CURRENT_RUNTIME_SCHEMA);
+
+        let loaded = ensure_runtime_schema(&root).unwrap();
+        assert_eq!(loaded, created);
+
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    fn unique_temp_dir(label: &str) -> PathBuf {
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        std::env::temp_dir().join(format!(
+            "m-bedrock-virtual-clients-{label}-{}-{nonce}",
+            std::process::id()
+        ))
     }
 }
