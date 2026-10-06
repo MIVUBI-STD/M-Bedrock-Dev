@@ -9,6 +9,7 @@ on:
       - "experiments/virtual-clients/guest/windows/**"
       - "experiments/virtual-clients/acceptance/windows/**"
       - ".github/workflows/virtual-clients-installer-verify.yml"
+      - ".github/workflows/virtual-clients-trusted-release.yml"
 
 permissions:
   contents: read
