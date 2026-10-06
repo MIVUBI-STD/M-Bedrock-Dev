@@ -31,4 +31,3 @@ if ($rule) {
 }
 New-NetFirewallRule -DisplayName 'M-Bedrock Virtual Guest Agent' -Direction Inbound -Action Allow -Program $agent -Protocol TCP -LocalPort 47831 -RemoteAddress LocalSubnet -Profile Any | Out-Null
 
-Start-ScheduledTask -TaskName 'M-Bedrock Virtual Guest Agent'

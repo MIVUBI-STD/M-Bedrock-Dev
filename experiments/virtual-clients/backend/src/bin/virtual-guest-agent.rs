@@ -124,7 +124,6 @@ fn guest_agent_token() -> io::Result<String> {
     ))
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::timing_safe_token_eq;
