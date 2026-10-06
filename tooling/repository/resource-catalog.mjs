@@ -103,6 +103,32 @@ function catalogKnowledge(resources, seen) {
   }
 }
 
+
+function catalogEngineeringContracts(resources, seen) {
+  const ownership = readJson("engine/contracts/engineering/ownership.json");
+  for (const [group, config] of Object.entries(ownership.groups ?? {})) {
+    for (const file of config.files ?? []) {
+      const path = join(
+        "engine/contracts/engineering/catalogs",
+        file,
+      ).replaceAll("\\", "/");
+      if (!existsSync(path)) continue;
+      addResource(resources, seen, {
+        id:
+          "knowledge.engineering-contract." +
+          slug(group) +
+          "." +
+          slug(basename(file)),
+        class: "KNOWLEDGE",
+        domain: "engineering-contract",
+        authority: "CANONICAL",
+        path,
+        lifecycle: "ACTIVE",
+      });
+    }
+  }
+}
+
 function catalogReliability(resources, seen) {
   for (const [name, authority] of [
     ["catalogs", "REFERENCE"],
@@ -157,6 +183,7 @@ export function buildResourceCatalog() {
   catalogDocuments(resources, seen);
   catalogSourceModules(resources, seen);
   catalogKnowledge(resources, seen);
+  catalogEngineeringContracts(resources, seen);
   catalogReliability(resources, seen);
   catalogSchemas(resources, seen);
 
