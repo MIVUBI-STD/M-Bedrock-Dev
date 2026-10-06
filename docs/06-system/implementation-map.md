@@ -150,8 +150,8 @@ Use this before broad repository search.
 | Virtual Clients desktop presentation / typed Tauri boundary | apps/virtual-clients/ |
 | Virtual Clients Window Layout geometry / display + HWND adapter | apps/virtual-clients/src-tauri/src/engine/window_arrangement.rs |
 | Virtual Clients Screen Overlay native lifecycle | apps/virtual-clients/src-tauri/src/engine/screen_overlay.rs |
-| Virtual Clients Native Minecraft desktop launch | apps/virtual-clients/src-tauri/src/engine/native_minecraft.rs |
 | Virtual Clients guest Minecraft launch capability | virtual-clients/runtime-core/src/bin/virtual-guest-agent.rs + runtime-core/src/guest.rs |
+| Virtual Clients host-side guest Minecraft orchestration | virtual-clients/runtime-core/src/minecraft_runtime.rs |
 | Virtual Clients per-monitor DPI initialization | apps/virtual-clients/src-tauri/src/engine/dpi.rs |
 | Virtual Clients VM lifecycle, setup, resource, identity, recovery, support, and update authority | virtual-clients/runtime-core/ |
 | Virtual Clients pure lifecycle eligibility / action admission | virtual-clients/runtime-core/src/lifecycle_admission.rs |
