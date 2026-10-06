@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "reg-result-transaction-complete-result-record",
+  "lane": "regression",
+  "artifact": {
+    "label": "Durable result recovery record contains all required semantic fields",
+    "file": "engine/fixtures/regressions/result-transaction/complete-result-record.ts",
+    "sha256": "02deae992f57e9a5ace964aac3042141ed63a5e64383a566e2a3a82614531d28"
+  },
+  "target": {
+    "edition": "bedrock",
+    "minecraftVersion": "1.21.x"
+  },
+  "expected": {
+    "disposition": "designed-behavior",
+    "domain": "Round Result Transaction Integrity",
+    "proofCeiling": "STATIC VERIFIED"
+  },
+  "provenance": {
+    "frozenBeforeRun": true,
+    "source": "engine/contracts/engineering/catalogs/round-integrity-contract.json"
+  }
+}

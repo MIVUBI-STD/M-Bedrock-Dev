@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "reg-result-transaction-cleanup-before-reward-journal",
+  "lane": "regression",
+  "artifact": {
+    "label": "Destructive cleanup occurs before durable reward operation journal",
+    "file": "engine/fixtures/regressions/result-transaction/cleanup-before-reward-journal.ts",
+    "sha256": "db68cbdc1481d71159353f3b43c015d5862c3fbee792118bc845fca2ad342dae"
+  },
+  "target": {
+    "edition": "bedrock",
+    "minecraftVersion": "1.21.x"
+  },
+  "expected": {
+    "disposition": "defect",
+    "domain": "Round Result Transaction Integrity",
+    "proofCeiling": "STATIC VERIFIED",
+    "findingKey": "result-transaction.cleanup-before-reward-journal"
+  },
+  "provenance": {
+    "frozenBeforeRun": true,
+    "source": "engine/contracts/engineering/catalogs/round-integrity-contract.json"
+  }
+}

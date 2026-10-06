@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "reg-result-transaction-partial-result-record",
+  "lane": "regression",
+  "artifact": {
+    "label": "Durable result recovery record omits required recovery identity",
+    "file": "engine/fixtures/regressions/result-transaction/partial-result-record.ts",
+    "sha256": "413399b8558647082441096a80dfe855c57dd5a7bc2854e6f504f22d9915d9b3"
+  },
+  "target": {
+    "edition": "bedrock",
+    "minecraftVersion": "1.21.x"
+  },
+  "expected": {
+    "disposition": "insufficient-evidence",
+    "domain": "Round Result Transaction Integrity",
+    "proofCeiling": "STATIC VERIFIED"
+  },
+  "provenance": {
+    "frozenBeforeRun": true,
+    "source": "engine/contracts/engineering/catalogs/round-integrity-contract.json"
+  }
+}

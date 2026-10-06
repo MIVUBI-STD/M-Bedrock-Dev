@@ -4,6 +4,107 @@
   "lane": "regression",
   "cases": [
     {
+      "id": "reg_build_decode_1_1_0_bug_bad_roommaster_world_guard",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_build_decode_1_1_0_bug_bad_roommaster_world_guard",
+      "artifactFile": "Build & Decode v1.1.0.mcworld",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_build_decode_1_1_0_bug_bad_waterlog_client_desync",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_build_decode_1_1_0_bug_bad_waterlog_client_desync",
+      "artifactFile": "Build & Decode v1.1.0.mcworld",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "runtime-sensitive",
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_build_decode_1_1_0_closed_barrier_blocks_escape_claim",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/history/2026-10-05-build-decode-v1.1.0-runtime-feedback.json#closed-barrier-enclosure",
+      "artifactFile": "Build & Decode v1.1.0.mcworld",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "negative",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ],
+      "expectation": "Closed minecraft:barrier enclosure blocks the physical escape claim even when mayfly is enabled and no script position clamp exists."
+    },
+    {
+      "id": "reg_build_decode_1_1_0_domobspawning_not_manual_spawn_proof",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/history/2026-10-05-build-decode-v1.1.0-runtime-feedback.json#systemLessons",
+      "artifactFile": "Build & Decode v1.1.0.mcworld",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "negative",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ],
+      "expectation": "doMobSpawning=false must not be treated as proof that spawn eggs, /summon, script spawnEntity, structure entities, or privileged manual spawn paths are blocked."
+    },
+    {
+      "id": "reg_build_decode_1_1_0_inactive_guard_not_blocking_proof",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/history/2026-10-05-build-decode-v1.1.0-runtime-feedback.json#systemLessons",
+      "artifactFile": "Build & Decode v1.1.0.mcworld",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "negative",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ],
+      "expectation": "A protection class that exists but is not instantiated/registered must not suppress a finding as Blocking Proof."
+    },
+    {
+      "id": "reg_build_decode_1_1_0_loading_bounds_not_escape_proof",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/history/2026-10-05-build-decode-v1.1.0-runtime-feedback.json#systemLessons",
+      "artifactFile": "Build & Decode v1.1.0.mcworld",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "negative",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ],
+      "expectation": "Crossing authored loading/gameplay analysis bounds must not be promoted to physical escape without actual collision-enclosure proof."
+    },
+    {
       "id": "reg_capture_run_gate_blocked",
       "status": "candidate",
       "sourceRef": "engine/reliability/catalogs/regressions.json#reg_capture_run_gate_blocked",
@@ -19,27 +120,12 @@
       ]
     },
     {
-      "id": "reg_loadout_entity_wall_not_broken",
+      "id": "reg_defense_async_reset_lease_reuse_race",
       "status": "candidate",
-      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_loadout_entity_wall_not_broken",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_async_reset_lease_reuse_race",
       "readiness": {
         "minimizedFixture": "missing",
-        "artifactFingerprint": "missing",
-        "frozenExpectation": "missing"
-      },
-      "evidenceRole": "positive",
-      "priorityBasis": [
-        "runtime-sensitive",
-        "semantic-owner-present"
-      ]
-    },
-    {
-      "id": "reg_multi_arena_cutscene_queue",
-      "status": "candidate",
-      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_multi_arena_cutscene_queue",
-      "readiness": {
-        "minimizedFixture": "missing",
-        "artifactFingerprint": "missing",
+        "artifactFingerprint": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee",
         "frozenExpectation": "missing"
       },
       "evidenceRole": "positive",
@@ -47,85 +133,8 @@
         "runtime-sensitive",
         "semantic-owner-present",
         "explicit-invariant"
-      ]
-    },
-    {
-      "id": "reg_fotp_l1_friendly_fire_enabled",
-      "status": "candidate",
-      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_fotp_l1_friendly_fire_enabled",
-      "readiness": {
-        "minimizedFixture": "missing",
-        "artifactFingerprint": "missing",
-        "frozenExpectation": "missing"
-      },
-      "evidenceRole": "positive",
-      "priorityBasis": [
-        "semantic-owner-present",
-        "explicit-invariant"
-      ]
-    },
-    {
-      "id": "reg_fotp_l1_weapon_durability_loss",
-      "status": "candidate",
-      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_fotp_l1_weapon_durability_loss",
-      "readiness": {
-        "minimizedFixture": "missing",
-        "artifactFingerprint": "missing",
-        "frozenExpectation": "missing"
-      },
-      "evidenceRole": "positive",
-      "priorityBasis": [
-        "semantic-owner-present",
-        "intermittent-reproduction",
-        "explicit-invariant"
-      ]
-    },
-    {
-      "id": "reg_fotp_l1_knocked_player_targeted",
-      "status": "candidate",
-      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_fotp_l1_knocked_player_targeted",
-      "readiness": {
-        "minimizedFixture": "missing",
-        "artifactFingerprint": "missing",
-        "frozenExpectation": "missing"
-      },
-      "evidenceRole": "positive",
-      "priorityBasis": [
-        "repeated-across-maps",
-        "semantic-owner-present",
-        "explicit-invariant"
-      ]
-    },
-    {
-      "id": "reg_fotp_l1_self_revive_shift",
-      "status": "candidate",
-      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_fotp_l1_self_revive_shift",
-      "readiness": {
-        "minimizedFixture": "missing",
-        "artifactFingerprint": "missing",
-        "frozenExpectation": "missing"
-      },
-      "evidenceRole": "positive",
-      "priorityBasis": [
-        "repeated-across-maps",
-        "semantic-owner-present",
-        "explicit-invariant"
-      ]
-    },
-    {
-      "id": "reg_fotp_l1_upgraded_item_droppable",
-      "status": "candidate",
-      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_fotp_l1_upgraded_item_droppable",
-      "readiness": {
-        "minimizedFixture": "missing",
-        "artifactFingerprint": "missing",
-        "frozenExpectation": "missing"
-      },
-      "evidenceRole": "positive",
-      "priorityBasis": [
-        "semantic-owner-present",
-        "explicit-invariant"
-      ]
+      ],
+      "artifactFile": "Defense Challenge v1.1.1.mcworld"
     },
     {
       "id": "reg_defense_cutscene_reconnect_loadout_loss",
@@ -140,37 +149,6 @@
       "priorityBasis": [
         "repeated-across-maps",
         "runtime-sensitive",
-        "semantic-owner-present",
-        "explicit-invariant"
-      ]
-    },
-    {
-      "id": "reg_defense_l1_lobby_final_countdown_revalidation",
-      "status": "candidate",
-      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l1_lobby_final_countdown_revalidation",
-      "readiness": {
-        "minimizedFixture": "missing",
-        "artifactFingerprint": "missing",
-        "frozenExpectation": "missing"
-      },
-      "evidenceRole": "positive",
-      "priorityBasis": [
-        "runtime-sensitive",
-        "semantic-owner-present",
-        "explicit-invariant"
-      ]
-    },
-    {
-      "id": "reg_defense_l1_enchant_purchase_no_effect",
-      "status": "candidate",
-      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l1_enchant_purchase_no_effect",
-      "readiness": {
-        "minimizedFixture": "missing",
-        "artifactFingerprint": "missing",
-        "frozenExpectation": "missing"
-      },
-      "evidenceRole": "positive",
-      "priorityBasis": [
         "semantic-owner-present",
         "explicit-invariant"
       ]
@@ -191,9 +169,9 @@
       ]
     },
     {
-      "id": "reg_defense_l1_zombie_path_barrier",
+      "id": "reg_defense_l1_enchant_purchase_no_effect",
       "status": "candidate",
-      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l1_zombie_path_barrier",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l1_enchant_purchase_no_effect",
       "readiness": {
         "minimizedFixture": "missing",
         "artifactFingerprint": "missing",
@@ -201,15 +179,14 @@
       },
       "evidenceRole": "positive",
       "priorityBasis": [
-        "runtime-sensitive",
         "semantic-owner-present",
         "explicit-invariant"
       ]
     },
     {
-      "id": "reg_defense_l1_unloaded_spawn_chunk_auto_win",
+      "id": "reg_defense_l1_lobby_final_countdown_revalidation",
       "status": "candidate",
-      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l1_unloaded_spawn_chunk_auto_win",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l1_lobby_final_countdown_revalidation",
       "readiness": {
         "minimizedFixture": "missing",
         "artifactFingerprint": "missing",
@@ -239,9 +216,41 @@
       ]
     },
     {
-      "id": "reg_defense_l2_keepinventory_disabled",
+      "id": "reg_defense_l1_unloaded_spawn_chunk_auto_win",
       "status": "candidate",
-      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l2_keepinventory_disabled",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l1_unloaded_spawn_chunk_auto_win",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "runtime-sensitive",
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_defense_l1_zombie_path_barrier",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l1_zombie_path_barrier",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "runtime-sensitive",
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_defense_l2_builditems_shop_missing",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l2_builditems_shop_missing",
       "readiness": {
         "minimizedFixture": "missing",
         "artifactFingerprint": "missing",
@@ -254,9 +263,9 @@
       ]
     },
     {
-      "id": "reg_defense_l2_builditems_shop_missing",
+      "id": "reg_defense_l2_keepinventory_disabled",
       "status": "candidate",
-      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l2_builditems_shop_missing",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l2_keepinventory_disabled",
       "readiness": {
         "minimizedFixture": "missing",
         "artifactFingerprint": "missing",
@@ -316,23 +325,6 @@
       "artifactFile": "Defense Challenge v1.1.1.mcworld"
     },
     {
-      "id": "reg_defense_async_reset_lease_reuse_race",
-      "status": "candidate",
-      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_async_reset_lease_reuse_race",
-      "readiness": {
-        "minimizedFixture": "missing",
-        "artifactFingerprint": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee",
-        "frozenExpectation": "missing"
-      },
-      "evidenceRole": "positive",
-      "priorityBasis": [
-        "runtime-sensitive",
-        "semantic-owner-present",
-        "explicit-invariant"
-      ],
-      "artifactFile": "Defense Challenge v1.1.1.mcworld"
-    },
-    {
       "id": "reg_defense_visible_arena_capacity_reduced",
       "status": "candidate",
       "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_visible_arena_capacity_reduced",
@@ -349,13 +341,105 @@
       ]
     },
     {
-      "id": "reg_build_decode_1_1_0_bug_bad_waterlog_client_desync",
+      "id": "reg_fotp_l1_friendly_fire_enabled",
       "status": "candidate",
-      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_build_decode_1_1_0_bug_bad_waterlog_client_desync",
-      "artifactFile": "Build & Decode v1.1.0.mcworld",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_fotp_l1_friendly_fire_enabled",
       "readiness": {
         "minimizedFixture": "missing",
-        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_fotp_l1_knocked_player_targeted",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_fotp_l1_knocked_player_targeted",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "repeated-across-maps",
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_fotp_l1_self_revive_shift",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_fotp_l1_self_revive_shift",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "repeated-across-maps",
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_fotp_l1_upgraded_item_droppable",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_fotp_l1_upgraded_item_droppable",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_fotp_l1_weapon_durability_loss",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_fotp_l1_weapon_durability_loss",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "intermittent-reproduction",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_loadout_entity_wall_not_broken",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_loadout_entity_wall_not_broken",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "runtime-sensitive",
+        "semantic-owner-present"
+      ]
+    },
+    {
+      "id": "reg_multi_arena_cutscene_queue",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_multi_arena_cutscene_queue",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
       "evidenceRole": "positive",
@@ -366,14 +450,13 @@
       ]
     },
     {
-      "id": "reg_build_decode_1_1_0_bug_bad_roommaster_world_guard",
-      "status": "candidate",
-      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_build_decode_1_1_0_bug_bad_roommaster_world_guard",
-      "artifactFile": "Build & Decode v1.1.0.mcworld",
+      "id": "reg_result_transaction_cleanup_before_reward_journal",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/regressions/result-transaction/cleanup-before-reward-journal.ts",
       "readiness": {
-        "minimizedFixture": "missing",
-        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
-        "frozenExpectation": "missing"
+        "minimizedFixture": "present",
+        "artifactFingerprint": "db68cbdc1481d71159353f3b43c015d5862c3fbee792118bc845fca2ad342dae",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-result-transaction-cleanup-before-reward-journal.json"
       },
       "evidenceRole": "positive",
       "priorityBasis": [
@@ -382,83 +465,73 @@
       ]
     },
     {
-      "id": "reg_build_decode_1_1_0_closed_barrier_blocks_escape_claim",
-      "status": "candidate",
-      "sourceRef": "engine/reliability/history/2026-10-05-build-decode-v1.1.0-runtime-feedback.json#closed-barrier-enclosure",
-      "artifactFile": "Build & Decode v1.1.0.mcworld",
-      "readiness": {
-        "minimizedFixture": "missing",
-        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
-        "frozenExpectation": "missing"
-      },
-      "evidenceRole": "negative",
-      "priorityBasis": [
-        "semantic-owner-present",
-        "explicit-invariant"
-      ],
-      "expectation": "Closed minecraft:barrier enclosure blocks the physical escape claim even when mayfly is enabled and no script position clamp exists."
-    },
-    {
-      "id": "reg_build_decode_1_1_0_loading_bounds_not_escape_proof",
-      "status": "candidate",
-      "sourceRef": "engine/reliability/history/2026-10-05-build-decode-v1.1.0-runtime-feedback.json#systemLessons",
-      "artifactFile": "Build & Decode v1.1.0.mcworld",
-      "readiness": {
-        "minimizedFixture": "missing",
-        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
-        "frozenExpectation": "missing"
-      },
-      "evidenceRole": "negative",
-      "priorityBasis": [
-        "semantic-owner-present",
-        "explicit-invariant"
-      ],
-      "expectation": "Crossing authored loading/gameplay analysis bounds must not be promoted to physical escape without actual collision-enclosure proof."
-    },
-    {
-      "id": "reg_build_decode_1_1_0_inactive_guard_not_blocking_proof",
-      "status": "candidate",
-      "sourceRef": "engine/reliability/history/2026-10-05-build-decode-v1.1.0-runtime-feedback.json#systemLessons",
-      "artifactFile": "Build & Decode v1.1.0.mcworld",
-      "readiness": {
-        "minimizedFixture": "missing",
-        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
-        "frozenExpectation": "missing"
-      },
-      "evidenceRole": "negative",
-      "priorityBasis": [
-        "semantic-owner-present",
-        "explicit-invariant"
-      ],
-      "expectation": "A protection class that exists but is not instantiated/registered must not suppress a finding as Blocking Proof."
-    },
-    {
-      "id": "reg_build_decode_1_1_0_domobspawning_not_manual_spawn_proof",
-      "status": "candidate",
-      "sourceRef": "engine/reliability/history/2026-10-05-build-decode-v1.1.0-runtime-feedback.json#systemLessons",
-      "artifactFile": "Build & Decode v1.1.0.mcworld",
-      "readiness": {
-        "minimizedFixture": "missing",
-        "artifactFingerprint": "d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
-        "frozenExpectation": "missing"
-      },
-      "evidenceRole": "negative",
-      "priorityBasis": [
-        "semantic-owner-present",
-        "explicit-invariant"
-      ],
-      "expectation": "doMobSpawning=false must not be treated as proof that spawn eggs, /summon, script spawnEntity, structure entities, or privileged manual spawn paths are blocked."
-    },
-    {
-      "id": "reg_terminal_race_unguarded_deferred",
+      "id": "reg_result_transaction_complete_result_record",
       "status": "ready",
-      "sourceRef": "engine/fixtures/regressions/terminal-race/unguarded-deferred.ts",
+      "sourceRef": "engine/fixtures/regressions/result-transaction/complete-result-record.ts",
       "readiness": {
         "minimizedFixture": "present",
-        "artifactFingerprint": "ae16bbad0e1d1d6251ba19c3ce68ab4d9699c5a90a9cdb9bf58ded4abafd7e07",
-        "frozenExpectation": "engine/reliability/corpus/expectations/reg-terminal-race-unguarded-deferred.json"
+        "artifactFingerprint": "02deae992f57e9a5ace964aac3042141ed63a5e64383a566e2a3a82614531d28",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-result-transaction-complete-result-record.json"
       },
-      "evidenceRole": "positive",
+      "evidenceRole": "negative",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_result_transaction_partial_result_record",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/regressions/result-transaction/partial-result-record.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "413399b8558647082441096a80dfe855c57dd5a7bc2854e6f504f22d9915d9b3",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-result-transaction-partial-result-record.json"
+      },
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_result_transaction_reward_journal_before_cleanup",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/regressions/result-transaction/reward-journal-before-cleanup.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "87c4038228663c06389001246378ea4b3a140ac199eb27040bc63c5d64f1ac6f",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-result-transaction-reward-journal-before-cleanup.json"
+      },
+      "evidenceRole": "negative",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_result_transaction_terminal_precedence_explicit",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/regressions/result-transaction/terminal-precedence-explicit.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "8e5fa8f02d116b3df6b774c40dcba52c089c43d72131fdd021158365266243e7",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-result-transaction-terminal-precedence-explicit.json"
+      },
+      "evidenceRole": "negative",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_result_transaction_terminal_precedence_latch_only",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/regressions/result-transaction/terminal-precedence-latch-only.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "524416dc1219dfb2b5010e84a92872886da6b66ad1e452dff1da6192587c833b",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-result-transaction-terminal-precedence-latch-only.json"
+      },
       "priorityBasis": [
         "semantic-owner-present",
         "explicit-invariant"
@@ -488,6 +561,21 @@
         "artifactFingerprint": "03513ddf55912574ff47365260f3c935191e73544918cdec06861b295c2e0c6e",
         "frozenExpectation": "engine/reliability/corpus/expectations/reg-terminal-race-two-event-unresolved.json"
       },
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_terminal_race_unguarded_deferred",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/regressions/terminal-race/unguarded-deferred.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "ae16bbad0e1d1d6251ba19c3ce68ab4d9699c5a90a9cdb9bf58ded4abafd7e07",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-terminal-race-unguarded-deferred.json"
+      },
+      "evidenceRole": "positive",
       "priorityBasis": [
         "semantic-owner-present",
         "explicit-invariant"

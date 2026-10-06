@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "reg-result-transaction-terminal-precedence-latch-only",
+  "lane": "regression",
+  "artifact": {
+    "label": "Terminal owner with one-shot latch but no deterministic precedence policy",
+    "file": "engine/fixtures/regressions/result-transaction/terminal-precedence-latch-only.ts",
+    "sha256": "524416dc1219dfb2b5010e84a92872886da6b66ad1e452dff1da6192587c833b"
+  },
+  "target": {
+    "edition": "bedrock",
+    "minecraftVersion": "1.21.x"
+  },
+  "expected": {
+    "disposition": "insufficient-evidence",
+    "domain": "Round Result Transaction Integrity",
+    "proofCeiling": "STATIC VERIFIED"
+  },
+  "provenance": {
+    "frozenBeforeRun": true,
+    "source": "engine/contracts/engineering/catalogs/round-integrity-contract.json"
+  }
+}
