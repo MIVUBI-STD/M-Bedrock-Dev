@@ -43,6 +43,33 @@ docs/
 ├── system/
 ```
 
+## Documentation loading contract
+
+Documentation is consumed as a routed graph, not as a folder scan:
+
+```text
+task / question
+→ docs/README.md
+→ one domain README
+→ one canonical owner
+→ specialist document only when activated
+→ source / proof owner
+→ STOP
+```
+
+Document roles:
+
+```text
+README.md            → router / index
+canonical owner      → durable rule or model for one concern
+specialist document  → bounded domain detail loaded on demand
+source               → implementation/runtime truth
+reliability history  → historical evidence only
+planning/workspace   → current work/execution state, never docs
+```
+
+A document that is not routed by its domain README is invalid. Broad-scanning a domain is a fallback for diagnosis of the documentation system itself, not normal product work.
+
 ## Context policy
 
 1. Start here only when the domain is not already known.
