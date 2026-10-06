@@ -164,3 +164,10 @@ Revalidate route corridors and path-critical markers before enabling waves.
 8. Has the entity made meaningful progress recently?
 9. Is recovery generation-scoped and bounded?
 10. Could a newer format version reject the behavior JSON?
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [Entity Runtime](../../engine/knowledge/entity-runtime/entity-runtime-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
