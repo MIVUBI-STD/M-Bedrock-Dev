@@ -370,7 +370,7 @@ export interface GameplayWorldModel {
       counters: number;
       provenMissingReconciliation: number;
       unresolvedCounters: number;
-      balancedCounters: number;
+      reconciledFromActorLifecycle: number;
       details: readonly {
         scriptId: string;
         counterId: string;
@@ -380,7 +380,7 @@ export interface GameplayWorldModel {
         replacementWrites: number;
         completionChecks: number;
         status:
-          | "balanced-evidence"
+          | "reconciled-from-actor-lifecycle"
           | "missing-reconciliation"
           | "unresolved";
       }[];
@@ -1905,9 +1905,9 @@ export function deriveGameplayWorldModel(
         unresolvedCounters:
           source.progressionActorAccounting
             ?.unresolvedCounters ?? 0,
-        balancedCounters:
+        reconciledFromActorLifecycle:
           source.progressionActorAccounting
-            ?.balancedCounters ?? 0,
+            ?.reconciledFromActorLifecycle ?? 0,
         details:
           source.progressionActorAccounting
             ?.counters.map((item) => ({

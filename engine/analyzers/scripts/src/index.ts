@@ -28,6 +28,7 @@ export * from "./domains/inventory/inventory-lifecycle-evidence.js";
 export * from "./domains/combat/combat-lifecycle-evidence.js";
 export * from "./domains/chunk/chunk-lifecycle-evidence.js";
 export * from "./domains/economy/economy-evidence.js";
+export * from "./domains/progression/progression-counter-evidence.js";
 
 export * from "./domains/persistence/persistent-data-lifecycle.js";
 

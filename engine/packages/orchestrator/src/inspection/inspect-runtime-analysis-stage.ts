@@ -326,6 +326,7 @@ export function analyzeInspectionRuntimeState(
           ? {}
           : { text: item.text }),
       })),
+      crossFileCalls,
     );
   const chunkLifecycle =
     analyzeChunkLifecycle(

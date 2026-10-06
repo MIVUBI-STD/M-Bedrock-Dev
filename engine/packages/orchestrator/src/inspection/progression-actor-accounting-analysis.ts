@@ -1,5 +1,7 @@
 import type {
+  CrossFileCallEdge,
   ParsedScriptFile,
+  ScriptProgressionCounterEvidence,
 } from "../../../../analyzers/scripts/src/index.js";
 
 export type ProgressionCounterKind =
@@ -7,7 +9,7 @@ export type ProgressionCounterKind =
   | "scoreboard";
 
 export type ProgressionCounterStatus =
-  | "balanced-evidence"
+  | "reconciled-from-actor-lifecycle"
   | "missing-reconciliation"
   | "unresolved";
 
@@ -19,15 +21,18 @@ export interface ProgressionCounterAssessment {
   readonly decrementWrites: number;
   readonly replacementWrites: number;
   readonly completionChecks: number;
+  readonly lifecycleLinkedDecrements: number;
+  readonly actorAccountingCandidate: boolean;
   readonly status: ProgressionCounterStatus;
   readonly reasons: readonly string[];
 }
 
 export interface ProgressionActorAccountingAnalysis {
-  readonly counters: readonly ProgressionCounterAssessment[];
+  readonly counters:
+    readonly ProgressionCounterAssessment[];
   readonly provenMissingReconciliation: number;
+  readonly reconciledFromActorLifecycle: number;
   readonly unresolvedCounters: number;
-  readonly balancedCounters: number;
 }
 
 export type ProgressionActorAccountingInput =
@@ -37,15 +42,33 @@ export type ProgressionActorAccountingInput =
       readonly text?: string;
     };
 
-const COUNTER_NAME =
+interface NormalizedScript {
+  readonly parsed: ParsedScriptFile;
+  readonly text: string;
+}
+
+interface CounterEvidenceRecord {
+  readonly scriptPath: string;
+  readonly scriptId: string;
+  readonly counterId: string;
+  readonly kind: ProgressionCounterKind;
+  readonly operation:
+    | "growth"
+    | "decrement"
+    | "replacement"
+    | "completion-check";
+  readonly executionRegion: string;
+}
+
+const ACTOR_COUNTER_NAME =
+  /(?:enemy|enemies|mob|mobs|remaining|alive)/i;
+
+const SCOREBOARD_COUNTER_NAME =
   /(?:wave|enemy|enemies|mob|mobs|remaining|alive|objective|progress|count)/i;
 
 function normalizedInput(
   input: ProgressionActorAccountingInput,
-): {
-  readonly parsed: ParsedScriptFile;
-  readonly text: string;
-} {
+): NormalizedScript {
   return "parsed" in input
     ? {
         parsed: input.parsed,
@@ -57,283 +80,417 @@ function normalizedInput(
       };
 }
 
-function add(
-  map: Map<string, ProgressionCounterAssessment>,
-  values: Omit<
-    ProgressionCounterAssessment,
-    "status" | "reasons"
-  >,
-): void {
-  const key =
-    values.kind + ":" + values.counterId;
-  const current = map.get(key);
-  const growthWrites =
-    (current?.growthWrites ?? 0) +
-    values.growthWrites;
-  const decrementWrites =
-    (current?.decrementWrites ?? 0) +
-    values.decrementWrites;
-  const replacementWrites =
-    (current?.replacementWrites ?? 0) +
-    values.replacementWrites;
-  const completionChecks =
-    (current?.completionChecks ?? 0) +
-    values.completionChecks;
-
-  const missingReconciliation =
-    growthWrites > 0 &&
-    completionChecks > 0 &&
-    decrementWrites === 0 &&
-    replacementWrites === 0;
-  const balanced =
-    growthWrites > 0 &&
-    completionChecks > 0 &&
-    decrementWrites > 0;
-
-  map.set(key, {
-    scriptId: values.scriptId,
-    counterId: values.counterId,
-    kind: values.kind,
-    growthWrites,
-    decrementWrites,
-    replacementWrites,
-    completionChecks,
-    status:
-      missingReconciliation
-        ? "missing-reconciliation"
-        : balanced
-          ? "balanced-evidence"
-          : "unresolved",
-    reasons:
-      missingReconciliation
-        ? [
-            "A progression-like counter grows and gates completion at zero, but no selected-artifact decrement or replacement/recompute write for that counter was found.",
-          ]
-        : balanced
-          ? [
-              "The counter has growth, a completion gate, and at least one selected-artifact decrement path.",
-            ]
-          : [
-              replacementWrites > 0
-                ? "The counter has replacement/set writes that may be initialization, reset, or recomputation. Their lifecycle role is unresolved, so they cannot be credited as actor reconciliation without source-side ownership proof."
-                : "The source exposes only part of the counter lifecycle; do not classify it safe or defective until producer/consumer/reconciliation evidence is complete.",
-            ],
-  });
-}
-
 function scoreboardEvidence(
-  scriptId: string,
-  text: string,
-): ProgressionCounterAssessment[] {
-  const map =
-    new Map<string, ProgressionCounterAssessment>();
-  const commandPattern =
-    /scoreboard\s+players\s+(add|remove|set)\s+\S+\s+([A-Za-z0-9_.:-]+)\s+(-?\d+)/gi;
-
-  for (const match of text.matchAll(commandPattern)) {
-    const operation =
-      match[1]!.toLowerCase();
-    const objective =
-      match[2]!;
-    if (!COUNTER_NAME.test(objective)) {
-      continue;
-    }
-    const value = Number(match[3]!);
-    add(map, {
-      scriptId,
-      counterId: objective,
-      kind: "scoreboard",
-      growthWrites:
-        operation === "add" && value > 0
-          ? 1
-          : 0,
-      decrementWrites:
-        (
-          operation === "remove" &&
-          value > 0
-        ) ||
-        (
-          operation === "add" &&
-          value < 0
+  script: NormalizedScript,
+): CounterEvidenceRecord[] {
+  const output: CounterEvidenceRecord[] = [];
+  for (
+    const command of
+      script.parsed.commandLiterals
+  ) {
+    const text =
+      command.command
+        .trim()
+        .replace(/^\//, "");
+    const mutation =
+      /^scoreboard\s+players\s+(add|remove|set)\s+\S+\s+([A-Za-z0-9_.:-]+)\s+(-?\d+)/i.exec(
+        text,
+      );
+    if (mutation) {
+      const action =
+        mutation[1]!.toLowerCase();
+      const counterId =
+        mutation[2]!;
+      if (
+        SCOREBOARD_COUNTER_NAME.test(
+          counterId,
         )
-          ? 1
-          : 0,
-      replacementWrites:
-        operation === "set"
-          ? 1
-          : 0,
-      completionChecks: 0,
-    });
-  }
-
-  const checkPattern =
-    /(?:if|unless)\s+score\s+\S+\s+([A-Za-z0-9_.:-]+)\s+matches\s+(?:\.\.)?0(?:\b|\.\.)/gi;
-  for (const match of text.matchAll(checkPattern)) {
-    const objective = match[1]!;
-    if (!COUNTER_NAME.test(objective)) {
-      continue;
+      ) {
+        const value =
+          Number(mutation[3]!);
+        const operation =
+          action === "set"
+            ? "replacement" as const
+            : (
+                action === "remove" &&
+                value > 0
+              ) ||
+              (
+                action === "add" &&
+                value < 0
+              )
+              ? "decrement" as const
+              : action === "add" &&
+                  value > 0
+                ? "growth" as const
+                : undefined;
+        if (operation) {
+          output.push({
+            scriptPath:
+              script.parsed.source.relativePath,
+            scriptId:
+              script.parsed.identifier,
+            counterId,
+            kind: "scoreboard",
+            operation,
+            executionRegion:
+              command.executionRegion ??
+              "module",
+          });
+        }
+      }
     }
-    add(map, {
-      scriptId,
-      counterId: objective,
-      kind: "scoreboard",
-      growthWrites: 0,
-      decrementWrites: 0,
-      replacementWrites: 0,
-      completionChecks: 1,
-    });
+
+    const completion =
+      /(?:if|unless)\s+score\s+\S+\s+([A-Za-z0-9_.:-]+)\s+matches\s+(?:\.\.)?0(?:\b|\.\.)/i.exec(
+        text,
+      );
+    if (
+      completion &&
+      SCOREBOARD_COUNTER_NAME.test(
+        completion[1]!,
+      )
+    ) {
+      output.push({
+        scriptPath:
+          script.parsed.source.relativePath,
+        scriptId:
+          script.parsed.identifier,
+        counterId: completion[1]!,
+        kind: "scoreboard",
+        operation: "completion-check",
+        executionRegion:
+          command.executionRegion ??
+          "module",
+      });
+    }
   }
-
-  return [...map.values()];
-}
-
-function variableNames(
-  text: string,
-): string[] {
-  const names = new Set<string>();
-  const pattern =
-    /\b([A-Za-z_$][\w$]*(?:wave|enemy|enemies|mob|mobs|remaining|alive|objective|progress|count)[\w$]*)\b/gi;
-  for (const match of text.matchAll(pattern)) {
-    names.add(match[1]!);
-  }
-  return [...names].sort();
-}
-
-function countMatches(
-  text: string,
-  pattern: RegExp,
-): number {
-  return [...text.matchAll(pattern)].length;
-}
-
-function escapeRegex(
-  value: string,
-): string {
-  return value.replace(
-    /[.*+?^$()|[\]\\{}]/g,
-    "\\$&",
-  );
+  return output;
 }
 
 function variableEvidence(
-  scriptId: string,
-  text: string,
-): ProgressionCounterAssessment[] {
-  return variableNames(text).map((name) => {
-    const escaped =
-      escapeRegex(name);
-    const growthWrites =
-      countMatches(
-        text,
-        new RegExp(
-          "(?:\\b" +
-            escaped +
-            "\\s*\\+\\+|\\b" +
-            escaped +
-            "\\s*\\+=\\s*[1-9]\\d*)",
-          "g",
-        ),
-      );
-    const decrementWrites =
-      countMatches(
-        text,
-        new RegExp(
-          "(?:\\b" +
-            escaped +
-            "\\s*--|\\b" +
-            escaped +
-            "\\s*-=\\s*[1-9]\\d*)",
-          "g",
-        ),
-      );
-    const completionChecks =
-      countMatches(
-        text,
-        new RegExp(
-          "\\b" +
-            escaped +
-            "\\s*(?:===|==|<=)\\s*0\\b",
-          "g",
-        ),
-      ) +
-      countMatches(
-        text,
-        new RegExp(
-          "\\b0\\s*(?:===|==|>=)\\s*" +
-            escaped +
-            "\\b",
-          "g",
-        ),
-      );
+  script: NormalizedScript,
+): CounterEvidenceRecord[] {
+  return (
+    script.parsed
+      .progressionCounterEvidence ?? []
+  ).map((
+    item:
+      ScriptProgressionCounterEvidence,
+  ) => ({
+    scriptPath:
+      script.parsed.source.relativePath,
+    scriptId:
+      script.parsed.identifier,
+    counterId: item.counterId,
+    kind: item.counterKind,
+    operation: item.kind,
+    executionRegion:
+      item.executionRegion,
+  }));
+}
 
-    const assignmentPattern =
-      new RegExp(
-        "\\b" +
-          escaped +
-          "\\s*=\\s*([^;\\n]+)",
-        "g",
-      );
-    let replacementWrites = 0;
+function localNode(
+  path: string,
+  region: string,
+): string {
+  return (
+    "module:" +
+    path +
+    "#" +
+    region
+  );
+}
+
+function lifecycleRoots(
+  scripts: readonly NormalizedScript[],
+): Set<string> {
+  const roots = new Set<string>();
+  for (const script of scripts) {
     for (
-      const match of
-        text.matchAll(assignmentPattern)
+      const evidence of
+        script.parsed
+          .combatLifecycleEvidence ?? []
     ) {
-      const rhs = match[1]!.trim();
       if (
-        /^-?\d+(?:\.\d+)?$/.test(rhs)
+        evidence.kind ===
+        "death-subscription"
       ) {
-        continue;
+        roots.add(
+          localNode(
+            script.parsed.source.relativePath,
+            evidence.executionRegion,
+          ),
+        );
       }
-      replacementWrites += 1;
     }
+    for (
+      const evidence of
+        script.parsed
+          .chunkLifecycleEvidence ?? []
+    ) {
+      if (
+        evidence.kind ===
+        "entity-remove-subscription"
+      ) {
+        roots.add(
+          localNode(
+            script.parsed.source.relativePath,
+            evidence.executionRegion,
+          ),
+        );
+      }
+    }
+  }
+  return roots;
+}
 
-    const map =
-      new Map<string, ProgressionCounterAssessment>();
-    add(map, {
-      scriptId,
-      counterId: name,
-      kind: "variable",
-      growthWrites,
-      decrementWrites,
-      replacementWrites,
-      completionChecks,
-    });
-    return [...map.values()][0]!;
-  }).filter((item) =>
-    item.growthWrites > 0 ||
-    item.decrementWrites > 0 ||
-    item.replacementWrites > 0 ||
-    item.completionChecks > 0
+function callGraph(
+  scripts: readonly NormalizedScript[],
+  crossFileCalls:
+    readonly CrossFileCallEdge[],
+): Map<string, Set<string>> {
+  const graph =
+    new Map<string, Set<string>>();
+  const add = (
+    from: string,
+    to: string,
+  ) => {
+    const next =
+      graph.get(from) ??
+      new Set<string>();
+    next.add(to);
+    graph.set(from, next);
+  };
+
+  for (const script of scripts) {
+    const path =
+      script.parsed.source.relativePath;
+    for (
+      const call of
+        script.parsed.localFunctionCalls
+    ) {
+      add(
+        localNode(
+          path,
+          call.callerRegion,
+        ),
+        localNode(
+          path,
+          call.targetRegion,
+        ),
+      );
+    }
+  }
+
+  for (const call of crossFileCalls) {
+    if (
+      call.status !== "resolved" ||
+      call.targetModule === undefined
+    ) {
+      continue;
+    }
+    add(
+      localNode(
+        call.callerModule,
+        call.callerRegion,
+      ),
+      localNode(
+        call.targetModule,
+        "function:" +
+          call.targetExport,
+      ),
+    );
+  }
+  return graph;
+}
+
+function reachableFrom(
+  roots: ReadonlySet<string>,
+  graph:
+    ReadonlyMap<
+      string,
+      ReadonlySet<string>
+    >,
+): Set<string> {
+  const seen =
+    new Set<string>(roots);
+  const queue = [...roots];
+
+  while (queue.length > 0) {
+    const current =
+      queue.shift()!;
+    for (
+      const next of
+        graph.get(current) ?? []
+    ) {
+      if (seen.has(next)) continue;
+      seen.add(next);
+      queue.push(next);
+    }
+  }
+  return seen;
+}
+
+function counterKey(
+  item: CounterEvidenceRecord,
+): string {
+  return (
+    item.kind +
+    ":" +
+    item.counterId
   );
 }
 
 export function analyzeProgressionActorAccounting(
   inputs:
     readonly ProgressionActorAccountingInput[],
+  crossFileCalls:
+    readonly CrossFileCallEdge[] = [],
 ): ProgressionActorAccountingAnalysis {
-  const counters = inputs
-    .flatMap((input) => {
-      const { parsed, text } =
-        normalizedInput(input);
-      if (!text.trim()) return [];
-      return [
-        ...scoreboardEvidence(
-          parsed.identifier,
-          text,
-        ),
-        ...variableEvidence(
-          parsed.identifier,
-          text,
-        ),
-      ];
-    })
-    .sort((a, b) =>
-      a.scriptId.localeCompare(b.scriptId) ||
-      a.counterId.localeCompare(
-        b.counterId,
-      ) ||
-      a.kind.localeCompare(b.kind)
+  const scripts =
+    inputs.map(normalizedInput);
+  const evidence = scripts.flatMap(
+    (script) => [
+      ...variableEvidence(script),
+      ...scoreboardEvidence(script),
+    ],
+  );
+  const lifecycleReachable =
+    reachableFrom(
+      lifecycleRoots(scripts),
+      callGraph(
+        scripts,
+        crossFileCalls,
+      ),
     );
+
+  const grouped =
+    new Map<
+      string,
+      CounterEvidenceRecord[]
+    >();
+  for (const item of evidence) {
+    const key = counterKey(item);
+    grouped.set(
+      key,
+      [
+        ...(grouped.get(key) ?? []),
+        item,
+      ],
+    );
+  }
+
+  const counters =
+    [...grouped.values()]
+      .map((items) => {
+        const first = items[0]!;
+        const growthWrites =
+          items.filter(
+            (item) =>
+              item.operation === "growth",
+          ).length;
+        const decrementWrites =
+          items.filter(
+            (item) =>
+              item.operation ===
+              "decrement",
+          ).length;
+        const replacementWrites =
+          items.filter(
+            (item) =>
+              item.operation ===
+              "replacement",
+          ).length;
+        const completionChecks =
+          items.filter(
+            (item) =>
+              item.operation ===
+              "completion-check",
+          ).length;
+        const linkedDecrements =
+          items.filter(
+            (item) =>
+              item.operation ===
+                "decrement" &&
+              lifecycleReachable.has(
+                localNode(
+                  item.scriptPath,
+                  item.executionRegion,
+                ),
+              ),
+          ).length;
+        const actorAccountingCandidate =
+          ACTOR_COUNTER_NAME.test(
+            first.counterId,
+          );
+
+        const missingReconciliation =
+          actorAccountingCandidate &&
+          growthWrites > 0 &&
+          completionChecks > 0 &&
+          decrementWrites === 0 &&
+          replacementWrites === 0;
+        const reconciled =
+          actorAccountingCandidate &&
+          growthWrites > 0 &&
+          completionChecks > 0 &&
+          linkedDecrements > 0;
+
+        return {
+          scriptId: [
+            ...new Set(
+              items.map(
+                (item) => item.scriptId,
+              ),
+            ),
+          ].sort().join(","),
+          counterId:
+            first.counterId,
+          kind: first.kind,
+          growthWrites,
+          decrementWrites,
+          replacementWrites,
+          completionChecks,
+          lifecycleLinkedDecrements:
+            linkedDecrements,
+          actorAccountingCandidate,
+          status:
+            missingReconciliation
+              ? "missing-reconciliation" as const
+              : reconciled
+                ? "reconciled-from-actor-lifecycle" as const
+                : "unresolved" as const,
+          reasons:
+            missingReconciliation
+              ? [
+                  "An actor-accounting counter grows and gates completion at zero, but the selected artifact exposes no decrement or replacement/recompute path.",
+                ]
+              : reconciled
+                ? [
+                    "At least one decrement is statically reachable from an entity-death or entity-remove lifecycle root, so actor reconciliation is source-linked rather than merely present somewhere in the project.",
+                  ]
+                : [
+                    decrementWrites > 0
+                      ? "A decrement exists, but no selected-artifact entity-death/entity-remove call path proves that the actor lifecycle can reach it. Keep this gray-zone until lifecycle ownership is linked."
+                      : replacementWrites > 0
+                        ? "Replacement/set writes exist, but their role may be initialization, reset, or recomputation. They are not credited as actor reconciliation without lifecycle proof."
+                        : "Only part of the actor-counter lifecycle is grounded. Do not classify it safe or defective until producer, completion, and reconciliation ownership are complete.",
+                  ],
+        };
+      })
+      .filter((item) =>
+        item.growthWrites > 0 ||
+        item.decrementWrites > 0 ||
+        item.replacementWrites > 0 ||
+        item.completionChecks > 0
+      )
+      .sort((a, b) =>
+        a.counterId.localeCompare(
+          b.counterId,
+        ) ||
+        a.kind.localeCompare(b.kind)
+      );
 
   return {
     counters,
@@ -343,16 +500,16 @@ export function analyzeProgressionActorAccounting(
           item.status ===
           "missing-reconciliation",
       ).length,
+    reconciledFromActorLifecycle:
+      counters.filter(
+        (item) =>
+          item.status ===
+          "reconciled-from-actor-lifecycle",
+      ).length,
     unresolvedCounters:
       counters.filter(
         (item) =>
           item.status === "unresolved",
-      ).length,
-    balancedCounters:
-      counters.filter(
-        (item) =>
-          item.status ===
-          "balanced-evidence",
       ).length,
   };
 }
