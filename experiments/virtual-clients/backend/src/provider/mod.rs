@@ -28,6 +28,7 @@ pub(crate) const DISK_STATE_TIMEOUT: Duration = Duration::from_secs(180);
 
 pub trait Provider {
     fn id(&self) -> &'static str;
+    fn version(&self) -> Option<String>;
     fn detect(&self) -> bool;
     fn provision(&self, client: ClientId) -> io::Result<ClientState>;
     fn reprovision(&self, client: ClientId) -> io::Result<ClientState>;
@@ -38,6 +39,17 @@ pub trait Provider {
     fn guest_tools_ready(&self, client: ClientId) -> io::Result<Option<bool>>;
     fn guest_ip_address(&self, client: ClientId) -> io::Result<Option<String>>;
     fn identity_key(&self, client: ClientId) -> io::Result<Option<String>>;
+
+    fn network_mode(&self, client: ClientId) -> io::Result<Option<String>> {
+        let vmx = client_vmx_path(client)?;
+        read_vmx_value(&vmx, "ethernet0.connectionType")
+    }
+
+    fn graphics_3d_enabled(&self, client: ClientId) -> io::Result<Option<bool>> {
+        let vmx = client_vmx_path(client)?;
+        Ok(read_vmx_value(&vmx, "mks.enable3d")?
+            .map(|value| value.eq_ignore_ascii_case("TRUE")))
+    }
     fn status(&self, client: ClientId) -> io::Result<ClientState>;
     fn start(&self, client: ClientId) -> io::Result<ClientState>;
     fn suspend(&self, client: ClientId) -> io::Result<ClientState>;
