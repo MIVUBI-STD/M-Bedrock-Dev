@@ -8,7 +8,6 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "check": "npm run verify:full",
     "verify:repository": "node tooling/repository/verify.mjs && npm run verify:ownership && npm run verify:capability-truth && npm run verify:authority && npm run verify:naming && npm run verify:information-architecture && npm run verify:documentation-paths && npm run verify:documentation-ownership && npm run verify:bug-finding-coverage && npm run verify:skills && npm run verify:skill-evals && npm run verify:permissions && npm run verify:audit-entrypoint && npm run audit:skills && npm run verify:modules && npm run verify:dependencies && node tooling/repository/verify-boundaries.mjs && node tooling/repository/verify-contract-registry.mjs && node tooling/repository/verify-reliability-catalogs.mjs && node tooling/repository/verify-reliability-history.mjs && node tooling/repository/verify-knowledge-catalogs.mjs && npm run verify:knowledge-bindings",
     "verify:boundaries": "node tooling/repository/verify-boundaries.mjs",
     "verify:source": "npm run typecheck && npm run bug-report-ui:build && npm test",
@@ -19,7 +18,6 @@
     "verify:modules": "node tooling/repository/verify-module-shape.mjs",
     "verify:dependencies": "node tooling/repository/verify-dependency-graph.mjs",
     "audit:source": "node tooling/repository/audit-source-hygiene.mjs",
-    "verify:ready": "npm run verify:full && npm run audit:source && npm run audit:api",
     "audit:api": "node tooling/repository/audit-public-api.mjs",
     "bug-report-ui:dev": "vite --config tooling/bug-report-ui/vite.config.mjs",
     "bug-report-ui:build": "vite build --config tooling/bug-report-ui/vite.config.mjs",
@@ -44,7 +42,8 @@
     "verify:documentation-ownership": "node tooling/repository/verify-documentation-ownership.mjs",
     "audit:knowledge-consumption": "node tooling/repository/audit-knowledge-consumption.mjs",
     "verify:knowledge-consumption": "node tooling/repository/audit-knowledge-consumption.mjs --strict",
-    "verify:documentation-paths": "node tooling/repository/verify-documentation-paths.mjs"
+    "verify:documentation-paths": "node tooling/repository/verify-documentation-paths.mjs",
+    "verify:local-ready": "npm run verify:full && npm run audit:source && npm run audit:api"
   },
   "dependencies": {
     "@8crafter/leveldb-zlib": "1.6.0",
