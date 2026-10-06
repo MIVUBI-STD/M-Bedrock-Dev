@@ -1700,11 +1700,11 @@ impl VirtualClients {
 
 #[cfg(test)]
 mod tests {
-    use crate::profile::BaseState;
     use super::{
         classify_identity_state, guest_probe_error_is_terminal, lifecycle_availability,
         restore_batch_state, validate_lifecycle_action, vm_identity_state, LifecycleAction,
     };
+    use crate::profile::BaseState;
     use crate::{
         client::{ClientId, ClientState, IdentityState, LifecycleBlocker},
         provider::Provider,
