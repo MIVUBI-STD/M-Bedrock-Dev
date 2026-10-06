@@ -102,3 +102,12 @@ Static structure analysis recognizes Education permission blocks such as allow, 
 Their presence is compatibility/capability evidence and must be checked against the target Education feature profile.
 
 Presence alone is not spatial proof. Reconstructing permission volumes or explaining build/traversal behavior requires world-coordinate and runtime/spatial evidence.
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [Education](../../engine/knowledge/platform/education.json)
+- [Education Runtime](../../engine/knowledge/platform/education-runtime.json)
+- [Permissions](../../engine/knowledge/platform/permissions-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
