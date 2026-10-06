@@ -3,40 +3,136 @@
   "semantics": "Classification for actionable knowledge that intentionally lacks a dedicated static analyzer/proof binding. This is a reliability projection, not semantic authority. Entries prevent runtime-only or unsupported knowledge from being falsely closed by heuristic bindings.",
   "classifications": [
     {
-      "knowledgeId": "performance.hardware-dependent-budget",
-      "status": "runtime-required",
-      "reason": "Safe per-tick work depends on hardware and current runtime load.",
-      "nextEvidenceOwner": "runtime-profiler"
+      "knowledgeId": "automation.block-custom-events",
+      "status": "static-capability-gap",
+      "reason": "Block custom component callback registration is not structurally parsed.",
+      "nextEvidenceOwner": "block-automation-analysis"
     },
     {
-      "knowledgeId": "performance.profiler-identifies-hotpaths",
-      "status": "runtime-required",
-      "reason": "Hotpath cost and call frequency require measured script profile data.",
-      "nextEvidenceOwner": "runtime-profiler"
+      "knowledgeId": "automation.block-tick-random-interval",
+      "status": "static-capability-gap",
+      "reason": "Block minecraft:tick components are not structurally parsed.",
+      "nextEvidenceOwner": "block-automation-analysis"
     },
     {
-      "knowledgeId": "performance.watchdog-termination-surface",
-      "status": "runtime-required",
-      "reason": "Watchdog termination is a runtime resource-pressure outcome.",
-      "nextEvidenceOwner": "runtime-probe"
+      "knowledgeId": "automation.command-block-mode-semantics",
+      "status": "static-capability-gap",
+      "reason": "Command-block runtime mode/redstone/always-active metadata is not fully modeled.",
+      "nextEvidenceOwner": "command-block-runtime-analysis"
     },
     {
-      "knowledgeId": "observability.content-log-debugger-profiler",
-      "status": "runtime-required",
-      "reason": "These are runtime evidence acquisition capabilities rather than static defect predicates.",
-      "nextEvidenceOwner": "runtime-lab"
+      "knowledgeId": "automation.queued-ticking-deprecated",
+      "status": "static-capability-gap",
+      "reason": "Legacy queued_ticking compatibility lacks block-component compatibility analysis.",
+      "nextEvidenceOwner": "block-automation-analysis"
     },
     {
-      "knowledgeId": "observability.visual-debug-spatial",
-      "status": "runtime-required",
-      "reason": "Visual debug validates live spatial behavior and does not prove source correctness by presence alone.",
-      "nextEvidenceOwner": "runtime-lab"
+      "knowledgeId": "automation.redstone-update-needs-consumer",
+      "status": "static-capability-gap",
+      "reason": "Redstone consumer/callback contract is not structurally modeled.",
+      "nextEvidenceOwner": "block-automation-analysis"
     },
     {
-      "knowledgeId": "observability.relation-profiler-validates-performance",
+      "knowledgeId": "automation.relation-block-tick-activates-callback",
+      "status": "static-capability-gap",
+      "reason": "Block tick-to-callback relation lacks structural block automation analysis.",
+      "nextEvidenceOwner": "block-automation-analysis"
+    },
+    {
+      "knowledgeId": "automation.repeat-delay-firsttick",
+      "status": "static-capability-gap",
+      "reason": "Repeating delay/first-tick metadata lacks structural timing analysis.",
+      "nextEvidenceOwner": "command-block-runtime-analysis"
+    },
+    {
+      "knowledgeId": "blockstate.block-access-can-fail-unloaded",
       "status": "runtime-required",
-      "reason": "Performance validation requires measured profiler evidence.",
-      "nextEvidenceOwner": "runtime-profiler"
+      "reason": "Loaded/accessibility state is runtime chunk/world state.",
+      "nextEvidenceOwner": "runtime-block-state"
+    },
+    {
+      "knowledgeId": "blockstate.block-components-many-surfaces",
+      "status": "static-capability-gap",
+      "reason": "Current block inspection does not structurally model all interactive block components.",
+      "nextEvidenceOwner": "interactive-block-component-analysis"
+    },
+    {
+      "knowledgeId": "blockstate.block-inventory-container",
+      "status": "runtime-required",
+      "reason": "Container availability/content is runtime component state.",
+      "nextEvidenceOwner": "runtime-block-state"
+    },
+    {
+      "knowledgeId": "blockstate.container-events-separate",
+      "status": "runtime-required",
+      "reason": "Open/close lifecycle is a runtime event surface.",
+      "nextEvidenceOwner": "runtime-block-state"
+    },
+    {
+      "knowledgeId": "command-context.command-block-s-has-no-entity",
+      "status": "runtime-required",
+      "reason": "Command-block executor behavior requires command-block context evidence not currently modeled.",
+      "nextEvidenceOwner": "runtime-command"
+    },
+    {
+      "knowledgeId": "command-context.selector-no-match-fails",
+      "status": "runtime-required",
+      "reason": "Selector resolution/no-match is runtime command outcome.",
+      "nextEvidenceOwner": "runtime-command"
+    },
+    {
+      "knowledgeId": "effects.event-mutation-delayed-until-entity-tick",
+      "status": "runtime-required",
+      "reason": "Delayed application requires tick observation.",
+      "nextEvidenceOwner": "runtime-entity-state"
+    },
+    {
+      "knowledgeId": "effects.health-is-attribute-component",
+      "status": "runtime-required",
+      "reason": "Health/max-health reconciliation needs live or stronger mutation/dataflow evidence.",
+      "nextEvidenceOwner": "runtime-entity-state"
+    },
+    {
+      "knowledgeId": "effects.property-and-component-group-batched",
+      "status": "runtime-required",
+      "reason": "Batched visibility requires tick observation.",
+      "nextEvidenceOwner": "runtime-entity-state"
+    },
+    {
+      "knowledgeId": "effects.readding-group-reinitializes",
+      "status": "runtime-required",
+      "reason": "Reinitialization is a runtime entity-component behavior.",
+      "nextEvidenceOwner": "runtime-entity-state"
+    },
+    {
+      "knowledgeId": "effects.relation-event-gates-observation",
+      "status": "runtime-required",
+      "reason": "Observation ordering requires post-tick evidence.",
+      "nextEvidenceOwner": "runtime-entity-state"
+    },
+    {
+      "knowledgeId": "effects.relation-max-health-requires-current-health-reconcile",
+      "status": "runtime-required",
+      "reason": "Reconciliation correctness requires observed health state.",
+      "nextEvidenceOwner": "runtime-entity-state"
+    },
+    {
+      "knowledgeId": "environment.explosion-source-and-blocks",
+      "status": "runtime-required",
+      "reason": "Source and impacted blocks are event payload/runtime evidence.",
+      "nextEvidenceOwner": "runtime-hazard-event"
+    },
+    {
+      "knowledgeId": "environment.relation-explosion-produces-world-mutation",
+      "status": "runtime-required",
+      "reason": "Actual impacted-block mutation requires explosion event/runtime world evidence.",
+      "nextEvidenceOwner": "runtime-hazard-event"
+    },
+    {
+      "knowledgeId": "feedback.animation-controller-load-initial-state",
+      "status": "static-capability-gap",
+      "reason": "Initial client visual state requires structural animation-controller analysis before runtime validation.",
+      "nextEvidenceOwner": "resource-pack-animation-analysis"
     },
     {
       "knowledgeId": "feedback.animation-controller-state-machine",
@@ -45,9 +141,9 @@
       "nextEvidenceOwner": "resource-pack-animation-analysis"
     },
     {
-      "knowledgeId": "feedback.animation-controller-load-initial-state",
+      "knowledgeId": "feedback.animation-version-behavior-can-change",
       "status": "static-capability-gap",
-      "reason": "Initial client visual state requires structural animation-controller analysis before runtime validation.",
+      "reason": "Resource-pack animation compatibility is not structurally modeled.",
       "nextEvidenceOwner": "resource-pack-animation-analysis"
     },
     {
@@ -67,6 +163,126 @@
       "status": "static-capability-gap",
       "reason": "Particle/resource-pack presentation context is not structurally modeled by the current source analyzers.",
       "nextEvidenceOwner": "resource-pack-feedback-analysis"
+    },
+    {
+      "knowledgeId": "feedback.relation-controller-validates-visual-state",
+      "status": "static-capability-gap",
+      "reason": "Animation-controller transition validation lacks a structural resource-pack analyzer.",
+      "nextEvidenceOwner": "resource-pack-animation-analysis"
+    },
+    {
+      "knowledgeId": "feedback.relation-title-reset-restores-default-timing",
+      "status": "static-capability-gap",
+      "reason": "Title reset/timing state lacks structural lifecycle analysis.",
+      "nextEvidenceOwner": "client-feedback-analysis"
+    },
+    {
+      "knowledgeId": "feedback.title-has-clear-reset-times",
+      "status": "static-capability-gap",
+      "reason": "Title timing/reset lifecycle lacks a structural command/UI feedback analyzer.",
+      "nextEvidenceOwner": "client-feedback-analysis"
+    },
+    {
+      "knowledgeId": "mount.add-remove-rider-runtime",
+      "status": "runtime-required",
+      "reason": "Current riders and seat relationships are live runtime state.",
+      "nextEvidenceOwner": "runtime-mount-state"
+    },
+    {
+      "knowledgeId": "multiplayer.shared-state-race-surface",
+      "status": "runtime-required",
+      "reason": "Interleaving correctness requires concurrency/runtime proof.",
+      "nextEvidenceOwner": "runtime-player-session"
+    },
+    {
+      "knowledgeId": "observability.content-log-debugger-profiler",
+      "status": "runtime-required",
+      "reason": "These are runtime evidence acquisition capabilities rather than static defect predicates.",
+      "nextEvidenceOwner": "runtime-lab"
+    },
+    {
+      "knowledgeId": "observability.relation-profiler-validates-performance",
+      "status": "runtime-required",
+      "reason": "Performance validation requires measured profiler evidence.",
+      "nextEvidenceOwner": "runtime-profiler"
+    },
+    {
+      "knowledgeId": "observability.visual-debug-spatial",
+      "status": "runtime-required",
+      "reason": "Visual debug validates live spatial behavior and does not prove source correctness by presence alone.",
+      "nextEvidenceOwner": "runtime-lab"
+    },
+    {
+      "knowledgeId": "performance.hardware-dependent-budget",
+      "status": "runtime-required",
+      "reason": "Safe per-tick work depends on hardware and current runtime load.",
+      "nextEvidenceOwner": "runtime-profiler"
+    },
+    {
+      "knowledgeId": "performance.profiler-identifies-hotpaths",
+      "status": "runtime-required",
+      "reason": "Hotpath cost and call frequency require measured script profile data.",
+      "nextEvidenceOwner": "runtime-profiler"
+    },
+    {
+      "knowledgeId": "performance.relation-profiler-validates-hotpath",
+      "status": "runtime-required",
+      "reason": "Hotpath validation requires measured profile data.",
+      "nextEvidenceOwner": "runtime-profiler"
+    },
+    {
+      "knowledgeId": "performance.runjob-one-iteration-minimum",
+      "status": "runtime-required",
+      "reason": "Iteration cost safety depends on measured runtime work.",
+      "nextEvidenceOwner": "runtime-profiler"
+    },
+    {
+      "knowledgeId": "performance.watchdog-termination-surface",
+      "status": "runtime-required",
+      "reason": "Watchdog termination is a runtime resource-pressure outcome.",
+      "nextEvidenceOwner": "runtime-probe"
+    },
+    {
+      "knowledgeId": "player.leave-player-object-no-longer-current",
+      "status": "runtime-required",
+      "reason": "Post-leave object validity requires identity/dataflow or runtime proof.",
+      "nextEvidenceOwner": "runtime-player-session"
+    },
+    {
+      "knowledgeId": "player.scoreboard-identity-separate-validity",
+      "status": "runtime-required",
+      "reason": "Scoreboard identity validity/entity resolution is runtime state.",
+      "nextEvidenceOwner": "runtime-player-session"
+    },
+    {
+      "knowledgeId": "player.session-memory-cleanup-required",
+      "status": "runtime-required",
+      "reason": "Actual in-memory cleanup completeness requires ownership/dataflow or runtime proof.",
+      "nextEvidenceOwner": "runtime-player-session"
+    },
+    {
+      "knowledgeId": "spatial.custom-dimension-travel-needs-loaded-arrival",
+      "status": "runtime-required",
+      "reason": "Arrival readiness is a runtime residency condition.",
+      "nextEvidenceOwner": "runtime-spatial-state"
+    },
+    {
+      "knowledgeId": "spatial.custom-height-can-change",
+      "status": "runtime-required",
+      "reason": "Custom dimension bounds must be observed from active world configuration.",
+      "nextEvidenceOwner": "runtime-spatial-state"
+    },
+    {
+      "knowledgeId": "spatial.dimension-height-range-runtime",
+      "status": "runtime-required",
+      "reason": "Valid Y bounds come from the active Dimension.heightRange.",
+      "nextEvidenceOwner": "runtime-spatial-state"
+    },
+    {
+      "knowledgeId": "spatial.relation-y-validity-requires-height-range",
+      "status": "runtime-required",
+      "reason": "Y validity requires active dimension bounds.",
+      "nextEvidenceOwner": "runtime-spatial-state"
     }
   ]
 }
