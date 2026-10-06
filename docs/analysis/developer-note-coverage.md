@@ -2,7 +2,7 @@
 id: document.analysis.developer-note-coverage
 class: DOCUMENT
 domain: analysis
-role: REFERENCE
+role: CONTRACT
 authority: CANONICAL
 lifecycle: ACTIVE
 ---
