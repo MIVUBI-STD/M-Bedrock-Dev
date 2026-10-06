@@ -12,6 +12,7 @@ import { buildResourceCatalog } from "./resource-catalog.mjs";
 
 interface RetrievalCliOptions {
   query: string;
+  id?: string;
   domains: string[];
   includeHistorical: boolean;
   allowAllDomains: boolean;
@@ -33,11 +34,20 @@ function parseArgs(argv: readonly string[]): RetrievalCliOptions {
   const queryParts: string[] = [];
   let includeHistorical = false;
   let allowAllDomains = false;
+  let id: string | undefined;
   let limit = 12;
   let sectionLimit = 8;
 
   for (let index = 0; index < argv.length; index += 1) {
     const value = argv[index]!;
+
+    if (value === "--id") {
+      const resourceId = argv[index + 1];
+      if (!resourceId) throw new Error("--id requires a resource ID.");
+      id = resourceId;
+      index += 1;
+      continue;
+    }
 
     if (value === "--domain") {
       const domain = argv[index + 1];
@@ -78,13 +88,13 @@ function parseArgs(argv: readonly string[]): RetrievalCliOptions {
   }
 
   const query = queryParts.join(" ").trim();
-  if (!query) {
+  if (!query && id === undefined) {
     throw new Error(
-      "Usage: npm run retrieve:repository -- <query> --domain <domain> [--history] [--limit 12] [--section-limit 8]",
+      "Usage: npm run retrieve:repository -- <query> --domain <domain> OR npm run retrieve:repository -- --id <resource-id>",
     );
   }
 
-  if (domains.length === 0 && !allowAllDomains) {
+  if (id === undefined && domains.length === 0 && !allowAllDomains) {
     throw new Error(
       "Retrieval requires Router scope. Pass --domain <domain>, or use --all explicitly for broad diagnostic discovery.",
     );
@@ -92,6 +102,7 @@ function parseArgs(argv: readonly string[]): RetrievalCliOptions {
 
   return {
     query,
+    ...(id === undefined ? {} : { id }),
     domains: [...new Set(domains)].sort(),
     includeHistorical,
     allowAllDomains,
@@ -104,6 +115,56 @@ function main(): void {
   const options = parseArgs(process.argv.slice(2));
   const catalog = buildResourceCatalog();
   const graph = buildGraph();
+
+  if (options.id !== undefined) {
+    const resource = catalog.resources.find(
+      (item) => item.id === options.id,
+    );
+    if (resource === undefined) {
+      throw new Error(
+        "Unknown Resource Catalog id: " + options.id,
+      );
+    }
+
+    const incoming = graph.edges
+      .filter((edge) => edge.to === resource.id)
+      .sort((a, b) =>
+        (a.from + "|" + a.type).localeCompare(
+          b.from + "|" + b.type,
+        ),
+      );
+    const outgoing = graph.edges
+      .filter((edge) => edge.from === resource.id)
+      .sort((a, b) =>
+        (a.type + "|" + a.to).localeCompare(
+          b.type + "|" + b.to,
+        ),
+      );
+
+    const sectionIndex = buildDocumentSectionIndex();
+    const sections =
+      resource.class === "DOCUMENT"
+        ? sectionIndex.sections.filter(
+            (section) =>
+              section.documentId === resource.id,
+          )
+        : [];
+
+    process.stdout.write(
+      JSON.stringify(
+        {
+          schemaVersion: 1,
+          resource,
+          incoming,
+          outgoing,
+          sections,
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+    return;
+  }
 
   const lexicalScores = scoreResourcesLexically(
     catalog.resources,
