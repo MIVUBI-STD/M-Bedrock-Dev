@@ -36,6 +36,11 @@ const clean = {
   worldRules: {
     conflictingGlobalRules: 0,
   },
+  baselineRestore: {
+    candidates: 0,
+    verified: 0,
+    unresolved: 0,
+  },
 };
 
 describe("arena reset closure", () => {
@@ -132,5 +137,28 @@ describe("arena reuse quarantine gate", () => {
     expect(
       recovered.reuseEligibility,
     ).toBe("reusable");
+  });
+});
+
+
+describe("baseline restore verification gate", () => {
+  it("quarantines arena reuse when reset-world restoration remains unverified", () => {
+    const result =
+      assessArenaResetClosure({
+        ...clean,
+        baselineRestore: {
+          candidates: 1,
+          verified: 0,
+          unresolved: 1,
+        },
+      });
+
+    expect(result.status).toBe("unresolved");
+    expect(result.reuseEligibility).toBe(
+      "quarantined",
+    );
+    expect(result.blockers).toContain(
+      "baselineRestoreVerificationGaps",
+    );
   });
 });

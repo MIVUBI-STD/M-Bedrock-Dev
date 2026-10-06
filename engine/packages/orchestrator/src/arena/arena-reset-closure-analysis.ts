@@ -28,6 +28,7 @@ export interface ArenaResetClosureAssessment {
     unguardedDeferredChunkWork: number;
     entityRemoveTerminalizationRisks: number;
     globalRuleConflicts: number;
+    baselineRestoreVerificationGaps: number;
   };
 }
 
@@ -60,6 +61,11 @@ export function assessArenaResetClosure(input: {
   worldRules: {
     conflictingGlobalRules: number;
   };
+  baselineRestore: {
+    candidates: number;
+    verified: number;
+    unresolved: number;
+  };
 }): ArenaResetClosureAssessment {
   const surfaces = {
     cleanupLedgerMissing:
@@ -90,6 +96,8 @@ export function assessArenaResetClosure(input: {
       input.chunk.entityRemoveTerminalizationRisks,
     globalRuleConflicts:
       input.worldRules.conflictingGlobalRules,
+    baselineRestoreVerificationGaps:
+      input.baselineRestore.unresolved,
   };
 
   const blockers = Object.entries(surfaces)

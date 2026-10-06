@@ -739,6 +739,40 @@ export function analyzeInspectionRuntimeState(
       input.target.mutationDependentActions ?? [],
     );
 
+  const resetMutationTransactions =
+    mutationTransactions.filter(
+      (item) =>
+        /(?:reset|cleanup|restore|baseline)/i.test(
+          item.rootFunctionId,
+        ),
+    );
+  const baselineRestore = {
+    candidates:
+      resetMutationTransactions.length,
+    verified:
+      resetMutationTransactions.filter(
+        (item) =>
+          item.verificationStep !==
+            undefined &&
+          (
+            item.status ===
+              "verified-before-dependent" ||
+            item.status ===
+              "no-dependent-action"
+          ),
+      ).length,
+    unresolved:
+      resetMutationTransactions.filter(
+        (item) =>
+          item.verificationStep ===
+            undefined ||
+          item.status ===
+            "dependent-before-verification" ||
+          item.status ===
+            "verification-unresolved",
+      ).length,
+  };
+
   const arenaResetClosure =
     assessArenaResetClosure({
       cleanup: arenaCleanupSurfaces,
@@ -751,6 +785,7 @@ export function analyzeInspectionRuntimeState(
       chunk: chunkLifecycle,
       worldRules:
         worldRuleAuthority,
+      baselineRestore,
     });
 
   const scriptCommandTransactions =
