@@ -114,6 +114,7 @@ export function buildGraph() {
 
   for (const resource of catalog.resources) {
     if (resource.class !== "DOCUMENT") continue;
+    if (resource.locator !== undefined) continue;
     if (!existsSync(resource.path)) continue;
 
     const text = readFileSync(resource.path, "utf8");
