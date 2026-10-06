@@ -1958,6 +1958,66 @@
       ]
     },
     {
+      "knowledgeId": "player.initial-spawn-not-universal-readiness-proof",
+      "consumer": "player-session-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/player-session-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/player-session-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "player.join-event-identity-only",
+      "consumer": "player-session-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/player-session-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/player-session-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "player.relation.initial-spawn-gates-session-ready",
+      "consumer": "player-session-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/player-session-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/player-session-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "player.relation.join-precedes-initial-spawn",
+      "consumer": "player-session-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/player-session-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/player-session-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "player.relation.leave-deactivates-current-session",
+      "consumer": "player-session-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/player-session-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/player-session-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "player.spawn-initial-vs-respawn",
+      "consumer": "player-session-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/player-session-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/player-session-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "population-policy.cap-pressure-diagnostic",
       "consumer": "entity-population-analysis",
       "analyzerPaths": [
