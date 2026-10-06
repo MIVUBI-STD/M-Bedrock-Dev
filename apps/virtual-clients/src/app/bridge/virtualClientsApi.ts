@@ -41,9 +41,18 @@ async function invokePublic<T>(tauriCommand: string, args?: Record<string, unkno
   }
 }
 
+async function invokeDesktop<T>(command: string): Promise<T> {
+  try {
+    return await invokeRuntime<T>(command);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new BackendBridgeError("DESKTOP_OPERATION_FAILED", message, true);
+  }
+}
+
 export const desktop = {
   canArrangeWindows: () => true,
-  arrangeWindows: () => invokeRuntime<WindowArrangementResult>("window_arrange")
+  arrangeWindows: () => invokeDesktop<WindowArrangementResult>("window_arrange")
 };
 
 export const backend = {

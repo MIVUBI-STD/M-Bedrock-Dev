@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { backend, desktop, BackendBridgeError } from "./app/bridge/virtualClientsApi.js";
   import AppSidebar from "./app/components/AppSidebar.svelte";
+  import ErrorBanner from "./app/components/ErrorBanner.svelte";
   import ClientsSurface from "./app/surfaces/ClientsSurface.svelte";
   import SettingsSurface from "./app/surfaces/SettingsSurface.svelte";
   import SetupSurface from "./app/surfaces/SetupSurface.svelte";
@@ -17,6 +18,7 @@
   } from "./contracts.js";
   import { actionForClient, clientDisplayName, primaryClientAction } from "./view-model.js";
   import type { Page } from "./app/navigation.js";
+  import { presentRuntimeError, type RuntimeErrorPresentation } from "./app/runtimeErrorPresentation.js";
 
 
   let snapshot: EngineSnapshot | undefined;
@@ -27,7 +29,7 @@
   let confirmReprovision: ClientStatus["id"] | undefined;
   let loading = true;
   let busy = "";
-  let error = "";
+  let error: RuntimeErrorPresentation | undefined;
   let supportPath = "";
   let arrangeMessage = "";
   let page: Page = "setup";
@@ -48,15 +50,9 @@
     page = next;
   }
 
-  function errorMessage(value: unknown): string {
-    if (value instanceof BackendBridgeError) return value.message;
-    if (value instanceof Error) return value.message;
-    return String(value);
-  }
-
   async function refresh() {
     loading = true;
-    error = "";
+    error = undefined;
     try {
       const [nextSnapshot, nextPolicy, nextActions, nextHistory, nextUpdate] = await Promise.all([
         backend.snapshot(),
@@ -74,7 +70,7 @@
       if (!pageChosen) page = nextSnapshot.doctor.nextSetupAction === "READY" ? "clients" : "setup";
       if (page === "setup" && nextSnapshot.doctor.nextSetupAction === "READY" && pageChosen) page = "clients";
     } catch (value) {
-      error = errorMessage(value);
+      error = presentRuntimeError(value);
       snapshot = undefined;
       actions = [];
       update = undefined;
@@ -85,12 +81,12 @@
 
   async function mutate(label: string, operation: () => Promise<unknown>) {
     busy = label;
-    error = "";
+    error = undefined;
     try {
       await operation();
       await refresh();
     } catch (value) {
-      error = errorMessage(value);
+      error = presentRuntimeError(value);
     } finally {
       busy = "";
     }
@@ -123,7 +119,7 @@
 
   async function arrangeWindows() {
     busy = "arrange";
-    error = "";
+    error = undefined;
     arrangeMessage = "";
     try {
       for (const client of virtuals) {
@@ -137,7 +133,7 @@
       const missingNative = result.missing.includes("Native");
       arrangeMessage = `${result.arranged.length} window${result.arranged.length === 1 ? "" : "s"} arranged${missingNative ? " · This PC was not open" : ""}`;
     } catch (value) {
-      error = errorMessage(value);
+      error = presentRuntimeError(value);
     } finally {
       busy = "";
     }
@@ -145,13 +141,13 @@
 
   async function createSupportBundle() {
     busy = "support";
-    error = "";
+    error = undefined;
     try {
       const result = await backend.supportBundle();
       supportPath = result.path;
       history = await backend.history();
     } catch (value) {
-      error = errorMessage(value);
+      error = presentRuntimeError(value);
     } finally {
       busy = "";
     }
@@ -196,10 +192,11 @@
     </header>
 
     {#if error}
-      <section class="error-banner" aria-live="polite">
-        <div><strong>Virtual Clients could not connect</strong><span>{error}</span></div>
-        <button on:click={refresh}>Try again</button>
-      </section>
+      <ErrorBanner
+        {error}
+        onRetry={refresh}
+        onSupport={() => selectPage("support")}
+      />
     {/if}
 
     {#if arrangeMessage}
