@@ -56,3 +56,50 @@ fn native_client_cannot_use_vm_clean_state_actions() {
         std::io::ErrorKind::InvalidInput
     );
 }
+
+
+#[test]
+fn virtual_count_contract_is_one_to_three() {
+    let lab = RuntimeLab;
+
+    assert_eq!(
+        lab.start(0)
+            .expect_err("zero Virtual instances must be rejected")
+            .kind(),
+        std::io::ErrorKind::InvalidInput
+    );
+    assert_eq!(
+        lab.start(4)
+            .expect_err("there are only three Virtual instances")
+            .kind(),
+        std::io::ErrorKind::InvalidInput
+    );
+    assert_eq!(
+        lab.resources(0)
+            .expect_err("zero Virtual instances must be rejected")
+            .kind(),
+        std::io::ErrorKind::InvalidInput
+    );
+    assert_eq!(
+        lab.resources(4)
+            .expect_err("there are only three Virtual instances")
+            .kind(),
+        std::io::ErrorKind::InvalidInput
+    );
+}
+
+#[test]
+fn virtual_names_are_stable_and_exclude_native() {
+    assert_eq!(ClientId::Native.as_str(), "Native");
+    assert_eq!(ClientId::Virtual01.as_str(), "Virtual-01");
+    assert_eq!(ClientId::Virtual02.as_str(), "Virtual-02");
+    assert_eq!(ClientId::Virtual03.as_str(), "Virtual-03");
+    assert_eq!(
+        ClientId::VIRTUAL,
+        [
+            ClientId::Virtual01,
+            ClientId::Virtual02,
+            ClientId::Virtual03,
+        ]
+    );
+}
