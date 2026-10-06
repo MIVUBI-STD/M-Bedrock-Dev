@@ -58,7 +58,7 @@ jobs:
           "### Virtual Clients package smoke" >> $env:GITHUB_STEP_SUMMARY
           "Tauri NSIS package built from commit $env:GITHUB_SHA." >> $env:GITHUB_STEP_SUMMARY
           "PACKAGE_SMOKE only; not native VMware/Minecraft acceptance." >> $env:GITHUB_STEP_SUMMARY
-          "SHA-256: `$hash`" >> $env:GITHUB_STEP_SUMMARY
+          "SHA-256: $hash" >> $env:GITHUB_STEP_SUMMARY
       - uses: actions/upload-artifact@v4
         with:
           name: Virtual-Clients-Package-Smoke-${{ github.sha }}
