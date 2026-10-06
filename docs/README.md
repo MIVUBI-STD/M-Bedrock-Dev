@@ -119,6 +119,22 @@ document.analysis.mandatory-audit-procedure
 
 A section is a retrieval address, not a second documentation authority. Editing/renaming a heading may change the derived section ID; the parent document ID remains stable.
 
+### Optional local Retrieval
+
+For a developer with a checkout, the same architecture is available through one read-only command:
+
+```text
+npm run retrieve:repository -- "inventory reconnect" --domain analysis
+```
+
+Broad cross-domain discovery must be explicit:
+
+```text
+npm run retrieve:repository -- "unknown concern" --all
+```
+
+This command is optional tooling, not a requirement for ChatGPT remote work. Its purpose is to expose the same Router → Catalog → Graph → Retrieval → section-selection flow in one query surface.
+
 ## Context policy
 
 1. Start here only when the domain is not already known.
