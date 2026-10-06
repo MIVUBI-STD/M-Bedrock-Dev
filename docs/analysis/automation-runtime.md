@@ -134,3 +134,10 @@ Reset must disarm old automation before reuse. A surviving ticking block or repe
 8. Can a block tick survive arena reset?
 9. Are delayed command/tick/script schedulers racing?
 10. Is any legacy queued-ticking content version-sensitive?
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [Automation](../../engine/knowledge/world-engine/automation-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
