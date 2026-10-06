@@ -119,3 +119,11 @@ This owner remains static and conservative:
 - runtime identifiers may imply engine-owned behavior not visible in JSON;
 - randomize/sequence/filter timing remains conservative;
 - actual active runtime state still requires runtime evidence when source proof cannot decide it.
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [Entity](../../engine/knowledge/entity-runtime/entity-bedrock.json)
+- [Entity Runtime](../../engine/knowledge/entity-runtime/entity-runtime-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
