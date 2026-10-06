@@ -4,7 +4,7 @@ use std::{io, path::PathBuf, process::Command};
 
 use crate::{
     client::ClientId,
-    guest::{guest_agent_protocol_compatible, GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA},
+    guest::{guest_agent_launch_compatible, GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA},
     paths::{
         base_profile_path_for_version, base_vmx_path_for_version, client_profile_path,
         validate_version_segment,
@@ -415,7 +415,7 @@ pub fn native_minecraft_profile() -> Option<MinecraftProfile> {
 fn base_profile_matches_native(native: &MinecraftProfile, base: &BaseProfile) -> bool {
     native.version == base.minecraft_version
         && base.guest_status_schema == GUEST_STATUS_SCHEMA
-        && guest_agent_protocol_compatible(base.guest_agent_protocol)
+        && guest_agent_launch_compatible(base.guest_agent_protocol)
         && valid_provenance_id(&base.base_generation_id)
 }
 
