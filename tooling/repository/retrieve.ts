@@ -14,6 +14,7 @@ interface RetrievalCliOptions {
   query: string;
   domains: string[];
   includeHistorical: boolean;
+  allowAllDomains: boolean;
   limit: number;
   sectionLimit: number;
 }
@@ -31,6 +32,7 @@ function parseArgs(argv: readonly string[]): RetrievalCliOptions {
   const domains: string[] = [];
   const queryParts: string[] = [];
   let includeHistorical = false;
+  let allowAllDomains = false;
   let limit = 12;
   let sectionLimit = 8;
 
@@ -55,6 +57,11 @@ function parseArgs(argv: readonly string[]): RetrievalCliOptions {
       continue;
     }
 
+    if (value === "--all") {
+      allowAllDomains = true;
+      continue;
+    }
+
     if (value === "--limit") {
       limit = positiveInteger(argv[index + 1], 12);
       index += 1;
@@ -73,7 +80,13 @@ function parseArgs(argv: readonly string[]): RetrievalCliOptions {
   const query = queryParts.join(" ").trim();
   if (!query) {
     throw new Error(
-      "Usage: npm run retrieve:repository -- <query> [--domain analysis] [--history] [--limit 12] [--section-limit 8]",
+      "Usage: npm run retrieve:repository -- <query> --domain <domain> [--history] [--limit 12] [--section-limit 8]",
+    );
+  }
+
+  if (domains.length === 0 && !allowAllDomains) {
+    throw new Error(
+      "Retrieval requires Router scope. Pass --domain <domain>, or use --all explicitly for broad diagnostic discovery.",
     );
   }
 
@@ -81,6 +94,7 @@ function parseArgs(argv: readonly string[]): RetrievalCliOptions {
     query,
     domains: [...new Set(domains)].sort(),
     includeHistorical,
+    allowAllDomains,
     limit,
     sectionLimit,
   };
@@ -140,6 +154,7 @@ function main(): void {
         query: options.query,
         domains: options.domains,
         includeHistorical: options.includeHistorical,
+        broadDiagnostic: options.allowAllDomains,
         resources,
         sections,
       },
