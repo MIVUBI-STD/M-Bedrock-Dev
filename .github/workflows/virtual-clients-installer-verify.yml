@@ -1,0 +1,95 @@
+name: Virtual Clients Installer Verify
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [Experimental]
+    paths:
+      - "experiments/virtual-clients/backend/**"
+      - "experiments/virtual-clients/distribution/windows/**"
+      - "experiments/virtual-clients/guest/windows/**"
+      - ".github/workflows/virtual-clients-installer-verify.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: virtual-clients-installer-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-installer:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install Rust 1.98.1
+        shell: pwsh
+        run: |
+          rustup toolchain install 1.98.1 --profile minimal
+          rustup default 1.98.1
+
+      - name: Build release binaries
+        working-directory: experiments/virtual-clients/backend
+        run: cargo build --release --bins
+
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        run: |
+          $cargo = Get-Content experiments/virtual-clients/backend/Cargo.toml -Raw
+          $match = [regex]::Match($cargo, '(?m)^version\s*=\s*"([^"]+)"\s*$')
+          if (!$match.Success) { throw 'Backend version is missing.' }
+          "value=$($match.Groups[1].Value)" >> $env:GITHUB_OUTPUT
+
+      - name: Locate Inno Setup
+        id: inno
+        shell: pwsh
+        run: |
+          $candidates = @(
+            'C:\Program Files (x86)\Inno Setup 6\ISCC.exe',
+            'C:\Program Files\Inno Setup 6\ISCC.exe'
+          )
+          $iscc = $candidates | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } | Select-Object -First 1
+          if (!$iscc) { throw 'Inno Setup 6 is not available on this runner.' }
+          "path=$iscc" >> $env:GITHUB_OUTPUT
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $source = (Resolve-Path 'experiments/virtual-clients/backend/target/release').Path
+          & '${{ steps.inno.outputs.path }}' `
+            "/DAppVersion=${{ steps.version.outputs.value }}" `
+            "/DSourceDir=$source" `
+            'experiments/virtual-clients/distribution/windows/virtual-clients.iss'
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed: $LASTEXITCODE" }
+
+      - name: Install smoke test
+        shell: pwsh
+        run: |
+          $dist = Resolve-Path 'experiments/virtual-clients/distribution/windows/dist'
+          $installer = @(Get-ChildItem $dist -Filter '*.exe' -File)
+          if ($installer.Count -ne 1) { throw "Expected one installer, found $($installer.Count)." }
+          $installDir = Join-Path $env:RUNNER_TEMP 'VirtualClientsInstall'
+          & $installer[0].FullName /VERYSILENT /SUPPRESSMSGBOXES /NORESTART "/DIR=$installDir"
+          if ($LASTEXITCODE -ne 0) { throw "Installer failed: $LASTEXITCODE" }
+
+          $hostExe = Join-Path $installDir 'virtual-clients.exe'
+          $guestExe = Join-Path $installDir 'guest\virtual-guest-agent.exe'
+          $prepare = Join-Path $installDir 'guest\windows\prepare-base.ps1'
+          if (!(Test-Path $hostExe -PathType Leaf)) { throw 'Host executable missing after install.' }
+          if (!(Test-Path $guestExe -PathType Leaf)) { throw 'Guest Agent executable missing after install.' }
+          if (!(Test-Path $prepare -PathType Leaf)) { throw 'Guest Base preparation script missing after install.' }
+
+          & $hostExe help | Out-Host
+          if ($LASTEXITCODE -ne 0) { throw 'Installed host executable smoke test failed.' }
+
+          $uninstaller = @(Get-ChildItem $installDir -Filter 'unins*.exe' -File)
+          if ($uninstaller.Count -ne 1) { throw 'Expected one uninstaller.' }
+          & $uninstaller[0].FullName /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+          if ($LASTEXITCODE -ne 0) { throw "Uninstall failed: $LASTEXITCODE" }
+          Start-Sleep -Seconds 2
+          if (Test-Path $installDir) { throw 'Install directory remains after uninstall.' }
