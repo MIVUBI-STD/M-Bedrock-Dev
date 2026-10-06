@@ -202,6 +202,17 @@ export interface DisplayInfo {
   height: number;
 }
 
+export type OverlayPosition = "TOP_LEFT" | "TOP_RIGHT";
+
+export interface ScreenOverlayPreference {
+  enabled: boolean;
+  showScreenNumber: boolean;
+  showLabel: boolean;
+  position: OverlayPosition;
+  opacity: number;
+  labels: Record<ClientId, string>;
+}
+
 export interface WindowArrangementResult {
   schema: 2;
   layout: WindowLayout;
