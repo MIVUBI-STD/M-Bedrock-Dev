@@ -1,3 +1,12 @@
+---
+id: document.system.router
+class: DOCUMENT
+domain: system
+role: ROUTER
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # System
 
 This domain owns durable architecture, semantic ownership, development discipline, specialist routing, developer/delivery operations, project/report ownership, and repository execution efficiency.

@@ -1,3 +1,12 @@
+---
+id: document.product.flow
+class: DOCUMENT
+domain: product
+role: WORKFLOW
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Product Flow
 
 ## Single source of truth

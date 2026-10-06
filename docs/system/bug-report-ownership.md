@@ -1,3 +1,12 @@
+---
+id: document.system.bug-report-ownership
+class: DOCUMENT
+domain: system
+role: CONTRACT
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Bug Report Ownership
 
 M-Bedrock separates **audit truth** from the **approved bug ledger**. They are different scopes, not competing authorities.

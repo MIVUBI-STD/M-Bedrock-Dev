@@ -1,3 +1,12 @@
+---
+id: document.system.drive-storage
+class: DOCUMENT
+domain: system
+role: CONTRACT
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Google Drive Storage
 
 Google Drive is the human-facing storage location for map binaries, active map documents, development source, version history, and technical references.

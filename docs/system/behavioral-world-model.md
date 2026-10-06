@@ -1,3 +1,12 @@
+---
+id: document.system.behavioral-world-model
+class: DOCUMENT
+domain: system
+role: ARCHITECTURE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Behavioral World Model
 
 The Behavioral World Model is the executable specification boundary between structural understanding and runtime experimentation.

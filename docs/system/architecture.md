@@ -1,3 +1,12 @@
+---
+id: document.system.architecture
+class: DOCUMENT
+domain: system
+role: ARCHITECTURE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Architecture
 
 M-Bedrock-Dev uses semantic ownership and one-way dependency direction.

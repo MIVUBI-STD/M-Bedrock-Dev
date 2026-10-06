@@ -1,3 +1,12 @@
+---
+id: document.system.canonical-naming
+class: DOCUMENT
+domain: system
+role: CONTRACT
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Canonical Naming
 
 This document defines repository-wide canonical terminology.

@@ -1,3 +1,12 @@
+---
+id: document.repair.router
+class: DOCUMENT
+domain: repair
+role: ROUTER
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Repair
 
 Canonical repair/mutation policy.

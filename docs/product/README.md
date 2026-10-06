@@ -1,3 +1,12 @@
+---
+id: document.product.router
+class: DOCUMENT
+domain: product
+role: ROUTER
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Product
 
 Canonical product identity and human-facing workflow.

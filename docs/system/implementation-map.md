@@ -1,3 +1,12 @@
+---
+id: document.system.implementation-map
+class: DOCUMENT
+domain: system
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Implementation Map
 
 Human-readable routing map for implementation ownership.

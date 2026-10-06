@@ -1,3 +1,12 @@
+---
+id: document.repair.repair-planning
+class: DOCUMENT
+domain: repair
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Repair Planning
 
 ## Purpose

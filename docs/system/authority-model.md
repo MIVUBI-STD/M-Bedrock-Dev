@@ -1,3 +1,12 @@
+---
+id: document.system.authority-model
+class: DOCUMENT
+domain: system
+role: CONTRACT
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Semantic Authority Model
 
 ## Current gameplay authority

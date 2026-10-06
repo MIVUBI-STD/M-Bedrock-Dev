@@ -1,3 +1,12 @@
+---
+id: document.system.development-operations
+class: DOCUMENT
+domain: system
+role: GUIDE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Development Operations
 
 ## Remote GitHub operating mode

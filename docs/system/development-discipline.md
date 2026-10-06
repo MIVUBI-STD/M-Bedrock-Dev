@@ -1,3 +1,12 @@
+---
+id: document.system.development-discipline
+class: DOCUMENT
+domain: system
+role: CONTRACT
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Development Discipline
 
 ## Minimum complete change

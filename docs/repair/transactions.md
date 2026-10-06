@@ -1,3 +1,12 @@
+---
+id: document.repair.transactions
+class: DOCUMENT
+domain: repair
+role: CONTRACT
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Repair Transactions
 
 A repair is represented as an explicit PatchTransaction.
