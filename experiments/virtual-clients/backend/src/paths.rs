@@ -88,6 +88,10 @@ pub fn staging_root() -> io::Result<PathBuf> {
     Ok(runtime_root()?.join("staging"))
 }
 
+pub fn update_staging_root() -> io::Result<PathBuf> {
+    Ok(runtime_root()?.join("updates"))
+}
+
 pub fn lock_path(root: &Path) -> PathBuf {
     root.join(".operation.lock")
 }
