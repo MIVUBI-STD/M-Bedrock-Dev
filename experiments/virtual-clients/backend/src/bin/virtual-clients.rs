@@ -1,6 +1,5 @@
 use m_bedrock_virtual_clients_core::{
-    client::{ClientId, DestructiveConfirmation},
-    VirtualClients,
+    ClientId, DestructiveConfirmation, VirtualClients,
 };
 
 fn parse_client(value: &str) -> Result<ClientId, String> {

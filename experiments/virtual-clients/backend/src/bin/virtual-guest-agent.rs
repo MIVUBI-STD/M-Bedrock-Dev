@@ -1,6 +1,5 @@
 use m_bedrock_virtual_clients_core::{
-    guest::{GuestStatus, GUEST_AGENT_PORT, GUEST_STATUS_SCHEMA},
-    profile::native_minecraft_profile,
+    guest_agent_minecraft_profile, GuestStatus, GUEST_AGENT_PORT, GUEST_STATUS_SCHEMA,
 };
 #[cfg(target_os = "windows")]
 use sha2::{Digest, Sha256};
@@ -59,7 +58,7 @@ fn handle(mut stream: TcpStream, token: &str) -> Result<(), Box<dyn std::error::
     let status = GuestStatus {
         schema: GUEST_STATUS_SCHEMA,
         agent_version: env!("CARGO_PKG_VERSION").to_string(),
-        minecraft: native_minecraft_profile(),
+        minecraft: guest_agent_minecraft_profile(),
         machine_identity: guest_machine_identity(),
     };
     let body = serde_json::to_string(&status)?;

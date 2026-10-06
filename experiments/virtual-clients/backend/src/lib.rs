@@ -1,13 +1,35 @@
-pub mod client;
-pub mod diagnostics;
-pub mod doctor;
-pub mod guest;
-pub mod paths;
-pub mod profile;
-pub mod provider;
-pub mod resources;
-pub mod runtime;
-pub mod schema;
-pub mod update;
+mod client;
+mod diagnostics;
+mod doctor;
+mod guest;
+mod paths;
+mod profile;
+mod provider;
+mod resources;
+mod runtime;
+mod schema;
+mod update;
 
-pub use runtime::VirtualClients;
+pub use client::{
+    ClientId, ClientState, ClientStatus, DestructiveConfirmation, IdentityState,
+};
+pub use diagnostics::{
+    DiagnosticsReport, HostDiagnostics, ProviderDiagnostics, VirtualHardwareDiagnostics,
+};
+pub use doctor::{DoctorClient, DoctorReport, SetupAction};
+pub use profile::{
+    BaseProfile, BaseProfileSource, MinecraftInstallType, MinecraftProfile, ProfileParity,
+    ProfileStatus,
+};
+pub use resources::{HostPressure, PressureLevel, VIRTUAL_MEMORY_LIMIT_MB};
+pub use runtime::{ResourceView, RuntimeStatus, VirtualClients};
+pub use schema::{SchemaState, SchemaStatus, CURRENT_RUNTIME_SCHEMA};
+pub use update::{StagedUpdate, UpdateCheck, UpdateState};
+
+#[doc(hidden)]
+pub use guest::{GuestStatus, GUEST_AGENT_PORT, GUEST_STATUS_SCHEMA};
+
+#[doc(hidden)]
+pub fn guest_agent_minecraft_profile() -> Option<MinecraftProfile> {
+    profile::native_minecraft_profile()
+}

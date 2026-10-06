@@ -1,4 +1,4 @@
-use m_bedrock_virtual_clients_core::{client::ClientId, VirtualClients};
+use m_bedrock_virtual_clients_core::{ClientId, VirtualClients};
 
 #[test]
 fn native_client_lifecycle_is_manual() {
