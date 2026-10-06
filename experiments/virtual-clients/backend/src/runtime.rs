@@ -1,7 +1,5 @@
 use crate::{
-    client::{
-        ClientId, ClientState, ClientStatus, DestructiveConfirmation, IdentityState,
-    },
+    client::{ClientId, ClientState, ClientStatus, DestructiveConfirmation, IdentityState},
     diagnostics::{collect as collect_diagnostics, DiagnosticsReport},
     doctor::{doctor, DoctorReport},
     guest::{query_guest_status, GuestStatus},
@@ -9,8 +7,8 @@ use crate::{
     profile::{
         current_base_vmx_path, load_client_profile, native_minecraft_profile, profile_status,
         require_base_matches_native, require_client_matches_native, write_client_profile,
-        write_verified_base_profile, write_verified_client_identities, BaseProfile, MinecraftProfile,
-        ProfileParity, ProfileStatus,
+        write_verified_base_profile, write_verified_client_identities, BaseProfile,
+        MinecraftProfile, ProfileParity, ProfileStatus,
     },
     provider::{
         cleanup_staging, current_platform_provider, ensure_guest_token_for_path, guest_token,
@@ -279,9 +277,7 @@ fn identity_fingerprint(value: &str) -> String {
     format!("{:x}", Sha256::digest(value.as_bytes()))
 }
 
-fn verify_identity_provenance(
-    provider: &dyn Provider,
-) -> io::Result<Vec<ClientStatus>> {
+fn verify_identity_provenance(provider: &dyn Provider) -> io::Result<Vec<ClientStatus>> {
     let native = native_minecraft_profile();
 
     let mut vm_identities = Vec::with_capacity(3);
@@ -462,11 +458,7 @@ fn client_status(
         lineage_parity: Some(lineage_parity(native, client)),
         version_parity: Some(parity),
         vm_identity: Some(vm_identity_state(provider, client)),
-        windows_identity: Some(windows_identity_state(
-            provider,
-            client,
-            guest.as_ref(),
-        )),
+        windows_identity: Some(windows_identity_state(provider, client, guest.as_ref())),
     })
 }
 

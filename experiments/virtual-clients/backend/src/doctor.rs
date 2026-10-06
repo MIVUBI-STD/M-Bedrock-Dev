@@ -136,12 +136,10 @@ pub fn doctor() -> DoctorReport {
                 _ => ProfileParity::Unknown,
             };
 
-            let identity_provenance = load_client_profile(client)
-                .ok()
-                .is_some_and(|profile| {
-                    profile.verified_vm_identity.is_some()
-                        && profile.verified_windows_identity.is_some()
-                });
+            let identity_provenance = load_client_profile(client).ok().is_some_and(|profile| {
+                profile.verified_vm_identity.is_some()
+                    && profile.verified_windows_identity.is_some()
+            });
 
             DoctorClient {
                 id: client.as_str(),

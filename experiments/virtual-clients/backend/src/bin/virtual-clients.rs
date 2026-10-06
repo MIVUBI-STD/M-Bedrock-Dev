@@ -40,19 +40,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         "reprovision" => {
             let client = parse_client(&args.next().ok_or("client id is required")?)?;
-            let confirmation = args.next().ok_or(
-                "reprovision is destructive; pass --destroy-account-state to continue",
-            )?;
+            let confirmation = args
+                .next()
+                .ok_or("reprovision is destructive; pass --destroy-account-state to continue")?;
             if confirmation != "--destroy-account-state" || args.next().is_some() {
                 return Err(
                     "reprovision requires exactly --destroy-account-state after the client id"
                         .into(),
                 );
             }
-            print_json(&app.reprovision(
-                client,
-                DestructiveConfirmation::ReprovisionAccountState,
-            )?)?;
+            print_json(
+                &app.reprovision(client, DestructiveConfirmation::ReprovisionAccountState)?,
+            )?;
         }
         "verify-identities" => print_json(&app.verify_identities()?)?,
         "start" => {
@@ -97,9 +96,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("  status");
             println!("  resources <1-3>");
             println!("  verify-identities");
-            println!(
-                "  reprovision <Virtual-01..03> --destroy-account-state"
-            );
+            println!("  reprovision <Virtual-01..03> --destroy-account-state");
             println!("  start <1-3>");
             println!("  open <Virtual-01..03>");
             println!("  suspend [Virtual-01..03]");
