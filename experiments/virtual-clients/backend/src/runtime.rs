@@ -3,6 +3,7 @@ use crate::{
     diagnostics::{collect as collect_diagnostics, DiagnosticsReport},
     doctor::{doctor, DoctorReport},
     guest::{query_guest_status, GuestStatus},
+    journal::{record_operation, OperationKind},
     paths::runtime_root,
     policy::{engine_policy, EnginePolicy, MAX_VIRTUAL_CLIENTS},
     profile::{
@@ -665,11 +666,107 @@ impl VirtualClients {
         engine_policy()
     }
 
+    fn record<T>(
+        &self,
+        operation: OperationKind,
+        target: Option<String>,
+        result: io::Result<T>,
+    ) -> io::Result<T> {
+        record_operation(operation, target, &result);
+        result
+    }
+
+    pub fn stage_update(&self) -> io::Result<StagedUpdate> {
+        self.record(OperationKind::StageUpdate, None, self.stage_update_inner())
+    }
+
+    pub fn register_base(&self) -> io::Result<BaseProfile> {
+        self.record(OperationKind::RegisterBase, None, self.register_base_inner())
+    }
+
+    pub fn provision(&self) -> io::Result<Vec<ClientStatus>> {
+        self.record(OperationKind::Provision, None, self.provision_inner())
+    }
+
+    pub fn reprovision(
+        &self,
+        client: ClientId,
+        confirmation: DestructiveConfirmation,
+    ) -> io::Result<ClientStatus> {
+        self.record(
+            OperationKind::Reprovision,
+            Some(client.as_str().to_string()),
+            self.reprovision_inner(client, confirmation),
+        )
+    }
+
+    pub fn verify_identities(&self) -> io::Result<Vec<ClientStatus>> {
+        self.record(
+            OperationKind::VerifyIdentities,
+            None,
+            self.verify_identities_inner(),
+        )
+    }
+
+    pub fn start(&self, count: usize) -> io::Result<Vec<ClientStatus>> {
+        self.record(
+            OperationKind::Start,
+            Some(format!("count:{count}")),
+            self.start_inner(count),
+        )
+    }
+
+    pub fn suspend(&self, client: Option<ClientId>) -> io::Result<Vec<ClientStatus>> {
+        let target = client
+            .map(|client| client.as_str().to_string())
+            .or_else(|| Some("all".to_string()));
+        self.record(OperationKind::Suspend, target, self.suspend_inner(client))
+    }
+
+    pub fn stop(&self, client: Option<ClientId>) -> io::Result<Vec<ClientStatus>> {
+        let target = client
+            .map(|client| client.as_str().to_string())
+            .or_else(|| Some("all".to_string()));
+        self.record(OperationKind::Stop, target, self.stop_inner(client))
+    }
+
+    pub fn restart(&self, client: ClientId) -> io::Result<ClientStatus> {
+        self.record(
+            OperationKind::Restart,
+            Some(client.as_str().to_string()),
+            self.restart_inner(client),
+        )
+    }
+
+    pub fn set_ready(&self, client: ClientId) -> io::Result<ClientStatus> {
+        self.record(
+            OperationKind::SetReady,
+            Some(client.as_str().to_string()),
+            self.set_ready_inner(client),
+        )
+    }
+
+    pub fn reset(&self, client: ClientId) -> io::Result<ClientStatus> {
+        self.record(
+            OperationKind::Reset,
+            Some(client.as_str().to_string()),
+            self.reset_inner(client),
+        )
+    }
+
+    pub fn open(&self, client: ClientId) -> io::Result<ClientStatus> {
+        self.record(
+            OperationKind::Open,
+            Some(client.as_str().to_string()),
+            self.open_inner(client),
+        )
+    }
+
     pub fn check_update(&self) -> io::Result<UpdateCheck> {
         check_update()
     }
 
-    pub fn stage_update(&self) -> io::Result<StagedUpdate> {
+    fn stage_update_inner(&self) -> io::Result<StagedUpdate> {
         stage_update()
     }
 
@@ -694,7 +791,7 @@ impl VirtualClients {
         write_support_bundle(self.snapshot()?)
     }
 
-    pub fn register_base(&self) -> io::Result<BaseProfile> {
+    fn register_base_inner(&self) -> io::Result<BaseProfile> {
         let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(
@@ -818,7 +915,7 @@ impl VirtualClients {
         write_verified_base_profile(&native, &proof.agent_version)
     }
 
-    pub fn provision(&self) -> io::Result<Vec<ClientStatus>> {
+    fn provision_inner(&self) -> io::Result<Vec<ClientStatus>> {
         let profile = require_base_matches_native()?;
         let native = profile.native.ok_or_else(|| {
             io::Error::new(
@@ -865,7 +962,7 @@ impl VirtualClients {
         Ok(result)
     }
 
-    pub fn reprovision(
+    fn reprovision_inner(
         &self,
         client: ClientId,
         confirmation: DestructiveConfirmation,
@@ -925,7 +1022,7 @@ impl VirtualClients {
         )
     }
 
-    pub fn verify_identities(&self) -> io::Result<Vec<ClientStatus>> {
+    fn verify_identities_inner(&self) -> io::Result<Vec<ClientStatus>> {
         require_base_matches_native()?;
         let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
@@ -1068,7 +1165,7 @@ impl VirtualClients {
         })
     }
 
-    pub fn start(&self, count: usize) -> io::Result<Vec<ClientStatus>> {
+    fn start_inner(&self, count: usize) -> io::Result<Vec<ClientStatus>> {
         let resources = self.resources(count)?;
         require_base_matches_native()?;
         let inactive = resources.suspended_virtual_clients + resources.stopped_virtual_clients;
@@ -1189,7 +1286,7 @@ impl VirtualClients {
         Ok(result)
     }
 
-    pub fn suspend(&self, client: Option<ClientId>) -> io::Result<Vec<ClientStatus>> {
+    fn suspend_inner(&self, client: Option<ClientId>) -> io::Result<Vec<ClientStatus>> {
         if client.is_some_and(ClientId::is_native) {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -1248,7 +1345,7 @@ impl VirtualClients {
         Ok(result)
     }
 
-    pub fn stop(&self, client: Option<ClientId>) -> io::Result<Vec<ClientStatus>> {
+    fn stop_inner(&self, client: Option<ClientId>) -> io::Result<Vec<ClientStatus>> {
         if client.is_some_and(ClientId::is_native) {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -1292,7 +1389,7 @@ impl VirtualClients {
         Ok(result)
     }
 
-    pub fn restart(&self, client: ClientId) -> io::Result<ClientStatus> {
+    fn restart_inner(&self, client: ClientId) -> io::Result<ClientStatus> {
         if client.is_native() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -1338,7 +1435,7 @@ impl VirtualClients {
         )
     }
 
-    pub fn set_ready(&self, client: ClientId) -> io::Result<ClientStatus> {
+    fn set_ready_inner(&self, client: ClientId) -> io::Result<ClientStatus> {
         if client.is_native() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -1374,7 +1471,7 @@ impl VirtualClients {
         )
     }
 
-    pub fn reset(&self, client: ClientId) -> io::Result<ClientStatus> {
+    fn reset_inner(&self, client: ClientId) -> io::Result<ClientStatus> {
         if client.is_native() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -1420,7 +1517,7 @@ impl VirtualClients {
         )
     }
 
-    pub fn open(&self, client: ClientId) -> io::Result<ClientStatus> {
+    fn open_inner(&self, client: ClientId) -> io::Result<ClientStatus> {
         if client.is_native() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,

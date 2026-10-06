@@ -1,7 +1,8 @@
 #![forbid(unsafe_code)]
 
 use m_bedrock_virtual_clients_core::{
-    ClientId, DestructiveConfirmation, ErrorReport, SuccessReport, VirtualClients,
+    read_operation_history, ClientId, DestructiveConfirmation, ErrorReport, SuccessReport,
+    VirtualClients,
 };
 use std::io;
 
@@ -52,6 +53,7 @@ fn run() -> io::Result<()> {
         "diagnostics" => print_json(&app.diagnostics()?)?,
         "snapshot" => print_json(&app.snapshot()?)?,
         "support-bundle" => print_json(&app.support_bundle()?)?,
+        "history" => print_json(&read_operation_history()?)?,
         "check-update" => print_json(&app.check_update()?)?,
         "stage-update" => print_json(&app.stage_update()?)?,
         "register-base" => print_json(&app.register_base()?)?,
@@ -139,6 +141,7 @@ fn run() -> io::Result<()> {
             println!("  diagnostics");
             println!("  snapshot");
             println!("  support-bundle");
+            println!("  history");
             println!("  check-update");
             println!("  stage-update");
             println!("  register-base");

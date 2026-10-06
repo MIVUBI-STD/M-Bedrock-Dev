@@ -246,3 +246,8 @@ Product/runtime limits have one read-only owner in `EnginePolicy`. Provider and 
 ## Health issue contract
 
 `DoctorReport.issues` exposes machine-readable observed conditions with a typed code, severity, and optional Virtual client. Issues are diagnostic facts only; `nextSetupAction` remains the single recovery/setup decision owner. Frontend code must never derive a competing recovery flow by interpreting issue strings.
+
+
+## Operation journal
+
+Mutation operations write a bounded local history of the last 200 operations. Records contain only timestamp, typed operation, non-sensitive target, outcome, typed error code, and retryability. The journal is diagnostic-only: lifecycle decisions never read it, write failures are best-effort, and no error message, credential, token, account identifier, world content, or filesystem path is stored.

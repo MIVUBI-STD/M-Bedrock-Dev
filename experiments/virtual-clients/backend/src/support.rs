@@ -1,6 +1,7 @@
 use crate::{
     diagnostics::DiagnosticsReport,
     doctor::DoctorReport,
+    journal::{read_operation_history, OperationRecord},
     paths::runtime_root,
     persistence::write_text_transactional,
 };
@@ -35,6 +36,7 @@ pub struct SupportBundle {
     pub app_version: &'static str,
     pub privacy: SupportPrivacy,
     pub snapshot: EngineSnapshot,
+    pub operation_history: Vec<OperationRecord>,
 }
 
 #[derive(Debug, Serialize)]
@@ -77,6 +79,7 @@ pub(crate) fn write_support_bundle(
             contains_absolute_runtime_paths: false,
         },
         snapshot,
+        operation_history: read_operation_history().unwrap_or_default(),
     };
     let json = serde_json::to_string_pretty(&bundle)
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;

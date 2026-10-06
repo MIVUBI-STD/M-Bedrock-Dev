@@ -6,6 +6,7 @@ mod diagnostics;
 mod doctor;
 mod error;
 mod guest;
+mod journal;
 mod paths;
 mod persistence;
 mod policy;
@@ -26,6 +27,7 @@ pub use doctor::{
     DoctorClient, DoctorReport, HealthIssue, HealthIssueCode, HealthSeverity, SetupAction,
 };
 pub use error::{ErrorCode, ErrorReport};
+pub use journal::{read_operation_history, OperationKind, OperationOutcome, OperationRecord};
 pub use policy::{engine_policy, EnginePolicy, MAX_VIRTUAL_CLIENTS, READY_SNAPSHOT_NAME, VIRTUAL_VCPUS};
 pub use profile::{
     BaseProfile, BaseProfileSource, BaseState, MinecraftInstallType, MinecraftProfile,

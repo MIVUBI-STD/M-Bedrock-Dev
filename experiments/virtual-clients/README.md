@@ -199,6 +199,7 @@ doctor
 diagnostics
 snapshot
 support-bundle
+history
 check-update
 stage-update
 register-base
@@ -237,3 +238,6 @@ Use it to collect deterministic backend evidence during the real-machine campaig
 `snapshot` returns one read-only engine view combining setup readiness and diagnostics under the public JSON contract.
 
 `support-bundle` writes one bounded JSON diagnostic artifact under the Virtual Clients runtime `support` directory. Its content excludes Microsoft credentials, account identifiers, Guest Agent tokens, world content, and absolute runtime paths. The returned command result contains the local file path so the operator can locate the artifact.
+
+
+`history` returns the bounded, non-authoritative operation journal used for support and troubleshooting. It never stores account credentials, tokens, free-form error messages, worlds, or runtime paths.
