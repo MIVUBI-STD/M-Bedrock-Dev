@@ -2171,6 +2171,78 @@
       ]
     },
     {
+      "knowledgeId": "life.entity-die-is-terminal-engine-evidence",
+      "consumer": "player-life-combat-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/player-session-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/player-session-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "life.health-change-is-not-death",
+      "consumer": "player-life-combat-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/player-session-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/player-session-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "life.health-component-is-attribute-not-session-state",
+      "consumer": "player-life-combat-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/player-session-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/player-session-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "life.player-spawn-covers-respawn",
+      "consumer": "player-life-combat-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/player-session-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/player-session-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "life.relation-health-change-does-not-prove-death",
+      "consumer": "player-life-combat-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/player-session-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/player-session-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "life.relation-respawn-gates-reconciliation",
+      "consumer": "player-life-combat-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/player-session-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/player-session-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "loot-policy.death-reward-arbitration",
       "consumer": "economy-contract-analysis",
       "analyzerPaths": [
@@ -4291,6 +4363,110 @@
       "proofPaths": [
         "engine/analyzers/scripts/test/domains/spatial/spatial-mutation-evidence.test.ts",
         "engine/packages/orchestrator/test/inspection/teleport-transaction-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "tick.before-events-restricted",
+      "consumer": "event-ordering-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/inspection/script-api-usage.ts",
+        "engine/packages/orchestrator/src/inspection/script-performance-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/script-api-usage.test.ts",
+        "engine/packages/orchestrator/test/inspection/script-performance-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "tick.currentTick-is-observation-not-transaction",
+      "consumer": "event-ordering-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/inspection/script-api-usage.ts",
+        "engine/packages/orchestrator/src/inspection/script-performance-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/script-api-usage.test.ts",
+        "engine/packages/orchestrator/test/inspection/script-performance-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "tick.relation-worldload-gates-world-state",
+      "consumer": "event-ordering-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/inspection/script-api-usage.ts",
+        "engine/packages/orchestrator/src/inspection/script-performance-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/script-api-usage.test.ts",
+        "engine/packages/orchestrator/test/inspection/script-performance-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "tick.relation.before-event-requires-deferral-for-mutation",
+      "consumer": "event-ordering-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/inspection/script-api-usage.ts",
+        "engine/packages/orchestrator/src/inspection/script-performance-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/script-api-usage.test.ts",
+        "engine/packages/orchestrator/test/inspection/script-performance-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "tick.runinterval-zero-is-next-tick-cadence",
+      "consumer": "event-ordering-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/inspection/script-api-usage.ts",
+        "engine/packages/orchestrator/src/inspection/script-performance-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/script-api-usage.test.ts",
+        "engine/packages/orchestrator/test/inspection/script-performance-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "tick.runjob-not-event-deferral",
+      "consumer": "event-ordering-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/inspection/script-api-usage.ts",
+        "engine/packages/orchestrator/src/inspection/script-performance-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/script-api-usage.test.ts",
+        "engine/packages/orchestrator/test/inspection/script-performance-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "tick.system-run-context-dependent",
+      "consumer": "event-ordering-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/inspection/script-api-usage.ts",
+        "engine/packages/orchestrator/src/inspection/script-performance-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/script-api-usage.test.ts",
+        "engine/packages/orchestrator/test/inspection/script-performance-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "tick.worldload-boundary-for-root-state",
+      "consumer": "event-ordering-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/inspection/script-api-usage.ts",
+        "engine/packages/orchestrator/src/inspection/script-performance-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/script-api-usage.test.ts",
+        "engine/packages/orchestrator/test/inspection/script-performance-analysis.test.ts"
       ]
     },
     {
