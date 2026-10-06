@@ -9,7 +9,6 @@ Tauri 2
 Svelte 5
 Vite
 TypeScript
-Tailwind CSS 4
 Rust
 ```
 
@@ -44,7 +43,7 @@ Window arrangement is desktop-native presentation behavior. VM lifecycle eligibi
 
 ## Packaging
 
-The Tauri NSIS package includes the support CLI and Guest Agent as sidecars plus guest/acceptance scripts as resources. `scripts/prepare-sidecars.mjs` builds target-specific sidecars before packaging.
+The Tauri NSIS package includes the support CLI and Guest Agent as package-only sidecars plus guest/acceptance scripts as resources. `scripts/prepare-sidecars.mjs` builds target-specific sidecars only for package/release work; normal dev/check/test does not depend on sidecar staging.
 
 ## Commands
 
