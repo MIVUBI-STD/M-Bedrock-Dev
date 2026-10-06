@@ -135,7 +135,7 @@ mod windows_host {
     }
 
 
-    #[derive(Debug, Serialize)]
+    #[derive(Debug, Deserialize, Serialize)]
     #[serde(rename_all = "camelCase")]
     struct WindowArrangementResult {
         schema: u32,
