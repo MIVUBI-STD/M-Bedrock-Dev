@@ -81,6 +81,78 @@
       "nextEvidenceOwner": "runtime-command"
     },
     {
+      "knowledgeId": "education.agent.code-builder-companion",
+      "status": "static-capability-gap",
+      "reason": "Agent runtime is not structurally modeled.",
+      "nextEvidenceOwner": "education-runtime-analysis"
+    },
+    {
+      "knowledgeId": "education.allow.build-permission",
+      "status": "static-capability-gap",
+      "reason": "Education specialty-block permission semantics are not structurally analyzed.",
+      "nextEvidenceOwner": "education-permission-analysis"
+    },
+    {
+      "knowledgeId": "education.border.force-field",
+      "status": "static-capability-gap",
+      "reason": "Education border permission/traversal semantics are not structurally analyzed.",
+      "nextEvidenceOwner": "education-permission-analysis"
+    },
+    {
+      "knowledgeId": "education.classroom-controls",
+      "status": "runtime-required",
+      "reason": "Classroom/admin controls can alter live runtime state outside pack ownership.",
+      "nextEvidenceOwner": "runtime-education-profile"
+    },
+    {
+      "knowledgeId": "education.code-builder-agent",
+      "status": "static-capability-gap",
+      "reason": "Agent/external coding world mutation is not structurally modeled.",
+      "nextEvidenceOwner": "education-runtime-analysis"
+    },
+    {
+      "knowledgeId": "education.code-builder.support",
+      "status": "static-capability-gap",
+      "reason": "Code Builder capability is not represented in target profile analysis.",
+      "nextEvidenceOwner": "education-profile-analysis"
+    },
+    {
+      "knowledgeId": "education.dedicated-server-2026",
+      "status": "runtime-required",
+      "reason": "Dedicated-server scale/deployment behavior requires target runtime profile validation.",
+      "nextEvidenceOwner": "runtime-education-profile"
+    },
+    {
+      "knowledgeId": "education.deny.build-restriction",
+      "status": "static-capability-gap",
+      "reason": "Education specialty-block permission semantics are not structurally analyzed.",
+      "nextEvidenceOwner": "education-permission-analysis"
+    },
+    {
+      "knowledgeId": "education.npc.dialogue-open-loaded-ticking",
+      "status": "runtime-required",
+      "reason": "NPC existence/loading/ticking is runtime entity/chunk state.",
+      "nextEvidenceOwner": "runtime-dialogue"
+    },
+    {
+      "knowledgeId": "education.relation-profile-gates-shared-fact",
+      "status": "static-capability-gap",
+      "reason": "Shared Bedrock assumptions need explicit Education target-profile gating.",
+      "nextEvidenceOwner": "education-profile-analysis"
+    },
+    {
+      "knowledgeId": "education.specialty-block-identifiers",
+      "status": "static-capability-gap",
+      "reason": "Education specialty-block presence lacks dedicated profile/block analysis.",
+      "nextEvidenceOwner": "education-permission-analysis"
+    },
+    {
+      "knowledgeId": "education.version-track-distinct",
+      "status": "static-capability-gap",
+      "reason": "Education/Bedrock version-profile compatibility needs explicit edition profile analysis.",
+      "nextEvidenceOwner": "education-profile-analysis"
+    },
+    {
       "knowledgeId": "effects.event-mutation-delayed-until-entity-tick",
       "status": "runtime-required",
       "reason": "Delayed application requires tick observation.",
@@ -183,6 +255,84 @@
       "nextEvidenceOwner": "client-feedback-analysis"
     },
     {
+      "knowledgeId": "gametest.experimental",
+      "status": "static-capability-gap",
+      "reason": "GameTest version/track compatibility needs dedicated validation-harness compatibility analysis.",
+      "nextEvidenceOwner": "gametest-compatibility-analysis"
+    },
+    {
+      "knowledgeId": "gametest.max-ticks-bounded",
+      "status": "runtime-required",
+      "reason": "GameTest timeout/assertion outcomes require executing the harness.",
+      "nextEvidenceOwner": "runtime-validation"
+    },
+    {
+      "knowledgeId": "gametest.relation-test-validates-invariant",
+      "status": "runtime-required",
+      "reason": "Invariant validation requires runtime GameTest execution.",
+      "nextEvidenceOwner": "runtime-validation"
+    },
+    {
+      "knowledgeId": "gametest.repeatable-environment",
+      "status": "runtime-required",
+      "reason": "GameTest is a runtime validation harness, not static source proof.",
+      "nextEvidenceOwner": "runtime-validation"
+    },
+    {
+      "knowledgeId": "inventory.entity-component-container-invalid-on-removed",
+      "status": "runtime-required",
+      "reason": "Container validity depends on live entity lifecycle.",
+      "nextEvidenceOwner": "runtime-inventory"
+    },
+    {
+      "knowledgeId": "inventory.itemstack-can-carry-custom-state",
+      "status": "static-capability-gap",
+      "reason": "Full item identity signatures need component/dynamic-property structural analysis.",
+      "nextEvidenceOwner": "item-identity-analysis"
+    },
+    {
+      "knowledgeId": "inventory.relation-slot-validity-gates-write",
+      "status": "runtime-required",
+      "reason": "Slot write validity requires runtime handle state.",
+      "nextEvidenceOwner": "runtime-inventory"
+    },
+    {
+      "knowledgeId": "inventory.setitem-replaces-slot",
+      "status": "runtime-required",
+      "reason": "Write success/errors are runtime container outcomes.",
+      "nextEvidenceOwner": "runtime-inventory"
+    },
+    {
+      "knowledgeId": "inventory.slot-validity-runtime",
+      "status": "runtime-required",
+      "reason": "Slot validity is live container state.",
+      "nextEvidenceOwner": "runtime-inventory"
+    },
+    {
+      "knowledgeId": "leveldb.actor-keyspace",
+      "status": "runtime-required",
+      "reason": "Actor keyspace requires native world database inspection.",
+      "nextEvidenceOwner": "runtime-world-storage"
+    },
+    {
+      "knowledgeId": "leveldb.chunk-key-tags",
+      "status": "runtime-required",
+      "reason": "Chunk key records require native world database inspection.",
+      "nextEvidenceOwner": "runtime-world-storage"
+    },
+    {
+      "knowledgeId": "leveldb.world-storage-format",
+      "status": "runtime-required",
+      "reason": "Native world database evidence is outside current static pack analyzers.",
+      "nextEvidenceOwner": "runtime-world-storage"
+    },
+    {
+      "knowledgeId": "leveldb.worlddata-commandblocks",
+      "status": "runtime-required",
+      "reason": "Saved command-block runtime data requires native world database inspection.",
+      "nextEvidenceOwner": "runtime-world-storage"
+    },
+    {
       "knowledgeId": "mount.add-remove-rider-runtime",
       "status": "runtime-required",
       "reason": "Current riders and seat relationships are live runtime state.",
@@ -243,6 +393,42 @@
       "nextEvidenceOwner": "runtime-probe"
     },
     {
+      "knowledgeId": "persistence.dynamic-properties-survive-restart",
+      "status": "static-capability-gap",
+      "reason": "Durable-vs-session reconciliation needs explicit persistence ownership analysis beyond scope alone.",
+      "nextEvidenceOwner": "persistent-state-reconciliation"
+    },
+    {
+      "knowledgeId": "persistence.dynamic-property-absence-distinct",
+      "status": "static-capability-gap",
+      "reason": "Absent/cleared/migrated state needs explicit persistence migration analysis.",
+      "nextEvidenceOwner": "persistent-state-reconciliation"
+    },
+    {
+      "knowledgeId": "persistence.relation-watchdog-requires-journal",
+      "status": "static-capability-gap",
+      "reason": "Durable journal policy needs explicit persistence transaction analysis.",
+      "nextEvidenceOwner": "persistent-state-reconciliation"
+    },
+    {
+      "knowledgeId": "persistence.relation-worldload-gates-reconcile",
+      "status": "static-capability-gap",
+      "reason": "Recovery ordering needs explicit persistence reconciliation analysis.",
+      "nextEvidenceOwner": "persistent-state-reconciliation"
+    },
+    {
+      "knowledgeId": "persistence.root-state-not-world-ready",
+      "status": "static-capability-gap",
+      "reason": "Startup/worldLoad reconciliation needs dedicated persistence recovery analysis.",
+      "nextEvidenceOwner": "persistent-state-reconciliation"
+    },
+    {
+      "knowledgeId": "persistence.watchdog-can-terminate-runtime",
+      "status": "runtime-required",
+      "reason": "Watchdog termination is a runtime failure mode.",
+      "nextEvidenceOwner": "runtime-persistence"
+    },
+    {
       "knowledgeId": "player.leave-player-object-no-longer-current",
       "status": "runtime-required",
       "reason": "Post-leave object validity requires identity/dataflow or runtime proof.",
@@ -283,6 +469,30 @@
       "status": "runtime-required",
       "reason": "Y validity requires active dimension bounds.",
       "nextEvidenceOwner": "runtime-spatial-state"
+    },
+    {
+      "knowledgeId": "world-mutation.relation-place-does-not-prove-ready",
+      "status": "runtime-required",
+      "reason": "Post-placement readiness requires runtime or explicit verification evidence.",
+      "nextEvidenceOwner": "runtime-world-mutation"
+    },
+    {
+      "knowledgeId": "world-mutation.setblock-can-fail-unloaded",
+      "status": "runtime-required",
+      "reason": "Loaded destination state is runtime chunk evidence.",
+      "nextEvidenceOwner": "runtime-world-mutation"
+    },
+    {
+      "knowledgeId": "world-mutation.structure-animation-is-time-spread",
+      "status": "runtime-required",
+      "reason": "Animated placement completion requires runtime timing/readiness observation.",
+      "nextEvidenceOwner": "runtime-world-mutation"
+    },
+    {
+      "knowledgeId": "world-mutation.structure-manager-place-queues-unloaded",
+      "status": "runtime-required",
+      "reason": "Queued placement/materialization requires runtime chunk/readiness evidence.",
+      "nextEvidenceOwner": "runtime-world-mutation"
     }
   ]
 }
