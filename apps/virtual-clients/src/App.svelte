@@ -101,7 +101,7 @@
     if (!action) return;
     if (action === "REGISTER_BASE") return mutate("setup", backend.registerBase);
     if (action === "PROVISION_VIRTUALS") return mutate("setup", backend.provision);
-    if (action === "VERIFY_IDENTITIES") return mutate("setup", backend.verifyIdentities);
+    await refresh();
   }
 
   async function runPrimaryClientAction(client: ClientStatus, available: ClientLifecycleActions) {
@@ -227,6 +227,8 @@
           {busy}
           onContinue={continueSetup}
           onOpenClients={() => selectPage("clients")}
+          onSupport={() => selectPage("support")}
+          onVerifyIdentities={() => mutate("verify-identities", backend.verifyIdentities)}
         />
       {:else if page === "clients"}
         <ClientsSurface
@@ -236,6 +238,7 @@
           {native}
           {virtuals}
           blockerCount={blockers.length}
+          setupAction={snapshot.doctor.nextSetupAction}
           {runningVirtuals}
           {busy}
           onStartAll={startAll}

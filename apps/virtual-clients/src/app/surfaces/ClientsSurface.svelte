@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ClientId, ClientLifecycleActions, ClientStatus, EnginePolicy, EngineSnapshot } from "../../contracts.js";
+  import type { ClientId, ClientLifecycleActions, ClientStatus, EnginePolicy, EngineSnapshot, SetupAction } from "../../contracts.js";
   import {
     actionForClient,
     blockerLabel,
@@ -15,6 +15,7 @@
   export let native: ClientStatus | undefined;
   export let virtuals: ClientStatus[];
   export let blockerCount: number;
+  export let setupAction: SetupAction;
   export let runningVirtuals: number;
   export let busy: string;
   export let onStartAll: () => void | Promise<void>;
@@ -28,6 +29,7 @@
   export let onReset: (client: ClientId) => void | Promise<void>;
   export let onReprovision: (client: ClientId) => void;
   export let onSupport: () => void;
+  export let onVerifyIdentities: () => void | Promise<void>;
 </script>
 
 <section class="hero compact">
@@ -35,6 +37,35 @@
   <h2>Your Minecraft clients</h2>
   <p>Start what you need, open each client, and keep recovery actions out of the way until they are needed.</p>
 </section>
+
+{#if setupAction === "VERIFY_IDENTITIES"}
+  <section class="setup-client-banner">
+    <div>
+      <span class="eyebrow">SETUP · CLIENT CHECK</span>
+      <strong>Finish Windows first boot on all three clients</strong>
+      <small>Start the clients, complete any Windows first-run screens, then check that each client has a unique identity.</small>
+    </div>
+    <button class="primary" disabled={Boolean(busy) || runningVirtuals < 3} on:click={onVerifyIdentities}>
+      {busy === "verify-identities" ? "Checking…" : "Check clients"}
+    </button>
+  </section>
+{:else if setupAction === "CREATE_READY_SNAPSHOTS"}
+  <section class="setup-client-banner">
+    <div>
+      <span class="eyebrow">SETUP · ACCOUNTS</span>
+      <strong>Sign in once, then save a recovery point</strong>
+      <small>Use each client's ••• menu after signing in and stopping that client. Setup completes when all three recovery points are saved.</small>
+    </div>
+  </section>
+{:else if setupAction === "REPROVISION_VIRTUALS"}
+  <section class="setup-client-banner">
+    <div>
+      <span class="eyebrow">SETUP · REFRESH</span>
+      <strong>One or more clients need to be recreated</strong>
+      <small>Use Recreate virtual client only on affected clients. This removes that client's saved Windows and Minecraft session.</small>
+    </div>
+  </section>
+{/if}
 
 <section class="batch-bar">
   <div>

@@ -184,7 +184,9 @@ Not exposed today:
 
 ## Frontend boundary
 
-Future Tauri/Svelte code must consume this Rust core. It must not duplicate provider, lifecycle, parity, update, or resource policy.
+The canonical desktop application lives at `apps/virtual-clients/` and consumes this Rust core through typed Tauri commands. It must not duplicate provider, lifecycle, parity, update, resource, identity, or recovery policy.
+
+`DoctorReport.nextSetupAction` is the sole first-run decision owner. Desktop presentation may classify that action as app-owned, user-guided, client-manager, or blocked for UX purposes, but it must refresh backend truth after every step and must never persist its own setup-completion state.
 
 
 ## Public contract
@@ -258,8 +260,3 @@ Mutation operations write a bounded local history of the last 200 operations. Re
 `actions` exposes the lifecycle state machine as read-only per-Virtual action availability. Frontend controls must consume this projection instead of recreating Start/Suspend/Stop/Open/Restart/Set-ready/Reset/Reprovision state rules. The projection reuses the same lifecycle validator as mutation execution, so it is not a second policy engine.
 
 
-## Desktop bridge protocol
-
-`virtual-clients-bridge` is the single native process boundary for desktop UI invocation. It accepts bounded newline-delimited JSON requests and returns one response per request. The response payload is the same versioned public JSON contract used by the CLI.
-
-CLI and desktop bridge share `execute_public_command`; command parsing and lifecycle invocation are not duplicated. The bridge protocol owns request correlation only and does not own runtime policy.

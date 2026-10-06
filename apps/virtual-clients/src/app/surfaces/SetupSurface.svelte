@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { ClientStatus, EngineSnapshot } from "../../contracts.js";
-  import { actionLabel, setupHint } from "../../view-model.js";
+  import { setupExperience, setupPhaseIndex } from "../setupFlow.js";
 
   export let snapshot: EngineSnapshot;
   export let virtuals: ClientStatus[];
@@ -8,41 +8,61 @@
   export let busy: string;
   export let onContinue: () => void | Promise<void>;
   export let onOpenClients: () => void;
+  export let onSupport: () => void;
 
   $: action = snapshot.doctor.nextSetupAction;
-  $: directAction = ["REGISTER_BASE", "PROVISION_VIRTUALS", "VERIFY_IDENTITIES"].includes(action);
-  $: clientAction = action === "CREATE_READY_SNAPSHOTS" || action === "REPROVISION_VIRTUALS";
+  $: experience = setupExperience(action);
+  $: phaseIndex = setupPhaseIndex(action);
 </script>
 
 <section class="hero">
   <span class="eyebrow">FIRST-TIME SETUP</span>
   <h2>Get your virtual Minecraft clients ready</h2>
-  <p>Follow one step at a time. Technical setup details stay in the background unless something needs attention.</p>
+  <p>Virtual Clients handles every safe app-owned step. It asks for your input only when Windows, VMware, or account setup requires a person.</p>
 </section>
 
 <section class="setup-focus">
-  <div class="step-number">→</div>
+  <div class="step-number">{experience.owner === "APP" ? "→" : experience.owner === "BLOCKED" ? "!" : "•"}</div>
   <div class="setup-copy">
-    <span class="eyebrow">CURRENT STEP</span>
-    <h2>{actionLabel(action)}</h2>
-    <p>{setupHint(action)}</p>
+    <span class="eyebrow">{experience.owner === "APP" ? "READY TO CONTINUE" : experience.owner === "CLIENTS" ? "CONTINUE IN CLIENTS" : experience.owner === "BLOCKED" ? "NEEDS ATTENTION" : "NEEDS YOU"}</span>
+    <h2>{experience.title}</h2>
+    <p>{experience.description}</p>
+    {#if experience.steps.length}
+      <ol class="setup-instructions">
+        {#each experience.steps as step}<li>{step}</li>{/each}
+      </ol>
+    {/if}
   </div>
   <div class="setup-action">
-    {#if directAction}
+    {#if experience.owner === "APP" && action !== "READY"}
       <button class="primary large" disabled={Boolean(busy)} on:click={onContinue}>
-        {busy === "setup" ? "Working…" : "Continue"}
+        {busy === "setup" ? "Working…" : experience.primaryLabel}
       </button>
-    {:else if clientAction}
-      <button class="primary large" on:click={onOpenClients}>Continue with clients</button>
+    {:else if experience.owner === "CLIENTS" || action === "READY"}
+      <button class="primary large" on:click={onOpenClients}>{experience.primaryLabel}</button>
+    {:else if experience.owner === "BLOCKED"}
+      <button class="secondary large" on:click={onSupport}>{experience.primaryLabel}</button>
     {:else}
-      <span class="manual-note">Complete this step, then refresh the app.</span>
+      <button class="primary large" disabled={Boolean(busy)} on:click={onContinue}>{experience.primaryLabel}</button>
+      <small class="manual-note">Virtual Clients will check the result before moving to the next step.</small>
     {/if}
   </div>
 </section>
 
 <section class="progress-row">
-  <article class:done={Boolean(snapshot.doctor.provider)}><span>1</span><div><strong>Computer</strong><small>{snapshot.doctor.provider ? "Ready" : "Needs setup"}</small></div></article>
-  <article class:done={snapshot.doctor.baseState === "FINALIZED"}><span>2</span><div><strong>Environment</strong><small>{snapshot.doctor.baseState === "FINALIZED" ? "Ready" : "Preparing"}</small></div></article>
-  <article class:done={virtuals.length > 0 && virtuals.every((client) => client.state !== "NOT_PROVISIONED")}><span>3</span><div><strong>Virtual clients</strong><small>{virtuals.length > 0 && virtuals.every((client) => client.state !== "NOT_PROVISIONED") ? "Created" : "Not ready"}</small></div></article>
-  <article class:done={readyVirtuals === virtuals.length && virtuals.length > 0}><span>4</span><div><strong>Accounts</strong><small>{readyVirtuals === virtuals.length && virtuals.length > 0 ? "Complete" : `${readyVirtuals} of ${virtuals.length || 3} ready`}</small></div></article>
+  {#each ["Computer", "Environment", "Virtual clients", "Accounts"] as label, index}
+    <article class:done={index < phaseIndex} class:current={index === phaseIndex}>
+      <span>{index < phaseIndex ? "✓" : index + 1}</span>
+      <div>
+        <strong>{label}</strong>
+        <small>{index < phaseIndex ? "Complete" : index === phaseIndex ? "Current" : "Next"}</small>
+      </div>
+    </article>
+  {/each}
 </section>
+
+{#if action === "CREATE_READY_SNAPSHOTS"}
+  <section class="setup-summary-line">
+    <strong>{readyVirtuals} of {virtuals.length || 3} recovery points saved</strong>
+  </section>
+{/if}

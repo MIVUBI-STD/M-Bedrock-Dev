@@ -54,3 +54,19 @@ npm run typecheck
 npm run verify:source
 npm run build:app
 ```
+
+
+## First-run orchestration
+
+`DoctorReport.nextSetupAction` remains the sole setup decision owner. The desktop maps that machine action to one of four presentation owners:
+
+```text
+APP      → safe operation can run directly
+USER     → Windows/VMware infrastructure step requires a person
+CLIENTS  → continue in the client manager
+BLOCKED  → stop and route to support
+```
+
+The desktop never infers the next setup state from health issues. User-owned steps always finish by refreshing backend truth; there is no UI-completed setup flag.
+
+Base creation and Windows Sysprep remain guided user steps because the backend has no safe primitive that owns those actions yet. The UI must not pretend they are automated.
