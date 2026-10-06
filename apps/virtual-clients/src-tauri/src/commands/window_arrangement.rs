@@ -34,14 +34,6 @@ pub async fn window_displays() -> Result<Vec<DisplayInfo>, String> {
 }
 
 #[tauri::command]
-pub async fn window_arrange(request: WindowLayoutRequest) -> Result<WindowArrangementResult, String> {
-    tauri::async_runtime::spawn_blocking(move || window_arrangement::arrange(request))
-        .await
-        .map_err(|error| format!("Window arrangement task failed: {error}"))?
-        .map_err(|error| error.to_string())
-}
-
-#[tauri::command]
 pub async fn window_apply_layout(request: ApplyWindowLayoutRequest) -> Result<WindowArrangementResult, String> {
     tauri::async_runtime::spawn_blocking(move || {
         let execution = window_arrangement::arrange_with_slots(request.layout)?;
@@ -76,8 +68,3 @@ pub async fn window_apply_layout(request: ApplyWindowLayoutRequest) -> Result<Wi
     .map_err(|error| error.to_string())
 }
 
-#[tauri::command]
-pub async fn window_clear_overlay() -> Result<(), String> {
-    screen_overlay::clear();
-    Ok(())
-}
