@@ -299,16 +299,18 @@ pub fn native_minecraft_profile() -> Option<MinecraftProfile> {
     None
 }
 
+fn base_profile_matches_native(native: &MinecraftProfile, base: &BaseProfile) -> bool {
+    native.version == base.minecraft_version
+        && base.guest_status_schema == GUEST_STATUS_SCHEMA
+        && base.guest_agent_version == env!("CARGO_PKG_VERSION")
+}
+
 pub fn profile_status() -> ProfileStatus {
     let native = native_minecraft_profile();
     let base = load_base_profile().ok();
 
     let parity = match (&native, &base) {
-        (Some(native), Some(base))
-            if native.version == base.minecraft_version
-                && base.guest_status_schema == GUEST_STATUS_SCHEMA
-                && base.guest_agent_version == env!("CARGO_PKG_VERSION") =>
-        {
+        (Some(native), Some(base)) if base_profile_matches_native(native, base) => {
             ProfileParity::Match
         }
         (Some(_), Some(_)) => ProfileParity::Mismatch,
@@ -445,8 +447,9 @@ fn normalized_version(value: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::{
-        normalized_version, BaseProfile, BaseProfileSource, ClientProfile, MinecraftInstallType,
-        MinecraftProfile, BASE_PROFILE_SCHEMA, CLIENT_PROFILE_SCHEMA,
+        base_profile_matches_native, normalized_version, BaseProfile, BaseProfileSource,
+        ClientProfile, MinecraftInstallType, MinecraftProfile, BASE_PROFILE_SCHEMA,
+        CLIENT_PROFILE_SCHEMA,
     };
     use crate::guest::GUEST_STATUS_SCHEMA;
 
@@ -506,22 +509,39 @@ mod tests {
     }
 
     #[test]
-    fn base_profile_agent_version_is_part_of_parity_contract() {
+    fn base_profile_parity_requires_current_agent_and_schema() {
+        let native = MinecraftProfile {
+            version: "1.21.120.0".into(),
+            install_type: MinecraftInstallType::Desktop,
+        };
         let current = BaseProfile {
             schema: BASE_PROFILE_SCHEMA,
-            minecraft_version: "1.21.120.0".into(),
+            minecraft_version: native.version.clone(),
             native_install_type: MinecraftInstallType::Desktop,
             guest_status_schema: GUEST_STATUS_SCHEMA,
             guest_agent_version: env!("CARGO_PKG_VERSION").into(),
             source: BaseProfileSource::LiveVerified,
         };
-        let stale = BaseProfile {
+
+        assert!(base_profile_matches_native(&native, &current));
+
+        let stale_agent = BaseProfile {
             guest_agent_version: "stale-agent".into(),
             ..current.clone()
         };
+        assert!(!base_profile_matches_native(&native, &stale_agent));
 
-        assert_eq!(current.guest_agent_version, env!("CARGO_PKG_VERSION"));
-        assert_ne!(stale.guest_agent_version, env!("CARGO_PKG_VERSION"));
+        let stale_schema = BaseProfile {
+            guest_status_schema: GUEST_STATUS_SCHEMA + 1,
+            ..current.clone()
+        };
+        assert!(!base_profile_matches_native(&native, &stale_schema));
+
+        let wrong_version = BaseProfile {
+            minecraft_version: "9.9.9".into(),
+            ..current
+        };
+        assert!(!base_profile_matches_native(&native, &wrong_version));
     }
 
     #[test]

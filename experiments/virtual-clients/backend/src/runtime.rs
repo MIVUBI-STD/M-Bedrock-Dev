@@ -628,6 +628,17 @@ impl VirtualClients {
                 if let Some(ip) = provider.guest_ip_for_path(&base)? {
                     match query_guest_status(&ip, &token, Duration::from_secs(2)) {
                         Ok(status) => {
+                            if status.agent_version != env!("CARGO_PKG_VERSION") {
+                                return Err(io::Error::new(
+                                    io::ErrorKind::InvalidData,
+                                    format!(
+                                        "Base Guest Agent version {} does not match backend {}",
+                                        status.agent_version,
+                                        env!("CARGO_PKG_VERSION")
+                                    ),
+                                ));
+                            }
+
                             let minecraft = status.minecraft.as_ref().ok_or_else(|| {
                                 io::Error::new(
                                     io::ErrorKind::NotFound,
