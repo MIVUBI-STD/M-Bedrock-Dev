@@ -480,6 +480,36 @@
       ]
     },
     {
+      "id": "reg_progression_generation_bound_actor_registry",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/regressions/progression/generation-bound-actor-registry.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "bc313181e8b5c076289905c7bc66ba0186be44047e8d34f5c9a091a4d0b13267",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-progression-generation-bound-actor-registry.json"
+      },
+      "evidenceRole": "negative",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_progression_unbound_actor_registry",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/regressions/progression/unbound-actor-registry.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "0012c7832892c8b07a449fdff3ee82ea350d25bfe60778613fe70dc48726aa88",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-progression-unbound-actor-registry.json"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
       "id": "reg_result_transaction_cleanup_before_reward_journal",
       "status": "ready",
       "sourceRef": "engine/fixtures/regressions/result-transaction/cleanup-before-reward-journal.ts",

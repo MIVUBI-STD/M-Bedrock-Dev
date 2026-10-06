@@ -1,5 +1,6 @@
 import type { ScriptEconomyEvidence } from "../domains/economy/economy-evidence.js";
 import type {
+  ScriptProgressionActorRegistryEvidence,
   ScriptProgressionActorSpawnEvidence,
   ScriptProgressionCounterEvidence,
 } from "../domains/progression/progression-counter-evidence.js";
@@ -476,6 +477,7 @@ export interface ParsedScriptFile {
   economyEvidence?: ScriptEconomyEvidence[];
   progressionCounterEvidence?: ScriptProgressionCounterEvidence[];
   progressionActorSpawnEvidence?: ScriptProgressionActorSpawnEvidence[];
+  progressionActorRegistryEvidence?: ScriptProgressionActorRegistryEvidence[];
   inventoryLifecycleEvidence?: ScriptInventoryLifecycleEvidence[];
   globalLeaseEvidence?: ScriptGlobalLeaseEvidence[];
   persistentDataLifecycleEvidence?: PersistentDataLifecycleEvidence[];

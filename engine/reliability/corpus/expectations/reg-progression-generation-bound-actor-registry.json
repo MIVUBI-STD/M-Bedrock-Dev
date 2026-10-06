@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "reg-progression-generation-bound-actor-registry",
+  "lane": "regression",
+  "artifact": {
+    "label": "Generation-bound actor registry owns materialization release and completion",
+    "file": "engine/fixtures/regressions/progression/generation-bound-actor-registry.ts",
+    "sha256": "bc313181e8b5c076289905c7bc66ba0186be44047e8d34f5c9a091a4d0b13267"
+  },
+  "target": {
+    "edition": "bedrock",
+    "minecraftVersion": "1.21.x"
+  },
+  "expected": {
+    "disposition": "designed-behavior",
+    "domain": "Progression Actor Population Integrity",
+    "proofCeiling": "STATIC VERIFIED"
+  },
+  "provenance": {
+    "frozenBeforeRun": true,
+    "source": "engine/contracts/engineering/catalogs/round-integrity-contract.json"
+  }
+}

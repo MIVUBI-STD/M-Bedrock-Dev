@@ -39,6 +39,18 @@ export interface ScriptProgressionActorSpawnEvidence {
   readonly source: SourceRef;
 }
 
+export interface ScriptProgressionActorRegistryEvidence {
+  readonly registryExpression: string;
+  readonly action:
+    | "materialize"
+    | "release"
+    | "completion-check";
+  readonly executionRegion: string;
+  readonly generationBound: boolean;
+  readonly actorIdentifier?: string;
+  readonly source: SourceRef;
+}
+
 export interface ScriptProgressionActiveEventEvidence {
   readonly event: string;
   readonly executionRegion: string;
@@ -2148,6 +2160,181 @@ export function deriveScriptProgressionActorSpawnEvidence(
       ) ||
       a.actorIdentifier.localeCompare(
         b.actorIdentifier,
+      )
+    );
+}
+
+const ACTOR_REGISTRY_NAME =
+  /(?:enemy|enemies|hostile|hostiles|mob|mobs|actor|actors|entity|entities|registry)/i;
+const GENERATION_BINDING_NAME =
+  /(?:generation|epoch|roundid|sessionid|waveid|lifeid)/i;
+
+function actorRegistryCollection(
+  expression: ts.Expression,
+  file: ts.SourceFile,
+): string | undefined {
+  const text = expression.getText(file);
+  return ACTOR_REGISTRY_NAME.test(text)
+    ? text
+    : undefined;
+}
+
+export function deriveScriptProgressionActorRegistryEvidence(
+  text: string,
+  source: SourceRef,
+): ScriptProgressionActorRegistryEvidence[] {
+  const file = ts.createSourceFile(
+    source.relativePath,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    scriptKind(source.relativePath),
+  );
+  const actorVariables = new Map<string, string>();
+  const output: ScriptProgressionActorRegistryEvidence[] = [];
+
+  const collectActors = (node: ts.Node): void => {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.initializer &&
+      ts.isCallExpression(node.initializer) &&
+      ts.isPropertyAccessExpression(node.initializer.expression) &&
+      node.initializer.expression.name.text === "spawnEntity"
+    ) {
+      const actorIdentifier =
+        literalString(node.initializer.arguments[0]);
+      if (
+        actorIdentifier &&
+        /^[a-z0-9_.-]+:[a-z0-9_./-]+$/i.test(actorIdentifier)
+      ) {
+        actorVariables.set(
+          node.name.text,
+          actorIdentifier.toLowerCase(),
+        );
+      }
+    }
+    ts.forEachChild(node, collectActors);
+  };
+  collectActors(file);
+
+  const push = (
+    node: ts.Node,
+    registryExpression: string,
+    action: ScriptProgressionActorRegistryEvidence["action"],
+    actorIdentifier?: string,
+  ) => {
+    output.push({
+      registryExpression,
+      action,
+      executionRegion:
+        executionRegion(node, file),
+      generationBound:
+        GENERATION_BINDING_NAME.test(
+          registryExpression.replace(/[^A-Za-z0-9]/g, ""),
+        ),
+      ...(actorIdentifier === undefined
+        ? {}
+        : { actorIdentifier }),
+      source: nodeSource(file, node, source),
+    });
+  };
+
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression)
+    ) {
+      const method = node.expression.name.text;
+      const registryExpression =
+        actorRegistryCollection(
+          node.expression.expression,
+          file,
+        );
+      if (
+        registryExpression &&
+        (method === "add" || method === "set")
+      ) {
+        const first = node.arguments[0];
+        const actorVariable =
+          first &&
+          (
+            ts.isPropertyAccessExpression(first)
+              ? first.expression
+              : first
+          );
+        const actorIdentifier =
+          actorVariable &&
+          ts.isIdentifier(actorVariable)
+            ? actorVariables.get(actorVariable.text)
+            : undefined;
+        push(
+          node,
+          registryExpression,
+          "materialize",
+          actorIdentifier,
+        );
+      } else if (
+        registryExpression &&
+        method === "delete"
+      ) {
+        push(node, registryExpression, "release");
+      }
+    }
+
+    if (
+      ts.isBinaryExpression(node) &&
+      completionControlsProgression(node, file)
+    ) {
+      const pairs: readonly [ts.Expression, ts.Expression][] = [
+        [node.left, node.right],
+        [node.right, node.left],
+      ];
+      for (const [candidate, zero] of pairs) {
+        if (
+          !isZero(zero) ||
+          !ts.isPropertyAccessExpression(candidate) ||
+          candidate.name.text !== "size"
+        ) {
+          continue;
+        }
+        const registryExpression =
+          actorRegistryCollection(
+            candidate.expression,
+            file,
+          );
+        if (registryExpression) {
+          push(
+            node,
+            registryExpression,
+            "completion-check",
+          );
+          break;
+        }
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+
+  return output
+    .filter((item, index, all) =>
+      all.findIndex((candidate) =>
+        candidate.registryExpression === item.registryExpression &&
+        candidate.action === item.action &&
+        candidate.executionRegion === item.executionRegion &&
+        candidate.source.range?.lineStart ===
+          item.source.range?.lineStart
+      ) === index
+    )
+    .sort((a, b) =>
+      a.registryExpression.localeCompare(
+        b.registryExpression,
+      ) ||
+      a.action.localeCompare(b.action) ||
+      a.executionRegion.localeCompare(
+        b.executionRegion,
       )
     );
 }

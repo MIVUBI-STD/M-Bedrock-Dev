@@ -62,6 +62,7 @@ import { deriveScriptCombatLifecycleEvidence } from "../domains/combat/combat-li
 import { deriveScriptChunkLifecycleEvidence } from "../domains/chunk/chunk-lifecycle-evidence.js";
 import { deriveScriptEconomyEvidence } from "../domains/economy/economy-evidence.js";
 import {
+  deriveScriptProgressionActorRegistryEvidence,
   deriveScriptProgressionActorSpawnEvidence,
   deriveScriptProgressionCounterEvidence,
 } from "../domains/progression/progression-counter-evidence.js";
@@ -1879,6 +1880,11 @@ export function parseScriptFile(
       text,
       source,
     );
+  const progressionActorRegistryEvidence =
+    deriveScriptProgressionActorRegistryEvidence(
+      text,
+      source,
+    );
   const persistentDataLifecycleEvidence =
     derivePersistentDataLifecycleEvidence(
       text,
@@ -2713,6 +2719,9 @@ export function parseScriptFile(
     ],
     progressionActorSpawnEvidence: [
       ...progressionActorSpawnEvidence,
+    ],
+    progressionActorRegistryEvidence: [
+      ...progressionActorRegistryEvidence,
     ],
     persistentDataLifecycleEvidence: [
       ...persistentDataLifecycleEvidence,

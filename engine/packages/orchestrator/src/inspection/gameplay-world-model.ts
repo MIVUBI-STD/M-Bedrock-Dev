@@ -459,6 +459,23 @@ export interface GameplayWorldModel {
       provenActorIdentityMismatch: number;
       provenSpawnQuantityMismatch: number;
       deferredSpawnAccountingGaps: number;
+      generationBoundRegistryAuthorities: number;
+      unboundRegistryAuthorities: number;
+      unresolvedRegistryAuthorities: number;
+      registryAuthorityAssessments: readonly {
+        scriptId: string;
+        registryExpression: string;
+        actorIdentifiers: readonly string[];
+        materializePaths: number;
+        lifecycleReleasePaths: number;
+        completionChecks: number;
+        generationBound: boolean;
+        status:
+          | "generation-bound-authoritative"
+          | "generation-unbound"
+          | "incomplete";
+        reason: string;
+      }[];
       scriptedRemovalCoverageGaps: number;
       terminalOnlyScriptedRemovalCounters: number;
       nonTerminalScriptedRemovalCounters: number;
@@ -2279,6 +2296,34 @@ export function deriveGameplayWorldModel(
         deferredSpawnAccountingGaps:
           source.progressionActorAccounting
             ?.deferredSpawnAccountingGaps ?? 0,
+        generationBoundRegistryAuthorities:
+          source.progressionActorAccounting
+            ?.generationBoundRegistryAuthorities ?? 0,
+        unboundRegistryAuthorities:
+          source.progressionActorAccounting
+            ?.unboundRegistryAuthorities ?? 0,
+        unresolvedRegistryAuthorities:
+          source.progressionActorAccounting
+            ?.unresolvedRegistryAuthorities ?? 0,
+        registryAuthorityAssessments:
+          source.progressionActorAccounting
+            ?.registryAuthorityAssessments.map((item) => ({
+              scriptId: item.scriptId,
+              registryExpression:
+                item.registryExpression,
+              actorIdentifiers:
+                [...item.actorIdentifiers],
+              materializePaths:
+                item.materializePaths,
+              lifecycleReleasePaths:
+                item.lifecycleReleasePaths,
+              completionChecks:
+                item.completionChecks,
+              generationBound:
+                item.generationBound,
+              status: item.status,
+              reason: item.reason,
+            })) ?? [],
         scriptedRemovalCoverageGaps:
           source.progressionActorAccounting
             ?.scriptedRemovalCoverageGaps ?? 0,

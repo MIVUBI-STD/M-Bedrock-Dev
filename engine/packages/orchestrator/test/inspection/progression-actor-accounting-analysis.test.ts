@@ -2024,6 +2024,73 @@ describe(
       });
     });
 
+    it("proves a generation-bound entity registry as authoritative population ownership", () => {
+      const source = [
+        "function spawn(dimension, arena) {",
+        "  const enemy = dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  arena.enemyRegistryByGeneration.get(arena.generation).add(enemy.id);",
+        "}",
+        "world.afterEvents.entityDie.subscribe((event) => {",
+        "  const arena = currentArena(event.deadEntity);",
+        "  arena.enemyRegistryByGeneration.get(arena.generation).delete(event.deadEntity.id);",
+        "});",
+        "function maybeAdvance(arena) {",
+        "  if (arena.enemyRegistryByGeneration.get(arena.generation).size === 0) nextWave();",
+        "}",
+      ].join("\n");
+
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed(source),
+        ]);
+
+      expect(
+        result.generationBoundRegistryAuthorities,
+      ).toBe(1);
+      expect(
+        result.registryAuthorityAssessments[0],
+      ).toMatchObject({
+        status:
+          "generation-bound-authoritative",
+        generationBound: true,
+        actorIdentifiers: [
+          "demo:enemy",
+        ],
+        materializePaths: 1,
+        lifecycleReleasePaths: 1,
+        completionChecks: 1,
+      });
+    });
+
+    it("keeps a complete but unversioned entity registry explicitly generation-unbound", () => {
+      const source = [
+        "function spawn(dimension, arena) {",
+        "  const enemy = dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  arena.enemies.add(enemy.id);",
+        "}",
+        "world.afterEvents.entityDie.subscribe((event) => {",
+        "  const arena = currentArena(event.deadEntity);",
+        "  arena.enemies.delete(event.deadEntity.id);",
+        "});",
+        "function maybeAdvance(arena) {",
+        "  if (arena.enemies.size === 0) nextWave();",
+        "}",
+      ].join("\n");
+
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed(source),
+        ]);
+
+      expect(
+        result.unboundRegistryAuthorities,
+      ).toBe(1);
+      expect(
+        result.registryAuthorityAssessments[0]
+          ?.status,
+      ).toBe("generation-unbound");
+    });
+
     it("keeps deferred actor materialization unresolved when population is not reserved before scheduling", () => {
       const source = [
         "let remainingEnemies = 0;",

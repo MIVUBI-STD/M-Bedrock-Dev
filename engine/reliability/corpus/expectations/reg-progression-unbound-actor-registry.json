@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "reg-progression-unbound-actor-registry",
+  "lane": "regression",
+  "artifact": {
+    "label": "Unversioned actor registry owns materialization release and completion",
+    "file": "engine/fixtures/regressions/progression/unbound-actor-registry.ts",
+    "sha256": "0012c7832892c8b07a449fdff3ee82ea350d25bfe60778613fe70dc48726aa88"
+  },
+  "target": {
+    "edition": "bedrock",
+    "minecraftVersion": "1.21.x"
+  },
+  "expected": {
+    "disposition": "insufficient-evidence",
+    "domain": "Progression Actor Population Integrity",
+    "proofCeiling": "STATIC VERIFIED"
+  },
+  "provenance": {
+    "frozenBeforeRun": true,
+    "source": "engine/contracts/engineering/catalogs/round-integrity-contract.json"
+  }
+}

@@ -133,6 +133,22 @@ export interface ProgressionCounterAssessment {
   readonly reasons: readonly string[];
 }
 
+export interface ProgressionActorRegistryAuthorityAssessment {
+  readonly scriptId: string;
+  readonly registryExpression: string;
+  readonly actorIdentifiers:
+    readonly string[];
+  readonly materializePaths: number;
+  readonly lifecycleReleasePaths: number;
+  readonly completionChecks: number;
+  readonly generationBound: boolean;
+  readonly status:
+    | "generation-bound-authoritative"
+    | "generation-unbound"
+    | "incomplete";
+  readonly reason: string;
+}
+
 export interface ProgressionStateTransitionAssessment {
   readonly scriptId: string;
   readonly target: string;
@@ -248,6 +264,11 @@ export interface ProgressionActorAccountingAnalysis {
   readonly unresolvedCrossIngressEffectCalls: number;
   readonly reconciledFromMatchedActorLifecycle: number;
   readonly deferredSpawnAccountingGaps: number;
+  readonly registryAuthorityAssessments:
+    readonly ProgressionActorRegistryAuthorityAssessment[];
+  readonly generationBoundRegistryAuthorities: number;
+  readonly unboundRegistryAuthorities: number;
+  readonly unresolvedRegistryAuthorities: number;
   readonly unresolvedCounters: number;
 }
 
@@ -2919,6 +2940,132 @@ function stateMachineAssessments(
   );
 }
 
+
+function progressionActorRegistryAuthorityAssessments(
+  scripts: readonly NormalizedScript[],
+  lifecycleReachable:
+    ReadonlySet<string>,
+): ProgressionActorRegistryAuthorityAssessment[] {
+  const groups =
+    new Map<
+      string,
+      {
+        scriptIds: Set<string>;
+        registryExpression: string;
+        actorIdentifiers: Set<string>;
+        materializePaths: number;
+        lifecycleReleasePaths: number;
+        completionChecks: number;
+        generationBound: boolean;
+      }
+    >();
+
+  for (const script of scripts) {
+    const path =
+      script.parsed.source.relativePath;
+    for (
+      const evidence of
+        script.parsed
+          .progressionActorRegistryEvidence ??
+        []
+    ) {
+      const key =
+        evidence.registryExpression;
+      const current =
+        groups.get(key) ?? {
+          scriptIds: new Set<string>(),
+          registryExpression: key,
+          actorIdentifiers:
+            new Set<string>(),
+          materializePaths: 0,
+          lifecycleReleasePaths: 0,
+          completionChecks: 0,
+          generationBound: true,
+        };
+      current.scriptIds.add(
+        script.parsed.identifier,
+      );
+      if (
+        evidence.actorIdentifier !==
+        undefined
+      ) {
+        current.actorIdentifiers.add(
+          evidence.actorIdentifier,
+        );
+      }
+      if (
+        evidence.action ===
+        "materialize"
+      ) {
+        current.materializePaths += 1;
+      } else if (
+        evidence.action === "release"
+      ) {
+        if (
+          lifecycleReachable.has(
+            localNode(
+              path,
+              evidence.executionRegion,
+            ),
+          )
+        ) {
+          current.lifecycleReleasePaths += 1;
+        }
+      } else {
+        current.completionChecks += 1;
+      }
+      current.generationBound =
+        current.generationBound &&
+        evidence.generationBound;
+      groups.set(key, current);
+    }
+  }
+
+  return [...groups.values()]
+    .map((item) => {
+      const complete =
+        item.materializePaths > 0 &&
+        item.lifecycleReleasePaths > 0 &&
+        item.completionChecks > 0 &&
+        item.actorIdentifiers.size > 0;
+      return {
+        scriptId:
+          [...item.scriptIds]
+            .sort()
+            .join(","),
+        registryExpression:
+          item.registryExpression,
+        actorIdentifiers:
+          [...item.actorIdentifiers].sort(),
+        materializePaths:
+          item.materializePaths,
+        lifecycleReleasePaths:
+          item.lifecycleReleasePaths,
+        completionChecks:
+          item.completionChecks,
+        generationBound:
+          item.generationBound,
+        status:
+          !complete
+            ? "incomplete" as const
+            : item.generationBound
+              ? "generation-bound-authoritative" as const
+              : "generation-unbound" as const,
+        reason:
+          !complete
+            ? "Actor registry evidence is partial: materialization, lifecycle-linked release, zero-gated completion, and actor identity are not all proven on the same registry expression."
+            : item.generationBound
+              ? "The same generation-bound actor registry owns materialization, lifecycle-linked release, and the progression empty-gate for identified actor type(s)."
+              : "The actor registry owns materialization, lifecycle-linked release, and the progression empty-gate, but the collection expression is not explicitly bound to a generation/epoch/round/session identity.",
+      };
+    })
+    .sort((a, b) =>
+      a.registryExpression.localeCompare(
+        b.registryExpression,
+      )
+    );
+}
+
 export function analyzeProgressionActorAccounting(
   inputs:
     readonly ProgressionActorAccountingInput[],
@@ -3007,6 +3154,11 @@ export function analyzeProgressionActorAccounting(
       ...deathReachable,
       ...removeReachable,
     ]);
+  const registryAuthorityAssessments =
+    progressionActorRegistryAuthorityAssessments(
+      scripts,
+      lifecycleReachable,
+    );
   const spawns =
     spawnEvidence(scripts);
   const guards =
@@ -3933,6 +4085,24 @@ export function analyzeProgressionActorAccounting(
         (item) =>
           item.status ===
           "deferred-spawn-accounting-unproven",
+      ).length,
+    registryAuthorityAssessments,
+    generationBoundRegistryAuthorities:
+      registryAuthorityAssessments.filter(
+        (item) =>
+          item.status ===
+          "generation-bound-authoritative",
+      ).length,
+    unboundRegistryAuthorities:
+      registryAuthorityAssessments.filter(
+        (item) =>
+          item.status ===
+          "generation-unbound",
+      ).length,
+    unresolvedRegistryAuthorities:
+      registryAuthorityAssessments.filter(
+        (item) =>
+          item.status === "incomplete",
       ).length,
     unresolvedCounters:
       counters.filter(

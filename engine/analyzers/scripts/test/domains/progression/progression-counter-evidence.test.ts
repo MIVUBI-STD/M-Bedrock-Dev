@@ -8,6 +8,7 @@ import {
   deriveScriptProgressionOrdinalAdvanceEvidence,
   deriveScriptProgressionActiveTransitionEvidence,
   deriveScriptProgressionStateTransitionEvidence,
+  deriveScriptProgressionActorRegistryEvidence,
 } from "../../../src/domains/progression/progression-counter-evidence.js";
 
 const source = {
@@ -357,4 +358,72 @@ describe("progression active event evidence", () => {
     expect(result).toEqual([]);
   });
 
+});
+
+describe("progression actor registry evidence", () => {
+  it("proves materialize release and zero-gate on one generation-bound registry", () => {
+    const result =
+      deriveScriptProgressionActorRegistryEvidence(
+        [
+          "function spawn(dimension, arena) {",
+          "  const enemy = dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+          "  arena.enemyRegistryByGeneration.get(arena.generation).add(enemy.id);",
+          "}",
+          "function onDeath(event, arena) {",
+          "  arena.enemyRegistryByGeneration.get(arena.generation).delete(event.deadEntity.id);",
+          "}",
+          "function maybeAdvance(arena) {",
+          "  if (arena.enemyRegistryByGeneration.get(arena.generation).size === 0) nextWave();",
+          "}",
+        ].join("\n"),
+        source,
+      );
+
+    expect(result).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          action: "materialize",
+          registryExpression:
+            "arena.enemyRegistryByGeneration.get(arena.generation)",
+          generationBound: true,
+          actorIdentifier: "demo:enemy",
+        }),
+        expect.objectContaining({
+          action: "release",
+          generationBound: true,
+        }),
+        expect.objectContaining({
+          action: "completion-check",
+          generationBound: true,
+        }),
+      ]),
+    );
+  });
+
+  it("keeps an unversioned registry generation-unbound", () => {
+    const result =
+      deriveScriptProgressionActorRegistryEvidence(
+        [
+          "function spawn(dimension, arena) {",
+          "  const enemy = dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+          "  arena.enemies.add(enemy.id);",
+          "}",
+          "function onDeath(event, arena) {",
+          "  arena.enemies.delete(event.deadEntity.id);",
+          "}",
+          "function maybeAdvance(arena) {",
+          "  if (arena.enemies.size === 0) nextWave();",
+          "}",
+        ].join("\n"),
+        source,
+      );
+
+    expect(result).toHaveLength(3);
+    expect(
+      result.every(
+        (item) =>
+          item.generationBound === false,
+      ),
+    ).toBe(true);
+  });
 });

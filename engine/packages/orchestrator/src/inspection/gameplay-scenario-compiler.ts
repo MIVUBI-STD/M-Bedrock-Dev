@@ -1218,6 +1218,31 @@ function runtimeEdgeState(
         scenarioLabel ===
           "progression-wave-integrity" &&
         world.progression.actorAccounting
+          .unboundRegistryAuthorities > 0
+      ) {
+        const registries =
+          world.progression.actorAccounting
+            .registryAuthorityAssessments
+            .filter((item) =>
+              item.status ===
+                "generation-unbound"
+            )
+            .map((item) =>
+              item.registryExpression
+            )
+            .sort();
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Actor population lifecycle is owned by registry collection(s) " +
+            registries.join(", ") +
+            ", but their selected-artifact collection expressions are not explicitly generation/epoch/round/session bound. Do not treat an unversioned live-entity registry as authoritative across arena reuse.",
+        };
+      }
+      if (
+        scenarioLabel ===
+          "progression-wave-integrity" &&
+        world.progression.actorAccounting
           .deferredSpawnAccountingGaps > 0
       ) {
         const counters =
