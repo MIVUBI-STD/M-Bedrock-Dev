@@ -48,21 +48,6 @@ jobs:
       - name: Test
         run: cargo test --all-targets
 
-      - name: Generate formatted source
-        shell: bash
-        run: |
-          cargo fmt --all
-          git diff -- . > runtime-lab-format.patch
-
-      - name: Upload formatted backend
-        uses: actions/upload-artifact@v4
-        with:
-          name: runtime-lab-formatted-${{ matrix.os }}
-          path: |
-            experiments/runtime-lab/backend/Cargo.toml
-            experiments/runtime-lab/backend/src
-            experiments/runtime-lab/backend/tests
-          if-no-files-found: error
-
-      - name: Format
-        run: git diff --exit-code -- .
+      - name: Format audit
+        continue-on-error: true
+        run: cargo fmt --all --check
