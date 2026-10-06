@@ -251,3 +251,8 @@ Product/runtime limits have one read-only owner in `EnginePolicy`. Provider and 
 ## Operation journal
 
 Mutation operations write a bounded local history of the last 200 operations. Records contain only timestamp, typed operation, non-sensitive target, outcome, typed error code, and retryability. The journal is diagnostic-only: lifecycle decisions never read it, write failures are best-effort, and no error message, credential, token, account identifier, world content, or filesystem path is stored.
+
+
+## Lifecycle action projection
+
+`actions` exposes the lifecycle state machine as read-only per-Virtual action availability. Frontend controls must consume this projection instead of recreating Start/Suspend/Stop/Open/Restart/Set-ready/Reset/Reprovision state rules. The projection reuses the same lifecycle validator as mutation execution, so it is not a second policy engine.

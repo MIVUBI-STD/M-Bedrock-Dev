@@ -1,5 +1,8 @@
 use crate::{
-    client::{ClientId, ClientState, ClientStatus, DestructiveConfirmation, IdentityState},
+    client::{
+        ActionAvailability, ClientId, ClientLifecycleActions, ClientState, ClientStatus,
+        DestructiveConfirmation, IdentityState, LifecycleBlocker,
+    },
     diagnostics::{collect as collect_diagnostics, DiagnosticsReport},
     doctor::{doctor, DoctorReport},
     guest::{query_guest_status, GuestStatus},
@@ -229,6 +232,37 @@ fn validate_lifecycle_action(
             state
         ),
     ))
+}
+
+fn lifecycle_availability(
+    client: ClientId,
+    action: LifecycleAction,
+    state: ClientState,
+    ready_snapshot: bool,
+) -> ActionAvailability {
+    if validate_lifecycle_action(client, action, state, ready_snapshot).is_ok() {
+        return ActionAvailability {
+            allowed: true,
+            blocker: None,
+        };
+    }
+
+    let blocker = if client.is_native() {
+        LifecycleBlocker::NativeManaged
+    } else if state == ClientState::NotProvisioned {
+        LifecycleBlocker::NotProvisioned
+    } else {
+        match action {
+            LifecycleAction::SetReady if ready_snapshot => LifecycleBlocker::ReadySnapshotExists,
+            LifecycleAction::Reset if !ready_snapshot => LifecycleBlocker::ReadySnapshotMissing,
+            _ => LifecycleBlocker::InvalidState,
+        }
+    };
+
+    ActionAvailability {
+        allowed: false,
+        blocker: Some(blocker),
+    }
 }
 
 fn restore_batch_state(
@@ -664,6 +698,71 @@ impl VirtualClients {
 
     pub fn policy(&self) -> EnginePolicy {
         engine_policy()
+    }
+
+    pub fn lifecycle_actions(&self) -> io::Result<Vec<ClientLifecycleActions>> {
+        let _lock = OperationLock::acquire_shared()?;
+        let Some(provider) = current_platform_provider() else {
+            return Ok(ClientId::VIRTUAL
+                .into_iter()
+                .map(|client| {
+                    let blocked = || ActionAvailability {
+                        allowed: false,
+                        blocker: Some(LifecycleBlocker::ProviderUnavailable),
+                    };
+                    ClientLifecycleActions {
+                        id: client.as_str(),
+                        start: blocked(),
+                        suspend: blocked(),
+                        stop: blocked(),
+                        open: blocked(),
+                        restart: blocked(),
+                        set_ready: blocked(),
+                        reset: blocked(),
+                        reprovision: blocked(),
+                    }
+                })
+                .collect());
+        };
+
+        ClientId::VIRTUAL
+            .into_iter()
+            .map(|client| {
+                let state = provider.status(client)?;
+                let ready = provider.has_ready(client).unwrap_or(false);
+                Ok(ClientLifecycleActions {
+                    id: client.as_str(),
+                    start: lifecycle_availability(client, LifecycleAction::Start, state, ready),
+                    suspend: lifecycle_availability(
+                        client,
+                        LifecycleAction::Suspend,
+                        state,
+                        ready,
+                    ),
+                    stop: lifecycle_availability(client, LifecycleAction::Stop, state, ready),
+                    open: lifecycle_availability(client, LifecycleAction::Open, state, ready),
+                    restart: lifecycle_availability(
+                        client,
+                        LifecycleAction::Restart,
+                        state,
+                        ready,
+                    ),
+                    set_ready: lifecycle_availability(
+                        client,
+                        LifecycleAction::SetReady,
+                        state,
+                        ready,
+                    ),
+                    reset: lifecycle_availability(client, LifecycleAction::Reset, state, ready),
+                    reprovision: lifecycle_availability(
+                        client,
+                        LifecycleAction::Reprovision,
+                        state,
+                        ready,
+                    ),
+                })
+            })
+            .collect()
     }
 
     fn record<T>(
@@ -1559,11 +1658,11 @@ impl VirtualClients {
 #[cfg(test)]
 mod tests {
     use super::{
-        classify_identity_state, guest_probe_error_is_terminal, restore_batch_state,
-        validate_lifecycle_action, vm_identity_state, LifecycleAction,
+        classify_identity_state, guest_probe_error_is_terminal, lifecycle_availability,
+        restore_batch_state, validate_lifecycle_action, vm_identity_state, LifecycleAction,
     };
     use crate::{
-        client::{ClientId, ClientState, IdentityState},
+        client::{ClientId, ClientState, IdentityState, LifecycleBlocker},
         provider::Provider,
     };
     use std::{cell::RefCell, io, path::Path};
@@ -1775,6 +1874,39 @@ mod tests {
         assert_eq!(
             classify_identity_state(None, [Some("vm-b"), Some("vm-c")]),
             IdentityState::Unknown
+        );
+    }
+
+    #[test]
+    fn lifecycle_availability_reuses_engine_policy() {
+        let start = lifecycle_availability(
+            ClientId::Virtual01,
+            LifecycleAction::Start,
+            ClientState::Stopped,
+            false,
+        );
+        assert!(start.allowed);
+        assert_eq!(start.blocker, None);
+
+        let reset = lifecycle_availability(
+            ClientId::Virtual01,
+            LifecycleAction::Reset,
+            ClientState::Stopped,
+            false,
+        );
+        assert!(!reset.allowed);
+        assert_eq!(reset.blocker, Some(LifecycleBlocker::ReadySnapshotMissing));
+
+        let set_ready = lifecycle_availability(
+            ClientId::Virtual01,
+            LifecycleAction::SetReady,
+            ClientState::Stopped,
+            true,
+        );
+        assert!(!set_ready.allowed);
+        assert_eq!(
+            set_ready.blocker,
+            Some(LifecycleBlocker::ReadySnapshotExists)
         );
     }
 

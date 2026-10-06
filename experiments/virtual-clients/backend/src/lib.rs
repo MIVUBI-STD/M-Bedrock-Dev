@@ -18,7 +18,10 @@ mod schema;
 mod support;
 mod update;
 
-pub use client::{ClientId, ClientState, ClientStatus, DestructiveConfirmation, IdentityState};
+pub use client::{
+    ActionAvailability, ClientId, ClientLifecycleActions, ClientState, ClientStatus,
+    DestructiveConfirmation, IdentityState, LifecycleBlocker,
+};
 pub use contract::{SuccessReport, PUBLIC_CONTRACT_SCHEMA};
 pub use diagnostics::{
     DiagnosticsReport, HostDiagnostics, ProviderDiagnostics, VirtualHardwareDiagnostics,

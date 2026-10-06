@@ -53,6 +53,38 @@ pub enum IdentityState {
     Duplicate,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum LifecycleBlocker {
+    ProviderUnavailable,
+    NativeManaged,
+    NotProvisioned,
+    InvalidState,
+    ReadySnapshotMissing,
+    ReadySnapshotExists,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ActionAvailability {
+    pub allowed: bool,
+    pub blocker: Option<LifecycleBlocker>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClientLifecycleActions {
+    pub id: &'static str,
+    pub start: ActionAvailability,
+    pub suspend: ActionAvailability,
+    pub stop: ActionAvailability,
+    pub open: ActionAvailability,
+    pub restart: ActionAvailability,
+    pub set_ready: ActionAvailability,
+    pub reset: ActionAvailability,
+    pub reprovision: ActionAvailability,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DestructiveConfirmation {
     ReprovisionAccountState,
