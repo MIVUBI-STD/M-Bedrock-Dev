@@ -152,3 +152,21 @@ Do not solve updates by adding aliases, copies, `-new` resources, or alternate o
 When a resource moves physically, update its path while retaining its semantic ID.
 
 When a resource is no longer active, retire or remove it from current routing. Do not preserve current-tree duplicates merely for backward naming compatibility unless an explicit external compatibility contract requires them.
+
+## Current-state access boundary
+
+Planning and Workspace remain directly routed current-state owners.
+
+```text
+current/future work intent
+→ planning/
+
+current project execution state / working artifacts
+→ workspace/
+```
+
+They are not default Resource Catalog search candidates and must not be mixed into general knowledge Retrieval for reassurance.
+
+When a task explicitly asks for current work, continuation, report state, or project execution data, Router selects the matching Planning/Workspace owner directly. Context may then include that selected state with its ownership intact.
+
+Reliability History is registered in Catalog for searchability but Retrieval excludes HISTORICAL resources by default. Historical resources enter Context only through explicit historical search/opt-in or an explicit historical seed.
