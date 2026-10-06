@@ -1342,6 +1342,29 @@
       ]
     },
     {
+      "knowledgeId": "mount-policy.relation-reset-deactivates-relationship",
+      "consumer": "arena-cleanup-surface-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/cleanup/cleanup-resource-evidence.ts",
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/cleanup/cleanup-resource-evidence.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "mount-policy.reset-dismount-order",
+      "consumer": "arena-cleanup-surface-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/cleanup/cleanup-resource-evidence.ts",
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/cleanup/cleanup-resource-evidence.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "mount.dismount-placement-policy",
       "consumer": "mount-analysis",
       "analyzerPaths": [
@@ -2158,6 +2181,37 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "spatial-policy.arena-volume-contract",
+      "consumer": "spatial-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/spatial-authority-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/spatial-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "spatial-policy.bounds-not-authority-alone",
+      "consumer": "spatial-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/behavior-model/src/minecraft/spatial-authority.ts",
+        "engine/packages/orchestrator/src/inspection/spatial-authority-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/spatial-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "spatial-policy.relation-volume-validates-location",
+      "consumer": "spatial-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/spatial-authority-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/spatial-authority-analysis.test.ts"
       ]
     },
     {
