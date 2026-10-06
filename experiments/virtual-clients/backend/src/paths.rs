@@ -80,6 +80,10 @@ pub fn client_root() -> io::Result<PathBuf> {
     Ok(runtime_root()?.join("clients"))
 }
 
+pub fn client_profile_path(client_name: &str) -> io::Result<PathBuf> {
+    Ok(client_root()?.join(client_name).join("client-profile.json"))
+}
+
 pub fn staging_root() -> io::Result<PathBuf> {
     Ok(runtime_root()?.join("staging"))
 }
