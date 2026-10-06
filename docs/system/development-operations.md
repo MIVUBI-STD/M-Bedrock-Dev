@@ -84,7 +84,7 @@ Promote a hygiene rule into `verify:repository` only after the repository baseli
 
 ## Optional local readiness
 
-For developers who choose a local checkout, `DEV.cmd finalize-local` may run the repository's executable verification suite.
+For developers who choose a local checkout, `DEV.cmd finalize-local` may run `npm run verify:local-ready` as the repository's optional local executable verification suite.
 
 This is an optional stronger-proof path. It does not define whether ChatGPT remote GitHub work is complete, and remote work must never be left artificially pending solely because this local command was not executed.
 
