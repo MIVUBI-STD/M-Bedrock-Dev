@@ -362,10 +362,178 @@
       ]
     },
     {
+      "knowledgeId": "chunks.entity-load-event-evidence",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunks.entity-remove-event-ambiguous-cause",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunks.overlap-still-costs-script-manager-capacity",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunks.relation.is-chunk-loaded-validates-readiness",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunks.relation.spawn-entity-requires-loaded-chunk",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunks.relation.tickingarea-create-produces-ready-area",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunks.script-tickingarea-capacity",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunks.script-tickingarea-create-readiness",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunks.script-tickingarea-fully-loaded",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "chunks.shutdown-restricted-cleanup",
       "consumer": "chunk-lifecycle-analysis",
       "analyzerPaths": [
         "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunks.spawn-entity-unloaded-chunk-error",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunks.tickingarea-manager-error-reasons",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunks.tickingarea-manager-restricted-execution",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunks.tickingarea-preload-order",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "chunks.world-load-default-execution-boundary",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-diagnostics.ts"
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
@@ -1292,6 +1460,66 @@
       ]
     },
     {
+      "knowledgeId": "interaction.block-interact-can-repeat-while-held",
+      "consumer": "interaction-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "interaction.form-response-can-cancel",
+      "consumer": "interaction-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "interaction.form-show-async",
+      "consumer": "interaction-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "interaction.input-permissions-mutable",
+      "consumer": "interaction-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "interaction.relation-form-response-is-deferred",
+      "consumer": "interaction-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "interaction.relation-repeat-interact-requires-firstevent",
+      "consumer": "interaction-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "inventory-policy.copy-writeback-required",
       "consumer": "inventory-lifecycle-analysis",
       "analyzerPaths": [
@@ -1374,6 +1602,17 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "inventory.relation-equipment-requires-separate-reset",
+      "consumer": "inventory-reset-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/inventory-reset-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-reset-closure-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/inventory-reset-analysis.test.ts"
       ]
     },
     {
@@ -2895,6 +3134,76 @@
       "proofPaths": [
         "engine/analyzers/scripts/test/domains/spatial/spatial-mutation-evidence.test.ts",
         "engine/packages/orchestrator/test/inspection/teleport-transaction-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "world-mutation.createfromworld-defaults-include",
+      "consumer": "structure-runtime-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/structure-semantics.ts",
+        "engine/adapters/mcstructure/src/runtime-content.ts",
+        "engine/packages/orchestrator/src/inspection/structure-runtime-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/structure-placement-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/structure-runtime-analysis.test.ts",
+        "engine/adapters/mcstructure/test/placement-transform.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "world-mutation.relation-placement-requires-resolved-target",
+      "consumer": "structure-runtime-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/structure-semantics.ts",
+        "engine/adapters/mcstructure/src/runtime-content.ts",
+        "engine/packages/orchestrator/src/inspection/structure-runtime-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/structure-placement-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/structure-runtime-analysis.test.ts",
+        "engine/adapters/mcstructure/test/placement-transform.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "world-mutation.structure-integrity-can-be-partial",
+      "consumer": "structure-runtime-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/structure-semantics.ts",
+        "engine/adapters/mcstructure/src/runtime-content.ts",
+        "engine/packages/orchestrator/src/inspection/structure-runtime-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/structure-placement-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/structure-runtime-analysis.test.ts",
+        "engine/adapters/mcstructure/test/placement-transform.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "world-mutation.structure-load-can-include-entities-blocks",
+      "consumer": "structure-runtime-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/structure-semantics.ts",
+        "engine/adapters/mcstructure/src/runtime-content.ts",
+        "engine/packages/orchestrator/src/inspection/structure-runtime-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/structure-placement-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/structure-runtime-analysis.test.ts",
+        "engine/adapters/mcstructure/test/placement-transform.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "world-mutation.structure-save-includes-stateful-block-data",
+      "consumer": "structure-runtime-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/structure-semantics.ts",
+        "engine/adapters/mcstructure/src/runtime-content.ts",
+        "engine/packages/orchestrator/src/inspection/structure-runtime-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/structure-placement-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/structure-runtime-analysis.test.ts",
+        "engine/adapters/mcstructure/test/placement-transform.test.ts"
       ]
     },
     {
