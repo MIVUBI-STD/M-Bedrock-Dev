@@ -241,3 +241,8 @@ A public-contract breaking change must increment `PUBLIC_CONTRACT_SCHEMA`. A run
 ## Engine policy
 
 Product/runtime limits have one read-only owner in `EnginePolicy`. Provider and frontend code must consume this policy rather than duplicate literals for maximum Virtual count, guest memory ceiling, vCPU count, Guest Agent port, or QA_READY snapshot name. Policy exposure does not make these values user-configurable.
+
+
+## Health issue contract
+
+`DoctorReport.issues` exposes machine-readable observed conditions with a typed code, severity, and optional Virtual client. Issues are diagnostic facts only; `nextSetupAction` remains the single recovery/setup decision owner. Frontend code must never derive a competing recovery flow by interpreting issue strings.

@@ -22,7 +22,9 @@ pub use contract::{SuccessReport, PUBLIC_CONTRACT_SCHEMA};
 pub use diagnostics::{
     DiagnosticsReport, HostDiagnostics, ProviderDiagnostics, VirtualHardwareDiagnostics,
 };
-pub use doctor::{DoctorClient, DoctorReport, SetupAction};
+pub use doctor::{
+    DoctorClient, DoctorReport, HealthIssue, HealthIssueCode, HealthSeverity, SetupAction,
+};
 pub use error::{ErrorCode, ErrorReport};
 pub use policy::{engine_policy, EnginePolicy, MAX_VIRTUAL_CLIENTS, READY_SNAPSHOT_NAME, VIRTUAL_VCPUS};
 pub use profile::{

@@ -35,6 +35,39 @@ pub enum SetupAction {
     CreateReadySnapshots,
     Ready,
 }
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum HealthSeverity {
+    Blocker,
+    Warning,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum HealthIssueCode {
+    RuntimeDataIncompatible,
+    ProviderUnavailable,
+    NativeMinecraftUnavailable,
+    BaseMissing,
+    BaseRunning,
+    BaseStateUnknown,
+    BaseFinalizationInterrupted,
+    BaseProfileMismatch,
+    VirtualNotProvisioned,
+    VirtualLineageMismatch,
+    IdentityProofMissing,
+    ReadySnapshotMissing,
+    HostCapacityLimited,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HealthIssue {
+    pub code: HealthIssueCode,
+    pub severity: HealthSeverity,
+    pub client: Option<&'static str>,
+}
+
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -53,6 +86,7 @@ pub struct DoctorReport {
     pub clients: Vec<DoctorClient>,
     pub ready_for_provisioning: bool,
     pub next_setup_action: SetupAction,
+    pub issues: Vec<HealthIssue>,
 }
 
 fn schema_allows_provisioning(status: &SchemaStatus) -> bool {
@@ -132,6 +166,138 @@ fn select_setup_action(
     } else {
         SetupAction::Ready
     }
+}
+
+fn collect_health_issues(
+    runtime_schema: &SchemaStatus,
+    provider_available: bool,
+    native_available: bool,
+    base_vm_present: bool,
+    base_vm_stopped: Option<bool>,
+    base_state: Option<BaseState>,
+    profile_parity: ProfileParity,
+    clients: &[DoctorClient],
+    max_recommended_virtual_clients: usize,
+) -> Vec<HealthIssue> {
+    let mut issues = Vec::new();
+    let mut push = |code, severity, client| {
+        issues.push(HealthIssue {
+            code,
+            severity,
+            client,
+        });
+    };
+
+    if matches!(
+        runtime_schema.state,
+        crate::schema::SchemaState::Invalid | crate::schema::SchemaState::NewerThanApp
+    ) {
+        push(
+            HealthIssueCode::RuntimeDataIncompatible,
+            HealthSeverity::Blocker,
+            None,
+        );
+    }
+
+    if !provider_available {
+        push(
+            HealthIssueCode::ProviderUnavailable,
+            HealthSeverity::Blocker,
+            None,
+        );
+    }
+
+    if !native_available {
+        push(
+            HealthIssueCode::NativeMinecraftUnavailable,
+            HealthSeverity::Blocker,
+            None,
+        );
+    }
+
+    if native_available {
+        if !base_vm_present {
+            push(
+                HealthIssueCode::BaseMissing,
+                HealthSeverity::Blocker,
+                None,
+            );
+        } else {
+            if base_vm_stopped == Some(false) {
+                push(
+                    HealthIssueCode::BaseRunning,
+                    HealthSeverity::Blocker,
+                    None,
+                );
+            }
+
+            match base_state {
+                None => push(
+                    HealthIssueCode::BaseStateUnknown,
+                    HealthSeverity::Blocker,
+                    None,
+                ),
+                Some(BaseState::Finalizing) => push(
+                    HealthIssueCode::BaseFinalizationInterrupted,
+                    HealthSeverity::Blocker,
+                    None,
+                ),
+                Some(BaseState::Registered | BaseState::Finalized) => {}
+            }
+
+            if profile_parity != ProfileParity::Match {
+                push(
+                    HealthIssueCode::BaseProfileMismatch,
+                    HealthSeverity::Blocker,
+                    None,
+                );
+            }
+        }
+    }
+
+    if provider_available {
+        for client in clients {
+            if !client.provisioned {
+                push(
+                    HealthIssueCode::VirtualNotProvisioned,
+                    HealthSeverity::Warning,
+                    Some(client.id),
+                );
+                continue;
+            }
+            if client.lineage_parity != ProfileParity::Match {
+                push(
+                    HealthIssueCode::VirtualLineageMismatch,
+                    HealthSeverity::Blocker,
+                    Some(client.id),
+                );
+            }
+            if !client.identity_provenance {
+                push(
+                    HealthIssueCode::IdentityProofMissing,
+                    HealthSeverity::Warning,
+                    Some(client.id),
+                );
+            }
+            if !client.ready_snapshot {
+                push(
+                    HealthIssueCode::ReadySnapshotMissing,
+                    HealthSeverity::Warning,
+                    Some(client.id),
+                );
+            }
+        }
+    }
+
+    if max_recommended_virtual_clients < ClientId::VIRTUAL.len() {
+        push(
+            HealthIssueCode::HostCapacityLimited,
+            HealthSeverity::Warning,
+            None,
+        );
+    }
+
+    issues
 }
 
 pub fn doctor() -> DoctorReport {
@@ -227,9 +393,21 @@ pub fn doctor() -> DoctorReport {
     let ready_for_provisioning = provider.is_some()
         && base_vm_present
         && base_vm_stopped == Some(true)
-        && base_state.as_deref() == Some(BaseState::Finalized)
+        && base_state == Some(BaseState::Finalized)
         && runtime_profile.parity == ProfileParity::Match
         && schema_allows_provisioning(&runtime_schema);
+
+    let issues = collect_health_issues(
+        &runtime_schema,
+        provider.is_some(),
+        runtime_profile.native.is_some(),
+        base_vm_present,
+        base_vm_stopped,
+        base_state,
+        runtime_profile.parity,
+        &clients,
+        max_recommended_virtual_clients,
+    );
 
     DoctorReport {
         platform: std::env::consts::OS,
@@ -246,14 +424,16 @@ pub fn doctor() -> DoctorReport {
         clients,
         ready_for_provisioning,
         next_setup_action,
+        issues,
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::{
-        recommended_by_cpu, recommended_by_memory, schema_allows_provisioning, select_setup_action,
-        DoctorClient, SetupAction,
+        collect_health_issues, recommended_by_cpu, recommended_by_memory,
+        schema_allows_provisioning, select_setup_action, DoctorClient, HealthIssueCode,
+        HealthSeverity, SetupAction,
     };
     use crate::{
         profile::{BaseState, ProfileParity},
@@ -275,6 +455,46 @@ mod tests {
             lineage_parity: ProfileParity::Match,
             identity_provenance,
         }
+    }
+
+    #[test]
+    fn health_issues_are_dependency_aware_and_machine_readable() {
+        let issues = collect_health_issues(
+            &compatible_schema(),
+            false,
+            true,
+            true,
+            Some(true),
+            Some(BaseState::Finalized),
+            ProfileParity::Match,
+            &[],
+            3,
+        );
+        assert_eq!(issues.len(), 1);
+        assert_eq!(issues[0].code, HealthIssueCode::ProviderUnavailable);
+        assert_eq!(issues[0].severity, HealthSeverity::Blocker);
+
+        let clients = vec![client(false, false)];
+        let issues = collect_health_issues(
+            &compatible_schema(),
+            true,
+            true,
+            true,
+            Some(true),
+            Some(BaseState::Finalized),
+            ProfileParity::Match,
+            &clients,
+            2,
+        );
+        assert!(issues
+            .iter()
+            .any(|issue| issue.code == HealthIssueCode::IdentityProofMissing));
+        assert!(issues
+            .iter()
+            .any(|issue| issue.code == HealthIssueCode::ReadySnapshotMissing));
+        assert!(issues
+            .iter()
+            .any(|issue| issue.code == HealthIssueCode::HostCapacityLimited));
     }
 
     #[test]
