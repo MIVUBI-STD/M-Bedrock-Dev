@@ -9,7 +9,7 @@ use crate::{
     },
 };
 
-pub const BASE_PROFILE_SCHEMA: u32 = 1;
+pub const BASE_PROFILE_SCHEMA: u32 = 2;
 pub const CLIENT_PROFILE_SCHEMA: u32 = 1;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
