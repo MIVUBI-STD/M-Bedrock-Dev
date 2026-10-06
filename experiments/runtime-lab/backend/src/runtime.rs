@@ -29,6 +29,7 @@ pub struct RuntimeStatus {
 #[serde(rename_all = "camelCase")]
 pub struct ResourceView {
     pub requested_virtual_clients: usize,
+    pub recommended_virtual_clients: usize,
     pub running_virtual_clients: usize,
     pub suspended_virtual_clients: usize,
     pub stopped_virtual_clients: usize,
@@ -211,15 +212,6 @@ impl RuntimeLab {
         }
 
         let host = doctor();
-        if count > host.max_recommended_virtual_clients {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                format!(
-                    "requested {count} virtual clients but this host is recommended for at most {}",
-                    host.max_recommended_virtual_clients
-                ),
-            ));
-        }
 
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(io::ErrorKind::NotFound, "virtualization provider is unavailable")
@@ -251,6 +243,7 @@ impl RuntimeLab {
 
         Ok(ResourceView {
             requested_virtual_clients: count,
+            recommended_virtual_clients: host.max_recommended_virtual_clients,
             running_virtual_clients: running,
             suspended_virtual_clients: suspended,
             stopped_virtual_clients: stopped,
