@@ -13,6 +13,9 @@ use std::{
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    if std::env::args().any(|argument| argument == "--interactive-launcher") {
+        return run_interactive_launcher();
+    }
     let token = guest_agent_token()?;
     let listener = TcpListener::bind(("0.0.0.0", GUEST_AGENT_PORT))?;
 
@@ -26,6 +29,78 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn ipc_root() -> io::Result<std::path::PathBuf> {
+    let program_data = std::env::var_os("ProgramData")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "ProgramData is unavailable"))?;
+    Ok(std::path::PathBuf::from(program_data).join("M-Bedrock").join("VirtualClients").join("interactive"))
+}
+
+#[cfg(target_os = "windows")]
+fn request_interactive_minecraft_launch() -> Result<m_bedrock_virtual_clients_core::MinecraftLaunchResult, Box<dyn std::error::Error>> {
+    use m_bedrock_virtual_clients_core::{MinecraftLaunchResult, MinecraftLaunchState};
+    if minecraft_process_running() {
+        return Ok(MinecraftLaunchResult { schema: 1, state: MinecraftLaunchState::AlreadyRunning });
+    }
+    let root = ipc_root()?;
+    std::fs::create_dir_all(&root)?;
+    let request = root.join("launch-minecraft.request");
+    let acknowledgement = root.join("launch-minecraft.ack");
+    let _ = std::fs::remove_file(&acknowledgement);
+    std::fs::write(&request, b"MINECRAFT_EDUCATION\n")?;
+
+    let deadline = std::time::Instant::now() + Duration::from_secs(35);
+    while std::time::Instant::now() < deadline {
+        if minecraft_process_running() {
+            let _ = std::fs::remove_file(&request);
+            let _ = std::fs::remove_file(&acknowledgement);
+            return Ok(());
+        }
+        if acknowledgement.is_file() {
+            let detail = std::fs::read_to_string(&acknowledgement).unwrap_or_default();
+            if detail.starts_with("ERROR:") {
+                let _ = std::fs::remove_file(&request);
+                let _ = std::fs::remove_file(&acknowledgement);
+                return Err(io::Error::new(io::ErrorKind::Other, detail.trim().to_string()).into());
+            }
+        }
+        std::thread::sleep(Duration::from_millis(500));
+    }
+    let _ = std::fs::remove_file(&request);
+    Err(io::Error::new(io::ErrorKind::TimedOut, "Interactive Minecraft launcher did not start Minecraft Education within 35 seconds").into())
+}
+
+#[cfg(target_os = "windows")]
+fn run_interactive_launcher() -> Result<(), Box<dyn std::error::Error>> {
+    let root = ipc_root()?;
+    std::fs::create_dir_all(&root)?;
+    let request = root.join("launch-minecraft.request");
+    let acknowledgement = root.join("launch-minecraft.ack");
+
+    loop {
+        if request.is_file() {
+            let action = std::fs::read_to_string(&request).unwrap_or_default();
+            if action.trim() == "MINECRAFT_EDUCATION" {
+                let result = launch_minecraft_interactive();
+                let message = match result {
+                    Ok(()) => "OK\n".to_string(),
+                    Err(error) => format!("ERROR:{error}\n"),
+                };
+                let _ = std::fs::write(&acknowledgement, message);
+            } else {
+                let _ = std::fs::write(&acknowledgement, "ERROR:unsupported interactive action\n");
+            }
+            let _ = std::fs::remove_file(&request);
+        }
+        std::thread::sleep(Duration::from_millis(250));
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+fn run_interactive_launcher() -> Result<(), Box<dyn std::error::Error>> {
+    Err(io::Error::new(io::ErrorKind::Unsupported, "Interactive launcher currently targets Windows guests").into())
 }
 
 fn handle(mut stream: TcpStream, token: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -116,13 +191,15 @@ fn minecraft_process_running() -> bool {
 
 #[cfg(target_os = "windows")]
 fn launch_minecraft() -> Result<m_bedrock_virtual_clients_core::MinecraftLaunchResult, Box<dyn std::error::Error>> {
-    use m_bedrock_virtual_clients_core::{MinecraftLaunchResult, MinecraftLaunchState};
+    request_interactive_minecraft_launch()
+}
+
+#[cfg(target_os = "windows")]
+fn launch_minecraft_interactive() -> Result<(), Box<dyn std::error::Error>> {
     if !interactive_session_available() {
-        return Err(io::Error::new(io::ErrorKind::PermissionDenied, "Guest Agent is not running in an interactive Windows user session; Minecraft UI launch is blocked").into());
+        return Err(io::Error::new(io::ErrorKind::PermissionDenied, "Interactive launcher is not running in an interactive Windows user session").into());
     }
-    if minecraft_process_running() {
-        return Ok(MinecraftLaunchResult { schema: 1, state: MinecraftLaunchState::AlreadyRunning });
-    }
+    if minecraft_process_running() { return Ok(()); }
 
     let profile = guest_agent_minecraft_profile().ok_or_else(|| {
         io::Error::new(io::ErrorKind::NotFound, "Minecraft Education installation is unavailable")
