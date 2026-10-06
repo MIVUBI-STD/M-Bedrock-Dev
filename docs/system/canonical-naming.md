@@ -188,6 +188,33 @@ Active State Store / Project Memory       → Workspace
 
 The forbidden terms may still appear when they describe an external API/library concept or a source-native identifier, but they must not become new canonical repository responsibilities.
 
+### Document metadata
+
+Every Markdown document under `docs/` carries a minimal metadata frontmatter:
+
+```yaml
+---
+id: document.analysis.player-lifecycle
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+```
+
+This metadata is the document's Catalog identity contract.
+
+Rules:
+
+- `id` is stable identity and must not be regenerated merely because the file moves;
+- `path` is discovered from the repository and is not duplicated in frontmatter;
+- only the six canonical fields are allowed;
+- no `title`, `tags`, `aliases`, `topics`, `misc`, or arbitrary extension fields;
+- relationships belong to Graph, not document metadata;
+- examples use `REFERENCE` authority; normal canonical docs use `CANONICAL`;
+- domain README files use `ROUTER` role.
+
 ### Resource classes
 
 Every registered knowledge-architecture resource uses exactly one class:
