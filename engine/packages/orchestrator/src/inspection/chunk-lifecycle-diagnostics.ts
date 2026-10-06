@@ -22,6 +22,7 @@ export function chunkLifecycleDiagnostics(
     analysis.cleanupOrderUnproven > 0 ||
     analysis.readinessUnverifiedLeases > 0 ||
     analysis.unguardedDeferredChunkWork > 0 ||
+    analysis.zeroTickDeferredChunkWork > 0 ||
     worldLoadReconciliationMissing;
 
   if (!strongRisk && !reviewRisk) {
@@ -51,6 +52,8 @@ export function chunkLifecycleDiagnostics(
           analysis.shutdownOnlyCleanupRisk,
         unguardedDeferredChunkWork:
           analysis.unguardedDeferredChunkWork,
+        zeroTickDeferredChunkWork:
+          analysis.zeroTickDeferredChunkWork,
         worldLoadReconciliationMissing,
         dynamicLeaseKeys:
           analysis.dynamicLeaseKeys,

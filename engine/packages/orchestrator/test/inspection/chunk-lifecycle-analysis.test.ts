@@ -257,6 +257,64 @@ describe("chunk lifecycle analysis", () => {
     expect(result.unguardedDeferredChunkWork).toBe(1);
   });
 
+  it("flags zero-tick deferred chunk recovery work", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function schedule(system, dimension) {",
+        "  system.runTimeout(() => {",
+        "    check(dimension);",
+        "  }, 0);",
+        "}",
+        "function check(dimension) {",
+        "  dimension.isChunkLoaded({ x: 0, y: 0, z: 0 });",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(
+      script.deferredCallbacks[0]
+        ?.delayTicks,
+    ).toBe(0);
+    expect(
+      result.zeroTickDeferredChunkWork,
+    ).toBe(1);
+  });
+
+  it("does not flag bounded positive-delay chunk work as zero-tick", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function schedule(system, dimension) {",
+        "  system.runTimeout(() => {",
+        "    check(dimension);",
+        "  }, 1);",
+        "}",
+        "function check(dimension) {",
+        "  dimension.isChunkLoaded({ x: 0, y: 0, z: 0 });",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(
+      result.zeroTickDeferredChunkWork,
+    ).toBe(0);
+  });
+
   it("reports partial entity residency observability when only load is observed", () => {
     const script = parseScriptFile(
       "main",

@@ -148,6 +148,7 @@ export interface ScriptDeferredCallback {
   callbackSource?: SourceRef;
   guardEvidence: "explicit-generation-check" | "unresolved";
   guardIdentifiers: string[];
+  delayTicks?: number;
 }
 
 export interface ScriptEntityEventTrigger {

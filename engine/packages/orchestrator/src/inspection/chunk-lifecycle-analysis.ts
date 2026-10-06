@@ -41,6 +41,7 @@ export interface ChunkLifecycleAnalysis {
   shutdownOnlyCleanupRisk: number;
   worldLoadReconciliationPaths: number;
   unguardedDeferredChunkWork: number;
+  zeroTickDeferredChunkWork: number;
   entityResidencyObservability: "complete" | "partial" | "absent";
   leases: readonly ChunkLeaseAssessment[];
 }
@@ -349,6 +350,43 @@ function unguardedDeferredChunkWorkFor(
   ).length;
 }
 
+
+function zeroTickDeferredChunkWorkFor(
+  script: ParsedScriptFile,
+): number {
+  const graph = callGraphFor(script);
+  const chunkRegions =
+    chunkLifecycleRegions(script);
+
+  return script.deferredCallbacks.filter(
+    (callback) => {
+      if (
+        callback.scheduler !==
+          "runTimeout" ||
+        callback.delayTicks !== 0
+      ) {
+        return false;
+      }
+
+      const root =
+        callback.callbackRegion;
+      if (root === undefined) {
+        return false;
+      }
+
+      const reachable =
+        reachableRegions(
+          graph,
+          root,
+        );
+      return [...chunkRegions].some(
+        (region) =>
+          reachable.has(region),
+      );
+    },
+  ).length;
+}
+
 function worldLoadReconciliationPathsFor(
   script: ParsedScriptFile,
 ): number {
@@ -518,6 +556,15 @@ export function analyzeChunkLifecycle(
         ),
       0,
     );
+  const zeroTickDeferredChunkWork =
+    scripts.reduce(
+      (sum, script) =>
+        sum +
+        zeroTickDeferredChunkWorkFor(
+          script,
+        ),
+      0,
+    );
 
   return {
     worldLoadObservers,
@@ -576,6 +623,7 @@ export function analyzeChunkLifecycle(
         : 0,
     worldLoadReconciliationPaths,
     unguardedDeferredChunkWork,
+    zeroTickDeferredChunkWork,
     entityResidencyObservability,
     leases,
   };

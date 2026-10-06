@@ -2471,6 +2471,19 @@ export function parseScriptFile(
         const guardIdentifiers = callback
           ? generationGuardIdentifiers(callback)
           : [];
+        const delayArgument =
+          (
+            scheduler === "runTimeout" ||
+            scheduler === "runInterval"
+          )
+            ? node.arguments[1]
+            : undefined;
+        const delayTicks =
+          delayArgument === undefined
+            ? undefined
+            : numericLiteralValue(
+                delayArgument,
+              );
         deferredCallbacks.push({
           scheduler,
           source: lineSource(file, node, source),
@@ -2485,6 +2498,9 @@ export function parseScriptFile(
             ? "explicit-generation-check"
             : "unresolved",
           guardIdentifiers,
+          ...(delayTicks === undefined
+            ? {}
+            : { delayTicks }),
         });
       }
 
