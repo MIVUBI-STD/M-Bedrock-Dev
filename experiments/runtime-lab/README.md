@@ -2,6 +2,46 @@
 
 Experimental backend for running multiple interactive Minecraft Education clients on one physical computer.
 
+## Simple flow
+
+### Setup once
+
+```text
+doctor
+provision
+start 1
+→ manually configure Virtual-01
+stop Virtual-01
+set-ready Virtual-01
+→ repeat for Virtual-02 / Virtual-03
+```
+
+### Daily use
+
+```text
+resources <1-3>
+start <1-3>
+status
+
+suspend [Virtual]
+→ free active resources while keeping warm state
+
+stop
+→ end all Virtual instances
+```
+
+### Recovery
+
+```text
+reset Virtual-01
+→ return one instance to QA_READY
+
+reprovision Virtual-01
+→ rebuild only that fully stopped instance from Base
+```
+
+The normal workflow does not require direct VMware commands or resource tuning.
+
 ## Runtime model
 
 ```text
