@@ -108,22 +108,6 @@ describe("Virtual Clients presentation projection", () => {
 });
 
 describe("Stop all availability", () => {
-  const client = (state: ClientStatus["state"]): ClientStatus => ({
-    id: "Virtual-01",
-    native: false,
-    state,
-    readySnapshot: true,
-    memoryLimitMb: 4096,
-    hostWorkingSetMb: null,
-    guestToolsReady: null,
-    guestAgentReady: null,
-    guestAgentVersion: null,
-    minecraftVersion: null,
-    lineageParity: null,
-    versionParity: null,
-    vmIdentity: null,
-    windowsIdentity: null,
-  });
 
   it("allows stopping when only suspended clients remain", () => {
     expect(hasStoppableClient([clientStatus("SUSPENDED")], actions)).toBe(true);
@@ -155,7 +139,7 @@ describe("First-time setup action", () => {
   it("uses backend setup availability before daily start", () => {
     const available = { ...actions[0], start: allow, startSetup: allow };
     expect(primaryClientAction(available, clientStatus("STOPPED"))).toEqual({ kind: "start-setup", label: "Start first-time setup" });
-    expect(primaryClientAction(available, { ...client, state: "RUNNING" })).toEqual({ kind: "open", label: "Open" });
+    expect(primaryClientAction(available, clientStatus("RUNNING"))).toEqual({ kind: "open", label: "Open" });
   });
 
   it("does not bypass blocked setup with daily Start", () => {
