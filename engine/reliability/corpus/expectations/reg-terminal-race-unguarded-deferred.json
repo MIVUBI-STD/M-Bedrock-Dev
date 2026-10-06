@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "reg-terminal-race-unguarded-deferred",
+  "lane": "regression",
+  "artifact": {
+    "label": "Reduced terminal race with unguarded deferred ingress",
+    "file": "engine/fixtures/regressions/terminal-race/unguarded-deferred.ts",
+    "sha256": "ae16bbad0e1d1d6251ba19c3ce68ab4d9699c5a90a9cdb9bf58ded4abafd7e07"
+  },
+  "target": {
+    "edition": "bedrock",
+    "minecraftVersion": "1.21.x"
+  },
+  "expected": {
+    "disposition": "defect",
+    "domain": "Terminal State & Duplicate-Commit Safety",
+    "proofCeiling": "STATIC VERIFIED",
+    "findingKey": "terminal-race.non-idempotent-multi-ingress"
+  },
+  "provenance": {
+    "frozenBeforeRun": true,
+    "source": "engine/reliability/corpus/audit-detection-cases.json#REG-DOUBLE-TERMINAL"
+  }
+}

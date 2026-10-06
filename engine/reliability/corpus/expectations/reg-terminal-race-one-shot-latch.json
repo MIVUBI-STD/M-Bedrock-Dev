@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "reg-terminal-race-one-shot-latch",
+  "lane": "regression",
+  "artifact": {
+    "label": "Reduced terminal convergence protected by one-shot latch",
+    "file": "engine/fixtures/regressions/terminal-race/one-shot-latch.ts",
+    "sha256": "a766739b454ed779e393aa1195ab637f67baf5d5b9b6f4a7e92619f49596faa7"
+  },
+  "target": {
+    "edition": "bedrock",
+    "minecraftVersion": "1.21.x"
+  },
+  "expected": {
+    "disposition": "designed-behavior",
+    "domain": "Terminal State & Duplicate-Commit Safety",
+    "proofCeiling": "STATIC VERIFIED"
+  },
+  "provenance": {
+    "frozenBeforeRun": true,
+    "source": "engine/reliability/corpus/audit-detection-cases.json#REG-DOUBLE-TERMINAL"
+  }
+}

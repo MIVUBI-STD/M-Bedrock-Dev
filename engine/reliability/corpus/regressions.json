@@ -448,6 +448,50 @@
         "explicit-invariant"
       ],
       "expectation": "doMobSpawning=false must not be treated as proof that spawn eggs, /summon, script spawnEntity, structure entities, or privileged manual spawn paths are blocked."
+    },
+    {
+      "id": "reg_terminal_race_unguarded_deferred",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/regressions/terminal-race/unguarded-deferred.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "ae16bbad0e1d1d6251ba19c3ce68ab4d9699c5a90a9cdb9bf58ded4abafd7e07",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-terminal-race-unguarded-deferred.json"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_terminal_race_one_shot_latch",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/regressions/terminal-race/one-shot-latch.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "a766739b454ed779e393aa1195ab637f67baf5d5b9b6f4a7e92619f49596faa7",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-terminal-race-one-shot-latch.json"
+      },
+      "evidenceRole": "negative",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_terminal_race_two_event_unresolved",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/regressions/terminal-race/two-event-unresolved.ts",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "03513ddf55912574ff47365260f3c935191e73544918cdec06861b295c2e0c6e",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-terminal-race-two-event-unresolved.json"
+      },
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     }
   ],
   "policy": {

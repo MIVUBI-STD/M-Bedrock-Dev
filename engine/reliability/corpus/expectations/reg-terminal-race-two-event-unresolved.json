@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "reg-terminal-race-two-event-unresolved",
+  "lane": "regression",
+  "artifact": {
+    "label": "Reduced terminal convergence without coexistence proof",
+    "file": "engine/fixtures/regressions/terminal-race/two-event-unresolved.ts",
+    "sha256": "03513ddf55912574ff47365260f3c935191e73544918cdec06861b295c2e0c6e"
+  },
+  "target": {
+    "edition": "bedrock",
+    "minecraftVersion": "1.21.x"
+  },
+  "expected": {
+    "disposition": "insufficient-evidence",
+    "domain": "Terminal State & Duplicate-Commit Safety",
+    "proofCeiling": "STATIC VERIFIED"
+  },
+  "provenance": {
+    "frozenBeforeRun": true,
+    "source": "engine/reliability/corpus/audit-detection-cases.json#REG-DOUBLE-TERMINAL"
+  }
+}
