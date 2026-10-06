@@ -13,6 +13,9 @@ use std::{
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    if std::env::args().any(|argument| argument == "--register-interactive-launcher") {
+        return register_interactive_launcher();
+    }
     if std::env::args().any(|argument| argument == "--interactive-launcher") {
         return run_interactive_launcher();
     }
@@ -86,6 +89,26 @@ fn request_interactive_minecraft_launch() -> Result<m_bedrock_virtual_clients_co
     }
     let _ = std::fs::remove_file(&request);
     Err(io::Error::new(io::ErrorKind::TimedOut, "Interactive Minecraft launcher did not start Minecraft Education within 35 seconds").into())
+}
+
+#[cfg(target_os = "windows")]
+fn register_interactive_launcher() -> Result<(), Box<dyn std::error::Error>> {
+    let app_data = std::env::var_os("APPDATA")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "APPDATA is unavailable for the interactive Windows user"))?;
+    let startup = std::path::PathBuf::from(app_data)
+        .join("Microsoft").join("Windows").join("Start Menu").join("Programs").join("Startup");
+    std::fs::create_dir_all(&startup)?;
+    let executable = std::env::current_exe()?;
+    let launcher = startup.join("M-Bedrock Virtual Interactive Launcher.cmd");
+    let command = format!("@echo off\r\nstart \"\" /min \"{}\" --interactive-launcher\r\n", executable.display());
+    std::fs::write(&launcher, command)?;
+    println!("{}", launcher.display());
+    Ok(())
+}
+
+#[cfg(not(target_os = "windows"))]
+fn register_interactive_launcher() -> Result<(), Box<dyn std::error::Error>> {
+    Err(io::Error::new(io::ErrorKind::Unsupported, "Interactive launcher registration currently targets Windows guests").into())
 }
 
 #[cfg(target_os = "windows")]
