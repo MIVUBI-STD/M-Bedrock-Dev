@@ -94,3 +94,18 @@ Accept it only when:
 4. GPU rendering remains usable;
 5. suspend/resume remains reliable;
 6. working-set or CPU usage improves measurably on the target machine.
+
+
+## Disk hygiene
+
+Do not use automatic disk shrink/compact on Runtime Lab Virtual instances while they retain `QA_READY` or other snapshot state.
+
+If a Virtual delta grows too large, prefer:
+
+```text
+stop Virtual
+→ reprovision Virtual
+→ prepare the clean instance again
+```
+
+Base should remain clean and stable; Virtual instances are the disposable layer.
