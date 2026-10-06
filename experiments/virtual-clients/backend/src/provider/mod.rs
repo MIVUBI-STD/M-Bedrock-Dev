@@ -76,7 +76,7 @@ pub(crate) fn runtime_root() -> io::Result<PathBuf> {
             .ok_or_else(|| {
                 io::Error::new(io::ErrorKind::NotFound, "LOCALAPPDATA is unavailable")
             })?;
-        return Ok(root.join("M-Bedrock").join("RuntimeLab"));
+        return Ok(root.join("M-Bedrock").join("VirtualClients"));
     }
 
     #[cfg(target_os = "macos")]
