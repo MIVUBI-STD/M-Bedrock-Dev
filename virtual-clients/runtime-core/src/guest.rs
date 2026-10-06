@@ -9,10 +9,15 @@ use crate::profile::MinecraftProfile;
 
 pub const GUEST_AGENT_PORT: u16 = 47831;
 pub const GUEST_STATUS_SCHEMA: u32 = 3;
-pub const GUEST_AGENT_PROTOCOL_VERSION: u32 = 1;
+pub const GUEST_AGENT_PROTOCOL_VERSION: u32 = 2;
+pub const GUEST_AGENT_MIN_STATUS_PROTOCOL: u32 = 1;
 
 pub fn guest_agent_protocol_compatible(protocol_version: u32) -> bool {
-    protocol_version == GUEST_AGENT_PROTOCOL_VERSION
+    (GUEST_AGENT_MIN_STATUS_PROTOCOL..=GUEST_AGENT_PROTOCOL_VERSION).contains(&protocol_version)
+}
+
+pub fn guest_agent_launch_compatible(protocol_version: u32) -> bool {
+    protocol_version >= 2 && protocol_version <= GUEST_AGENT_PROTOCOL_VERSION
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -23,6 +28,54 @@ pub struct GuestStatus {
     pub agent_version: String,
     pub minecraft: Option<MinecraftProfile>,
     pub machine_identity: Option<String>,
+}
+
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum MinecraftLaunchState {
+    AlreadyRunning,
+    Launched,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MinecraftLaunchResult {
+    pub schema: u32,
+    pub state: MinecraftLaunchState,
+}
+
+pub fn launch_guest_minecraft(ip: &str, token: &str, timeout: Duration) -> io::Result<MinecraftLaunchResult> {
+    let address = (ip, GUEST_AGENT_PORT)
+        .to_socket_addrs()?
+        .next()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::AddrNotAvailable, "guest IP is invalid"))?;
+    if token.len() != 64 || !token.chars().all(|character| character.is_ascii_hexdigit()) {
+        return Err(io::Error::new(io::ErrorKind::InvalidInput, "guest agent token is invalid"));
+    }
+    let mut stream = TcpStream::connect_timeout(&address, timeout)?;
+    stream.set_read_timeout(Some(timeout))?;
+    stream.set_write_timeout(Some(timeout))?;
+    let request = format!(
+        "POST /minecraft/launch HTTP/1.1\r\nHost: virtual-client\r\nX-Virtual-Clients-Token: {token}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
+    );
+    stream.write_all(request.as_bytes())?;
+    let mut response = Vec::new();
+    stream.take(8 * 1024).read_to_end(&mut response)?;
+    let response = String::from_utf8(response)
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+    let (headers, body) = response.split_once("\r\n\r\n")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "guest agent launch response is malformed"))?;
+    let status_line = headers.lines().next().unwrap_or_default();
+    if !status_line.contains(" 200 ") {
+        return Err(io::Error::new(io::ErrorKind::Other, format!("guest agent launch returned {status_line}")));
+    }
+    let result: MinecraftLaunchResult = serde_json::from_str(body.trim())
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+    if result.schema != 1 {
+        return Err(io::Error::new(io::ErrorKind::InvalidData, "unsupported Minecraft launch response schema"));
+    }
+    Ok(result)
 }
 
 pub fn query_guest_status(ip: &str, token: &str, timeout: Duration) -> io::Result<GuestStatus> {
@@ -110,7 +163,7 @@ fn validate_guest_status(status: &GuestStatus) -> io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::{
-        guest_agent_protocol_compatible, validate_guest_status, GuestStatus,
+        guest_agent_launch_compatible, guest_agent_protocol_compatible, validate_guest_status, GuestStatus,
         GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA,
     };
     use crate::profile::{MinecraftInstallType, MinecraftProfile};
@@ -142,7 +195,10 @@ mod tests {
 
     #[test]
     fn guest_protocol_compatibility_is_explicit() {
+        assert!(guest_agent_protocol_compatible(1));
         assert!(guest_agent_protocol_compatible(GUEST_AGENT_PROTOCOL_VERSION));
+        assert!(!guest_agent_launch_compatible(1));
+        assert!(guest_agent_launch_compatible(GUEST_AGENT_PROTOCOL_VERSION));
         assert!(!guest_agent_protocol_compatible(GUEST_AGENT_PROTOCOL_VERSION + 1));
 
         let mut status = GuestStatus {
