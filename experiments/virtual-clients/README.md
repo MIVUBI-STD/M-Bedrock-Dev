@@ -22,14 +22,22 @@ start 3
 verify-identities
 → doctor nextSetupAction = CREATE_READY_SNAPSHOTS
 
-start 1
-→ configure Virtual-01
-→ sign in once with its own test identity
+Virtual-01
+→ configure/sign in once
 → confirm Minecraft Education reaches the signed-in menu
-stop Virtual-01
-set-ready Virtual-01
+→ stop Virtual-01
+→ set-ready Virtual-01
 
-repeat for Virtual-02 / Virtual-03
+Virtual-02
+→ configure/sign in once
+→ stop Virtual-02
+→ set-ready Virtual-02
+
+Virtual-03
+→ configure/sign in once
+→ stop Virtual-03
+→ set-ready Virtual-03
+
 → doctor nextSetupAction = READY
 
 Base must never contain a Microsoft/Minecraft user session. Account state belongs to each provisioned Virtual only.
@@ -188,6 +196,9 @@ Microsoft credentials, passwords, access tokens, refresh tokens, and equivalent 
 
 ```text
 doctor
+diagnostics
+check-update
+stage-update
 register-base
 provision
 status

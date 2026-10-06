@@ -84,24 +84,18 @@ provision
 → vmIdentity = UNIQUE for all three
 → windowsIdentity = UNIQUE for all three
 → doctor nextSetupAction = CREATE_READY_SNAPSHOTS
-→ stop all
-→ start 1
-→ Virtual-01 RUNNING
-→ guestToolsReady
-→ guestAgentReady
-→ versionParity MATCH
-→ manually playable
+→ Virtual-01 manually playable
 → configure account once
 → verify signed-in Minecraft menu
-→ stop
-→ start again without signing in again
-→ suspend/resume without signing in again
-→ stop
-→ set-ready
-→ reset
-→ start again and verify account session remains usable
-→ repeat for Virtual-02 / Virtual-03
+→ stop Virtual-01
+→ set-ready Virtual-01
+→ repeat account setup + stop + set-ready for Virtual-02 / Virtual-03
 → doctor nextSetupAction = READY
+→ reset Virtual-01
+→ verify account session remains usable
+→ suspend/resume Virtual-01 without signing in again
+→ stop Virtual-01
+→ start 1 and verify account session remains usable
 → resources 3
 → start 3
 → open Native manually
