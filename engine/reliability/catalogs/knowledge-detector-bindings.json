@@ -1335,6 +1335,50 @@
       ]
     },
     {
+      "knowledgeId": "world-policy.no-dependent-work-before-verify",
+      "consumer": "mutation-transaction-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/repair/mutation-transaction-analysis.ts",
+        "engine/packages/orchestrator/src/repair/script-mutation-transaction-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/repair/mutation-transaction-analysis.test.ts",
+        "engine/packages/orchestrator/test/repair/script-mutation-transaction-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "world-policy.relation-dependent-action-requires-prior-verification",
+      "consumer": "mutation-transaction-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/repair/mutation-transaction-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/repair/mutation-transaction-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "world-policy.relation-incomplete-order-proof-requires-more-evidence",
+      "consumer": "mutation-transaction-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/repair/mutation-transaction-analysis.ts",
+        "engine/packages/orchestrator/src/repair/script-mutation-transaction-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/repair/mutation-transaction-analysis.test.ts",
+        "engine/packages/orchestrator/test/repair/script-mutation-transaction-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "world-policy.relation-script-mutation-candidate-requires-verification",
+      "consumer": "script-mutation-transaction-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/repair/script-mutation-transaction-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/repair/script-mutation-transaction-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "world-policy.spawn-causality-separation",
       "consumer": "world-rule-authority-analysis",
       "analyzerPaths": [
@@ -1343,6 +1387,20 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/world-rule-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "world-policy.structure-request-not-commit",
+      "consumer": "mutation-transaction-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/structure-proof-analysis.ts",
+        "engine/packages/orchestrator/src/repair/mutation-transaction-analysis.ts",
+        "engine/packages/orchestrator/src/repair/script-mutation-transaction-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/structure-proof-analysis.test.ts",
+        "engine/packages/orchestrator/test/repair/mutation-transaction-analysis.test.ts",
+        "engine/packages/orchestrator/test/repair/script-mutation-transaction-analysis.test.ts"
       ]
     },
     {
