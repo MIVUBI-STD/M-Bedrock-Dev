@@ -8,6 +8,10 @@ import type {
   GameplayIntentModel,
 } from "../../../gameplay-intent/src/index.js";
 import { stateSurfaceKey } from "../../../project-model/src/index.js";
+import {
+  createDiagnostic,
+  type DiagnosticFinding,
+} from "../../../diagnostics/src/index.js";
 
 export type StateMirrorStatus =
   | "consistent"
@@ -323,5 +327,48 @@ export function assessObjectiveAuthorityDeclarations(
       a.objectiveId.localeCompare(
         b.objectiveId,
       )
+    );
+}
+
+
+export function objectiveAuthorityDiagnostics(
+  assessments:
+    readonly ObjectiveAuthorityAssessment[],
+): DiagnosticFinding[] {
+  return assessments
+    .flatMap((item) => {
+      if (item.status === "declared") {
+        return [];
+      }
+
+      return [
+        createDiagnostic({
+          code:
+            item.status ===
+              "multiple-authorities"
+              ? "STATE_MULTIPLE_AUTHORITIES"
+              : "STATE_AUTHORITY_UNDECLARED",
+          severity:
+            item.status ===
+              "multiple-authorities"
+              ? "medium"
+              : "info",
+          message:
+            item.reason,
+          data: {
+            objectiveId:
+              item.objectiveId,
+            objectiveLabel:
+              item.objectiveLabel,
+            contractIds:
+              [...item.contractIds],
+            authorityKeys:
+              [...item.authorityKeys],
+          },
+        }),
+      ];
+    })
+    .sort((a, b) =>
+      a.id.localeCompare(b.id)
     );
 }

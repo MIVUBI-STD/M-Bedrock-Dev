@@ -1,0 +1,22 @@
+{
+  "objective": {
+    "id": "objective:flag",
+    "label": "Flag"
+  },
+  "contracts": [
+    {
+      "id": "flag-authority",
+      "purpose": "objective:flag",
+      "authority": {
+        "kind": "scoreboard",
+        "key": "flagHealth"
+      },
+      "mirrors": [
+        {
+          "kind": "tag",
+          "key": "flag_low"
+        }
+      ]
+    }
+  ]
+}

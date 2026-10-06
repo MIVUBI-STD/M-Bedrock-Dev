@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "reg-objective-authority-split-brain",
+  "lane": "regression",
+  "artifact": {
+    "label": "Objective with two explicit authority surfaces",
+    "file": "engine/fixtures/regressions/state-authority/objective-split-authority.json",
+    "sha256": "e18a07d3535298a6a3244b2e27ebfbcba3e6ef3c85308d9f9329fd098f97bc97"
+  },
+  "target": {
+    "edition": "bedrock",
+    "minecraftVersion": "1.21.x"
+  },
+  "expected": {
+    "disposition": "defect",
+    "domain": "Objective State Authority",
+    "findingKey": "STATE_MULTIPLE_AUTHORITIES",
+    "proofCeiling": "STATIC VERIFIED",
+    "issueType": "BUG",
+    "publicStatus": "PROVEN"
+  },
+  "provenance": {
+    "frozenBeforeRun": true,
+    "source": "engine/contracts/engineering/catalogs/round-integrity-contract.json"
+  }
+}

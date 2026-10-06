@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { KnowledgeCatalog } from "../../../knowledge/src/index.js";
 import {
   assessObjectiveAuthorityDeclarations,
+  objectiveAuthorityDiagnostics,
   correlateStateAuthority,
   stateAuthorityRuntimeEvidence,
 } from "../../src/inspection/state-authority-analysis.js";
@@ -228,5 +229,54 @@ describe("objective authority declarations", () => {
         "tag:flag_alive",
       ],
     });
+  });
+});
+
+
+describe("objective authority diagnostics", () => {
+  it("emits no finding for one declared authority", () => {
+    const findings =
+      objectiveAuthorityDiagnostics([{
+        objectiveId: "objective:flag",
+        objectiveLabel: "Flag",
+        status: "declared",
+        contractIds: ["flag"],
+        authorityKeys: [
+          "scoreboard:flagHealth",
+        ],
+        reason: "declared",
+      }]);
+    expect(findings).toEqual([]);
+  });
+
+  it("emits canonical diagnostics for undeclared and multiple authority states", () => {
+    const findings =
+      objectiveAuthorityDiagnostics([{
+        objectiveId: "objective:a",
+        objectiveLabel: "A",
+        status: "undeclared",
+        contractIds: [],
+        authorityKeys: [],
+        reason: "missing",
+      }, {
+        objectiveId: "objective:b",
+        objectiveLabel: "B",
+        status: "multiple-authorities",
+        contractIds: ["b1", "b2"],
+        authorityKeys: [
+          "scoreboard:b",
+          "tag:b",
+        ],
+        reason: "split",
+      }]);
+
+    expect(
+      findings.map((item) =>
+        item.code
+      ),
+    ).toEqual([
+      "STATE_AUTHORITY_UNDECLARED",
+      "STATE_MULTIPLE_AUTHORITIES",
+    ].sort());
   });
 });

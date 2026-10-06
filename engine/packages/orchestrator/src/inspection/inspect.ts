@@ -44,6 +44,10 @@ import { combatContractDiagnostics } from "../combat-contract-diagnostics.js";
 import { chunkLifecycleDiagnostics } from "../chunk-lifecycle-diagnostics.js";
 import { economyContractDiagnostics } from "../economy-contract-diagnostics.js";
 import { spatialAuthorityDiagnostics } from "../spatial-authority-diagnostics.js";
+import {
+  assessObjectiveAuthorityDeclarations,
+  objectiveAuthorityDiagnostics,
+} from "./state-authority-analysis.js";
 import { inventoryLifecycleDiagnostics } from "../inventory-lifecycle-diagnostics.js";
 import { entityAiNavigationDiagnostics } from "../entity-ai-navigation-diagnostics.js";
 import { arenaLifecycleDiagnostics } from "../arena-lifecycle-diagnostics.js";
@@ -165,6 +169,17 @@ export async function inspectDirectory(
     supplementalSignals:
       gameplaySurfaceSignals,
   });
+
+  const objectiveAuthority =
+    assessObjectiveAuthorityDeclarations(
+      gameplayIntent,
+      target.stateAuthorityContracts ?? [],
+    );
+  diagnostics.push(
+    ...objectiveAuthorityDiagnostics(
+      objectiveAuthority,
+    ),
+  );
 
   const entityAiStack =
     analyzeEntityAiStacks(

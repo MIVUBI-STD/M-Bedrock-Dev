@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "reg-objective-authority-single-declared",
+  "lane": "regression",
+  "artifact": {
+    "label": "Single explicitly declared objective authority",
+    "file": "engine/fixtures/regressions/state-authority/objective-single-authority.json",
+    "sha256": "aa183de77c56db5c0d3af35c307c5ab3470198de4581f581750da45f9f6b41c0"
+  },
+  "target": {
+    "edition": "bedrock",
+    "minecraftVersion": "1.21.x"
+  },
+  "expected": {
+    "disposition": "designed-behavior",
+    "domain": "Objective State Authority",
+    "proofCeiling": "STATIC VERIFIED"
+  },
+  "provenance": {
+    "frozenBeforeRun": true,
+    "source": "engine/contracts/engineering/catalogs/round-integrity-contract.json"
+  }
+}

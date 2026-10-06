@@ -450,6 +450,36 @@
       ]
     },
     {
+      "id": "reg_objective_authority_single_declared",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/regressions/state-authority/objective-single-authority.json",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "aa183de77c56db5c0d3af35c307c5ab3470198de4581f581750da45f9f6b41c0",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-objective-authority-single-declared.json"
+      },
+      "evidenceRole": "negative",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_objective_authority_split_brain",
+      "status": "ready",
+      "sourceRef": "engine/fixtures/regressions/state-authority/objective-split-authority.json",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "e18a07d3535298a6a3244b2e27ebfbcba3e6ef3c85308d9f9329fd098f97bc97",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-objective-authority-split-brain.json"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
       "id": "reg_progression_deferred_spawn_reserved_generation_guarded",
       "status": "ready",
       "sourceRef": "engine/fixtures/regressions/progression/deferred-spawn-reserved-generation-guarded.ts",
