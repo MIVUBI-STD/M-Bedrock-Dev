@@ -1,6 +1,6 @@
 use crate::{
-    inspect_base_preparation, read_operation_history, ClientId, DestructiveConfirmation, ErrorReport,
-    SuccessReport, VirtualClients,
+    inspect_base_preparation, read_operation_history, ClientId, DestructiveConfirmation,
+    ErrorReport, SuccessReport, VirtualClients,
 };
 use serde::Serialize;
 use serde_json::Value;
