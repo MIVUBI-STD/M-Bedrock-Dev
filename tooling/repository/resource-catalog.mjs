@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { basename, join, relative } from "node:path";
+import { join, relative } from "node:path";
 import { readDocumentMetadata } from "./document-metadata.mjs";
 
 const DOC_DOMAINS = ["product", "artifacts", "analysis", "repair", "validation", "system", "examples"];
@@ -149,34 +149,65 @@ function catalogSourceModules(resources, seen) {
   }
 }
 
+function registerFactCatalog(
+  resources,
+  seen,
+  path,
+  authority,
+) {
+  const catalog = readJson(path);
+
+  for (const fact of catalog.facts ?? []) {
+    if (
+      typeof fact.id !== "string" ||
+      !fact.id.trim() ||
+      typeof fact.domain !== "string" ||
+      !fact.domain.trim()
+    ) {
+      throw new Error("Invalid knowledge fact in " + path);
+    }
+
+    addResource(resources, seen, {
+      id: "knowledge." + fact.id,
+      class: "KNOWLEDGE",
+      domain: slug(fact.domain),
+      authority,
+      path,
+      locator: fact.id,
+      lifecycle: "ACTIVE",
+    });
+  }
+}
+
 function catalogKnowledge(resources, seen) {
   const ownership = readJson("engine/knowledge/ownership.json");
 
   for (const config of Object.values(ownership.groups ?? {})) {
     for (const file of config.files ?? []) {
-      const path = join("engine/knowledge", file).replaceAll("\\", "/");
-      const catalog = readJson(path);
+      registerFactCatalog(
+        resources,
+        seen,
+        join("engine/knowledge", file).replaceAll("\\", "/"),
+        "REFERENCE",
+      );
+    }
+  }
 
-      for (const fact of catalog.facts ?? []) {
-        if (
-          typeof fact.id !== "string" ||
-          !fact.id.trim() ||
-          typeof fact.domain !== "string" ||
-          !fact.domain.trim()
-        ) {
-          throw new Error("Invalid knowledge fact in " + path);
-        }
+  const engineering = readJson(
+    "engine/contracts/engineering/ownership.json",
+  );
 
-        addResource(resources, seen, {
-          id: "knowledge." + fact.id,
-          class: "KNOWLEDGE",
-          domain: slug(fact.domain),
-          authority: "REFERENCE",
-          path,
-          locator: fact.id,
-          lifecycle: "ACTIVE",
-        });
-      }
+  for (const config of Object.values(engineering.groups ?? {})) {
+    for (const file of config.files ?? []) {
+      registerFactCatalog(
+        resources,
+        seen,
+        join(
+          "engine/contracts/engineering/catalogs",
+          file,
+        ).replaceAll("\\", "/"),
+        "CANONICAL",
+      );
     }
   }
 }
