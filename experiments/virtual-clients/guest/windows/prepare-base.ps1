@@ -1,9 +1,13 @@
 param(
   [Parameter(Mandatory = $true)] [string]$MinecraftInstaller,
-  [Parameter(Mandatory = $true)] [string]$GuestAgentSource
+  [string]$GuestAgentSource = ''
 )
 
 $ErrorActionPreference = 'Stop'
+
+if ([string]::IsNullOrWhiteSpace($GuestAgentSource)) {
+  $GuestAgentSource = Join-Path $PSScriptRoot 'virtual-guest-agent.exe'
+}
 
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
 $principal = New-Object Security.Principal.WindowsPrincipal($identity)
