@@ -65,3 +65,76 @@ export function isResolvedMapClassification(
     classification.playerMode !== null
   );
 }
+
+
+export function migrateLegacyMapClassification(
+  legacyLabel: string,
+  evidenceRef: string,
+): GameDesignMapClassification {
+  const normalized = legacyLabel
+    .trim()
+    .toLowerCase();
+
+  const prefix =
+    normalized.split(" - ")[0] ?? normalized;
+
+  const base = {
+    playerMode: null,
+    classificationStatus:
+      "UNRESOLVED" as const,
+    evidenceRefs: [
+      evidenceRef,
+    ],
+  };
+
+  if (prefix === "build") {
+    return {
+      ...base,
+      mapType: "BUILDING",
+      mechanicTags: ["BUILD"],
+    };
+  }
+
+  if (prefix === "pvp") {
+    return {
+      ...base,
+      mapType: "COMBAT",
+      mechanicTags: [],
+    };
+  }
+
+  if (prefix === "challenge") {
+    return {
+      ...base,
+      mapType: "CHALLENGE_COURSE",
+      mechanicTags: [],
+    };
+  }
+
+  if (
+    prefix === "find the button"
+  ) {
+    return {
+      ...base,
+      mapType: "SEARCH_PUZZLE",
+      mechanicTags: [
+        "SEARCH",
+        "PUZZLE",
+      ],
+    };
+  }
+
+  if (prefix === "skills") {
+    return {
+      ...base,
+      mapType: "SKILL_COURSE",
+      mechanicTags: [],
+    };
+  }
+
+  return {
+    ...base,
+    mapType: null,
+    mechanicTags: [],
+  };
+}

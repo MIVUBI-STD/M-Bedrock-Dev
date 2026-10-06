@@ -3,6 +3,7 @@ import {
   intentAuthorityStrength,
   resolveGameDesignIntentRules,
   validateGameDesignSpec,
+  migrateLegacyMapClassification,
   type GameDesignSpec,
 } from "../src/index.js";
 
@@ -135,5 +136,65 @@ describe("Game Design intent resolution", () => {
     });
 
     expect(errors).toEqual([]);
+  });
+
+  it("migrates legacy project labels conservatively without inventing player mode", () => {
+    const cases = [
+      [
+        "Build - Build & Decode",
+        "BUILDING",
+        ["BUILD"],
+      ],
+      [
+        "PvP - Beach Bedwars",
+        "COMBAT",
+        [],
+      ],
+      [
+        "Challenge - Defense Map",
+        "CHALLENGE_COURSE",
+        [],
+      ],
+      [
+        "Find The Button - Mysteries of Biomes / Level 1",
+        "SEARCH_PUZZLE",
+        ["SEARCH", "PUZZLE"],
+      ],
+      [
+        "Skills - Aftershock",
+        "SKILL_COURSE",
+        [],
+      ],
+      [
+        "Minigame - The Gauntlet",
+        null,
+        [],
+      ],
+    ] as const;
+
+    for (
+      const [
+        label,
+        mapType,
+        mechanicTags,
+      ] of cases
+    ) {
+      const result =
+        migrateLegacyMapClassification(
+          label,
+          "workspace:project-registry",
+        );
+
+      expect(result).toMatchObject({
+        mapType,
+        playerMode: null,
+        mechanicTags,
+        classificationStatus:
+          "UNRESOLVED",
+        evidenceRefs: [
+          "workspace:project-registry",
+        ],
+      });
+    }
   });
 });
