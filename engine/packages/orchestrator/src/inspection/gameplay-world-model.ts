@@ -382,6 +382,10 @@ export interface GameplayWorldModel {
         replacementWrites: number;
         completionChecks: number;
         lifecycleLinkedDecrements: number;
+        deathLinkedDecrements: number;
+        removeLinkedDecrements: number;
+        reconciliationLifecycleKinds:
+          readonly ("death" | "remove")[];
         quantityComparableGrowths: number;
         quantityMatchedGrowths: number;
         quantityMismatchGrowths: number;
@@ -1954,6 +1958,12 @@ export function deriveGameplayWorldModel(
                 item.completionChecks,
               lifecycleLinkedDecrements:
                 item.lifecycleLinkedDecrements,
+              deathLinkedDecrements:
+                item.deathLinkedDecrements,
+              removeLinkedDecrements:
+                item.removeLinkedDecrements,
+              reconciliationLifecycleKinds:
+                [...item.reconciliationLifecycleKinds],
               quantityComparableGrowths:
                 item.quantityComparableGrowths,
               quantityMatchedGrowths:

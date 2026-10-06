@@ -24,6 +24,10 @@ export interface ProgressionCounterAssessment {
   readonly replacementWrites: number;
   readonly completionChecks: number;
   readonly lifecycleLinkedDecrements: number;
+  readonly deathLinkedDecrements: number;
+  readonly removeLinkedDecrements: number;
+  readonly reconciliationLifecycleKinds:
+    readonly ("death" | "remove")[];
   readonly quantityComparableGrowths: number;
   readonly quantityMatchedGrowths: number;
   readonly quantityMismatchGrowths: number;
@@ -98,6 +102,7 @@ interface SpawnEvidenceRecord {
     | "conditional"
     | "repeated"
     | "unknown";
+  readonly sourceLine?: number;
 }
 
 interface LifecycleActorGuard {
@@ -239,6 +244,8 @@ function scoreboardEvidence(
           command.executionRegion ??
           "module",
         executionShape: "unknown",
+        sourceLine:
+          command.source.range?.lineStart,
       });
     }
   }
@@ -384,11 +391,18 @@ function reaches(
   ).has(to);
 }
 
-function lifecycleRoots(
+function lifecycleRootsByKind(
   scripts: readonly NormalizedScript[],
-): Set<string> {
-  const roots = new Set<string>();
+): {
+  readonly death: Set<string>;
+  readonly remove: Set<string>;
+} {
+  const death = new Set<string>();
+  const remove = new Set<string>();
+
   for (const script of scripts) {
+    const path =
+      script.parsed.source.relativePath;
     for (
       const evidence of
         script.parsed
@@ -398,9 +412,9 @@ function lifecycleRoots(
         evidence.kind ===
         "death-subscription"
       ) {
-        roots.add(
+        death.add(
           localNode(
-            script.parsed.source.relativePath,
+            path,
             evidence.executionRegion,
           ),
         );
@@ -415,16 +429,17 @@ function lifecycleRoots(
         evidence.kind ===
         "entity-remove-subscription"
       ) {
-        roots.add(
+        remove.add(
           localNode(
-            script.parsed.source.relativePath,
+            path,
             evidence.executionRegion,
           ),
         );
       }
     }
   }
-  return roots;
+
+  return { death, remove };
 }
 
 function spawnEvidence(
@@ -450,6 +465,8 @@ function spawnEvidence(
           spawn.actorIdentifier,
         executionShape:
           spawn.executionShape,
+        sourceLine:
+          spawn.source.range?.lineStart,
       });
     }
 
@@ -486,7 +503,9 @@ function spawnEvidence(
         candidate.actorIdentifier ===
           item.actorIdentifier &&
         candidate.executionShape ===
-          item.executionShape
+          item.executionShape &&
+        candidate.sourceLine ===
+          item.sourceLine
       ) === index,
   );
 }
@@ -710,11 +729,23 @@ export function analyzeProgressionActorAccounting(
       scripts,
       crossFileCalls,
     );
-  const lifecycleReachable =
+  const lifecycleRoots =
+    lifecycleRootsByKind(scripts);
+  const deathReachable =
     reachableFrom(
-      lifecycleRoots(scripts),
+      lifecycleRoots.death,
       graph,
     );
+  const removeReachable =
+    reachableFrom(
+      lifecycleRoots.remove,
+      graph,
+    );
+  const lifecycleReachable =
+    new Set([
+      ...deathReachable,
+      ...removeReachable,
+    ]);
   const spawns =
     spawnEvidence(scripts);
   const guards =
@@ -775,6 +806,34 @@ export function analyzeProgressionActorAccounting(
                 ),
               ),
           ).length;
+        const deathLinkedDecrements =
+          decrements.filter(
+            (item) =>
+              deathReachable.has(
+                localNode(
+                  item.scriptPath,
+                  item.executionRegion,
+                ),
+              ),
+          ).length;
+        const removeLinkedDecrements =
+          decrements.filter(
+            (item) =>
+              removeReachable.has(
+                localNode(
+                  item.scriptPath,
+                  item.executionRegion,
+                ),
+              ),
+          ).length;
+        const reconciliationLifecycleKinds = [
+          ...(deathLinkedDecrements > 0
+            ? ["death" as const]
+            : []),
+          ...(removeLinkedDecrements > 0
+            ? ["remove" as const]
+            : []),
+        ];
         const actorAccountingCandidate =
           ACTOR_COUNTER_NAME.test(
             first.counterId,
@@ -906,6 +965,9 @@ export function analyzeProgressionActorAccounting(
           completionChecks,
           lifecycleLinkedDecrements:
             linkedDecrements,
+          deathLinkedDecrements,
+          removeLinkedDecrements,
+          reconciliationLifecycleKinds,
           quantityComparableGrowths,
           quantityMatchedGrowths,
           quantityMismatchGrowths,
@@ -950,7 +1012,9 @@ export function analyzeProgressionActorAccounting(
                     ? [
                         "Counter growth is source-linked to actor type(s) " +
                         matchedActorIdentifiers.join(", ") +
-                        ", actor quantity matches the direct spawn count, and an entity-death/entity-remove path guarded for the same actor identity reaches the decrement.",
+                        ", actor quantity matches the direct spawn count, and matching actor reconciliation reaches the decrement through lifecycle kind(s): " +
+                        reconciliationLifecycleKinds.join(", ") +
+                        ".",
                       ]
                     : [
                       linkedDecrements > 0

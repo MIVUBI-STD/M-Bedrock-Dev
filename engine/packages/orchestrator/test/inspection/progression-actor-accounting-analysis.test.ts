@@ -204,6 +204,42 @@ describe(
         });
     });
 
+    it("preserves distinct direct spawn calls when proving quantity equality", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "world.afterEvents.entityDie.subscribe((event) => {",
+        "  if (event.deadEntity.typeId === 'demo:enemy') decrementRemaining();",
+        "});",
+        "function spawnWave(dimension) {",
+        "  dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  dimension.spawnEntity('demo:enemy', { x: 1, y: 0, z: 0 });",
+        "  remainingEnemies += 2;",
+        "}",
+        "function decrementRemaining() { remainingEnemies--; }",
+        "function maybeAdvance() { if (remainingEnemies === 0) nextWave(); }",
+      ].join("\n");
+
+      const result =
+        analyzeProgressionActorAccounting([
+          parsed(source),
+        ]);
+
+      expect(
+        result.provenSpawnQuantityMismatch,
+      ).toBe(0);
+      expect(result.counters[0])
+        .toMatchObject({
+          spawnQuantityStatus: "matched",
+          quantityComparableGrowths: 1,
+          quantityMatchedGrowths: 1,
+          reconciliationLifecycleKinds: [
+            "death",
+          ],
+          status:
+            "reconciled-from-matched-actor-lifecycle",
+        });
+    });
+
     it("keeps looped spawn quantity unresolved instead of inventing a mismatch", () => {
       const source = [
         "let remainingEnemies = 0;",
@@ -256,6 +292,10 @@ describe(
         .toMatchObject({
           actorIdentityStatus: "matched",
           spawnQuantityStatus: "matched",
+          reconciliationLifecycleKinds: [
+            "remove",
+          ],
+          removeLinkedDecrements: 1,
           status:
             "reconciled-from-matched-actor-lifecycle",
         });
