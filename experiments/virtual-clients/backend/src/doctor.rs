@@ -221,6 +221,13 @@ pub fn doctor() -> DoctorReport {
         &clients,
     );
 
+    let ready_for_provisioning = provider.is_some()
+        && base_vm_present
+        && base_vm_stopped == Some(true)
+        && base_state.as_deref() == Some("FINALIZED")
+        && runtime_profile.parity == ProfileParity::Match
+        && schema_allows_provisioning(&runtime_schema);
+
     DoctorReport {
         platform: std::env::consts::OS,
         provider: provider.as_ref().map(|provider| provider.id()),
@@ -235,12 +242,7 @@ pub fn doctor() -> DoctorReport {
         runtime_schema,
         runtime_profile: runtime_profile.clone(),
         clients,
-        ready_for_provisioning: provider.is_some()
-            && base_vm_present
-            && base_vm_stopped == Some(true)
-            && base_state.as_deref() == Some("FINALIZED")
-            && runtime_profile.parity == ProfileParity::Match
-            && schema_allows_provisioning(&runtime_schema),
+        ready_for_provisioning,
         next_setup_action,
     }
 }
