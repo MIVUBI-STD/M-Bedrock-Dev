@@ -40,6 +40,7 @@ describe("map audit validation plan", () => {
           familyProofCriteria: [],
           proofStopRule: "Stop after the deciding observation.",
           runtimeLastResort: true,
+          runtimeRequired: true,
         },
       } as any,
     ]);
@@ -50,6 +51,53 @@ describe("map audit validation plan", () => {
       broadPlaythroughAllowed: false,
       test: "Cancel one water placement and compare Client A with Client B.",
     });
+  });
+
+  it("does not mistake runtime-last policy for a requirement to run Minecraft", () => {
+    const groups = groupNeedValidationTests([
+      {
+        status: "NEED_VALIDATION",
+        causalLinkId: "link:static-with-route",
+        validationGroupKey: "static:with-route",
+        validationTest: "Complete the source-side ownership proof.",
+        missingProof: "One source-side ownership edge.",
+        issueType: "BUG",
+        gameplayFlow: "PROVE",
+        proofNavigation: {
+          recipeId: "proof:test",
+          proofGoal: "Close source proof before runtime.",
+          provenClaims: [],
+          missingClaims: ["owner-edge"],
+          route: [
+            {
+              order: 1,
+              knowledgeDomain: "state-flow",
+              question: "Who owns the write?",
+              purpose: "Resolve ownership.",
+              evidencePreference: "selected-artifact",
+            },
+            {
+              order: 2,
+              knowledgeDomain: "runtime",
+              question: "Observe only if source proof cannot decide.",
+              purpose: "Last resort.",
+              evidencePreference: "runtime",
+            },
+          ],
+          evidenceSubstitutions: [],
+          historicalSearchHints: [],
+          historyPressure: 0,
+          familyProofCriteria: [],
+          proofStopRule: "Stop once source proof decides the claim.",
+          runtimeLastResort: true,
+          runtimeRequired: false,
+        },
+      } as any,
+    ]);
+
+    expect(groups[0]?.verificationMode).toBe(
+      "STATIC_PROOF_COMPLETION",
+    );
   });
 
   it("keeps static proof work out of runtime mode", () => {

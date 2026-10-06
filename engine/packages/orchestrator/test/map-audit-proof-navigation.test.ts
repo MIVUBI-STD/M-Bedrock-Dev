@@ -55,9 +55,27 @@ describe("map audit proof navigation", () => {
       "runtime",
     );
     expect(result.runtimeLastResort).toBe(true);
+    expect(result.runtimeRequired).toBe(false);
     expect(result.missingClaims).toEqual([
       "Reachable completion accounting.",
     ]);
+  });
+
+  it("marks explicitly native client reconciliation residue as runtime-required", () => {
+    const item = {
+      ...finding("ui-feedback-information"),
+      validationReason:
+        "Native client reconciliation is not statically decidable.",
+      missingProof:
+        "One acting-client versus observer-client comparison.",
+      validationTest:
+        "Cancel one predicted mutation and compare both clients.",
+    };
+
+    const result = buildAuditProofNavigation(item);
+
+    expect(result.runtimeLastResort).toBe(true);
+    expect(result.runtimeRequired).toBe(true);
   });
 
   it("offers static simulation evidence substitution only when world evidence supports it", () => {

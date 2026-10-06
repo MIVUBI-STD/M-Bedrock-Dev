@@ -47,7 +47,16 @@ export interface AuditProofNavigation {
   readonly historyPressure: number;
   readonly familyProofCriteria: readonly string[];
   readonly proofStopRule: string;
+  /**
+   * Runtime remains the final escalation tier, not the default next action.
+   * This flag preserves the policy that runtime comes last.
+   */
   readonly runtimeLastResort: boolean;
+  /**
+   * True only when the unresolved claim itself is inherently runtime-native
+   * after available static/formal substitutions are exhausted.
+   */
+  readonly runtimeRequired?: boolean;
 }
 
 interface ProofRecipe {
@@ -739,6 +748,23 @@ function substitutionCandidates(
   return output;
 }
 
+function runtimeIsInherentlyRequired(
+  finding: NeedValidationAuditIssueProjection,
+  substitutions: readonly AuditEvidenceSubstitution[],
+): boolean {
+  if (substitutions.length > 0) return false;
+
+  const unresolved = [
+    finding.validationReason,
+    finding.missingProof,
+    finding.validationTest,
+  ].join(" ");
+
+  return /(?:native\s+(?:client|engine|render|input|physics|collision|pathfind|simulation)|client[-\s/]*(?:server[-\s/]*)?reconcil|multi[-\s]?client\s+visual|render(?:ing)?\s+(?:visibility|state)|actual\s+(?:pathfind|collision|physics|simulation)|performance\s+manifestation)/i.test(
+    unresolved,
+  );
+}
+
 function reprioritizeRouteWithHistoricalHints(
   route: readonly AuditProofNavigationStep[],
   hints: readonly AuditHistoricalSearchHint[],
@@ -812,6 +838,12 @@ export function buildAuditProofNavigation(
           world,
         );
 
+  const evidenceSubstitutions =
+    substitutionCandidates(
+      finding,
+      world,
+    );
+
   return {
     recipeId: recipe.id,
     proofGoal: recipe.goal,
@@ -824,11 +856,7 @@ export function buildAuditProofNavigation(
         baseRoute,
         historicalSearchHints,
       ),
-    evidenceSubstitutions:
-      substitutionCandidates(
-        finding,
-        world,
-      ),
+    evidenceSubstitutions,
     historicalSearchHints,
     historyPressure:
       historicalSearchPressure(
@@ -841,5 +869,10 @@ export function buildAuditProofNavigation(
     proofStopRule:
       "Once every applicable family criterion is grounded and universal contradiction/translation/scope/evidence/counter-proof criteria are saturated, stop searching and do not request runtime manifestation merely for reassurance.",
     runtimeLastResort: true,
+    runtimeRequired:
+      runtimeIsInherentlyRequired(
+        finding,
+        evidenceSubstitutions,
+      ),
   };
 }

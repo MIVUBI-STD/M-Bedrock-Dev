@@ -47,7 +47,7 @@ export function groupNeedValidationTests(
       verificationMode:
         items.some(
           (item) =>
-            item.proofNavigation?.runtimeLastResort === true,
+            item.proofNavigation?.runtimeRequired === true,
         )
           ? "NARROW_RUNTIME_VERIFICATION" as const
           : "STATIC_PROOF_COMPLETION" as const,
