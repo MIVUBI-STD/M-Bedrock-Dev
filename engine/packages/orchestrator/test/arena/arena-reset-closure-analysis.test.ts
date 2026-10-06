@@ -1,0 +1,92 @@
+import {
+  describe,
+  expect,
+  it,
+} from "vitest";
+import {
+  assessArenaResetClosure,
+} from "../../src/arena/arena-reset-closure-analysis.js";
+
+const clean = {
+  cleanup: {
+    ledger: { missing: 0, partial: 0 },
+    lifecycle: { unresolved: 0 },
+  },
+  inventory: {
+    unresolvedResetPairs: 0,
+    unresolvedLoadoutTransactions: 0,
+  },
+  capability: {
+    unguardedMutationRegions: 0,
+  },
+  combat: {
+    staleReviveContradictions: 0,
+    reviveAfterDeathContradictions: 0,
+    projectileCleanupContractGap: 0,
+  },
+  interaction: {
+    directInputLockRisks: 0,
+    staleFormResponseGaps: 0,
+    repeatedInputRisks: 0,
+  },
+  chunk: {
+    unguardedDeferredChunkWork: 0,
+    entityRemoveTerminalizationRisks: 0,
+  },
+  worldRules: {
+    conflictingGlobalRules: 0,
+  },
+};
+
+describe("arena reset closure", () => {
+  it("reports complete only when every consumed domain is closed", () => {
+    expect(
+      assessArenaResetClosure(clean),
+    ).toMatchObject({
+      status: "complete",
+      blockers: [],
+    });
+  });
+
+  it("fails closed when any domain still leaks state", () => {
+    const result =
+      assessArenaResetClosure({
+        ...clean,
+        interaction: {
+          ...clean.interaction,
+          directInputLockRisks: 1,
+        },
+        combat: {
+          ...clean.combat,
+          staleReviveContradictions: 1,
+        },
+      });
+
+    expect(result.status).toBe("unresolved");
+    expect(result.blockers).toEqual([
+      "inputLockRisks",
+      "staleReviveContradictions",
+    ]);
+  });
+
+  it("keeps surface-level cleanup proof partial instead of green", () => {
+    const result =
+      assessArenaResetClosure({
+        ...clean,
+        cleanup: {
+          ledger: {
+            missing: 0,
+            partial: 1,
+          },
+          lifecycle: {
+            unresolved: 0,
+          },
+        },
+      });
+
+    expect(result.status).toBe("partial");
+    expect(result.warnings).toEqual([
+      "cleanupLedgerPartial",
+    ]);
+  });
+});

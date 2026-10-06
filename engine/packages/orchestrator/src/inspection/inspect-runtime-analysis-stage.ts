@@ -739,6 +739,20 @@ export function analyzeInspectionRuntimeState(
       input.target.mutationDependentActions ?? [],
     );
 
+  const arenaResetClosure =
+    assessArenaResetClosure({
+      cleanup: arenaCleanupSurfaces,
+      inventory: inventoryLifecycle,
+      capability:
+        capabilityMutationFootprint,
+      combat: combatPolicy,
+      interaction:
+        interactionLifecycle,
+      chunk: chunkLifecycle,
+      worldRules:
+        worldRuleAuthority,
+    });
+
   const scriptCommandTransactions =
     analyzeScriptCommandMutationTransactions(
       input.parsedScripts.map((item) => item.parsed),
@@ -768,6 +782,7 @@ export function analyzeInspectionRuntimeState(
     scriptSafeConfig,
     arenaLifecycle,
     arenaCleanupSurfaces,
+    arenaResetClosure,
     inventoryLifecycle,
     inventoryPolicy,
     inventoryRestoreOwnership,
