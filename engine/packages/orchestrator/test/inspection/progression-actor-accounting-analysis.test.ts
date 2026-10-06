@@ -1993,7 +1993,8 @@ describe(
         result.counters[0]
           ?.matchedActorIdentifiers,
       ).toEqual(["demo:enemy"]);
-    
+    });
+
     it("accepts a complete authored result lifecycle transaction", () => {
       const source = [
         "type ResultState = 'active' | 'terminal_candidate' | 'resolving' | 'result_committed' | 'rewarding' | 'cleanup' | 'complete';",
@@ -2148,6 +2149,5 @@ describe(
         result.stateMachines[0]?.reason,
       ).toMatch(/rewarding/);
     });
-});
   },
 );
