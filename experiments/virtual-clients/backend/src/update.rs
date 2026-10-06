@@ -5,6 +5,7 @@ use std::{
     fs,
     io::{self, Read},
     path::{Path, PathBuf},
+    sync::Arc,
     time::Duration,
 };
 
@@ -230,8 +231,15 @@ fn fetch_bytes(url: &str, max_bytes: u64) -> io::Result<Vec<u8>> {
         ));
     }
 
+    let tls = native_tls::TlsConnector::new().map_err(|error| {
+        io::Error::new(
+            io::ErrorKind::Other,
+            format!("native TLS initialization failed: {error}"),
+        )
+    })?;
     let agent = ureq::AgentBuilder::new()
         .timeout(Duration::from_secs(12))
+        .tls_connector(Arc::new(tls))
         .build();
     let response = agent.get(url).call().map_err(|error| {
         io::Error::new(
