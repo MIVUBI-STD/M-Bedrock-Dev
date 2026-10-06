@@ -17,6 +17,24 @@ import type { ClientLifecycleActions, ClientStatus } from "../src/contracts.js";
 
 const allow = { allowed: true, blocker: null } as const;
 const deny = { allowed: false, blocker: "INVALID_STATE" } as const;
+const clientStatus = (state: ClientStatus["state"], minecraftRunning: boolean | null = null): ClientStatus => ({
+  id: "Virtual-01",
+  native: false,
+  state,
+  readySnapshot: true,
+  memoryLimitMb: 4096,
+  hostWorkingSetMb: null,
+  guestToolsReady: null,
+  guestAgentReady: null,
+  guestAgentVersion: null,
+  minecraftVersion: null,
+  minecraftRunning,
+  lineageParity: null,
+  versionParity: null,
+  vmIdentity: null,
+  windowsIdentity: null,
+});
+
 const actions: ClientLifecycleActions[] = [
   {
     id: "Virtual-01",
@@ -35,17 +53,21 @@ describe("Virtual Clients presentation projection", () => {
   it("does not derive lifecycle rules locally", () => {
     expect(actionForClient(actions, "Virtual-01")).toBe(actions[0]);
     expect(actionForClient(actions, "Virtual-02")).toBeUndefined();
-    expect(primaryClientAction(actions[0], { ...client, state: "RUNNING" })).toEqual({ kind: "open", label: "Open" });
+    expect(primaryClientAction(actions[0], clientStatus("RUNNING"))).toEqual({ kind: "open", label: "Open" });
     expect(primaryClientAction({
       ...actions[0],
       open: allow,
       start: allow,
-    }, "STOPPED")).toEqual({ kind: "start", label: "Start" });
+    }, clientStatus("STOPPED"))).toEqual({ kind: "start", label: "Start" });
     expect(primaryClientAction({
       ...actions[0],
       open: allow,
       start: allow,
-    }, "SUSPENDED")).toEqual({ kind: "start", label: "Resume" });
+    }, clientStatus("SUSPENDED"))).toEqual({ kind: "start", label: "Resume" });
+  });
+
+  it("offers Minecraft launch when the VM is running but Minecraft is closed", () => {
+    expect(primaryClientAction(actions[0], clientStatus("RUNNING", false))).toEqual({ kind: "launch-minecraft", label: "Launch Minecraft" });
   });
 
   it("presents internal states in user-facing language", () => {
@@ -104,13 +126,13 @@ describe("Stop all availability", () => {
   });
 
   it("allows stopping when only suspended clients remain", () => {
-    expect(hasStoppableClient([client("SUSPENDED")], actions)).toBe(true);
+    expect(hasStoppableClient([clientStatus("SUSPENDED")], actions)).toBe(true);
   });
 
   it("does not enable stop for stopped clients or missing backend permission", () => {
-    expect(hasStoppableClient([client("STOPPED")], actions)).toBe(false);
-    expect(hasStoppableClient([client("RUNNING")], [{ ...actions[0], stop: deny }])).toBe(false);
-    expect(hasStoppableClient([client("SUSPENDED")], [])).toBe(false);
+    expect(hasStoppableClient([clientStatus("STOPPED")], actions)).toBe(false);
+    expect(hasStoppableClient([clientStatus("RUNNING")], [{ ...actions[0], stop: deny }])).toBe(false);
+    expect(hasStoppableClient([clientStatus("SUSPENDED")], [])).toBe(false);
   });
 });
 
@@ -123,7 +145,7 @@ describe("Admission presentation", () => {
   it("shows the backend reason without deriving a new admission policy", () => {
     const blocked = { ...deny, reason: "Host memory is insufficient." };
     const availability = { ...actions[0], start: blocked, open: allow };
-    expect(primaryClientAction(availability, "STOPPED")).toBeUndefined();
+    expect(primaryClientAction(availability, clientStatus("STOPPED"))).toBeUndefined();
     expect(primaryClientBlocker(availability, "STOPPED")).toBe("Host memory is insufficient.");
     expect(blockerLabel(blocked.blocker, blocked.reason)).toBe(blocked.reason);
   });
@@ -132,14 +154,14 @@ describe("Admission presentation", () => {
 describe("First-time setup action", () => {
   it("uses backend setup availability before daily start", () => {
     const available = { ...actions[0], start: allow, startSetup: allow };
-    expect(primaryClientAction(available, "STOPPED")).toEqual({ kind: "start-setup", label: "Start first-time setup" });
+    expect(primaryClientAction(available, clientStatus("STOPPED"))).toEqual({ kind: "start-setup", label: "Start first-time setup" });
     expect(primaryClientAction(available, { ...client, state: "RUNNING" })).toEqual({ kind: "open", label: "Open" });
   });
 
   it("does not bypass blocked setup with daily Start", () => {
     const blocked = { ...deny, reason: "VM identity is unknown." };
     const available = { ...actions[0], start: allow, startSetup: blocked };
-    expect(primaryClientAction(available, "STOPPED")).toBeUndefined();
+    expect(primaryClientAction(available, clientStatus("STOPPED"))).toBeUndefined();
     expect(primaryClientBlocker(available, "STOPPED")).toBe(blocked.reason);
   });
 });
