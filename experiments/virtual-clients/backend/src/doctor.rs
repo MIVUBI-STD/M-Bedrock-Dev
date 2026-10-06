@@ -359,9 +359,10 @@ pub fn doctor() -> DoctorReport {
                 _ => ProfileParity::Unknown,
             };
 
+            let current_vm_identity = provider.as_ref()
+                .and_then(|provider| provider.identity_key(client).ok().flatten());
             let identity_provenance = load_client_profile(client).ok().is_some_and(|profile| {
-                profile.verified_vm_identity.is_some()
-                    && profile.verified_windows_identity.is_some()
+                profile.identity_provenance_matches(current_vm_identity.as_deref())
             });
 
             DoctorClient {
@@ -818,4 +819,26 @@ mod tests {
             SetupAction::Ready
         );
     }
+    #[test]
+    fn changed_or_unreadable_vm_identity_reopens_identity_verification() {
+        let profile = crate::profile::ClientProfile {
+            schema: crate::profile::CLIENT_PROFILE_SCHEMA,
+            base_minecraft_version: "1.0.0".into(),
+            created_by: "test".into(),
+            verified_vm_identity: Some(crate::profile::identity_fingerprint("uuid-a|mac-a")),
+            verified_windows_identity: Some("windows-proof".into()),
+        };
+        for observed in [Some("uuid-b|mac-a"), None] {
+            let mut clients = vec![client(true, true), client(true, true), client(true, true)];
+            clients[0].identity_provenance = profile.identity_provenance_matches(observed);
+            assert_eq!(
+                select_setup_action(
+                    &compatible_schema(), true, true, true, ProfileParity::Match,
+                    Some(BaseState::Finalized), &clients,
+                ),
+                SetupAction::VerifyIdentities,
+            );
+        }
+    }
+
 }

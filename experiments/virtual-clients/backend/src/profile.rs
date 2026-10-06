@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::{io, path::PathBuf, process::Command};
 
 use crate::{
@@ -87,6 +88,26 @@ pub struct ClientProfile {
     pub verified_vm_identity: Option<String>,
     #[serde(default)]
     pub verified_windows_identity: Option<String>,
+}
+
+
+pub(crate) fn identity_fingerprint(value: &str) -> String {
+    format!("{:x}", Sha256::digest(value.as_bytes()))
+}
+
+impl ClientProfile {
+    pub(crate) fn saved_vm_identity_matches(&self, current: Option<&str>) -> bool {
+        match self.verified_vm_identity.as_deref() {
+            None => true,
+            Some(expected) => current.is_some_and(|value| identity_fingerprint(value) == expected),
+        }
+    }
+
+    pub(crate) fn identity_provenance_matches(&self, current: Option<&str>) -> bool {
+        self.verified_vm_identity.as_deref().is_some_and(|value| !value.is_empty())
+            && self.verified_windows_identity.as_deref().is_some_and(|value| !value.is_empty())
+            && self.saved_vm_identity_matches(current)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -578,4 +599,37 @@ mod tests {
         };
         assert_eq!(profile.version, "1.21.120.0");
     }
+    #[test]
+    fn stored_identity_provenance_requires_the_current_vm() {
+        let mut profile = super::ClientProfile {
+            schema: super::CLIENT_PROFILE_SCHEMA,
+            base_minecraft_version: "1.0.0".into(),
+            created_by: "test".into(),
+            verified_vm_identity: Some(super::identity_fingerprint("uuid-a|mac-a")),
+            verified_windows_identity: Some("windows-proof".into()),
+        };
+        assert!(profile.identity_provenance_matches(Some("uuid-a|mac-a")));
+        assert!(!profile.identity_provenance_matches(Some("uuid-b|mac-a")));
+        assert!(!profile.identity_provenance_matches(None));
+        profile.verified_windows_identity = None;
+        assert!(!profile.identity_provenance_matches(Some("uuid-a|mac-a")));
+        profile.verified_windows_identity = Some(String::new());
+        assert!(!profile.identity_provenance_matches(Some("uuid-a|mac-a")));
+    }
+
+    #[test]
+    fn a_fresh_profile_is_not_identity_proof_but_has_no_saved_vm_mismatch() {
+        let profile = super::ClientProfile {
+            schema: super::CLIENT_PROFILE_SCHEMA,
+            base_minecraft_version: "1.0.0".into(),
+            created_by: "test".into(),
+            verified_vm_identity: None,
+            verified_windows_identity: None,
+        };
+        assert!(profile.saved_vm_identity_matches(None));
+        assert!(!profile.identity_provenance_matches(Some("uuid-a|mac-a")));
+        assert_eq!(super::identity_fingerprint("abc"),
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+    }
+
 }

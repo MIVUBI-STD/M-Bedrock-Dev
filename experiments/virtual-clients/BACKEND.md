@@ -333,3 +333,21 @@ state is introduced. See the [Tauri channel API](https://v2.tauri.app/develop/ca
 Source implementation is not build, OOBE, transport-delivery or multiplayer proof.
 Detailed internal stages, measured read-performance, and target acceptance remain
 pending.
+
+## Readiness evidence consistency
+
+ClientProfile owns saved VM-fingerprint comparison and the stored identity
+milestone. Doctor and lifecycle admission use the same helper. Both saved proofs
+must be nonempty and the current VM identity must match; unknown/changed VM
+identity routes Doctor back to VERIFY_IDENTITIES. This checks current VM
+provenance, not live Windows identity: live Guest Agent checks remain required.
+An identity mismatch does not unlock first-time setup for an established client
+or relax daily startup. Manual VMware inspection may be needed before rechecking
+identities; do not silently recreate a client to fix its identity.
+
+UPDATE_STAGED now requires an installer file to exist and its saved version,
+platform, SHA-256 and signer metadata to match the validated current manifest.
+A missing installer or changed manifest returns UPDATE_AVAILABLE. This is
+staging metadata consistency, not a fresh cryptographic verification of bytes at
+check time. Stage download still verifies bytes/signature; self-application
+remains disabled.

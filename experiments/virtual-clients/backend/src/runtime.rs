@@ -14,7 +14,7 @@ use crate::{
     paths::runtime_root,
     policy::{engine_policy, EnginePolicy, MAX_VIRTUAL_CLIENTS},
     profile::{
-        current_base_vmx_path, load_client_profile, native_minecraft_profile, profile_status,
+        current_base_vmx_path, identity_fingerprint, load_client_profile, native_minecraft_profile, profile_status,
         require_base_matches_native, require_client_matches_native, write_client_profile,
         write_verified_base_profile, write_verified_client_identities, BaseProfile, BaseState,
         MinecraftProfile, ProfileParity, ProfileStatus,
@@ -30,7 +30,6 @@ use crate::{
 };
 use fs2::FileExt;
 use serde::Serialize;
-use sha2::{Digest, Sha256};
 use std::{
     fs::{self, File, OpenOptions},
     io, thread,
@@ -191,19 +190,11 @@ fn collect_lifecycle_facts(provider: &dyn Provider, client: ClientId) -> io::Res
     let profile = profile_status();
     let client_profile = load_client_profile(client).ok();
     let current_vm = provider.identity_key(client).ok().flatten();
-    let saved_vm_identity_matches = match client_profile
-        .as_ref()
-        .and_then(|profile| profile.verified_vm_identity.as_deref())
-    {
-        None => true,
-        Some(expected) => current_vm
-            .as_deref()
-            .is_some_and(|identity| identity_fingerprint(identity) == expected),
-    };
+    let saved_vm_identity_matches = client_profile.as_ref().map_or(true, |profile| {
+        profile.saved_vm_identity_matches(current_vm.as_deref())
+    });
     let identity_verified = client_profile.as_ref().is_some_and(|profile| {
-        profile.verified_vm_identity.is_some()
-            && profile.verified_windows_identity.is_some()
-            && saved_vm_identity_matches
+        profile.identity_provenance_matches(current_vm.as_deref())
     });
     let client_compatible = match (profile.native.as_ref(), client_profile.as_ref()) {
         (Some(native), Some(client)) => native.version == client.base_minecraft_version,
@@ -514,10 +505,6 @@ fn windows_identity_state(
     }
 
     IdentityState::Unique
-}
-
-fn identity_fingerprint(value: &str) -> String {
-    format!("{:x}", Sha256::digest(value.as_bytes()))
 }
 
 fn verify_identity_provenance(provider: &dyn Provider) -> io::Result<Vec<ClientStatus>> {

@@ -214,11 +214,37 @@ Implemented source in the current pass:
 - Activity cannot release busy or substitute for final result/reconciliation.
 - Fourteen new regression cases written (six Rust, eight frontend), not executed.
 
-Next bounded source work: reconcile Doctor's stored identity milestone with
-current VM identity evidence, and fix update staging state when its installer is
-missing. Do not relax exact Guest Agent compatibility without a proven protocol
+The subsequent readiness-consistency pass now reconciles Doctor's identity
+milestone with current VM identity and rejects missing/mismatched staged installers. Do not relax exact Guest Agent compatibility without a proven protocol
 matrix. Remaining detailed progress, performance and real-machine acceptance must
 be named explicitly rather than marked complete by source inspection.
+
+### Readiness consistency checkpoint (2026-10-06)
+
+Implemented:
+- ClientProfile owns saved VM identity comparison and verified-provenance presence.
+- Doctor and lifecycle admission consume that same helper.
+- Missing/currently changed VM identity prevents Doctor from claiming completed
+  identity setup; existing daily-start identity gates stay in place.
+- UPDATE_STAGED requires an existing installer and matching version/platform/hash/
+  signer metadata against the validated manifest.
+- Four regression tests added, unexecuted.
+- Separately, 15 focused Node checks passed on the unchanged frontend pure modules;
+  this does not replace the pending typecheck/build/Vitest/Rust gates.
+
+Remaining readiness gates:
+- Compile/typecheck/test the final combined source before claiming package readiness.
+- Perform target-machine OOBE, identity, account, recovery and multiplayer acceptance.
+- Measure status-read cost and VM memory/latency before efficiency claims.
+- Rich internal-stage progress is not implemented; command activity is implemented.
+- Exact Guest Agent release matching remains deliberate fail-closed behavior until
+  an explicit compatibility matrix proves a safe relaxation.
+- Base/checkpoint lineage currently lacks a unique same-version Base generation
+  binding; changing that persisted contract requires an explicit migration and
+  acceptance pass, not an untested metadata relabel.
+
+Do not call the whole system ready based on source commits alone. User requests
+end-to-end readiness; these unresolved gates are the remaining work, not PASS.
 
 ### Source-grounded findings (review baseline, before Stage 1 changes)
 

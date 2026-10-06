@@ -128,9 +128,16 @@ pub fn check_update() -> io::Result<UpdateCheck> {
     let latest = parse_version(&manifest.version)?;
     let current = parse_version(env!("CARGO_PKG_VERSION"))?;
     let staged = staged_update().ok().flatten();
-    let staged_matches = staged
-        .as_ref()
-        .is_some_and(|item| item.version == manifest.version);
+    let platform = manifest.platforms.get(current_platform()).ok_or_else(|| {
+        io::Error::new(io::ErrorKind::NotFound, "update manifest has no package for this platform")
+    })?;
+    validate_platform_manifest(&policy, &manifest.version, platform)?;
+    let staged_matches = staged.as_ref().is_some_and(|item| {
+        staged_update_matches(
+            item, &manifest.version, current_platform(), platform,
+            Path::new(&item.installer_path).is_file(),
+        )
+    });
 
     let state = if latest <= current {
         UpdateState::UpToDate
@@ -151,10 +158,26 @@ pub fn check_update() -> io::Result<UpdateCheck> {
         can_apply_now,
         self_update_enabled: policy.self_update_runtime_enabled,
         staged_path: staged
-            .filter(|item| staged_matches && Path::new(&item.installer_path).is_file())
+            .filter(|_| staged_matches)
             .map(|item| item.installer_path),
         reason,
     })
+}
+
+// Staged is a concrete downloaded artifact matching the current manifest,
+// not merely a leftover metadata record. This does not enable self-application.
+fn staged_update_matches(
+    staged: &StagedUpdate,
+    version: &str,
+    platform: &str,
+    manifest: &PlatformManifest,
+    installer_exists: bool,
+) -> bool {
+    installer_exists
+        && staged.version == version
+        && staged.platform == platform
+        && staged.sha256.eq_ignore_ascii_case(&manifest.sha256)
+        && staged.authenticode_thumbprint.eq_ignore_ascii_case(&manifest.authenticode_thumbprint)
 }
 
 pub fn stage_update() -> io::Result<StagedUpdate> {
@@ -688,4 +711,28 @@ mod tests {
         };
         assert!(validate_platform_manifest(&policy, "1.2.3", &wrong_asset).is_err());
     }
+    #[test]
+    fn staging_requires_an_existing_matching_installer() {
+        let manifest = PlatformManifest {
+            url: "https://github.com/example/installer.exe".into(),
+            sha256: "a".repeat(64),
+            authenticode_thumbprint: "b".repeat(40),
+        };
+        let staged = super::StagedUpdate {
+            version: "1.2.3".into(),
+            platform: "windows-x86_64".into(),
+            installer_path: "installer.exe".into(),
+            sha256: "A".repeat(64),
+            authenticode_thumbprint: "B".repeat(40),
+        };
+        assert!(super::staged_update_matches(&staged, "1.2.3", "windows-x86_64", &manifest, true));
+        assert!(!super::staged_update_matches(&staged, "1.2.3", "windows-x86_64", &manifest, false));
+        assert!(!super::staged_update_matches(&staged, "1.2.4", "windows-x86_64", &manifest, true));
+        assert!(!super::staged_update_matches(&staged, "1.2.3", "macos", &manifest, true));
+        let changed_hash = PlatformManifest { sha256: "c".repeat(64), ..manifest.clone() };
+        assert!(!super::staged_update_matches(&staged, "1.2.3", "windows-x86_64", &changed_hash, true));
+        let changed_signer = PlatformManifest { authenticode_thumbprint: "d".repeat(40), ..manifest };
+        assert!(!super::staged_update_matches(&staged, "1.2.3", "windows-x86_64", &changed_signer, true));
+    }
+
 }

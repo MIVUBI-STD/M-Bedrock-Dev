@@ -1,6 +1,43 @@
 ## 2026-10-06 — Virtual Clients action admission and payload validation
 
 
+## Virtual Clients readiness consistency — source implementation (2026-10-06)
+
+Baseline: Experimental `a107b7d86d1728975c374b6ecc9f4d73e566ad82`.
+Context: REMOTE_GITHUB. Source-only, skip-ci.
+
+ClientProfile now owns saved VM fingerprint matching and the stored provenance
+milestone. Doctor and runtime use the same predicate. A missing, empty or
+current-VM-mismatched proof cannot count as completed identity setup. The SHA-256
+fingerprint algorithm and persisted profile schemas remain unchanged.
+
+Staged update reporting now validates the platform manifest and requires an
+existing installer whose saved version/platform/hash/signer metadata matches.
+Missing or stale metadata no longer reports UPDATE_STAGED. Download signature
+verification remains in stage_update; check_update does not rehash/reverify bytes.
+Self-update remains disabled.
+
+Four regressions written (two profile, one Doctor routing, one staging matrix).
+
+Focused execution evidence: Node 24.19.0 ran an isolated node:test harness against
+the five unchanged TypeScript module sources at baseline a107b7d: view-model.ts,
+setupFlow.ts, operationProgress.ts, contracts.ts, and payloadValidation.ts.
+Result: 15 checks passed, 0 failed, 0 skipped. Coverage: first-boot action choice,
+blocked-setup no-fallback, running Open, legacy response behavior, honest naming,
+setup guidance, suspended Stop, progress schema/phase and terminal semantics,
+action invariants, optional setup availability, complete client lists, envelope
+validation, and numeric policy validation. This was focused module execution,
+not the repository Vitest suite, typechecking, Svelte rendering, or Tauri IPC.
+No dependencies were installed and no Codex/Work task or CI run was created.
+Rust (cargo/rustc) and frontend check tools (tsc/svelte-check/Vitest) were not
+available in the checked execution environment.
+
+NOT RUN: Cargo fmt/check/test, frontend typecheck/build/Vitest, VM identity-change
+recovery on a target machine, or update download/installer tests. This remains
+source implementation, not system-ready evidence.
+
+
+
 ## Virtual Clients first boot and command activity — source implementation (2026-10-06)
 
 Baseline: Experimental `022c0fa049d07e4b47f7156fdb6ad3f595bea5e6`.
