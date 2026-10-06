@@ -20,6 +20,11 @@ if ($InstallerSha256 -notmatch '^[A-Fa-f0-9]{64}$') {
   throw 'Installer SHA-256 is invalid.'
 }
 
+$thumbprint = $AuthenticodeThumbprint.Replace(' ', '').ToUpperInvariant()
+if ($thumbprint -notmatch '^[A-F0-9]{40}$') {
+  throw 'Authenticode certificate thumbprint is invalid.'
+}
+
 $policyPath = Join-Path $PSScriptRoot 'release-channel.json'
 $policy = Get-Content -LiteralPath $policyPath -Raw | ConvertFrom-Json
 
@@ -42,31 +47,6 @@ if ($policy.selfUpdateRuntimeEnabled -ne $false) {
   throw 'Runtime self-update activation requires a separate reviewed change.'
 }
 
-$thumbprint = $AuthenticodeThumbprint.Replace(' ', '').ToUpperInvariant()
-if ($thumbprint -notmatch '^[A-F0-9]{40}$tag = "$($policy.releaseTagPrefix)$Version"
-$assetUrl = "https://github.com/$($policy.repository)/releases/download/$tag/$([Uri]::EscapeDataString($InstallerName))"
-
-$manifest = [ordered]@{
-  version = $Version
-  platforms = [ordered]@{
-    $policy.platform = [ordered]@{
-      authenticodeThumbprint = $thumbprint
-      url = $assetUrl
-      sha256 = $InstallerSha256.ToLowerInvariant()
-    }
-  }
-}
-
-$parent = Split-Path -Parent $OutputPath
-if ($parent) {
-  New-Item -ItemType Directory -Path $parent -Force | Out-Null
-}
-
-$manifest | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $OutputPath -Encoding utf8
-) {
-  throw 'Authenticode certificate thumbprint is invalid.'
-}
-
 $tag = "$($policy.releaseTagPrefix)$Version"
 $assetUrl = "https://github.com/$($policy.repository)/releases/download/$tag/$([Uri]::EscapeDataString($InstallerName))"
 
@@ -74,7 +54,7 @@ $manifest = [ordered]@{
   version = $Version
   platforms = [ordered]@{
     $policy.platform = [ordered]@{
-      signature = $signature
+      authenticodeThumbprint = $thumbprint
       url = $assetUrl
       sha256 = $InstallerSha256.ToLowerInvariant()
     }
