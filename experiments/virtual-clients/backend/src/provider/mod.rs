@@ -401,7 +401,9 @@ pub(crate) fn host_working_sets_mb() -> Vec<(ClientId, u64)> {
 
 #[cfg(test)]
 mod tests {
-    use super::{guest_tools_state_ready, listed_as_running, parse_guest_ip, snapshot_list_contains};
+    use super::{
+        guest_tools_state_ready, listed_as_running, parse_guest_ip, snapshot_list_contains,
+    };
 
     #[test]
     fn detects_running_vm_from_vmrun_list() {
