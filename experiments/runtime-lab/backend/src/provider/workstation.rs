@@ -1,5 +1,5 @@
 use super::{
-    apply_client_policy, base_vmx_path, client_vmx_path, command_output, ensure_parent, has_suspend_state,
+    apply_virtual_hardware_policy, base_vmx_path, client_vmx_path, command_output, ensure_parent, has_suspend_state,
     host_working_set_mb, listed_as_running, read_vmx_memory, read_vmx_value,
     promote_staging_vm, remove_vm_container, snapshot_list_contains, staging_client_vmx_path,
     wait_for_state, MemoryMode, Provider, READY_SNAPSHOT,
@@ -118,7 +118,7 @@ impl Provider for VmwareWorkstationProvider {
             return Err(error);
         }
 
-        if let Err(error) = apply_client_policy(&staging) {
+        if let Err(error) = apply_virtual_hardware_policy(&staging) {
             remove_vm_container(&staging);
             return Err(error);
         }
