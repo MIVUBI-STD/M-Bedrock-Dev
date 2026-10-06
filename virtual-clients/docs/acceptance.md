@@ -141,6 +141,43 @@ Required observations:
 - reprovision affects only the selected fully stopped Virtual;
 - rollback failures are surfaced explicitly.
 
+## Minecraft auto-launch acceptance
+
+Daily client lifecycle now treats a usable Virtual as VM + Minecraft, while
+keeping those responsibilities separate internally.
+
+Required proof:
+- `start-client` and batch `start` start/resume the VM, verify Guest Agent /
+  lineage / Windows identity, request Minecraft Education launch, then open the
+  VM console window;
+- Minecraft launch is idempotent: if Minecraft is already running, no second
+  Minecraft process/window is created;
+- Resume preserves an already-running Minecraft process and launches it only
+  when it is absent;
+- Restart and QA_READY reset wait for guest compatibility, launch Minecraft and
+  reopen the VM console;
+- first-time `start-setup` does NOT auto-launch Minecraft during Windows OOBE;
+- launch failure leaves the verified VM running and reports specifically that
+  Minecraft could not be opened; it must not roll the VM back merely because
+  the guest application failed;
+- console-open failure after successful launch reports that VM + Minecraft are
+  running but the client window could not be opened;
+- a running VM with `minecraftRunning=false` is presented as Minecraft closed
+  and offers Launch Minecraft; `minecraftRunning=true` is presented as
+  Minecraft ready;
+- Guest Agent protocol v2 is required for launch capability. Protocol v1 remains
+  status-readable for diagnosis/migration but is not sufficient for a current
+  Base/client lineage;
+- `POST /minecraft/launch` accepts no executable, path, command or arguments
+  from the host and remains authenticated with the existing per-VM token;
+- launch waits are bounded and an absent Start-menu/App identity produces a
+  recoverable error rather than arbitrary shell execution;
+- normal launch never automates Microsoft/Minecraft account sign-in and never
+  reads account/session secrets.
+
+Record actual Minecraft Education process/AppID behavior on the canonical
+Windows image before broadening any process matching or launch fallback.
+
 ## Window Layout acceptance
 
 After Native and Virtual-01/02/03 are open, verify the desktop orchestration
