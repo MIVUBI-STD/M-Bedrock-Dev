@@ -99,6 +99,26 @@ planning/workspace   → current work/execution state, never docs
 
 A document that is not routed by its domain README is invalid. Broad-scanning a domain is a fallback for diagnosis of the documentation system itself, not normal product work.
 
+## Section-level retrieval
+
+Large canonical documents remain single physical owners. Their H2 (`##`) headings are indexed as DERIVED Catalog resources:
+
+```text
+physical document
+→ H2 section resources
+→ Graph DERIVED_FROM parent
+→ Retrieval
+```
+
+Example:
+
+```text
+document.analysis.mandatory-audit-procedure
+└─ document.analysis.mandatory-audit-procedure.section.prove
+```
+
+A section is a retrieval address, not a second documentation authority. Editing/renaming a heading may change the derived section ID; the parent document ID remains stable.
+
 ## Context policy
 
 1. Start here only when the domain is not already known.
