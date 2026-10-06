@@ -121,6 +121,11 @@ export interface AuditModelTaskPacket {
   readonly historyPressure?: number;
   readonly familyProofCriteria?: readonly string[];
   readonly proofStopRule?: string;
+  /**
+   * False means the model must keep resolving source/cross-domain/formal proof
+   * and must not hand the task to a local Minecraft/player test.
+   */
+  readonly runtimeRequired?: boolean;
   readonly allowedOutputs: readonly string[];
   readonly forbiddenActions: readonly string[];
   readonly stopCondition: string;
@@ -571,6 +576,8 @@ export function deriveAuditModelTaskPackets(input: {
           ],
           proofStopRule:
             navigation.proofStopRule,
+          runtimeRequired:
+            navigation.runtimeRequired === true,
           allowedOutputs: [
             "new selected-artifact proof",
             "cross-domain corroboration",
@@ -579,10 +586,19 @@ export function deriveAuditModelTaskPackets(input: {
             "formal contradiction proof",
             "evidence substitution that removes runtime need",
             "PROVEN-ready causal resolution",
-            "narrow runtime proof request only after earlier routes are exhausted",
+            ...(navigation.runtimeRequired === true
+              ? [
+                  "exactly one narrow runtime proof request after earlier routes are exhausted",
+                ]
+              : []),
           ],
           forbiddenActions: [
             "skip directly to runtime while an earlier navigation route remains applicable",
+            ...(navigation.runtimeRequired === true
+              ? []
+              : [
+                  "request a local Minecraft/player test while runtimeRequired=false",
+                ]),
             "invent evidence",
             "infer unresolved evidence contents",
             "change severity",
@@ -590,7 +606,9 @@ export function deriveAuditModelTaskPackets(input: {
             "use historical/stale map behavior as current gameplay authority",
           ],
           stopCondition:
-            "Stop immediately when universal minimum proof and every applicable family saturation criterion are grounded with counter-proof cleared. Otherwise continue only on unsatisfied criteria. Request exactly one runtime observation only after all applicable non-runtime criteria/routes are exhausted.",
+            navigation.runtimeRequired === true
+              ? "Stop immediately when universal minimum proof and every applicable family saturation criterion are grounded with counter-proof cleared. If non-runtime proof still cannot decide the explicitly runtime-native claim, request exactly one narrow deciding runtime observation."
+              : "Keep resolving selected-artifact, cross-domain, or formal proof until the claim is decided or the evidence model itself is shown insufficient. Do not request Minecraft/player testing merely to confirm a source-decidable claim.",
         };
       });
 
