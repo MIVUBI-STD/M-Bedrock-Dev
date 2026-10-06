@@ -108,7 +108,7 @@ const flows: Record<SetupAction, SetupExperience> = {
       "Use Start first-time setup on each virtual client; its VMware window opens for Windows setup.",
       "Complete Windows first-run setup in each client if Windows asks.",
       "Inside each client, double-click Enable Virtual Clients Launcher on the Windows desktop once.",
-      "Sign out and back in, then keep all three clients running together and use Check clients after Windows setup completes.",
+      "Keep all three clients running together, then use Check clients after Windows setup completes.",
     ],
   },
   CREATE_READY_SNAPSHOTS: {
