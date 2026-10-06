@@ -595,9 +595,7 @@ mod tests {
         let base = root.join("Base.vmx");
         fs::write(
             &base,
-            format!(
-                "{GUEST_TOKEN_KEY} = \"{inherited}\"\n{BASE_STATE_KEY} = \"FINALIZED\"\n"
-            ),
+            format!("{GUEST_TOKEN_KEY} = \"{inherited}\"\n{BASE_STATE_KEY} = \"FINALIZED\"\n"),
         )
         .unwrap();
 

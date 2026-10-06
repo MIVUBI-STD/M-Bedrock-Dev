@@ -1296,7 +1296,6 @@ impl VirtualClients {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::{classify_identity_state, guest_probe_error_is_terminal};
@@ -1311,7 +1310,9 @@ mod tests {
             io::ErrorKind::PermissionDenied,
             io::ErrorKind::Other,
         ] {
-            assert!(guest_probe_error_is_terminal(&io::Error::new(kind, "terminal")));
+            assert!(guest_probe_error_is_terminal(&io::Error::new(
+                kind, "terminal"
+            )));
         }
 
         for kind in [
@@ -1320,7 +1321,9 @@ mod tests {
             io::ErrorKind::WouldBlock,
             io::ErrorKind::NotConnected,
         ] {
-            assert!(!guest_probe_error_is_terminal(&io::Error::new(kind, "retry")));
+            assert!(!guest_probe_error_is_terminal(&io::Error::new(
+                kind, "retry"
+            )));
         }
     }
 

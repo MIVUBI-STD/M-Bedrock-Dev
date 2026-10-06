@@ -252,8 +252,8 @@ pub fn doctor() -> DoctorReport {
 #[cfg(test)]
 mod tests {
     use super::{
-        recommended_by_cpu, recommended_by_memory, schema_allows_provisioning,
-        select_setup_action, DoctorClient, SetupAction,
+        recommended_by_cpu, recommended_by_memory, schema_allows_provisioning, select_setup_action,
+        DoctorClient, SetupAction,
     };
     use crate::{
         profile::ProfileParity,
