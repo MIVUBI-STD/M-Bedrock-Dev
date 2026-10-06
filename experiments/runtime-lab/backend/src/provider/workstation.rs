@@ -161,6 +161,21 @@ impl Provider for VmwareWorkstationProvider {
         read_vmx_memory(&vmx)
     }
 
+    fn guest_tools_ready(&self, client: ClientId) -> io::Result<Option<bool>> {
+        let vmx = self.require_client(client)?;
+        if !self.running(&vmx)? {
+            return Ok(Some(false));
+        }
+
+        match command_output(
+            self.require_vmrun()?,
+            ["-T", "ws", "checkToolsState", vmx.to_string_lossy().as_ref()],
+        ) {
+            Ok(state) => Ok(Some(state.to_ascii_lowercase().contains("running"))),
+            Err(_) => Ok(None),
+        }
+    }
+
     fn identity_key(&self, client: ClientId) -> io::Result<Option<String>> {
         let vmx = self.require_client(client)?;
         let uuid = read_vmx_value(&vmx, "uuid.bios")?;
