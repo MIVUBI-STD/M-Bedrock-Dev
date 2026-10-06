@@ -269,7 +269,7 @@
         layout: preference.layout,
         displayIndex: selectedDisplay.index,
         mainWindow: preference.layout === "FOCUS" ? preference.mainWindow : null,
-      });
+      }, preference.overlay);
       if (result.arranged.length === 0) {
         throw new BackendBridgeError("WINDOWS_NOT_FOUND", "No Minecraft client windows are currently open.", true);
       }
