@@ -198,3 +198,10 @@ Unknown/newer schema must not be silently parsed as current.
 8. What orphan resources are enumerated?
 9. How are old schema versions migrated?
 10. Can reconnect resurrect stale round/session state?
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [Persistence](../../engine/knowledge/world-engine/persistence-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
