@@ -39,6 +39,37 @@ if (existsSync(catalogPath)) {
   if (!sameSet(resource.lifecycle?.enum ?? [], expectedLifecycle)) {
     failures.push("Resource Catalog lifecycle vocabulary drift.");
   }
+
+  const vocabularies = [
+    ["Resource Class", expectedClasses],
+    ["Document Role", expectedRoles],
+    ["Authority", expectedAuthorities],
+    ["Lifecycle", expectedLifecycle],
+  ];
+
+  for (let leftIndex = 0; leftIndex < vocabularies.length; leftIndex += 1) {
+    const [leftName, leftValues] = vocabularies[leftIndex];
+    for (
+      let rightIndex = leftIndex + 1;
+      rightIndex < vocabularies.length;
+      rightIndex += 1
+    ) {
+      const [rightName, rightValues] = vocabularies[rightIndex];
+      const overlap = leftValues.filter((value) =>
+        rightValues.includes(value)
+      );
+      if (overlap.length > 0) {
+        failures.push(
+          "Knowledge architecture vocabularies overlap: " +
+            leftName +
+            " / " +
+            rightName +
+            " -> " +
+            overlap.join(", "),
+        );
+      }
+    }
+  }
 }
 
 if (existsSync(graphPath)) {
