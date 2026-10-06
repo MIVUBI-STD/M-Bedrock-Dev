@@ -1,8 +1,27 @@
 # Development Operations
 
-## Command authority
+## Remote GitHub operating mode
 
-`DEV.cmd` is the sole repository-level developer command surface.
+The primary ChatGPT development mode is **REMOTE_GITHUB**.
+
+```text
+GitHub ref / exact source
+→ identify canonical owner
+→ minimum source reads
+→ diagnose first wrong owner
+→ bounded repository mutation
+→ exact-head source/static verification
+→ explicit higher-context residue only when inherently required
+→ STOP
+```
+
+A local checkout, Node installation, npm install, `npm run check`, Vitest, TypeScript execution, or `DEV.cmd` is **not required** to complete normal remote repository work.
+
+Remote completion must state its proof ceiling honestly. Source/static claims may close remotely. Claims about compiler execution, tests actually passing, archive execution, Minecraft import, or gameplay remain unclaimed unless matching execution evidence exists.
+
+## Optional local developer commands
+
+`DEV.cmd` is retained only as a convenience for developers who intentionally use a local Windows checkout:
 
 ```text
 DEV.cmd setup
@@ -14,9 +33,7 @@ DEV.cmd inspect <artifact>
 DEV.cmd finalize-local
 ```
 
-It delegates to `tooling/windows-toolchain/dev.ps1`. Internal package scripts remain implementation details.
-
-`DEV.cmd doctor` checks the exact pinned Node/npm developer toolchain, PowerShell, Git/branch context, dependency lock state, installed dependencies, and local workspace shape without owning product semantics.
+These commands are not ChatGPT workflow authority and never gate remote GitHub completion.
 
 ## Toolchain authority
 
@@ -26,17 +43,18 @@ Do not require global TypeScript/Vitest/build tools when package-managed version
 
 ## Verification lanes
 
-Use targeted proof during development. Integrated repository verification is a checkpoint, not an inner-loop substitute.
+Use the strongest evidence available for the exact claim without turning a higher execution context into a mandatory dependency.
 
 ```text
-policy/docs change      → structural review
-TypeScript owner        → typecheck + targeted test
-archive/repair owner    → targeted fixture tests
-cross-owner checkpoint  → module shape + dependency graph + integrated Verify
-real artifact behavior  → LOCAL_ARTIFACT
-Minecraft import/open   → LOCAL_MINECRAFT
-gameplay/runtime        → LIVE_MINECRAFT
+policy/docs change      → REMOTE_GITHUB structural/source review
+source contract         → REMOTE_GITHUB exact-head source + affected tests/contracts review
+executed typecheck/test → optional local or exact-head CI evidence
+artifact execution      → LOCAL_ARTIFACT only when inherently required
+Minecraft import/open   → LOCAL_MINECRAFT only when inherently required
+gameplay/runtime        → LIVE_MINECRAFT only when inherently required
 ```
+
+Remote source completion and executable validation are different proof levels. Missing optional executable evidence must be reported as a proof ceiling, not converted into a requirement to move the task to a local PC.
 
 ## Distribution boundary
 
@@ -64,11 +82,11 @@ The audit is intentionally non-blocking. A zero-inbound file or apparently unuse
 
 Promote a hygiene rule into `verify:repository` only after the repository baseline proves that the rule has low false-positive risk.
 
-## Local readiness gate
+## Optional local readiness
 
-`DEV.cmd finalize-local` runs `npm run verify:ready`, combining blocking repository/source verification with the source-hygiene report.
+For developers who choose a local checkout, `DEV.cmd finalize-local` may run the repository's executable verification suite.
 
-It intentionally does not require a clean Git working tree. Repository readiness and commit timing remain separate developer concerns.
+This is an optional stronger-proof path. It does not define whether ChatGPT remote GitHub work is complete, and remote work must never be left artificially pending solely because this local command was not executed.
 
 ## Dependency execution policy
 
