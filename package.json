@@ -46,7 +46,8 @@
     "verify:local-ready": "npm run verify:full && npm run audit:source && npm run audit:api",
     "verify:remote-workflow-policy": "node tooling/repository/verify-remote-workflow-policy.mjs",
     "verify:documentation-routing": "node tooling/repository/verify-documentation-routing.mjs",
-    "verify:knowledge-architecture": "node tooling/repository/verify-knowledge-architecture.mjs"
+    "verify:knowledge-architecture": "node tooling/repository/verify-knowledge-architecture.mjs",
+    "retrieve:repository": "tsx tooling/repository/retrieve.ts"
   },
   "dependencies": {
     "@8crafter/leveldb-zlib": "1.6.0",
