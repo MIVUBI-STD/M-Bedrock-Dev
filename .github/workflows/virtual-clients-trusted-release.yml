@@ -232,7 +232,14 @@ jobs:
           if (@(Get-ChildItem $uiAssets -Filter '*.js' -File).Count -lt 1) { throw 'Virtual Clients UI JavaScript bundle missing after signed install.' }
 
           & $appExe --probe
-          if ($LASTEXITCODE -ne 0) { throw 'Installed desktop host frontend/backend probe failed.' }
+          if ($LASTEXITCODE -ne 0) {
+            $hostLog = Join-Path $env:LOCALAPPDATA 'M-Bedrock\VirtualClients\desktop-host-error.log'
+            if (Test-Path -LiteralPath $hostLog -PathType Leaf) {
+              Write-Host 'Desktop host error log:'
+              Get-Content -LiteralPath $hostLog | Write-Host
+            }
+            throw 'Installed desktop host frontend/backend probe failed.'
+          }
 
           & $hostExe help | Out-Host
           if ($LASTEXITCODE -ne 0) { throw 'Installed CLI executable smoke test failed.' }
