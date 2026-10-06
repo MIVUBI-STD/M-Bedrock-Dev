@@ -91,7 +91,7 @@
       "type": "DEV_NOTE",
       "title": "Explicitly Own the Gauntlet World Gamerule Baseline",
       "problem": "The production world setup explicitly normalizes only a limited gamerule set. The map has scripted combat, building/breaking and custom recovery, so leaving relevant world-interaction rules implicit increases the chance that imported/world-edited state changes gameplay unexpectedly.",
-      "action": "Define one canonical Gauntlet world-baseline owner and explicitly review/set every gameplay-relevant gamerule required for deterministic operation, including mob griefing, mob/entity/tile drops, fire tick and projectile block breaking where compatible with authored mechanics. Re-verify the baseline at safe lifecycle boundaries such as world bootstrap/session start rather than relying on prior world state. Keep doImmediateRespawn only after the Level 6 recovery race is fixed and verified.",
+      "action": "Review and explicitly set every Gauntlet-specific gameplay-relevant gamerule in the map's existing world-setup owner, including mob griefing, mob/entity/tile drops, fire tick and projectile block breaking where compatible with authored mechanics. Re-verify that same baseline at safe lifecycle boundaries such as world bootstrap/session start rather than relying on prior world state. Do not create a second gamerule authority. Keep doImmediateRespawn only after the Level 6 recovery race is fixed and verified.",
       "evidence": {
         "configuredRules": [
           "keepInventory",
