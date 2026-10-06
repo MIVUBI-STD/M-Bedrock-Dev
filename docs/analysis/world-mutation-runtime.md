@@ -215,3 +215,12 @@ block exists
 Door/gate/trapdoor/powered state may affect player and entity routes. Reward containers must reconcile with economy/idempotency so restoration cannot recreate already-consumed rewards.
 
 World-object mutation can invalidate automation/topology assumptions and must therefore trigger the appropriate downstream revalidation.
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [World Mutation](../../engine/knowledge/world-engine/world-mutation-bedrock.json)
+- [Interactive Blocks](../../engine/knowledge/player-runtime/interactive-blocks-bedrock.json)
+- [Environment Hazards](../../engine/knowledge/gameplay-runtime/environment-hazards-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
