@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project://schemas/knowledge-architecture/resource-catalog/v1",
+  "title": "M-Bedrock-Dev Resource Catalog v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "resources"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/resource"
+      }
+    }
+  },
+  "$defs": {
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "class",
+        "domain",
+        "authority",
+        "path",
+        "lifecycle"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(document|knowledge|source|reliability|workflow|schema)\\.[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+        },
+        "class": {
+          "enum": [
+            "DOCUMENT",
+            "KNOWLEDGE",
+            "SOURCE",
+            "RELIABILITY",
+            "WORKFLOW",
+            "SCHEMA"
+          ]
+        },
+        "domain": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "role": {
+          "enum": [
+            "ROUTER",
+            "WORKFLOW",
+            "CONTRACT",
+            "REFERENCE",
+            "ARCHITECTURE",
+            "GUIDE"
+          ]
+        },
+        "authority": {
+          "enum": [
+            "CANONICAL",
+            "REFERENCE",
+            "HISTORICAL",
+            "DERIVED"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lifecycle": {
+          "enum": [
+            "ACTIVE",
+            "RETIRED"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "class": {
+                "const": "DOCUMENT"
+              }
+            },
+            "required": [
+              "class"
+            ]
+          },
+          "then": {
+            "required": [
+              "role"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "class": {
+                "not": {
+                  "const": "DOCUMENT"
+                }
+              }
+            },
+            "required": [
+              "class"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "role"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}
