@@ -48,12 +48,13 @@ fn validate_request(request: &WindowLayoutRequest) -> io::Result<()> {
     Ok(())
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct Rect {
-    x: i32,
-    y: i32,
-    width: i32,
-    height: i32,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Rect {
+    pub x: i32,
+    pub y: i32,
+    pub width: i32,
+    pub height: i32,
 }
 
 fn calculate_slots(layout: &WindowLayout, area: Rect, count: usize) -> Vec<Rect> {
@@ -179,6 +180,18 @@ struct WindowDiscovery {
     missing: Vec<String>,
 }
 
+#[derive(Debug, Clone)]
+pub struct ArrangedSlot {
+    pub id: String,
+    pub rect: Rect,
+}
+
+#[derive(Debug)]
+pub struct ArrangementExecution {
+    pub result: WindowArrangementResult,
+    pub slots: Vec<ArrangedSlot>,
+}
+
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct WindowMove {
@@ -286,7 +299,7 @@ foreach ($move in $moves) {
 }
 
 #[cfg(target_os = "windows")]
-pub fn arrange(request: WindowLayoutRequest) -> io::Result<WindowArrangementResult> {
+pub fn arrange_with_slots(request: WindowLayoutRequest) -> io::Result<ArrangementExecution> {
     validate_request(&request)?;
     let mut discovery = discover_windows(request.display_index)?;
     if matches!(request.layout, WindowLayout::Focus) {
@@ -310,13 +323,26 @@ pub fn arrange(request: WindowLayoutRequest) -> io::Result<WindowArrangementResu
     }).collect();
     apply_window_moves(&moves)?;
 
-    Ok(WindowArrangementResult {
-        schema: 2,
-        layout: request.layout,
-        display_index: request.display_index,
-        arranged: discovery.windows.into_iter().map(|window| window.id).collect(),
-        missing: discovery.missing,
+    let arranged: Vec<String> = discovery.windows.iter().map(|window| window.id.clone()).collect();
+    let arranged_slots = discovery.windows.iter().zip(slots.iter()).map(|(window, rect)| ArrangedSlot {
+        id: window.id.clone(),
+        rect: *rect,
+    }).collect();
+    Ok(ArrangementExecution {
+        result: WindowArrangementResult {
+            schema: 2,
+            layout: request.layout,
+            display_index: request.display_index,
+            arranged,
+            missing: discovery.missing,
+        },
+        slots: arranged_slots,
     })
+}
+
+#[cfg(target_os = "windows")]
+pub fn arrange(request: WindowLayoutRequest) -> io::Result<WindowArrangementResult> {
+    arrange_with_slots(request).map(|execution| execution.result)
 }
 
 #[cfg(not(target_os = "windows"))]
