@@ -17,6 +17,7 @@ ANALYSIS / GRAPH          → [analysis/](./analysis/README.md)
 REPAIR / MUTATION         → [repair/](./repair/README.md)
 VALIDATION / EVIDENCE     → [validation/](./validation/README.md)
 SYSTEM / OWNERSHIP        → [system/](./system/README.md)
+EXAMPLES / REFERENCE      → [examples/](./examples/README.md)
 ```
 
 Core system documents answer different questions:
