@@ -34,7 +34,9 @@ pub struct ProviderDiagnostics {
 pub struct VirtualHardwareDiagnostics {
     pub id: &'static str,
     pub network_mode: Option<String>,
+    pub network_requires_acceptance: bool,
     pub graphics_3d_enabled: Option<bool>,
+    pub graphics_policy_ready: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -58,10 +60,16 @@ pub fn collect(runtime: RuntimeStatus) -> io::Result<DiagnosticsReport> {
     let virtual_hardware = if let Some(provider) = provider.as_ref() {
         ClientId::VIRTUAL
             .into_iter()
-            .map(|client| VirtualHardwareDiagnostics {
-                id: client.as_str(),
-                network_mode: provider.network_mode(client).ok().flatten(),
-                graphics_3d_enabled: provider.graphics_3d_enabled(client).ok().flatten(),
+            .map(|client| {
+                let network_mode = provider.network_mode(client).ok().flatten();
+                let graphics_3d_enabled = provider.graphics_3d_enabled(client).ok().flatten();
+                VirtualHardwareDiagnostics {
+                    id: client.as_str(),
+                    network_requires_acceptance: network_mode.is_some(),
+                    network_mode,
+                    graphics_policy_ready: graphics_3d_enabled == Some(true),
+                    graphics_3d_enabled,
+                }
             })
             .collect()
     } else {
@@ -70,7 +78,9 @@ pub fn collect(runtime: RuntimeStatus) -> io::Result<DiagnosticsReport> {
             .map(|client| VirtualHardwareDiagnostics {
                 id: client.as_str(),
                 network_mode: None,
+                network_requires_acceptance: false,
                 graphics_3d_enabled: None,
+                graphics_policy_ready: false,
             })
             .collect()
     };
