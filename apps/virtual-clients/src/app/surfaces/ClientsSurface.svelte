@@ -3,6 +3,7 @@
   import {
     actionForClient,
     blockerLabel,
+    hasStoppableClient,
     clientDisplayName,
     primaryClientAction,
     recoveryLabel,
@@ -30,6 +31,7 @@
   export let onReprovision: (client: ClientId) => void;
   export let onSupport: () => void;
   export let onVerifyIdentities: () => void | Promise<void>;
+  $: canStopAll = hasStoppableClient(virtuals, actions);
 </script>
 
 <section class="hero compact">
@@ -79,7 +81,7 @@
     <button class="secondary" disabled={Boolean(busy) || runningVirtuals === 0} on:click={onArrange}>
       {busy === "arrange" ? "Arranging…" : "Arrange"}
     </button>
-    <button class="secondary" disabled={Boolean(busy) || runningVirtuals === 0} on:click={onStopAll}>
+    <button class="secondary" disabled={Boolean(busy) || !canStopAll} on:click={onStopAll}>
       {busy === "stop-all" ? "Stopping…" : "Stop all"}
     </button>
   </div>

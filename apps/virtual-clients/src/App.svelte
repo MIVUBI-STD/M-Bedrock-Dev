@@ -8,6 +8,8 @@
   import SetupSurface from "./app/surfaces/SetupSurface.svelte";
   import SupportSurface from "./app/surfaces/SupportSurface.svelte";
   import RecreateClientDialog from "./app/components/RecreateClientDialog.svelte";
+  import RestoreRecoveryPointDialog from "./app/components/RestoreRecoveryPointDialog.svelte";
+  import { settleMutation } from "./app/mutation.js";
   import SaveRecoveryPointDialog from "./app/components/SaveRecoveryPointDialog.svelte";
   import type {
     BasePreparationReport,
@@ -31,6 +33,8 @@
   let history: readonly OperationRecord[] = [];
   let update: UpdateCheck | undefined;
   let confirmReprovision: ClientStatus["id"] | undefined;
+  let confirmReset: ClientStatus["id"] | undefined;
+  let refreshFailed = false;
   let confirmSetReady: ClientStatus["id"] | undefined;
   let loading = true;
   let busy = "";
@@ -55,9 +59,8 @@
     page = next;
   }
 
-  async function refresh() {
+  async function loadState() {
     loading = true;
-    error = undefined;
     try {
       const [nextSnapshot, nextPolicy, nextActions, nextHistory] = await Promise.all([
         backend.snapshot(),
@@ -79,12 +82,26 @@
       if (!pageChosen) page = nextSnapshot.doctor.nextSetupAction === "READY" ? "clients" : "setup";
       if (page === "setup" && nextSnapshot.doctor.nextSetupAction === "READY" && pageChosen) page = "clients";
     } catch (value) {
-      error = presentRuntimeError(value);
       snapshot = undefined;
       basePreflight = undefined;
+      policy = undefined;
       actions = [];
+      history = [];
+      throw value;
     } finally {
       loading = false;
+    }
+  }
+
+  async function refresh() {
+    if (busy) return;
+    error = undefined;
+    refreshFailed = false;
+    try {
+      await loadState();
+    } catch (value) {
+      refreshFailed = true;
+      error = presentRuntimeError(value);
     }
   }
 
@@ -110,13 +127,18 @@
   }
 
   async function mutate(label: string, operation: () => Promise<unknown>) {
+    if (busy || loading) return;
     busy = label;
     error = undefined;
+    refreshFailed = false;
     try {
-      await operation();
-      await refresh();
-    } catch (value) {
-      error = presentRuntimeError(value);
+      const result = await settleMutation(operation, loadState);
+      refreshFailed = !result.refresh.ok;
+      if (!result.operation.ok) {
+        error = presentRuntimeError(result.operation.error);
+      } else if (!result.refresh.ok) {
+        error = presentRuntimeError(result.refresh.error);
+      }
     } finally {
       busy = "";
     }
@@ -212,6 +234,13 @@
     await mutate(`ready-${client}`, () => backend.setReady(client));
   }
 
+  async function resetConfirmed() {
+    const client = confirmReset;
+    if (!client || client === "Native" || busy || loading) return;
+    confirmReset = undefined;
+    await mutate(`reset-${client}`, () => backend.reset(client));
+  }
+
   async function reprovisionConfirmed() {
     const client = confirmReprovision;
     if (!client || client === "Native") return;
@@ -259,6 +288,15 @@
         onRetry={refresh}
         onSupport={() => selectPage("support")}
       />
+    {/if}
+
+    {#if refreshFailed}
+      <section class="notice" role="status">
+        <div>
+          <strong>Current client state could not be refreshed</strong>
+          <span>Client controls are hidden until Refresh succeeds. The operation error, if any, is shown above.</span>
+        </div>
+      </section>
     {/if}
 
     {#if arrangeMessage}
@@ -314,7 +352,7 @@
           onSuspend={(client) => mutate(`suspend-${client}`, () => backend.suspend(client))}
           onStop={(client) => mutate(`stop-${client}`, () => backend.stop(client))}
           onSetReady={(client) => { confirmSetReady = client; }}
-          onReset={(client) => mutate(`reset-${client}`, () => backend.reset(client))}
+          onReset={(client) => { confirmReset = client; }}
           onReprovision={(client) => { confirmReprovision = client; }}
           onSupport={() => selectPage("support")}
           onVerifyIdentities={() => mutate("verify-identities", backend.verifyIdentities)}
@@ -347,6 +385,15 @@
       {busy}
       onCancel={() => (confirmSetReady = undefined)}
       onConfirm={setReadyConfirmed}
+    />
+  {/if}
+
+  {#if confirmReset}
+    <RestoreRecoveryPointDialog
+      clientName={clientDisplayName(confirmReset)}
+      {busy}
+      onCancel={() => (confirmReset = undefined)}
+      onConfirm={resetConfirmed}
     />
   {/if}
 

@@ -126,7 +126,31 @@ Use [Development Discipline](../06-system/development-discipline.md):
 reuse existing owners, make the minimum complete change, and stop after proof.
 The items below are engineering findings and proposals, not gameplay bug reports.
 
-### Source-grounded findings
+### Stage 1 source implementation checkpoint (2026-10-06)
+
+The user subsequently authorized code changes and a commit to Experimental
+through the GitHub connector. No Codex/Work task, local build/test execution,
+or new CI run is authorized by that request.
+
+Stage 1 source changes now implement:
+- a shared production start-batch executor with one failure/rollback exit;
+- target preflight before changes, with per-target rechecks during execution;
+- responsibility tracking before provider start, including partial-start errors;
+- restoration of earlier batch changes without stopping pre-existing clients;
+- stopping a newly started/resumed client whose verification fails;
+- independent UUID/MAC collision checks without changing saved key format;
+- frontend state refresh after both success and failure, preserving the original
+  operation error and hiding controls if current state cannot be retrieved;
+- explicit restore-loss confirmation and Stop all support for suspended clients.
+
+Nine Rust regression cases and nine frontend regression cases were added.
+They are executable specifications, NOT executed PASS results.
+Current proof is recorded in [Current Validation](current-validation.md).
+
+Stage 1 remains pending execution verification. Stages 2–4 are not implemented.
+Do not automatically expand scope beyond this bounded source delivery.
+
+### Source-grounded findings (review baseline, before Stage 1 changes)
 
 1. **Incomplete batch failure cleanup.**
    `runtime.rs::start_targets` explicitly restores prior states for several
@@ -306,8 +330,9 @@ simultaneous players. Report this coverage limit explicitly.
 
 ### Delivery stop
 
-This documentation handoff is complete when its commit is verified on
-Experimental. It does not claim implementation, fresh test execution, live
-acceptance, or a free-usage guarantee. Further coding execution must respect the
-user's no-Codex/Work constraint and requires a supported, explicitly authorized
-route.
+The initial documentation handoff was committed as
+`b100769a9091790688bbc8dafd203ca20039c7b6`.
+The subsequent Stage 1 delivery stops after the source commit and remote content
+are verified on Experimental. Source delivery is not test, package, or live
+acceptance, and is not a free-usage guarantee. Respect the user's no-Codex/Work
+constraint; leave execution proof and Stages 2–4 explicitly pending.

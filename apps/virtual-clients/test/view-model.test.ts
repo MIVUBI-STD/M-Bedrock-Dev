@@ -3,6 +3,7 @@ import {
   actionForClient,
   actionLabel,
   blockerLabel,
+  hasStoppableClient,
   clientDisplayName,
   issueLabel,
   primaryClientAction,
@@ -11,7 +12,7 @@ import {
   stateLabel,
   updateLabel,
 } from "../src/view-model.js";
-import type { ClientLifecycleActions } from "../src/contracts.js";
+import type { ClientLifecycleActions, ClientStatus } from "../src/contracts.js";
 
 const allow = { allowed: true, blocker: null } as const;
 const deny = { allowed: false, blocker: "INVALID_STATE" } as const;
@@ -80,5 +81,34 @@ describe("Virtual Clients presentation projection", () => {
     expect(updateLabel("UP_TO_DATE")).toBe("Up to date");
     expect(updateLabel("UPDATE_AVAILABLE")).toBe("Update available");
     expect(updateLabel("UPDATE_STAGED")).toBe("Update ready to install");
+  });
+});
+
+describe("Stop all availability", () => {
+  const client = (state: ClientStatus["state"]): ClientStatus => ({
+    id: "Virtual-01",
+    native: false,
+    state,
+    readySnapshot: true,
+    memoryLimitMb: 4096,
+    hostWorkingSetMb: null,
+    guestToolsReady: null,
+    guestAgentReady: null,
+    guestAgentVersion: null,
+    minecraftVersion: null,
+    lineageParity: null,
+    versionParity: null,
+    vmIdentity: null,
+    windowsIdentity: null,
+  });
+
+  it("allows stopping when only suspended clients remain", () => {
+    expect(hasStoppableClient([client("SUSPENDED")], actions)).toBe(true);
+  });
+
+  it("does not enable stop for stopped clients or missing backend permission", () => {
+    expect(hasStoppableClient([client("STOPPED")], actions)).toBe(false);
+    expect(hasStoppableClient([client("RUNNING")], [{ ...actions[0], stop: deny }])).toBe(false);
+    expect(hasStoppableClient([client("SUSPENDED")], [])).toBe(false);
   });
 });

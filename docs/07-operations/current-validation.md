@@ -1,3 +1,54 @@
+## 2026-10-06 — Virtual Clients Stage 1 source reliability changes
+
+Branch: `Experimental`. Parent source:
+`b100769a9091790688bbc8dafd203ca20039c7b6`.
+
+Execution context: **REMOTE_GITHUB / SOURCE REVIEW ONLY**.
+Changes were prepared and published through the GitHub connector.
+No Codex/Work task, terminal session, build, typecheck, rustfmt, Vitest, Cargo
+test, new CI run, or VMware/Minecraft session was performed in this pass.
+
+Implemented source changes:
+- Production start orchestration delegates its mutation loop to
+  `execute_start_batch`, which is also used by deterministic fake-provider
+  regression cases.
+- Known target preconditions are checked before mutation; live checks remain
+  repeated per target under the existing operation lock.
+- Every returned error from the batch loop reaches one rollback path.
+  Targets are tracked before provider startup to cover partial-start failures.
+- Previously running clients are not added to rollback responsibility.
+  Earlier successful resumes restore to SUSPENDED; a newly started/resumed
+  client failing verification is stopped.
+- VM collision detection compares UUID and MAC independently, while retaining
+  the existing provenance serialization/fingerprint format.
+- UI mutation coordination refreshes actual backend state after either outcome,
+  retains the operation error if refresh also fails, and removes stale controls.
+- Restore requires an explicit loss-of-changes confirmation.
+- Stop all remains available for suspended clients when backend action
+  eligibility permits it.
+
+Regression specifications added (not executed):
+- Nine Rust tests: component-wise identity collisions/invalid values, later
+  admission failure, result-collection failure, protection of a pre-existing
+  running client, provider failure after mutation, incomplete rollback,
+  later invalid state, selected-client success, and failed-resume verification.
+- Nine frontend tests: five mutation/refresh outcomes, two Stop all cases,
+  and two restore disclosure/routing checks.
+- Restore routing tests are source assertions, not an interactive Svelte test.
+
+Required next proof when an execution route is authorized:
+- Backend Cargo check/test/fmt on the changed source.
+- Frontend typecheck, build, and Virtual Clients Vitest suite.
+- Interactive restore cancel/confirm and partial-failure UI reconciliation.
+- Target-machine startup/recovery, account persistence, and multiplayer
+  acceptance remain separate.
+
+Existing successful workflow results on ancestor `6e87cdf` do not validate
+this changed head. Do not describe this checkpoint as runtime-ready or fully
+tested. Continuation is in [Next Action](next-action.md).
+
+---
+
 ## 2026-10-05 — causal crosscheck and knowledge-loop hardening
 
 Source-reviewed on `Local` after Build & Decode runtime feedback exposed false-positive and cross-system blind spots.

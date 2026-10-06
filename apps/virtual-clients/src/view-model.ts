@@ -135,3 +135,16 @@ export function updateLabel(state: UpdateState): string {
   };
   return labels[state];
 }
+
+/** A suspended client is still eligible for Stop; use backend action authority. */
+export function hasStoppableClient(
+  clients: readonly ClientStatus[],
+  actions: readonly ClientLifecycleActions[],
+): boolean {
+  return clients.some(
+    (client) =>
+      !client.native &&
+      client.state !== "STOPPED" &&
+      actionForClient(actions, client.id)?.stop.allowed === true,
+  );
+}

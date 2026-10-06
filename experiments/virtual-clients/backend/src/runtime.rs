@@ -124,19 +124,25 @@ fn require_base_finalization_state(state: Option<BaseState>) -> io::Result<()> {
     ))
 }
 
+fn identity_components(value: &str) -> Option<(&str, &str)> {
+    let (uuid, mac) = value.split_once('|')?;
+    let (uuid, mac) = (uuid.trim(), mac.trim());
+    (!uuid.is_empty() && !mac.is_empty() && !mac.contains('|')).then_some((uuid, mac))
+}
+
 fn classify_identity_state<'a>(
     current: Option<&'a str>,
     peers: impl IntoIterator<Item = Option<&'a str>>,
 ) -> IdentityState {
-    let Some(current) = current else {
+    let Some((uuid, mac)) = current.and_then(identity_components) else {
         return IdentityState::Unknown;
     };
 
     for peer in peers {
-        let Some(peer) = peer else {
+        let Some((peer_uuid, peer_mac)) = peer.and_then(identity_components) else {
             return IdentityState::Unknown;
         };
-        if peer == current {
+        if uuid.eq_ignore_ascii_case(peer_uuid) || mac.eq_ignore_ascii_case(peer_mac) {
             return IdentityState::Duplicate;
         }
     }
@@ -308,6 +314,56 @@ fn with_rollback_context(error: io::Error, failed: &[&'static str]) -> io::Error
             failed.join(", ")
         ),
     )
+}
+
+// Shared by production startup and deterministic provider tests. Every failure
+// after the first mutation follows the same rollback path, including failures
+// in admission, compatibility verification, and result collection.
+fn execute_start_batch<T>(
+    provider: &dyn Provider,
+    targets: &[ClientId],
+    mut prepare: impl FnMut(ClientId, ClientState) -> io::Result<()>,
+    mut verify: impl FnMut(ClientId) -> io::Result<T>,
+) -> io::Result<Vec<T>> {
+    let mut changed = Vec::with_capacity(targets.len());
+    let outcome: io::Result<Vec<T>> = (|| {
+        let mut results = Vec::with_capacity(targets.len());
+        for &client in targets {
+            let original_state = provider.status(client)?;
+            validate_lifecycle_action(client, LifecycleAction::Start, original_state, false)?;
+            prepare(client, original_state)?;
+
+            if original_state != ClientState::Running {
+                // A provider may mutate the VM before returning a timeout/error.
+                // Record responsibility before calling it so that case is covered.
+                changed.push((client, original_state));
+                provider.start(client)?;
+            }
+            match verify(client) {
+                Ok(result) => results.push(result),
+                Err(error) => {
+                    // A newly started/resumed client that fails verification
+                    // must be stopped, not left live or saved as a bad resume.
+                    // Earlier successful resumes still return to Suspended.
+                    if original_state != ClientState::Running {
+                        if let Some((_, rollback_state)) = changed.last_mut() {
+                            *rollback_state = ClientState::Stopped;
+                        }
+                    }
+                    return Err(error);
+                }
+            }
+        }
+        Ok(results)
+    })();
+
+    match outcome {
+        Ok(results) => Ok(results),
+        Err(error) => {
+            let failed = restore_batch_state(provider, &changed);
+            Err(with_rollback_context(error, &failed))
+        }
+    }
 }
 
 fn guest_status_once(provider: &dyn Provider, client: ClientId) -> Option<GuestStatus> {
@@ -526,11 +582,15 @@ fn verify_identity_provenance(provider: &dyn Provider) -> io::Result<Vec<ClientS
 
     for left in 0..ClientId::VIRTUAL.len() {
         for right in (left + 1)..ClientId::VIRTUAL.len() {
-            if vm_identities[left].1 == vm_identities[right].1 {
+            if classify_identity_state(
+                Some(vm_identities[left].1.as_str()),
+                [Some(vm_identities[right].1.as_str())],
+            ) != IdentityState::Unique
+            {
                 return Err(io::Error::new(
                     io::ErrorKind::InvalidData,
                     format!(
-                        "{} and {} share the same VM identity",
+                        "{} and {} do not have independently unique VM UUID and MAC identities",
                         vm_identities[left].0.as_str(),
                         vm_identities[right].0.as_str()
                     ),
@@ -1347,8 +1407,8 @@ impl VirtualClients {
     }
 
     fn start_targets(&self, targets: Vec<ClientId>) -> io::Result<Vec<ClientStatus>> {
-        require_base_matches_native()?;
         let _lock = OperationLock::acquire()?;
+        require_base_matches_native()?;
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(
                 io::ErrorKind::NotFound,
@@ -1356,107 +1416,84 @@ impl VirtualClients {
             )
         })?;
 
-        let native_profile = native_minecraft_profile();
-        let target_count = targets.len();
-        let mut result = Vec::with_capacity(target_count);
-        let mut started_by_batch: Vec<(ClientId, ClientState)> = Vec::new();
-
-        for (index, client) in targets.into_iter().enumerate() {
+        // Reject known target errors before any VM is changed. Admission is
+        // repeated per target because provider/host state can change externally.
+        for &client in &targets {
             require_client_matches_native(client)?;
             require_verified_vm_identity(provider.as_ref(), client)?;
-            let original_state = provider.status(client)?;
             validate_lifecycle_action(
                 client,
                 LifecycleAction::Start,
-                original_state,
-                provider.has_ready(client).unwrap_or(false),
+                provider.status(client)?,
+                false,
             )?;
-
-            if original_state != ClientState::Running {
-                let live_pressure = current_host_pressure();
-                if !live_pressure.can_start_virtual {
-                    let rollback_failed = restore_batch_state(provider.as_ref(), &started_by_batch);
-                    let error = io::Error::new(
-                        io::ErrorKind::Other,
-                        format!(
-                            "host memory pressure became {:?} before starting {}",
-                            live_pressure.level,
-                            client.as_str()
-                        ),
-                    );
-                    return Err(with_rollback_context(error, &rollback_failed));
-                }
-            }
-
             if vm_identity_state(provider.as_ref(), client) == IdentityState::Duplicate {
-                let rollback_failed = restore_batch_state(provider.as_ref(), &started_by_batch);
-                let error = io::Error::new(
+                return Err(io::Error::new(
                     io::ErrorKind::InvalidData,
-                    format!("{} has duplicate VM identity", client.as_str()),
-                );
-                return Err(with_rollback_context(error, &rollback_failed));
-            }
-
-            if let Err(error) = provider.start(client) {
-                let rollback_failed = restore_batch_state(provider.as_ref(), &started_by_batch);
-                return Err(with_rollback_context(error, &rollback_failed));
-            }
-
-            if original_state != ClientState::Running {
-                started_by_batch.push((client, original_state));
-            }
-
-            if vm_identity_state(provider.as_ref(), client) == IdentityState::Duplicate {
-                let mut rollback_failed = Vec::new();
-                if provider.stop(client).is_err() {
-                    rollback_failed.push(client.as_str());
-                }
-                started_by_batch.retain(|(started, _)| *started != client);
-                rollback_failed.extend(restore_batch_state(provider.as_ref(), &started_by_batch));
-                let error = io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    format!(
-                        "{} received duplicate VM identity after start",
-                        client.as_str()
-                    ),
-                );
-                return Err(with_rollback_context(error, &rollback_failed));
-            }
-
-            if let Err(error) = wait_for_guest_compatibility(
-                provider.as_ref(),
-                client,
-                Duration::from_secs(90),
-                true,
-            ) {
-                if original_state == ClientState::Running {
-                    return Err(error);
-                }
-
-                let mut rollback_failed = Vec::new();
-                if provider.stop(client).is_err() {
-                    rollback_failed.push(client.as_str());
-                }
-                started_by_batch.retain(|(started, _)| *started != client);
-                rollback_failed.extend(restore_batch_state(provider.as_ref(), &started_by_batch));
-                return Err(with_rollback_context(error, &rollback_failed));
-            }
-
-            let working_sets = provider.host_working_sets_mb()?;
-            result.push(client_status(
-                provider.as_ref(),
-                &working_sets,
-                native_profile.as_ref(),
-                client,
-            )?);
-
-            if index + 1 < target_count {
-                let delay = start_delay_secs(current_host_pressure().level);
-                thread::sleep(Duration::from_secs(delay));
+                    format!("{} has duplicate VM UUID or MAC identity", client.as_str()),
+                ));
             }
         }
 
-        Ok(result)
+        let native_profile = native_minecraft_profile();
+        let target_count = targets.len();
+        let mut completed = 0;
+        execute_start_batch(
+            provider.as_ref(),
+            &targets,
+            |client, original_state| {
+                require_client_matches_native(client)?;
+                require_verified_vm_identity(provider.as_ref(), client)?;
+                if original_state != ClientState::Running {
+                    let pressure = current_host_pressure();
+                    if !pressure.can_start_virtual {
+                        return Err(io::Error::new(
+                            io::ErrorKind::Other,
+                            format!(
+                                "host memory pressure became {:?} before starting {}",
+                                pressure.level,
+                                client.as_str()
+                            ),
+                        ));
+                    }
+                }
+                if vm_identity_state(provider.as_ref(), client) == IdentityState::Duplicate {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        format!("{} has duplicate VM UUID or MAC identity", client.as_str()),
+                    ));
+                }
+                Ok(())
+            },
+            |client| {
+                if vm_identity_state(provider.as_ref(), client) == IdentityState::Duplicate {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        format!("{} received duplicate VM UUID or MAC identity", client.as_str()),
+                    ));
+                }
+                wait_for_guest_compatibility(
+                    provider.as_ref(),
+                    client,
+                    Duration::from_secs(90),
+                    true,
+                )?;
+                let working_sets = provider.host_working_sets_mb()?;
+                let status = client_status(
+                    provider.as_ref(),
+                    &working_sets,
+                    native_profile.as_ref(),
+                    client,
+                )?;
+                completed += 1;
+                if completed < target_count {
+                    thread::sleep(Duration::from_secs(start_delay_secs(
+                        current_host_pressure().level,
+                    )));
+                }
+                Ok(status)
+            },
+        )
     }
 
     fn suspend_inner(&self, client: Option<ClientId>) -> io::Result<Vec<ClientStatus>> {
@@ -1743,6 +1780,7 @@ mod tests {
         states: RefCell<[ClientState; 3]>,
         identities: [Option<&'static str>; 3],
         fail_start: Option<ClientId>,
+        fail_after_start: bool,
         fail_stop: Option<ClientId>,
         fail_suspend: Option<ClientId>,
         identity_error: Option<ClientId>,
@@ -1754,6 +1792,7 @@ mod tests {
                 states: RefCell::new(states),
                 identities,
                 fail_start: None,
+                fail_after_start: false,
                 fail_stop: None,
                 fail_suspend: None,
                 identity_error: None,
@@ -1838,6 +1877,9 @@ mod tests {
 
         fn start(&self, client: ClientId) -> io::Result<ClientState> {
             if self.fail_start == Some(client) {
+                if self.fail_after_start {
+                    self.set_state(client, ClientState::Running)?;
+                }
                 return Err(io::Error::new(
                     io::ErrorKind::Other,
                     "injected start failure",
@@ -1954,19 +1996,19 @@ mod tests {
     #[test]
     fn vm_identity_classification_is_fail_closed() {
         assert_eq!(
-            classify_identity_state(Some("vm-a"), [Some("vm-b"), Some("vm-c")]),
+            classify_identity_state(Some("uuid-a|mac-a"), [Some("uuid-b|mac-b"), Some("uuid-c|mac-c")]),
             IdentityState::Unique
         );
         assert_eq!(
-            classify_identity_state(Some("vm-a"), [Some("vm-a"), Some("vm-c")]),
+            classify_identity_state(Some("uuid-a|mac-a"), [Some("uuid-a|mac-a"), Some("uuid-c|mac-c")]),
             IdentityState::Duplicate
         );
         assert_eq!(
-            classify_identity_state(Some("vm-a"), [Some("vm-b"), None]),
+            classify_identity_state(Some("uuid-a|mac-a"), [Some("uuid-b|mac-b"), None]),
             IdentityState::Unknown
         );
         assert_eq!(
-            classify_identity_state(None, [Some("vm-b"), Some("vm-c")]),
+            classify_identity_state(None, [Some("uuid-b|mac-b"), Some("uuid-c|mac-c")]),
             IdentityState::Unknown
         );
     }
@@ -2142,7 +2184,7 @@ mod tests {
                 ClientState::Stopped,
                 ClientState::Stopped,
             ],
-            [Some("vm-a"), Some("vm-b"), Some("vm-c")],
+            [Some("uuid-a|mac-a"), Some("uuid-b|mac-b"), Some("uuid-c|mac-c")],
         );
         assert_eq!(
             vm_identity_state(&provider, ClientId::Virtual01),
@@ -2155,7 +2197,7 @@ mod tests {
                 ClientState::Stopped,
                 ClientState::Stopped,
             ],
-            [Some("vm-a"), Some("vm-a"), Some("vm-c")],
+            [Some("uuid-a|mac-a"), Some("uuid-a|mac-a"), Some("uuid-c|mac-c")],
         );
         assert_eq!(
             vm_identity_state(&duplicate, ClientId::Virtual01),
@@ -2170,7 +2212,7 @@ mod tests {
                     ClientState::Stopped,
                     ClientState::Stopped,
                 ],
-                [Some("vm-a"), Some("vm-b"), Some("vm-c")],
+                [Some("uuid-a|mac-a"), Some("uuid-b|mac-b"), Some("uuid-c|mac-c")],
             )
         };
         assert_eq!(
@@ -2187,7 +2229,7 @@ mod tests {
                 ClientState::Running,
                 ClientState::Stopped,
             ],
-            [Some("vm-a"), Some("vm-b"), Some("vm-c")],
+            [Some("uuid-a|mac-a"), Some("uuid-b|mac-b"), Some("uuid-c|mac-c")],
         );
 
         let failed = restore_batch_state(
@@ -2223,7 +2265,7 @@ mod tests {
                     ClientState::Running,
                     ClientState::Stopped,
                 ],
-                [Some("vm-a"), Some("vm-b"), Some("vm-c")],
+                [Some("uuid-a|mac-a"), Some("uuid-b|mac-b"), Some("uuid-c|mac-c")],
             )
         };
 
@@ -2249,4 +2291,191 @@ mod tests {
             ClientState::Stopped
         );
     }
+    #[test]
+    fn vm_identity_rejects_a_collision_in_either_component() {
+        for peer in ["uuid-b|mac-a", "uuid-a|mac-b", "UUID-A|MAC-B"] {
+            assert_eq!(
+                classify_identity_state(Some("uuid-a|mac-a"), [Some(peer)]),
+                IdentityState::Duplicate
+            );
+        }
+        assert_eq!(
+            classify_identity_state(Some("uuid-a|mac-a"), [Some("uuid-b|mac-b")]),
+            IdentityState::Unique
+        );
+        for invalid in ["missing-separator", "|mac-a", "uuid-a|", "a|b|c"] {
+            assert_eq!(
+                classify_identity_state(Some(invalid), [Some("uuid-b|mac-b")]),
+                IdentityState::Unknown
+            );
+        }
+    }
+
+    fn stopped_provider() -> FakeProvider {
+        FakeProvider::new(
+            [ClientState::Stopped; 3],
+            [Some("uuid-a|mac-a"), Some("uuid-b|mac-b"), Some("uuid-c|mac-c")],
+        )
+    }
+
+    #[test]
+    fn start_batch_rolls_back_when_later_admission_fails() {
+        let provider = stopped_provider();
+        let error = super::execute_start_batch(
+            &provider,
+            &ClientId::VIRTUAL,
+            |client, _| {
+                if client == ClientId::Virtual02 {
+                    Err(io::Error::new(io::ErrorKind::InvalidData, "lineage changed"))
+                } else {
+                    Ok(())
+                }
+            },
+            |client| provider.state(client),
+        )
+        .unwrap_err();
+        assert!(error.to_string().contains("lineage changed"));
+        assert_eq!(*provider.states.borrow(), [ClientState::Stopped; 3]);
+    }
+
+    #[test]
+    fn start_batch_rolls_back_result_collection_failure() {
+        let provider = FakeProvider::new(
+            [ClientState::Suspended, ClientState::Stopped, ClientState::Stopped],
+            [Some("uuid-a|mac-a"), Some("uuid-b|mac-b"), Some("uuid-c|mac-c")],
+        );
+        let result = super::execute_start_batch(
+            &provider,
+            &ClientId::VIRTUAL,
+            |_, _| Ok(()),
+            |client| {
+                if client == ClientId::Virtual02 {
+                    Err(io::Error::new(io::ErrorKind::Other, "status unavailable"))
+                } else {
+                    provider.state(client)
+                }
+            },
+        );
+        assert!(result.is_err());
+        assert_eq!(
+            *provider.states.borrow(),
+            [ClientState::Suspended, ClientState::Stopped, ClientState::Stopped]
+        );
+    }
+
+    #[test]
+    fn start_batch_preserves_preexisting_running_client_on_verification_failure() {
+        let provider = FakeProvider::new(
+            [ClientState::Stopped, ClientState::Running, ClientState::Stopped],
+            [Some("uuid-a|mac-a"), Some("uuid-b|mac-b"), Some("uuid-c|mac-c")],
+        );
+        let result = super::execute_start_batch(
+            &provider,
+            &ClientId::VIRTUAL,
+            |_, _| Ok(()),
+            |client| {
+                if client == ClientId::Virtual02 {
+                    Err(io::Error::new(io::ErrorKind::InvalidData, "guest mismatch"))
+                } else {
+                    provider.state(client)
+                }
+            },
+        );
+        assert!(result.is_err());
+        assert_eq!(
+            *provider.states.borrow(),
+            [ClientState::Stopped, ClientState::Running, ClientState::Stopped]
+        );
+    }
+
+    #[test]
+    fn start_batch_tracks_provider_mutation_before_a_start_error() {
+        let provider = FakeProvider {
+            fail_start: Some(ClientId::Virtual02),
+            fail_after_start: true,
+            ..stopped_provider()
+        };
+        let result = super::execute_start_batch(
+            &provider,
+            &ClientId::VIRTUAL,
+            |_, _| Ok(()),
+            |client| provider.state(client),
+        );
+        assert!(result.is_err());
+        assert_eq!(*provider.states.borrow(), [ClientState::Stopped; 3]);
+    }
+
+    #[test]
+    fn start_batch_reports_rollback_failure_and_keeps_the_original_error() {
+        let provider = FakeProvider {
+            fail_start: Some(ClientId::Virtual02),
+            fail_stop: Some(ClientId::Virtual01),
+            ..stopped_provider()
+        };
+        let error = super::execute_start_batch(
+            &provider,
+            &ClientId::VIRTUAL,
+            |_, _| Ok(()),
+            |client| provider.state(client),
+        )
+        .unwrap_err();
+        let message = error.to_string();
+        assert!(message.contains("injected start failure"));
+        assert!(message.contains("rollback incomplete for Virtual-01"));
+        assert_eq!(
+            *provider.states.borrow(),
+            [ClientState::Running, ClientState::Stopped, ClientState::Stopped]
+        );
+    }
+
+    #[test]
+    fn start_batch_rolls_back_a_later_invalid_state() {
+        let provider = FakeProvider::new(
+            [ClientState::Stopped, ClientState::Error, ClientState::Stopped],
+            [Some("uuid-a|mac-a"), Some("uuid-b|mac-b"), Some("uuid-c|mac-c")],
+        );
+        assert!(super::execute_start_batch(
+            &provider,
+            &ClientId::VIRTUAL,
+            |_, _| Ok(()),
+            |client| provider.state(client),
+        )
+        .is_err());
+        assert_eq!(provider.state(ClientId::Virtual01).unwrap(), ClientState::Stopped);
+        assert_eq!(provider.state(ClientId::Virtual02).unwrap(), ClientState::Error);
+    }
+
+    #[test]
+    fn start_batch_success_changes_only_selected_clients() {
+        let provider = stopped_provider();
+        let result = super::execute_start_batch(
+            &provider,
+            &[ClientId::Virtual02],
+            |_, _| Ok(()),
+            |client| provider.state(client),
+        )
+        .unwrap();
+        assert_eq!(result, vec![ClientState::Running]);
+        assert_eq!(
+            *provider.states.borrow(),
+            [ClientState::Stopped, ClientState::Running, ClientState::Stopped]
+        );
+    }
+
+    #[test]
+    fn start_batch_stops_a_resumed_client_that_fails_verification() {
+        let provider = FakeProvider::new(
+            [ClientState::Suspended, ClientState::Stopped, ClientState::Stopped],
+            [Some("uuid-a|mac-a"), Some("uuid-b|mac-b"), Some("uuid-c|mac-c")],
+        );
+        let result: io::Result<Vec<ClientState>> = super::execute_start_batch(
+            &provider,
+            &[ClientId::Virtual01],
+            |_, _| Ok(()),
+            |_| Err(io::Error::new(io::ErrorKind::InvalidData, "guest mismatch")),
+        );
+        assert!(result.is_err());
+        assert_eq!(*provider.states.borrow(), [ClientState::Stopped; 3]);
+    }
+
 }
