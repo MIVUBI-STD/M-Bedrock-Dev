@@ -10,6 +10,7 @@ use crate::{
     provider::{cleanup_staging, current_platform_provider, Provider},
     resources::{current_host_pressure, start_delay_secs, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
     schema::ensure_runtime_schema,
+    update::{check_update, UpdateCheck},
 };
 use fs2::FileExt;
 use serde::Serialize;
@@ -279,6 +280,10 @@ fn client_status(
 impl VirtualClients {
     pub fn doctor(&self) -> DoctorReport {
         doctor()
+    }
+
+    pub fn check_update(&self) -> io::Result<UpdateCheck> {
+        check_update()
     }
 
     pub fn register_base(&self) -> io::Result<BaseProfile> {
