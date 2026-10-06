@@ -141,6 +141,89 @@ Required observations:
 - reprovision affects only the selected fully stopped Virtual;
 - rollback failures are surfaced explicitly.
 
+## Four-client concurrency and sign-in acceptance
+
+The product target is one Native Minecraft Education client plus Virtual-01,
+Virtual-02 and Virtual-03. Treat that as an unproven target-machine capability
+until every layer below passes together.
+
+### Interactive sign-in
+
+For each Virtual independently:
+- Minecraft must launch into the interactive signed-in Windows desktop, not
+  session 0 or a SYSTEM-only desktop;
+- selecting Minecraft Education sign-in may open an embedded sign-in surface,
+  system browser window/tab, or another Microsoft authentication surface. The
+  product must not assume one fixed presentation;
+- any browser/window spawned for authentication must remain inside that
+  Virtual's Windows session and be manually controllable through that VM;
+- redirect/deep-link completion must return authentication to the same
+  Virtual's Minecraft instance;
+- MFA, Conditional Access, tenant branding, consent, password reset and
+  federation redirects must remain usable;
+- closing/reopening Minecraft after successful Remember-me/session persistence
+  should not require a new sign-in unless Microsoft policy/session expiry does;
+- Virtual Clients must never capture, proxy, copy or persist Microsoft
+  passwords, MFA codes, OAuth tokens, cookies or Minecraft session secrets;
+- each Virtual must be configured with its own licensed organizational account
+  where the intended multiplayer scenario requires distinct players.
+
+Current source warning: the Guest Agent startup task runs as SYSTEM. A
+SYSTEM/session-0 agent is not accepted as proof that Minecraft or its
+authentication UI can appear in the interactive user session. Auto-launch is
+not target-machine-ready until this boundary is proven or corrected.
+
+### Four simultaneous Minecraft clients
+
+Prove Native + Virtual-01 + Virtual-02 + Virtual-03 concurrently, not one at a
+time:
+- all four reach an interactive Minecraft menu concurrently;
+- each Virtual retains its own Windows/Minecraft account identity;
+- no Minecraft instance exits because another instance started;
+- no Store/Desktop package single-instance behavior redirects launch into a
+  different Windows session;
+- VMware 3D acceleration remains available in all three guests concurrently;
+- keyboard/mouse focus can move between all four without stuck capture;
+- audio does not block launch or make the workflow unusable;
+- host CPU, committed memory, resident working sets, GPU memory/3D usage and
+  disk pressure remain observable while all four are active;
+- CRITICAL host pressure blocks additional starts without killing already
+  running clients;
+- suspend/resume one Virtual does not terminate or corrupt the other three;
+- restarting/resetting one Virtual does not move another account/session into
+  that VM;
+- Window Layout discovers exactly the intended Native + three VMware windows
+  after all four Minecraft clients are running.
+
+### Multiplayer/network concurrency
+
+Prove the real multiplayer path with four distinct clients:
+- all four have network connectivity at the same time;
+- DNS, Microsoft authentication, Minecraft services and required multiplayer
+  endpoints are reachable from every guest;
+- NAT/VMware networking gives each guest a usable independent network identity;
+- one client can host and the other three can join as intended;
+- repeat with Native as host and with one Virtual as host;
+- peer discovery/join is not assumed to work merely because Internet access
+  works;
+- host firewall, guest firewall, VMware NAT/bridged mode and router isolation
+  must be recorded for the accepted configuration;
+- disconnect/reconnect one Virtual while the other clients remain in session;
+- suspend/resume one joined Virtual and record whether Minecraft reconnects,
+  returns to menu, or requires manual rejoin;
+- duplicate account use, license rejection, tenant mismatch and multiplayer
+  permission errors must be distinguishable from network failures.
+
+### Persistence/isolation
+
+After all four are configured:
+- stop/start all three Virtuals and verify each returns to its own account;
+- restore QA_READY independently on each Virtual and verify no account crossing;
+- prove Base remains free of Microsoft/Minecraft user sessions;
+- prove reprovision is the only normal operation that intentionally destroys
+  the selected Virtual's saved account state;
+- repeat after host reboot and Virtual Clients app restart.
+
 ## Minecraft auto-launch acceptance
 
 Daily client lifecycle now treats a usable Virtual as VM + Minecraft, while
