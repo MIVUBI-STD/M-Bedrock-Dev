@@ -116,7 +116,7 @@ export function primaryClientAction(
     return { kind: "launch-minecraft", label: "Launch Minecraft" };
   }
   if (client.state === "RUNNING" && actions.open.allowed) {
-    return { kind: "open", label: "Open" };
+    return { kind: "open", label: client.interactiveLauncherReady === false ? "Finish setup" : "Open" };
   }
   if ((client.state === "STOPPED" || client.state === "SUSPENDED") && actions.startSetup) {
     return actions.startSetup.allowed ? { kind: "start-setup", label: "Start first-time setup" } : undefined;
