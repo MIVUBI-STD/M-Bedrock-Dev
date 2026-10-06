@@ -768,6 +768,78 @@
       ]
     },
     {
+      "knowledgeId": "cleanup.entity-remove-not-terminal-cause",
+      "consumer": "arena-reset-closure-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-reset-closure-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "cleanup.entity-tags-persist-on-entity",
+      "consumer": "arena-reset-closure-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-reset-closure-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "cleanup.relation-remove-event-not-proof",
+      "consumer": "arena-reset-closure-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-reset-closure-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "cleanup.relation-reset-requires-multi-surface",
+      "consumer": "arena-reset-closure-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-reset-closure-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "cleanup.scheduled-callbacks-persist-until-cleared",
+      "consumer": "arena-reset-closure-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-reset-closure-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "cleanup.scoreboard-state-can-outlive-round",
+      "consumer": "arena-reset-closure-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-reset-closure-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "combat-policy.damage-filter-before-sideeffects",
       "consumer": "combat-lifecycle-analysis",
       "analyzerPaths": [
@@ -834,6 +906,61 @@
       "consumer": "combat-lifecycle-analysis",
       "analyzerPaths": [
         "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "combat.damage-source-multifield",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "combat.hurt-event-damage-and-source",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "combat.projectile-owner-controls-attribution",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "combat.pvp-gamerule-prevents-player-damage",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "combat.relation-pvp-global-not-team-policy",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
@@ -1937,6 +2064,66 @@
       ]
     },
     {
+      "knowledgeId": "loot.command-can-spawn-or-inject",
+      "consumer": "economy-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/economy-contract-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/reward-source-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/economy-contract-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/reward-source-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "loot.drop-and-inventory-change-events-separate",
+      "consumer": "economy-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/economy-contract-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/reward-source-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/economy-contract-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/reward-source-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "loot.entity-death-table",
+      "consumer": "economy-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/economy-contract-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/reward-source-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/economy-contract-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/reward-source-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "loot.pickup-after-event",
+      "consumer": "economy-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/economy-contract-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/reward-source-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/economy-contract-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/reward-source-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "loot.relation-pickup-validates-transfer",
+      "consumer": "economy-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/economy-contract-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/reward-source-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/economy-contract-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/reward-source-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "mount-policy.relation-reset-deactivates-relationship",
       "consumer": "arena-cleanup-surface-analysis",
       "analyzerPaths": [
@@ -2430,11 +2617,66 @@
       ]
     },
     {
+      "knowledgeId": "physics.clearvelocity-zeroes-motion",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "physics.getvelocity-observable",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "physics.impulse-adds-velocity",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "physics.knockback-adds-velocity",
       "consumer": "combat-lifecycle-analysis",
       "analyzerPaths": [
         "engine/analyzers/scripts/src/parser/parse.ts",
         "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "physics.relation-teleport-requires-velocity-policy",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "physics.teleport-keepvelocity-explicit",
+      "consumer": "combat-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/combat-lifecycle-analysis.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
@@ -2770,6 +3012,94 @@
       "proofPaths": [
         "engine/analyzers/scripts/test/domains/progression/progression-counter-evidence.test.ts",
         "engine/packages/orchestrator/test/inspection/progression-actor-accounting-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "population.density-limit",
+      "consumer": "entity-population-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/entity-population-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "population.despawn-multimode",
+      "consumer": "entity-population-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/entity-population-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "population.distance-despawn-defaults",
+      "consumer": "entity-population-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/entity-population-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "population.population-control-cap",
+      "consumer": "entity-population-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/entity-population-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "population.spawn-entity-timer",
+      "consumer": "entity-population-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/entity-population-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "population.spawn-on-death-new-surface",
+      "consumer": "entity-population-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/entity-population-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "population.spawn-rule-identifier-match",
+      "consumer": "entity-population-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/entity-population-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "population.spawn-rule-multifactor",
+      "consumer": "entity-population-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/entity-population-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts"
       ]
     },
     {
@@ -3186,6 +3516,61 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/persistence-source-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "state.dynamic-property-can-be-deleted",
+      "consumer": "state-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/state-authority-analysis.ts",
+        "engine/analyzers/scripts/src/domains/persistence/persistent-state-scope.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/state-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "state.dynamic-property-undefined-means-not-set",
+      "consumer": "state-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/state-authority-analysis.ts",
+        "engine/analyzers/scripts/src/domains/persistence/persistent-state-scope.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/state-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "state.entity-tags-independent-state-surface",
+      "consumer": "state-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/state-authority-analysis.ts",
+        "engine/analyzers/scripts/src/domains/persistence/persistent-state-scope.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/state-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "state.relation-tag-does-not-supersede-authority",
+      "consumer": "state-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/state-authority-analysis.ts",
+        "engine/analyzers/scripts/src/domains/persistence/persistent-state-scope.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/state-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "state.scoreboard-participants-not-online-player-set",
+      "consumer": "state-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/state-authority-analysis.ts",
+        "engine/analyzers/scripts/src/domains/persistence/persistent-state-scope.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/state-authority-analysis.test.ts"
       ]
     },
     {
