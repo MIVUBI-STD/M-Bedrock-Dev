@@ -90,24 +90,46 @@ impl Drop for OperationLock {
     }
 }
 
-fn vm_identity_state(provider: &dyn Provider, client: ClientId) -> IdentityState {
-    let Ok(Some(identity)) = provider.identity_key(client) else {
+fn classify_identity_state<'a>(
+    current: Option<&'a str>,
+    peers: impl IntoIterator<Item = Option<&'a str>>,
+) -> IdentityState {
+    let Some(current) = current else {
         return IdentityState::Unknown;
     };
 
-    for other in ClientId::VIRTUAL {
-        if other == client {
-            continue;
-        }
-        if provider.status(other).ok() == Some(ClientState::NotProvisioned) {
-            continue;
-        }
-        if provider.identity_key(other).ok().flatten().as_deref() == Some(identity.as_str()) {
+    for peer in peers {
+        let Some(peer) = peer else {
+            return IdentityState::Unknown;
+        };
+        if peer == current {
             return IdentityState::Duplicate;
         }
     }
 
     IdentityState::Unique
+}
+
+fn vm_identity_state(provider: &dyn Provider, client: ClientId) -> IdentityState {
+    let current = provider.identity_key(client).ok().flatten();
+    let mut peers = Vec::new();
+
+    for other in ClientId::VIRTUAL {
+        if other == client {
+            continue;
+        }
+
+        match provider.status(other) {
+            Ok(ClientState::NotProvisioned) => continue,
+            Ok(_) => peers.push(provider.identity_key(other).ok().flatten()),
+            Err(_) => peers.push(None),
+        }
+    }
+
+    classify_identity_state(
+        current.as_deref(),
+        peers.iter().map(|identity| identity.as_deref()),
+    )
 }
 
 fn restore_batch_state(
@@ -1232,5 +1254,32 @@ impl VirtualClients {
             native_profile.as_ref(),
             client,
         )
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::classify_identity_state;
+    use crate::client::IdentityState;
+
+    #[test]
+    fn vm_identity_classification_is_fail_closed() {
+        assert_eq!(
+            classify_identity_state(Some("vm-a"), [Some("vm-b"), Some("vm-c")]),
+            IdentityState::Unique
+        );
+        assert_eq!(
+            classify_identity_state(Some("vm-a"), [Some("vm-a"), Some("vm-c")]),
+            IdentityState::Duplicate
+        );
+        assert_eq!(
+            classify_identity_state(Some("vm-a"), [Some("vm-b"), None]),
+            IdentityState::Unknown
+        );
+        assert_eq!(
+            classify_identity_state(None, [Some("vm-b"), Some("vm-c")]),
+            IdentityState::Unknown
+        );
     }
 }

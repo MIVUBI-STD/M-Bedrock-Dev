@@ -56,6 +56,13 @@ pub struct DoctorReport {
     pub next_setup_action: SetupAction,
 }
 
+fn schema_allows_provisioning(status: &SchemaStatus) -> bool {
+    matches!(
+        status.state,
+        crate::schema::SchemaState::Ready | crate::schema::SchemaState::Missing
+    )
+}
+
 fn recommended_by_memory(total_gb: f64) -> usize {
     if total_gb >= 24.0 {
         3
@@ -232,7 +239,8 @@ pub fn doctor() -> DoctorReport {
             && base_vm_present
             && base_vm_stopped == Some(true)
             && base_state.as_deref() == Some("FINALIZED")
-            && runtime_profile.parity == ProfileParity::Match,
+            && runtime_profile.parity == ProfileParity::Match
+            && schema_allows_provisioning(&runtime_schema),
         next_setup_action,
     }
 }
@@ -240,7 +248,8 @@ pub fn doctor() -> DoctorReport {
 #[cfg(test)]
 mod tests {
     use super::{
-        recommended_by_cpu, recommended_by_memory, select_setup_action, DoctorClient, SetupAction,
+        recommended_by_cpu, recommended_by_memory, schema_allows_provisioning,
+        select_setup_action, DoctorClient, SetupAction,
     };
     use crate::{
         profile::ProfileParity,
@@ -262,6 +271,31 @@ mod tests {
             lineage_parity: ProfileParity::Match,
             identity_provenance,
         }
+    }
+
+    #[test]
+    fn provisioning_readiness_fails_closed_on_incompatible_schema() {
+        let ready = SchemaStatus {
+            state: SchemaState::Ready,
+            schema: Some(crate::schema::CURRENT_RUNTIME_SCHEMA),
+        };
+        let missing = SchemaStatus {
+            state: SchemaState::Missing,
+            schema: None,
+        };
+        let invalid = SchemaStatus {
+            state: SchemaState::Invalid,
+            schema: None,
+        };
+        let newer = SchemaStatus {
+            state: SchemaState::NewerThanApp,
+            schema: Some(crate::schema::CURRENT_RUNTIME_SCHEMA + 1),
+        };
+
+        assert!(schema_allows_provisioning(&ready));
+        assert!(schema_allows_provisioning(&missing));
+        assert!(!schema_allows_provisioning(&invalid));
+        assert!(!schema_allows_provisioning(&newer));
     }
 
     #[test]
