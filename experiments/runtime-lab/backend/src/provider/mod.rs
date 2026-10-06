@@ -8,8 +8,7 @@ use crate::{
 use std::{
     env,
     ffi::OsStr,
-    fs,
-    io,
+    fs, io,
     path::{Path, PathBuf},
     process::{Command, Stdio},
     thread,
@@ -24,7 +23,6 @@ pub(crate) const READY_SNAPSHOT: &str = "QA_READY";
 pub(crate) const CLIENT_VCPUS: &str = "2";
 const COMMAND_TIMEOUT: Duration = Duration::from_secs(45);
 pub(crate) const DISK_STATE_TIMEOUT: Duration = Duration::from_secs(180);
-
 
 pub trait Provider {
     fn id(&self) -> &'static str;
@@ -53,13 +51,17 @@ pub fn current_platform_provider() -> Option<Box<dyn Provider>> {
     #[cfg(target_os = "windows")]
     {
         let provider = VmwareWorkstationProvider::default();
-        return provider.detect().then(|| Box::new(provider) as Box<dyn Provider>);
+        return provider
+            .detect()
+            .then(|| Box::new(provider) as Box<dyn Provider>);
     }
 
     #[cfg(target_os = "macos")]
     {
         let provider = VmwareFusionProvider::default();
-        return provider.detect().then(|| Box::new(provider) as Box<dyn Provider>);
+        return provider
+            .detect()
+            .then(|| Box::new(provider) as Box<dyn Provider>);
     }
 
     #[allow(unreachable_code)]
@@ -71,7 +73,9 @@ pub(crate) fn runtime_root() -> io::Result<PathBuf> {
     {
         let root = env::var_os("LOCALAPPDATA")
             .map(PathBuf::from)
-            .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "LOCALAPPDATA is unavailable"))?;
+            .ok_or_else(|| {
+                io::Error::new(io::ErrorKind::NotFound, "LOCALAPPDATA is unavailable")
+            })?;
         return Ok(root.join("M-Bedrock").join("RuntimeLab"));
     }
 
@@ -108,7 +112,10 @@ pub(crate) fn base_vmx_path() -> io::Result<PathBuf> {
     }
 
     #[allow(unreachable_code)]
-    Err(io::Error::new(io::ErrorKind::Unsupported, "unsupported platform"))
+    Err(io::Error::new(
+        io::ErrorKind::Unsupported,
+        "unsupported platform",
+    ))
 }
 
 pub(crate) fn client_vmx_path(client: ClientId) -> io::Result<PathBuf> {
@@ -132,7 +139,10 @@ pub(crate) fn staging_client_vmx_path(client: ClientId) -> io::Result<PathBuf> {
     }
 
     #[allow(unreachable_code)]
-    Err(io::Error::new(io::ErrorKind::Unsupported, "unsupported platform"))
+    Err(io::Error::new(
+        io::ErrorKind::Unsupported,
+        "unsupported platform",
+    ))
 }
 
 fn client_vmx_path_under(client: ClientId, owner: &str) -> io::Result<PathBuf> {
@@ -159,7 +169,10 @@ fn client_vmx_path_under(client: ClientId, owner: &str) -> io::Result<PathBuf> {
     }
 
     #[allow(unreachable_code)]
-    Err(io::Error::new(io::ErrorKind::Unsupported, "unsupported platform"))
+    Err(io::Error::new(
+        io::ErrorKind::Unsupported,
+        "unsupported platform",
+    ))
 }
 
 pub(crate) fn vm_container(vmx: &Path) -> io::Result<&Path> {
@@ -229,7 +242,12 @@ where
     loop {
         if child.try_wait()?.is_some() {
             let output = child.wait_with_output()?;
-            return require_success(program, output.status.success(), &output.stdout, &output.stderr);
+            return require_success(
+                program,
+                output.status.success(),
+                &output.stdout,
+                &output.stderr,
+            );
         }
 
         if started.elapsed() >= timeout {
@@ -237,7 +255,11 @@ where
             let _ = child.wait();
             return Err(io::Error::new(
                 io::ErrorKind::TimedOut,
-                format!("{} exceeded {}s timeout", program.display(), timeout.as_secs()),
+                format!(
+                    "{} exceeded {}s timeout",
+                    program.display(),
+                    timeout.as_secs()
+                ),
             ));
         }
 
@@ -245,7 +267,12 @@ where
     }
 }
 
-fn require_success(program: &Path, success: bool, stdout: &[u8], stderr: &[u8]) -> io::Result<String> {
+fn require_success(
+    program: &Path,
+    success: bool,
+    stdout: &[u8],
+    stderr: &[u8],
+) -> io::Result<String> {
     if success {
         return Ok(String::from_utf8_lossy(stdout).trim().to_string());
     }
@@ -285,7 +312,11 @@ pub(crate) fn has_suspend_state(vmx: &Path) -> bool {
     })
 }
 
-pub(crate) fn wait_for_state<F>(mut predicate: F, expected: bool, timeout: Duration) -> io::Result<()>
+pub(crate) fn wait_for_state<F>(
+    mut predicate: F,
+    expected: bool,
+    timeout: Duration,
+) -> io::Result<()>
 where
     F: FnMut() -> io::Result<bool>,
 {
@@ -313,11 +344,7 @@ pub(crate) fn apply_virtual_hardware_policy(vmx: &Path) -> io::Result<()> {
     let mut lines: Vec<String> = source.lines().map(ToOwned::to_owned).collect();
 
     set_vmx_value(&mut lines, "numvcpus", CLIENT_VCPUS);
-    set_vmx_value(
-        &mut lines,
-        "memsize",
-        &VIRTUAL_MEMORY_LIMIT_MB.to_string(),
-    );
+    set_vmx_value(&mut lines, "memsize", &VIRTUAL_MEMORY_LIMIT_MB.to_string());
     set_vmx_value(&mut lines, "answer.msg.uuid.altered", "I copied it");
 
     let mut output = lines.join("\n");
@@ -330,9 +357,9 @@ pub(crate) fn read_vmx_value(vmx: &Path, key: &str) -> io::Result<Option<String>
     let prefix = format!("{key} =");
     Ok(source.lines().find_map(|line| {
         let trimmed = line.trim();
-        trimmed.strip_prefix(&prefix).map(|value| {
-            value.trim().trim_matches('"').to_string()
-        })
+        trimmed
+            .strip_prefix(&prefix)
+            .map(|value| value.trim().trim_matches('"').to_string())
     }))
 }
 
@@ -363,7 +390,10 @@ pub(crate) fn guest_tools_state_ready(state: &str) -> bool {
 
 fn set_vmx_value(lines: &mut Vec<String>, key: &str, value: &str) {
     let prefix = format!("{key} =");
-    if let Some(line) = lines.iter_mut().find(|line| line.trim_start().starts_with(&prefix)) {
+    if let Some(line) = lines
+        .iter_mut()
+        .find(|line| line.trim_start().starts_with(&prefix))
+    {
         *line = format!("{key} = \"{value}\"");
     } else {
         lines.push(format!("{key} = \"{value}\""));
@@ -431,7 +461,6 @@ mod tests {
         assert!(!guest_tools_state_ready("not running"));
     }
 }
-
 
 pub(crate) fn cleanup_staging() -> io::Result<()> {
     let staging = runtime_root()?.join("staging");
