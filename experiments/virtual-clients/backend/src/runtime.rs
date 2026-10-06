@@ -213,6 +213,30 @@ fn wait_for_guest_compatibility(
                     ));
                 }
 
+                if let Some(expected_windows_identity) = load_client_profile(client)
+                    .ok()
+                    .and_then(|profile| profile.verified_windows_identity)
+                {
+                    let current_windows_identity = status.machine_identity.as_deref().ok_or_else(|| {
+                        io::Error::new(
+                            io::ErrorKind::InvalidData,
+                            format!(
+                                "{} Windows identity cannot be verified against saved provenance",
+                                client.as_str()
+                            ),
+                        )
+                    })?;
+                    if current_windows_identity != expected_windows_identity {
+                        return Err(io::Error::new(
+                            io::ErrorKind::InvalidData,
+                            format!(
+                                "{} Windows identity changed after verification; reprovision or run verify-identities after resolving the identity change",
+                                client.as_str()
+                            ),
+                        ));
+                    }
+                }
+
                 if guest.version != native.version {
                     return Err(io::Error::new(
                         io::ErrorKind::InvalidData,
@@ -356,6 +380,36 @@ fn verify_identity_provenance(provider: &dyn Provider) -> io::Result<Vec<ClientS
         )?);
     }
     Ok(result)
+}
+
+fn require_verified_vm_identity(
+    provider: &dyn Provider,
+    client: ClientId,
+) -> io::Result<()> {
+    let Some(expected_vm_identity) = load_client_profile(client)
+        .ok()
+        .and_then(|profile| profile.verified_vm_identity)
+    else {
+        return Ok(());
+    };
+
+    let current_vm_identity = provider.identity_key(client)?.ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!("{} VM identity is unavailable", client.as_str()),
+        )
+    })?;
+    if identity_fingerprint(&current_vm_identity) != expected_vm_identity {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!(
+                "{} VM identity changed after verification; reprovision or run verify-identities after resolving the identity change",
+                client.as_str()
+            ),
+        ));
+    }
+
+    Ok(())
 }
 
 fn require_verified_identity_provenance(
@@ -851,6 +905,7 @@ impl VirtualClients {
 
         for (index, client) in targets.into_iter().enumerate() {
             require_client_matches_native(client)?;
+            require_verified_vm_identity(provider.as_ref(), client)?;
             let original_state = provider.status(client)?;
 
             if original_state != ClientState::Running {
