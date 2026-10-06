@@ -92,13 +92,14 @@ No parallel state database exists.
 - Automatic cleanup of abandoned staging data after an interrupted provisioning run.
 - Immutable Base requirement.
 - Provider command timeout.
-- Sequential multi-instance boot.
+- Pressure-aware multi-instance boot: 2s spacing under NORMAL pressure and 5s under PRESSURE.
 - Graceful stop with bounded hard fallback.
 - Suspend / fast-resume path.
 - Clean `QA_READY` reset path.
 - Selected-instance reprovision only.
 - Identity duplicate detection.
 - Actual host-pressure observation.
+- Batch-start rollback restores newly started instances to their prior STOPPED/SUSPENDED state when a later start fails.
 
 ## Frontend boundary
 
