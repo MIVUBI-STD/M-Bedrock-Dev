@@ -13,7 +13,6 @@ const run = (program, args, cwd = appRoot) => {
   const result = spawnSync(program, args, {
     cwd,
     stdio: "inherit",
-    shell: process.platform === "win32",
   });
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
@@ -21,7 +20,6 @@ const run = (program, args, cwd = appRoot) => {
 
 const rustc = spawnSync("rustc", ["-vV"], {
   encoding: "utf8",
-  shell: process.platform === "win32",
 });
 if (rustc.error) throw rustc.error;
 if (rustc.status !== 0) process.exit(rustc.status ?? 1);

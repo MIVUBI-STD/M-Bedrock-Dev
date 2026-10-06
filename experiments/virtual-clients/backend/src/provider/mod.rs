@@ -1,10 +1,12 @@
+#[cfg(target_os = "macos")]
 mod fusion;
+#[cfg(target_os = "windows")]
 mod workstation;
 
 use crate::{
     client::{ClientId, ClientState},
     paths::{client_root, staging_root},
-    policy::{READY_SNAPSHOT_NAME, VIRTUAL_VCPUS},
+    policy::VIRTUAL_VCPUS,
     profile::{current_base_vmx_path, BaseState},
     resources::VIRTUAL_MEMORY_LIMIT_MB,
 };
