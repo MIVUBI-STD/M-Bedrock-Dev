@@ -28,6 +28,7 @@ VersionInfoVersion={#AppVersion}
 Source: "{#SourceDir}\virtual-clients.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\virtual-guest-agent.exe"; DestDir: "{app}\guest"; Flags: ignoreversion
 Source: "..\..\guest\windows\*.ps1"; DestDir: "{app}\guest\windows"; Flags: ignoreversion
+Source: "..\..\acceptance\windows\*.ps1"; DestDir: "{app}\acceptance\windows"; Flags: ignoreversion
 Source: "..\release-channel.json"; DestDir: "{app}\distribution"; Flags: ignoreversion
 
 [Registry]

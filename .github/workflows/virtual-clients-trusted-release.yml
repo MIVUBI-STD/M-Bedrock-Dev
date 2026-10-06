@@ -53,7 +53,8 @@ jobs:
             'experiments/virtual-clients/guest/windows/install-guest-agent.ps1',
             'experiments/virtual-clients/guest/windows/prepare-base.ps1',
             'experiments/virtual-clients/guest/windows/finalize-base.ps1',
-            'experiments/virtual-clients/guest/windows/uninstall-guest-agent.ps1'
+            'experiments/virtual-clients/guest/windows/uninstall-guest-agent.ps1',
+            'experiments/virtual-clients/acceptance/windows/collect-acceptance.ps1'
           )
           foreach ($path in $paths) {
             $tokens = $null

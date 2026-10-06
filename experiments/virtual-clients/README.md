@@ -202,3 +202,14 @@ reprovision <Virtual-01|Virtual-02|Virtual-03> --destroy-account-state
 ```
 
 Frontend remains deferred until backend and real-machine acceptance are complete.
+
+
+## Acceptance evidence
+
+The Windows installer includes:
+
+```text
+acceptance/windows/collect-acceptance.ps1
+```
+
+Use it to collect deterministic backend evidence during the real-machine campaign. Pass `-VerifyIdentities` only when Virtual-01, Virtual-02, and Virtual-03 are all running after first-boot Windows setup.

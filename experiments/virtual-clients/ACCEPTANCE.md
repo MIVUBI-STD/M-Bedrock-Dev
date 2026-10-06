@@ -160,3 +160,33 @@ Windows distribution acceptance requires:
 - update apply remains unavailable while any Virtual is RUNNING or SUSPENDED;
 - update staging never changes Native/Base/Virtual Minecraft lineage;
 - self-update remains disabled until trusted signature verification is implemented and accepted.
+
+
+## Windows acceptance execution
+
+Use the installed evidence collector instead of manually copying CLI output:
+
+```powershell
+& "$env:LOCALAPPDATA\Programs\M-Bedrock Virtual Clients\acceptance\windows\collect-acceptance.ps1" `
+  -VirtualClients "$env:LOCALAPPDATA\Programs\M-Bedrock Virtual Clients\virtual-clients.exe"
+```
+
+After all three Virtual instances are running and first-boot Windows setup has completed:
+
+```powershell
+& "$env:LOCALAPPDATA\Programs\M-Bedrock Virtual Clients\acceptance\windows\collect-acceptance.ps1" `
+  -VirtualClients "$env:LOCALAPPDATA\Programs\M-Bedrock Virtual Clients\virtual-clients.exe" `
+  -VerifyIdentities
+```
+
+The collector writes timestamped evidence outside the repository by default and captures `doctor`, `status`, `diagnostics`, `resources 3`, optional `verify-identities`, and one `summary.json`. It never reads or stores Microsoft credentials, account names, worlds, or gameplay content.
+
+First-boot acceptance after Sysprep also requires:
+
+- each newly provisioned Virtual completes Windows specialization/OOBE only during initial setup;
+- first boot does not modify the immutable Base;
+- after initial setup, stop/start does not return the Virtual to OOBE;
+- Guest Agent becomes reachable after first-boot setup;
+- `verify-identities` returns `vmIdentity = UNIQUE` and `windowsIdentity = UNIQUE` for all three;
+- account sign-in happens only after identity verification;
+- later daily starts preserve the configured Windows and Minecraft account state.
