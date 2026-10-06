@@ -292,9 +292,9 @@
           onRestart={(client) => mutate(`restart-${client}`, () => backend.restart(client))}
           onSuspend={(client) => mutate(`suspend-${client}`, () => backend.suspend(client))}
           onStop={(client) => mutate(`stop-${client}`, () => backend.stop(client))}
-          onSetReady={(client) => (confirmSetReady = client)}
+          onSetReady={(client) => { confirmSetReady = client; }}
           onReset={(client) => mutate(`reset-${client}`, () => backend.reset(client))}
-          onReprovision={(client) => (confirmReprovision = client)}
+          onReprovision={(client) => { confirmReprovision = client; }}
           onSupport={() => selectPage("support")}
           onVerifyIdentities={() => mutate("verify-identities", backend.verifyIdentities)}
         />
