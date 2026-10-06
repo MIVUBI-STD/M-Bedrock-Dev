@@ -240,6 +240,28 @@
     }
   }
 
+  async function identifyScreens(preference: WindowLayoutPreference) {
+    error = undefined;
+    try {
+      const displays = await desktop.displays();
+      const selectedDisplay = displays.find((display) => display.index === preference.displayIndex)
+        ?? displays.find((display) => display.primary)
+        ?? displays[0];
+      if (!selectedDisplay) throw new BackendBridgeError("DISPLAY_NOT_FOUND", "No usable display is available.", true);
+      const request = {
+        layout: preference.layout,
+        displayIndex: selectedDisplay.index,
+        mainWindow: preference.layout === "FOCUS" ? preference.mainWindow : null,
+      };
+      await desktop.arrangeWindows(request, preference.overlay, true);
+      window.setTimeout(() => {
+        if (!disposed) void desktop.arrangeWindows(request, preference.overlay, false).catch(() => {});
+      }, 3000);
+    } catch (value) {
+      error = presentRuntimeError(value);
+    }
+  }
+
   async function applyWindowLayout(preference: WindowLayoutPreference) {
     saveWindowLayoutPreference(preference);
     layoutPreference = preference;
@@ -475,6 +497,7 @@
       preference={layoutPreference}
       onCancel={() => (layoutDialogOpen = false)}
       onApply={applyWindowLayout}
+      onIdentify={identifyScreens}
     />
   {/if}
 
