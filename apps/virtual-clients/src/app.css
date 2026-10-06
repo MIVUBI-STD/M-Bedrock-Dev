@@ -42,3 +42,5 @@
 @media(max-width:760px){.base-preflight{margin-left:16px;margin-right:16px}.preflight-grid{grid-template-columns:1fr}.preflight-grid>div{border-right:0!important}}
 
 .preflight-tools{padding:10px 14px 0;display:flex;gap:8px}
+
+.confirmation-check{margin-top:16px;padding:11px 12px;border:1px solid #284b3b;border-radius:8px;background:#0f1814;color:#a8d9bd;font-size:10px}

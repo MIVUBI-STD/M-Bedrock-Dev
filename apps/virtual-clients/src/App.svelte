@@ -8,6 +8,7 @@
   import SetupSurface from "./app/surfaces/SetupSurface.svelte";
   import SupportSurface from "./app/surfaces/SupportSurface.svelte";
   import RecreateClientDialog from "./app/components/RecreateClientDialog.svelte";
+  import SaveRecoveryPointDialog from "./app/components/SaveRecoveryPointDialog.svelte";
   import type {
     BasePreparationReport,
     ClientLifecycleActions,
@@ -30,6 +31,7 @@
   let history: readonly OperationRecord[] = [];
   let update: UpdateCheck | undefined;
   let confirmReprovision: ClientStatus["id"] | undefined;
+  let confirmSetReady: ClientStatus["id"] | undefined;
   let loading = true;
   let busy = "";
   let error: RuntimeErrorPresentation | undefined;
@@ -185,6 +187,13 @@
     }
   }
 
+  async function setReadyConfirmed() {
+    const client = confirmSetReady;
+    if (!client || client === "Native") return;
+    confirmSetReady = undefined;
+    await mutate(`ready-${client}`, () => backend.setReady(client));
+  }
+
   async function reprovisionConfirmed() {
     const client = confirmReprovision;
     if (!client || client === "Native") return;
@@ -283,7 +292,7 @@
           onRestart={(client) => mutate(`restart-${client}`, () => backend.restart(client))}
           onSuspend={(client) => mutate(`suspend-${client}`, () => backend.suspend(client))}
           onStop={(client) => mutate(`stop-${client}`, () => backend.stop(client))}
-          onSetReady={(client) => mutate(`ready-${client}`, () => backend.setReady(client))}
+          onSetReady={(client) => (confirmSetReady = client)}
           onReset={(client) => mutate(`reset-${client}`, () => backend.reset(client))}
           onReprovision={(client) => (confirmReprovision = client)}
           onSupport={() => selectPage("support")}
@@ -310,6 +319,15 @@
       {/if}
     {/if}
   </main>
+
+  {#if confirmSetReady}
+    <SaveRecoveryPointDialog
+      clientName={clientDisplayName(confirmSetReady)}
+      {busy}
+      onCancel={() => (confirmSetReady = undefined)}
+      onConfirm={setReadyConfirmed}
+    />
+  {/if}
 
   {#if confirmReprovision}
     <RecreateClientDialog

@@ -1,0 +1,21 @@
+<script lang="ts">
+  export let clientName: string;
+  export let busy: string;
+  export let onCancel: () => void;
+  export let onConfirm: () => void | Promise<void>;
+</script>
+
+<div class="modal-backdrop">
+  <dialog open class="modal" aria-labelledby="save-ready-title">
+    <span class="eyebrow">RECOVERY POINT</span>
+    <h2 id="save-ready-title">Save {clientName} as ready?</h2>
+    <p>Before saving, confirm Minecraft Education is signed in and the main menu is visible. Virtual Clients does not read or store account credentials; this confirmation only protects the recovery baseline.</p>
+    <div class="confirmation-check">
+      <strong>I confirmed the signed-in Minecraft Education main menu on this client.</strong>
+    </div>
+    <div class="modal-actions">
+      <button class="secondary" on:click={onCancel}>Cancel</button>
+      <button class="primary" disabled={Boolean(busy)} on:click={onConfirm}>Save recovery point</button>
+    </div>
+  </dialog>
+</div>
