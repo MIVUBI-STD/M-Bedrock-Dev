@@ -16,6 +16,8 @@ register-base
 → Base state = FINALIZED
 provision
 
+If doctor reports `REBUILD_BASE`, Base finalization was interrupted/ambiguous and the Base must be rebuilt rather than reused.
+
 start 3
 verify-identities
 → doctor nextSetupAction = CREATE_READY_SNAPSHOTS

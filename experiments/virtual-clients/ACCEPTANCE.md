@@ -58,7 +58,9 @@ Base lifecycle proof also requires:
 - `provision` and `reprovision` refuse any Base whose canonical state is not `FINALIZED`;
 - `finalize-base.ps1` requires explicit `-ConfirmGeneralize`, a `REGISTERED` Base, clean Microsoft device registration, VMware Tools, and successful Sysprep;
 - the pre-existing `guestinfo.virtualclients.baseState` value changes `REGISTERED → FINALIZING → FINALIZED` and remains `FINALIZED` after shutdown;
-- a failed Sysprep attempt must not produce `FINALIZED`.
+- a failed Sysprep attempt must not produce `FINALIZED`;
+- missing/legacy Base state routes back to `REGISTER_BASE`;
+- `FINALIZING` routes to `REBUILD_BASE` and must never be treated as safe to provision.
 
 Guest Agent security proof also requires:
 

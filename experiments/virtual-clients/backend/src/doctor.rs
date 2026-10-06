@@ -28,6 +28,7 @@ pub enum SetupAction {
     PrepareBase,
     RegisterBase,
     FinalizeBase,
+    RebuildBase,
     ProvisionVirtuals,
     ReprovisionVirtuals,
     VerifyIdentities,
@@ -101,7 +102,11 @@ fn select_setup_action(
         SetupAction::PrepareBase
     } else if profile_parity != ProfileParity::Match {
         SetupAction::RegisterBase
-    } else if base_state != Some("FINALIZED") {
+    } else if base_state == Some("FINALIZING") {
+        SetupAction::RebuildBase
+    } else if base_state != Some("REGISTERED") && base_state != Some("FINALIZED") {
+        SetupAction::RegisterBase
+    } else if base_state == Some("REGISTERED") {
         SetupAction::FinalizeBase
     } else if clients.iter().any(|client| !client.provisioned) {
         SetupAction::ProvisionVirtuals
@@ -312,6 +317,54 @@ mod tests {
                 &clients,
             ),
             SetupAction::CreateReadySnapshots
+        );
+    }
+
+    #[test]
+    fn base_state_routes_legacy_and_interrupted_setup_safely() {
+        let clients = vec![
+            client(false, false),
+            client(false, false),
+            client(false, false),
+        ];
+
+        assert_eq!(
+            select_setup_action(
+                &compatible_schema(),
+                true,
+                true,
+                true,
+                ProfileParity::Match,
+                None,
+                &clients,
+            ),
+            SetupAction::RegisterBase
+        );
+
+        assert_eq!(
+            select_setup_action(
+                &compatible_schema(),
+                true,
+                true,
+                true,
+                ProfileParity::Match,
+                Some("REGISTERED"),
+                &clients,
+            ),
+            SetupAction::FinalizeBase
+        );
+
+        assert_eq!(
+            select_setup_action(
+                &compatible_schema(),
+                true,
+                true,
+                true,
+                ProfileParity::Match,
+                Some("FINALIZING"),
+                &clients,
+            ),
+            SetupAction::RebuildBase
         );
     }
 
