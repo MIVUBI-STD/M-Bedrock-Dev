@@ -46,6 +46,9 @@ const clean = {
     generationBoundAuthorities: 0,
     unresolvedAuthorities: 0,
     multiplicityContradictions: 0,
+    autonomousReplacementSources: 0,
+    replacementLineage: "not-applicable",
+    unresolvedSpawnCommits: 0,
   },
 };
 
@@ -205,6 +208,41 @@ describe("entity identity and multiplicity reset gate", () => {
 
     expect(result.blockers).toContain(
       "entityMultiplicityContradictions",
+    );
+  });
+});
+
+
+describe("owned population cleanup gate", () => {
+  it("quarantines reuse when autonomous replacement lineage is not explicit", () => {
+    const result =
+      assessArenaResetClosure({
+        ...clean,
+        entityPopulation: {
+          ...clean.entityPopulation,
+          autonomousReplacementSources: 1,
+          replacementLineage:
+            "declared-but-inheritance-unproven",
+        },
+      });
+
+    expect(result.blockers).toContain(
+      "ownedPopulationCleanupGaps",
+    );
+  });
+
+  it("quarantines reuse when spawn commit remains unresolved", () => {
+    const result =
+      assessArenaResetClosure({
+        ...clean,
+        entityPopulation: {
+          ...clean.entityPopulation,
+          unresolvedSpawnCommits: 1,
+        },
+      });
+
+    expect(result.reuseEligibility).toBe(
+      "quarantined",
     );
   });
 });

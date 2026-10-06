@@ -811,6 +811,15 @@ export function analyzeInspectionRuntimeState(
         multiplicityContradictions:
           progressionActorAccounting
             .provenSpawnQuantityMismatch,
+        autonomousReplacementSources:
+          entityPopulation
+            .autonomousReplacementSources,
+        replacementLineage:
+          entityPopulation
+            .replacementLineage,
+        unresolvedSpawnCommits:
+          entityPopulation
+            .unresolvedSpawnCommits,
       },
     });
 

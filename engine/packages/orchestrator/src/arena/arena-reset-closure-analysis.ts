@@ -31,6 +31,7 @@ export interface ArenaResetClosureAssessment {
     baselineRestoreVerificationGaps: number;
     entityPopulationIdentityGaps: number;
     entityMultiplicityContradictions: number;
+    ownedPopulationCleanupGaps: number;
   };
 }
 
@@ -73,6 +74,12 @@ export function assessArenaResetClosure(input: {
     generationBoundAuthorities: number;
     unresolvedAuthorities: number;
     multiplicityContradictions: number;
+    autonomousReplacementSources: number;
+    replacementLineage:
+      | "explicit"
+      | "declared-but-inheritance-unproven"
+      | "not-applicable";
+    unresolvedSpawnCommits: number;
   };
 }): ArenaResetClosureAssessment {
   const surfaces = {
@@ -112,6 +119,14 @@ export function assessArenaResetClosure(input: {
         : 0,
     entityMultiplicityContradictions:
       input.entityPopulation.multiplicityContradictions,
+    ownedPopulationCleanupGaps:
+      input.entityPopulation.unresolvedSpawnCommits +
+      (
+        input.entityPopulation.autonomousReplacementSources > 0 &&
+        input.entityPopulation.replacementLineage !== "explicit"
+          ? 1
+          : 0
+      ),
   };
 
   const blockers = Object.entries(surfaces)

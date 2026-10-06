@@ -1402,6 +1402,19 @@
       ]
     },
     {
+      "knowledgeId": "population-policy.cleanup-owned-population",
+      "consumer": "arena-reset-closure-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/entity-population-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-reset-closure-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "population-policy.despawn-vs-death-separated",
       "consumer": "entity-population-analysis",
       "analyzerPaths": [
