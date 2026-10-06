@@ -10,6 +10,7 @@ on:
       - "experiments/virtual-clients/acceptance/windows/**"
       - ".github/workflows/virtual-clients-installer-verify.yml"
       - ".github/workflows/virtual-clients-trusted-release.yml"
+      - ".github/workflows/virtual-clients-trusted-release.yml"
 
 permissions:
   contents: read
@@ -33,28 +34,65 @@ jobs:
           rustup toolchain install 1.98.1 --profile minimal
           rustup default 1.98.1
 
-      - name: Validate trusted release workflow structure
+      - name: Validate trusted release workflow contract
         shell: pwsh
         run: |
           $path = '.github/workflows/virtual-clients-trusted-release.yml'
           $source = Get-Content -LiteralPath $path -Raw
-          $markers = @(
-            'name: Virtual Clients Trusted Release',
-            '- name: Validate release identity',
-            '- name: Smoke install signed installer',
-            '- name: Publish stable release'
+
+          $requiredSteps = @(
+            'Checkout exact tagged source',
+            'Validate release identity',
+            'Validate PowerShell scripts',
+            'Install Rust 1.98.1',
+            'Verify backend',
+            'Build trusted binaries',
+            'Locate signing tools',
+            'Sign release binaries',
+            'Build and sign installer',
+            'Verify Authenticode identity',
+            'Smoke install signed installer',
+            'Build trusted release metadata',
+            'Upload trusted release candidate',
+            'Publish stable release'
           )
-          foreach ($marker in $markers) {
-            $count = ([regex]::Matches($source, [regex]::Escape($marker))).Count
-            if ($count -ne 1) {
-              throw "$path must contain exactly one '$marker'; found $count."
+
+          $previous = -1
+          foreach ($name in $requiredSteps) {
+            $needle = "- name: $name"
+            $matches = [regex]::Matches($source, [regex]::Escape($needle))
+            if ($matches.Count -ne 1) {
+              throw "Trusted release workflow must contain exactly one '$name' step; found $($matches.Count)."
             }
+            $index = $matches[0].Index
+            if ($index -le $previous) {
+              throw "Trusted release workflow step order is invalid at '$name'."
+            }
+            $previous = $index
           }
+
           if ($source.Contains('workflow_dispatch:')) {
-            throw "$path must use the signed tag as its only release trigger."
+            throw 'Trusted release must remain tag-triggered only.'
           }
           if (!$source.Contains('virtual-clients-v*')) {
-            throw "$path stable tag trigger is missing."
+            throw 'Trusted release stable tag trigger is missing.'
+          }
+
+          $metadataStart = $source.IndexOf('- name: Build trusted release metadata')
+          $uploadStart = $source.IndexOf('- name: Upload trusted release candidate')
+          if ($metadataStart -lt 0 -or $uploadStart -le $metadataStart) {
+            throw 'Trusted release metadata block boundaries are invalid.'
+          }
+          $metadataBlock = $source.Substring($metadataStart, $uploadStart - $metadataStart)
+          foreach ($needle in @(
+            'CURRENT_RUNTIME_SCHEMA',
+            'SHA256SUMS.txt',
+            'write-update-manifest.ps1',
+            'build-provenance.json'
+          )) {
+            if (!$metadataBlock.Contains($needle)) {
+              throw "Trusted release metadata step is missing '$needle'."
+            }
           }
 
       - name: Validate PowerShell distribution scripts
