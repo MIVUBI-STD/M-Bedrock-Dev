@@ -10,6 +10,7 @@
   export let onContinue: () => void | Promise<void>;
   export let onOpenClients: () => void;
   export let onSupport: () => void;
+  export let onOpenBaseLocation: () => void | Promise<void>;
 
   $: action = snapshot.doctor.nextSetupAction;
   $: experience = setupExperience(action);
@@ -88,6 +89,9 @@
       <div><span>Network</span><strong>{basePreflight.networkPresent === true ? "Present" : basePreflight.networkPresent === false ? "Missing" : "Unknown"}</strong></div>
     </div>
     {#if basePreflight.baseExpectedPath}
+      <div class="preflight-tools">
+        <button class="secondary" on:click={onOpenBaseLocation}>Open Base location</button>
+      </div>
       <details class="preflight-path">
         <summary>Expected Base location</summary>
         <code>{basePreflight.baseExpectedPath}</code>

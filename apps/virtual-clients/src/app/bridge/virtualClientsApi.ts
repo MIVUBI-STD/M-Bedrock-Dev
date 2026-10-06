@@ -53,7 +53,8 @@ async function invokeDesktop<T>(command: string): Promise<T> {
 
 export const desktop = {
   canArrangeWindows: () => true,
-  arrangeWindows: () => invokeDesktop<WindowArrangementResult>("window_arrange")
+  arrangeWindows: () => invokeDesktop<WindowArrangementResult>("window_arrange"),
+  openBaseLocation: () => invokeDesktop<void>("setup_open_base_location")
 };
 
 export const backend = {

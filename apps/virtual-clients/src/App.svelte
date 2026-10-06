@@ -122,6 +122,15 @@
     await mutate("start-all", () => backend.start(count));
   }
 
+  async function openBaseLocation() {
+    error = undefined;
+    try {
+      await desktop.openBaseLocation();
+    } catch (value) {
+      error = presentRuntimeError(value);
+    }
+  }
+
   async function arrangeWindows() {
     busy = "arrange";
     error = undefined;
@@ -234,6 +243,7 @@
           onContinue={continueSetup}
           onOpenClients={() => selectPage("clients")}
           onSupport={() => selectPage("support")}
+          onOpenBaseLocation={openBaseLocation}
         />
       {:else if page === "clients"}
         <ClientsSurface

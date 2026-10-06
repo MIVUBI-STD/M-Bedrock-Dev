@@ -32,6 +32,7 @@ pub fn run() {
             commands::virtual_clients::virtual_clients_reset,
             commands::virtual_clients::virtual_clients_open,
             commands::virtual_clients::virtual_clients_reprovision,
+            commands::setup_tools::setup_open_base_location,
             commands::window_arrangement::window_arrange
         ])
         .run(tauri::generate_context!())
