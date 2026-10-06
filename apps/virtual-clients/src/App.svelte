@@ -9,6 +9,7 @@
   import SupportSurface from "./app/surfaces/SupportSurface.svelte";
   import RecreateClientDialog from "./app/components/RecreateClientDialog.svelte";
   import RestoreRecoveryPointDialog from "./app/components/RestoreRecoveryPointDialog.svelte";
+  import WindowLayoutDialog from "./app/components/WindowLayoutDialog.svelte";
   import { operationProgressLabel, type ProgressObserver } from "./app/operationProgress.js";
   import { settleMutation } from "./app/mutation.js";
   import SaveRecoveryPointDialog from "./app/components/SaveRecoveryPointDialog.svelte";
@@ -19,13 +20,14 @@
     EnginePolicy,
     EngineSnapshot,
     OperationRecord,
+    DisplayInfo,
     UpdateCheck,
   } from "./contracts.js";
   import { actionForClient, clientDisplayName, primaryClientAction } from "./view-model.js";
   import type { Page } from "./app/navigation.js";
   import { presentRuntimeError, type RuntimeErrorPresentation } from "./app/runtimeErrorPresentation.js";
   import { setupExperience } from "./app/setupFlow.js";
-  import { loadWindowLayoutPreference } from "./app/windowLayoutPreference.js";
+  import { loadWindowLayoutPreference, saveWindowLayoutPreference, type WindowLayoutPreference } from "./app/windowLayoutPreference.js";
 
 
   let snapshot: EngineSnapshot | undefined;
@@ -49,6 +51,9 @@
   let error: RuntimeErrorPresentation | undefined;
   let supportPath = "";
   let arrangeMessage = "";
+  let layoutDialogOpen = false;
+  let layoutDisplays: DisplayInfo[] = [];
+  let layoutPreference: WindowLayoutPreference = loadWindowLayoutPreference();
   let page: Page = "clients";
   let pageChosen = false;
 
@@ -221,6 +226,27 @@
     }
   }
 
+  async function openWindowLayout() {
+    error = undefined;
+    try {
+      layoutDisplays = await desktop.displays();
+      const selected = layoutDisplays.find((display) => display.index === layoutPreference.displayIndex)
+        ?? layoutDisplays.find((display) => display.primary)
+        ?? layoutDisplays[0];
+      if (selected) layoutPreference = { ...layoutPreference, displayIndex: selected.index };
+      layoutDialogOpen = true;
+    } catch (value) {
+      error = presentRuntimeError(value);
+    }
+  }
+
+  async function applyWindowLayout(preference: WindowLayoutPreference) {
+    saveWindowLayoutPreference(preference);
+    layoutPreference = preference;
+    layoutDialogOpen = false;
+    await arrangeWindows();
+  }
+
   async function arrangeWindows() {
     if (busy || loading || refreshRunning) return;
     operationStatus = "Waiting for backend confirmation…";
@@ -233,7 +259,7 @@
         if (client.state === "RUNNING" && available?.open.allowed) await backend.open(client.id, reportProgress);
       }
       operationStatus = "Arranging client windows…";
-      const preference = loadWindowLayoutPreference();
+      const preference = layoutPreference;
       const displays = await desktop.displays();
       const selectedDisplay = displays.find((display) => display.index === preference.displayIndex)
         ?? displays.find((display) => display.primary)
@@ -409,6 +435,7 @@
           {busy}
           onStartAll={startAll}
           onArrange={arrangeWindows}
+          onConfigureLayout={openWindowLayout}
           onStopAll={() => mutate("stop-all", (onProgress) => backend.stop(undefined, onProgress))}
           onPrimary={runPrimaryClientAction}
           onRestart={(client) => mutate(`restart-${client}`, (onProgress) => backend.restart(client, onProgress))}
@@ -441,6 +468,15 @@
       {/if}
     {/if}
   </main>
+
+  {#if layoutDialogOpen}
+    <WindowLayoutDialog
+      displays={layoutDisplays}
+      preference={layoutPreference}
+      onCancel={() => (layoutDialogOpen = false)}
+      onApply={applyWindowLayout}
+    />
+  {/if}
 
   {#if confirmSetReady}
     <SaveRecoveryPointDialog
