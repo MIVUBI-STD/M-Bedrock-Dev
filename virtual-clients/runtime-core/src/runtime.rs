@@ -1516,6 +1516,15 @@ impl VirtualClients {
                     ),
                 ));
             }
+            if let Err(error) = provider.open(*client) {
+                return Err(io::Error::new(
+                    error.kind(),
+                    format!(
+                        "{} and Minecraft Education are running, but the client window could not be opened: {error}",
+                        client.as_str()
+                    ),
+                ));
+            }
         }
         Ok(statuses)
     }
