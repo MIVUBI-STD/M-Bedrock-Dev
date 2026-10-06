@@ -1480,6 +1480,16 @@
       ]
     },
     {
+      "knowledgeId": "population-policy.relation-spawn-verify-gates-registration",
+      "consumer": "entity-population-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/entity-population-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "population-policy.replacement-lineage",
       "consumer": "entity-population-analysis",
       "analyzerPaths": [

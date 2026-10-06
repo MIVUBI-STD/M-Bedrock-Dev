@@ -329,3 +329,91 @@ describe("spawn intent and replacement lineage", () => {
     ).toBe("explicit");
   });
 });
+
+
+describe("spawn commit transaction", () => {
+  it("proves verification before generation registry registration", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function spawn(dimension, arena) {",
+        "  const enemy = dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  if (!enemy.isValid || enemy.typeId !== 'demo:enemy') return;",
+        "  if (arenaGenerationOf(enemy) !== arena.generation) return;",
+        "  arena.enemyRegistry.add(enemy.id);",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeEntityPopulationSources(
+        [],
+        [script],
+      );
+
+    expect(
+      result.verifiedSpawnCommits,
+    ).toBe(1);
+    expect(
+      result.spawnCommits[0]
+        ?.status,
+    ).toBe(
+      "verified-before-registration",
+    );
+  });
+
+  it("rejects registration before verification", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function spawn(dimension, arena) {",
+        "  const enemy = dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  arena.enemyRegistry.add(enemy.id);",
+        "  if (!enemy.isValid) return;",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    expect(
+      analyzeEntityPopulationSources(
+        [],
+        [script],
+      ).spawnCommits[0]?.status,
+    ).toBe(
+      "registration-before-verification",
+    );
+  });
+
+  it("keeps raw spawn without registry commit unresolved", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function spawn(dimension) {",
+        "  const enemy = dimension.spawnEntity('demo:enemy', { x: 0, y: 0, z: 0 });",
+        "  if (!enemy.isValid) return;",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    expect(
+      analyzeEntityPopulationSources(
+        [],
+        [script],
+      ).spawnCommits[0]?.status,
+    ).toBe(
+      "spawn-without-registration",
+    );
+  });
+});

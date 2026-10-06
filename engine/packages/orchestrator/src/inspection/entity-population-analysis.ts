@@ -58,6 +58,17 @@ export interface SpawnIntentAssessment {
     readonly string[];
 }
 
+export interface SpawnCommitAssessment {
+  readonly scriptId: string;
+  readonly functionRegion: string;
+  readonly entityVariable: string;
+  readonly status:
+    | "verified-before-registration"
+    | "registration-before-verification"
+    | "registration-without-verification"
+    | "spawn-without-registration";
+}
+
 export interface EntityPopulationSourceAnalysis {
   readonly autonomousSpawnSources:
     readonly AutonomousEntitySpawnSource[];
@@ -81,6 +92,10 @@ export interface EntityPopulationSourceAnalysis {
     | "explicit"
     | "declared-but-inheritance-unproven"
     | "not-applicable";
+  readonly spawnCommits:
+    readonly SpawnCommitAssessment[];
+  readonly verifiedSpawnCommits: number;
+  readonly unresolvedSpawnCommits: number;
 }
 
 function autonomousSpawnKind(
@@ -239,6 +254,197 @@ function lineageInheritanceEvidence(
   );
 }
 
+
+function spawnCommitAssessments(
+  scripts: readonly ParsedScriptFile[],
+): SpawnCommitAssessment[] {
+  const output:
+    SpawnCommitAssessment[] = [];
+
+  for (const script of scripts) {
+    const file = ts.createSourceFile(
+      script.source.relativePath,
+      script.text,
+      ts.ScriptTarget.Latest,
+      true,
+      script.source.relativePath.endsWith(
+        ".ts",
+      )
+        ? ts.ScriptKind.TS
+        : ts.ScriptKind.JS,
+    );
+
+    const inspectFunction = (
+      node:
+        | ts.FunctionDeclaration
+        | ts.MethodDeclaration
+        | ts.ArrowFunction
+        | ts.FunctionExpression,
+      region: string,
+    ): void => {
+      if (!node.body) return;
+      const body = node.body;
+      const statements =
+        ts.isBlock(body)
+          ? body.statements
+          : ts.factory.createNodeArray();
+
+      for (
+        let index = 0;
+        index < statements.length;
+        index += 1
+      ) {
+        const statement =
+          statements[index]!;
+        if (
+          !ts.isVariableStatement(
+            statement,
+          )
+        ) {
+          continue;
+        }
+
+        for (
+          const declaration of
+            statement.declarationList
+              .declarations
+        ) {
+          if (
+            !ts.isIdentifier(
+              declaration.name,
+            ) ||
+            !declaration.initializer ||
+            !ts.isCallExpression(
+              declaration.initializer,
+            ) ||
+            !ts.isPropertyAccessExpression(
+              declaration.initializer
+                .expression,
+            ) ||
+            declaration.initializer
+              .expression.name.text !==
+              "spawnEntity"
+          ) {
+            continue;
+          }
+
+          const variable =
+            declaration.name.text;
+          let verificationIndex:
+            number | undefined;
+          let registrationIndex:
+            number | undefined;
+
+          for (
+            let later = index + 1;
+            later < statements.length;
+            later += 1
+          ) {
+            const text =
+              statements[later]!.getText(
+                file,
+              );
+
+            if (
+              verificationIndex ===
+                undefined &&
+              new RegExp(
+                "\\b" +
+                  variable +
+                  "\\.(?:id|typeId|location|isValid)\\b|(?:arena|generation|ownership)[\\s\\S]{0,120}\\b" +
+                  variable +
+                  "\\b",
+                "i",
+              ).test(text)
+            ) {
+              verificationIndex = later;
+            }
+
+            if (
+              registrationIndex ===
+                undefined &&
+              new RegExp(
+                "(?:registry|actors|enemies|entities)[\\s\\S]{0,120}\\.(?:add|set)\\s*\\([\\s\\S]{0,80}\\b" +
+                  variable +
+                  "\\.id\\b",
+                "i",
+              ).test(text)
+            ) {
+              registrationIndex = later;
+            }
+          }
+
+          const status:
+            SpawnCommitAssessment["status"] =
+            registrationIndex ===
+              undefined
+              ? "spawn-without-registration"
+              : verificationIndex ===
+                  undefined
+                ? "registration-without-verification"
+                : verificationIndex <
+                    registrationIndex
+                  ? "verified-before-registration"
+                  : "registration-before-verification";
+
+          output.push({
+            scriptId:
+              script.identifier,
+            functionRegion: region,
+            entityVariable: variable,
+            status,
+          });
+        }
+      }
+    };
+
+    const visit = (
+      node: ts.Node,
+    ): void => {
+      if (
+        ts.isFunctionDeclaration(
+          node,
+        ) &&
+        node.name
+      ) {
+        inspectFunction(
+          node,
+          "function:" +
+            node.name.text,
+        );
+      } else if (
+        ts.isMethodDeclaration(node)
+      ) {
+        const name = node.name;
+        if (
+          ts.isIdentifier(name) ||
+          ts.isStringLiteralLike(name)
+        ) {
+          inspectFunction(
+            node,
+            "function:" +
+              name.text,
+          );
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(file);
+  }
+
+  return output.sort((a, b) =>
+    a.scriptId.localeCompare(
+      b.scriptId,
+    ) ||
+    a.functionRegion.localeCompare(
+      b.functionRegion,
+    ) ||
+    a.entityVariable.localeCompare(
+      b.entityVariable,
+    )
+  );
+}
+
 export function analyzeEntityPopulationSources(
   entities:
     readonly ParsedEntityDefinition[],
@@ -257,6 +463,8 @@ export function analyzeEntityPopulationSources(
     AutonomousEntitySpawnSource[] = [];
   const spawnIntents =
     spawnIntentAssessments(scripts);
+  const spawnCommits =
+    spawnCommitAssessments(scripts);
   const lineageEvidence =
     lineageInheritanceEvidence(
       scripts,
@@ -488,6 +696,19 @@ export function analyzeEntityPopulationSources(
         : lineageEvidence > 0
           ? "explicit"
           : "declared-but-inheritance-unproven",
+    spawnCommits,
+    verifiedSpawnCommits:
+      spawnCommits.filter(
+        (item) =>
+          item.status ===
+          "verified-before-registration",
+      ).length,
+    unresolvedSpawnCommits:
+      spawnCommits.filter(
+        (item) =>
+          item.status !==
+          "verified-before-registration",
+      ).length,
   };
 }
 
