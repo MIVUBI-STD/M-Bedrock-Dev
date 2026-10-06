@@ -219,6 +219,8 @@ export interface WindowArrangementResult {
   displayIndex: number;
   arranged: ClientId[];
   missing: ClientId[];
+  overlayApplied?: boolean;
+  overlayWarning?: string | null;
 }
 
 export interface SupportBundleResult {
