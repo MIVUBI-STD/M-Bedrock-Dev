@@ -89,6 +89,19 @@ fn write_json(stream: &mut TcpStream, value: &impl serde::Serialize) -> Result<(
 }
 
 #[cfg(target_os = "windows")]
+fn interactive_session_available() -> bool {
+    let output = std::process::Command::new("powershell.exe")
+        .args([
+            "-NoLogo", "-NoProfile", "-NonInteractive", "-Command",
+            "$session = (Get-Process -Id $PID).SessionId; $interactive = @(Get-Process explorer -ErrorAction SilentlyContinue | Where-Object { $_.SessionId -ne 0 }).Count -gt 0; ($session -ne 0) -and $interactive",
+        ])
+        .output();
+    output.ok()
+        .filter(|output| output.status.success())
+        .is_some_and(|output| String::from_utf8_lossy(&output.stdout).trim().eq_ignore_ascii_case("True"))
+}
+
+#[cfg(target_os = "windows")]
 fn minecraft_process_running() -> bool {
     std::process::Command::new("powershell.exe")
         .args([
@@ -104,6 +117,9 @@ fn minecraft_process_running() -> bool {
 #[cfg(target_os = "windows")]
 fn launch_minecraft() -> Result<m_bedrock_virtual_clients_core::MinecraftLaunchResult, Box<dyn std::error::Error>> {
     use m_bedrock_virtual_clients_core::{MinecraftLaunchResult, MinecraftLaunchState};
+    if !interactive_session_available() {
+        return Err(io::Error::new(io::ErrorKind::PermissionDenied, "Guest Agent is not running in an interactive Windows user session; Minecraft UI launch is blocked").into());
+    }
     if minecraft_process_running() {
         return Ok(MinecraftLaunchResult { schema: 1, state: MinecraftLaunchState::AlreadyRunning });
     }
