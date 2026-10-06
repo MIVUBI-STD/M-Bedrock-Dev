@@ -4,8 +4,9 @@
     "interfaces": {
       "purpose": "User-facing executable/UI surfaces that consume engine APIs.",
       "entries": [
+        "bug-report-ui",
         "cli",
-        "bug-report-ui"
+        "virtual-clients-ui"
       ]
     }
   }
