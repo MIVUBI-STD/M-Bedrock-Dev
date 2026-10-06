@@ -68,12 +68,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("  resources <1-3>");
             println!("  reprovision <Virtual-01..03>");
             println!("  start <1-3>");
-            println!("  open <Native|Virtual-01..03>");
+            println!("  open <Virtual-01..03>");
             println!("  suspend [Virtual-01..03]");
             println!("  restart <Virtual-01..03>");
             println!("  set-ready <Virtual-01..03>");
             println!("  reset <Virtual-01..03>");
-            println!("  stop [Native|Virtual-01..03]");
+            println!("  stop [Virtual-01..03]");
         }
     }
 
