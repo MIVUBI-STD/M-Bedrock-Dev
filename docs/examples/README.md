@@ -1,0 +1,12 @@
+# Examples
+
+Non-canonical examples and reference outputs used to illustrate repository contracts.
+
+Examples never define current workflow, schema authority, gameplay truth, or report state.
+
+## Available examples
+
+- [Defense Challenge Audit Reference](./defense-challenge-v1.1.1-audit-reference.md) — historical/reference illustration of an audit result shape; not current-map proof.
+- [Map Audit Output V2 Example](./map-audit-output-v2.example.json) — example serialized Map Audit Output V2 payload.
+
+Use examples only after reading the canonical owner they illustrate.
