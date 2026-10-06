@@ -78,7 +78,6 @@ mod tests {
     }
 }
 
-
 pub fn start_delay_secs(level: PressureLevel) -> u64 {
     match level {
         PressureLevel::Normal => 2,
