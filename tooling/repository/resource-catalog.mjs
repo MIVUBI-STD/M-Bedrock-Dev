@@ -1,38 +1,8 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, join, relative } from "node:path";
+import { readDocumentMetadata } from "./document-metadata.mjs";
 
 const DOC_DOMAINS = ["product", "artifacts", "analysis", "repair", "validation", "system", "examples"];
-
-const DOCUMENT_ROLE = new Map([
-  ["docs/product/flow.md", "WORKFLOW"],
-  ["docs/analysis/master-selected-map-audit-workflow.md", "WORKFLOW"],
-  ["docs/analysis/mandatory-audit-procedure.md", "WORKFLOW"],
-  ["docs/analysis/audit-execution-flow.md", "WORKFLOW"],
-
-  ["docs/system/architecture.md", "ARCHITECTURE"],
-  ["docs/system/behavioral-world-model.md", "ARCHITECTURE"],
-  ["docs/analysis/executable-reasoning-architecture.md", "ARCHITECTURE"],
-
-  ["docs/system/development-operations.md", "GUIDE"],
-
-  ["docs/system/authority-model.md", "CONTRACT"],
-  ["docs/system/bug-report-ownership.md", "CONTRACT"],
-  ["docs/system/canonical-naming.md", "CONTRACT"],
-  ["docs/system/development-discipline.md", "CONTRACT"],
-  ["docs/system/drive-storage.md", "CONTRACT"],
-  ["docs/system/project-lifecycle.md", "CONTRACT"],
-  ["docs/analysis/bug-finding-coverage.md", "CONTRACT"],
-  ["docs/analysis/gameplay-model-closure.md", "CONTRACT"],
-  ["docs/analysis/map-audit-naming-contract.md", "CONTRACT"],
-  ["docs/analysis/map-audit-report-v2-schema.md", "CONTRACT"],
-  ["docs/analysis/multi-arena-audit-contract.md", "CONTRACT"],
-  ["docs/analysis/runtime-telemetry-contract.md", "CONTRACT"],
-  ["docs/analysis/user-input-translation-contract.md", "CONTRACT"],
-  ["docs/analysis/vital-gameplay-knowledge-closure.md", "CONTRACT"],
-  ["docs/repair/transactions.md", "CONTRACT"],
-  ["docs/validation/package-proof.md", "CONTRACT"],
-  ["docs/validation/repair-validation.md", "CONTRACT"],
-]);
 
 function slug(value) {
   return value
@@ -42,19 +12,6 @@ function slug(value) {
     .replace(/[^a-zA-Z0-9.-]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .toLowerCase();
-}
-
-function documentId(path) {
-  if (path === "docs/README.md") return "document.docs.router";
-  const parts = path.split("/");
-  const domain = parts[1];
-  if (parts.at(-1) === "README.md") return "document." + domain + ".router";
-  return "document." + domain + "." + slug(parts.at(-1));
-}
-
-function documentRole(path) {
-  if (path.endsWith("/README.md") || path === "docs/README.md") return "ROUTER";
-  return DOCUMENT_ROLE.get(path) ?? "REFERENCE";
 }
 
 function addResource(resources, seen, resource) {
@@ -68,14 +25,14 @@ function readJson(path) {
 }
 
 function catalogDocuments(resources, seen) {
+  const rootPath = "docs/README.md";
+  const rootMetadata = readDocumentMetadata(
+    readFileSync(rootPath, "utf8"),
+    rootPath,
+  );
   addResource(resources, seen, {
-    id: documentId("docs/README.md"),
-    class: "DOCUMENT",
-    domain: "docs",
-    role: "ROUTER",
-    authority: "CANONICAL",
-    path: "docs/README.md",
-    lifecycle: "ACTIVE",
+    ...rootMetadata,
+    path: rootPath,
   });
 
   for (const domain of DOC_DOMAINS) {
@@ -83,14 +40,13 @@ function catalogDocuments(resources, seen) {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       if (!entry.isFile() || !entry.name.endsWith(".md")) continue;
       const path = join(dir, entry.name).replaceAll("\\", "/");
-      addResource(resources, seen, {
-        id: documentId(path),
-        class: "DOCUMENT",
-        domain,
-        role: documentRole(path),
-        authority: domain === "examples" ? "REFERENCE" : "CANONICAL",
+      const metadata = readDocumentMetadata(
+        readFileSync(path, "utf8"),
         path,
-        lifecycle: "ACTIVE",
+      );
+      addResource(resources, seen, {
+        ...metadata,
+        path,
       });
     }
   }
@@ -209,5 +165,9 @@ export function buildResourceCatalog() {
 }
 
 export function resourceIdForDocumentPath(path) {
-  return documentId(path.replaceAll("\\", "/"));
+  const normalized = path.replaceAll("\\", "/");
+  return readDocumentMetadata(
+    readFileSync(normalized, "utf8"),
+    normalized,
+  ).id;
 }
