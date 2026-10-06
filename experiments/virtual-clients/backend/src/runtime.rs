@@ -862,6 +862,9 @@ impl VirtualClients {
             ));
         }
 
+        require_base_matches_native()?;
+        require_client_matches_native(client)?;
+
         let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(
@@ -889,6 +892,7 @@ impl VirtualClients {
         }
 
         require_base_matches_native()?;
+        require_client_matches_native(client)?;
 
         let _lock = OperationLock::acquire()?;
         let provider = current_platform_provider().ok_or_else(|| {
@@ -925,6 +929,9 @@ impl VirtualClients {
                 "Native is opened manually on the host",
             ));
         }
+
+        require_base_matches_native()?;
+        require_client_matches_native(client)?;
 
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(
