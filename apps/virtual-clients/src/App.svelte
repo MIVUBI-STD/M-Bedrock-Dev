@@ -20,6 +20,7 @@
   import { actionForClient, clientDisplayName, primaryClientAction } from "./view-model.js";
   import type { Page } from "./app/navigation.js";
   import { presentRuntimeError, type RuntimeErrorPresentation } from "./app/runtimeErrorPresentation.js";
+  import { setupExperience } from "./app/setupFlow.js";
 
 
   let snapshot: EngineSnapshot | undefined;
@@ -56,14 +57,18 @@
     loading = true;
     error = undefined;
     try {
-      const [nextSnapshot, nextPolicy, nextBasePreflight, nextActions, nextHistory, nextUpdate] = await Promise.all([
+      const [nextSnapshot, nextPolicy, nextActions, nextHistory, nextUpdate] = await Promise.all([
         backend.snapshot(),
         backend.policy(),
-        backend.basePreflight(),
         backend.actions(),
         backend.history(),
         backend.checkUpdate(),
       ]);
+      const nextBasePreflight =
+        setupExperience(nextSnapshot.doctor.nextSetupAction).phase === "ENVIRONMENT"
+          ? await backend.basePreflight()
+          : undefined;
+
       snapshot = nextSnapshot;
       policy = nextPolicy;
       basePreflight = nextBasePreflight;
