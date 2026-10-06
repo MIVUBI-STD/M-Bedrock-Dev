@@ -208,6 +208,15 @@ export function deriveScriptSpatialMutations(
             receiverText,
             source: sourceRef,
             position,
+            ...(node.arguments[1]?.getText(file).match(/dimension\s*:\s*([^,}]+)/)?.[1] === undefined
+              ? {}
+              : { dimensionExpression: node.arguments[1]!.getText(file).match(/dimension\s*:\s*([^,}]+)/)![1]!.trim() }),
+            ...(node.arguments[1]?.getText(file).match(/checkForBlocks\s*:\s*(true|false)/)?.[1] === undefined
+              ? {}
+              : { checkForBlocks: node.arguments[1]!.getText(file).match(/checkForBlocks\s*:\s*(true|false)/)![1] === "true" }),
+            ...(method !== "tryTeleport" || assignedIdentifier(node) === undefined
+              ? {}
+              : { resultBinding: assignedIdentifier(node) }),
           });
         }
       }
