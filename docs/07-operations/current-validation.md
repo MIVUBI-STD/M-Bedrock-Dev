@@ -1,3 +1,47 @@
+## Four-client deep audit — interactive auth and concurrency (2026-10-07)
+
+Deep scenario audit found two P0 proof boundaries and several secondary ones.
+
+P0 interactive-auth boundary:
+- the installed Guest Agent is a SYSTEM/ServiceAccount startup task;
+- SYSTEM/session-0 execution is not accepted as proof of visible Minecraft UI or
+  Microsoft authentication UI in the Virtual's interactive desktop;
+- Guest Agent launch now hands off through a local fixed-action interactive mode
+  instead of directly claiming SYSTEM can launch the UI;
+- the same binary has a narrow `--interactive-launcher` mode with no network
+  listener and only one literal action: Minecraft Education;
+- local launch requests carry a short correlation ID so stale request/ack files
+  cannot be accepted as current success;
+- a per-Virtual interactive-user task/registration is still NOT implemented in
+  repo because the write path for that scheduled-task script was blocked. Do not
+  call auto-launch target-machine-ready until this registration plus explicit
+  ProgramData IPC ACLs are implemented/proven;
+- user-specific interactive launcher registration belongs after each Virtual's
+  OOBE, never in the generalized Base.
+
+P0 four-client boundary:
+- no official support claim was found for one Native + three Minecraft Education
+  guests on one physical host; treat it as an engineering capability requiring
+  target-machine proof;
+- Base preflight now exposes VMware `ethernet0.connectionType` rather than
+  assuming NAT/bridged equivalence;
+- Minecraft launch after multi-VM start is staggered with the existing pressure
+  delay to reduce renderer/disk initialization storms;
+- UI wording is `Minecraft open`, not `Minecraft ready`, because process
+  presence does not prove signed-in menu or multiplayer readiness.
+
+Canonical scenario matrix:
+`virtual-clients/docs/four-client-failure-matrix.md`.
+
+Proof must distinguish:
+VM running ≠ Minecraft process open ≠ interactive menu usable ≠ account signed
+in ≠ multiplayer ready.
+
+No generic remote shell, credential automation, GPU threshold, forced network
+mode, audio policy, or additional state machine was introduced without evidence.
+
+---
+
 ## Virtual Clients Minecraft auto-launch — REMOTE_GITHUB implementation (2026-10-07)
 
 Implemented source:
