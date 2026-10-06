@@ -1,1 +1,1 @@
-export type Page = "setup" | "clients" | "settings" | "support";
+export type Page = "clients" | "settings" | "support";
