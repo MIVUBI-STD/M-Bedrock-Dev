@@ -2,7 +2,7 @@
 id: document.analysis.player-lifecycle
 class: DOCUMENT
 domain: analysis
-role: REFERENCE
+role: DOMAIN
 authority: CANONICAL
 lifecycle: ACTIVE
 ---
