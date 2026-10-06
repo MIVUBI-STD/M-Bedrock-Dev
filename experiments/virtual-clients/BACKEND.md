@@ -62,6 +62,15 @@ Boot paths require:
 
 ## Base provenance
 
+The Base has one canonical lifecycle marker in VM configuration:
+
+```text
+guestinfo.virtualclients.baseState
+REGISTERED → FINALIZING → FINALIZED
+```
+
+`register-base` performs live verification while the Base is still reusable, then marks it `REGISTERED`. `finalize-base.ps1 -ConfirmGeneralize` runs Windows Sysprep generalization inside the Base, verifies the marker becomes `FINALIZED`, then shuts Windows down. `provision` and `reprovision` accept only a stopped `FINALIZED` Base. A finalized Base must never be booted for re-registration.
+
 `register-base` records the currently detected Native Minecraft version beside the stopped Base.
 
 That record means:

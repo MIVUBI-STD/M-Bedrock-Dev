@@ -10,6 +10,10 @@ Experimental backend for running multiple interactive Minecraft Education client
 doctor
 → prepare Base with the same Minecraft Education version as Native
 register-base
+→ Base state = REGISTERED
+→ run finalize-base.ps1 -ConfirmGeneralize inside Base
+→ Sysprep generalize + shutdown
+→ Base state = FINALIZED
 provision
 
 start 3
@@ -25,6 +29,8 @@ set-ready Virtual-01
 repeat for Virtual-02 / Virtual-03
 
 Base must never contain a Microsoft/Minecraft user session. Account state belongs to each provisioned Virtual only.
+
+Do not boot Base again after it reaches `FINALIZED`. A finalized Base is an immutable clone source.
 ```
 
 ### Daily use

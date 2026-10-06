@@ -11,8 +11,8 @@ use crate::{
         MinecraftProfile, ProfileParity, ProfileStatus,
     },
     provider::{
-        cleanup_staging, current_platform_provider, ensure_guest_token_for_path, guest_token,
-        Provider,
+        base_state_for_path, cleanup_staging, current_platform_provider,
+        ensure_guest_token_for_path, guest_token, set_base_state_for_path, Provider,
     },
     resources::{current_host_pressure, start_delay_secs, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
     schema::ensure_runtime_schema,
@@ -507,6 +507,22 @@ impl VirtualClients {
             ));
         }
 
+        match base_state_for_path(&base)?.as_deref() {
+            Some("FINALIZED") => {
+                return Err(io::Error::new(
+                    io::ErrorKind::AlreadyExists,
+                    "Base is already FINALIZED and must not be booted for re-registration",
+                ))
+            }
+            Some("FINALIZING") => {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "Base is in FINALIZING state; inspect the Base before continuing",
+                ))
+            }
+            _ => {}
+        }
+
         let token = ensure_guest_token_for_path(&base)?;
         provider.start_validation_vm(&base)?;
 
@@ -563,6 +579,7 @@ impl VirtualClients {
             }
         };
 
+        set_base_state_for_path(&base, "REGISTERED")?;
         write_verified_base_profile(&native, &proof.agent_version)
     }
 
@@ -574,6 +591,14 @@ impl VirtualClients {
                 "Native Minecraft Education version could not be detected",
             )
         })?;
+        let base = current_base_vmx_path()?;
+        if base_state_for_path(&base)?.as_deref() != Some("FINALIZED") {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Base must be FINALIZED with finalize-base.ps1 before provisioning",
+            ));
+        }
+
         let _lock = OperationLock::acquire()?;
         cleanup_staging()?;
         let provider = current_platform_provider().ok_or_else(|| {
@@ -630,6 +655,13 @@ impl VirtualClients {
                 "Native Minecraft Education version could not be detected",
             )
         })?;
+        let base = current_base_vmx_path()?;
+        if base_state_for_path(&base)?.as_deref() != Some("FINALIZED") {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Base must be FINALIZED with finalize-base.ps1 before reprovisioning",
+            ));
+        }
 
         let _lock = OperationLock::acquire()?;
         cleanup_staging()?;

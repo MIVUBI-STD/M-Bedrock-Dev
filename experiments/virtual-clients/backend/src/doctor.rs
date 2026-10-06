@@ -3,7 +3,7 @@ use crate::{
     paths::runtime_root,
     profile::current_base_vmx_path,
     profile::{load_client_profile, profile_status, ProfileParity, ProfileStatus},
-    provider::current_platform_provider,
+    provider::{base_state_for_path, current_platform_provider},
     schema::{inspect_runtime_schema, SchemaStatus},
 };
 use serde::Serialize;
@@ -27,6 +27,7 @@ pub enum SetupAction {
     InstallNativeMinecraft,
     PrepareBase,
     RegisterBase,
+    FinalizeBase,
     ProvisionVirtuals,
     ReprovisionVirtuals,
     VerifyIdentities,
@@ -45,6 +46,7 @@ pub struct DoctorReport {
     pub base_vm_path: Option<String>,
     pub base_vm_present: bool,
     pub base_vm_stopped: Option<bool>,
+    pub base_state: Option<String>,
     pub runtime_schema: SchemaStatus,
     pub runtime_profile: ProfileStatus,
     pub clients: Vec<DoctorClient>,
@@ -96,6 +98,11 @@ pub fn doctor() -> DoctorReport {
         }
         _ => None,
     };
+
+    let base_state = base
+        .as_ref()
+        .and_then(|path| base_state_for_path(path).ok())
+        .flatten();
 
     let runtime_schema = runtime_root()
         .map(|root| inspect_runtime_schema(&root))
@@ -164,6 +171,8 @@ pub fn doctor() -> DoctorReport {
         SetupAction::PrepareBase
     } else if runtime_profile.parity != ProfileParity::Match {
         SetupAction::RegisterBase
+    } else if base_state.as_deref() != Some("FINALIZED") {
+        SetupAction::FinalizeBase
     } else if clients.iter().any(|client| !client.provisioned) {
         SetupAction::ProvisionVirtuals
     } else if clients
@@ -187,12 +196,14 @@ pub fn doctor() -> DoctorReport {
         base_vm_path: base.map(|path| path.display().to_string()),
         base_vm_present,
         base_vm_stopped,
+        base_state: base_state.clone(),
         runtime_schema,
         runtime_profile: runtime_profile.clone(),
         clients,
         ready_for_provisioning: provider.is_some()
             && base_vm_present
             && base_vm_stopped == Some(true)
+            && base_state.as_deref() == Some("FINALIZED")
             && runtime_profile.parity == ProfileParity::Match,
         next_setup_action,
     }

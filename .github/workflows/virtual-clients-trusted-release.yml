@@ -45,6 +45,30 @@ jobs:
           if (!$cert -or !$cert.HasPrivateKey) { throw 'Signing certificate with private key is not available in CurrentUser\My.' }
           "version=$version" >> $env:GITHUB_OUTPUT
 
+      - name: Validate PowerShell scripts
+        shell: pwsh
+        run: |
+          $paths = @(
+            'experiments/virtual-clients/distribution/write-update-manifest.ps1',
+            'experiments/virtual-clients/guest/windows/install-guest-agent.ps1',
+            'experiments/virtual-clients/guest/windows/prepare-base.ps1',
+            'experiments/virtual-clients/guest/windows/finalize-base.ps1',
+            'experiments/virtual-clients/guest/windows/uninstall-guest-agent.ps1'
+          )
+          foreach ($path in $paths) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $path),
+              [ref]$tokens,
+              [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              $details = ($errors | ForEach-Object { $_.Message }) -join '; '
+              throw "$path has PowerShell parser errors: $details"
+            }
+          }
+
       - name: Install Rust 1.98.1
         shell: pwsh
         run: |

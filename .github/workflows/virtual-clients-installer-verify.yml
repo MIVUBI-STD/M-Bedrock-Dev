@@ -39,6 +39,7 @@ jobs:
             'experiments/virtual-clients/distribution/write-update-manifest.ps1',
             'experiments/virtual-clients/guest/windows/install-guest-agent.ps1',
             'experiments/virtual-clients/guest/windows/prepare-base.ps1',
+            'experiments/virtual-clients/guest/windows/finalize-base.ps1',
             'experiments/virtual-clients/guest/windows/uninstall-guest-agent.ps1'
           )
           foreach ($path in $paths) {
@@ -108,9 +109,11 @@ jobs:
           $hostExe = Join-Path $installDir 'virtual-clients.exe'
           $guestExe = Join-Path $installDir 'guest\virtual-guest-agent.exe'
           $prepare = Join-Path $installDir 'guest\windows\prepare-base.ps1'
+          $finalize = Join-Path $installDir 'guest\windows\finalize-base.ps1'
           if (!(Test-Path $hostExe -PathType Leaf)) { throw 'Host executable missing after install.' }
           if (!(Test-Path $guestExe -PathType Leaf)) { throw 'Guest Agent executable missing after install.' }
           if (!(Test-Path $prepare -PathType Leaf)) { throw 'Guest Base preparation script missing after install.' }
+          if (!(Test-Path $finalize -PathType Leaf)) { throw 'Guest Base finalization script missing after install.' }
 
           & $hostExe help | Out-Host
           if ($LASTEXITCODE -ne 0) { throw 'Installed host executable smoke test failed.' }

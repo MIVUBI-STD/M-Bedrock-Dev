@@ -23,6 +23,7 @@ pub use workstation::VmwareWorkstationProvider;
 
 pub(crate) const READY_SNAPSHOT: &str = "QA_READY";
 pub(crate) const GUEST_TOKEN_KEY: &str = "guestinfo.virtualclients.token";
+pub(crate) const BASE_STATE_KEY: &str = "guestinfo.virtualclients.baseState";
 pub(crate) const CLIENT_VCPUS: &str = "2";
 const COMMAND_TIMEOUT: Duration = Duration::from_secs(45);
 pub(crate) const DISK_STATE_TIMEOUT: Duration = Duration::from_secs(180);
@@ -359,6 +360,26 @@ pub(crate) fn guest_token_for_path(vmx: &Path) -> io::Result<Option<String>> {
     read_vmx_value(vmx, GUEST_TOKEN_KEY)
 }
 
+pub(crate) fn base_state_for_path(vmx: &Path) -> io::Result<Option<String>> {
+    read_vmx_value(vmx, BASE_STATE_KEY)
+}
+
+pub(crate) fn set_base_state_for_path(vmx: &Path, state: &str) -> io::Result<()> {
+    if !matches!(state, "REGISTERED" | "FINALIZING" | "FINALIZED") {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "invalid Base lifecycle state",
+        ));
+    }
+
+    let source = fs::read_to_string(vmx)?;
+    let mut lines: Vec<String> = source.lines().map(ToOwned::to_owned).collect();
+    set_vmx_value(&mut lines, BASE_STATE_KEY, state);
+    let mut output = lines.join("\n");
+    output.push('\n');
+    fs::write(vmx, output)
+}
+
 pub(crate) fn ensure_guest_token_for_path(vmx: &Path) -> io::Result<String> {
     if let Some(token) = guest_token_for_path(vmx)? {
         if valid_guest_token(&token) {
@@ -469,7 +490,7 @@ mod tests {
     use super::{
         apply_virtual_hardware_policy, guest_token_for_path, guest_tools_state_ready,
         listed_as_running, parse_guest_ip, snapshot_list_contains, valid_guest_token,
-        GUEST_TOKEN_KEY,
+        BASE_STATE_KEY, GUEST_TOKEN_KEY,
     };
     use std::{
         fs,
@@ -515,6 +536,24 @@ mod tests {
         assert!(valid_guest_token(&"a".repeat(64)));
         assert!(!valid_guest_token("short"));
         assert!(!valid_guest_token(&"z".repeat(64)));
+    }
+
+    #[test]
+    fn base_state_is_single_canonical_vmx_key() {
+        let root = unique_temp_dir("base-state");
+        fs::create_dir_all(&root).unwrap();
+        let vmx = root.join("Base.vmx");
+        fs::write(&vmx, "config.version = \"8\"\n").unwrap();
+
+        super::set_base_state_for_path(&vmx, "REGISTERED").unwrap();
+        assert_eq!(
+            super::base_state_for_path(&vmx).unwrap().as_deref(),
+            Some("REGISTERED")
+        );
+        assert!(fs::read_to_string(&vmx).unwrap().contains(BASE_STATE_KEY));
+        assert!(super::set_base_state_for_path(&vmx, "READY").is_err());
+
+        fs::remove_dir_all(root).unwrap();
     }
 
     #[test]

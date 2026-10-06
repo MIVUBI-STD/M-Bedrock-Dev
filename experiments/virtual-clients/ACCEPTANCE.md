@@ -21,7 +21,13 @@ doctor
 → Native Minecraft version detected
 → Base present + stopped
 → register-base
+→ baseState = REGISTERED
 → runtimeProfile.parity = MATCH
+→ finalize-base.ps1 -ConfirmGeneralize
+→ Sysprep /generalize /oobe /mode:vm
+→ Base shuts down
+→ baseState = FINALIZED
+→ readyForProvisioning = true
 ```
 
 Changing/updating Native Minecraft without rebuilding/re-registering Base must produce:
@@ -45,6 +51,14 @@ start
 ```
 
 A newly started mismatch must be stopped and batch rollback attempted.
+
+Base lifecycle proof also requires:
+
+- `register-base` refuses to boot a Base already marked `FINALIZED`;
+- `provision` and `reprovision` refuse any Base whose canonical state is not `FINALIZED`;
+- `finalize-base.ps1` requires explicit `-ConfirmGeneralize`, a `REGISTERED` Base, clean Microsoft device registration, VMware Tools, and successful Sysprep;
+- the pre-existing `guestinfo.virtualclients.baseState` value changes `REGISTERED → FINALIZING → FINALIZED` and remains `FINALIZED` after shutdown;
+- a failed Sysprep attempt must not produce `FINALIZED`.
 
 Guest Agent security proof also requires:
 
