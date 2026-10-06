@@ -673,6 +673,128 @@
       ]
     },
     {
+      "knowledgeId": "event-policy.after-event-not-global-consistency-barrier",
+      "consumer": "mutation-transaction-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/repair/mutation-transaction-analysis.ts",
+        "engine/packages/orchestrator/src/repair/script-mutation-transaction-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/repair/mutation-transaction-analysis.test.ts",
+        "engine/packages/orchestrator/test/repair/script-mutation-transaction-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "event-policy.bounded-observability-retry",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "event-policy.command-callback-state-recheck",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "event-policy.deferred-generation-envelope",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "event-policy.no-same-tick-read-after-write-assumption",
+      "consumer": "mutation-transaction-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/repair/mutation-transaction-analysis.ts",
+        "engine/packages/orchestrator/src/repair/script-mutation-transaction-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/repair/mutation-transaction-analysis.test.ts",
+        "engine/packages/orchestrator/test/repair/script-mutation-transaction-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "event-policy.relation-applied-state-gates-dependent-branch",
+      "consumer": "mutation-transaction-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/repair/mutation-transaction-analysis.ts",
+        "engine/packages/orchestrator/src/repair/script-mutation-transaction-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/repair/mutation-transaction-analysis.test.ts",
+        "engine/packages/orchestrator/test/repair/script-mutation-transaction-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "event-policy.relation-callback-execution-requires-current-generation",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "event-policy.relation-deferred-work-requires-generation-revalidation",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/interaction-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/interaction-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "event-policy.relation-event-to-verification",
+      "consumer": "mutation-transaction-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/repair/mutation-transaction-analysis.ts",
+        "engine/packages/orchestrator/src/repair/script-mutation-transaction-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/repair/mutation-transaction-analysis.test.ts",
+        "engine/packages/orchestrator/test/repair/script-mutation-transaction-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "event-policy.separate-event-from-observable-state",
+      "consumer": "mutation-transaction-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/repair/mutation-transaction-analysis.ts",
+        "engine/packages/orchestrator/src/repair/script-mutation-transaction-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/repair/mutation-transaction-analysis.test.ts",
+        "engine/packages/orchestrator/test/repair/script-mutation-transaction-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "feedback-policy.cancelled-predicted-mutation-reconcile",
       "consumer": "client-mutation-reconciliation-analysis",
       "analyzerPaths": [
