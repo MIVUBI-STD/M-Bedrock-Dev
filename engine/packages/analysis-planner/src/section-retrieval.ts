@@ -12,6 +12,7 @@ export interface DocumentSection {
 export interface SectionRetrievalQuery {
   readonly text: string;
   readonly documentIds?: readonly string[];
+  readonly lexicalScores?: Readonly<Record<string, number>>;
   readonly semanticScores?: Readonly<Record<string, number>>;
   readonly limit?: number;
 }
@@ -19,6 +20,7 @@ export interface SectionRetrievalQuery {
 export interface SectionRetrievalScore {
   readonly documentScope: number;
   readonly heading: number;
+  readonly lexical: number;
   readonly semantic: number;
   readonly level: number;
   readonly total: number;
