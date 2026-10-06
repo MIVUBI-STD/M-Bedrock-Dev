@@ -97,3 +97,19 @@ Virtualization itself is not treated as officially supported by Minecraft Educat
 Windows + VMware Workstation is the primary target.
 
 macOS/Fusion remains a separate acceptance campaign.
+
+## Distribution proof
+
+Windows distribution acceptance requires:
+
+- exact source version equals Cargo/package version;
+- release binaries built with `--locked`;
+- current-user installer builds from exact source SHA;
+- uninstall preserves Runtime data by default;
+- provenance records source SHA, version, runtime schema and installer SHA-256;
+- update check performs no install or runtime mutation;
+- staged installer URL matches the configured GitHub release channel;
+- staged installer SHA-256 matches manifest metadata;
+- update apply remains unavailable while any Virtual is RUNNING or SUSPENDED;
+- update staging never changes Native/Base/Virtual Minecraft lineage;
+- self-update remains disabled until trusted signature verification is implemented and accepted.
