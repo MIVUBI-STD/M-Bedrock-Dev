@@ -51,6 +51,17 @@ fn interactive_launcher_ready() -> bool {
 }
 
 #[cfg(target_os = "windows")]
+fn interactive_launcher_ready() -> bool {
+    let Ok(root) = ipc_root() else { return false; };
+    let heartbeat = root.join("interactive-launcher.heartbeat");
+    let Ok(metadata) = std::fs::metadata(&heartbeat) else { return false; };
+    let Ok(modified) = metadata.modified() else { return false; };
+    std::time::SystemTime::now()
+        .duration_since(modified)
+        .is_ok_and(|age| age <= Duration::from_secs(3))
+}
+
+#[cfg(target_os = "windows")]
 fn request_interactive_minecraft_launch() -> Result<m_bedrock_virtual_clients_core::MinecraftLaunchResult, Box<dyn std::error::Error>> {
     use m_bedrock_virtual_clients_core::{MinecraftLaunchResult, MinecraftLaunchState};
     if minecraft_process_running() {
