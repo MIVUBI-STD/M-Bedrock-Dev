@@ -1,3 +1,40 @@
+## Virtual Clients Screen Overlay — REMOTE_GITHUB implementation (2026-10-07)
+
+Implemented source on top of Window Layout v2:
+- Native Screen Overlay owner uses lightweight Win32 windows from Rust through
+  a minimal windows-sys dependency; no extra WebViews and no Minecraft HUD/pack.
+- Overlay windows are transparent/layered, click-through, non-activating,
+  tool-window style and topmost. Creation/destruction is owned by one dedicated
+  overlay thread with an explicit command channel.
+- Arrange + Screen Overlay is one atomic desktop command. Overlay rectangles are
+  derived from the exact Rust Window Layout slots; there is no second geometry
+  engine.
+- Turning Screen Overlay off and applying a layout clears existing overlays.
+  App shutdown sends deterministic overlay shutdown/cleanup.
+- Defaults show Screen number + user label in the top-left. Labels are editable
+  presentation preferences only.
+- Identify screens reuses the same overlay owner in temporary identify mode for
+  three seconds, then reapplies the normal overlay. No second overlay subsystem.
+- Reset to defaults is draft-only inside the dialog; preference persistence
+  occurs only on Apply, so Cancel has no hidden side effect.
+- Native window discovery now fails closed on an ambiguous Native title by also
+  requiring a Minecraft/Education-like process name. Virtual windows still
+  require their explicit Virtual-01/02/03 marker.
+
+Deliberate behavior:
+- Window Layout and Screen Overlay are re-applied only when the user chooses
+  Arrange/Apply/Identify. The app does not continuously force Minecraft window
+  positions. If the user manually moves a Minecraft window, pressing Arrange
+  restores both layout and overlay positions.
+- A missing/crashed client is reported as missing; other windows are arranged
+  from the windows actually found. There is no background auto-reflow daemon.
+
+Proof ceiling: REMOTE_GITHUB source/static review. The windows-sys API surface,
+Win32 thread behavior, DPI behavior and actual Minecraft HWND identification
+still require the canonical local Windows checkpoint before readiness claims.
+
+---
+
 ## Virtual Clients Window Layout v2 — REMOTE_GITHUB implementation (2026-10-07)
 
 Window Layout is now a first-class desktop feature rather than one implicit
