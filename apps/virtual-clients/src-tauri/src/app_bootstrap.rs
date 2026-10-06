@@ -38,10 +38,13 @@ pub fn run() {
             commands::setup_tools::setup_open_base_location,
             commands::setup_tools::setup_open_guest_tools,
             commands::window_arrangement::window_displays,
-            commands::window_arrangement::window_arrange
+            commands::window_arrangement::window_arrange,
+            commands::window_arrangement::window_apply_layout,
+            commands::window_arrangement::window_clear_overlay
         ])
         .run(tauri::generate_context!())
         .expect("failed to run M-Bedrock Virtual Clients desktop runtime");
+    crate::engine::screen_overlay::shutdown();
 }
 
 fn show_startup_error(message: &str) {
