@@ -390,6 +390,23 @@ Rules:
 
 Path is location. ID is identity. They are not interchangeable.
 
+### Update naming rule
+
+Ordinary updates do not change canonical identity.
+
+Forbidden update naming patterns for new owners/resources include:
+
+```text
+-new
+-latest
+-final
+-copy
+-backup
+-v2
+```
+
+A version suffix is allowed only when version is part of the real product/schema identity (for example Bug Report V2), not as a substitute for updating an existing owner.
+
 ## Data lifecycle vocabulary
 
 Resource lifecycle uses one state vocabulary:
