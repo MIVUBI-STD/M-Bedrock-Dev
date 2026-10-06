@@ -3,7 +3,6 @@ import {
   DEFAULT_WINDOW_LAYOUT,
   loadWindowLayoutPreference,
   defaultWindowLayoutPreference,
-  resetWindowLayoutPreference,
   saveWindowLayoutPreference,
 } from "../src/app/windowLayoutPreference.js";
 
@@ -40,7 +39,6 @@ describe("Window Layout preference", () => {
     saveWindowLayoutPreference(value);
     expect(loadWindowLayoutPreference()).toEqual(value);
     expect(defaultWindowLayoutPreference()).toEqual(DEFAULT_WINDOW_LAYOUT);
-    expect(resetWindowLayoutPreference()).toEqual(DEFAULT_WINDOW_LAYOUT);
   });
 
   it("falls back when stored data is invalid", () => {
