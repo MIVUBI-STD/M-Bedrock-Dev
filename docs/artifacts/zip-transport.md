@@ -2,7 +2,7 @@
 id: document.artifacts.zip-transport
 class: DOCUMENT
 domain: artifacts
-role: REFERENCE
+role: DOMAIN
 authority: CANONICAL
 lifecycle: ACTIVE
 ---
