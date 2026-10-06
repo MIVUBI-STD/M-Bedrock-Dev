@@ -5,8 +5,9 @@ use crate::{
     guest::{query_guest_status, GuestStatus},
     paths::runtime_root,
     profile::{
-        current_base_vmx_path, native_minecraft_profile, profile_status, register_base_from_native,
-        require_base_matches_native, BaseProfile, MinecraftProfile, ProfileParity, ProfileStatus,
+        current_base_vmx_path, native_minecraft_profile, profile_status,
+        require_base_matches_native, write_verified_base_profile, BaseProfile, MinecraftProfile,
+        ProfileParity, ProfileStatus,
     },
     provider::{cleanup_staging, current_platform_provider, Provider},
     resources::{current_host_pressure, start_delay_secs, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
@@ -287,14 +288,86 @@ impl VirtualClients {
                 "virtualization provider is unavailable",
             )
         })?;
+        let native = native_minecraft_profile().ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "Native Minecraft Education version could not be detected",
+            )
+        })?;
         let base = current_base_vmx_path()?;
+        if !base.is_file() {
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                format!("Base VM is missing: {}", base.display()),
+            ));
+        }
         if provider.is_running_path(&base)? {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "Base must be fully stopped before registration",
+                "Base must be stopped before live verification",
             ));
         }
-        register_base_from_native()
+
+        provider.start_validation_vm(&base)?;
+
+        let proof = (|| -> io::Result<GuestStatus> {
+            let started = std::time::Instant::now();
+            loop {
+                if let Some(ip) = provider.guest_ip_for_path(&base)? {
+                    if let Ok(status) = query_guest_status(&ip, Duration::from_secs(2)) {
+                        let minecraft = status.minecraft.as_ref().ok_or_else(|| {
+                            io::Error::new(
+                                io::ErrorKind::NotFound,
+                                "Base Guest Agent cannot detect Minecraft Education",
+                            )
+                        })?;
+                        if minecraft.version != native.version {
+                            return Err(io::Error::new(
+                                io::ErrorKind::InvalidData,
+                                format!(
+                                    "Base Minecraft Education version {} does not match Native {}",
+                                    minecraft.version, native.version
+                                ),
+                            ));
+                        }
+                        return Ok(status);
+                    }
+                }
+
+                if started.elapsed() >= Duration::from_secs(120) {
+                    return Err(io::Error::new(
+                        io::ErrorKind::TimedOut,
+                        "Base Guest Agent did not become ready within 120s",
+                    ));
+                }
+                thread::sleep(Duration::from_secs(1));
+            }
+        })();
+
+        let stop_result = provider.stop_validation_vm(&base);
+
+        let proof = match (proof, stop_result) {
+            (Ok(proof), Ok(())) => proof,
+            (Err(error), Ok(())) => return Err(error),
+            (Ok(_), Err(stop_error)) => {
+                return Err(io::Error::new(
+                    stop_error.kind(),
+                    format!(
+                        "Base proof succeeded but Base could not be stopped: {stop_error}"
+                    ),
+                ))
+            }
+            (Err(proof_error), Err(stop_error)) => {
+                return Err(io::Error::new(
+                    proof_error.kind(),
+                    format!(
+                        "{proof_error}; Base stop also failed: {stop_error}"
+                    ),
+                ))
+            }
+        };
+
+        write_verified_base_profile(&native, &proof.agent_version)
     }
 
     pub fn provision(&self) -> io::Result<Vec<ClientStatus>> {
