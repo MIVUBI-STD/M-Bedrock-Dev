@@ -10,6 +10,7 @@ export interface CompiledResourceContextItem {
   readonly role?: string;
   readonly authority: string;
   readonly path: string;
+  readonly locator?: string;
   readonly score: number;
   readonly reasons: readonly string[];
 }
@@ -43,6 +44,9 @@ export function compileResourceContext(
       : { role: result.resource.role }),
     authority: result.resource.authority,
     path: result.resource.path,
+    ...(result.resource.locator === undefined
+      ? {}
+      : { locator: result.resource.locator }),
     score: result.score.total,
     reasons: [...result.reasons],
   }));
