@@ -161,3 +161,10 @@ Special items may differ by:
 8. What proves the final loadout is correct?
 9. What happens if payment succeeds but grant fails?
 10. Can reset remove only items owned by the ending scope?
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [Inventory](../../engine/knowledge/player-runtime/inventory-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
