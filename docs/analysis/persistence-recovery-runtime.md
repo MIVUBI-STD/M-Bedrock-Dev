@@ -1,3 +1,12 @@
+---
+id: document.analysis.persistence-recovery-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Persistence, Save, Reload, and Crash Recovery
 
 ## Core rule

@@ -1,3 +1,12 @@
+---
+id: document.analysis.mounts-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Mount, Ride, Vehicle, and Passenger Lifecycle Integrity
 
 ## Core problem

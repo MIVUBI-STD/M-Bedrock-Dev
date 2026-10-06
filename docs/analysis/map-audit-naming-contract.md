@@ -1,3 +1,12 @@
+---
+id: document.analysis.map-audit-naming-contract
+class: DOCUMENT
+domain: analysis
+role: CONTRACT
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Map Audit Naming Contract
 
 ## Purpose

@@ -1,3 +1,12 @@
+---
+id: document.analysis.spatial-containment-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # World Bounds, Void, Dimension Geometry, and Spatial Containment
 
 ## Core problem

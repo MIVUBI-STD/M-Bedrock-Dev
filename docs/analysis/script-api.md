@@ -1,3 +1,12 @@
+---
+id: document.analysis.script-api
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Script API Static Analysis
 
 Script content is analyzed statically and is never executed.

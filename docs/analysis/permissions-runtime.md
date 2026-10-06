@@ -1,3 +1,12 @@
+---
+id: document.analysis.permissions-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Player Permissions, Gamemode, Abilities, and Developer Access Integrity
 
 ## Core problem

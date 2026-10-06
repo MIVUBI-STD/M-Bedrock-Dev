@@ -1,3 +1,12 @@
+---
+id: document.analysis.runtime-telemetry-contract
+class: DOCUMENT
+domain: analysis
+role: CONTRACT
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Runtime Telemetry Contract
 
 ## Purpose

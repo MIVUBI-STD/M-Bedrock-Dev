@@ -1,3 +1,12 @@
+---
+id: document.analysis.mcstructure
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # mcstructure Analysis
 
 Initial normalized facts:

@@ -1,3 +1,12 @@
+---
+id: document.analysis.round-integrity-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Objective, Scoring, Win-Loss, and Round Completion Integrity
 
 ## Core problem

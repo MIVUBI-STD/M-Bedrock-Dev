@@ -1,3 +1,12 @@
+---
+id: document.analysis.map-audit-report-v2-schema
+class: DOCUMENT
+domain: analysis
+role: CONTRACT
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Map Audit Report V2 Schema
 
 ## Purpose

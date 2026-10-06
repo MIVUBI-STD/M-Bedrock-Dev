@@ -1,3 +1,12 @@
+---
+id: document.analysis.performance-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Performance, Watchdog, and Scheduler Budgeting
 
 ## Core problem

@@ -1,3 +1,12 @@
+---
+id: document.analysis.player-lifecycle
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Player Lifecycle
 
 ## Purpose

@@ -1,3 +1,12 @@
+---
+id: document.analysis.multi-arena-audit-contract
+class: DOCUMENT
+domain: analysis
+role: CONTRACT
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Multi Arena Audit Contract
 
 > Start from `master-selected-map-audit-workflow.md`. This document is the specialist contract for replica, capacity, isolation, cleanup, and reuse inside the canonical MODEL/STRESS stages.

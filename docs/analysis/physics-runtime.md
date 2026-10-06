@@ -1,3 +1,12 @@
+---
+id: document.analysis.physics-runtime
+class: DOCUMENT
+domain: analysis
+role: REFERENCE
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Movement, Velocity, Knockback, Fall, and Physics-State Integrity
 
 ## Core problem

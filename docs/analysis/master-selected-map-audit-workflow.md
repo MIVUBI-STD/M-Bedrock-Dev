@@ -1,3 +1,12 @@
+---
+id: document.analysis.master-selected-map-audit-workflow
+class: DOCUMENT
+domain: analysis
+role: WORKFLOW
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Master Selected-Map Audit Workflow
 
 ## Purpose
