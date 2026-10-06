@@ -28,7 +28,9 @@ pub use doctor::{
 };
 pub use error::{ErrorCode, ErrorReport};
 pub use journal::{read_operation_history, OperationKind, OperationOutcome, OperationRecord};
-pub use policy::{engine_policy, EnginePolicy, MAX_VIRTUAL_CLIENTS, READY_SNAPSHOT_NAME, VIRTUAL_VCPUS};
+pub use policy::{
+    engine_policy, EnginePolicy, MAX_VIRTUAL_CLIENTS, READY_SNAPSHOT_NAME, VIRTUAL_VCPUS,
+};
 pub use profile::{
     BaseProfile, BaseProfileSource, BaseState, MinecraftInstallType, MinecraftProfile,
     ProfileParity, ProfileStatus,

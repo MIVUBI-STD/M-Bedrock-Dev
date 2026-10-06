@@ -5,8 +5,8 @@ use super::{
     snapshot_list_contains, staging_client_vmx_path, vm_identity_key, wait_for_state, Provider,
     DISK_STATE_TIMEOUT,
 };
-use crate::policy::READY_SNAPSHOT_NAME;
 use crate::client::{ClientId, ClientState};
+use crate::policy::READY_SNAPSHOT_NAME;
 use std::{
     io,
     path::{Path, PathBuf},

@@ -1,7 +1,4 @@
-use crate::{
-    guest::GUEST_AGENT_PORT,
-    resources::VIRTUAL_MEMORY_LIMIT_MB,
-};
+use crate::{guest::GUEST_AGENT_PORT, resources::VIRTUAL_MEMORY_LIMIT_MB};
 use serde::Serialize;
 
 pub const MAX_VIRTUAL_CLIENTS: usize = 3;

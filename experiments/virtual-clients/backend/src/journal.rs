@@ -70,8 +70,7 @@ pub fn read_operation_history() -> io::Result<Vec<OperationRecord>> {
     }
 
     let raw = read_text_recovering(&path)?;
-    serde_json::from_str(&raw)
-        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))
+    serde_json::from_str(&raw).map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))
 }
 
 pub(crate) fn record_operation<T>(

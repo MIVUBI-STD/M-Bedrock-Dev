@@ -58,9 +58,7 @@ pub(crate) fn capture_time_ms() -> io::Result<u64> {
         .map_err(|_| io::Error::new(io::ErrorKind::Other, "system time is out of range"))
 }
 
-pub(crate) fn write_support_bundle(
-    snapshot: EngineSnapshot,
-) -> io::Result<SupportBundleResult> {
+pub(crate) fn write_support_bundle(snapshot: EngineSnapshot) -> io::Result<SupportBundleResult> {
     let root = runtime_root()?.join("support");
     fs::create_dir_all(&root)?;
 

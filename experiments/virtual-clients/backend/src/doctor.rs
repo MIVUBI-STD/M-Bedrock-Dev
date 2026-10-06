@@ -8,7 +8,6 @@ use crate::{
 };
 use serde::Serialize;
 use sysinfo::System;
-
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DoctorClient {
@@ -141,14 +140,18 @@ fn select_setup_action(
     } else if !base_vm_present {
         SetupAction::PrepareBase
     } else if profile_parity != ProfileParity::Match {
-        if matches!(base_state, Some(BaseState::Finalized) | Some(BaseState::Finalizing)) {
+        if matches!(
+            base_state,
+            Some(BaseState::Finalized) | Some(BaseState::Finalizing)
+        ) {
             SetupAction::RebuildBase
         } else {
             SetupAction::RegisterBase
         }
     } else if base_state == Some(BaseState::Finalizing) {
         SetupAction::RebuildBase
-    } else if base_state != Some(BaseState::Registered) && base_state != Some(BaseState::Finalized) {
+    } else if base_state != Some(BaseState::Registered) && base_state != Some(BaseState::Finalized)
+    {
         SetupAction::RegisterBase
     } else if base_state == Some(BaseState::Registered) {
         SetupAction::FinalizeBase
@@ -217,18 +220,10 @@ fn collect_health_issues(
 
     if native_available {
         if !base_vm_present {
-            push(
-                HealthIssueCode::BaseMissing,
-                HealthSeverity::Blocker,
-                None,
-            );
+            push(HealthIssueCode::BaseMissing, HealthSeverity::Blocker, None);
         } else {
             if base_vm_stopped == Some(false) {
-                push(
-                    HealthIssueCode::BaseRunning,
-                    HealthSeverity::Blocker,
-                    None,
-                );
+                push(HealthIssueCode::BaseRunning, HealthSeverity::Blocker, None);
             }
 
             match base_state {

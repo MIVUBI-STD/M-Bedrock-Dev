@@ -681,7 +681,11 @@ impl VirtualClients {
     }
 
     pub fn register_base(&self) -> io::Result<BaseProfile> {
-        self.record(OperationKind::RegisterBase, None, self.register_base_inner())
+        self.record(
+            OperationKind::RegisterBase,
+            None,
+            self.register_base_inner(),
+        )
     }
 
     pub fn provision(&self) -> io::Result<Vec<ClientStatus>> {
