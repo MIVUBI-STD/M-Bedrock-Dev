@@ -34,11 +34,19 @@ const bindings = existsSync(bindingPath)
   : [];
 const bound = new Set(bindings.map((item) => item.knowledgeId));
 const catalog = buildResourceCatalog();
-const resourceByPath = new Map(
-  catalog.resources.map((resource) => [
-    resource.path.replaceAll("\\", "/"),
-    resource,
-  ]),
+const resourceByLocation = new Map(
+  catalog.resources
+    .filter(
+      (resource) =>
+        typeof resource.locator === "string" &&
+        resource.locator.length > 0,
+    )
+    .map((resource) => [
+      resource.path.replaceAll("\\", "/") +
+        "#" +
+        resource.locator,
+      resource,
+    ]),
 );
 
 const actionable = [];
@@ -51,11 +59,17 @@ for (const root of roots) {
     for (const kind of ["facts", "relations"]) {
       for (const item of catalog[kind] ?? []) {
         if (typeof item.id !== "string" || !item.id.trim()) continue;
+        const normalizedPath =
+          path.replaceAll("\\", "/");
         const resource =
-          resourceByPath.get(path.replaceAll("\\", "/"));
+          kind === "facts"
+            ? resourceByLocation.get(
+                normalizedPath + "#" + item.id,
+              )
+            : undefined;
         const record = {
           id: item.id,
-          path,
+          path: normalizedPath,
           ...(resource === undefined
             ? {}
             : { resourceId: resource.id }),
@@ -73,21 +87,24 @@ const stale = [...bound].filter(
   (id) => !actionable.some((item) => item.id === id) && !passive.some((item) => item.id === id),
 );
 
-const missingByResource = Object.values(
+const missingByOwner = Object.values(
   missing.reduce((groups, item) => {
-    const key = item.resourceId ?? item.path;
-    const current = groups[key] ?? {
-      resourceId: item.resourceId,
+    const current = groups[item.path] ?? {
       path: item.path,
+      resourceIds: [],
       knowledgeIds: [],
     };
+    if (item.resourceId !== undefined) {
+      current.resourceIds.push(item.resourceId);
+    }
     current.knowledgeIds.push(item.id);
-    groups[key] = current;
+    groups[item.path] = current;
     return groups;
   }, {}),
 )
   .map((item) => ({
     ...item,
+    resourceIds: [...new Set(item.resourceIds)].sort(),
     knowledgeIds: [...item.knowledgeIds].sort(),
     count: item.knowledgeIds.length,
   }))
@@ -96,20 +113,23 @@ const missingByResource = Object.values(
     left.path.localeCompare(right.path)
   );
 
-const actionableCoverage =
+const boundActionableKnowledge =
+  actionable.length - missing.length;
+const dedicatedBindingCoverage =
   actionable.length === 0
     ? 1
-    : (actionable.length - missing.length) / actionable.length;
+    : boundActionableKnowledge / actionable.length;
 
 const result = {
   schemaVersion: 1,
   actionableKnowledge: actionable.length,
   passiveKnowledge: passive.length,
   dedicatedBindings: bound.size,
+  boundActionableKnowledge,
   actionableWithoutDedicatedBinding: missing.length,
-  actionableCoverage,
+  dedicatedBindingCoverage,
   staleBindings: stale.length,
-  missingByResource,
+  missingByOwner,
   missing,
   stale,
 };

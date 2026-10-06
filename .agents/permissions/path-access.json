@@ -9,21 +9,21 @@
       "targetRepair": "read"
     },
     {
-      "path": "workspace/active/**/source/**",
+      "path": "workspace/projects/**/source/**",
       "audit": "read",
       "detectionDevelopment": "read",
       "benchmark": "read",
       "targetRepair": "read"
     },
     {
-      "path": "workspace/active/**/working/**",
+      "path": "workspace/projects/**/working/**",
       "audit": "read",
       "detectionDevelopment": "read",
       "benchmark": "read",
       "targetRepair": "read-write"
     },
     {
-      "path": "workspace/active/**/design/**",
+      "path": "workspace/projects/**/design/**",
       "audit": "read",
       "detectionDevelopment": "read",
       "benchmark": "read",

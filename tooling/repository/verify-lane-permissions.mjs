@@ -6,6 +6,32 @@ const corpus = JSON.parse(
 );
 const failures = [];
 
+const pathAccess = JSON.parse(
+  readFileSync(".agents/permissions/path-access.json", "utf8"),
+);
+const pathRules = pathAccess.rules ?? [];
+const configuredPaths = pathRules.map((rule) => rule.path);
+
+for (const stalePath of configuredPaths.filter((path) =>
+  path.startsWith("workspace/active/")
+)) {
+  failures.push(
+    "Stale workspace permission path is forbidden: " + stalePath,
+  );
+}
+
+for (const requiredPath of [
+  "workspace/projects/**/source/**",
+  "workspace/projects/**/working/**",
+  "workspace/projects/**/design/**",
+]) {
+  if (!configuredPaths.includes(requiredPath)) {
+    failures.push(
+      "Missing canonical workspace permission path: " + requiredPath,
+    );
+  }
+}
+
 for (const item of corpus.cases ?? []) {
   const result = evaluateLanePermission(item.request);
   if (result.decision !== item.expected) {

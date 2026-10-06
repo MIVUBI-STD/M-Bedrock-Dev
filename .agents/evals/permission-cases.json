@@ -39,7 +39,7 @@
       "request": {
         "lane": "m-bedrock-detection-development",
         "action": "target-write",
-        "path": "workspace/active/demo/working/scripts/main.js",
+        "path": "workspace/projects/demo/working/scripts/main.js",
         "resource": "target",
         "mode": "write"
       },
@@ -50,7 +50,7 @@
       "request": {
         "lane": "m-bedrock-target-repair",
         "action": "repair",
-        "path": "workspace/active/demo/working/scripts/main.js",
+        "path": "workspace/projects/demo/working/scripts/main.js",
         "resource": "target",
         "mode": "write"
       },
@@ -84,6 +84,28 @@
         "mode": "read"
       },
       "expected": "ask"
+    },
+    {
+      "id": "stale-active-workspace-path-denied",
+      "request": {
+        "lane": "m-bedrock-target-repair",
+        "action": "repair",
+        "path": "workspace/active/demo/working/scripts/main.js",
+        "resource": "target",
+        "mode": "write"
+      },
+      "expected": "deny"
+    },
+    {
+      "id": "audit-read-project-source",
+      "request": {
+        "lane": "m-bedrock-map-bug-audit",
+        "action": "inspect",
+        "path": "workspace/projects/demo/source/behavior_packs/example/manifest.json",
+        "resource": "workspace",
+        "mode": "read"
+      },
+      "expected": "allow"
     }
   ]
 }
