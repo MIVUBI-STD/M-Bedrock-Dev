@@ -56,7 +56,7 @@ memoryLimitMb
 hostWorkingSetMb
 ```
 
-`hostWorkingSetMb` is best-effort process resident memory, not guest configured memory. `resources` aggregates observed working-set values separately from the 4096 MB guest ceiling.
+`hostWorkingSetMb` is best-effort process resident memory, not guest configured memory. `resources` aggregates observed working-set values separately from the 4096 MB guest ceiling. `guestToolsReady` reports whether VMware Tools is observable as running; it intentionally does not create a new lifecycle state.
 
 ### Warm state
 
