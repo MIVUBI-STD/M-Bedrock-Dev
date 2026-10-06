@@ -234,9 +234,14 @@
       }
       operationStatus = "Arranging client windows…";
       const preference = loadWindowLayoutPreference();
+      const displays = await desktop.displays();
+      const selectedDisplay = displays.find((display) => display.index === preference.displayIndex)
+        ?? displays.find((display) => display.primary)
+        ?? displays[0];
+      if (!selectedDisplay) throw new BackendBridgeError("DISPLAY_NOT_FOUND", "No usable display is available.", true);
       const result = await desktop.arrangeWindows({
         layout: preference.layout,
-        displayIndex: preference.displayIndex,
+        displayIndex: selectedDisplay.index,
         mainWindow: preference.layout === "FOCUS" ? preference.mainWindow : null,
       });
       if (result.arranged.length === 0) {
