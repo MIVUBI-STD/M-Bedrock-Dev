@@ -119,6 +119,32 @@ describe("conditional gameplay knowledge dependencies", () => {
     );
   });
 
+  it("keeps chunk and temporal proof mandatory for entity-backed progression even when removal accounting is absent", () => {
+    const input = world();
+    const noAccounting = {
+      ...input,
+      chunks: {
+        ...input.chunks,
+        entityRemoveObservers: 0,
+      },
+    } as GameplayWorldModel;
+
+    const domains =
+      requiredKnowledgeDomainsForPreset(
+        "progression-wave-integrity",
+        noAccounting,
+      );
+
+    expect(domains).toEqual(
+      expect.arrayContaining([
+        "chunk-simulation",
+        "entity-behavior",
+        "platform-constraints",
+        "temporal-ownership",
+      ]),
+    );
+  });
+
   it("does not require economy knowledge when no economy surface exists", () => {
     const input = world();
     const withoutEconomy = {

@@ -13,6 +13,7 @@ export type GameplayAuditScenarioKind =
   | "terminal-collision"
   | "transaction-atomicity"
   | "simulation-distance"
+  | "progression-wave-integrity"
   | "information-correctness"
   | "player-capability-integrity"
   | "world-rule-authority"
@@ -56,6 +57,7 @@ export interface GameplayAuditScenarioPresetInput {
   readonly hasRepeatedRunSurface?: boolean;
   readonly hasTransactionalGameplay?: boolean;
   readonly hasSimulationDistanceDependency?: boolean;
+  readonly hasProgressionActorSurface?: boolean;
   readonly hasPlayerFeedbackSurface?: boolean;
   readonly hasPrivilegedCapabilitySurface?: boolean;
   readonly hasWorldRuleSurface?: boolean;
@@ -281,6 +283,25 @@ export function buildGameplayAuditScenarioPreset(
           "If delivery fails, is payment rolled back or safely reconciled?",
           "Can retry or reconnect duplicate delivery or consume payment twice?",
           "Do success and failure messages match the committed transaction result?",
+        ],
+      }),
+    );
+  }
+
+  if (input.hasProgressionActorSurface) {
+    scenarios.push(
+      scenario({
+        id: "progression:actor-accounting",
+        kind: "progression-wave-integrity",
+        flowStage: "PROGRESSION",
+        reason:
+          "Entity-backed progression can deadlock when spawn, death/removal, objective counters, and simulation ownership do not converge on one completion rule.",
+        questions: [
+          "What exact actor/counter/objective state gates progression to the next wave, level, or terminal result?",
+          "Which spawn paths increase the required actor population and which death/remove/despawn paths reconcile it?",
+          "Can an actor disappear, unload, despawn, or die without the completion counter/state being reconciled?",
+          "Can required actors stop simulating while progression still waits for them?",
+          "Is zero/complete evaluated from one authoritative state rather than a stale mirror or partial actor set?",
         ],
       }),
     );

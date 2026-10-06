@@ -62,6 +62,24 @@ describe("gameplay audit scenario preset flow stages", () => {
     expect(byKind.get("terminal-collision")).toBe(
       "TERMINAL",
     );
+    const progressionPreset =
+      buildGameplayAuditScenarioPreset({
+        hasProgressionActorSurface: true,
+      });
+    const progressionScenario =
+      progressionPreset.scenarios.find(
+        (scenario) =>
+          scenario.kind ===
+            "progression-wave-integrity",
+      );
+    expect(progressionScenario?.flowStage).toBe(
+      "PROGRESSION",
+    );
+    expect(
+      progressionScenario?.questions.join(" "),
+    ).toMatch(
+      /death\/removal|stop simulating|completion counter/i,
+    );
     const terminalScenario = preset.scenarios.find(
       (scenario) =>
         scenario.kind === "terminal-collision",

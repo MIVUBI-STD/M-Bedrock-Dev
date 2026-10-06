@@ -808,6 +808,17 @@ function runtimeEdgeState(
       };
     }
     case "runtime:entities": {
+      if (
+        scenarioLabel === "progression-wave-integrity" &&
+        world.combat.deathHandlers === 0 &&
+        world.chunks.entityRemoveObservers === 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Entity-backed progression is material, but no selected-artifact entity death/removal observer is available to prove actor-count reconciliation. This is an explicit wave/progression gray-zone: it is not a bug by itself, but it cannot be treated as safe until another source-proven completion/accounting path is found.",
+        };
+      }
       const scopedAi = world.entities.aiStack.assessments.filter(
         (item) =>
           identifierMatchesScenarioScope(
@@ -1297,6 +1308,22 @@ export function compileGameplayScenarioGraph(
         addRuntime(
           "runtime:chunks",
           "runtime:entities",
+          "runtime:arena",
+        );
+        break;
+      case "progression-wave-integrity":
+        addIntentKinds(
+          "objective",
+          "mechanic",
+          "phase",
+          "state",
+          "actor",
+          "outcome",
+        );
+        addRuntime(
+          "runtime:entities",
+          "runtime:chunks",
+          "runtime:combat",
           "runtime:arena",
         );
         break;

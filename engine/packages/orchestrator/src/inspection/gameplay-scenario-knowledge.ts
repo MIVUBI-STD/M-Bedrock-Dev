@@ -689,6 +689,14 @@ export function requiredKnowledgeDomainsForPreset(
       addIfApplicable("arena-lifecycle");
       addIfApplicable("spatial-authority");
       break;
+    case "progression-wave-integrity":
+      domains.add("chunk-simulation");
+      domains.add("platform-constraints");
+      addIfApplicable("entity-behavior");
+      addIfApplicable("combat-lifecycle");
+      addIfApplicable("arena-lifecycle");
+      add(domains, "temporal-ownership");
+      break;
     case "information-correctness":
       addIfApplicable("economy-reward");
       addIfApplicable("inventory-state");

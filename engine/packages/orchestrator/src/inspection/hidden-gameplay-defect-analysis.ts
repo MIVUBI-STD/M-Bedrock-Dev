@@ -669,6 +669,7 @@ function scenarioSurfaceSignals(
   worldRule: boolean;
   cancelledWorldMutation: boolean;
   spatialContainment: boolean;
+  progressionActor: boolean;
 } {
   const text = selectedArtifactSearchText(intent);
   return {
@@ -680,6 +681,8 @@ function scenarioSurfaceSignals(
       /beforeEvents|before event|event\.cancel|cancelled interaction|cancelled item|bucket|waterlog|water bucket/i.test(text),
     spatialContainment:
       /barrier|arena boundary|containment|mayfly|flight|fly|physical arena|collision|outside arena/i.test(text),
+    progressionActor:
+      /wave|enemy|enemies|mob|mobs|kill|defeat|eliminate|remaining|horde|round|objective|progression/i.test(text),
   };
 }
 
@@ -731,6 +734,9 @@ function auditScenarioPresetFromModel(
             node.kind === "objective",
         )
       ),
+    hasProgressionActorSurface:
+      input.world.entities.definitions > 0 &&
+      surfaceSignals.progressionActor,
     hasPlayerFeedbackSurface:
       input.intent.evidence.some((item) =>
         item.origin === "dialogue" ||
@@ -969,6 +975,12 @@ export function refreshHiddenGameplayDefectsForWorld(
                 scenario.kind ===
                   "spatial-containment",
             ),
+          progressionActor:
+            existing.auditScenarioPreset.scenarios.some(
+              (scenario) =>
+                scenario.kind ===
+                  "progression-wave-integrity",
+            ),
         }
       : scenarioSurfaceSignals(intent);
   const auditScenarioPreset =
@@ -1006,6 +1018,9 @@ export function refreshHiddenGameplayDefectsForWorld(
               node.kind === "objective",
           ) ?? false)
         ),
+      hasProgressionActorSurface:
+        world.entities.definitions > 0 &&
+        refreshSurfaceSignals.progressionActor,
       hasPlayerFeedbackSurface:
         intent?.evidence.some((item) =>
           item.origin === "dialogue" ||
