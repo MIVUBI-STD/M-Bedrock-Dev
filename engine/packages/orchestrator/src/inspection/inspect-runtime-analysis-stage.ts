@@ -786,6 +786,23 @@ export function analyzeInspectionRuntimeState(
       worldRules:
         worldRuleAuthority,
       baselineRestore,
+      entityPopulation: {
+        registryAuthorities:
+          progressionActorAccounting
+            .registryAuthorityAssessments
+            .length,
+        generationBoundAuthorities:
+          progressionActorAccounting
+            .generationBoundRegistryAuthorities,
+        unresolvedAuthorities:
+          progressionActorAccounting
+            .unboundRegistryAuthorities +
+          progressionActorAccounting
+            .unresolvedRegistryAuthorities,
+        multiplicityContradictions:
+          progressionActorAccounting
+            .provenSpawnQuantityMismatch,
+      },
     });
 
   const scriptCommandTransactions =

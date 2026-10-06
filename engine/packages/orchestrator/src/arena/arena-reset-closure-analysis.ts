@@ -29,6 +29,8 @@ export interface ArenaResetClosureAssessment {
     entityRemoveTerminalizationRisks: number;
     globalRuleConflicts: number;
     baselineRestoreVerificationGaps: number;
+    entityPopulationIdentityGaps: number;
+    entityMultiplicityContradictions: number;
   };
 }
 
@@ -66,6 +68,12 @@ export function assessArenaResetClosure(input: {
     verified: number;
     unresolved: number;
   };
+  entityPopulation: {
+    registryAuthorities: number;
+    generationBoundAuthorities: number;
+    unresolvedAuthorities: number;
+    multiplicityContradictions: number;
+  };
 }): ArenaResetClosureAssessment {
   const surfaces = {
     cleanupLedgerMissing:
@@ -98,6 +106,12 @@ export function assessArenaResetClosure(input: {
       input.worldRules.conflictingGlobalRules,
     baselineRestoreVerificationGaps:
       input.baselineRestore.unresolved,
+    entityPopulationIdentityGaps:
+      input.entityPopulation.registryAuthorities > 0
+        ? input.entityPopulation.unresolvedAuthorities
+        : 0,
+    entityMultiplicityContradictions:
+      input.entityPopulation.multiplicityContradictions,
   };
 
   const blockers = Object.entries(surfaces)

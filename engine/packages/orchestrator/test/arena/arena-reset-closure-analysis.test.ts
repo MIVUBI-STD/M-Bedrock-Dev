@@ -41,6 +41,12 @@ const clean = {
     verified: 0,
     unresolved: 0,
   },
+  entityPopulation: {
+    registryAuthorities: 0,
+    generationBoundAuthorities: 0,
+    unresolvedAuthorities: 0,
+    multiplicityContradictions: 0,
+  },
 };
 
 describe("arena reset closure", () => {
@@ -159,6 +165,46 @@ describe("baseline restore verification gate", () => {
     );
     expect(result.blockers).toContain(
       "baselineRestoreVerificationGaps",
+    );
+  });
+});
+
+
+describe("entity identity and multiplicity reset gate", () => {
+  it("quarantines reset reuse when a declared entity registry is not generation-bound", () => {
+    const result =
+      assessArenaResetClosure({
+        ...clean,
+        entityPopulation: {
+          registryAuthorities: 1,
+          generationBoundAuthorities: 0,
+          unresolvedAuthorities: 1,
+          multiplicityContradictions: 0,
+        },
+      });
+
+    expect(result.reuseEligibility).toBe(
+      "quarantined",
+    );
+    expect(result.blockers).toContain(
+      "entityPopulationIdentityGaps",
+    );
+  });
+
+  it("quarantines reset reuse on proven spawn multiplicity contradiction", () => {
+    const result =
+      assessArenaResetClosure({
+        ...clean,
+        entityPopulation: {
+          registryAuthorities: 1,
+          generationBoundAuthorities: 1,
+          unresolvedAuthorities: 0,
+          multiplicityContradictions: 1,
+        },
+      });
+
+    expect(result.blockers).toContain(
+      "entityMultiplicityContradictions",
     );
   });
 });
