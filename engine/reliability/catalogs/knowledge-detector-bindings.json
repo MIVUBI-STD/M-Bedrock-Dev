@@ -903,6 +903,58 @@
       ]
     },
     {
+      "knowledgeId": "multiplayer-policy.idempotent-reward-cleanup",
+      "consumer": "reward-source-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/reward-source-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/reward-source-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "multiplayer-policy.post-defer-validation",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "multiplayer-policy.relation-arena-owner-gates-start",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "multiplayer-policy.relation-current-generation-gates-side-effects",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "multiplayer-policy.relation-observed-start-requires-single-owner",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "multiplayer-policy.selector-arena-scope",
       "consumer": "arena-state-isolation-analysis",
       "analyzerPaths": [
@@ -910,6 +962,16 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/arena/arena-state-isolation-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "multiplayer-policy.single-arena-start-transaction",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
       ]
     },
     {
@@ -1052,6 +1114,16 @@
       ]
     },
     {
+      "knowledgeId": "player-policy.arena-participation-generation",
+      "consumer": "arena-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "player-policy.connection-generation",
       "consumer": "arena-lifecycle-analysis",
       "analyzerPaths": [
@@ -1060,6 +1132,17 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "player-policy.identity-layers",
+      "consumer": "persistence-source-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/persistence/persistent-state-scope.ts",
+        "engine/packages/orchestrator/src/inspection/persistence-source-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/persistence-source-analysis.test.ts"
       ]
     },
     {
@@ -1079,6 +1162,16 @@
       "analyzerPaths": [
         "engine/packages/orchestrator/src/inspection/persistence-source-analysis.ts",
         "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/persistence-source-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "player-policy.relation.reconnect-requires-reconcile",
+      "consumer": "persistence-source-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/persistence-source-analysis.ts"
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/persistence-source-analysis.test.ts"
