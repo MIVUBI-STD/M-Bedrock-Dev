@@ -40,7 +40,7 @@ function validPreference(value: unknown): value is WindowLayoutPreference {
     typeof item.overlay.showLabel === "boolean" &&
     (item.overlay.position === "TOP_LEFT" || item.overlay.position === "TOP_RIGHT") &&
     Number.isFinite(item.overlay.opacity) && item.overlay.opacity >= 0.35 && item.overlay.opacity <= 1 &&
-    clientIds.every((id) => typeof item.overlay.labels?.[id] === "string");
+    clientIds.every((id) => typeof item.overlay.labels?.[id] === "string" && item.overlay.labels[id].length <= 32);
 }
 
 export function loadWindowLayoutPreference(): WindowLayoutPreference {
