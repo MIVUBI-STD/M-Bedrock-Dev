@@ -5,7 +5,6 @@ use crate::{
     client::{ClientId, ClientState},
     resources::VIRTUAL_MEMORY_LIMIT_MB,
 };
-use serde::Serialize;
 use std::{
     env,
     ffi::OsStr,
@@ -26,15 +25,9 @@ pub(crate) const CLIENT_VCPUS: &str = "2";
 const COMMAND_TIMEOUT: Duration = Duration::from_secs(45);
 pub(crate) const DISK_STATE_TIMEOUT: Duration = Duration::from_secs(180);
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum MemoryMode {
-    Ceiling,
-}
 
 pub trait Provider {
     fn id(&self) -> &'static str;
-    fn memory_mode(&self) -> MemoryMode;
     fn detect(&self) -> bool;
     fn provision(&self, client: ClientId) -> io::Result<ClientState>;
     fn reprovision(&self, client: ClientId) -> io::Result<ClientState>;
