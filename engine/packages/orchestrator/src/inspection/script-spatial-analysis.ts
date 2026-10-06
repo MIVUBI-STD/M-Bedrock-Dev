@@ -115,7 +115,7 @@ function resolveMutation(
     };
   }
 
-  if (mutation.kind === "teleport") {
+  if (mutation.kind === "teleport" || mutation.kind === "try-teleport") {
     return {
       effect: {
         kind: "teleport",
@@ -263,7 +263,7 @@ export function analyzeScriptSpatialMutations(
           ...(mutation.kind !== "teleport" ||
           mutation.checkForBlocks === undefined
             ? {}
-            : { checkForBlocks: mutation.checkForBlocks }),
+            : { checkForBlocks: mutation.checkForBlocks }),\n          ...(mutation.resultBinding === undefined ? {} : { resultBinding: mutation.resultBinding }),
         });
       } else {
         failures.push(resolved.failure);

@@ -193,7 +193,7 @@ export function deriveScriptSpatialMutations(
       const region = executionRegion(node, file);
       const sourceRef = nodeSource(file, node, source);
 
-      if (method === "teleport") {
+      if (method === "teleport" || method === "tryTeleport") {
         const position = expressionAt(node, 0);
         if (!position) {
           reject(
@@ -203,7 +203,7 @@ export function deriveScriptSpatialMutations(
           );
         } else {
           mutations.push({
-            kind: "teleport",
+            kind: method === "tryTeleport" ? "try-teleport" : "teleport",
             executionRegion: region,
             receiverText,
             source: sourceRef,

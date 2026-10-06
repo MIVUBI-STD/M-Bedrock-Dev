@@ -44,6 +44,21 @@ describe("script non-block spatial mutation evidence", () => {
     });
   });
 
+  it("distinguishes tryTeleport and preserves its result binding", () => {
+    const result = deriveScriptSpatialMutations(
+      [
+        "const P = { x: 1, y: 2, z: 3 };",
+        "const moved = player.tryTeleport(P, { checkForBlocks: true });",
+      ].join("\n"),
+      source,
+    );
+    expect(result.mutations[0]).toMatchObject({
+      kind: "try-teleport",
+      resultBinding: "moved",
+      checkForBlocks: true,
+    });
+  });
+
   it("rejects runtime-computed coordinates instead of executing them", () => {
     const result = deriveScriptSpatialMutations(
       "dimension.spawnEntity('minecraft:zombie', getRuntimeLocation());",

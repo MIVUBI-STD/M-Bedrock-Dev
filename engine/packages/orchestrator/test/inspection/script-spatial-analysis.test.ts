@@ -52,6 +52,21 @@ describe("script spatial analysis", () => {
     });
   });
 
+  it("keeps tryTeleport result identity available for transaction verification", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "const P = { x: 1, y: 2, z: 3 };",
+        "const moved = player.tryTeleport(P, { checkForBlocks: true });",
+      ].join("\n"),
+      { artifactId: "fixture", relativePath: "scripts/main.ts" },
+    );
+    expect(analyzeScriptSpatialMutations([script]).resolvedEffectSources[0]).toMatchObject({
+      resultBinding: "moved",
+      checkForBlocks: true,
+    });
+  });
+
   it("keeps runtime-dynamic block identity out of topology proof", () => {
     const script = parseScriptFile(
       "main",
