@@ -22,6 +22,7 @@ pub use fusion::VmwareFusionProvider;
 pub use workstation::VmwareWorkstationProvider;
 
 pub(crate) const READY_SNAPSHOT: &str = "QA_READY";
+pub(crate) const GUEST_TOKEN_KEY: &str = "guestinfo.virtualclients.token";
 pub(crate) const CLIENT_VCPUS: &str = "2";
 const COMMAND_TIMEOUT: Duration = Duration::from_secs(45);
 pub(crate) const DISK_STATE_TIMEOUT: Duration = Duration::from_secs(180);
@@ -354,6 +355,39 @@ pub(crate) fn read_vmx_memory(vmx: &Path) -> io::Result<u64> {
         .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "invalid memsize in VMX"))
 }
 
+pub(crate) fn guest_token_for_path(vmx: &Path) -> io::Result<Option<String>> {
+    read_vmx_value(vmx, GUEST_TOKEN_KEY)
+}
+
+pub(crate) fn ensure_guest_token_for_path(vmx: &Path) -> io::Result<String> {
+    if let Some(token) = guest_token_for_path(vmx)? {
+        if valid_guest_token(&token) {
+            return Ok(token);
+        }
+    }
+
+    let mut bytes = [0_u8; 32];
+    getrandom::getrandom(&mut bytes)
+        .map_err(|error| io::Error::new(io::ErrorKind::Other, format!("guest token entropy failed: {error}")))?;
+    let token = bytes.iter().map(|byte| format!("{byte:02x}")).collect::<String>();
+
+    let source = fs::read_to_string(vmx)?;
+    let mut lines: Vec<String> = source.lines().map(ToOwned::to_owned).collect();
+    set_vmx_value(&mut lines, GUEST_TOKEN_KEY, &token);
+    let mut output = lines.join("\n");
+    output.push('\n');
+    fs::write(vmx, output)?;
+    Ok(token)
+}
+
+pub(crate) fn guest_token(client: ClientId) -> io::Result<Option<String>> {
+    guest_token_for_path(&client_vmx_path(client)?)
+}
+
+fn valid_guest_token(token: &str) -> bool {
+    token.len() == 64 && token.chars().all(|character| character.is_ascii_hexdigit())
+}
+
 pub(crate) fn vm_identity_key(vmx: &Path) -> io::Result<Option<String>> {
     let uuid = read_vmx_value(vmx, "uuid.bios")?;
     let mac = read_vmx_value(vmx, "ethernet0.generatedAddress")?;
@@ -421,6 +455,7 @@ pub(crate) fn host_working_sets_mb() -> Vec<(ClientId, u64)> {
 mod tests {
     use super::{
         guest_tools_state_ready, listed_as_running, parse_guest_ip, snapshot_list_contains,
+        valid_guest_token,
     };
 
     #[test]
@@ -454,6 +489,13 @@ mod tests {
             Some("192.168.10.42".into())
         );
         assert_eq!(parse_guest_ip("Error: Tools not ready"), None);
+    }
+
+    #[test]
+    fn guest_token_format_is_strict() {
+        assert!(valid_guest_token(&"a".repeat(64)));
+        assert!(!valid_guest_token("short"));
+        assert!(!valid_guest_token(&"z".repeat(64)));
     }
 }
 
