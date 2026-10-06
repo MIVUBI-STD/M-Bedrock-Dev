@@ -84,6 +84,42 @@ STOP condition
 
 Do not add fallback owners, registries, caches, retries, state machines, or compatibility layers merely to compensate for an unproven diagnosis.
 
+## Knowledge access
+
+Repository information is not consumed as a flat file tree.
+
+Use:
+
+```text
+task
+→ Router
+→ Catalog identity
+→ Graph relationships
+→ Retrieval
+→ Context
+→ decision
+```
+
+In REMOTE_GITHUB:
+
+- start from `docs/README.md` or the already-known domain Router;
+- use document frontmatter `id` as stable identity;
+- follow explicit Markdown links and machine-readable ownership/binding sources before broad search;
+- use targeted GitHub source lookup only inside the selected owner/module;
+- treat semantic similarity/search as ranking assistance, never authority;
+- preserve CANONICAL / REFERENCE / HISTORICAL / DERIVED authority when composing Context;
+- do not broad-scan a documentation domain for reassurance;
+- if a relevant resource is unreachable from its Router/Graph, fix routing/metadata rather than relying on memory.
+
+Machine owners:
+
+```text
+Catalog   → tooling/repository/resource-catalog.mjs
+Graph     → tooling/repository/graph.mjs
+Retrieval → engine/packages/analysis-planner/src/retrieval.ts
+Context   → engine/packages/orchestrator/src/workflow/context-compiler.ts
+```
+
 ## Selected-map audit invariant
 
 Production map audit has one selected artifact and one operator flow:
