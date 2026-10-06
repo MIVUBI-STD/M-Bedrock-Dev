@@ -26,6 +26,18 @@ export function chunkLifecycleDiagnostics(
     analysis.unboundedDeferredChunkRetries > 0 ||
     analysis.spawnRetryDedupGaps > 0 ||
     analysis.unserializedTickingAreaAllocations > 0 ||
+    analysis.incompleteTickingAreaErrorRouters > 0 ||
+    (
+      analysis.tickingAreaAcquires > 0 &&
+      analysis.capacityChecks > 0 &&
+      analysis.capacityQueuePaths === 0
+    ) ||
+    (
+      analysis.tickingAreaAcquires > 0 &&
+      analysis.leaseJournalWriters > 0 &&
+      analysis.worldLoadObservers > 0 &&
+      analysis.leaseJournalRecoveryPaths === 0
+    ) ||
     analysis.broadSpawnRecoveryRisks > 0 ||
     analysis.entityRemoveTerminalizationRisks > 0 ||
     analysis.unresolvedResidencyStateMachines > 0 ||
@@ -77,6 +89,18 @@ export function chunkLifecycleDiagnostics(
           analysis.serializedTickingAreaAllocations,
         unserializedTickingAreaAllocations:
           analysis.unserializedTickingAreaAllocations,
+        tickingAreaErrorHandlers:
+          analysis.tickingAreaErrorHandlers,
+        completeTickingAreaErrorRouters:
+          analysis.completeTickingAreaErrorRouters,
+        incompleteTickingAreaErrorRouters:
+          analysis.incompleteTickingAreaErrorRouters,
+        capacityQueuePaths:
+          analysis.capacityQueuePaths,
+        leaseJournalWriters:
+          analysis.leaseJournalWriters,
+        leaseJournalRecoveryPaths:
+          analysis.leaseJournalRecoveryPaths,
         spawnRecoveryRoutes:
           analysis.spawnRecoveryRoutes,
         unloadedSpecificSpawnRecoveryRoutes:

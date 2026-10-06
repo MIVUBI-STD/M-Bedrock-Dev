@@ -469,6 +469,100 @@ describe("chunk lifecycle analysis", () => {
     ).toBe(1);
   });
 
+  it("proves reason-specific TickingAreaError routing and capacity requeue", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "async function allocate(manager, options, queue, journal) {",
+        "  try {",
+        "    const lease = await manager.createTickingArea('arena:lease', options);",
+        "    journal.record('lease', lease.identifier);",
+        "  } catch (error) {",
+        "    if (error.reason === 'IdentifierAlreadyExists') reconcileOwnership();",
+        "    else if (error.reason === 'OverChunkLimit') queue.enqueue(options);",
+        "    else if (error.reason === 'SideLengthExceeded') failPlanner();",
+        "    else if (error.reason === 'UnknownIdentifier') reconcileStaleLease();",
+        "    else throw error;",
+        "  }",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(
+      result.completeTickingAreaErrorRouters,
+    ).toBe(1);
+    expect(
+      result.incompleteTickingAreaErrorRouters,
+    ).toBe(0);
+    expect(
+      result.capacityQueuePaths,
+    ).toBe(1);
+    expect(
+      result.leaseJournalWriters,
+    ).toBe(1);
+  });
+
+  it("keeps generic TickingAreaError handling explicit as incomplete", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "async function allocate(manager, options) {",
+        "  try {",
+        "    await manager.createTickingArea('arena:lease', options);",
+        "  } catch (error) {",
+        "    retry();",
+        "  }",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    expect(
+      analyzeChunkLifecycle([
+        script,
+      ]).incompleteTickingAreaErrorRouters,
+    ).toBe(1);
+  });
+
+  it("proves durable lease journal reconciliation from worldLoad", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "async function allocate(manager, options, leaseJournal) {",
+        "  const lease = await manager.createTickingArea('arena:lease', options);",
+        "  leaseJournal.record('lease', lease.identifier);",
+        "}",
+        "world.afterEvents.worldLoad.subscribe(() => {",
+        "  reconcileLeaseJournal();",
+        "});",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(
+      result.leaseJournalWriters,
+    ).toBe(1);
+    expect(
+      result.leaseJournalRecoveryPaths,
+    ).toBe(1);
+  });
+
   it("accepts unloaded-chunk-specific spawn recovery routing", () => {
     const script = parseScriptFile(
       "main",

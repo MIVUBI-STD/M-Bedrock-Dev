@@ -60,6 +60,12 @@ export interface ChunkLifecycleAnalysis {
   spawnRetryDedupGaps: number;
   serializedTickingAreaAllocations: number;
   unserializedTickingAreaAllocations: number;
+  tickingAreaErrorHandlers: number;
+  completeTickingAreaErrorRouters: number;
+  incompleteTickingAreaErrorRouters: number;
+  capacityQueuePaths: number;
+  leaseJournalWriters: number;
+  leaseJournalRecoveryPaths: number;
   spawnRecoveryRoutes: number;
   unloadedSpecificSpawnRecoveryRoutes: number;
   broadSpawnRecoveryRisks: number;
@@ -600,6 +606,200 @@ function chunkRecoveryStaticProofs(
       allocationRegions.size,
     serializedTickingAreaAllocations:
       serializedRegions.size,
+  };
+}
+
+
+function tickingAreaReliabilityProofs(
+  script: ParsedScriptFile,
+): {
+  errorHandlers: number;
+  completeErrorRouters: number;
+  incompleteErrorRouters: number;
+  capacityQueuePaths: number;
+  leaseJournalWriters: number;
+  leaseJournalRecoveryPaths: number;
+} {
+  const file = ts.createSourceFile(
+    script.source.relativePath,
+    script.text,
+    ts.ScriptTarget.Latest,
+    true,
+    script.source.relativePath.endsWith(
+      ".ts",
+    )
+      ? ts.ScriptKind.TS
+      : ts.ScriptKind.JS,
+  );
+  let errorHandlers = 0;
+  let completeErrorRouters = 0;
+  let incompleteErrorRouters = 0;
+  let capacityQueuePaths = 0;
+  let leaseJournalWriters = 0;
+  let leaseJournalRecoveryPaths = 0;
+
+  const containsTickingAreaCall = (
+    node: ts.Node,
+  ): boolean => {
+    let found = false;
+    const scan = (
+      current: ts.Node,
+    ): void => {
+      if (
+        ts.isCallExpression(current) &&
+        ts.isPropertyAccessExpression(
+          current.expression,
+        ) &&
+        (
+          current.expression.name.text ===
+            "createTickingArea" ||
+          current.expression.name.text ===
+            "removeTickingArea"
+        )
+      ) {
+        found = true;
+        return;
+      }
+      if (!found) {
+        ts.forEachChild(
+          current,
+          scan,
+        );
+      }
+    };
+    scan(node);
+    return found;
+  };
+
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isTryStatement(node) &&
+      node.catchClause &&
+      containsTickingAreaCall(
+        node.tryBlock,
+      )
+    ) {
+      errorHandlers += 1;
+      const text =
+        node.catchClause.block.getText(
+          file,
+        );
+      const required = [
+        "IdentifierAlreadyExists",
+        "OverChunkLimit",
+        "SideLengthExceeded",
+        "UnknownIdentifier",
+      ];
+      const covered =
+        required.filter(
+          (reason) =>
+            text.includes(reason),
+        ).length;
+      if (
+        covered === required.length
+      ) {
+        completeErrorRouters += 1;
+      } else {
+        incompleteErrorRouters += 1;
+      }
+
+      if (
+        /OverChunkLimit/.test(text) &&
+        /(?:queue|enqueue|requeue|pending)/i.test(
+          text,
+        )
+      ) {
+        capacityQueuePaths += 1;
+      }
+    }
+
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(
+        node.expression,
+      )
+    ) {
+      const method =
+        node.expression.name.text;
+      const receiver =
+        node.expression.expression.getText(
+          file,
+        );
+      const text =
+        node.getText(file);
+
+      if (
+        /(?:journal|ledger|lease)/i.test(
+          receiver,
+        ) &&
+        /(?:set|write|save|record|upsert|add)/i.test(
+          method,
+        ) &&
+        /(?:lease|ticking|identifier|generation|owner)/i.test(
+          text,
+        )
+      ) {
+        leaseJournalWriters += 1;
+      }
+    }
+
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(
+        node.expression,
+      ) &&
+      node.expression.name.text ===
+        "subscribe"
+    ) {
+      const owner =
+        node.expression.expression;
+      if (
+        ts.isPropertyAccessExpression(
+          owner,
+        ) &&
+        owner.name.text ===
+          "worldLoad"
+      ) {
+        const callback =
+          node.arguments[0];
+        if (
+          callback &&
+          (
+            ts.isArrowFunction(
+              callback,
+            ) ||
+            ts.isFunctionExpression(
+              callback,
+            )
+          )
+        ) {
+          const text =
+            callback.body.getText(file);
+          if (
+            /(?:journal|ledger|lease)/i.test(
+              text,
+            ) &&
+            /(?:reconcile|recover|adopt|remove|cleanup)/i.test(
+              text,
+            )
+          ) {
+            leaseJournalRecoveryPaths += 1;
+          }
+        }
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+
+  return {
+    errorHandlers,
+    completeErrorRouters,
+    incompleteErrorRouters,
+    capacityQueuePaths,
+    leaseJournalWriters,
+    leaseJournalRecoveryPaths,
   };
 }
 
@@ -1308,6 +1508,44 @@ export function analyzeChunkLifecycle(
         ),
       0,
     );
+  const reliabilityProofs =
+    scripts.reduce(
+      (summary, script) => {
+        const current =
+          tickingAreaReliabilityProofs(
+            script,
+          );
+        return {
+          errorHandlers:
+            summary.errorHandlers +
+            current.errorHandlers,
+          completeErrorRouters:
+            summary.completeErrorRouters +
+            current.completeErrorRouters,
+          incompleteErrorRouters:
+            summary.incompleteErrorRouters +
+            current.incompleteErrorRouters,
+          capacityQueuePaths:
+            summary.capacityQueuePaths +
+            current.capacityQueuePaths,
+          leaseJournalWriters:
+            summary.leaseJournalWriters +
+            current.leaseJournalWriters,
+          leaseJournalRecoveryPaths:
+            summary.leaseJournalRecoveryPaths +
+            current.leaseJournalRecoveryPaths,
+        };
+      },
+      {
+        errorHandlers: 0,
+        completeErrorRouters: 0,
+        incompleteErrorRouters: 0,
+        capacityQueuePaths: 0,
+        leaseJournalWriters: 0,
+        leaseJournalRecoveryPaths: 0,
+      },
+    );
+
   const staticRecoveryProofs =
     scripts.reduce(
       (summary, script) => {
@@ -1440,6 +1678,18 @@ export function analyzeChunkLifecycle(
         staticRecoveryProofs.tickingAreaAllocations -
           staticRecoveryProofs.serializedTickingAreaAllocations,
       ),
+    tickingAreaErrorHandlers:
+      reliabilityProofs.errorHandlers,
+    completeTickingAreaErrorRouters:
+      reliabilityProofs.completeErrorRouters,
+    incompleteTickingAreaErrorRouters:
+      reliabilityProofs.incompleteErrorRouters,
+    capacityQueuePaths:
+      reliabilityProofs.capacityQueuePaths,
+    leaseJournalWriters:
+      reliabilityProofs.leaseJournalWriters,
+    leaseJournalRecoveryPaths:
+      reliabilityProofs.leaseJournalRecoveryPaths,
     spawnRecoveryRoutes:
       spawnRecoveryRouting.routes,
     unloadedSpecificSpawnRecoveryRoutes:
