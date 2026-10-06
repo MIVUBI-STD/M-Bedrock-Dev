@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { KnowledgeCatalog } from "../../../knowledge/src/index.js";
 import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
 import {
+  analyzeDeferredMutationGeneration,
   analyzeScriptMutationTransactions,
   scriptMutationTransactionRuntimeEvidence,
 } from "../../src/repair/script-mutation-transaction-analysis.js";
@@ -376,5 +377,52 @@ describe("script mutation transaction analysis", () => {
 
     const assessments = analyzeScriptMutationTransactions([script]);
     expect(assessments).toEqual([]);
+  });
+});
+
+
+describe("deferred mutation generation ownership", () => {
+  it("proves generation revalidation before deferred block mutation", () => {
+    const script = parse(`
+      import { system, world } from "@minecraft/server";
+      const dimension = world.getDimension("overworld");
+      let arenaGeneration = 4;
+      const capturedGeneration = arenaGeneration;
+      system.runTimeout(() => {
+        if (capturedGeneration !== arenaGeneration) return;
+        const block = dimension.getBlock({ x: 0, y: 64, z: 0 });
+        block.setType("minecraft:stone");
+      }, 1);
+    `);
+
+    const result =
+      analyzeDeferredMutationGeneration([
+        script,
+      ]);
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        guardEvidence:
+          "explicit-generation-check",
+        mutationCalls: 1,
+      }),
+    ]);
+  });
+
+  it("keeps deferred block mutation without generation guard unresolved", () => {
+    const script = parse(`
+      import { system, world } from "@minecraft/server";
+      const dimension = world.getDimension("overworld");
+      system.runTimeout(() => {
+        const block = dimension.getBlock({ x: 0, y: 64, z: 0 });
+        block.setType("minecraft:stone");
+      }, 1);
+    `);
+
+    expect(
+      analyzeDeferredMutationGeneration([
+        script,
+      ])[0]?.guardEvidence,
+    ).toBe("unresolved");
   });
 });

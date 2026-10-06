@@ -550,3 +550,84 @@ export function scriptMutationTransactionRuntimeEvidence(
 
   return records;
 }
+
+
+export interface DeferredMutationGenerationAssessment {
+  scriptId: string;
+  callbackRegion: string;
+  guardEvidence:
+    | "explicit-generation-check"
+    | "unresolved";
+  mutationCalls: number;
+}
+
+export function analyzeDeferredMutationGeneration(
+  scripts: readonly ParsedScriptFile[],
+): DeferredMutationGenerationAssessment[] {
+  const output:
+    DeferredMutationGenerationAssessment[] = [];
+
+  for (const script of scripts) {
+    for (
+      const callback of
+        script.deferredCallbacks
+    ) {
+      const region =
+        callback.callbackRegion;
+      if (!region) continue;
+
+      const mutationCalls =
+        script.methodCalls.filter(
+          (call) =>
+            call.executionRegion ===
+              region &&
+            (
+              (
+                call.receiverType ===
+                  "Block" &&
+                (
+                  call.method ===
+                    "setType" ||
+                  call.method ===
+                    "setPermutation"
+                )
+              ) ||
+              (
+                call.receiverType ===
+                  "Dimension" &&
+                (
+                  call.method ===
+                    "fillBlocks" ||
+                  call.method ===
+                    "setBlockType" ||
+                  call.method ===
+                    "setBlockPermutation"
+                )
+              )
+            ),
+        ).length;
+
+      if (mutationCalls === 0) {
+        continue;
+      }
+
+      output.push({
+        scriptId:
+          script.identifier,
+        callbackRegion: region,
+        guardEvidence:
+          callback.guardEvidence,
+        mutationCalls,
+      });
+    }
+  }
+
+  return output.sort((a, b) =>
+    a.scriptId.localeCompare(
+      b.scriptId,
+    ) ||
+    a.callbackRegion.localeCompare(
+      b.callbackRegion,
+    )
+  );
+}

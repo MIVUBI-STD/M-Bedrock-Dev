@@ -1390,6 +1390,17 @@
       ]
     },
     {
+      "knowledgeId": "world-policy.stale-mutation-cancel",
+      "consumer": "script-mutation-transaction-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/parser/parse.ts",
+        "engine/packages/orchestrator/src/repair/script-mutation-transaction-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/repair/script-mutation-transaction-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "world-policy.structure-request-not-commit",
       "consumer": "mutation-transaction-analysis",
       "analyzerPaths": [
