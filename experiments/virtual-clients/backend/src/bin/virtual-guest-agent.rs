@@ -43,7 +43,7 @@ fn handle(mut stream: TcpStream, token: &str) -> Result<(), Box<dyn std::error::
             .then(|| value.trim())
     });
 
-    if supplied != Some(token) {
+    if !supplied.is_some_and(|candidate| timing_safe_token_eq(candidate, token)) {
         stream.write_all(
             b"HTTP/1.1 401 Unauthorized\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
         )?;
@@ -63,6 +63,19 @@ fn handle(mut stream: TcpStream, token: &str) -> Result<(), Box<dyn std::error::
     );
     stream.write_all(response.as_bytes())?;
     Ok(())
+}
+
+fn timing_safe_token_eq(candidate: &str, expected: &str) -> bool {
+    if candidate.len() != expected.len() {
+        return false;
+    }
+
+    candidate
+        .as_bytes()
+        .iter()
+        .zip(expected.as_bytes())
+        .fold(0_u8, |difference, (left, right)| difference | (left ^ right))
+        == 0
 }
 
 #[cfg(target_os = "windows")]
@@ -109,4 +122,18 @@ fn guest_agent_token() -> io::Result<String> {
         io::ErrorKind::Unsupported,
         "Virtual Guest Agent currently targets Windows guests",
     ))
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::timing_safe_token_eq;
+
+    #[test]
+    fn guest_token_comparison_requires_exact_match() {
+        let token = "a".repeat(64);
+        assert!(timing_safe_token_eq(&token, &token));
+        assert!(!timing_safe_token_eq(&"b".repeat(64), &token));
+        assert!(!timing_safe_token_eq("short", &token));
+    }
 }

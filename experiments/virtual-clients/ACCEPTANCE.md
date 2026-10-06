@@ -46,6 +46,15 @@ start
 
 A newly started mismatch must be stopped and batch rollback attempted.
 
+Guest Agent security proof also requires:
+
+- the agent has no fallback/shared token source; Windows guests read only `guestinfo.virtualclients.token`;
+- cloned Virtual VMX files rotate the inherited Base token during the production hardware-policy path;
+- `Base`, `Virtual-01`, `Virtual-02`, and `Virtual-03` do not share a Guest Agent token;
+- invalid or missing tokens receive no status payload;
+- the Windows firewall rule is scoped to the installed Guest Agent executable, TCP 47831, and `LocalSubnet`;
+- the scheduled task has no finite execution-time ceiling for the long-running agent.
+
 ## Target-machine proof
 
 ```text

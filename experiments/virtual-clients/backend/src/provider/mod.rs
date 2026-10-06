@@ -468,8 +468,14 @@ pub(crate) fn host_working_sets_mb() -> Vec<(ClientId, u64)> {
 #[cfg(test)]
 mod tests {
     use super::{
-        guest_tools_state_ready, listed_as_running, parse_guest_ip, snapshot_list_contains,
-        valid_guest_token,
+        apply_virtual_hardware_policy, guest_token_for_path, guest_tools_state_ready,
+        listed_as_running, parse_guest_ip, snapshot_list_contains, valid_guest_token,
+        GUEST_TOKEN_KEY,
+    };
+    use std::{
+        fs,
+        path::PathBuf,
+        time::{SystemTime, UNIX_EPOCH},
     };
 
     #[test]
@@ -510,6 +516,49 @@ mod tests {
         assert!(valid_guest_token(&"a".repeat(64)));
         assert!(!valid_guest_token("short"));
         assert!(!valid_guest_token(&"z".repeat(64)));
+    }
+
+    #[test]
+    fn virtual_hardware_policy_rotates_inherited_guest_tokens_per_clone() {
+        let root = unique_temp_dir("guest-token-rotation");
+        fs::create_dir_all(&root).unwrap();
+
+        let inherited = "a".repeat(64);
+        let base = root.join("Base.vmx");
+        fs::write(&base, format!("{GUEST_TOKEN_KEY} = \"{inherited}\"\n")).unwrap();
+
+        let mut virtual_tokens = Vec::new();
+        for name in ["Virtual-01", "Virtual-02", "Virtual-03"] {
+            let vmx = root.join(format!("{name}.vmx"));
+            fs::copy(&base, &vmx).unwrap();
+            apply_virtual_hardware_policy(&vmx).unwrap();
+
+            let token = guest_token_for_path(&vmx).unwrap().unwrap();
+            assert!(valid_guest_token(&token));
+            assert_ne!(token, inherited);
+            virtual_tokens.push(token);
+        }
+
+        assert_eq!(
+            guest_token_for_path(&base).unwrap().as_deref(),
+            Some(inherited.as_str())
+        );
+        assert_ne!(virtual_tokens[0], virtual_tokens[1]);
+        assert_ne!(virtual_tokens[0], virtual_tokens[2]);
+        assert_ne!(virtual_tokens[1], virtual_tokens[2]);
+
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    fn unique_temp_dir(label: &str) -> PathBuf {
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        std::env::temp_dir().join(format!(
+            "m-bedrock-virtual-clients-{label}-{}-{nonce}",
+            std::process::id()
+        ))
     }
 }
 
