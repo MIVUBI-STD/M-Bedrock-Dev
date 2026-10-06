@@ -5,13 +5,15 @@ use std::{
 };
 
 fn backup_path(path: &Path) -> io::Result<PathBuf> {
-    let parent = path
-        .parent()
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "metadata path has no parent"))?;
+    let parent = path.parent().ok_or_else(|| {
+        io::Error::new(io::ErrorKind::InvalidInput, "metadata path has no parent")
+    })?;
     let name = path
         .file_name()
         .and_then(|name| name.to_str())
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "metadata filename is invalid"))?;
+        .ok_or_else(|| {
+            io::Error::new(io::ErrorKind::InvalidInput, "metadata filename is invalid")
+        })?;
     Ok(parent.join(format!(".{name}.bak")))
 }
 
@@ -22,7 +24,9 @@ fn temporary_path(path: &Path) -> io::Result<PathBuf> {
     let name = path
         .file_name()
         .and_then(|name| name.to_str())
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "metadata filename is invalid"))?;
+        .ok_or_else(|| {
+            io::Error::new(io::ErrorKind::InvalidInput, "metadata filename is invalid")
+        })?;
     Ok(parent.join(format!(".{name}.{}.tmp", std::process::id())))
 }
 
