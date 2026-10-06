@@ -101,7 +101,7 @@ A document that is not routed by its domain README is invalid. Broad-scanning a 
 
 ## Section-level retrieval
 
-Large canonical documents remain single physical owners. Their H2 (`##`) headings are indexed as DERIVED Catalog resources:
+Large canonical documents remain single physical owners. Their H2/H3 (`##` / `###`) headings are indexed as DERIVED Catalog resources:
 
 ```text
 physical document
