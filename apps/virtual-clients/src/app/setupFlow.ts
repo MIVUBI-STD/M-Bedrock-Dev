@@ -64,8 +64,8 @@ const flows: Record<SetupAction, SetupExperience> = {
     description: "The prepared environment must complete its one-time Windows generalization before it can become the immutable source for virtual clients.",
     primaryLabel: "Finalization completed",
     steps: [
-      "Boot the prepared Base only for this finalization step.",
-      "Run the packaged finalization script inside the Base as Administrator.",
+      "Use Open Base for finalization; Virtual Clients will start the registered Base and open VMware.",
+      "Inside the Base, run C:\\ProgramData\\M-Bedrock\\VirtualClients\\finalize-base.ps1 -ConfirmGeneralize as Administrator.",
       "Allow Windows to generalize and shut down the Base.",
       "Do not boot the finalized Base again; return here and continue.",
     ],
