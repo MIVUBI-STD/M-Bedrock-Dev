@@ -109,7 +109,7 @@ export function blockerLabel(value: string | null | undefined, reason?: string):
 export function primaryClientAction(
   actions: ClientLifecycleActions | undefined,
   state: ClientStatus["state"],
-): { kind: "open" | "start" | "start-setup"; label: string } | undefined {
+): { kind: "open" | "start" | "start-setup" | "launch-minecraft"; label: string } | undefined {
   if (!actions) return undefined;
 
   if (state === "RUNNING" && actions.open.allowed) {
