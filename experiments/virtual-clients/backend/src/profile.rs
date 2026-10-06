@@ -5,7 +5,7 @@ use std::{
     process::Command,
 };
 
-use crate::provider::base_vmx_path;
+use crate::provider::{base_vmx_path, current_platform_provider};
 
 pub const BASE_PROFILE_SCHEMA: u32 = 1;
 
@@ -25,11 +25,18 @@ pub struct MinecraftProfile {
     pub install_type: MinecraftInstallType,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum BaseProfileSource {
+    NativeRecorded,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BaseProfile {
     pub schema: u32,
-    pub minecraft: MinecraftProfile,
+    pub minecraft_version: String,
+    pub source: BaseProfileSource,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -79,6 +86,59 @@ pub fn load_base_profile() -> io::Result<BaseProfile> {
     Ok(profile)
 }
 
+pub fn register_base_from_native() -> io::Result<BaseProfile> {
+    let native = native_minecraft_profile().ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::NotFound,
+            "Native Minecraft Education version could not be detected",
+        )
+    })?;
+
+    let base = base_vmx_path()?;
+    if !base.is_file() {
+        return Err(io::Error::new(
+            io::ErrorKind::NotFound,
+            format!("Base VM is missing: {}", base.display()),
+        ));
+    }
+
+    let provider = current_platform_provider().ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::NotFound,
+            "virtualization provider is unavailable",
+        )
+    })?;
+    if provider.is_running_path(&base)? {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "Base must be fully stopped before registration",
+        ));
+    }
+
+    let profile = BaseProfile {
+        schema: BASE_PROFILE_SCHEMA,
+        minecraft_version: native.version,
+        source: BaseProfileSource::NativeRecorded,
+    };
+
+    let path = base_profile_path()?;
+    let parent = path.parent().ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "Base profile path has no parent directory",
+        )
+    })?;
+    fs::create_dir_all(parent)?;
+
+    let temporary = path.with_extension("json.tmp");
+    let json = serde_json::to_string_pretty(&profile)
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+    fs::write(&temporary, format!("{json}\n"))?;
+    fs::rename(&temporary, &path)?;
+
+    Ok(profile)
+}
+
 pub fn native_minecraft_profile() -> Option<MinecraftProfile> {
     #[cfg(target_os = "windows")]
     {
@@ -99,7 +159,7 @@ pub fn profile_status() -> ProfileStatus {
     let base = load_base_profile().ok();
 
     let parity = match (&native, &base) {
-        (Some(native), Some(base)) if native.version == base.minecraft.version => {
+        (Some(native), Some(base)) if native.version == base.minecraft_version => {
             ProfileParity::Match
         }
         (Some(_), Some(_)) => ProfileParity::Mismatch,
@@ -127,18 +187,18 @@ pub fn require_base_matches_native() -> io::Result<ProfileStatus> {
             let base = status
                 .base
                 .as_ref()
-                .map(|profile| profile.minecraft.version.as_str())
+                .map(|profile| profile.minecraft_version.as_str())
                 .unwrap_or("unknown");
             Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 format!(
-                    "Minecraft Education version mismatch: Native={native}, Base={base}. Prepare a Base matching Native before starting Virtual clients."
+                    "Minecraft Education version mismatch: Native={native}, Base={base}. Prepare and register a Base matching Native before starting Virtual clients."
                 ),
             ))
         }
         ProfileParity::Unknown => Err(io::Error::new(
             io::ErrorKind::NotFound,
-            "Minecraft Education parity cannot be proven. Native version and Base profile are both required.",
+            "Minecraft Education parity cannot be proven. Native version and registered Base profile are both required.",
         )),
     }
 }
@@ -235,11 +295,17 @@ fn normalized_version(value: &str) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{normalized_version, BaseProfile, MinecraftInstallType, MinecraftProfile};
+    use super::{
+        normalized_version, BaseProfile, BaseProfileSource, MinecraftInstallType, MinecraftProfile,
+        BASE_PROFILE_SCHEMA,
+    };
 
     #[test]
     fn version_normalization_is_strict() {
-        assert_eq!(normalized_version("1.21.120.0\n"), Some("1.21.120.0".into()));
+        assert_eq!(
+            normalized_version("1.21.120.0\n"),
+            Some("1.21.120.0".into())
+        );
         assert_eq!(normalized_version(""), None);
         assert_eq!(normalized_version("version 1.21"), None);
     }
@@ -247,15 +313,22 @@ mod tests {
     #[test]
     fn base_profile_schema_round_trips() {
         let profile = BaseProfile {
-            schema: 1,
-            minecraft: MinecraftProfile {
-                version: "1.21.120.0".into(),
-                install_type: MinecraftInstallType::Desktop,
-            },
+            schema: BASE_PROFILE_SCHEMA,
+            minecraft_version: "1.21.120.0".into(),
+            source: BaseProfileSource::NativeRecorded,
         };
 
         let json = serde_json::to_string(&profile).unwrap();
         let decoded: BaseProfile = serde_json::from_str(&json).unwrap();
         assert_eq!(decoded, profile);
+    }
+
+    #[test]
+    fn native_profile_carries_install_type() {
+        let profile = MinecraftProfile {
+            version: "1.21.120.0".into(),
+            install_type: MinecraftInstallType::Desktop,
+        };
+        assert_eq!(profile.version, "1.21.120.0");
     }
 }
