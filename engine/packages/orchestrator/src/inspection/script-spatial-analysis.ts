@@ -28,6 +28,9 @@ export interface ResolvedScriptSpatialEffect {
   effect: ResolvedEffect;
   executionRegion: string;
   source: SourceRef;
+  dimensionExpression?: string;
+  checkForBlocks?: boolean;
+  resultBinding?: string;
 }
 
 export interface ScriptSpatialResolutionFailure {
@@ -256,14 +259,6 @@ export function analyzeScriptSpatialMutations(
           executionRegion:
             mutation.executionRegion,
           source: mutation.source,
-          ...(mutation.kind !== "teleport" ||
-          mutation.dimensionExpression === undefined
-            ? {}
-            : { dimensionExpression: mutation.dimensionExpression }),
-          ...(mutation.kind !== "teleport" ||
-          mutation.checkForBlocks === undefined
-            ? {}
-            : { checkForBlocks: mutation.checkForBlocks }),\n          ...(mutation.resultBinding === undefined ? {} : { resultBinding: mutation.resultBinding }),
         });
       } else {
         failures.push(resolved.failure);
@@ -284,6 +279,17 @@ export function analyzeScriptSpatialMutations(
           executionRegion:
             mutation.executionRegion,
           source: mutation.source,
+          ...((mutation.kind !== "teleport" && mutation.kind !== "try-teleport") ||
+          mutation.dimensionExpression === undefined
+            ? {}
+            : { dimensionExpression: mutation.dimensionExpression }),
+          ...((mutation.kind !== "teleport" && mutation.kind !== "try-teleport") ||
+          mutation.checkForBlocks === undefined
+            ? {}
+            : { checkForBlocks: mutation.checkForBlocks }),
+          ...(mutation.resultBinding === undefined
+            ? {}
+            : { resultBinding: mutation.resultBinding }),
         });
       } else if ("placement" in resolved) {
         structurePlacements.push(resolved.placement);
