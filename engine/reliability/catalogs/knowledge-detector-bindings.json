@@ -70,6 +70,17 @@
       ]
     },
     {
+      "knowledgeId": "chunk-policy.relation.lease-removal-deactivates",
+      "consumer": "chunk-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/chunk/chunk-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/chunk-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "chunk-policy.relation.recovery-queues-capacity",
       "consumer": "chunk-lifecycle-analysis",
       "analyzerPaths": [

@@ -1,4 +1,4 @@
-# Development Planning
+- 2026-10-06: Chunk Runtime audit slice hardened without CI: added zero-tick recovery detection, unloaded-specific spawn recovery routing, entityRemove-vs-death residency proof, explicit residency state-machine proof, bounded retry proof, spawn retry deduplication proof, serialized Script TickingArea allocation proof, reason-specific TickingAreaError routing, capacity requeue evidence, and continuous lease-journal/worldLoad reconciliation evidence. Remaining setup-planning/backend-compatibility contracts stay open rather than being heuristic-bound.\n\n# Development Planning
 
 Current and future work that improves M-Bedrock-Dev itself.
 
