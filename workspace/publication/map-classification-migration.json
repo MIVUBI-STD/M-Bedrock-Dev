@@ -9,16 +9,36 @@
       "sha": "df04ea8645ac88aaaecccc8772d24fe104de152e"
     },
     {
+      "path": "workspace/reports/Attack-Challenge-v1.1.1-BugReport.json",
+      "sha": "7a151ab870c2bc1dec7a4e700fd4c66c8c04c193"
+    },
+    {
       "path": "workspace/reports/Build-and-Decode-v1.1.1-BugReport.json",
       "sha": "abbc31a61dfc2ef854230062224f49c25fa70c71"
+    },
+    {
+      "path": "workspace/reports/Composite-Challenge-v1.1.1-BugReport.json",
+      "sha": "cb412f870d7d373846fbc83b66930dfa38c69d93"
     },
     {
       "path": "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json",
       "sha": "1836cc7babb704b288ec6363416942b63493d239"
     },
     {
-      "path": "workspace/reports/Composite-Challenge-v1.1.1-BugReport.json",
-      "sha": "cb412f870d7d373846fbc83b66930dfa38c69d93"
+      "path": "workspace/reports/Fall-of-the-Pillager-L1-v1.1.0-BugReport.json",
+      "sha": "9e21340ad000bb0ac47eaad85d69a1158d851a28"
+    },
+    {
+      "path": "workspace/reports/Five-Nights-at-Z-Village-L1-v1.1.0-BugReport.json",
+      "sha": "c15aa60096c2e28036fb384c914b83ea8e58a72e"
+    },
+    {
+      "path": "workspace/reports/Manhunt-v1.0.0-BugReport.json",
+      "sha": "244d5ef54c9ba3b75e2eb478306394899a40abd8"
+    },
+    {
+      "path": "workspace/reports/Orb-of-the-Illusioner-L2-v1.1.0-BugReport.json",
+      "sha": "9e21d78257330dce69205ab4fd6b54b50deea9bb"
     },
     {
       "path": "workspace/reports/The-Circuit-v1.0.2-BugReport.json",
@@ -27,22 +47,6 @@
     {
       "path": "workspace/reports/The-Gauntlet-v1.0.2-BugReport.json",
       "sha": "99b5cf5e252852b2ce523d442e0788254c476fb4"
-    },
-    {
-      "path": "workspace/reports/Manhunt-v1.0.0-BugReport.json",
-      "sha": "244d5ef54c9ba3b75e2eb478306394899a40abd8"
-    },
-    {
-      "path": "workspace/reports/Fall-of-the-Pillager-L1-v1.1.0-BugReport.json",
-      "sha": "9e21340ad000bb0ac47eaad85d69a1158d851a28"
-    },
-    {
-      "path": "workspace/reports/Orb-of-the-Illusioner-L2-v1.1.0-BugReport.json",
-      "sha": "9e21d78257330dce69205ab4fd6b54b50deea9bb"
-    },
-    {
-      "path": "workspace/reports/Five-Nights-at-Z-Village-L1-v1.1.0-BugReport.json",
-      "sha": "c15aa60096c2e28036fb384c914b83ea8e58a72e"
     }
   ],
   "summary": {
@@ -80,15 +84,24 @@
       "classification": {
         "mapType": "CHALLENGE_COURSE",
         "playerMode": null,
-        "mechanicTags": [],
+        "mechanicTags": [
+          "LOADOUT",
+          "MULTI_ARENA",
+          "RECONNECT",
+          "RESPAWN"
+        ],
         "classificationStatus": "UNRESOLVED",
         "evidenceRefs": [
-          "workspace/project-registry.json#attack-challenge"
+          "workspace/project-registry.json#attack-challenge",
+          "workspace/reports/Attack-Challenge-v1.1.1-BugReport.json#BUG-ATK-PRELOAD-INVENTORY",
+          "workspace/reports/Attack-Challenge-v1.1.1-BugReport.json#BUG-ATK-RESPAWN-RECONNECT",
+          "workspace/reports/Attack-Challenge-v1.1.1-BugReport.json#DM-ATK-ARENA-CAPACITY"
         ]
       },
       "rationale": [
-        "Legacy project label supports a partial canonical Map Type only.",
-        "Player Mode remains unresolved until selected-artifact or approved design evidence proves the player relationship."
+        "Project registry legacy label proves CHALLENGE_COURSE.",
+        "Current report directly proves buy-phase loadout, respawn/reconnect ownership, and six independent arena surfaces.",
+        "Player Mode remains unresolved because the current report does not explicitly prove whether party members cooperate against non-player opponents or compete with another player side."
       ]
     },
     {
@@ -252,7 +265,7 @@
       },
       "rationale": [
         "Project registry legacy label proves CHALLENGE_COURSE.",
-        "Current report describes valid parties jointly running an arena against enemy waves, supporting COOPERATIVE Player Mode.",
+        "Current report describes one party occupying an arena while progression is driven by hostile enemy waves; this supports COOPERATIVE Player Mode rather than player-versus-player opposition.",
         "Wave, enemy-spawn, six-arena concurrency, respawn/reconnect and world-reset mechanics are directly evidenced."
       ]
     },
