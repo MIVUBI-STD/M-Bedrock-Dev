@@ -103,15 +103,52 @@ function readableFile(path) {
   }
 }
 
+function resourceText(resource, jsonCache) {
+  if (!readableFile(resource.path)) return undefined;
+
+  if (
+    resource.class === "KNOWLEDGE" &&
+    resource.locator !== undefined &&
+    resource.path.endsWith(".json")
+  ) {
+    let data = jsonCache.get(resource.path);
+    if (data === undefined) {
+      data = JSON.parse(readFileSync(resource.path, "utf8"));
+      jsonCache.set(resource.path, data);
+    }
+
+    const fact = (data.facts ?? []).find(
+      (item) => item?.id === resource.locator,
+    );
+    if (fact === undefined) return undefined;
+
+    return [
+      fact.id,
+      fact.domain,
+      fact.subject,
+      fact.statement,
+      ...(fact.capabilityTags ?? []),
+      ...(fact.riskSurfaces ?? []),
+      ...(fact.diagnosticHints ?? []),
+    ]
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  return readFileSync(resource.path, "utf8");
+}
+
 export function scoreResourcesLexically(resources, query) {
+  const jsonCache = new Map();
   const documents = resources
     .filter((resource) => TEXT_CLASSES.has(resource.class))
     .filter((resource) => resource.lifecycle === "ACTIVE")
-    .filter((resource) => readableFile(resource.path))
-    .map((resource) => ({
-      id: resource.id,
-      text: readFileSync(resource.path, "utf8"),
-    }));
+    .flatMap((resource) => {
+      const text = resourceText(resource, jsonCache);
+      return text === undefined
+        ? []
+        : [{ id: resource.id, text }];
+    });
 
   return scoreDocuments(documents, query);
 }
