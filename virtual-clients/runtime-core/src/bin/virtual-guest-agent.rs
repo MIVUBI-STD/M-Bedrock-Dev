@@ -58,6 +58,7 @@ fn handle(mut stream: TcpStream, token: &str) -> Result<(), Box<dyn std::error::
                 protocol_version: GUEST_AGENT_PROTOCOL_VERSION,
                 agent_version: env!("CARGO_PKG_VERSION").to_string(),
                 minecraft: guest_agent_minecraft_profile(),
+                minecraft_running: Some(minecraft_process_running()),
                 machine_identity: guest_machine_identity(),
             };
             write_json(&mut stream, &status)
