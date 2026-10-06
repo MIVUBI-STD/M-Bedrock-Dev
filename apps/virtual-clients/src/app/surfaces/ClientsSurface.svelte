@@ -58,7 +58,7 @@
     <div>
       <span class="eyebrow">SETUP · ACCOUNTS</span>
       <strong>Sign in once, then save a recovery point</strong>
-      <small>Use each client's ••• menu after signing in and stopping that client. Setup completes when all three recovery points are saved.</small>
+      <small>In each client, double-click Enable Virtual Clients Launcher on the Windows desktop once, then complete Minecraft sign-in. After signing in, stop that client and use its ••• menu to Save recovery point.</small>
     </div>
   </section>
 {:else if setupAction === "REPROVISION_VIRTUALS"}
