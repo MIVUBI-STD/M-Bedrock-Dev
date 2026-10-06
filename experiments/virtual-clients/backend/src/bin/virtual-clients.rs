@@ -22,6 +22,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match command.as_str() {
         "doctor" => print_json(&app.doctor())?,
+        "diagnostics" => print_json(&app.diagnostics()?)?,
         "check-update" => print_json(&app.check_update()?)?,
         "register-base" => print_json(&app.register_base()?)?,
         "provision" => print_json(&app.provision()?)?,
@@ -71,6 +72,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         _ => {
             println!("M-Bedrock Virtual Clients");
             println!("  doctor");
+            println!("  diagnostics");
             println!("  check-update");
             println!("  register-base");
             println!("  provision");
