@@ -32,10 +32,3 @@ pub async fn setup_open_base_location() -> Result<(), String> {
         .map_err(|error| error.to_string())
 }
 
-#[tauri::command]
-pub async fn desktop_launch_native_minecraft() -> Result<(), String> {
-    tauri::async_runtime::spawn_blocking(crate::engine::native_minecraft::launch_native_minecraft)
-        .await
-        .map_err(|error| format!("Native Minecraft launch task failed: {error}"))?
-        .map_err(|error| error.to_string())
-}
