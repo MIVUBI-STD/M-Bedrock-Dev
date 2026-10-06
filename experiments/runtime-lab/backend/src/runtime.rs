@@ -350,8 +350,7 @@ impl RuntimeLab {
             if original_state != ClientState::Running {
                 let live_pressure = current_host_pressure();
                 if !live_pressure.can_start_virtual {
-                    let rollback_failed =
-                        restore_batch_state(provider.as_ref(), &started_by_batch);
+                    let rollback_failed = restore_batch_state(provider.as_ref(), &started_by_batch);
                     let error = io::Error::new(
                         io::ErrorKind::Other,
                         format!(
@@ -388,13 +387,13 @@ impl RuntimeLab {
                     rollback_failed.push(client.as_str());
                 }
                 started_by_batch.retain(|(started, _)| *started != client);
-                rollback_failed.extend(restore_batch_state(
-                    provider.as_ref(),
-                    &started_by_batch,
-                ));
+                rollback_failed.extend(restore_batch_state(provider.as_ref(), &started_by_batch));
                 let error = io::Error::new(
                     io::ErrorKind::InvalidData,
-                    format!("{} received duplicate VM identity after start", client.as_str()),
+                    format!(
+                        "{} received duplicate VM identity after start",
+                        client.as_str()
+                    ),
                 );
                 return Err(with_rollback_context(error, &rollback_failed));
             }
