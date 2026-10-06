@@ -1,4 +1,4 @@
-export type RetrievalResourceClass =
+export type CatalogResourceClass =
   | "DOCUMENT"
   | "KNOWLEDGE"
   | "SOURCE"
@@ -6,7 +6,7 @@ export type RetrievalResourceClass =
   | "WORKFLOW"
   | "SCHEMA";
 
-export type RetrievalDocumentRole =
+export type DocumentRole =
   | "ROUTER"
   | "WORKFLOW"
   | "CONTRACT"
@@ -14,17 +14,17 @@ export type RetrievalDocumentRole =
   | "ARCHITECTURE"
   | "GUIDE";
 
-export type RetrievalAuthority =
+export type ResourceAuthority =
   | "CANONICAL"
   | "REFERENCE"
   | "HISTORICAL"
   | "DERIVED";
 
-export type RetrievalLifecycle =
+export type ResourceLifecycle =
   | "ACTIVE"
   | "RETIRED";
 
-export type RetrievalRelationType =
+export type GraphRelationType =
   | "ROUTES_TO"
   | "OWNS"
   | "IMPLEMENTS"
@@ -34,27 +34,27 @@ export type RetrievalRelationType =
   | "RELATES_TO"
   | "DERIVED_FROM";
 
-export interface RetrievalResource {
+export interface CatalogResource {
   id: string;
-  class: RetrievalResourceClass;
+  class: CatalogResourceClass;
   domain: string;
-  role?: RetrievalDocumentRole;
-  authority: RetrievalAuthority;
+  role?: DocumentRole;
+  authority: ResourceAuthority;
   path: string;
-  lifecycle: RetrievalLifecycle;
+  lifecycle: ResourceLifecycle;
 }
 
-export interface RetrievalGraphEdge {
+export interface GraphEdge {
   from: string;
-  type: RetrievalRelationType;
+  type: GraphRelationType;
   to: string;
 }
 
 export interface RetrievalQuery {
   text: string;
   domains?: readonly string[];
-  classes?: readonly RetrievalResourceClass[];
-  authorities?: readonly RetrievalAuthority[];
+  classes?: readonly CatalogResourceClass[];
+  authorities?: readonly ResourceAuthority[];
   seedIds?: readonly string[];
   semanticScores?: Readonly<Record<string, number>>;
   limit?: number;
@@ -70,19 +70,19 @@ export interface RetrievalScore {
 }
 
 export interface RetrievalResult {
-  resource: RetrievalResource;
+  resource: CatalogResource;
   score: RetrievalScore;
   reasons: readonly string[];
 }
 
-const AUTHORITY_SCORE: Readonly<Record<RetrievalAuthority, number>> = {
+const AUTHORITY_SCORE: Readonly<Record<ResourceAuthority, number>> = {
   CANONICAL: 20,
   REFERENCE: 10,
   HISTORICAL: 0,
   DERIVED: 2,
 };
 
-const RELATION_SCORE: Readonly<Record<RetrievalRelationType, number>> = {
+const RELATION_SCORE: Readonly<Record<GraphRelationType, number>> = {
   ROUTES_TO: 30,
   OWNS: 28,
   IMPLEMENTS: 26,
@@ -110,7 +110,7 @@ function tokens(value: string): readonly string[] {
 }
 
 function structuralScore(
-  resource: RetrievalResource,
+  resource: CatalogResource,
   queryTokens: readonly string[],
 ): number {
   if (queryTokens.length === 0) return 0;
@@ -134,7 +134,7 @@ function structuralScore(
 }
 
 function graphScores(
-  edges: readonly RetrievalGraphEdge[],
+  edges: readonly GraphEdge[],
   seedIds: ReadonlySet<string>,
 ): Map<string, number> {
   const scores = new Map<string, number>();
@@ -165,10 +165,10 @@ function graphScores(
 }
 
 function candidateResources(
-  resources: readonly RetrievalResource[],
+  resources: readonly CatalogResource[],
   graphScore: ReadonlyMap<string, number>,
   domains: ReadonlySet<string>,
-): readonly RetrievalResource[] {
+): readonly CatalogResource[] {
   if (domains.size === 0 && graphScore.size === 0) {
     return resources;
   }
@@ -181,8 +181,8 @@ function candidateResources(
 }
 
 export function retrieveResources(
-  resources: readonly RetrievalResource[],
-  edges: readonly RetrievalGraphEdge[],
+  resources: readonly CatalogResource[],
+  edges: readonly GraphEdge[],
   query: RetrievalQuery,
 ): readonly RetrievalResult[] {
   const domains = new Set(query.domains ?? []);
