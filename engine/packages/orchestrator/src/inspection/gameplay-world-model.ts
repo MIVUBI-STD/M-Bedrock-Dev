@@ -218,6 +218,24 @@ export interface GameplayWorldModel {
         missing: number;
         coverageRatio: number;
       };
+      lifecycle: {
+        declared: boolean;
+        complete: number;
+        unresolved: number;
+        assessments: readonly {
+          scriptId: string;
+          tableName: string;
+          stateType?: string;
+          status:
+            | "complete"
+            | "unresolved";
+          missingPhases:
+            readonly string[];
+          orderingViolations:
+            readonly string[];
+          reason: string;
+        }[];
+      };
     };
     isolation: {
       isolated: number;
@@ -1204,6 +1222,8 @@ export function deriveGameplayWorldModel(
   if (source.arena.cleanupSurfaces !== undefined) {
     const unresolved =
       source.arena.cleanupSurfaces.unresolved > 0 ||
+      source.arena.cleanupSurfaces.lifecycle
+        .unresolved > 0 ||
       (source.arena.cleanupSurfaces.ledger?.missing ?? 0) > 0;
     runtimeSurfaces.push({
       id: "runtime:arena-cleanup",
@@ -1931,6 +1951,35 @@ export function deriveGameplayWorldModel(
           coverageRatio:
             source.arena.cleanupSurfaces
               ?.ledger?.coverageRatio ?? 1,
+        },
+        lifecycle: {
+          declared:
+            source.arena.cleanupSurfaces
+              ?.lifecycle.declared ?? false,
+          complete:
+            source.arena.cleanupSurfaces
+              ?.lifecycle.complete ?? 0,
+          unresolved:
+            source.arena.cleanupSurfaces
+              ?.lifecycle.unresolved ?? 0,
+          assessments:
+            source.arena.cleanupSurfaces
+              ?.lifecycle.assessments.map((item) => ({
+                scriptId: item.scriptId,
+                tableName: item.tableName,
+                ...(item.stateType === undefined
+                  ? {}
+                  : {
+                      stateType:
+                        item.stateType,
+                    }),
+                status: item.status,
+                missingPhases:
+                  [...item.missingPhases],
+                orderingViolations:
+                  [...item.orderingViolations],
+                reason: item.reason,
+              })) ?? [],
         },
       },
       isolation: {

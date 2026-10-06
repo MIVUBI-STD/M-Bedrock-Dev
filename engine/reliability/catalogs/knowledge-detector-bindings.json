@@ -87,6 +87,18 @@
       ]
     },
     {
+      "knowledgeId": "cleanup-policy.invalidate-first",
+      "consumer": "arena-cleanup-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-diagnostics.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-world-model.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "cleanup-policy.inventory-clear-not-equipment-proof",
       "consumer": "inventory-lifecycle-analysis",
       "analyzerPaths": [
@@ -94,6 +106,18 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "cleanup-policy.new-generation-after-verify",
+      "consumer": "arena-cleanup-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-diagnostics.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-world-model.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts"
       ]
     },
     {
@@ -109,6 +133,42 @@
       ]
     },
     {
+      "knowledgeId": "cleanup-policy.relation-generation-transition-requires-valid-lifecycle",
+      "consumer": "arena-cleanup-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-diagnostics.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-world-model.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "cleanup-policy.relation-invalidate-gates-clean",
+      "consumer": "arena-cleanup-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-diagnostics.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-world-model.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "cleanup-policy.relation-verify-gates-reuse",
+      "consumer": "arena-cleanup-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-diagnostics.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-world-model.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "cleanup-policy.repeatability-proof",
       "consumer": "arena-repeated-run-validation",
       "analyzerPaths": [
@@ -118,6 +178,18 @@
       "proofPaths": [
         "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts",
         "engine/packages/orchestrator/test/arena/arena-repeated-run-validation.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "cleanup-policy.reset-is-transaction",
+      "consumer": "arena-cleanup-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-diagnostics.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-world-model.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts"
       ]
     },
     {
@@ -137,6 +209,18 @@
       "consumer": "arena-cleanup-surface-analysis",
       "analyzerPaths": [
         "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "cleanup-policy.verify-empty-before-ready",
+      "consumer": "arena-cleanup-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-diagnostics.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-world-model.ts"
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts"

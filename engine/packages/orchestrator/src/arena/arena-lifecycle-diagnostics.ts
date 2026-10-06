@@ -21,6 +21,7 @@ export function arenaLifecycleDiagnostics(
   const strongRisk =
     lifecycle.unresolved > 0 ||
     cleanup.unresolved > 0 ||
+    cleanup.lifecycle.unresolved > 0 ||
     ledgerMissing > 0;
 
   const reviewRisk =
@@ -57,6 +58,12 @@ export function arenaLifecycleDiagnostics(
           ledgerPartial,
         cleanupLedgerMissing:
           ledgerMissing,
+        cleanupLifecycleDeclared:
+          cleanup.lifecycle.declared,
+        cleanupLifecycleComplete:
+          cleanup.lifecycle.complete,
+        cleanupLifecycleUnresolved:
+          cleanup.lifecycle.unresolved,
       },
     }),
   ];

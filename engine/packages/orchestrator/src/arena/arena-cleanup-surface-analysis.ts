@@ -75,6 +75,23 @@ export interface ArenaCleanupResourceLedger {
   obligations: readonly ArenaCleanupResourceObligation[];
 }
 
+export interface ArenaCleanupLifecycleAssessment {
+  scriptId: string;
+  tableName: string;
+  stateType?: string;
+  status: "complete" | "unresolved";
+  missingPhases: readonly string[];
+  orderingViolations: readonly string[];
+  reason: string;
+}
+
+export interface ArenaCleanupLifecycleSummary {
+  declared: boolean;
+  complete: number;
+  unresolved: number;
+  assessments: readonly ArenaCleanupLifecycleAssessment[];
+}
+
 export interface ArenaCleanupSurfaceAnalysis {
   acquiredSurfaces: number;
   terminalAssessments: readonly ArenaCleanupTerminalAssessment[];
@@ -82,6 +99,7 @@ export interface ArenaCleanupSurfaceAnalysis {
   partial: number;
   unresolved: number;
   ledger?: ArenaCleanupResourceLedger;
+  lifecycle: ArenaCleanupLifecycleSummary;
 }
 
 const TERMINAL_PATTERN =
@@ -605,6 +623,223 @@ function buildResourceLedger(
   };
 }
 
+
+const CLEANUP_LIFECYCLE_PHASES = [
+  "freeze",
+  "invalidate",
+  "clean",
+  "restorebaseline",
+  "verifyempty",
+  "readyfornextgeneration",
+] as const;
+
+function normalizedCleanupState(
+  value: string,
+): string {
+  return value
+    .replace(/[^A-Za-z0-9]/g, "")
+    .toLowerCase();
+}
+
+function cleanupStateCanReach(
+  start: string,
+  target: string,
+  outgoing:
+    ReadonlyMap<string, ReadonlySet<string>>,
+): boolean {
+  const seen = new Set<string>([start]);
+  const queue = [start];
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    if (current === target) return true;
+    for (
+      const next of
+        outgoing.get(current) ?? []
+    ) {
+      if (seen.has(next)) continue;
+      seen.add(next);
+      queue.push(next);
+    }
+  }
+  return false;
+}
+
+function cleanupLifecycleSummary(
+  scripts: readonly ParsedScriptFile[],
+  acquiredSurfaces: number,
+): ArenaCleanupLifecycleSummary {
+  const assessments:
+    ArenaCleanupLifecycleAssessment[] = [];
+
+  for (const script of scripts) {
+    const declarations =
+      script.transitionDeclarations ?? [];
+    const byTable =
+      new Map<
+        string,
+        typeof declarations
+      >();
+
+    for (const declaration of declarations) {
+      const owner =
+        (
+          declaration.tableName +
+          " " +
+          (declaration.stateType ?? "")
+        );
+      if (
+        !/(?:cleanup|reset)/i.test(owner)
+      ) {
+        continue;
+      }
+      const list =
+        byTable.get(
+          declaration.tableName,
+        ) ?? [];
+      byTable.set(
+        declaration.tableName,
+        [...list, declaration],
+      );
+    }
+
+    for (const [tableName, table] of byTable) {
+      const stateType =
+        table.find(
+          (item) =>
+            item.stateType !== undefined,
+        )?.stateType;
+      const states =
+        new Set<string>();
+      const outgoing =
+        new Map<string, Set<string>>();
+
+      for (const transition of table) {
+        const from =
+          normalizedCleanupState(
+            transition.from,
+          );
+        states.add(from);
+        const next =
+          outgoing.get(from) ??
+          new Set<string>();
+        for (const target of transition.to) {
+          const normalized =
+            normalizedCleanupState(
+              target,
+            );
+          states.add(normalized);
+          next.add(normalized);
+        }
+        outgoing.set(from, next);
+      }
+
+      const missingPhases =
+        CLEANUP_LIFECYCLE_PHASES
+          .filter(
+            (phase) =>
+              !states.has(phase),
+          );
+      const orderingViolations:
+        string[] = [];
+
+      for (
+        let index = 0;
+        index <
+          CLEANUP_LIFECYCLE_PHASES.length -
+            1;
+        index += 1
+      ) {
+        const from =
+          CLEANUP_LIFECYCLE_PHASES[
+            index
+          ]!;
+        const to =
+          CLEANUP_LIFECYCLE_PHASES[
+            index + 1
+          ]!;
+        if (
+          !states.has(from) ||
+          !states.has(to)
+        ) {
+          continue;
+        }
+        if (
+          !cleanupStateCanReach(
+            from,
+            to,
+            outgoing,
+          )
+        ) {
+          orderingViolations.push(
+            from + " !-> " + to,
+          );
+        }
+      }
+
+      const status =
+        missingPhases.length === 0 &&
+        orderingViolations.length === 0
+          ? "complete" as const
+          : "unresolved" as const;
+
+      assessments.push({
+        scriptId: script.identifier,
+        tableName,
+        ...(stateType === undefined
+          ? {}
+          : { stateType }),
+        status,
+        missingPhases,
+        orderingViolations,
+        reason:
+          status === "complete"
+            ? "Authored cleanup lifecycle closes FREEZE -> INVALIDATE -> CLEAN -> RESTORE_BASELINE -> VERIFY_EMPTY -> READY_FOR_NEXT_GENERATION in order."
+            : "Authored cleanup lifecycle does not close the required cleanup transaction. Missing=[" +
+              missingPhases.join(",") +
+              "] ordering=[" +
+              orderingViolations.join(",") +
+              "].",
+      });
+    }
+  }
+
+  if (
+    assessments.length === 0 &&
+    acquiredSurfaces > 0
+  ) {
+    return {
+      declared: false,
+      complete: 0,
+      unresolved: 1,
+      assessments: [],
+    };
+  }
+
+  return {
+    declared:
+      assessments.length > 0,
+    complete:
+      assessments.filter(
+        (item) =>
+          item.status === "complete",
+      ).length,
+    unresolved:
+      assessments.filter(
+        (item) =>
+          item.status === "unresolved",
+      ).length,
+    assessments:
+      assessments.sort((a, b) =>
+        a.scriptId.localeCompare(
+          b.scriptId,
+        ) ||
+        a.tableName.localeCompare(
+          b.tableName,
+        )
+      ),
+  };
+}
+
 export function analyzeArenaCleanupSurfaces(
   scripts: readonly ParsedScriptFile[],
 ): ArenaCleanupSurfaceAnalysis {
@@ -622,6 +857,11 @@ export function analyzeArenaCleanupSurfaces(
     scripts,
     terminalAssessments,
   );
+  const lifecycle =
+    cleanupLifecycleSummary(
+      scripts,
+      acquiredSurfaces,
+    );
 
   return {
     acquiredSurfaces,
@@ -639,5 +879,6 @@ export function analyzeArenaCleanupSurfaces(
       (sum, item) => sum + item.unresolved,
       0,
     ),
+    lifecycle,
   };
 }

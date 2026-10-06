@@ -131,6 +131,105 @@ describe("arena cleanup surface analysis", () => {
     ).toBe(true);
   });
 
+  it("accepts a complete authored cleanup transaction lifecycle", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "type CleanupState = 'FREEZE' | 'INVALIDATE' | 'CLEAN' | 'RESTORE_BASELINE' | 'VERIFY_EMPTY' | 'READY_FOR_NEXT_GENERATION';",
+        "const cleanupTransitions: Record<CleanupState, readonly CleanupState[]> = {",
+        "  FREEZE: ['INVALIDATE'],",
+        "  INVALIDATE: ['CLEAN'],",
+        "  CLEAN: ['RESTORE_BASELINE'],",
+        "  RESTORE_BASELINE: ['VERIFY_EMPTY'],",
+        "  VERIFY_EMPTY: ['READY_FOR_NEXT_GENERATION'],",
+        "  READY_FOR_NEXT_GENERATION: [],",
+        "};",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeArenaCleanupSurfaces([
+        script,
+      ]);
+
+    expect(
+      result.lifecycle,
+    ).toMatchObject({
+      declared: true,
+      complete: 1,
+      unresolved: 0,
+    });
+  });
+
+  it("keeps a cleanup lifecycle unresolved when verify-empty is skipped", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "type ResetState = 'FREEZE' | 'INVALIDATE' | 'CLEAN' | 'RESTORE_BASELINE' | 'READY_FOR_NEXT_GENERATION';",
+        "const resetTransitions: Record<ResetState, readonly ResetState[]> = {",
+        "  FREEZE: ['INVALIDATE'],",
+        "  INVALIDATE: ['CLEAN'],",
+        "  CLEAN: ['RESTORE_BASELINE'],",
+        "  RESTORE_BASELINE: ['READY_FOR_NEXT_GENERATION'],",
+        "  READY_FOR_NEXT_GENERATION: [],",
+        "};",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeArenaCleanupSurfaces([
+        script,
+      ]);
+
+    expect(
+      result.lifecycle.unresolved,
+    ).toBe(1);
+    expect(
+      result.lifecycle
+        .assessments[0]
+        ?.missingPhases,
+    ).toContain("verifyempty");
+  });
+
+  it("requires an explicit cleanup lifecycle when mutable arena surfaces are acquired", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function start(player) {",
+        "  player.addTag('playing');",
+        "}",
+        "function cleanup(player) {",
+        "  player.removeTag('playing');",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeArenaCleanupSurfaces([
+        script,
+      ]);
+
+    expect(
+      result.lifecycle,
+    ).toMatchObject({
+      declared: false,
+      complete: 0,
+      unresolved: 1,
+    });
+  });
+
   it("flags temporary equipment without cleanup as missing", () => {
     const script = parseScriptFile(
       "main",
