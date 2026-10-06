@@ -2,7 +2,7 @@
 id: document.validation.retest-and-regression
 class: DOCUMENT
 domain: validation
-role: REFERENCE
+role: GUIDE
 authority: CANONICAL
 lifecycle: ACTIVE
 ---
