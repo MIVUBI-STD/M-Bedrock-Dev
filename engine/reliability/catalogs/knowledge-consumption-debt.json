@@ -243,43 +243,13 @@
       "nextEvidenceOwner": "runtime-chunk-lifecycle"
     },
     {
-      "knowledgeId": "cinematic.camera-clear-ends-active-perspective",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "cinematic-control-analysis"
-    },
-    {
       "knowledgeId": "cinematic.camera-methods-restricted-execution",
       "status": "static-capability-gap",
       "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
       "nextEvidenceOwner": "cinematic-control-analysis"
     },
     {
-      "knowledgeId": "cinematic.camera-set-clear-fade-target-player",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "cinematic-control-analysis"
-    },
-    {
-      "knowledgeId": "cinematic.camera-state-persists-until-clear-or-disconnect",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "cinematic-control-analysis"
-    },
-    {
-      "knowledgeId": "cinematic.cutscene-example-disables-input",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "cinematic-control-analysis"
-    },
-    {
       "knowledgeId": "cinematic.fade-has-independent-timing",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "cinematic-control-analysis"
-    },
-    {
-      "knowledgeId": "cinematic.relation-cutscene-requires-control-coordination",
       "status": "static-capability-gap",
       "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
       "nextEvidenceOwner": "cinematic-control-analysis"
