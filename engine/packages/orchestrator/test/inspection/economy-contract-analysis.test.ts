@@ -103,4 +103,21 @@ describe("economy contract analysis", () => {
       result.deathRewardOverlapContractConflicts,
     ).toBe(0);
   });
+
+  it("keeps terminal reward ordering unresolved until RESULT_COMMITTED binding is proven", () => {
+    const result = analyzeEconomyContract(
+      rewards,
+      {
+        ...baseContract,
+        deathRewardArbitration:
+          "complementary",
+      },
+    );
+
+    expect(
+      result.terminalRewardResultCommitUnproven,
+    ).toBe(1);
+    expect(result.reasons.join(" "))
+      .toMatch(/RESULT_COMMITTED binding proof/);
+  });
 });

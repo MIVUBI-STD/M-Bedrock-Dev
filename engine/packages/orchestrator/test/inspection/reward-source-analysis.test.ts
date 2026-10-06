@@ -186,4 +186,39 @@ describe("reward source analysis", () => {
       result.pickupCurrencyWithoutConsumeCandidates,
     ).toBe(1);
   });
+
+  it("credits a reachable persistent operation guard as reward idempotency evidence", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "world.afterEvents.entityDie.subscribe((event) => {",
+        "  award(event.deadEntity, resultId);",
+        "});",
+        "function award(player, resultId) {",
+        "  const applied = world.getDynamicProperty('rewardOp');",
+        "  if (applied !== resultId) credits.addScore(player, 1);",
+        "  world.setDynamicProperty('rewardOp', resultId);",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result = analyzeRewardSources(
+      [script],
+      [],
+      [],
+    );
+
+    expect(result.deathRewardPaths).toBe(1);
+    expect(
+      result.rewardPathsWithoutIdempotency,
+    ).toBe(0);
+    expect(result.paths[0]).toMatchObject({
+      idempotencyGuards: 1,
+      scoreCredits: 1,
+    });
+  });
 });
