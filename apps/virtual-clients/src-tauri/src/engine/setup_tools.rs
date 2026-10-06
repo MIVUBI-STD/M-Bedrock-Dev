@@ -21,7 +21,7 @@ pub fn open_base_location() -> io::Result<()> {
 }
 
 #[cfg(target_os = "windows")]
-pub pub fn open_folder(path: &Path) -> io::Result<()> {
+pub fn open_folder(path: &Path) -> io::Result<()> {
     Command::new("explorer.exe").arg(path).spawn()?;
     Ok(())
 }
