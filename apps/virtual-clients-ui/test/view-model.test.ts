@@ -4,7 +4,9 @@ import {
   actionLabel,
   blockerLabel,
   issueLabel,
+  setupHint,
   stateLabel,
+  updateLabel,
 } from "../src/view-model.js";
 import type { ClientLifecycleActions } from "../src/contracts.js";
 
@@ -44,5 +46,12 @@ describe("Virtual Clients presentation projection", () => {
   it("uses backend setup action as the only setup decision", () => {
     expect(actionLabel("VERIFY_IDENTITIES")).toBe("Verify identities");
     expect(actionLabel("READY")).toBe("Ready");
+    expect(setupHint("FINALIZE_BASE")).toMatch(/finalization script/i);
+  });
+
+  it("formats update states without inventing update policy", () => {
+    expect(updateLabel("UP_TO_DATE")).toBe("Up to date");
+    expect(updateLabel("UPDATE_AVAILABLE")).toBe("Update available");
+    expect(updateLabel("UPDATE_STAGED")).toBe("Update staged");
   });
 });

@@ -146,6 +146,22 @@ export interface OperationRecord {
   retryable: boolean;
 }
 
+export type UpdateState =
+  | "UP_TO_DATE"
+  | "UPDATE_AVAILABLE"
+  | "UPDATE_STAGED"
+  | "UNAVAILABLE";
+
+export interface UpdateCheck {
+  state: UpdateState;
+  currentVersion: string;
+  latestVersion: string | null;
+  canApplyNow: boolean;
+  selfUpdateEnabled: boolean;
+  stagedPath: string | null;
+  reason: string | null;
+}
+
 export interface SupportBundleResult {
   capturedAtUnixMs: number;
   path: string;

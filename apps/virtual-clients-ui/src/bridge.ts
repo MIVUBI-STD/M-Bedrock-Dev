@@ -7,6 +7,7 @@ import {
   type EngineSnapshot,
   type OperationRecord,
   type SupportBundleResult,
+  type UpdateCheck,
 } from "./contracts.js";
 
 export type BackendCommand =
@@ -90,6 +91,7 @@ export const backend = {
   actions: () => invoke<ClientLifecycleActions[]>("actions"),
   history: () => invoke<OperationRecord[]>("history"),
   supportBundle: () => invoke<SupportBundleResult>("support-bundle"),
+  checkUpdate: () => invoke<UpdateCheck>("check-update"),
   registerBase: () => invoke<unknown>("register-base"),
   provision: () => invoke<unknown>("provision"),
   verifyIdentities: () => invoke<unknown>("verify-identities"),
