@@ -82,6 +82,7 @@ export function retrieveDocumentSections(
 ): readonly SectionRetrievalResult[] {
   const documentIds = new Set(query.documentIds ?? []);
   const queryTokens = tokens(query.text);
+  const lexicalScores = query.lexicalScores ?? {};
   const semanticScores = query.semanticScores ?? {};
   const limit = clamp(query.limit ?? 8, 1, 32);
 
@@ -100,6 +101,9 @@ export function retrieveDocumentSections(
           ? 30
           : 0;
       const heading = headingScore(section, queryTokens);
+      const lexical = Math.round(
+        clamp(lexicalScores[section.id] ?? 0, 0, 1) * 30,
+      );
       const semantic = Math.round(
         clamp(semanticScores[section.id] ?? 0, 0, 1) * 30,
       );
@@ -107,6 +111,7 @@ export function retrieveDocumentSections(
       const total =
         documentScope +
         heading +
+        lexical +
         semantic +
         level;
 
@@ -115,6 +120,7 @@ export function retrieveDocumentSections(
         score: {
           documentScope,
           heading,
+          lexical,
           semantic,
           level,
           total,
@@ -122,6 +128,7 @@ export function retrieveDocumentSections(
         reasons: [
           ...(documentScope > 0 ? ["document-scope"] : []),
           ...(heading > 0 ? ["heading-match"] : []),
+          ...(lexical > 0 ? ["lexical-rank"] : []),
           ...(semantic > 0 ? ["semantic-rank"] : []),
           "heading-level:" + section.level,
         ],
@@ -131,6 +138,7 @@ export function retrieveDocumentSections(
       (result) =>
         queryTokens.length === 0 ||
         result.score.heading > 0 ||
+        result.score.lexical > 0 ||
         result.score.semantic > 0,
     )
     .sort(
