@@ -27,6 +27,8 @@ pub struct GuestStatus {
     pub protocol_version: u32,
     pub agent_version: String,
     pub minecraft: Option<MinecraftProfile>,
+    #[serde(default)]
+    pub minecraft_running: Option<bool>,
     pub machine_identity: Option<String>,
 }
 
@@ -176,6 +178,7 @@ mod tests {
             protocol_version: GUEST_AGENT_PROTOCOL_VERSION,
             agent_version: "0.1.0".into(),
             minecraft: None,
+            minecraft_running: Some(false),
             machine_identity: Some("a".repeat(64)),
         };
         validate_guest_status(&status).unwrap();
@@ -226,6 +229,7 @@ mod tests {
                 version: "1.21.120.0".into(),
                 install_type: MinecraftInstallType::Desktop,
             }),
+            minecraft_running: Some(true),
             machine_identity: Some("a".repeat(64)),
         };
 
