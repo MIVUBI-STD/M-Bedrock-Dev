@@ -173,6 +173,7 @@ fn wait_for_guest_compatibility(
     provider: &dyn Provider,
     client: ClientId,
     timeout: Duration,
+    enforce_verified_windows_identity: bool,
 ) -> io::Result<GuestStatus> {
     let native = native_minecraft_profile().ok_or_else(|| {
         io::Error::new(
@@ -213,27 +214,30 @@ fn wait_for_guest_compatibility(
                     ));
                 }
 
-                if let Some(expected_windows_identity) = load_client_profile(client)
-                    .ok()
-                    .and_then(|profile| profile.verified_windows_identity)
-                {
-                    let current_windows_identity = status.machine_identity.as_deref().ok_or_else(|| {
-                        io::Error::new(
-                            io::ErrorKind::InvalidData,
-                            format!(
-                                "{} Windows identity cannot be verified against saved provenance",
-                                client.as_str()
-                            ),
-                        )
-                    })?;
-                    if current_windows_identity != expected_windows_identity {
-                        return Err(io::Error::new(
-                            io::ErrorKind::InvalidData,
-                            format!(
-                                "{} Windows identity changed after verification; reprovision or run verify-identities after resolving the identity change",
-                                client.as_str()
-                            ),
-                        ));
+                if enforce_verified_windows_identity {
+                    if let Some(expected_windows_identity) = load_client_profile(client)
+                        .ok()
+                        .and_then(|profile| profile.verified_windows_identity)
+                    {
+                        let current_windows_identity =
+                            status.machine_identity.as_deref().ok_or_else(|| {
+                                io::Error::new(
+                                    io::ErrorKind::InvalidData,
+                                    format!(
+                                        "{} Windows identity cannot be verified against saved provenance",
+                                        client.as_str()
+                                    ),
+                                )
+                            })?;
+                        if current_windows_identity != expected_windows_identity {
+                            return Err(io::Error::new(
+                                io::ErrorKind::InvalidData,
+                                format!(
+                                    "{} Windows identity changed after verification; reprovision or run verify-identities after resolving the identity change",
+                                    client.as_str()
+                                ),
+                            ));
+                        }
                     }
                 }
 
@@ -323,7 +327,8 @@ fn verify_identity_provenance(provider: &dyn Provider) -> io::Result<Vec<ClientS
                 format!("{} VM identity is unavailable", client.as_str()),
             )
         })?;
-        let guest = wait_for_guest_compatibility(provider, client, Duration::from_secs(30))?;
+        let guest =
+            wait_for_guest_compatibility(provider, client, Duration::from_secs(30), false)?;
         let windows_identity = guest.machine_identity.clone().ok_or_else(|| {
             io::Error::new(
                 io::ErrorKind::InvalidData,
@@ -960,7 +965,12 @@ impl VirtualClients {
             }
 
             if let Err(error) =
-                wait_for_guest_compatibility(provider.as_ref(), client, Duration::from_secs(90))
+                wait_for_guest_compatibility(
+                    provider.as_ref(),
+                    client,
+                    Duration::from_secs(90),
+                    true,
+                )
             {
                 if original_state == ClientState::Running {
                     return Err(error);
@@ -1112,7 +1122,12 @@ impl VirtualClients {
         })?;
         provider.restart(client)?;
         if let Err(error) =
-            wait_for_guest_compatibility(provider.as_ref(), client, Duration::from_secs(90))
+            wait_for_guest_compatibility(
+                    provider.as_ref(),
+                    client,
+                    Duration::from_secs(90),
+                    true,
+                )
         {
             let failed = if provider.stop(client).is_err() {
                 vec![client.as_str()]
@@ -1181,7 +1196,12 @@ impl VirtualClients {
         })?;
         provider.reset(client)?;
         if let Err(error) =
-            wait_for_guest_compatibility(provider.as_ref(), client, Duration::from_secs(90))
+            wait_for_guest_compatibility(
+                    provider.as_ref(),
+                    client,
+                    Duration::from_secs(90),
+                    true,
+                )
         {
             let failed = if provider.stop(client).is_err() {
                 vec![client.as_str()]
