@@ -1,3 +1,33 @@
+## Virtual Clients provenance and Guest Agent protocol — source implementation (2026-10-06)
+
+Baseline: Experimental `9e1cc0e4522f59f11bc9789782afb3f948f2ba1b`.
+
+Source changes prepared for the next Experimental commit:
+- Guest Agent status now carries an explicit protocol version. Backend
+  compatibility uses that protocol authority rather than Cargo package-version
+  equality; unknown protocol versions remain fail-closed.
+- Base profile schema advances to v3 with `guestAgentProtocol` and a random
+  `baseGenerationId` created only when a Base is live-verified and registered.
+- Client profile schema advances to v2 and stores the exact Base generation used
+  for provisioning/reprovisioning.
+- Client/native lineage now requires both Minecraft-version parity and the
+  registered Base generation. Re-registering/replacing a Base at the same
+  Minecraft version therefore makes older Virtual lineage stale instead of
+  silently matching by version.
+- Legacy Base/client profile schemas remain readable enough to classify but are
+  rejected by the current schema gate. Existing rebuild/reprovision routes own
+  recovery; no second migration registry or compatibility database was added.
+- Frontend register-Base payload validation now requires the new provenance
+  fields. Regression specifications cover protocol compatibility, package-version
+  independence, legacy profile rejection, provenance shape and identity behavior.
+
+Proof ceiling: REMOTE_GITHUB source/static review only. No CI, Cargo, Vitest,
+package build, installer, VMware or Minecraft execution was run for this change.
+The next local checkpoint remains `DEV.cmd verify-virtual-clients`; target-machine
+migration, recovery and multiplayer acceptance remain separate.
+
+---
+
 ## 2026-10-06 — Virtual Clients action admission and payload validation
 
 

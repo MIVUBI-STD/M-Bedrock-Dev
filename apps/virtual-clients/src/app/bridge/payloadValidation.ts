@@ -11,6 +11,8 @@ const text: Check = (value) => typeof value === "string";
 const boolean: Check = (value) => typeof value === "boolean";
 const number: Check = (value) => typeof value === "number" && Number.isFinite(value) && value >= 0;
 const integer: Check = (value) => typeof value === "number" && value >= 0 && Number.isSafeInteger(value);
+const positiveInteger: Check = (value) => integer(value) && value > 0;
+const hex64: Check = (value) => typeof value === "string" && /^[0-9a-fA-F]{64}$/.test(value);
 const nullable = (check: Check): Check => (value) => value === null || check(value);
 const optional = (check: Check): Check => (value) => value === undefined || check(value);
 const oneOf = (...values: readonly unknown[]): Check => (value) => values.includes(value);
@@ -147,9 +149,10 @@ export const updateCheck = shape<UpdateCheck>({
 });
 export const supportBundle = shape<SupportBundleResult>({ capturedAtUnixMs: integer, path: text });
 export const baseProfile = shape<unknown>({
-  schema: oneOf(2), minecraftVersion: text,
+  schema: oneOf(3), minecraftVersion: text,
   nativeInstallType: oneOf("DESKTOP", "STORE", "APP_BUNDLE", "UNKNOWN"),
-  guestStatusSchema: integer, guestAgentVersion: text, source: oneOf("LIVE_VERIFIED"),
+  guestStatusSchema: integer, guestAgentProtocol: positiveInteger, guestAgentVersion: text,
+  baseGenerationId: hex64, source: oneOf("LIVE_VERIFIED"),
 });
 export const stagedUpdate = shape<unknown>({
   version: text, platform: text, installerPath: text, sha256: text, authenticodeThumbprint: text,

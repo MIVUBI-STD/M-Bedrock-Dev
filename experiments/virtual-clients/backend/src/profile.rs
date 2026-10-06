@@ -4,7 +4,7 @@ use std::{io, path::PathBuf, process::Command};
 
 use crate::{
     client::ClientId,
-    guest::GUEST_STATUS_SCHEMA,
+    guest::{guest_agent_protocol_compatible, GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA},
     paths::{
         base_profile_path_for_version, base_vmx_path_for_version, client_profile_path,
         validate_version_segment,
@@ -12,8 +12,8 @@ use crate::{
     persistence::{read_text_recovering, write_text_transactional},
 };
 
-pub const BASE_PROFILE_SCHEMA: u32 = 2;
-pub const CLIENT_PROFILE_SCHEMA: u32 = 1;
+pub const BASE_PROFILE_SCHEMA: u32 = 3;
+pub const CLIENT_PROFILE_SCHEMA: u32 = 2;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -74,7 +74,11 @@ pub struct BaseProfile {
     pub minecraft_version: String,
     pub native_install_type: MinecraftInstallType,
     pub guest_status_schema: u32,
+    #[serde(default)]
+    pub guest_agent_protocol: u32,
     pub guest_agent_version: String,
+    #[serde(default)]
+    pub base_generation_id: String,
     pub source: BaseProfileSource,
 }
 
@@ -83,6 +87,8 @@ pub struct BaseProfile {
 pub struct ClientProfile {
     pub schema: u32,
     pub base_minecraft_version: String,
+    #[serde(default)]
+    pub base_generation_id: String,
     pub created_by: String,
     #[serde(default)]
     pub verified_vm_identity: Option<String>,
@@ -93,6 +99,17 @@ pub struct ClientProfile {
 
 pub(crate) fn identity_fingerprint(value: &str) -> String {
     format!("{:x}", Sha256::digest(value.as_bytes()))
+}
+
+fn new_base_generation_id() -> io::Result<String> {
+    let mut bytes = [0_u8; 32];
+    getrandom::getrandom(&mut bytes)
+        .map_err(|error| io::Error::new(io::ErrorKind::Other, error.to_string()))?;
+    Ok(bytes.iter().map(|byte| format!("{byte:02x}")).collect())
+}
+
+fn valid_provenance_id(value: &str) -> bool {
+    value.len() == 64 && value.chars().all(|character| character.is_ascii_hexdigit())
 }
 
 impl ClientProfile {
@@ -165,6 +182,12 @@ pub fn load_base_profile() -> io::Result<BaseProfile> {
             ),
         ));
     }
+    if !valid_provenance_id(&profile.base_generation_id) {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Base profile baseGenerationId is invalid",
+        ));
+    }
 
     Ok(profile)
 }
@@ -172,6 +195,7 @@ pub fn load_base_profile() -> io::Result<BaseProfile> {
 pub fn write_verified_base_profile(
     native: &MinecraftProfile,
     guest_agent_version: &str,
+    guest_agent_protocol: u32,
 ) -> io::Result<BaseProfile> {
     let base = base_vmx_path_for_version(&native.version)?;
     if !base.is_file() {
@@ -186,7 +210,9 @@ pub fn write_verified_base_profile(
         minecraft_version: native.version.clone(),
         native_install_type: native.install_type.clone(),
         guest_status_schema: GUEST_STATUS_SCHEMA,
+        guest_agent_protocol,
         guest_agent_version: guest_agent_version.to_string(),
+        base_generation_id: new_base_generation_id()?,
         source: BaseProfileSource::LiveVerified,
     };
 
@@ -198,7 +224,11 @@ pub fn write_verified_base_profile(
     Ok(profile)
 }
 
-pub fn write_client_profile(client: ClientId, base_version: &str) -> io::Result<ClientProfile> {
+pub fn write_client_profile(
+    client: ClientId,
+    base_version: &str,
+    base_generation_id: &str,
+) -> io::Result<ClientProfile> {
     if client.is_native() {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
@@ -209,6 +239,7 @@ pub fn write_client_profile(client: ClientId, base_version: &str) -> io::Result<
     let profile = ClientProfile {
         schema: CLIENT_PROFILE_SCHEMA,
         base_minecraft_version: base_version.to_string(),
+        base_generation_id: base_generation_id.to_string(),
         created_by: env!("CARGO_PKG_VERSION").to_string(),
         verified_vm_identity: None,
         verified_windows_identity: None,
@@ -265,6 +296,13 @@ fn valid_identity_fingerprint(value: &str) -> bool {
 }
 
 fn validate_client_profile_identities(profile: &ClientProfile) -> io::Result<()> {
+    if !valid_provenance_id(&profile.base_generation_id) {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "client profile baseGenerationId is invalid",
+        ));
+    }
+
     for (name, value) in [
         (
             "verifiedVmIdentity",
@@ -317,6 +355,22 @@ pub fn require_client_matches_native(client: ClientId) -> io::Result<ClientProfi
         ));
     }
 
+    let base = load_base_profile().map_err(|error| {
+        io::Error::new(
+            error.kind(),
+            format!("registered Base lineage cannot be proven: {error}"),
+        )
+    })?;
+    if profile.base_generation_id != base.base_generation_id {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!(
+                "{} belongs to an older Base generation. Reprovision this Virtual from the current Base.",
+                client.as_str()
+            ),
+        ));
+    }
+
     Ok(profile)
 }
 
@@ -338,7 +392,8 @@ pub fn native_minecraft_profile() -> Option<MinecraftProfile> {
 fn base_profile_matches_native(native: &MinecraftProfile, base: &BaseProfile) -> bool {
     native.version == base.minecraft_version
         && base.guest_status_schema == GUEST_STATUS_SCHEMA
-        && base.guest_agent_version == env!("CARGO_PKG_VERSION")
+        && guest_agent_protocol_compatible(base.guest_agent_protocol)
+        && valid_provenance_id(&base.base_generation_id)
 }
 
 pub fn profile_status() -> ProfileStatus {
@@ -481,7 +536,7 @@ mod tests {
         ClientProfile, MinecraftInstallType, MinecraftProfile, BASE_PROFILE_SCHEMA,
         CLIENT_PROFILE_SCHEMA,
     };
-    use crate::guest::GUEST_STATUS_SCHEMA;
+    use crate::guest::{GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA};
 
     #[test]
     fn version_normalization_is_strict() {
@@ -517,7 +572,9 @@ mod tests {
             minecraft_version: "1.21.120.0".into(),
             native_install_type: MinecraftInstallType::Desktop,
             guest_status_schema: GUEST_STATUS_SCHEMA,
+            guest_agent_protocol: GUEST_AGENT_PROTOCOL_VERSION,
             guest_agent_version: "0.1.0".into(),
+            base_generation_id: "a".repeat(64),
             source: BaseProfileSource::LiveVerified,
         };
 
@@ -527,12 +584,11 @@ mod tests {
     }
 
     #[test]
-    fn legacy_client_profile_without_identity_proof_is_compatible() {
+    fn legacy_client_profile_without_base_generation_is_rejected() {
         let json = r#"{"schema":1,"baseMinecraftVersion":"1.21.120.0","createdBy":"0.1.0"}"#;
         let profile: ClientProfile = serde_json::from_str(json).unwrap();
-        assert_eq!(profile.schema, CLIENT_PROFILE_SCHEMA);
-        assert_eq!(profile.verified_vm_identity, None);
-        assert_eq!(profile.verified_windows_identity, None);
+        assert_ne!(profile.schema, CLIENT_PROFILE_SCHEMA);
+        assert!(profile.base_generation_id.is_empty());
     }
 
     #[test]
@@ -540,6 +596,7 @@ mod tests {
         let mut profile = ClientProfile {
             schema: CLIENT_PROFILE_SCHEMA,
             base_minecraft_version: "1.21.120.0".into(),
+            base_generation_id: "c".repeat(64),
             created_by: "0.1.0".into(),
             verified_vm_identity: Some("a".repeat(64)),
             verified_windows_identity: Some("b".repeat(64)),
@@ -566,17 +623,25 @@ mod tests {
             minecraft_version: native.version.clone(),
             native_install_type: MinecraftInstallType::Desktop,
             guest_status_schema: GUEST_STATUS_SCHEMA,
-            guest_agent_version: env!("CARGO_PKG_VERSION").into(),
+            guest_agent_protocol: GUEST_AGENT_PROTOCOL_VERSION,
+            guest_agent_version: "older-compatible-package".into(),
+            base_generation_id: "a".repeat(64),
             source: BaseProfileSource::LiveVerified,
         };
 
         assert!(base_profile_matches_native(&native, &current));
 
-        let stale_agent = BaseProfile {
-            guest_agent_version: "stale-agent".into(),
+        let different_package_version = BaseProfile {
+            guest_agent_version: "newer-compatible-package".into(),
             ..current.clone()
         };
-        assert!(!base_profile_matches_native(&native, &stale_agent));
+        assert!(base_profile_matches_native(&native, &different_package_version));
+
+        let stale_protocol = BaseProfile {
+            guest_agent_protocol: GUEST_AGENT_PROTOCOL_VERSION + 1,
+            ..current.clone()
+        };
+        assert!(!base_profile_matches_native(&native, &stale_protocol));
 
         let stale_schema = BaseProfile {
             guest_status_schema: GUEST_STATUS_SCHEMA + 1,
@@ -604,6 +669,7 @@ mod tests {
         let mut profile = super::ClientProfile {
             schema: super::CLIENT_PROFILE_SCHEMA,
             base_minecraft_version: "1.0.0".into(),
+            base_generation_id: "c".repeat(64),
             created_by: "test".into(),
             verified_vm_identity: Some(super::identity_fingerprint("uuid-a|mac-a")),
             verified_windows_identity: Some("windows-proof".into()),
@@ -622,6 +688,7 @@ mod tests {
         let profile = super::ClientProfile {
             schema: super::CLIENT_PROFILE_SCHEMA,
             base_minecraft_version: "1.0.0".into(),
+            base_generation_id: "c".repeat(64),
             created_by: "test".into(),
             verified_vm_identity: None,
             verified_windows_identity: None,

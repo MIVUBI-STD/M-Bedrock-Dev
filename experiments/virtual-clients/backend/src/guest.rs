@@ -8,12 +8,18 @@ use std::{
 use crate::profile::MinecraftProfile;
 
 pub const GUEST_AGENT_PORT: u16 = 47831;
-pub const GUEST_STATUS_SCHEMA: u32 = 2;
+pub const GUEST_STATUS_SCHEMA: u32 = 3;
+pub const GUEST_AGENT_PROTOCOL_VERSION: u32 = 1;
+
+pub fn guest_agent_protocol_compatible(protocol_version: u32) -> bool {
+    protocol_version == GUEST_AGENT_PROTOCOL_VERSION
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GuestStatus {
     pub schema: u32,
+    pub protocol_version: u32,
     pub agent_version: String,
     pub minecraft: Option<MinecraftProfile>,
     pub machine_identity: Option<String>,
@@ -78,6 +84,13 @@ fn validate_guest_status(status: &GuestStatus) -> io::Result<()> {
         ));
     }
 
+    if status.protocol_version == 0 {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "guest agent protocol version must be non-zero",
+        ));
+    }
+
     if let Some(identity) = status.machine_identity.as_deref() {
         if identity.len() != 64
             || !identity
@@ -96,7 +109,10 @@ fn validate_guest_status(status: &GuestStatus) -> io::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use super::{validate_guest_status, GuestStatus, GUEST_STATUS_SCHEMA};
+    use super::{
+        guest_agent_protocol_compatible, validate_guest_status, GuestStatus,
+        GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA,
+    };
     use crate::profile::{MinecraftInstallType, MinecraftProfile};
     use std::io;
 
@@ -104,6 +120,7 @@ mod tests {
     fn guest_identity_fingerprint_format_is_strict() {
         let mut status = GuestStatus {
             schema: GUEST_STATUS_SCHEMA,
+            protocol_version: GUEST_AGENT_PROTOCOL_VERSION,
             agent_version: "0.1.0".into(),
             minecraft: None,
             machine_identity: Some("a".repeat(64)),
@@ -124,9 +141,30 @@ mod tests {
     }
 
     #[test]
+    fn guest_protocol_compatibility_is_explicit() {
+        assert!(guest_agent_protocol_compatible(GUEST_AGENT_PROTOCOL_VERSION));
+        assert!(!guest_agent_protocol_compatible(GUEST_AGENT_PROTOCOL_VERSION + 1));
+
+        let mut status = GuestStatus {
+            schema: GUEST_STATUS_SCHEMA,
+            protocol_version: 0,
+            agent_version: "9.9.9".into(),
+            minecraft: None,
+            machine_identity: None,
+        };
+        assert_eq!(
+            validate_guest_status(&status).unwrap_err().kind(),
+            io::ErrorKind::InvalidData
+        );
+        status.protocol_version = GUEST_AGENT_PROTOCOL_VERSION;
+        validate_guest_status(&status).unwrap();
+    }
+
+    #[test]
     fn guest_status_round_trips() {
         let status = GuestStatus {
             schema: GUEST_STATUS_SCHEMA,
+            protocol_version: GUEST_AGENT_PROTOCOL_VERSION,
             agent_version: "0.1.0".into(),
             minecraft: Some(MinecraftProfile {
                 version: "1.21.120.0".into(),

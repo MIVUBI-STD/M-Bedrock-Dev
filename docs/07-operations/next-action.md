@@ -244,11 +244,13 @@ Remaining readiness gates:
 - Perform target-machine OOBE, identity, account, recovery and multiplayer acceptance.
 - Measure status-read cost and VM memory/latency before efficiency claims.
 - Rich internal-stage progress is not implemented; command activity is implemented.
-- Exact Guest Agent release matching remains deliberate fail-closed behavior until
-  an explicit compatibility matrix proves a safe relaxation.
-- Base/checkpoint lineage currently lacks a unique same-version Base generation
-  binding; changing that persisted contract requires an explicit migration and
-  acceptance pass, not an untested metadata relabel.
+- Guest Agent package version is now separated from the explicit Guest Agent
+  protocol contract in source. Unknown protocol versions remain fail-closed;
+  target-machine acceptance is still required before this source change is ready.
+- Base and Virtual provenance now carry one Base generation identity in source,
+  so same-Minecraft-version Base replacement invalidates stale Virtual lineage.
+  Legacy profile schemas fail closed and require the existing rebuild/reprovision
+  path; target-machine migration/recovery acceptance remains open.
 
 Do not call the whole system ready based on source commits alone. User requests
 end-to-end readiness; these unresolved gates are the remaining work, not PASS.
@@ -417,13 +419,15 @@ target-machine acceptance; source tests cannot close that residue.
 
 Goal: safe application maintenance without unnecessary environment recreation.
 
-- Separate application version, public contract schema, Guest Agent protocol,
-  persisted data schema, and Minecraft version responsibilities.
-- Specify and test agent compatibility explicitly before relaxing exact-version
-  gates. Unknown/incompatible versions remain blocked.
-- Bind client and recovery-point provenance to the actual Base identity,
-  not only a matching Minecraft version. Avoid hashing whole VM disks on
-  every startup or introducing speculative caches.
+- Keep application version, public contract schema, Guest Agent protocol,
+  persisted profile schema, Base generation identity, and Minecraft version as
+  separate responsibilities.
+- Expand the Guest Agent protocol compatibility matrix only when a tested
+  backward-compatible protocol revision exists. Unknown/incompatible protocol
+  versions remain blocked.
+- Keep client lineage bound to the registered Base generation rather than only
+  Minecraft version. Do not replace this with whole-disk hashing or speculative
+  caches.
 - Resolve the documented owner-location conflict once. Do not combine a large
   directory move with lifecycle fixes or leave duplicate implementations.
 - Extract proven responsibilities from runtime.rs within the existing crate

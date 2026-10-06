@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
-  actionAvailability, clientStatus, enginePolicy, engineSnapshot,
+  actionAvailability, baseProfile, clientStatus, enginePolicy, engineSnapshot,
   lifecycleActions, operationHistory, updateCheck, windowArrangement,
 } from "../src/app/bridge/payloadValidation.js";
 
@@ -105,6 +105,25 @@ describe("Backend payload shapes", () => {
     expect(enginePolicy(policy)).toBe(true);
     expect(enginePolicy({ ...policy, virtualVcpus: "two" })).toBe(false);
     expect(enginePolicy({ ...policy, maxVirtualClients: -1 })).toBe(false);
+  });
+
+  it("requires Base generation and Guest Agent protocol provenance", () => {
+    const value = {
+      schema: 3,
+      minecraftVersion: "1.21.120.0",
+      nativeInstallType: "DESKTOP",
+      guestStatusSchema: 3,
+      guestAgentProtocol: 1,
+      guestAgentVersion: "0.1.0",
+      baseGenerationId: "a".repeat(64),
+      source: "LIVE_VERIFIED",
+    };
+    expect(baseProfile(value)).toBe(true);
+    expect(baseProfile({ ...value, schema: 2 })).toBe(false);
+    expect(baseProfile({ ...value, baseGenerationId: undefined })).toBe(false);
+    expect(baseProfile({ ...value, baseGenerationId: "short" })).toBe(false);
+    expect(baseProfile({ ...value, guestAgentProtocol: undefined })).toBe(false);
+    expect(baseProfile({ ...value, guestAgentProtocol: 0 })).toBe(false);
   });
 
   it("rejects malformed journal records", () => {

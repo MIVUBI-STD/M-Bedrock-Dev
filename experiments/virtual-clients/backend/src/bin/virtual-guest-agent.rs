@@ -1,7 +1,8 @@
 #![forbid(unsafe_code)]
 
 use m_bedrock_virtual_clients_core::{
-    guest_agent_minecraft_profile, GuestStatus, GUEST_AGENT_PORT, GUEST_STATUS_SCHEMA,
+    guest_agent_minecraft_profile, GuestStatus, GUEST_AGENT_PORT,
+    GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA,
 };
 #[cfg(target_os = "windows")]
 use sha2::{Digest, Sha256};
@@ -59,6 +60,7 @@ fn handle(mut stream: TcpStream, token: &str) -> Result<(), Box<dyn std::error::
 
     let status = GuestStatus {
         schema: GUEST_STATUS_SCHEMA,
+        protocol_version: GUEST_AGENT_PROTOCOL_VERSION,
         agent_version: env!("CARGO_PKG_VERSION").to_string(),
         minecraft: guest_agent_minecraft_profile(),
         machine_identity: guest_machine_identity(),

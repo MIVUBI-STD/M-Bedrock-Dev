@@ -824,6 +824,7 @@ mod tests {
         let profile = crate::profile::ClientProfile {
             schema: crate::profile::CLIENT_PROFILE_SCHEMA,
             base_minecraft_version: "1.0.0".into(),
+            base_generation_id: "c".repeat(64),
             created_by: "test".into(),
             verified_vm_identity: Some(crate::profile::identity_fingerprint("uuid-a|mac-a")),
             verified_windows_identity: Some("windows-proof".into()),

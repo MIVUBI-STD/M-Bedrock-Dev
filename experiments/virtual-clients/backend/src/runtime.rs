@@ -5,7 +5,10 @@ use crate::{
     },
     diagnostics::{collect as collect_diagnostics, DiagnosticsReport},
     doctor::{doctor, DoctorReport},
-    guest::{query_guest_status, GuestStatus},
+    guest::{
+        guest_agent_protocol_compatible, query_guest_status, GuestStatus,
+        GUEST_AGENT_PROTOCOL_VERSION,
+    },
     journal::{record_operation, OperationKind},
     lifecycle_admission::{
         evaluate_lifecycle_admission, require_lifecycle_admission, validate_power_state,
@@ -14,7 +17,8 @@ use crate::{
     paths::runtime_root,
     policy::{engine_policy, EnginePolicy, MAX_VIRTUAL_CLIENTS},
     profile::{
-        current_base_vmx_path, identity_fingerprint, load_client_profile, native_minecraft_profile, profile_status,
+        current_base_vmx_path, identity_fingerprint, load_base_profile, load_client_profile,
+        native_minecraft_profile, profile_status,
         require_base_matches_native, require_client_matches_native, write_client_profile,
         write_verified_base_profile, write_verified_client_identities, BaseProfile, BaseState,
         MinecraftProfile, ProfileParity, ProfileStatus,
@@ -339,11 +343,15 @@ fn guest_status_once(provider: &dyn Provider, client: ClientId) -> Option<GuestS
 }
 
 fn lineage_parity(native: Option<&MinecraftProfile>, client: ClientId) -> ProfileParity {
-    match (native, load_client_profile(client).ok()) {
-        (Some(native), Some(profile)) if native.version == profile.base_minecraft_version => {
+    match (native, load_base_profile().ok(), load_client_profile(client).ok()) {
+        (Some(native), Some(base), Some(profile))
+            if native.version == profile.base_minecraft_version
+                && native.version == base.minecraft_version
+                && profile.base_generation_id == base.base_generation_id =>
+        {
             ProfileParity::Match
         }
-        (Some(_), Some(_)) => ProfileParity::Mismatch,
+        (Some(_), Some(_), Some(_)) => ProfileParity::Mismatch,
         _ => ProfileParity::Unknown,
     }
 }
@@ -400,14 +408,14 @@ fn wait_for_guest_compatibility(
                         )
                     })?;
 
-                    if status.agent_version != env!("CARGO_PKG_VERSION") {
+                    if !guest_agent_protocol_compatible(status.protocol_version) {
                         return Err(io::Error::new(
                             io::ErrorKind::InvalidData,
                             format!(
-                                "{} Guest Agent version {} does not match backend {}",
+                                "{} Guest Agent protocol {} is incompatible with backend protocol {}",
                                 client.as_str(),
-                                status.agent_version,
-                                env!("CARGO_PKG_VERSION")
+                                status.protocol_version,
+                                GUEST_AGENT_PROTOCOL_VERSION
                             ),
                         ));
                     }
@@ -916,13 +924,13 @@ impl VirtualClients {
                 if let Some(ip) = provider.guest_ip_for_path(&base)? {
                     match query_guest_status(&ip, &token, Duration::from_secs(2)) {
                         Ok(status) => {
-                            if status.agent_version != env!("CARGO_PKG_VERSION") {
+                            if !guest_agent_protocol_compatible(status.protocol_version) {
                                 return Err(io::Error::new(
                                     io::ErrorKind::InvalidData,
                                     format!(
-                                        "Base Guest Agent version {} does not match backend {}",
-                                        status.agent_version,
-                                        env!("CARGO_PKG_VERSION")
+                                        "Base Guest Agent protocol {} is incompatible with backend protocol {}",
+                                        status.protocol_version,
+                                        GUEST_AGENT_PROTOCOL_VERSION
                                     ),
                                 ));
                             }
@@ -984,7 +992,11 @@ impl VirtualClients {
         };
 
         set_base_state_for_path(&base, BaseState::Registered)?;
-        write_verified_base_profile(&native, &proof.agent_version)
+        write_verified_base_profile(
+            &native,
+            &proof.agent_version,
+            proof.protocol_version,
+        )
     }
 
     fn open_base_for_finalization_inner(&self) -> io::Result<()> {
@@ -1030,6 +1042,9 @@ impl VirtualClients {
                 "Native Minecraft Education version could not be detected",
             )
         })?;
+        let base_generation_id = profile.base.as_ref().map(|base| base.base_generation_id.clone()).ok_or_else(|| {
+            io::Error::new(io::ErrorKind::NotFound, "registered Base generation is unavailable")
+        })?;
         let base = current_base_vmx_path()?;
         if base_state_for_path(&base)? != Some(BaseState::Finalized) {
             return Err(io::Error::new(
@@ -1051,7 +1066,7 @@ impl VirtualClients {
             let previous = provider.status(client)?;
             provider.provision(client)?;
             if previous == ClientState::NotProvisioned {
-                write_client_profile(client, &native.version)?;
+                write_client_profile(client, &native.version, &base_generation_id)?;
             }
         }
 
@@ -1094,6 +1109,9 @@ impl VirtualClients {
                 "Native Minecraft Education version could not be detected",
             )
         })?;
+        let base_generation_id = profile.base.as_ref().map(|base| base.base_generation_id.clone()).ok_or_else(|| {
+            io::Error::new(io::ErrorKind::NotFound, "registered Base generation is unavailable")
+        })?;
         let base = current_base_vmx_path()?;
         if base_state_for_path(&base)? != Some(BaseState::Finalized) {
             return Err(io::Error::new(
@@ -1113,7 +1131,7 @@ impl VirtualClients {
         check_action_admission(provider.as_ref(), client, LifecycleAction::Reprovision)?;
 
         provider.reprovision(client)?;
-        write_client_profile(client, &native.version)?;
+        write_client_profile(client, &native.version, &base_generation_id)?;
         let working_sets = provider.host_working_sets_mb()?;
         let native_profile = native_minecraft_profile();
         client_status(

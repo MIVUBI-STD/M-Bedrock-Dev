@@ -53,7 +53,9 @@ pub use support::{EngineSnapshot, SupportBundleResult};
 pub use update::{StagedUpdate, UpdateCheck, UpdateState};
 
 #[doc(hidden)]
-pub use guest::{GuestStatus, GUEST_AGENT_PORT, GUEST_STATUS_SCHEMA};
+pub use guest::{
+    GuestStatus, GUEST_AGENT_PORT, GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA,
+};
 
 #[doc(hidden)]
 pub fn guest_agent_minecraft_profile() -> Option<MinecraftProfile> {
