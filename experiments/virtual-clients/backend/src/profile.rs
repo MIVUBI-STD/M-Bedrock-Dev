@@ -306,7 +306,8 @@ pub fn profile_status() -> ProfileStatus {
     let parity = match (&native, &base) {
         (Some(native), Some(base))
             if native.version == base.minecraft_version
-                && base.guest_status_schema == GUEST_STATUS_SCHEMA =>
+                && base.guest_status_schema == GUEST_STATUS_SCHEMA
+                && base.guest_agent_version == env!("CARGO_PKG_VERSION") =>
         {
             ProfileParity::Match
         }
@@ -502,6 +503,25 @@ mod tests {
                 .kind(),
             std::io::ErrorKind::InvalidData
         );
+    }
+
+    #[test]
+    fn base_profile_agent_version_is_part_of_parity_contract() {
+        let current = BaseProfile {
+            schema: BASE_PROFILE_SCHEMA,
+            minecraft_version: "1.21.120.0".into(),
+            native_install_type: MinecraftInstallType::Desktop,
+            guest_status_schema: GUEST_STATUS_SCHEMA,
+            guest_agent_version: env!("CARGO_PKG_VERSION").into(),
+            source: BaseProfileSource::LiveVerified,
+        };
+        let stale = BaseProfile {
+            guest_agent_version: "stale-agent".into(),
+            ..current.clone()
+        };
+
+        assert_eq!(current.guest_agent_version, env!("CARGO_PKG_VERSION"));
+        assert_ne!(stale.guest_agent_version, env!("CARGO_PKG_VERSION"));
     }
 
     #[test]

@@ -45,7 +45,6 @@ pub struct DoctorReport {
     pub total_memory_gb: f64,
     pub available_memory_gb: f64,
     pub max_recommended_virtual_clients: usize,
-    pub base_vm_path: Option<String>,
     pub base_vm_present: bool,
     pub base_vm_stopped: Option<bool>,
     pub base_state: Option<String>,
@@ -108,7 +107,11 @@ fn select_setup_action(
     } else if !base_vm_present {
         SetupAction::PrepareBase
     } else if profile_parity != ProfileParity::Match {
-        SetupAction::RegisterBase
+        if matches!(base_state, Some("FINALIZED") | Some("FINALIZING")) {
+            SetupAction::RebuildBase
+        } else {
+            SetupAction::RegisterBase
+        }
     } else if base_state == Some("FINALIZING") {
         SetupAction::RebuildBase
     } else if base_state != Some("REGISTERED") && base_state != Some("FINALIZED") {
@@ -235,7 +238,6 @@ pub fn doctor() -> DoctorReport {
         total_memory_gb,
         available_memory_gb,
         max_recommended_virtual_clients,
-        base_vm_path: base.map(|path| path.display().to_string()),
         base_vm_present,
         base_vm_stopped,
         base_state: base_state.clone(),
@@ -401,6 +403,40 @@ mod tests {
                 &clients,
             ),
             SetupAction::RebuildBase
+        );
+    }
+
+    #[test]
+    fn stale_finalized_base_requires_rebuild_not_reregistration() {
+        let clients = vec![
+            client(false, false),
+            client(false, false),
+            client(false, false),
+        ];
+
+        assert_eq!(
+            select_setup_action(
+                &compatible_schema(),
+                true,
+                true,
+                true,
+                ProfileParity::Mismatch,
+                Some("FINALIZED"),
+                &clients,
+            ),
+            SetupAction::RebuildBase
+        );
+        assert_eq!(
+            select_setup_action(
+                &compatible_schema(),
+                true,
+                true,
+                true,
+                ProfileParity::Mismatch,
+                Some("REGISTERED"),
+                &clients,
+            ),
+            SetupAction::RegisterBase
         );
     }
 

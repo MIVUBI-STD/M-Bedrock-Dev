@@ -331,6 +331,7 @@ pub(crate) fn apply_virtual_hardware_policy(vmx: &Path) -> io::Result<()> {
     set_vmx_value(&mut lines, "ethernet0.present", "TRUE");
     set_vmx_value(&mut lines, "ethernet0.startConnected", "TRUE");
     set_vmx_value(&mut lines, "answer.msg.uuid.altered", "I copied it");
+    remove_vmx_value(&mut lines, BASE_STATE_KEY);
 
     let mut output = lines.join("\n");
     output.push('\n');
@@ -435,6 +436,11 @@ pub(crate) fn vm_identity_key(vmx: &Path) -> io::Result<Option<String>> {
 
 pub(crate) fn guest_tools_state_ready(state: &str) -> bool {
     state.trim().eq_ignore_ascii_case("running")
+}
+
+fn remove_vmx_value(lines: &mut Vec<String>, key: &str) {
+    let prefix = format!("{key} =");
+    lines.retain(|line| !line.trim_start().starts_with(&prefix));
 }
 
 fn set_vmx_value(lines: &mut Vec<String>, key: &str, value: &str) {
@@ -585,7 +591,13 @@ mod tests {
 
         let inherited = "a".repeat(64);
         let base = root.join("Base.vmx");
-        fs::write(&base, format!("{GUEST_TOKEN_KEY} = \"{inherited}\"\n")).unwrap();
+        fs::write(
+            &base,
+            format!(
+                "{GUEST_TOKEN_KEY} = \"{inherited}\"\n{BASE_STATE_KEY} = \"FINALIZED\"\n"
+            ),
+        )
+        .unwrap();
 
         let mut virtual_tokens = Vec::new();
         for name in ["Virtual-01", "Virtual-02", "Virtual-03"] {
@@ -596,12 +608,17 @@ mod tests {
             let token = guest_token_for_path(&vmx).unwrap().unwrap();
             assert!(valid_guest_token(&token));
             assert_ne!(token, inherited);
+            assert_eq!(super::base_state_for_path(&vmx).unwrap(), None);
             virtual_tokens.push(token);
         }
 
         assert_eq!(
             guest_token_for_path(&base).unwrap().as_deref(),
             Some(inherited.as_str())
+        );
+        assert_eq!(
+            super::base_state_for_path(&base).unwrap().as_deref(),
+            Some("FINALIZED")
         );
         assert_ne!(virtual_tokens[0], virtual_tokens[1]);
         assert_ne!(virtual_tokens[0], virtual_tokens[2]);
