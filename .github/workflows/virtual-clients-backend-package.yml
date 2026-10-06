@@ -1,0 +1,89 @@
+name: Virtual Clients Backend Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Virtual Clients version (MAJOR.MINOR.PATCH)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: virtual-clients-backend-package
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    if: github.ref == 'refs/heads/Experimental'
+    runs-on: windows-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: experiments/virtual-clients/backend
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Validate requested version
+        shell: pwsh
+        run: |
+          $version = '${{ inputs.version }}'
+          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw 'Version must be MAJOR.MINOR.PATCH.' }
+          $cargo = Get-Content Cargo.toml -Raw
+          $match = [regex]::Match($cargo, '(?m)^version\s*=\s*"([^"]+)"\s*$')
+          if (!$match.Success -or $match.Groups[1].Value -ne $version) { throw "Requested version $version does not match Cargo.toml." }
+
+      - name: Install Rust 1.77.2
+        shell: pwsh
+        run: |
+          rustup toolchain install 1.77.2 --profile minimal --component rustfmt
+          rustup override set 1.77.2
+
+      - name: Verify source
+        run: |
+          cargo check --locked --all-targets
+          cargo test --locked --all-targets
+          cargo fmt --all --check
+
+      - name: Build host and guest binaries
+        run: cargo build --locked --release --bins
+
+      - name: Package backend bundle
+        shell: pwsh
+        run: |
+          $out = Join-Path $PWD 'dist\windows-x86_64'
+          New-Item -ItemType Directory -Path $out -Force | Out-Null
+          Copy-Item target\release\virtual-clients.exe $out
+          Copy-Item target\release\virtual-guest-agent.exe $out
+          Copy-Item ..\distribution\release-channel.json $out
+          $files = @('virtual-clients.exe','virtual-guest-agent.exe','release-channel.json')
+          $checksums = foreach ($name in $files) {
+            $path = Join-Path $out $name
+            $hash = (Get-FileHash -Algorithm SHA256 $path).Hash.ToLowerInvariant()
+            "$hash  $name"
+          }
+          $checksums | Set-Content -Encoding ascii (Join-Path $out 'SHA256SUMS.txt')
+          $provenance = [ordered]@{
+            schema = 1
+            source_sha = $env:GITHUB_SHA
+            version = '${{ inputs.version }}'
+            platform = 'windows-x86_64'
+            rust = '1.77.2'
+            runtime_schema = 1
+            binaries = @('virtual-clients.exe', 'virtual-guest-agent.exe')
+          }
+          $provenance | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8 (Join-Path $out 'build-provenance.json')
+
+      - name: Upload verified backend bundle
+        uses: actions/upload-artifact@v6
+        with:
+          name: virtual-clients-backend-windows-x86_64
+          path: experiments/virtual-clients/backend/dist/windows-x86_64
+          if-no-files-found: error
+          retention-days: 14
