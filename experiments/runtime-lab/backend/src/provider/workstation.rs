@@ -1,7 +1,9 @@
 use super::{
-    apply_virtual_hardware_policy, base_vmx_path, client_vmx_path, command_output, command_output_with_timeout, ensure_parent, guest_tools_state_ready, has_suspend_state, listed_as_running, read_vmx_memory, vm_identity_key,
-    promote_staging_vm, remove_vm_container, snapshot_list_contains, staging_client_vmx_path,
-    wait_for_state, Provider, DISK_STATE_TIMEOUT, READY_SNAPSHOT,
+    apply_virtual_hardware_policy, base_vmx_path, client_vmx_path, command_output,
+    command_output_with_timeout, ensure_parent, guest_tools_state_ready, has_suspend_state,
+    listed_as_running, promote_staging_vm, read_vmx_memory, remove_vm_container,
+    snapshot_list_contains, staging_client_vmx_path, vm_identity_key, wait_for_state, Provider,
+    DISK_STATE_TIMEOUT, READY_SNAPSHOT,
 };
 use crate::client::{ClientId, ClientState};
 use std::{
@@ -26,16 +28,25 @@ pub struct VmwareWorkstationProvider;
 
 impl VmwareWorkstationProvider {
     fn vmrun(&self) -> Option<&'static Path> {
-        VMRUN_CANDIDATES.iter().map(Path::new).find(|path| path.is_file())
+        VMRUN_CANDIDATES
+            .iter()
+            .map(Path::new)
+            .find(|path| path.is_file())
     }
 
     fn gui(&self) -> Option<&'static Path> {
-        GUI_CANDIDATES.iter().map(Path::new).find(|path| path.is_file())
+        GUI_CANDIDATES
+            .iter()
+            .map(Path::new)
+            .find(|path| path.is_file())
     }
 
     fn require_vmrun(&self) -> io::Result<&'static Path> {
         self.vmrun().ok_or_else(|| {
-            io::Error::new(io::ErrorKind::NotFound, "VMware Workstation vmrun.exe was not found")
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "VMware Workstation vmrun.exe was not found",
+            )
         })
     }
 
@@ -61,7 +72,6 @@ impl Provider for VmwareWorkstationProvider {
     fn id(&self) -> &'static str {
         "vmware-workstation"
     }
-
 
     fn detect(&self) -> bool {
         self.vmrun().is_some()
@@ -147,7 +157,10 @@ impl Provider for VmwareWorkstationProvider {
         if vmx.is_file() && (self.running(&vmx)? || has_suspend_state(&vmx)) {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                format!("{} must be fully stopped before reprovision", client.as_str()),
+                format!(
+                    "{} must be fully stopped before reprovision",
+                    client.as_str()
+                ),
             ));
         }
         remove_vm_container(&vmx);
@@ -167,7 +180,12 @@ impl Provider for VmwareWorkstationProvider {
 
         match command_output(
             self.require_vmrun()?,
-            ["-T", "ws", "checkToolsState", vmx.to_string_lossy().as_ref()],
+            [
+                "-T",
+                "ws",
+                "checkToolsState",
+                vmx.to_string_lossy().as_ref(),
+            ],
         ) {
             Ok(state) => Ok(Some(guest_tools_state_ready(&state))),
             Err(_) => Ok(None),
@@ -215,7 +233,13 @@ impl Provider for VmwareWorkstationProvider {
 
         command_output_with_timeout(
             self.require_vmrun()?,
-            ["-T", "ws", "suspend", vmx.to_string_lossy().as_ref(), "soft"],
+            [
+                "-T",
+                "ws",
+                "suspend",
+                vmx.to_string_lossy().as_ref(),
+                "soft",
+            ],
             DISK_STATE_TIMEOUT,
         )?;
         wait_for_state(|| self.running(&vmx), false, DISK_STATE_TIMEOUT)?;
@@ -284,7 +308,10 @@ impl Provider for VmwareWorkstationProvider {
         if self.running(&vmx)? || has_suspend_state(&vmx) {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                format!("{} must be fully stopped before setting QA_READY", client.as_str()),
+                format!(
+                    "{} must be fully stopped before setting QA_READY",
+                    client.as_str()
+                ),
             ));
         }
         if self.has_ready(client)? {
@@ -296,7 +323,13 @@ impl Provider for VmwareWorkstationProvider {
 
         command_output_with_timeout(
             self.require_vmrun()?,
-            ["-T", "ws", "snapshot", vmx.to_string_lossy().as_ref(), READY_SNAPSHOT],
+            [
+                "-T",
+                "ws",
+                "snapshot",
+                vmx.to_string_lossy().as_ref(),
+                READY_SNAPSHOT,
+            ],
             DISK_STATE_TIMEOUT,
         )?;
         Ok(ClientState::Stopped)
@@ -317,7 +350,13 @@ impl Provider for VmwareWorkstationProvider {
 
         command_output_with_timeout(
             self.require_vmrun()?,
-            ["-T", "ws", "revertToSnapshot", vmx.to_string_lossy().as_ref(), READY_SNAPSHOT],
+            [
+                "-T",
+                "ws",
+                "revertToSnapshot",
+                vmx.to_string_lossy().as_ref(),
+                READY_SNAPSHOT,
+            ],
             DISK_STATE_TIMEOUT,
         )?;
         command_output(
@@ -331,7 +370,10 @@ impl Provider for VmwareWorkstationProvider {
     fn open(&self, client: ClientId) -> io::Result<ClientState> {
         let vmx = self.require_client(client)?;
         let gui = self.gui().ok_or_else(|| {
-            io::Error::new(io::ErrorKind::NotFound, "VMware Workstation UI was not found")
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                "VMware Workstation UI was not found",
+            )
         })?;
 
         Command::new(gui).arg("-t").arg(&vmx).spawn()?;
