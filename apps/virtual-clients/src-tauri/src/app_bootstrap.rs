@@ -14,6 +14,7 @@ pub fn run() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             commands::virtual_clients::virtual_clients_policy,
+            commands::virtual_clients::virtual_clients_base_preflight,
             commands::virtual_clients::virtual_clients_snapshot,
             commands::virtual_clients::virtual_clients_actions,
             commands::virtual_clients::virtual_clients_history,

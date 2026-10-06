@@ -1,6 +1,7 @@
 import {
   parseErrorEnvelope,
   parseSuccessEnvelope,
+  type BasePreparationReport,
   type ClientId,
   type ClientLifecycleActions,
   type EnginePolicy,
@@ -57,6 +58,7 @@ export const desktop = {
 
 export const backend = {
   policy: () => invokePublic<EnginePolicy>("virtual_clients_policy"),
+  basePreflight: () => invokePublic<BasePreparationReport>("virtual_clients_base_preflight"),
   snapshot: () => invokePublic<EngineSnapshot>("virtual_clients_snapshot"),
   actions: () => invokePublic<ClientLifecycleActions[]>("virtual_clients_actions"),
   history: () => invokePublic<OperationRecord[]>("virtual_clients_history"),

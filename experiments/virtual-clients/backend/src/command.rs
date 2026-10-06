@@ -1,6 +1,6 @@
 use crate::{
-    read_operation_history, ClientId, DestructiveConfirmation, ErrorReport, SuccessReport,
-    VirtualClients,
+    inspect_base_preparation, read_operation_history, ClientId, DestructiveConfirmation, ErrorReport,
+    SuccessReport, VirtualClients,
 };
 use serde::Serialize;
 use serde_json::Value;
@@ -59,6 +59,10 @@ fn execute_value(command: &str, args: &[String]) -> io::Result<Value> {
         "policy" => {
             require_no_args(command, args)?;
             to_value(app.policy())
+        }
+        "base-preflight" => {
+            require_no_args(command, args)?;
+            to_value(inspect_base_preparation()?)
         }
         "actions" => {
             require_no_args(command, args)?;

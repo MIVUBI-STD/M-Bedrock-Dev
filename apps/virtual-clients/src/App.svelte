@@ -9,6 +9,7 @@
   import SupportSurface from "./app/surfaces/SupportSurface.svelte";
   import RecreateClientDialog from "./app/components/RecreateClientDialog.svelte";
   import type {
+    BasePreparationReport,
     ClientLifecycleActions,
     ClientStatus,
     EnginePolicy,
@@ -23,6 +24,7 @@
 
   let snapshot: EngineSnapshot | undefined;
   let policy: EnginePolicy | undefined;
+  let basePreflight: BasePreparationReport | undefined;
   let actions: readonly ClientLifecycleActions[] = [];
   let history: readonly OperationRecord[] = [];
   let update: UpdateCheck | undefined;
@@ -54,15 +56,17 @@
     loading = true;
     error = undefined;
     try {
-      const [nextSnapshot, nextPolicy, nextActions, nextHistory, nextUpdate] = await Promise.all([
+      const [nextSnapshot, nextPolicy, nextBasePreflight, nextActions, nextHistory, nextUpdate] = await Promise.all([
         backend.snapshot(),
         backend.policy(),
+        backend.basePreflight(),
         backend.actions(),
         backend.history(),
         backend.checkUpdate(),
       ]);
       snapshot = nextSnapshot;
       policy = nextPolicy;
+      basePreflight = nextBasePreflight;
       actions = nextActions;
       history = nextHistory;
       update = nextUpdate;
@@ -72,6 +76,7 @@
     } catch (value) {
       error = presentRuntimeError(value);
       snapshot = undefined;
+      basePreflight = undefined;
       actions = [];
       update = undefined;
     } finally {
@@ -222,6 +227,7 @@
       {#if page === "setup"}
         <SetupSurface
           {snapshot}
+          {basePreflight}
           {virtuals}
           {readyVirtuals}
           {busy}

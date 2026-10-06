@@ -1,8 +1,9 @@
 <script lang="ts">
-  import type { ClientStatus, EngineSnapshot } from "../../contracts.js";
+  import type { BasePreparationReport, ClientStatus, EngineSnapshot } from "../../contracts.js";
   import { setupExperience, setupPhaseIndex } from "../setupFlow.js";
 
   export let snapshot: EngineSnapshot;
+  export let basePreflight: BasePreparationReport | undefined;
   export let virtuals: ClientStatus[];
   export let readyVirtuals: number;
   export let busy: string;
@@ -64,5 +65,33 @@
 {#if action === "CREATE_READY_SNAPSHOTS"}
   <section class="setup-summary-line">
     <strong>{readyVirtuals} of {virtuals.length || 3} recovery points saved</strong>
+  </section>
+{/if}
+
+
+{#if experience.phase === "ENVIRONMENT" && basePreflight}
+  <section class="base-preflight">
+    <header>
+      <div>
+        <span class="eyebrow">ENVIRONMENT PREFLIGHT</span>
+        <strong>What Virtual Clients can verify from this PC</strong>
+      </div>
+    </header>
+    <div class="preflight-grid">
+      <div><span>VMware</span><strong>{basePreflight.provider ?? "Not detected"}</strong></div>
+      <div><span>Minecraft Education</span><strong>{basePreflight.nativeVersion ?? "Not detected"}</strong></div>
+      <div><span>Base VM</span><strong>{basePreflight.basePresent ? "Found" : "Not found"}</strong></div>
+      <div><span>Base power</span><strong>{basePreflight.baseStopped === true ? "Stopped" : basePreflight.baseStopped === false ? "Running" : "Unknown"}</strong></div>
+      <div><span>CPU</span><strong>{basePreflight.configuredVcpus ?? "—"} vCPU</strong></div>
+      <div><span>Memory</span><strong>{basePreflight.configuredMemoryMb ? `${basePreflight.configuredMemoryMb} MB` : "—"}</strong></div>
+      <div><span>3D acceleration</span><strong>{basePreflight.graphics3dEnabled === true ? "Enabled" : basePreflight.graphics3dEnabled === false ? "Disabled" : "Unknown"}</strong></div>
+      <div><span>Network</span><strong>{basePreflight.networkPresent === true ? "Present" : basePreflight.networkPresent === false ? "Missing" : "Unknown"}</strong></div>
+    </div>
+    {#if basePreflight.baseExpectedPath}
+      <details class="preflight-path">
+        <summary>Expected Base location</summary>
+        <code>{basePreflight.baseExpectedPath}</code>
+      </details>
+    {/if}
   </section>
 {/if}

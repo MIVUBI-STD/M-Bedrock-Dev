@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 
+mod base_preparation;
 mod client;
 mod command;
 mod contract;
@@ -19,6 +20,7 @@ mod schema;
 mod support;
 mod update;
 
+pub use base_preparation::{inspect_base_preparation, BasePreparationReport};
 pub use client::{
     ActionAvailability, ClientId, ClientLifecycleActions, ClientState, ClientStatus,
     DestructiveConfirmation, IdentityState, LifecycleBlocker,

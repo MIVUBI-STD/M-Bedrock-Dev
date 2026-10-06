@@ -7,6 +7,7 @@ async fn run(command: &'static str, args: Vec<String>) -> Result<String, String>
 }
 
 #[tauri::command] pub async fn virtual_clients_policy() -> Result<String,String> { run("policy", vec![]).await }
+#[tauri::command] pub async fn virtual_clients_base_preflight() -> Result<String,String> { run("base-preflight", vec![]).await }
 #[tauri::command] pub async fn virtual_clients_snapshot() -> Result<String,String> { run("snapshot", vec![]).await }
 #[tauri::command] pub async fn virtual_clients_actions() -> Result<String,String> { run("actions", vec![]).await }
 #[tauri::command] pub async fn virtual_clients_history() -> Result<String,String> { run("history", vec![]).await }

@@ -126,6 +126,23 @@ export interface EngineSnapshot {
   diagnostics: DiagnosticsReport;
 }
 
+export interface BasePreparationReport {
+  platform: string;
+  provider: string | null;
+  providerVersion: string | null;
+  nativeVersion: string | null;
+  nativeInstallType: string | null;
+  baseExpectedPath: string | null;
+  basePresent: boolean;
+  baseStopped: boolean | null;
+  baseState: BaseState | null;
+  configuredMemoryMb: number | null;
+  configuredVcpus: number | null;
+  graphics3dEnabled: boolean | null;
+  networkPresent: boolean | null;
+  networkStartConnected: boolean | null;
+}
+
 export interface EnginePolicy {
   maxVirtualClients: number;
   virtualMemoryLimitMb: number;
