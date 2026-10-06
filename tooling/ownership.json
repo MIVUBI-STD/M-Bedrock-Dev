@@ -14,8 +14,9 @@
       ]
     },
     "interfaceSupport": {
-      "purpose": "Build/dev support for app presentation surfaces without owning product semantics.",
+      "purpose": "Build/dev support for report document and UI presentation surfaces without owning product semantics.",
       "entries": [
+        "bug-report-documents",
         "bug-report-ui"
       ]
     }
