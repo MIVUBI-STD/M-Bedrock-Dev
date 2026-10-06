@@ -621,6 +621,38 @@
       ]
     },
     {
+      "knowledgeId": "inventory-policy.copy-writeback-required",
+      "consumer": "inventory-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/inventory/inventory-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/inventory-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "inventory-policy.inventory-and-equipment-separate",
+      "consumer": "inventory-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/inventory/inventory-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/inventory-lifecycle-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "inventory-policy.respawn-single-restore-owner",
+      "consumer": "inventory-restore-ownership-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/inventory-restore-ownership-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/inventory-restore-ownership-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "inventory.container-additem-can-leave-remainder",
       "consumer": "inventory-lifecycle-analysis",
       "analyzerPaths": [
@@ -651,6 +683,81 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "loot-policy.death-reward-arbitration",
+      "consumer": "economy-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/reward-source-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/economy-contract-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/economy-contract-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "loot-policy.inventory-full-transfer",
+      "consumer": "economy-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/economy-contract-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/economy-contract-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "loot-policy.logical-reward-idempotency",
+      "consumer": "economy-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/reward-source-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/economy-contract-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/economy-contract-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "loot-policy.pickup-scope-validation",
+      "consumer": "economy-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/reward-source-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/economy-contract-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/economy-contract-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "loot-policy.relation-result-gates-terminal-loot",
+      "consumer": "economy-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/economy-contract-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/economy-contract-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "loot-policy.reward-after-result",
+      "consumer": "economy-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/economy-contract-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/economy-contract-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "loot-policy.stale-drop-invalid",
+      "consumer": "economy-contract-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/reward-source-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/economy-contract-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/economy-contract-analysis.test.ts"
       ]
     },
     {
