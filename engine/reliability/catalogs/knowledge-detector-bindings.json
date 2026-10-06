@@ -1036,6 +1036,102 @@
       ]
     },
     {
+      "knowledgeId": "compat.beta-requires-experiment",
+      "consumer": "manifest-compatibility-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/manifest/src/index.ts",
+        "engine/packages/compatibility/src/index.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/compatibility/test/script-method-matrix.test.ts",
+        "engine/packages/compatibility/test/script-event-matrix.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "compat.dependencies-require-version-match",
+      "consumer": "manifest-compatibility-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/manifest/src/index.ts",
+        "engine/packages/compatibility/src/index.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/compatibility/test/script-method-matrix.test.ts",
+        "engine/packages/compatibility/test/script-event-matrix.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "compat.experiments-change-over-time",
+      "consumer": "manifest-compatibility-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/manifest/src/index.ts",
+        "engine/packages/compatibility/src/index.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/compatibility/test/script-method-matrix.test.ts",
+        "engine/packages/compatibility/test/script-event-matrix.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "compat.latest-platform-needs-revalidation",
+      "consumer": "manifest-compatibility-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/manifest/src/index.ts",
+        "engine/packages/compatibility/src/index.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/compatibility/test/script-method-matrix.test.ts",
+        "engine/packages/compatibility/test/script-event-matrix.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "compat.manifest-defines-load-contract",
+      "consumer": "manifest-compatibility-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/manifest/src/index.ts",
+        "engine/packages/compatibility/src/index.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/compatibility/test/script-method-matrix.test.ts",
+        "engine/packages/compatibility/test/script-event-matrix.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "compat.min-engine-affects-semantics",
+      "consumer": "manifest-compatibility-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/manifest/src/index.ts",
+        "engine/packages/compatibility/src/index.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/compatibility/test/script-method-matrix.test.ts",
+        "engine/packages/compatibility/test/script-event-matrix.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "compat.relation-engine-version-validates-runtime",
+      "consumer": "manifest-compatibility-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/manifest/src/index.ts",
+        "engine/packages/compatibility/src/index.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/compatibility/test/script-method-matrix.test.ts",
+        "engine/packages/compatibility/test/script-event-matrix.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "compat.script-major-can-break",
+      "consumer": "manifest-compatibility-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/manifest/src/index.ts",
+        "engine/packages/compatibility/src/index.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/compatibility/test/script-method-matrix.test.ts",
+        "engine/packages/compatibility/test/script-event-matrix.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "effects-policy.baseline-contract",
       "consumer": "arena-cleanup-surface-analysis",
       "analyzerPaths": [
@@ -2854,6 +2950,132 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "script.event.chat-send-prerelease",
+      "consumer": "script-api-compatibility-diagnostics",
+      "analyzerPaths": [
+        "engine/packages/compatibility/src/script-method-matrix.ts",
+        "engine/packages/compatibility/src/script-event-matrix.ts",
+        "engine/analyzers/diagnostics/src/script/script-event-findings.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/compatibility/test/script-method-matrix.test.ts",
+        "engine/packages/compatibility/test/script-event-matrix.test.ts",
+        "engine/analyzers/diagnostics/test/script/script-event-findings.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "script.event.player-place-block-prerelease",
+      "consumer": "script-api-compatibility-diagnostics",
+      "analyzerPaths": [
+        "engine/packages/compatibility/src/script-method-matrix.ts",
+        "engine/packages/compatibility/src/script-event-matrix.ts",
+        "engine/analyzers/diagnostics/src/script/script-event-findings.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/compatibility/test/script-method-matrix.test.ts",
+        "engine/packages/compatibility/test/script-event-matrix.test.ts",
+        "engine/analyzers/diagnostics/test/script/script-event-findings.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "script.event.watchdog-terminate-prerelease",
+      "consumer": "script-api-compatibility-diagnostics",
+      "analyzerPaths": [
+        "engine/packages/compatibility/src/script-method-matrix.ts",
+        "engine/packages/compatibility/src/script-event-matrix.ts",
+        "engine/analyzers/diagnostics/src/script/script-event-findings.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/compatibility/test/script-method-matrix.test.ts",
+        "engine/packages/compatibility/test/script-event-matrix.test.ts",
+        "engine/analyzers/diagnostics/test/script/script-event-findings.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "script.lifecycle-is-valid-methods-removed-2.0",
+      "consumer": "script-api-compatibility-diagnostics",
+      "analyzerPaths": [
+        "engine/packages/compatibility/src/script-method-matrix.ts",
+        "engine/packages/compatibility/src/script-event-matrix.ts",
+        "engine/analyzers/diagnostics/src/script/script-event-findings.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/compatibility/test/script-method-matrix.test.ts",
+        "engine/packages/compatibility/test/script-event-matrix.test.ts",
+        "engine/analyzers/diagnostics/test/script/script-event-findings.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "script.lifecycle-item-use-on-events-removed-2.0",
+      "consumer": "script-api-compatibility-diagnostics",
+      "analyzerPaths": [
+        "engine/packages/compatibility/src/script-method-matrix.ts",
+        "engine/packages/compatibility/src/script-event-matrix.ts",
+        "engine/analyzers/diagnostics/src/script/script-event-findings.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/compatibility/test/script-method-matrix.test.ts",
+        "engine/packages/compatibility/test/script-event-matrix.test.ts",
+        "engine/analyzers/diagnostics/test/script/script-event-findings.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "script.lifecycle-run-command-async-removed-2.0",
+      "consumer": "script-api-compatibility-diagnostics",
+      "analyzerPaths": [
+        "engine/packages/compatibility/src/script-method-matrix.ts",
+        "engine/packages/compatibility/src/script-event-matrix.ts",
+        "engine/analyzers/diagnostics/src/script/script-event-findings.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/compatibility/test/script-method-matrix.test.ts",
+        "engine/packages/compatibility/test/script-event-matrix.test.ts",
+        "engine/analyzers/diagnostics/test/script/script-event-findings.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "script.lifecycle-world-initialize-events-removed-2.0",
+      "consumer": "script-api-compatibility-diagnostics",
+      "analyzerPaths": [
+        "engine/packages/compatibility/src/script-method-matrix.ts",
+        "engine/packages/compatibility/src/script-event-matrix.ts",
+        "engine/analyzers/diagnostics/src/script/script-event-findings.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/compatibility/test/script-method-matrix.test.ts",
+        "engine/packages/compatibility/test/script-event-matrix.test.ts",
+        "engine/analyzers/diagnostics/test/script/script-event-findings.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "script.lifecycle.world-play-sound-removed-2.0",
+      "consumer": "script-api-compatibility-diagnostics",
+      "analyzerPaths": [
+        "engine/packages/compatibility/src/script-method-matrix.ts",
+        "engine/packages/compatibility/src/script-event-matrix.ts",
+        "engine/analyzers/diagnostics/src/script/script-event-findings.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/compatibility/test/script-method-matrix.test.ts",
+        "engine/packages/compatibility/test/script-event-matrix.test.ts",
+        "engine/analyzers/diagnostics/test/script/script-event-findings.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "script.production-portfolio.current-stable-surface",
+      "consumer": "script-api-compatibility-diagnostics",
+      "analyzerPaths": [
+        "engine/packages/compatibility/src/script-method-matrix.ts",
+        "engine/packages/compatibility/src/script-event-matrix.ts",
+        "engine/analyzers/diagnostics/src/script/script-event-findings.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/compatibility/test/script-method-matrix.test.ts",
+        "engine/packages/compatibility/test/script-event-matrix.test.ts",
+        "engine/analyzers/diagnostics/test/script/script-event-findings.test.ts"
       ]
     },
     {
