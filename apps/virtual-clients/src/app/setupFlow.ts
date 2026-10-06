@@ -107,7 +107,8 @@ const flows: Record<SetupAction, SetupExperience> = {
     steps: [
       "Use Start first-time setup on each virtual client; its VMware window opens for Windows setup.",
       "Complete Windows first-run setup in each client if Windows asks.",
-      "Keep all three clients running together, then use Check clients after Windows setup completes.",
+      "Inside each client, run the installed Guest Agent once with --register-interactive-launcher from that Windows user account.",
+      "Sign out and back in, then keep all three clients running together and use Check clients after Windows setup completes.",
     ],
   },
   CREATE_READY_SNAPSHOTS: {
@@ -117,8 +118,8 @@ const flows: Record<SetupAction, SetupExperience> = {
     description: "Sign in once on each virtual client, then save its recovery point. Account sessions remain inside each virtual machine.",
     primaryLabel: "Open clients",
     steps: [
-      "Open one virtual client.",
-      "Sign in to Minecraft Education and confirm the main menu appears.",
+      "Open one virtual client and confirm its interactive launcher is active.",
+      "Open Minecraft Education, complete Microsoft sign-in in that same virtual Windows session, and confirm the main menu appears.",
       "Stop that client and choose Save recovery point.",
       "Repeat for the remaining clients.",
     ],
