@@ -208,10 +208,13 @@ Router scope
 → Catalog identity
 → Graph neighbors
 → source/ownership structure
-→ semantic ranking
+→ lexical ranking
+→ optional semantic ranking
 → authority filtering
 → Context
 ```
+
+Lexical ranking is repository-native and requires no external provider. Semantic ranking is optional enrichment after routing, graph, and structural/lexical narrowing.
 
 Pure vector similarity must not search the entire repository as an unbounded first step.
 
