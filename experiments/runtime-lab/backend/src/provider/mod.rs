@@ -352,9 +352,7 @@ pub(crate) fn host_working_set_mb(vmx: &Path) -> Option<u64> {
         .values()
         .filter(|process| {
             process.cmd().iter().any(|arg| {
-                arg.to_string_lossy()
-                    .to_ascii_lowercase()
-                    .contains(&target)
+                arg.to_ascii_lowercase().contains(&target)
             })
         })
         .map(|process| process.memory())
