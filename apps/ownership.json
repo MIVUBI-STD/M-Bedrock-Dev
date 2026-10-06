@@ -6,7 +6,7 @@
       "entries": [
         "bug-report-ui",
         "cli",
-        "virtual-clients-ui"
+        "virtual-clients"
       ]
     }
   }

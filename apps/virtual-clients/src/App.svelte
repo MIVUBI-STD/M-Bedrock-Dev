@@ -16,8 +16,8 @@
     UpdateCheck,
   } from "./contracts.js";
   import { actionForClient, clientDisplayName, primaryClientAction } from "./view-model.js";
+  import type { Page } from "./app/navigation.js";
 
-  export type Page = "setup" | "clients" | "settings" | "support";
 
   let snapshot: EngineSnapshot | undefined;
   let policy: EnginePolicy | undefined;
@@ -175,6 +175,7 @@
     {readyVirtuals}
     blockerCount={blockers.length}
     provider={snapshot?.doctor.provider}
+    setupAction={snapshot?.doctor.nextSetupAction}
     {loading}
     {busy}
     onSelect={selectPage}

@@ -19,7 +19,7 @@ jobs:
       contents: write
     defaults:
       run:
-        working-directory: apps/virtual-clients-ui
+        working-directory: apps/virtual-clients
     env:
       GH_TOKEN: ${{ github.token }}
       VIRTUAL_CLIENTS_PUBLISHER_CERT_THUMBPRINT: ${{ vars.VIRTUAL_CLIENTS_SIGNING_CERT_THUMBPRINT }}
@@ -51,7 +51,7 @@ jobs:
         with:
           node-version: 24.21.0
           cache: npm
-          cache-dependency-path: apps/virtual-clients-ui/package-lock.json
+          cache-dependency-path: apps/virtual-clients/package-lock.json
       - name: Install Rust 1.98.1
         shell: pwsh
         run: |

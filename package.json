@@ -39,12 +39,13 @@
     "bug-report-html": "tsx tooling/bug-report-documents/render.ts",
     "verify:audit-entrypoint": "node tooling/repository/verify-selected-map-audit-entrypoint.mjs",
     "verify:knowledge-bindings": "node tooling/repository/verify-knowledge-detector-bindings.mjs",
-    "virtual-clients-ui:dev": "npm --prefix apps/virtual-clients-ui run dev:app",
-    "virtual-clients-ui:build": "npm --prefix apps/virtual-clients-ui run build:frontend",
-    "virtual-clients-ui:preview": "npm --prefix apps/virtual-clients-ui run preview:frontend",
-    "virtual-clients-ui:test": "vitest run apps/virtual-clients-ui/test",
-    "virtual-clients-ui:typecheck": "npm --prefix apps/virtual-clients-ui run typecheck",
-    "virtual-clients-ui:app": "npm --prefix apps/virtual-clients-ui run build:app"
+    "virtual-clients:dev": "npm --prefix apps/virtual-clients run dev:app",
+    "virtual-clients:build": "npm --prefix apps/virtual-clients run build:frontend",
+    "virtual-clients:preview": "npm --prefix apps/virtual-clients run preview:frontend",
+    "virtual-clients:test": "vitest run apps/virtual-clients/test",
+    "virtual-clients:typecheck": "npm --prefix apps/virtual-clients run typecheck",
+    "virtual-clients:verify": "npm --prefix apps/virtual-clients run verify:source",
+    "virtual-clients:app": "npm --prefix apps/virtual-clients run build:app"
   },
   "dependencies": {
     "@8crafter/leveldb-zlib": "1.6.0",

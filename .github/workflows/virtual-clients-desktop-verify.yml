@@ -1,18 +1,18 @@
-name: Virtual Clients UI
+name: Virtual Clients Desktop Verify
 
 on:
   push:
     branches: [Experimental]
     paths:
-      - "apps/virtual-clients-ui/**"
+      - "apps/virtual-clients/**"
       - "experiments/virtual-clients/backend/src/**"
-      - ".github/workflows/virtual-clients-ui.yml"
+      - ".github/workflows/virtual-clients-desktop-verify.yml"
 
 permissions:
   contents: read
 
 concurrency:
-  group: virtual-clients-ui-${{ github.ref }}
+  group: virtual-clients-desktop-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -21,14 +21,14 @@ jobs:
     timeout-minutes: 25
     defaults:
       run:
-        working-directory: apps/virtual-clients-ui
+        working-directory: apps/virtual-clients
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: 24.21.0
           cache: npm
-          cache-dependency-path: apps/virtual-clients-ui/package-lock.json
+          cache-dependency-path: apps/virtual-clients/package-lock.json
       - name: Install Rust 1.98.1
         shell: pwsh
         run: |
@@ -46,4 +46,4 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           npm ci --no-audit --no-fund
-          npm run virtual-clients-ui:test
+          npm run virtual-clients:test

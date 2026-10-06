@@ -1,6 +1,7 @@
 <script lang="ts">
   import { actionLabel } from "../../view-model.js";
-  import type { Page } from "../../App.svelte";
+  import type { SetupAction } from "../../contracts.js";
+  import type { Page } from "../navigation.js";
 
   export let page: Page;
   export let setupComplete: boolean;
@@ -8,6 +9,7 @@
   export let readyVirtuals: number;
   export let blockerCount: number;
   export let provider: string | null | undefined;
+  export let setupAction: SetupAction | undefined;
   export let loading: boolean;
   export let busy: string;
   export let onSelect: (page: Page) => void;
@@ -23,7 +25,7 @@
   <nav aria-label="Virtual Clients navigation">
     {#if !setupComplete}
       <button class:active={page === "setup"} class="nav-item" on:click={() => onSelect("setup")}>
-        <span>Setup</span><small>{actionLabel("PREPARE_BASE")}</small>
+        <span>Setup</span><small>{actionLabel(setupAction ?? "PREPARE_BASE")}</small>
       </button>
     {/if}
     <button class:active={page === "clients"} class="nav-item" on:click={() => onSelect("clients")}>
