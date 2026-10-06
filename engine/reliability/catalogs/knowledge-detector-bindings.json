@@ -2342,6 +2342,29 @@
       ]
     },
     {
+      "knowledgeId": "teleport.relation-destination-requires-readiness",
+      "consumer": "teleport-transaction-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/teleport-transaction-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/script-spatial-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/teleport-transaction-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "teleport.tryteleport-can-fail",
+      "consumer": "teleport-transaction-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/spatial/spatial-mutation-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/teleport-transaction-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/spatial/spatial-mutation-evidence.test.ts",
+        "engine/packages/orchestrator/test/inspection/teleport-transaction-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "world-policy.logical-bounds-not-collision-proof",
       "consumer": "arena-barrier-enclosure-proof",
       "analyzerPaths": [
