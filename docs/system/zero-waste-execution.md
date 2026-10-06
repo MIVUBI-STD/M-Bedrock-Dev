@@ -2,7 +2,7 @@
 id: document.system.zero-waste-execution
 class: DOCUMENT
 domain: system
-role: REFERENCE
+role: WORKFLOW
 authority: CANONICAL
 lifecycle: ACTIVE
 ---
