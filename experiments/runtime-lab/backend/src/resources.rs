@@ -1,4 +1,5 @@
 use serde::Serialize;
+use sysinfo::System;
 
 pub const VIRTUAL_MEMORY_LIMIT_MB: u64 = 4096;
 
@@ -68,4 +69,14 @@ mod tests {
         assert_eq!(report.level, PressureLevel::Critical);
         assert!(!report.can_start_virtual);
     }
+}
+
+
+pub fn current_host_pressure() -> HostPressure {
+    let mut system = System::new();
+    system.refresh_memory();
+    evaluate_pressure(
+        system.total_memory() / 1024 / 1024,
+        system.available_memory() / 1024 / 1024,
+    )
 }
