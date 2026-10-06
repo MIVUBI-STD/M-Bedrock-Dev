@@ -39,10 +39,25 @@ fn ipc_root() -> io::Result<std::path::PathBuf> {
 }
 
 #[cfg(target_os = "windows")]
+fn interactive_launcher_ready() -> bool {
+    let Ok(root) = ipc_root() else { return false; };
+    let heartbeat = root.join("launcher.ready");
+    let Ok(metadata) = std::fs::metadata(&heartbeat) else { return false; };
+    let Ok(modified) = metadata.modified() else { return false; };
+    modified.elapsed().is_ok_and(|age| age <= Duration::from_secs(5))
+}
+
+#[cfg(target_os = "windows")]
 fn request_interactive_minecraft_launch() -> Result<m_bedrock_virtual_clients_core::MinecraftLaunchResult, Box<dyn std::error::Error>> {
     use m_bedrock_virtual_clients_core::{MinecraftLaunchResult, MinecraftLaunchState};
     if minecraft_process_running() {
         return Ok(MinecraftLaunchResult { schema: 1, state: MinecraftLaunchState::AlreadyRunning });
+    }
+    if !interactive_launcher_ready() {
+        return Err(io::Error::new(
+            io::ErrorKind::NotConnected,
+            "Interactive launcher is not active for the signed-in Windows user",
+        ).into());
     }
     let root = ipc_root()?;
     std::fs::create_dir_all(&root)?;
@@ -79,8 +94,17 @@ fn run_interactive_launcher() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::create_dir_all(&root)?;
     let request = root.join("launch-minecraft.request");
     let acknowledgement = root.join("launch-minecraft.ack");
+    let heartbeat = root.join("launcher.ready");
 
     loop {
+        let session = std::process::Command::new("powershell.exe")
+            .args(["-NoLogo", "-NoProfile", "-NonInteractive", "-Command", "(Get-Process -Id $PID).SessionId"])
+            .output()
+            .ok()
+            .filter(|output| output.status.success())
+            .map(|output| String::from_utf8_lossy(&output.stdout).trim().to_string())
+            .unwrap_or_default();
+        let _ = std::fs::write(&heartbeat, format!("session={session}\n"));
         if request.is_file() {
             let action = std::fs::read_to_string(&request).unwrap_or_default();
             let mut parts = action.split_whitespace();
@@ -138,6 +162,7 @@ fn handle(mut stream: TcpStream, token: &str) -> Result<(), Box<dyn std::error::
                 agent_version: env!("CARGO_PKG_VERSION").to_string(),
                 minecraft: guest_agent_minecraft_profile(),
                 minecraft_running: Some(minecraft_process_running()),
+                interactive_launcher_ready: Some(interactive_launcher_ready()),
                 machine_identity: guest_machine_identity(),
             };
             write_json(&mut stream, &status)
