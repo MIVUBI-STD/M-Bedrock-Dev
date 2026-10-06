@@ -12,8 +12,7 @@ mod windows_host {
     use serde::{Deserialize, Serialize};
     use std::{
         collections::HashMap,
-        env,
-        fs,
+        env, fs,
         io::{self, BufRead, BufReader, Read, Write},
         net::{TcpListener, TcpStream},
         path::{Path, PathBuf},
@@ -350,11 +349,8 @@ mod windows_host {
             ),
             ("GET", "") | ("GET", "index.html") => {
                 let source = fs::read_to_string(ui_root.join("index.html"))?;
-                let injected = source.replacen(
-                    "<head>",
-                    "<head><script src=\"./host.js\"></script>",
-                    1,
-                );
+                let injected =
+                    source.replacen("<head>", "<head><script src=\"./host.js\"></script>", 1);
                 write_response(
                     &mut stream,
                     200,
@@ -363,7 +359,12 @@ mod windows_host {
                 )
             }
             ("GET", path) => serve_static(&mut stream, ui_root, path),
-            _ => write_response(&mut stream, 405, "text/plain; charset=utf-8", b"Method Not Allowed"),
+            _ => write_response(
+                &mut stream,
+                405,
+                "text/plain; charset=utf-8",
+                b"Method Not Allowed",
+            ),
         }
     }
 
@@ -371,7 +372,10 @@ mod windows_host {
         let mut reader = BufReader::new(stream.try_clone()?);
         let mut first = String::new();
         if reader.read_line(&mut first)? == 0 {
-            return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "empty HTTP request"));
+            return Err(io::Error::new(
+                io::ErrorKind::UnexpectedEof,
+                "empty HTTP request",
+            ));
         }
         if first.len() > MAX_HTTP_HEADER_BYTES {
             return Err(io::Error::new(
@@ -474,7 +478,11 @@ mod windows_host {
     }
 
     fn mime_for(path: &Path) -> &'static str {
-        match path.extension().and_then(|value| value.to_str()).unwrap_or_default() {
+        match path
+            .extension()
+            .and_then(|value| value.to_str())
+            .unwrap_or_default()
+        {
             "js" => "text/javascript; charset=utf-8",
             "css" => "text/css; charset=utf-8",
             "json" => "application/json; charset=utf-8",
