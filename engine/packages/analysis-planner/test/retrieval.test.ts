@@ -92,6 +92,18 @@ describe("retrieveResources", () => {
     ).toBe(false);
   });
 
+  it("allows historical data only when explicitly requested", () => {
+    const results = retrieveResources(resources, edges, {
+      text: "",
+      includeHistorical: true,
+      limit: 50,
+    });
+
+    expect(
+      results.some((item) => item.resource.authority === "HISTORICAL"),
+    ).toBe(true);
+  });
+
   it("never returns retired resources", () => {
     const results = retrieveResources(resources, edges, {
       text: "",
