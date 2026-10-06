@@ -236,3 +236,8 @@ A public-contract breaking change must increment `PUBLIC_CONTRACT_SCHEMA`. A run
 `snapshot` is the canonical aggregate read-model for operator/frontend inspection.
 
 `support-bundle` creates a diagnostic artifact from existing backend truth. It is not a state database and cannot influence lifecycle decisions. Bundle content excludes credentials, account identifiers, tokens, world content, and absolute runtime paths.
+
+
+## Engine policy
+
+Product/runtime limits have one read-only owner in `EnginePolicy`. Provider and frontend code must consume this policy rather than duplicate literals for maximum Virtual count, guest memory ceiling, vCPU count, Guest Agent port, or QA_READY snapshot name. Policy exposure does not make these values user-configurable.

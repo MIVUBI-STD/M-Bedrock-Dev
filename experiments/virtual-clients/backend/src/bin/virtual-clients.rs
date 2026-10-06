@@ -48,6 +48,7 @@ fn run() -> io::Result<()> {
 
     match command.as_str() {
         "doctor" => print_json(&app.doctor())?,
+        "policy" => print_json(&app.policy())?,
         "diagnostics" => print_json(&app.diagnostics()?)?,
         "snapshot" => print_json(&app.snapshot()?)?,
         "support-bundle" => print_json(&app.support_bundle()?)?,
@@ -134,6 +135,7 @@ fn run() -> io::Result<()> {
         _ => {
             println!("M-Bedrock Virtual Clients");
             println!("  doctor");
+            println!("  policy");
             println!("  diagnostics");
             println!("  snapshot");
             println!("  support-bundle");

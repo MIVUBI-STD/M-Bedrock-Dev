@@ -8,6 +8,7 @@ mod error;
 mod guest;
 mod paths;
 mod persistence;
+mod policy;
 mod profile;
 mod provider;
 mod resources;
@@ -23,6 +24,7 @@ pub use diagnostics::{
 };
 pub use doctor::{DoctorClient, DoctorReport, SetupAction};
 pub use error::{ErrorCode, ErrorReport};
+pub use policy::{engine_policy, EnginePolicy, MAX_VIRTUAL_CLIENTS, READY_SNAPSHOT_NAME, VIRTUAL_VCPUS};
 pub use profile::{
     BaseProfile, BaseProfileSource, BaseState, MinecraftInstallType, MinecraftProfile,
     ProfileParity, ProfileStatus,

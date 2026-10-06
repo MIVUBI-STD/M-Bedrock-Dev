@@ -4,6 +4,7 @@ use crate::{
     doctor::{doctor, DoctorReport},
     guest::{query_guest_status, GuestStatus},
     paths::runtime_root,
+    policy::{engine_policy, EnginePolicy, MAX_VIRTUAL_CLIENTS},
     profile::{
         current_base_vmx_path, load_client_profile, native_minecraft_profile, profile_status,
         require_base_matches_native, require_client_matches_native, write_client_profile,
@@ -660,6 +661,10 @@ impl VirtualClients {
         doctor()
     }
 
+    pub fn policy(&self) -> EnginePolicy {
+        engine_policy()
+    }
+
     pub fn check_update(&self) -> io::Result<UpdateCheck> {
         check_update()
     }
@@ -1001,10 +1006,10 @@ impl VirtualClients {
     }
 
     pub fn resources(&self, count: usize) -> io::Result<ResourceView> {
-        if !(1..=3).contains(&count) {
+        if !(1..=MAX_VIRTUAL_CLIENTS).contains(&count) {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "virtual client count must be between 1 and 3",
+                "virtual client count must be within the configured engine policy",
             ));
         }
 

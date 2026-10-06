@@ -4,6 +4,7 @@ mod workstation;
 use crate::{
     client::{ClientId, ClientState},
     paths::{client_root, staging_root},
+    policy::{READY_SNAPSHOT_NAME_NAME, VIRTUAL_VCPUS},
     profile::{current_base_vmx_path, BaseState},
     resources::VIRTUAL_MEMORY_LIMIT_MB,
 };
@@ -23,10 +24,8 @@ use fusion::VmwareFusionProvider;
 #[cfg(target_os = "windows")]
 use workstation::VmwareWorkstationProvider;
 
-pub(crate) const READY_SNAPSHOT: &str = "QA_READY";
 pub(crate) const GUEST_TOKEN_KEY: &str = "guestinfo.virtualclients.token";
 pub(crate) const BASE_STATE_KEY: &str = "guestinfo.virtualclients.baseState";
-pub(crate) const CLIENT_VCPUS: &str = "2";
 const COMMAND_TIMEOUT: Duration = Duration::from_secs(45);
 pub(crate) const DISK_STATE_TIMEOUT: Duration = Duration::from_secs(180);
 
@@ -329,7 +328,7 @@ pub(crate) fn apply_virtual_hardware_policy(vmx: &Path) -> io::Result<()> {
     let source = fs::read_to_string(vmx)?;
     let mut lines: Vec<String> = source.lines().map(ToOwned::to_owned).collect();
 
-    set_vmx_value(&mut lines, "numvcpus", CLIENT_VCPUS);
+    set_vmx_value(&mut lines, "numvcpus", &VIRTUAL_VCPUS.to_string());
     set_vmx_value(&mut lines, "memsize", &VIRTUAL_MEMORY_LIMIT_MB.to_string());
     set_vmx_value(&mut lines, "mks.enable3d", "TRUE");
     set_vmx_value(&mut lines, "ethernet0.present", "TRUE");
