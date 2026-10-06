@@ -131,3 +131,10 @@ Do not depend only on historical events like 'arena became occupied' to paint th
 8. Are animation-controller conditions aligned with gameplay authority?
 9. Is command context correct for particle placement?
 10. Is this regression potentially version-sensitive?
+## Platform knowledge
+
+Minecraft platform facts referenced by this analysis are owned by:
+
+- [Client Feedback](../../engine/knowledge/player-runtime/client-feedback-bedrock.json)
+
+This document owns audit/failure-model guidance. The linked knowledge files own platform facts and applicability.
