@@ -136,8 +136,7 @@ pub fn check_update() -> io::Result<UpdateCheck> {
 
     let readiness = update_apply_readiness();
 
-    let (can_apply_now, reason) =
-        apply_permission(policy.self_update_runtime_enabled, readiness);
+    let (can_apply_now, reason) = apply_permission(policy.self_update_runtime_enabled, readiness);
 
     Ok(UpdateCheck {
         state,
@@ -322,9 +321,8 @@ fn validate_platform_manifest(
 ) -> io::Result<()> {
     parse_version(version)?;
 
-    let parsed = Url::parse(&platform.url).map_err(|_| {
-        io::Error::new(io::ErrorKind::InvalidData, "update package URL is invalid")
-    })?;
+    let parsed = Url::parse(&platform.url)
+        .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "update package URL is invalid"))?;
     let (owner, repository) = policy.repository.split_once('/').ok_or_else(|| {
         io::Error::new(
             io::ErrorKind::InvalidData,
