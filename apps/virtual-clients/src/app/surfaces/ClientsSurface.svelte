@@ -35,10 +35,9 @@
   $: pausedVirtuals = virtuals.filter((client) => client.state === "SUSPENDED").length;
 </script>
 
-<section class="hero compact">
-  <span class="eyebrow">CLIENTS</span>
-  <h2>Virtual Minecraft clients</h2>
-  <p>Start, resume, and open clients from one place. Recovery tools stay in each client's menu until you need them.</p>
+<section class="hero compact clients-heading">
+  <h2>Your clients</h2>
+  <p>Choose a client and continue.</p>
 </section>
 
 {#if setupAction === "VERIFY_IDENTITIES"}
