@@ -98,6 +98,9 @@ import type {
 import type {
   CapabilityExposureSummary,
 } from "./capability-exposure-stage.js";
+import type {
+  ProgressionActorAccountingAnalysis,
+} from "./progression-actor-accounting-analysis.js";
 import {
   discoverGameplaySurfaces,
   type GameplaySurfaceDiscoveryResult,
@@ -361,6 +364,27 @@ export interface GameplayWorldModel {
       itemConsumes: number;
       idempotencyGuards: number;
     }[];
+  };
+  progression: {
+    actorAccounting: {
+      counters: number;
+      provenMissingReconciliation: number;
+      unresolvedCounters: number;
+      balancedCounters: number;
+      details: readonly {
+        scriptId: string;
+        counterId: string;
+        kind: "variable" | "scoreboard";
+        growthWrites: number;
+        decrementWrites: number;
+        replacementWrites: number;
+        completionChecks: number;
+        status:
+          | "balanced-evidence"
+          | "missing-reconciliation"
+          | "unresolved";
+      }[];
+    };
   };
   combat: {
     hurtHandlers: number;
@@ -676,6 +700,8 @@ export interface GameplayWorldModelSource {
   scriptSpatial: ScriptSpatialAnalysis;
   spatialAuthority?: SpatialAuthorityCoverageReport;
   combatLifecycle?: CombatLifecycleAnalysis;
+  progressionActorAccounting?:
+    ProgressionActorAccountingAnalysis;
   combatRuntime?: CombatRuntimeTelemetryAnalysis;
   combatPolicy?: CombatContractAnalysis;
   chunkLifecycle?: ChunkLifecycleAnalysis;
@@ -1867,6 +1893,38 @@ export function deriveGameplayWorldModel(
           itemConsumes: item.itemConsumes,
           idempotencyGuards: item.idempotencyGuards,
         })) ?? [],
+    },
+    progression: {
+      actorAccounting: {
+        counters:
+          source.progressionActorAccounting
+            ?.counters.length ?? 0,
+        provenMissingReconciliation:
+          source.progressionActorAccounting
+            ?.provenMissingReconciliation ?? 0,
+        unresolvedCounters:
+          source.progressionActorAccounting
+            ?.unresolvedCounters ?? 0,
+        balancedCounters:
+          source.progressionActorAccounting
+            ?.balancedCounters ?? 0,
+        details:
+          source.progressionActorAccounting
+            ?.counters.map((item) => ({
+              scriptId: item.scriptId,
+              counterId: item.counterId,
+              kind: item.kind,
+              growthWrites:
+                item.growthWrites,
+              decrementWrites:
+                item.decrementWrites,
+              replacementWrites:
+                item.replacementWrites,
+              completionChecks:
+                item.completionChecks,
+              status: item.status,
+            })) ?? [],
+      },
     },
     combat: {
       hurtHandlers:

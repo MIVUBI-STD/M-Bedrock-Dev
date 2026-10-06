@@ -303,6 +303,7 @@ export function buildInspectionResult(
     playerCapabilitySurfaces,
     clientMutationReconciliation,
     capabilityMutationFootprint,
+    progressionActorAccounting,
     inventoryLifecycle,
     arenaLifecycle,
     arenaCleanupSurfaces,
@@ -443,6 +444,7 @@ export function buildInspectionResult(
     capabilityExposure,
     clientMutationReconciliation,
     capabilityMutationFootprint,
+    progressionActorAccounting,
     combatLifecycle,
     combatRuntime:
       combatRuntimeTelemetry,

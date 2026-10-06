@@ -56,6 +56,9 @@ import {
 import {
   analyzeCapabilityMutationFootprint,
 } from "./capability-mutation-footprint-analysis.js";
+import {
+  analyzeProgressionActorAccounting,
+} from "./progression-actor-accounting-analysis.js";
 
 export interface InspectionRuntimeAnalysisInput {
   target: InspectTargetProfile;
@@ -315,6 +318,15 @@ export function analyzeInspectionRuntimeState(
     analyzeCombatLifecycle(
       scriptsFor("combat-lifecycle"),
     );
+  const progressionActorAccounting =
+    analyzeProgressionActorAccounting(
+      input.parsedScripts.map((item) => ({
+        parsed: item.parsed,
+        ...(item.text === undefined
+          ? {}
+          : { text: item.text }),
+      })),
+    );
   const chunkLifecycle =
     analyzeChunkLifecycle(
       scriptsFor("chunk-simulation"),
@@ -555,6 +567,7 @@ export function analyzeInspectionRuntimeState(
     inventoryRestoreOwnership,
     capabilityMutationFootprint,
     combatLifecycle,
+    progressionActorAccounting,
     chunkLifecycle,
     persistenceSource,
     rewardSources,

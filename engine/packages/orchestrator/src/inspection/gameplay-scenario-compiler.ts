@@ -809,6 +809,44 @@ function runtimeEdgeState(
     }
     case "runtime:entities": {
       if (
+        scenarioLabel ===
+          "progression-wave-integrity" &&
+        world.progression.actorAccounting
+          .provenMissingReconciliation > 0
+      ) {
+        const counters =
+          world.progression.actorAccounting.details
+            .filter((item) =>
+              item.status ===
+                "missing-reconciliation"
+            )
+            .map((item) =>
+              item.scriptId +
+              ":" +
+              item.counterId
+            )
+            .sort();
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Selected-artifact progression accounting proves a completion counter can grow and is checked for zero/complete, but has no decrement or replacement/recompute path: " +
+            counters.join(", ") +
+            ". The progression gate cannot converge through that counter lifecycle, so runtime reproduction is not required to establish the accounting contradiction.",
+        };
+      }
+      if (
+        scenarioLabel ===
+          "progression-wave-integrity" &&
+        world.progression.actorAccounting
+          .unresolvedCounters > 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Progression-like counter evidence is present but its producer/consumer/reconciliation lifecycle is incomplete. Keep it explicit in unresolved reporting and finish source-side counter ownership proof before any player test.",
+        };
+      }
+      if (
         scenarioLabel === "progression-wave-integrity" &&
         world.combat.deathHandlers === 0 &&
         world.chunks.entityRemoveObservers === 0
