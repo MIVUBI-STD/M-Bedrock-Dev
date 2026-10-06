@@ -14,11 +14,14 @@ provision
 
 start 1
 → configure Virtual-01
-→ sign in with its own test identity
+→ sign in once with its own test identity
+→ confirm Minecraft Education reaches the signed-in menu
 stop Virtual-01
 set-ready Virtual-01
 
 repeat for Virtual-02 / Virtual-03
+
+Base must never contain a Microsoft/Minecraft user session. Account state belongs to each provisioned Virtual only.
 ```
 
 ### Daily use
@@ -31,6 +34,10 @@ status
 suspend [Virtual]
 stop [Virtual]
 ```
+
+Normal daily lifecycle preserves the complete guest disk. A Virtual that was signed in during setup must remain signed in across `start`, `stop`, `restart`, `suspend`, resume through `start`, and `open` unless Microsoft/Minecraft itself invalidates the session.
+
+`reset` returns only the selected Virtual to its `QA_READY` snapshot. Therefore `QA_READY` is created after that Virtual's account setup. `reprovision` intentionally destroys and recreates the selected Virtual from Base and therefore destroys that Virtual's saved guest/account session.
 
 ### Recovery
 
@@ -158,6 +165,8 @@ base/.../base-profile.json
 ```
 
 The profile is provenance, not a runtime state database.
+
+Microsoft credentials, passwords, access tokens, refresh tokens, and equivalent account secrets are never copied into Virtual Clients runtime data. Sign-in persistence is owned by the guest operating system inside each Virtual's persistent disk.
 
 ## Commands
 

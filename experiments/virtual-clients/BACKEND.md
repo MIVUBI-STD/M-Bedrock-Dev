@@ -125,6 +125,25 @@ Virtual Clients never silently kills existing running clients because of host pr
 - Clean QA_READY reset.
 - Selected-instance reprovision.
 
+## Account persistence invariant
+
+Account state is guest-owned, not backend-owned.
+
+```text
+Base       = no Microsoft/Minecraft user session
+Virtual-01 = its own persistent guest/account state
+Virtual-02 = its own persistent guest/account state
+Virtual-03 = its own persistent guest/account state
+```
+
+Virtual Clients never stores Microsoft passwords, access tokens, refresh tokens, or equivalent account secrets in runtime/profile data.
+
+Normal lifecycle operations (`start`, `stop`, `restart`, `suspend`, resume through `start`, and `open`) must not revert a snapshot, recreate the VM, or otherwise replace the selected Virtual's persistent guest disk.
+
+`QA_READY` is created after that Virtual completes one-time account setup. `reset` therefore returns to the configured checkpoint. Microsoft/Minecraft may still invalidate or expire a session independently; that is a real account condition, not backend state.
+
+`reprovision` is destructive to the selected Virtual's guest/account state because it creates a fresh clone from Base. It is recovery/setup, not normal daily lifecycle.
+
 ## Disk policy
 
 Do not automatically shrink or compact Virtual disks while snapshot chains exist.

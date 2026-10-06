@@ -67,11 +67,15 @@ provision
 → guestAgentReady
 → versionParity MATCH
 → manually playable
-→ suspend/resume
-→ configure account
+→ configure account once
+→ verify signed-in Minecraft menu
+→ stop
+→ start again without signing in again
+→ suspend/resume without signing in again
 → stop
 → set-ready
 → reset
+→ start again and verify account session remains usable
 → repeat for Virtual-02 / Virtual-03
 → resources 3
 → start 3
@@ -86,6 +90,13 @@ provision
 
 Required observations:
 
+- Base contains no Microsoft/Minecraft user session;
+- each Virtual uses its own account session and does not inherit another Virtual's session;
+- `start`, `stop`, `restart`, `suspend`, resume and `open` preserve the selected Virtual's guest/account state;
+- repeated daily starts do not require sign-in again while the Microsoft/Minecraft session remains valid;
+- `QA_READY` is created after account setup and reset restores that configured checkpoint;
+- `reprovision` is explicitly destructive to the selected Virtual's saved account session;
+- no Microsoft password/token/session secret is written into Virtual Clients runtime/profile data;
 - all four clients remain manually controllable;
 - all clients run exactly the same Minecraft Education version;
 - accounts are licensed and in the same Microsoft 365 tenant;
