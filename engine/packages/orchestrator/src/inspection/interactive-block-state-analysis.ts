@@ -54,3 +54,28 @@ export function analyzeInteractiveBlockState(
       mutations.length > 0 ? "runtime-verification-required" as const : "not-applicable" as const,
   };
 }
+
+export function assessAuthoredDoorState(
+  analysis: ReturnType<typeof analyzeInteractiveBlockState>,
+) {
+  const doors = analysis.mutations.filter((item) =>
+    item.typeIdentity !== undefined &&
+    /(?:door|fence_gate|trapdoor)$/i.test(item.typeIdentity)
+  );
+  return doors.map((item) => {
+    const states = item.permutationStates;
+    const openValue = states?.open_bit ?? states?.["minecraft:open_bit"];
+    return {
+      scriptId: item.scriptId,
+      typeIdentity: item.typeIdentity!,
+      openState:
+        openValue === true
+          ? "open" as const
+          : openValue === false
+            ? "closed" as const
+            : "unresolved" as const,
+      stateEvidence: item.stateEvidence,
+      source: item.source,
+    };
+  });
+}
