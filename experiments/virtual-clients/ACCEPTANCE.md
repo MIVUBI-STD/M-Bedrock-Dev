@@ -1,70 +1,99 @@
-# Runtime Lab Backend Acceptance
+# Virtual Clients Backend Acceptance
 
 ## Source proof
 
-The Experimental backend workflow must pass `cargo check --all-targets` and `cargo test --all-targets` on Windows and macOS. `cargo fmt --all --check` is reported separately as a source-hygiene audit and is not runtime proof.
+The Experimental workflow must pass on both Windows and macOS:
 
-Hosted compilation does not prove VMware, GPU, input, or Minecraft runtime behavior.
+```text
+cargo check --locked --all-targets
+cargo test --locked --all-targets
+cargo fmt --all --check
+```
+
+Hosted source proof does not prove VMware, GPU, input, Microsoft sign-in, or Minecraft runtime behavior.
+
+## Version authority proof
+
+Before provisioning:
+
+```text
+doctor
+→ Native Minecraft version detected
+→ Base present + stopped
+→ register-base
+→ runtimeProfile.parity = MATCH
+```
+
+Changing/updating Native Minecraft without rebuilding/re-registering Base must produce:
+
+```text
+runtimeProfile.parity = MISMATCH
+start/provision blocked
+```
+
+## Guest Agent proof
+
+For every Virtual:
+
+```text
+start
+→ VMware Tools ready
+→ Guest Agent reachable
+→ Guest Agent version = host backend version
+→ live Minecraft version = Native version
+→ versionParity = MATCH
+```
+
+A newly started mismatch must be stopped and batch rollback attempted.
 
 ## Target-machine proof
 
 ```text
-doctor
-→ Base present and stopped
-→ provision
-→ verify Virtual identities are not DUPLICATE
+provision
+→ unique Virtual identities
 → start 1
-→ Virtual-01 reaches RUNNING
-→ observe guestToolsReady when VMware Tools becomes available
-→ Virtual-01 manually playable
-→ inspect memoryLimitMb = 4096
-→ inspect hostWorkingSetMb when available
-→ suspend Virtual-01
-→ confirm SUSPENDED
-→ start Virtual-01 again
-→ run suspend with no instance and confirm batch park behavior
-→ start 1
-→ confirm resume to RUNNING
-→ configure + set-ready Virtual-01
-→ reset Virtual-01 and confirm QA_READY
-→ prepare Virtual-02 / Virtual-03
+→ Virtual-01 RUNNING
+→ guestToolsReady
+→ guestAgentReady
+→ versionParity MATCH
+→ manually playable
+→ suspend/resume
+→ configure account
+→ stop
+→ set-ready
+→ reset
+→ repeat for Virtual-02 / Virtual-03
 → resources 3
 → start 3
 → open Native manually
-→ control Native + Virtual-01 + Virtual-02 + Virtual-03
-→ observe host pressure and responsiveness
-→ suspend one Virtual and confirm pressure improves
-→ stop all Virtual instances
+→ control Native + 3 Virtual clients
+→ host/join Minecraft Education multiplayer
+→ disconnect/reconnect one Virtual
+→ suspend one Virtual
+→ stop all
 → start 3 again
-→ verify recovery
 ```
 
 Required observations:
 
-- no operation-state corruption;
-- Base stays unchanged;
-- linked clones remain isolated;
-- Virtual identities are unique after initialization;
-- 4 GB is a limit, not interpreted as measured host use;
-- actual host working set can be lower than the limit;
-- CRITICAL pressure blocks new starts but does not kill existing clients;
-- suspend reduces active resource pressure enough to be useful;
-- batch suspend parks all Virtual instances without touching Native;
-- resumed client remains manually playable;
-- guestToolsReady does not report true before VMware Tools is actually available;
-- soft stop normally works;
-- hard stop remains exceptional recovery;
-- reset affects only the selected Virtual;
-- reprovision affects only the selected fully stopped Virtual.
+- all four clients remain manually controllable;
+- all clients run exactly the same Minecraft Education version;
+- accounts are licensed and in the same Microsoft 365 tenant;
+- network path supports peer-to-peer multiplayer;
+- Base remains unchanged;
+- clone UUID/MAC identities remain unique;
+- 4 GB is treated as a ceiling, not measured resident use;
+- host working-set telemetry is plausible;
+- CRITICAL pressure blocks new starts without killing existing clients;
+- suspend/resume remains usable;
+- QA_READY reset affects only the selected Virtual;
+- reprovision affects only the selected fully stopped Virtual;
+- rollback failures are surfaced explicitly.
 
-Frontend work starts only after the primary platform passes this backend acceptance.
+## Support boundary
 
+Virtualization itself is not treated as officially supported by Minecraft Education until this target-machine campaign proves the complete workflow.
 
-## Failure recovery proof
+Windows + VMware Workstation is the primary target.
 
-Acceptance must also verify:
-
-- a failed multi-instance start restores Virtual instances already changed by that batch;
-- a failed batch suspend resumes Virtual instances that were parked by that batch;
-- if any rollback action itself fails, the failure is surfaced with the affected Virtual name;
-- after any partial failure, `status` accurately reports the remaining runtime state.
+macOS/Fusion remains a separate acceptance campaign.
