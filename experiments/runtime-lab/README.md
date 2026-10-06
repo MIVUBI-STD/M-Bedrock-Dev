@@ -40,7 +40,7 @@ reprovision Virtual-01
 → rebuild only that fully stopped instance from Base
 ```
 
-The normal workflow does not require direct VMware commands or resource tuning.
+The normal workflow does not require direct VMware commands or resource tuning. If a multi-instance start fails partway through, instances started by that batch are restored to their previous STOPPED/SUSPENDED state.
 
 ## Runtime model
 
@@ -91,7 +91,7 @@ PRESSURE  15–24%
 CRITICAL  < 15%
 ```
 
-New Virtual starts are blocked only at CRITICAL pressure. Existing running Virtual instances are never resized or killed automatically.
+New Virtual starts are blocked only at CRITICAL pressure. Existing running Virtual instances are never resized or killed automatically. Batch start pacing is automatic: 2 seconds between instances under NORMAL pressure and 5 seconds under PRESSURE.
 
 ## Suspend
 
