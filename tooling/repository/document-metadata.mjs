@@ -1,11 +1,3 @@
-const RESOURCE_CLASSES = new Set([
-  "DOCUMENT",
-  "KNOWLEDGE",
-  "SOURCE",
-  "RELIABILITY",
-  "SCHEMA",
-]);
-
 const DOCUMENT_ROLES = new Set([
   "ROUTER",
   "WORKFLOW",
@@ -28,7 +20,7 @@ const LIFECYCLE = new Set([
 ]);
 
 const ID_PATTERN =
-  /^(document|knowledge|source|reliability|schema)\.[a-z0-9]+(?:[.-][a-z0-9]+)*$/;
+  /^document\.[a-z0-9]+(?:[.-][a-z0-9]+)*$/;
 
 function parseLines(block) {
   const result = {};
@@ -94,7 +86,7 @@ export function readDocumentMetadata(text, path = "<document>") {
   if (!ID_PATTERN.test(values.id)) {
     throw new Error(path + ": invalid document resource id " + values.id);
   }
-  if (!RESOURCE_CLASSES.has(values.class) || values.class !== "DOCUMENT") {
+  if (values.class !== "DOCUMENT") {
     throw new Error(path + ": document class must be DOCUMENT");
   }
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(values.domain)) {
