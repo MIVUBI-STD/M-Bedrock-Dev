@@ -1298,9 +1298,184 @@ impl VirtualClients {
 
 #[cfg(test)]
 mod tests {
-    use super::{classify_identity_state, guest_probe_error_is_terminal};
-    use crate::client::IdentityState;
-    use std::io;
+    use super::{
+        classify_identity_state, guest_probe_error_is_terminal, restore_batch_state,
+        vm_identity_state,
+    };
+    use crate::{
+        client::{ClientId, ClientState, IdentityState},
+        provider::Provider,
+    };
+    use std::{
+        cell::RefCell,
+        io,
+        path::Path,
+    };
+
+    #[derive(Debug)]
+    struct FakeProvider {
+        states: RefCell<[ClientState; 3]>,
+        identities: [Option<&'static str>; 3],
+        fail_start: Option<ClientId>,
+        fail_stop: Option<ClientId>,
+        fail_suspend: Option<ClientId>,
+        identity_error: Option<ClientId>,
+    }
+
+    impl FakeProvider {
+        fn new(states: [ClientState; 3], identities: [Option<&'static str>; 3]) -> Self {
+            Self {
+                states: RefCell::new(states),
+                identities,
+                fail_start: None,
+                fail_stop: None,
+                fail_suspend: None,
+                identity_error: None,
+            }
+        }
+
+        fn index(client: ClientId) -> io::Result<usize> {
+            match client {
+                ClientId::Virtual01 => Ok(0),
+                ClientId::Virtual02 => Ok(1),
+                ClientId::Virtual03 => Ok(2),
+                ClientId::Native => Err(io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    "Native has no provider state",
+                )),
+            }
+        }
+
+        fn state(&self, client: ClientId) -> io::Result<ClientState> {
+            Ok(self.states.borrow()[Self::index(client)?])
+        }
+
+        fn set_state(&self, client: ClientId, state: ClientState) -> io::Result<ClientState> {
+            self.states.borrow_mut()[Self::index(client)?] = state;
+            Ok(state)
+        }
+
+        fn unsupported<T>() -> io::Result<T> {
+            Err(io::Error::new(
+                io::ErrorKind::Unsupported,
+                "not used by runtime simulation",
+            ))
+        }
+    }
+
+    impl Provider for FakeProvider {
+        fn id(&self) -> &'static str {
+            "fake"
+        }
+
+        fn version(&self) -> Option<String> {
+            Some("test".into())
+        }
+
+        fn detect(&self) -> bool {
+            true
+        }
+
+        fn provision(&self, _client: ClientId) -> io::Result<ClientState> {
+            Self::unsupported()
+        }
+
+        fn reprovision(&self, _client: ClientId) -> io::Result<ClientState> {
+            Self::unsupported()
+        }
+
+        fn memory_limit_mb(&self, _client: ClientId) -> io::Result<u64> {
+            Ok(4096)
+        }
+
+        fn guest_tools_ready(&self, _client: ClientId) -> io::Result<Option<bool>> {
+            Ok(Some(true))
+        }
+
+        fn guest_ip_address(&self, _client: ClientId) -> io::Result<Option<String>> {
+            Ok(None)
+        }
+
+        fn identity_key(&self, client: ClientId) -> io::Result<Option<String>> {
+            if self.identity_error == Some(client) {
+                return Err(io::Error::new(
+                    io::ErrorKind::Other,
+                    "injected identity read failure",
+                ));
+            }
+            Ok(self.identities[Self::index(client)?].map(str::to_string))
+        }
+
+        fn status(&self, client: ClientId) -> io::Result<ClientState> {
+            self.state(client)
+        }
+
+        fn start(&self, client: ClientId) -> io::Result<ClientState> {
+            if self.fail_start == Some(client) {
+                return Err(io::Error::new(
+                    io::ErrorKind::Other,
+                    "injected start failure",
+                ));
+            }
+            self.set_state(client, ClientState::Running)
+        }
+
+        fn suspend(&self, client: ClientId) -> io::Result<ClientState> {
+            if self.fail_suspend == Some(client) {
+                return Err(io::Error::new(
+                    io::ErrorKind::Other,
+                    "injected suspend failure",
+                ));
+            }
+            self.set_state(client, ClientState::Suspended)
+        }
+
+        fn stop(&self, client: ClientId) -> io::Result<ClientState> {
+            if self.fail_stop == Some(client) {
+                return Err(io::Error::new(
+                    io::ErrorKind::Other,
+                    "injected stop failure",
+                ));
+            }
+            self.set_state(client, ClientState::Stopped)
+        }
+
+        fn restart(&self, client: ClientId) -> io::Result<ClientState> {
+            self.set_state(client, ClientState::Running)
+        }
+
+        fn set_ready(&self, client: ClientId) -> io::Result<ClientState> {
+            self.state(client)
+        }
+
+        fn has_ready(&self, _client: ClientId) -> io::Result<bool> {
+            Ok(false)
+        }
+
+        fn reset(&self, client: ClientId) -> io::Result<ClientState> {
+            self.set_state(client, ClientState::Running)
+        }
+
+        fn open(&self, client: ClientId) -> io::Result<ClientState> {
+            self.state(client)
+        }
+
+        fn is_running_path(&self, _vmx: &Path) -> io::Result<bool> {
+            Self::unsupported()
+        }
+
+        fn start_validation_vm(&self, _vmx: &Path) -> io::Result<()> {
+            Self::unsupported()
+        }
+
+        fn stop_validation_vm(&self, _vmx: &Path) -> io::Result<()> {
+            Self::unsupported()
+        }
+
+        fn guest_ip_for_path(&self, _vmx: &Path) -> io::Result<Option<String>> {
+            Self::unsupported()
+        }
+    }
 
     #[test]
     fn guest_probe_protocol_errors_fail_fast() {
@@ -1344,6 +1519,119 @@ mod tests {
         assert_eq!(
             classify_identity_state(None, [Some("vm-b"), Some("vm-c")]),
             IdentityState::Unknown
+        );
+    }
+
+    #[test]
+    fn fake_provider_proves_identity_states_without_vmware() {
+        let provider = FakeProvider::new(
+            [
+                ClientState::Stopped,
+                ClientState::Stopped,
+                ClientState::Stopped,
+            ],
+            [Some("vm-a"), Some("vm-b"), Some("vm-c")],
+        );
+        assert_eq!(
+            vm_identity_state(&provider, ClientId::Virtual01),
+            IdentityState::Unique
+        );
+
+        let duplicate = FakeProvider::new(
+            [
+                ClientState::Stopped,
+                ClientState::Stopped,
+                ClientState::Stopped,
+            ],
+            [Some("vm-a"), Some("vm-a"), Some("vm-c")],
+        );
+        assert_eq!(
+            vm_identity_state(&duplicate, ClientId::Virtual01),
+            IdentityState::Duplicate
+        );
+
+        let unreadable = FakeProvider {
+            identity_error: Some(ClientId::Virtual02),
+            ..FakeProvider::new(
+                [
+                    ClientState::Stopped,
+                    ClientState::Stopped,
+                    ClientState::Stopped,
+                ],
+                [Some("vm-a"), Some("vm-b"), Some("vm-c")],
+            )
+        };
+        assert_eq!(
+            vm_identity_state(&unreadable, ClientId::Virtual01),
+            IdentityState::Unknown
+        );
+    }
+
+    #[test]
+    fn fake_provider_proves_batch_rollback_to_original_states() {
+        let provider = FakeProvider::new(
+            [
+                ClientState::Running,
+                ClientState::Running,
+                ClientState::Stopped,
+            ],
+            [Some("vm-a"), Some("vm-b"), Some("vm-c")],
+        );
+
+        let failed = restore_batch_state(
+            &provider,
+            &[
+                (ClientId::Virtual01, ClientState::Stopped),
+                (ClientId::Virtual02, ClientState::Suspended),
+            ],
+        );
+
+        assert!(failed.is_empty());
+        assert_eq!(provider.state(ClientId::Virtual01).unwrap(), ClientState::Stopped);
+        assert_eq!(
+            provider.state(ClientId::Virtual02).unwrap(),
+            ClientState::Suspended
+        );
+        assert_eq!(
+            provider.state(ClientId::Virtual03).unwrap(),
+            ClientState::Stopped
+        );
+    }
+
+    #[test]
+    fn fake_provider_surfaces_incomplete_rollback_without_touching_other_clients() {
+        let provider = FakeProvider {
+            fail_stop: Some(ClientId::Virtual01),
+            ..FakeProvider::new(
+                [
+                    ClientState::Running,
+                    ClientState::Running,
+                    ClientState::Stopped,
+                ],
+                [Some("vm-a"), Some("vm-b"), Some("vm-c")],
+            )
+        };
+
+        let failed = restore_batch_state(
+            &provider,
+            &[
+                (ClientId::Virtual01, ClientState::Stopped),
+                (ClientId::Virtual02, ClientState::Suspended),
+            ],
+        );
+
+        assert_eq!(failed, vec!["Virtual-01"]);
+        assert_eq!(
+            provider.state(ClientId::Virtual01).unwrap(),
+            ClientState::Running
+        );
+        assert_eq!(
+            provider.state(ClientId::Virtual02).unwrap(),
+            ClientState::Suspended
+        );
+        assert_eq!(
+            provider.state(ClientId::Virtual03).unwrap(),
+            ClientState::Stopped
         );
     }
 }
