@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "semantics": "Classification for actionable knowledge that intentionally lacks a dedicated static analyzer/proof binding. This is a reliability projection, not semantic authority. Entries prevent runtime-only or unsupported knowledge from being falsely closed by heuristic bindings.",
+  "classifications": [
+    {
+      "knowledgeId": "performance.hardware-dependent-budget",
+      "status": "runtime-required",
+      "reason": "Safe per-tick work depends on hardware and current runtime load.",
+      "nextEvidenceOwner": "runtime-profiler"
+    },
+    {
+      "knowledgeId": "performance.profiler-identifies-hotpaths",
+      "status": "runtime-required",
+      "reason": "Hotpath cost and call frequency require measured script profile data.",
+      "nextEvidenceOwner": "runtime-profiler"
+    },
+    {
+      "knowledgeId": "performance.watchdog-termination-surface",
+      "status": "runtime-required",
+      "reason": "Watchdog termination is a runtime resource-pressure outcome.",
+      "nextEvidenceOwner": "runtime-probe"
+    },
+    {
+      "knowledgeId": "observability.content-log-debugger-profiler",
+      "status": "runtime-required",
+      "reason": "These are runtime evidence acquisition capabilities rather than static defect predicates.",
+      "nextEvidenceOwner": "runtime-lab"
+    },
+    {
+      "knowledgeId": "observability.visual-debug-spatial",
+      "status": "runtime-required",
+      "reason": "Visual debug validates live spatial behavior and does not prove source correctness by presence alone.",
+      "nextEvidenceOwner": "runtime-lab"
+    },
+    {
+      "knowledgeId": "observability.relation-profiler-validates-performance",
+      "status": "runtime-required",
+      "reason": "Performance validation requires measured profiler evidence.",
+      "nextEvidenceOwner": "runtime-profiler"
+    },
+    {
+      "knowledgeId": "feedback.animation-controller-state-machine",
+      "status": "static-capability-gap",
+      "reason": "Repository currently lacks a structural resource-pack animation-controller parser.",
+      "nextEvidenceOwner": "resource-pack-animation-analysis"
+    },
+    {
+      "knowledgeId": "feedback.animation-controller-load-initial-state",
+      "status": "static-capability-gap",
+      "reason": "Initial client visual state requires structural animation-controller analysis before runtime validation.",
+      "nextEvidenceOwner": "resource-pack-animation-analysis"
+    },
+    {
+      "knowledgeId": "feedback.animation-vs-controller",
+      "status": "static-capability-gap",
+      "reason": "Animations and controller transition logic are not structurally modeled yet.",
+      "nextEvidenceOwner": "resource-pack-animation-analysis"
+    },
+    {
+      "knowledgeId": "feedback.molang-client-derived-state",
+      "status": "static-capability-gap",
+      "reason": "Molang presentation-state expressions are not structurally analyzed yet.",
+      "nextEvidenceOwner": "resource-pack-animation-analysis"
+    },
+    {
+      "knowledgeId": "feedback.particle-position-context",
+      "status": "static-capability-gap",
+      "reason": "Particle/resource-pack presentation context is not structurally modeled by the current source analyzers.",
+      "nextEvidenceOwner": "resource-pack-feedback-analysis"
+    }
+  ]
+}
