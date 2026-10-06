@@ -3,6 +3,18 @@
   "semantics": "Classification for actionable knowledge that intentionally lacks a dedicated static analyzer/proof binding. This is a reliability projection, not semantic authority. Entries prevent runtime-only or unsupported knowledge from being falsely closed by heuristic bindings.",
   "classifications": [
     {
+      "knowledgeId": "ai.schema-version-can-break-behavior",
+      "status": "runtime-required",
+      "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
+      "nextEvidenceOwner": "runtime-domain-validation"
+    },
+    {
+      "knowledgeId": "ai.search-cost-can-scale",
+      "status": "runtime-required",
+      "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
+      "nextEvidenceOwner": "runtime-domain-validation"
+    },
+    {
       "knowledgeId": "automation.block-custom-events",
       "status": "static-capability-gap",
       "reason": "Block custom component callback registration is not structurally parsed.",
@@ -231,6 +243,54 @@
       "nextEvidenceOwner": "runtime-chunk-lifecycle"
     },
     {
+      "knowledgeId": "cinematic.camera-clear-ends-active-perspective",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "cinematic-control-analysis"
+    },
+    {
+      "knowledgeId": "cinematic.camera-methods-restricted-execution",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "cinematic-control-analysis"
+    },
+    {
+      "knowledgeId": "cinematic.camera-set-clear-fade-target-player",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "cinematic-control-analysis"
+    },
+    {
+      "knowledgeId": "cinematic.camera-state-persists-until-clear-or-disconnect",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "cinematic-control-analysis"
+    },
+    {
+      "knowledgeId": "cinematic.cutscene-example-disables-input",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "cinematic-control-analysis"
+    },
+    {
+      "knowledgeId": "cinematic.fade-has-independent-timing",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "cinematic-control-analysis"
+    },
+    {
+      "knowledgeId": "cinematic.relation-cutscene-requires-control-coordination",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "cinematic-control-analysis"
+    },
+    {
+      "knowledgeId": "combat.projectile-block-destruction-separate-gamerule",
+      "status": "runtime-required",
+      "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
+      "nextEvidenceOwner": "runtime-domain-validation"
+    },
+    {
       "knowledgeId": "command-context.command-block-s-has-no-entity",
       "status": "runtime-required",
       "reason": "Command-block executor behavior requires command-block context evidence not currently modeled.",
@@ -349,6 +409,84 @@
       "status": "runtime-required",
       "reason": "Reconciliation correctness requires observed health state.",
       "nextEvidenceOwner": "runtime-entity-state"
+    },
+    {
+      "knowledgeId": "entity.attack.melee-damage-component",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
+    },
+    {
+      "knowledgeId": "entity.attack.ranged-requires-shooter",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
+    },
+    {
+      "knowledgeId": "entity.break-door-navigation-owned",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
+    },
+    {
+      "knowledgeId": "entity.entity-sensor-fires-events",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
+    },
+    {
+      "knowledgeId": "entity.environment-sensor-fires-events",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
+    },
+    {
+      "knowledgeId": "entity.event.cross-entity-tick-order",
+      "status": "runtime-required",
+      "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
+      "nextEvidenceOwner": "runtime-domain-validation"
+    },
+    {
+      "knowledgeId": "entity.event.effects-deferred-to-tick",
+      "status": "runtime-required",
+      "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
+      "nextEvidenceOwner": "runtime-domain-validation"
+    },
+    {
+      "knowledgeId": "entity.open-door-needs-path-through-door",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
+    },
+    {
+      "knowledgeId": "entity.relation-definition-requires-transition-integrity",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
+    },
+    {
+      "knowledgeId": "entity.runtime-identifier-built-in-behavior",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
+    },
+    {
+      "knowledgeId": "entity.sensor.entity-conditional-event",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
+    },
+    {
+      "knowledgeId": "entity.sensor.environment-conditional-event",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
+    },
+    {
+      "knowledgeId": "entity.stalk-pounce-needs-target-attack",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
     },
     {
       "knowledgeId": "environment.explosion-source-and-blocks",
@@ -567,6 +705,24 @@
       "nextEvidenceOwner": "runtime-world-storage"
     },
     {
+      "knowledgeId": "loot.before-pickup-restricted-mutation",
+      "status": "runtime-required",
+      "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
+      "nextEvidenceOwner": "runtime-domain-validation"
+    },
+    {
+      "knowledgeId": "loot.spawn-requires-loaded-location",
+      "status": "runtime-required",
+      "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
+      "nextEvidenceOwner": "runtime-domain-validation"
+    },
+    {
+      "knowledgeId": "loot.table-multipool-conditional",
+      "status": "static-capability-gap",
+      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
+      "nextEvidenceOwner": "loot-table-analysis"
+    },
+    {
       "knowledgeId": "mount.add-remove-rider-runtime",
       "status": "runtime-required",
       "reason": "Current riders and seat relationships are live runtime state.",
@@ -681,6 +837,18 @@
       "nextEvidenceOwner": "runtime-persistence"
     },
     {
+      "knowledgeId": "physics.knockback-rules-version-sensitive",
+      "status": "runtime-required",
+      "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
+      "nextEvidenceOwner": "runtime-domain-validation"
+    },
+    {
+      "knowledgeId": "physics.pushability-version-sensitive",
+      "status": "runtime-required",
+      "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
+      "nextEvidenceOwner": "runtime-domain-validation"
+    },
+    {
       "knowledgeId": "player.leave-player-object-no-longer-current",
       "status": "runtime-required",
       "reason": "Post-leave object validity requires identity/dataflow or runtime proof.",
@@ -721,6 +889,24 @@
       "status": "runtime-required",
       "reason": "Y validity requires active dimension bounds.",
       "nextEvidenceOwner": "runtime-spatial-state"
+    },
+    {
+      "knowledgeId": "state.inventory-slot-has-own-validity",
+      "status": "runtime-required",
+      "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
+      "nextEvidenceOwner": "runtime-domain-validation"
+    },
+    {
+      "knowledgeId": "state.scoreboard-identity-can-be-invalid",
+      "status": "runtime-required",
+      "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
+      "nextEvidenceOwner": "runtime-domain-validation"
+    },
+    {
+      "knowledgeId": "state.scoreboard-objective-reference-validity",
+      "status": "runtime-required",
+      "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
+      "nextEvidenceOwner": "runtime-domain-validation"
     },
     {
       "knowledgeId": "world-mutation.relation-place-does-not-prove-ready",
