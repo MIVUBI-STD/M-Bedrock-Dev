@@ -25,6 +25,8 @@ doctor
 → inspect hostWorkingSetMb when available
 → suspend Virtual-01
 → confirm SUSPENDED
+→ start Virtual-01 again
+→ run suspend with no instance and confirm batch park behavior
 → start 1
 → confirm resume to RUNNING
 → configure + set-ready Virtual-01
@@ -51,6 +53,7 @@ Required observations:
 - actual host working set can be lower than the limit;
 - CRITICAL pressure blocks new starts but does not kill existing clients;
 - suspend reduces active resource pressure enough to be useful;
+- batch suspend parks all Virtual instances without touching Native;
 - resumed client remains manually playable;
 - soft stop normally works;
 - hard stop remains exceptional recovery;
