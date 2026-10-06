@@ -3,10 +3,11 @@ mod workstation;
 
 use crate::{
     client::{ClientId, ClientState},
+    paths::{client_root, staging_root},
+    profile::current_base_vmx_path,
     resources::VIRTUAL_MEMORY_LIMIT_MB,
 };
 use std::{
-    env,
     ffi::OsStr,
     fs, io,
     net::IpAddr,
@@ -70,62 +71,16 @@ pub fn current_platform_provider() -> Option<Box<dyn Provider>> {
     None
 }
 
-pub(crate) fn runtime_root() -> io::Result<PathBuf> {
-    #[cfg(target_os = "windows")]
-    {
-        let root = env::var_os("LOCALAPPDATA")
-            .map(PathBuf::from)
-            .ok_or_else(|| {
-                io::Error::new(io::ErrorKind::NotFound, "LOCALAPPDATA is unavailable")
-            })?;
-        return Ok(root.join("M-Bedrock").join("VirtualClients"));
-    }
-
-    #[cfg(target_os = "macos")]
-    {
-        let home = env::var_os("HOME")
-            .map(PathBuf::from)
-            .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "HOME is unavailable"))?;
-        return Ok(home
-            .join("Library")
-            .join("Application Support")
-            .join("M-Bedrock")
-            .join("RuntimeLab"));
-    }
-
-    #[allow(unreachable_code)]
-    Err(io::Error::new(
-        io::ErrorKind::Unsupported,
-        "Runtime Lab supports Windows and macOS only",
-    ))
-}
-
 pub(crate) fn base_vmx_path() -> io::Result<PathBuf> {
-    let root = runtime_root()?;
-
-    #[cfg(target_os = "windows")]
-    {
-        return Ok(root.join("base").join("Base").join("Base.vmx"));
-    }
-
-    #[cfg(target_os = "macos")]
-    {
-        return Ok(root.join("base").join("Base.vmwarevm").join("Base.vmx"));
-    }
-
-    #[allow(unreachable_code)]
-    Err(io::Error::new(
-        io::ErrorKind::Unsupported,
-        "unsupported platform",
-    ))
+    current_base_vmx_path()
 }
 
 pub(crate) fn client_vmx_path(client: ClientId) -> io::Result<PathBuf> {
-    client_vmx_path_under(client, "clients")
+    client_vmx_path_under(client, client_root()?)
 }
 
 pub(crate) fn staging_client_vmx_path(client: ClientId) -> io::Result<PathBuf> {
-    let root = runtime_root()?.join("staging");
+    let root = staging_root()?;
     let name = format!("{}-{}", client.as_str(), std::process::id());
 
     #[cfg(target_os = "windows")]
@@ -147,7 +102,7 @@ pub(crate) fn staging_client_vmx_path(client: ClientId) -> io::Result<PathBuf> {
     ))
 }
 
-fn client_vmx_path_under(client: ClientId, owner: &str) -> io::Result<PathBuf> {
+fn client_vmx_path_under(client: ClientId, root: PathBuf) -> io::Result<PathBuf> {
     if client.is_native() {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
@@ -155,7 +110,6 @@ fn client_vmx_path_under(client: ClientId, owner: &str) -> io::Result<PathBuf> {
         ));
     }
 
-    let root = runtime_root()?.join(owner);
     let name = client.as_str();
 
     #[cfg(target_os = "windows")]
@@ -484,7 +438,7 @@ mod tests {
 }
 
 pub(crate) fn cleanup_staging() -> io::Result<()> {
-    let staging = runtime_root()?.join("staging");
+    let staging = staging_root()?;
     if !staging.exists() {
         return Ok(());
     }
