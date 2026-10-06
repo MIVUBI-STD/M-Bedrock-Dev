@@ -38,11 +38,18 @@ const INTERACTIVE_LAUNCHER_PORT: u16 = 47832;
 
 #[cfg(target_os = "windows")]
 fn interactive_launcher_ready() -> bool {
-    "127.0.0.1:47832"
-        .parse()
-        .ok()
-        .and_then(|address| TcpStream::connect_timeout(&address, Duration::from_millis(150)).ok())
-        .is_some()
+    let Ok(address) = "127.0.0.1:47832".parse() else { return false; };
+    let Ok(mut stream) = TcpStream::connect_timeout(&address, Duration::from_millis(150)) else { return false; };
+    let request_id = "0000000000000000";
+    if stream.set_read_timeout(Some(Duration::from_millis(250))).is_err()
+        || stream.set_write_timeout(Some(Duration::from_millis(150))).is_err()
+        || stream.write_all(format!("PING {request_id}\n").as_bytes()).is_err()
+        || stream.shutdown(Shutdown::Write).is_err()
+    {
+        return false;
+    }
+    let mut response = String::new();
+    stream.read_to_string(&mut response).is_ok() && response.trim() == format!("READY:{request_id}")
 }
 
 #[cfg(target_os = "windows")]
@@ -114,11 +121,12 @@ fn run_interactive_launcher() -> Result<(), Box<dyn std::error::Error>> {
         let mut parts = request.split_whitespace();
         let verb = parts.next().unwrap_or_default();
         let request_id = parts.next().unwrap_or_default();
-        let valid = verb == "MINECRAFT_EDUCATION"
-            && request_id.len() == 16
+        let request_id_valid = request_id.len() == 16
             && request_id.chars().all(|character| character.is_ascii_hexdigit())
             && parts.next().is_none();
-        let response = if valid {
+        let response = if verb == "PING" && request_id_valid {
+            format!("READY:{request_id}\n")
+        } else if verb == "MINECRAFT_EDUCATION" && request_id_valid {
             match launch_minecraft_interactive() {
                 Ok(()) => format!("OK:{request_id}\n"),
                 Err(error) => format!("ERROR:{request_id}:{error}\n"),
