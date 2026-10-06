@@ -56,7 +56,7 @@ memoryLimitMb
 hostWorkingSetMb
 ```
 
-`hostWorkingSetMb` is best-effort process resident memory, not guest configured memory.
+`hostWorkingSetMb` is best-effort process resident memory, not guest configured memory. `resources` aggregates observed working-set values separately from the 4096 MB guest ceiling.
 
 ### Warm state
 
@@ -64,6 +64,8 @@ hostWorkingSetMb
 
 ```text
 RUNNING → SUSPENDED → start → RUNNING
+
+`suspend` without an instance applies the same operation to all Virtual instances.
 ```
 
 This is separate from `STOPPED` and from the `QA_READY` clean checkpoint.
@@ -87,6 +89,7 @@ No parallel state database exists.
 
 - OS-level mutation lock.
 - Transactional linked-clone staging.
+- Automatic cleanup of abandoned staging data after an interrupted provisioning run.
 - Immutable Base requirement.
 - Provider command timeout.
 - Sequential multi-instance boot.
