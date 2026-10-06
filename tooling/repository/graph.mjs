@@ -13,7 +13,7 @@ function cleanTarget(value) {
     .split("?", 1)[0];
 }
 
-function resolveDocumentLink(fromPath, rawTarget) {
+function resolveResourceLink(fromPath, rawTarget) {
   const target = cleanTarget(rawTarget);
   if (!target || /^[a-z][a-z0-9+.-]*:/i.test(target)) return undefined;
 
@@ -22,7 +22,6 @@ function resolveDocumentLink(fromPath, rawTarget) {
     : posix.normalize(posix.join(posix.dirname(fromPath), target));
 
   if (!resolved.startsWith("docs/")) return undefined;
-  if (!resolved.endsWith(".md")) return undefined;
   return resolved;
 }
 
@@ -46,11 +45,11 @@ export function buildGraph() {
 
     const text = readFileSync(resource.path, "utf8");
     for (const match of text.matchAll(MARKDOWN_LINK)) {
-      const targetPath = resolveDocumentLink(resource.path, match[1]);
+      const targetPath = resolveResourceLink(resource.path, match[1]);
       if (!targetPath) continue;
 
       const target = byPath.get(targetPath);
-      if (!target || target.class !== "DOCUMENT") continue;
+      if (!target) continue;
 
       addEdge(edges, seen, {
         from: resource.id,
