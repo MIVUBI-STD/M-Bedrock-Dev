@@ -83,6 +83,47 @@ function catalogExamples(resources, seen) {
   }
 }
 
+
+function catalogStandaloneSources(resources, seen) {
+  for (const resource of [
+    {
+      id: "source.rules.capabilities",
+      class: "SOURCE",
+      domain: "rules",
+      authority: "CANONICAL",
+      path: "engine/rules/capabilities",
+      lifecycle: "ACTIVE",
+    },
+    {
+      id: "source.runtime.bedrock-reliability-harness",
+      class: "SOURCE",
+      domain: "runtime",
+      authority: "CANONICAL",
+      path: "engine/runtime/bedrock-reliability-harness",
+      lifecycle: "ACTIVE",
+    },
+    {
+      id: "source.runtime.lab",
+      class: "SOURCE",
+      domain: "runtime",
+      authority: "CANONICAL",
+      path: "engine/runtime/lab",
+      lifecycle: "ACTIVE",
+    },
+    {
+      id: "source.design.design-system",
+      class: "SOURCE",
+      domain: "design",
+      authority: "CANONICAL",
+      path: "engine/design",
+      lifecycle: "ACTIVE",
+    },
+  ]) {
+    if (!existsSync(resource.path)) continue;
+    addResource(resources, seen, resource);
+  }
+}
+
 function catalogSourceModules(resources, seen) {
   const groups = [
     ["package", "engine/packages", "engine/packages/ownership.json", "modules"],
@@ -203,7 +244,51 @@ function walkJson(root) {
   return result;
 }
 
+
+function fixtureFiles(root) {
+  if (!existsSync(root)) return [];
+
+  return readdirSync(root, { withFileTypes: true })
+    .flatMap((entry) => {
+      const path = join(root, entry.name);
+      if (entry.isDirectory()) return fixtureFiles(path);
+      if (!entry.isFile()) return [];
+      if (entry.name === "README.md") return [];
+      return [path];
+    })
+    .sort();
+}
+
+function catalogFixtures(resources, seen) {
+  const root = "engine/fixtures";
+
+  for (const rawPath of fixtureFiles(root)) {
+    const path = rawPath.replaceAll("\\", "/");
+    const rel = relative(root, rawPath).replaceAll("\\", "/");
+    addResource(resources, seen, {
+      id: "reliability.fixtures." + slug(rel),
+      class: "RELIABILITY",
+      domain: "fixtures",
+      authority: "REFERENCE",
+      path,
+      lifecycle: "ACTIVE",
+    });
+  }
+}
+
 function catalogSchemas(resources, seen) {
+  const designSchema = "engine/design/schema/v1.schema.json";
+  if (existsSync(designSchema)) {
+    addResource(resources, seen, {
+      id: "schema.design.v1",
+      class: "SCHEMA",
+      domain: "design",
+      authority: "CANONICAL",
+      path: designSchema,
+      lifecycle: "ACTIVE",
+    });
+  }
+
   for (const rawPath of walkJson("engine/schemas")) {
     const path = rawPath.replaceAll("\\", "/");
     const rel = relative("engine/schemas", rawPath).replaceAll("\\", "/");
@@ -228,9 +313,11 @@ export function buildResourceCatalog() {
   catalogDocuments(resources, seen);
   catalogExamples(resources, seen);
   catalogSourceModules(resources, seen);
+  catalogStandaloneSources(resources, seen);
   catalogKnowledge(resources, seen);
   catalogEngineeringContracts(resources, seen);
   catalogReliability(resources, seen);
+  catalogFixtures(resources, seen);
   catalogSchemas(resources, seen);
 
   resources.sort((a, b) => a.id.localeCompare(b.id));
