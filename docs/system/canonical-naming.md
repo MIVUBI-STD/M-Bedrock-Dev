@@ -182,13 +182,15 @@ Persisted index used as source of truth   → canonical Owner; Index stays DERIV
 Knowledge Graph Manager / Link Graph      → Graph
 Dispatcher / Resolver                     → Router
 RAG Manager / Semantic Search Manager     → Retrieval
-Context Pack / Memory Bundle              → Context
+Memory Bundle                             → Context
 Master / Golden / Primary Owner           → Owner
 Archive Log / Execution Log Store         → History
 Benchmark Dataset / Evaluation Dataset    → Corpus
 Todo / Backlog Store / Current Work       → Planning
 Active State Store / Project Memory       → Workspace
 ```
+
+`Context` is the only architectural name for bounded reasoning input. Concrete source types should use `Context` terminology; legacy `*ContextPack` identifiers are migration debt, not a second concept.
 
 Catalog and Registry are deliberately different:
 
@@ -262,6 +264,7 @@ Rules:
 
 - `id` is stable identity and must not be regenerated merely because the file moves;
 - `path` is discovered from the repository and is not duplicated in frontmatter;
+- `locator` identifies one stable item inside a multi-item owner file (for example a knowledge fact ID); it is Catalog data, not document frontmatter;
 - only the six canonical fields are allowed;
 - no `title`, `tags`, `aliases`, `topics`, `misc`, or arbitrary extension fields;
 - relationships belong to Graph, not document metadata;
@@ -290,7 +293,15 @@ Class meanings:
 - `SCHEMA` — structural data contract.
 - `EXAMPLE` — non-authoritative illustrative artifact such as a serialized example payload.
 
-Do not add synonymous classes such as NOTE, PAGE, ARTICLE, RESOURCE, CONTENT, or DOC_NODE.
+Class meanings:
+
+- `DOCUMENT` — human-facing durable documentation.
+- `KNOWLEDGE` — machine-readable facts or requirements, including platform facts and engineering contract facts; authority determines whether the item is supporting reference or canonical requirement.
+- `SOURCE` — implementation owner/module.
+- `RELIABILITY` — reliability evidence/catalog/corpus/history resource.
+- `SCHEMA` — structural schema.
+
+Do not add synonymous classes such as NOTE, PAGE, ARTICLE, RESOURCE, CONTENT, DOC_NODE, or WORKFLOW. Workflow is a document role, not a resource class.
 
 ### Document roles
 
