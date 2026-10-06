@@ -733,20 +733,10 @@ impl VirtualClients {
                 Ok(ClientLifecycleActions {
                     id: client.as_str(),
                     start: lifecycle_availability(client, LifecycleAction::Start, state, ready),
-                    suspend: lifecycle_availability(
-                        client,
-                        LifecycleAction::Suspend,
-                        state,
-                        ready,
-                    ),
+                    suspend: lifecycle_availability(client, LifecycleAction::Suspend, state, ready),
                     stop: lifecycle_availability(client, LifecycleAction::Stop, state, ready),
                     open: lifecycle_availability(client, LifecycleAction::Open, state, ready),
-                    restart: lifecycle_availability(
-                        client,
-                        LifecycleAction::Restart,
-                        state,
-                        ready,
-                    ),
+                    restart: lifecycle_availability(client, LifecycleAction::Restart, state, ready),
                     set_ready: lifecycle_availability(
                         client,
                         LifecycleAction::SetReady,
