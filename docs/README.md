@@ -53,6 +53,23 @@ docs/
 ├── system/
 ```
 
+## Stable document identity
+
+Every Markdown document under `docs/` has a small frontmatter identity:
+
+```yaml
+---
+id: document.analysis.player-lifecycle
+class: DOCUMENT
+domain: analysis
+role: DOMAIN
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+```
+
+Use `id` to identify the document and path only to locate it. A file may move without changing its identity.
+
 ## Documentation loading contract
 
 Documentation is consumed as a routed graph, not as a folder scan:
