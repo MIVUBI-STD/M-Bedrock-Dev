@@ -335,7 +335,7 @@ pub(crate) fn apply_virtual_hardware_policy(vmx: &Path) -> io::Result<()> {
     let mut output = lines.join("\n");
     output.push('\n');
     fs::write(vmx, output)?;
-    ensure_guest_token_for_path(vmx).map(|_| ())
+    rotate_guest_token_for_path(vmx).map(|_| ())
 }
 
 pub(crate) fn read_vmx_value(vmx: &Path, key: &str) -> io::Result<Option<String>> {
@@ -366,12 +366,11 @@ pub(crate) fn ensure_guest_token_for_path(vmx: &Path) -> io::Result<String> {
             return Ok(token);
         }
     }
+    rotate_guest_token_for_path(vmx)
+}
 
-    let mut bytes = [0_u8; 32];
-    getrandom::getrandom(&mut bytes)
-        .map_err(|error| io::Error::new(io::ErrorKind::Other, format!("guest token entropy failed: {error}")))?;
-    let token = bytes.iter().map(|byte| format!("{byte:02x}")).collect::<String>();
-
+pub(crate) fn rotate_guest_token_for_path(vmx: &Path) -> io::Result<String> {
+    let token = generate_guest_token()?;
     let source = fs::read_to_string(vmx)?;
     let mut lines: Vec<String> = source.lines().map(ToOwned::to_owned).collect();
     set_vmx_value(&mut lines, GUEST_TOKEN_KEY, &token);
@@ -379,6 +378,20 @@ pub(crate) fn ensure_guest_token_for_path(vmx: &Path) -> io::Result<String> {
     output.push('\n');
     fs::write(vmx, output)?;
     Ok(token)
+}
+
+fn generate_guest_token() -> io::Result<String> {
+    let mut bytes = [0_u8; 32];
+    getrandom::getrandom(&mut bytes).map_err(|error| {
+        io::Error::new(
+            io::ErrorKind::Other,
+            format!("guest token entropy failed: {error}"),
+        )
+    })?;
+    Ok(bytes
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>())
 }
 
 pub(crate) fn guest_token(client: ClientId) -> io::Result<Option<String>> {
