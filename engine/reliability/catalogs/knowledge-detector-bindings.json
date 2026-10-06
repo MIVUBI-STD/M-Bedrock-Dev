@@ -109,6 +109,18 @@
       ]
     },
     {
+      "knowledgeId": "cleanup-policy.repeatability-proof",
+      "consumer": "arena-repeated-run-validation",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
+        "engine/packages/orchestrator/src/arena/arena-repeated-run-validation.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-repeated-run-validation.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "cleanup-policy.scope-delete-not-global-clear",
       "consumer": "arena-state-isolation-analysis",
       "analyzerPaths": [
@@ -117,6 +129,16 @@
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/arena/arena-state-isolation-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "cleanup-policy.surface-inventory",
+      "consumer": "arena-cleanup-surface-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts"
+      ],
+      "proofPaths": [
         "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts"
       ]
     },
