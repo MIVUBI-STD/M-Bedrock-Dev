@@ -43,7 +43,7 @@ Rust is the only backend authority.
 
 Each Virtual is configured with a 4 GB guest memory ceiling. This is a guest-visible limit, not a claim that the host permanently consumes 4 GB of resident physical RAM.
 
-Runtime Lab observes host total memory, host available memory, host pressure, configured Virtual memory limit, and best-effort host working set for each running Virtual.
+Runtime Lab observes host total memory, host available memory, host pressure, configured Virtual memory limit, and best-effort resident working set for each running Virtual. `resources` also reports the total observed working set for the requested Virtual set when process mapping is available.
 
 ```text
 NORMAL    >= 25% host RAM available
@@ -55,7 +55,7 @@ New Virtual starts are blocked only at CRITICAL pressure. Existing running Virtu
 
 ## Suspend
 
-`suspend Virtual-02` stores live VM state to disk and moves the instance to `SUSPENDED`. A later `start 2` resumes requested suspended instances through the same canonical start path.
+`suspend Virtual-02` stores one live VM state to disk and moves it to `SUSPENDED`. Running `suspend` without an instance parks all Virtual instances. A later `start N` resumes requested suspended instances through the same canonical start path.
 
 Suspend is the preferred warm-state path when an instance should stay available without remaining actively resident.
 
@@ -72,6 +72,8 @@ macOS Base:
 ```text
 ~/Library/Application Support/M-Bedrock/RuntimeLab/base/Base.vmwarevm/Base.vmx
 ```
+
+Provisioning automatically clears abandoned staging output from an interrupted earlier provisioning attempt before creating new clones.
 
 Provisioning:
 
@@ -117,7 +119,7 @@ resources <1-3>
 start <1-3>
 
 open <Native|Virtual-01|Virtual-02|Virtual-03>
-suspend <Virtual-01|Virtual-02|Virtual-03>
+suspend [Virtual-01|Virtual-02|Virtual-03]
 stop [Native|Virtual-01|Virtual-02|Virtual-03]
 
 restart <Virtual-01|Virtual-02|Virtual-03>
