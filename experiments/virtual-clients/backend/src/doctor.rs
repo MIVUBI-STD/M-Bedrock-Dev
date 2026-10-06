@@ -1,8 +1,8 @@
 use crate::{
     client::{ClientId, ClientState},
-    profile::{profile_status, ProfileParity, ProfileStatus},
     paths::runtime_root,
     profile::current_base_vmx_path,
+    profile::{profile_status, ProfileParity, ProfileStatus},
     provider::current_platform_provider,
     schema::{inspect_runtime_schema, SchemaStatus},
 };
