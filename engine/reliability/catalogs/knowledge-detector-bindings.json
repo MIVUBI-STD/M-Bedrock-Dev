@@ -227,6 +227,58 @@
       ]
     },
     {
+      "knowledgeId": "command-policy.nested-execute-context-trace",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/commands/test/parse.test.ts",
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "command-policy.no-bare-global-selectors-critical",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/commands/test/parse.test.ts",
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "command-policy.no-single-tag-membership-proof",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/commands/test/parse.test.ts",
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "command-policy.relative-coordinate-context-proof",
+      "consumer": "command-context-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/commands/src/parse.ts",
+        "engine/packages/orchestrator/src/inspection/command-context-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/commands/test/parse.test.ts",
+        "engine/packages/orchestrator/test/inspection/command-context-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "feedback-policy.cancelled-predicted-mutation-reconcile",
       "consumer": "client-mutation-reconciliation-analysis",
       "analyzerPaths": [

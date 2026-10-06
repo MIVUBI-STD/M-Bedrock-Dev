@@ -60,6 +60,10 @@ import {
   analyzeProgressionActorAccounting,
 } from "./progression-actor-accounting-analysis.js";
 import {
+  analyzeCommandContext,
+  commandContextDiagnostics,
+} from "./command-context-analysis.js";
+import {
   deriveEntityEventExternalEvidence,
 } from "./entity-event-evidence.js";
 import {
@@ -613,6 +617,24 @@ export function analyzeInspectionRuntimeState(
     );
   }
 
+  const commandContext =
+    analyzeCommandContext(
+      parsedScriptModels,
+      (
+        topology.arenaReplicaDiscovery
+          ?.replicas.length ?? 0
+      ) > 0 ||
+      (
+        scriptSafeConfig
+          .resolvedArenaCount ?? 0
+      ) > 1,
+    );
+  diagnostics.push(
+    ...commandContextDiagnostics(
+      commandContext,
+    ),
+  );
+
   const structureProofs = derivePlacementProofs(
     structureRuntime,
     parsedFunctionModels,
@@ -735,6 +757,7 @@ export function analyzeInspectionRuntimeState(
     arenaStateIsolation,
     arenaLayoutReconciliation,
     arenaCapacity,
+    commandContext,
     structureProofs,
     routeCorrelations,
     effectiveRouteCorridors,

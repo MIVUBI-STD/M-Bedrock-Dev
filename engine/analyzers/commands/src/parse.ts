@@ -13,17 +13,140 @@ function selectorEffects(tokens: readonly string[], source: SourceRef): CommandE
   return effects;
 }
 
-function parseExecuteNested(command: string, source: SourceRef): CommandEffect | undefined {
-  const tokens = tokenizeCommand(command);
-  const runIndex = tokens.findIndex((token) => token.toLowerCase() === "run");
-  if (runIndex < 0 || runIndex === tokens.length - 1) return undefined;
+function parseExecuteContext(
+  tokens: readonly string[],
+  runIndex: number,
+) {
+  const modifiers: Array<{
+    kind:
+      | "as"
+      | "at"
+      | "in"
+      | "positioned"
+      | "rotated"
+      | "anchored";
+    value: string;
+  }> = [];
 
-  const nestedCommand = tokens.slice(runIndex + 1).join(" ");
+  let index = 1;
+  while (index < runIndex) {
+    const token =
+      tokens[index]?.toLowerCase();
+    if (
+      token === "as" ||
+      token === "at" ||
+      token === "in" ||
+      token === "anchored"
+    ) {
+      const value = tokens[index + 1];
+      if (value !== undefined) {
+        modifiers.push({
+          kind: token,
+          value,
+        });
+        index += 2;
+        continue;
+      }
+    }
+
+    if (
+      token === "positioned" ||
+      token === "rotated"
+    ) {
+      const next =
+        tokens[index + 1]?.toLowerCase();
+      if (
+        next === "as" &&
+        tokens[index + 2] !== undefined
+      ) {
+        modifiers.push({
+          kind: token,
+          value:
+            "as " +
+            tokens[index + 2],
+        });
+        index += 3;
+        continue;
+      }
+
+      const width =
+        token === "positioned"
+          ? 3
+          : 2;
+      const values =
+        tokens.slice(
+          index + 1,
+          index + 1 + width,
+        );
+      if (values.length === width) {
+        modifiers.push({
+          kind: token,
+          value: values.join(" "),
+        });
+        index += 1 + width;
+        continue;
+      }
+    }
+
+    index += 1;
+  }
+
+  return modifiers;
+}
+
+function parseExecuteNested(
+  command: string,
+  source: SourceRef,
+): {
+  effect: CommandEffect;
+  contextTrace: {
+    modifiers: readonly {
+      kind:
+        | "as"
+        | "at"
+        | "in"
+        | "positioned"
+        | "rotated"
+        | "anchored";
+      value: string;
+    }[];
+    nestedCommand: string;
+  };
+} | undefined {
+  const tokens = tokenizeCommand(command);
+  const runIndex =
+    tokens.findIndex(
+      (token) =>
+        token.toLowerCase() === "run",
+    );
+  if (
+    runIndex < 0 ||
+    runIndex === tokens.length - 1
+  ) {
+    return undefined;
+  }
+
+  const nestedCommand =
+    tokens.slice(runIndex + 1).join(" ");
   return {
-    kind: "nested-command",
-    wrapper: "execute",
-    source,
-    nested: analyzeCommand(nestedCommand, source),
+    effect: {
+      kind: "nested-command",
+      wrapper: "execute",
+      source,
+      nested:
+        analyzeCommand(
+          nestedCommand,
+          source,
+        ),
+    },
+    contextTrace: {
+      modifiers:
+        parseExecuteContext(
+          tokens,
+          runIndex,
+        ),
+      nestedCommand,
+    },
   };
 }
 
@@ -44,8 +167,25 @@ export function analyzeCommand(command: string, source: SourceRef): CommandAnaly
   const verb = tokens[0]!.toLowerCase();
 
   if (verb === "execute") {
-    const nested = parseExecuteNested(command, source);
-    effects.push(nested ?? { kind: "unknown", command, source });
+    const nested =
+      parseExecuteNested(
+        normalizedCommand,
+        source,
+      );
+    if (nested) {
+      effects.push(nested.effect);
+      return {
+        command,
+        effects,
+        contextTrace:
+          nested.contextTrace,
+      };
+    }
+    effects.push({
+      kind: "unknown",
+      command,
+      source,
+    });
     return { command, effects };
   }
 

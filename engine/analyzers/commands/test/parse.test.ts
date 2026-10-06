@@ -80,3 +80,46 @@ describe("command analyzer", () => {
     }
   });
 });
+
+
+describe("execute context trace", () => {
+  it("preserves nested execute context modifiers separately", () => {
+    const result = analyzeCommand(
+      "execute as @a[tag=arena1] at @s in nether positioned 1 2 3 rotated 90 0 anchored eyes run tp @s ~1 ~ ^2",
+      source,
+    );
+
+    expect(
+      result.contextTrace,
+    ).toEqual({
+      modifiers: [
+        {
+          kind: "as",
+          value: "@a[tag=arena1]",
+        },
+        {
+          kind: "at",
+          value: "@s",
+        },
+        {
+          kind: "in",
+          value: "nether",
+        },
+        {
+          kind: "positioned",
+          value: "1 2 3",
+        },
+        {
+          kind: "rotated",
+          value: "90 0",
+        },
+        {
+          kind: "anchored",
+          value: "eyes",
+        },
+      ],
+      nestedCommand:
+        "tp @s ~1 ~ ^2",
+    });
+  });
+});

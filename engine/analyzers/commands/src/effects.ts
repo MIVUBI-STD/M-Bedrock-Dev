@@ -100,7 +100,26 @@ export type CommandEffect =
       source: SourceRef;
     };
 
+export type CommandContextModifierKind =
+  | "as"
+  | "at"
+  | "in"
+  | "positioned"
+  | "rotated"
+  | "anchored";
+
+export interface CommandContextModifier {
+  kind: CommandContextModifierKind;
+  value: string;
+}
+
+export interface CommandContextTrace {
+  modifiers: readonly CommandContextModifier[];
+  nestedCommand: string;
+}
+
 export interface CommandAnalysis {
   command: string;
   effects: CommandEffect[];
+  contextTrace?: CommandContextTrace;
 }
