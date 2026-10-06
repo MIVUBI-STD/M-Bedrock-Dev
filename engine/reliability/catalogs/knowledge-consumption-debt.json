@@ -705,6 +705,24 @@
       "nextEvidenceOwner": "runtime-world-storage"
     },
     {
+      "knowledgeId": "life.gamemode-change-observable",
+      "status": "runtime-required",
+      "reason": "This lifecycle/ordering property depends on live event timing, world readiness, mutation feedback, or runtime observation.",
+      "nextEvidenceOwner": "runtime-event-ordering"
+    },
+    {
+      "knowledgeId": "life.health-change-handler-mutation-loop-risk",
+      "status": "runtime-required",
+      "reason": "This lifecycle/ordering property depends on live event timing, world readiness, mutation feedback, or runtime observation.",
+      "nextEvidenceOwner": "runtime-event-ordering"
+    },
+    {
+      "knowledgeId": "life.respawn-player-ready-world",
+      "status": "runtime-required",
+      "reason": "This lifecycle/ordering property depends on live event timing, world readiness, mutation feedback, or runtime observation.",
+      "nextEvidenceOwner": "runtime-event-ordering"
+    },
+    {
       "knowledgeId": "loot.before-pickup-restricted-mutation",
       "status": "runtime-required",
       "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
@@ -907,6 +925,30 @@
       "status": "runtime-required",
       "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
       "nextEvidenceOwner": "runtime-domain-validation"
+    },
+    {
+      "knowledgeId": "tick.cross-entity-event-order-variable",
+      "status": "runtime-required",
+      "reason": "This lifecycle/ordering property depends on live event timing, world readiness, mutation feedback, or runtime observation.",
+      "nextEvidenceOwner": "runtime-event-ordering"
+    },
+    {
+      "knowledgeId": "tick.entity-event-apply-on-entity-tick",
+      "status": "runtime-required",
+      "reason": "This lifecycle/ordering property depends on live event timing, world readiness, mutation feedback, or runtime observation.",
+      "nextEvidenceOwner": "runtime-event-ordering"
+    },
+    {
+      "knowledgeId": "tick.entity-sequence-does-not-see-pending-change",
+      "status": "runtime-required",
+      "reason": "This lifecycle/ordering property depends on live event timing, world readiness, mutation feedback, or runtime observation.",
+      "nextEvidenceOwner": "runtime-event-ordering"
+    },
+    {
+      "knowledgeId": "tick.relation.entity-event-delayed-until-entity-tick",
+      "status": "runtime-required",
+      "reason": "This lifecycle/ordering property depends on live event timing, world readiness, mutation feedback, or runtime observation.",
+      "nextEvidenceOwner": "runtime-event-ordering"
     },
     {
       "knowledgeId": "world-mutation.relation-place-does-not-prove-ready",
