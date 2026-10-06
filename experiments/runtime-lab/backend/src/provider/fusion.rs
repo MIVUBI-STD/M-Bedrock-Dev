@@ -1,7 +1,7 @@
 use super::{
     apply_virtual_hardware_policy, base_vmx_path, client_vmx_path, command_output, command_output_with_timeout, ensure_parent, guest_tools_state_ready, has_suspend_state, listed_as_running, read_vmx_memory, vm_identity_key,
     promote_staging_vm, remove_vm_container, snapshot_list_contains, staging_client_vmx_path,
-    wait_for_state, MemoryMode, Provider, DISK_STATE_TIMEOUT, READY_SNAPSHOT,
+    wait_for_state, Provider, DISK_STATE_TIMEOUT, READY_SNAPSHOT,
 };
 use crate::client::{ClientId, ClientState};
 use std::{io, path::Path, process::Command, time::Duration};
@@ -39,9 +39,6 @@ impl Provider for VmwareFusionProvider {
         "vmware-fusion"
     }
 
-    fn memory_mode(&self) -> MemoryMode {
-        MemoryMode::Ceiling
-    }
 
     fn detect(&self) -> bool {
         self.vmrun().is_file()
