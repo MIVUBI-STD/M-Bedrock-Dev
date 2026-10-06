@@ -19,7 +19,7 @@
 <aside class="rail">
   <div class="brand">
     <div class="brand-mark">MB</div>
-    <div><strong>Virtual Clients</strong><span>M-Bedrock</span></div>
+    <div><strong>Virtual Clients</strong><span>Multi-client manager</span></div>
   </div>
 
   <nav aria-label="Virtual Clients navigation">
@@ -32,7 +32,7 @@
       <span>Clients</span><small>{runningVirtuals} running · {readyVirtuals} ready</small>
     </button>
     <button class:active={page === "settings"} class="nav-item" on:click={() => onSelect("settings")}>
-      <span>Settings</span><small>App & performance</small>
+      <span>Settings</span><small>Performance & updates</small>
     </button>
     <button class:active={page === "support"} class="nav-item" on:click={() => onSelect("support")}>
       <span>Help & Support</span><small>{blockerCount ? `${blockerCount} need attention` : "System status"}</small>

@@ -35,12 +35,14 @@
   $: canStopAll = hasStoppableClient(virtuals, actions);
   $: canStartAll = virtuals.length > 0 &&
     virtuals.every((client) => actionForClient(actions, client.id)?.start.allowed === true);
+  $: pausedVirtuals = virtuals.filter((client) => client.state === "SUSPENDED").length;
+  $: stoppedVirtuals = virtuals.filter((client) => client.state === "STOPPED").length;
 </script>
 
 <section class="hero compact">
-  <span class="eyebrow">DAILY USE</span>
-  <h2>Your Minecraft clients</h2>
-  <p>Start what you need, open each client, and keep recovery actions out of the way until they are needed.</p>
+  <span class="eyebrow">CLIENTS</span>
+  <h2>Virtual Minecraft clients</h2>
+  <p>Start, resume, and open clients from one place. Recovery tools stay in each client\'s menu until you need them.</p>
 </section>
 
 {#if setupAction === "VERIFY_IDENTITIES"}
@@ -75,8 +77,8 @@
 
 <section class="batch-bar">
   <div>
-    <strong>{runningVirtuals === 0 ? "No virtual clients running" : `${runningVirtuals} virtual client${runningVirtuals === 1 ? "" : "s"} running`}</strong>
-    <small>{snapshot.diagnostics.runtime.pressure.canStartVirtual ? "Automatic resource protection is active" : "This PC is under resource pressure; new starts are paused"}</small>
+    <strong>{runningVirtuals === 0 ? "No virtual clients running" : `${runningVirtuals} running`}{pausedVirtuals ? ` · ${pausedVirtuals} paused` : ""}{stoppedVirtuals ? ` · ${stoppedVirtuals} stopped` : ""}</strong>
+    <small>{snapshot.diagnostics.runtime.pressure.canStartVirtual ? "Resource protection is active" : "New starts are paused to protect this PC"}</small>
   </div>
   <div class="batch-actions">
     {#if setupAction !== "VERIFY_IDENTITIES"}
@@ -102,7 +104,7 @@
         <h3>{clientDisplayName(native.id)}</h3>
         <small>Minecraft Education {native.minecraftVersion ?? "version unknown"} · Version reference</small>
       </div>
-      <span class="state running">{stateLabel(native.state)}</span>
+      <span class="state">{stateLabel(native.state)}</span>
       <div class="row-action"><span class="managed">Managed on this PC</span></div>
     </article>
   {/if}

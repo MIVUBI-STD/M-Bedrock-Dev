@@ -49,7 +49,7 @@
     {:else}
       {#if action === "FINALIZE_BASE"}
         <button class="primary large" disabled={Boolean(busy)} on:click={onOpenBaseFinalization}>
-          {busy === "open-base-finalization" ? "Opening…" : "Open Base for finalization"}
+          {busy === "open-base-finalization" ? "Opening…" : "Open environment"}
         </button>
       {/if}
       <button class="secondary large" disabled={Boolean(busy)} on:click={onContinue}>{experience.primaryLabel}</button>
@@ -88,8 +88,8 @@
     <div class="preflight-grid">
       <div><span>VMware</span><strong>{basePreflight.provider ?? "Not detected"}</strong></div>
       <div><span>Minecraft Education</span><strong>{basePreflight.nativeVersion ?? "Not detected"}</strong></div>
-      <div><span>Base VM</span><strong>{basePreflight.basePresent ? "Found" : "Not found"}</strong></div>
-      <div><span>Base power</span><strong>{basePreflight.baseStopped === true ? "Stopped" : basePreflight.baseStopped === false ? "Running" : "Unknown"}</strong></div>
+      <div><span>Prepared environment</span><strong>{basePreflight.basePresent ? "Found" : "Not found"}</strong></div>
+      <div><span>Environment state</span><strong>{basePreflight.baseStopped === true ? "Stopped" : basePreflight.baseStopped === false ? "Running" : "Unknown"}</strong></div>
       <div><span>CPU</span><strong>{basePreflight.configuredVcpus ?? "—"} vCPU</strong></div>
       <div><span>Memory</span><strong>{basePreflight.configuredMemoryMb ? `${basePreflight.configuredMemoryMb} MB` : "—"}</strong></div>
       <div><span>3D acceleration</span><strong>{basePreflight.graphics3dEnabled === true ? "Enabled" : basePreflight.graphics3dEnabled === false ? "Disabled" : "Unknown"}</strong></div>
@@ -97,11 +97,11 @@
     </div>
     {#if basePreflight.baseExpectedPath}
       <div class="preflight-tools">
-        <button class="secondary" on:click={onOpenBaseLocation}>Open Base location</button>
+        <button class="secondary" on:click={onOpenBaseLocation}>Open environment location</button>
         <button class="secondary" on:click={onOpenSetupTools}>Open setup tools</button>
       </div>
       <details class="preflight-path">
-        <summary>Expected Base location</summary>
+        <summary>Expected environment location</summary>
         <code>{basePreflight.baseExpectedPath}</code>
       </details>
     {/if}

@@ -11,15 +11,15 @@
 
 <section class="hero compact">
   <span class="eyebrow">SETTINGS</span>
-  <h2>Keep the default simple</h2>
-  <p>Virtual Clients manages resource safety automatically. Advanced runtime details remain read-only until the backend exposes a safe user setting.</p>
+  <h2>Performance & updates</h2>
+  <p>Virtual Clients manages safe performance automatically. Review resource limits and application update status here.</p>
 </section>
 
 <section class="settings-card">
   <div>
     <span class="eyebrow">PERFORMANCE</span>
-    <h3>Automatic</h3>
-    <p>The app watches available memory and host pressure before starting additional virtual clients.</p>
+    <h3>Automatic resource management</h3>
+    <p>New clients start only when this PC has enough available memory. Running clients are never stopped automatically.</p>
   </div>
   <div class="setting-meta">
     <span>{policy?.virtualMemoryLimitMb ? `${policy.virtualMemoryLimitMb / 1024} GB` : "—"} ceiling per client</span>
@@ -51,5 +51,5 @@
     <h3>{snapshot.diagnostics.runtime.runtimeProfile.parity === "MATCH" ? "Minecraft versions match" : "Needs attention"}</h3>
     <p>Virtual clients follow the Minecraft Education version installed on this PC.</p>
   </div>
-  <span class="badge">{snapshot.diagnostics.runtime.runtimeProfile.parity}</span>
+  <span class="badge">{snapshot.diagnostics.runtime.runtimeProfile.parity === "MATCH" ? "Matched" : snapshot.diagnostics.runtime.runtimeProfile.parity === "MISMATCH" ? "Mismatch" : "Unknown"}</span>
 </section>
