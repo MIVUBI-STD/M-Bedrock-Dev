@@ -66,6 +66,7 @@ export interface ClientStatus {
   guestAgentVersion: string | null;
   minecraftVersion: string | null;
   minecraftRunning: boolean | null;
+  interactiveLauncherReady: boolean | null;
   lineageParity: ProfileParity | null;
   versionParity: ProfileParity | null;
   vmIdentity: IdentityState | null;
