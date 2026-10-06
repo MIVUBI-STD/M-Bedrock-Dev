@@ -59,17 +59,20 @@ struct OperationLock {
 }
 
 impl OperationLock {
-    fn acquire() -> io::Result<Self> {
+    fn open() -> io::Result<(std::path::PathBuf, File)> {
         let root = runtime_root()?;
         fs::create_dir_all(&root)?;
-        ensure_runtime_schema(&root)?;
         let path = root.join(".operation.lock");
         let file = OpenOptions::new()
             .read(true)
             .write(true)
             .create(true)
             .open(path)?;
+        Ok((root, file))
+    }
 
+    fn acquire() -> io::Result<Self> {
+        let (root, file) = Self::open()?;
         file.try_lock_exclusive().map_err(|error| {
             if error.kind() == io::ErrorKind::WouldBlock {
                 io::Error::new(
@@ -80,7 +83,22 @@ impl OperationLock {
                 error
             }
         })?;
+        ensure_runtime_schema(&root)?;
+        Ok(Self { file })
+    }
 
+    fn acquire_shared() -> io::Result<Self> {
+        let (_, file) = Self::open()?;
+        file.try_lock_shared().map_err(|error| {
+            if error.kind() == io::ErrorKind::WouldBlock {
+                io::Error::new(
+                    io::ErrorKind::WouldBlock,
+                    "Virtual Clients state is being modified",
+                )
+            } else {
+                error
+            }
+        })?;
         Ok(Self { file })
     }
 }
@@ -651,12 +669,14 @@ impl VirtualClients {
     }
 
     pub fn diagnostics(&self) -> io::Result<DiagnosticsReport> {
-        collect_diagnostics(self.status()?)
+        let _lock = OperationLock::acquire_shared()?;
+        collect_diagnostics(self.status_unlocked()?)
     }
 
     pub fn snapshot(&self) -> io::Result<EngineSnapshot> {
+        let _lock = OperationLock::acquire_shared()?;
         let captured_at_unix_ms = capture_time_ms()?;
-        let runtime = self.status()?;
+        let runtime = self.status_unlocked()?;
         let diagnostics = collect_diagnostics(runtime)?;
         Ok(EngineSnapshot {
             captured_at_unix_ms,
@@ -913,6 +933,11 @@ impl VirtualClients {
     }
 
     pub fn status(&self) -> io::Result<RuntimeStatus> {
+        let _lock = OperationLock::acquire_shared()?;
+        self.status_unlocked()
+    }
+
+    fn status_unlocked(&self) -> io::Result<RuntimeStatus> {
         let provider = current_platform_provider();
         let mut clients = Vec::with_capacity(ClientId::ALL.len());
 
@@ -983,6 +1008,7 @@ impl VirtualClients {
             ));
         }
 
+        let _lock = OperationLock::acquire_shared()?;
         let host = doctor();
 
         let provider = current_platform_provider().ok_or_else(|| {
