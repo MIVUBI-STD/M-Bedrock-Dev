@@ -25,6 +25,14 @@ const resources: readonly CatalogResource[] = [
     lifecycle: "ACTIVE",
   },
   {
+    id: "knowledge.player-runtime.inventory",
+    class: "KNOWLEDGE",
+    domain: "player-runtime",
+    authority: "REFERENCE",
+    path: "engine/knowledge/player-runtime/inventory-bedrock.json",
+    lifecycle: "ACTIVE",
+  },
+  {
     id: "reliability.system.history",
     class: "RELIABILITY",
     domain: "system",
@@ -48,6 +56,11 @@ const edges: readonly GraphEdge[] = [
     from: "document.analysis.player-lifecycle",
     type: "RELATES_TO",
     to: "document.analysis.inventory-runtime",
+  },
+  {
+    from: "document.analysis.inventory-runtime",
+    type: "USES",
+    to: "knowledge.player-runtime.inventory",
   },
 ];
 
@@ -79,6 +92,33 @@ describe("retrieveResources", () => {
       "document.analysis.inventory-runtime",
     ]);
     expect(results[1]?.reasons).toContain("graph-relation");
+  });
+
+  it("expands to a second graph hop only when requested", () => {
+    const oneHop = retrieveResources(resources, edges, {
+      text: "",
+      seedIds: ["document.analysis.player-lifecycle"],
+      limit: 10,
+    });
+    const twoHop = retrieveResources(resources, edges, {
+      text: "",
+      seedIds: ["document.analysis.player-lifecycle"],
+      graphDepth: 2,
+      limit: 10,
+    });
+
+    expect(
+      oneHop.some(
+        (item) =>
+          item.resource.id === "knowledge.player-runtime.inventory",
+      ),
+    ).toBe(false);
+    expect(
+      twoHop.some(
+        (item) =>
+          item.resource.id === "knowledge.player-runtime.inventory",
+      ),
+    ).toBe(true);
   });
 
   it("does not surface unrelated historical data by default routed scope", () => {
