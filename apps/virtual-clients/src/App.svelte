@@ -25,6 +25,7 @@
   import type { Page } from "./app/navigation.js";
   import { presentRuntimeError, type RuntimeErrorPresentation } from "./app/runtimeErrorPresentation.js";
   import { setupExperience } from "./app/setupFlow.js";
+  import { loadWindowLayoutPreference } from "./app/windowLayoutPreference.js";
 
 
   let snapshot: EngineSnapshot | undefined;
@@ -232,7 +233,12 @@
         if (client.state === "RUNNING" && available?.open.allowed) await backend.open(client.id, reportProgress);
       }
       operationStatus = "Arranging client windows…";
-      const result = await desktop.arrangeWindows();
+      const preference = loadWindowLayoutPreference();
+      const result = await desktop.arrangeWindows({
+        layout: preference.layout,
+        displayIndex: preference.displayIndex,
+        mainWindow: preference.layout === "FOCUS" ? preference.mainWindow : null,
+      });
       if (result.arranged.length === 0) {
         throw new BackendBridgeError("WINDOWS_NOT_FOUND", "No Minecraft client windows are currently open.", true);
       }
