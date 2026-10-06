@@ -1,6 +1,7 @@
 use crate::{
     client::{ClientId, ClientState, ClientStatus, IdentityState},
     doctor::{doctor, DoctorReport},
+    profile::{profile_status, require_base_matches_native, ProfileStatus},
     provider::{cleanup_staging, current_platform_provider, runtime_root, Provider},
     resources::{current_host_pressure, start_delay_secs, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
 };
@@ -19,6 +20,7 @@ pub struct RuntimeLab;
 #[serde(rename_all = "camelCase")]
 pub struct RuntimeStatus {
     pub provider: Option<&'static str>,
+    pub runtime_profile: ProfileStatus,
     pub pressure: HostPressure,
     pub clients: Vec<ClientStatus>,
 }
@@ -171,6 +173,7 @@ impl RuntimeLab {
     }
 
     pub fn provision(&self) -> io::Result<Vec<ClientStatus>> {
+        require_base_matches_native()?;
         let _lock = OperationLock::acquire()?;
         cleanup_staging()?;
         let provider = current_platform_provider().ok_or_else(|| {
@@ -193,6 +196,7 @@ impl RuntimeLab {
     }
 
     pub fn reprovision(&self, client: ClientId) -> io::Result<ClientStatus> {
+        require_base_matches_native()?;
         if client.is_native() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -251,6 +255,7 @@ impl RuntimeLab {
 
         Ok(RuntimeStatus {
             provider: provider.as_ref().map(|provider| provider.id()),
+            runtime_profile: profile_status(),
             pressure: current_host_pressure(),
             clients,
         })
@@ -319,6 +324,7 @@ impl RuntimeLab {
     }
 
     pub fn start(&self, count: usize) -> io::Result<Vec<ClientStatus>> {
+        require_base_matches_native()?;
         let resources = self.resources(count)?;
         let inactive = resources.suspended_virtual_clients + resources.stopped_virtual_clients;
 
@@ -499,6 +505,7 @@ impl RuntimeLab {
     }
 
     pub fn restart(&self, client: ClientId) -> io::Result<ClientStatus> {
+        require_base_matches_native()?;
         if client.is_native() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -539,6 +546,7 @@ impl RuntimeLab {
     }
 
     pub fn reset(&self, client: ClientId) -> io::Result<ClientStatus> {
+        require_base_matches_native()?;
         if client.is_native() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
