@@ -30,8 +30,8 @@ Before material work know repository, target ref, current HEAD when relevant, ex
 
 ## 2. Execution context and proof ceiling
 
-`REMOTE_GITHUB` may prove source/static/CI contracts.
-`LOCAL_ARTIFACT` additionally owns filesystem, archive, local package and deterministic artifact execution.
+`REMOTE_GITHUB` is the normal ChatGPT repository context. It may complete source/static repository work directly from the exact GitHub ref without requiring a local checkout or npm execution. When an exact-head GitHub workflow result already exists, it may also contribute CI evidence.
+`LOCAL_ARTIFACT` is optional higher-context evidence for filesystem, archive, local package and deterministic artifact execution.
 `LOCAL_MINECRAFT` additionally owns import/open compatibility.
 `LIVE_MINECRAFT` owns actual gameplay/runtime behavior.
 
@@ -71,7 +71,7 @@ Exhaust independent GitHub-verifiable work before handoff.
 
 Do not transfer a complete task because one residue needs a local artifact or Minecraft.
 
-Prepare deterministic harnesses/tests/fixtures remotely when they reduce later local work.
+Prepare deterministic harnesses/tests/fixtures remotely when they improve future executable proof, but do not require a local handoff merely to declare remote source work complete.
 
 ## 6. WRITE ONCE
 
@@ -112,11 +112,11 @@ Never use temporary branches/workflows, base64 stand-ins, placeholder source, al
 
 Run the cheapest check that can falsify the changed claim.
 
-- docs/policy → structural/static review
-- TypeScript contract → typecheck + targeted tests
-- archive/repair behavior → targeted fixture tests
-- repository checkpoint → integrated verifier
-- Minecraft package/import/runtime → matching local/live context
+- docs/policy → exact-head structural/static review
+- TypeScript/source contract → exact-head source review + affected contract/test/fixture review; compiler/test execution is additional evidence, not a remote-work prerequisite
+- archive/repair behavior → source/fixture reasoning remotely; actual artifact execution only when that claim requires it
+- repository checkpoint → inspect repository verifier contracts and affected ownership remotely; executed verifier output is stronger optional evidence
+- Minecraft package/import/runtime → matching local/live context only when the requested claim actually depends on Minecraft execution
 
 A queued, running, cancelled, skipped, or unrelated workflow is not PASS.
 
@@ -144,6 +144,6 @@ User-supplied archives, JSON, scripts, NBT/LevelDB, paths and identifiers are un
 
 ## 11. STOP
 
-Stop when the requested GitHub-valid outcome and relevant proof are satisfied, or after delivering the minimum higher-context residue.
+Stop when the requested GitHub-valid outcome and the strongest proof available in REMOTE_GITHUB are satisfied. Higher-context residue remains explicit only for claims that are inherently impossible to decide from repository evidence; it does not make the completed remote source work incomplete.
 
 Do not automatically audit another layer, synchronize unrelated docs, create proof objects, or resume deferred runtime work.
