@@ -61,6 +61,19 @@
       ]
     },
     {
+      "knowledgeId": "inventory.container-additem-can-leave-remainder",
+      "consumer": "inventory-lifecycle-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/inventory/inventory-lifecycle-evidence.ts",
+        "engine/packages/orchestrator/src/inspection/inventory-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/inventory/inventory-lifecycle-evidence.test.ts",
+        "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "inventory.equipment-separate-surface",
       "consumer": "inventory-lifecycle-analysis",
       "analyzerPaths": [

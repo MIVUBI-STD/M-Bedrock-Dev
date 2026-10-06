@@ -22,6 +22,12 @@ export interface ScriptInventoryLifecycleEvidence {
   itemBinding?: string;
   itemIdentifier?: string;
   slotExpression?: string;
+  grantResultBinding?: string;
+  grantResultStatus?:
+    | "unobserved"
+    | "captured-unchecked"
+    | "checked"
+    | "propagated";
   source: SourceRef;
 }
 
@@ -133,6 +139,111 @@ function assignedIdentifier(
     return parent.left.text;
   }
   return undefined;
+}
+
+function containsIdentifier(
+  node: ts.Node,
+  identifier: string,
+): boolean {
+  let found = false;
+  const visit = (current: ts.Node): void => {
+    if (found) return;
+    if (
+      ts.isIdentifier(current) &&
+      current.text === identifier
+    ) {
+      found = true;
+      return;
+    }
+    ts.forEachChild(current, visit);
+  };
+  visit(node);
+  return found;
+}
+
+function executionOwner(
+  node: ts.Node,
+): ts.Node {
+  let current: ts.Node | undefined = node.parent;
+  while (current) {
+    if (
+      ts.isFunctionDeclaration(current) ||
+      ts.isMethodDeclaration(current) ||
+      ts.isArrowFunction(current) ||
+      ts.isFunctionExpression(current)
+    ) {
+      return current;
+    }
+    current = current.parent;
+  }
+  return node.getSourceFile();
+}
+
+function conditionExpression(
+  node: ts.Node,
+): ts.Expression | undefined {
+  if (
+    ts.isIfStatement(node) ||
+    ts.isWhileStatement(node) ||
+    ts.isDoStatement(node)
+  ) {
+    return node.expression;
+  }
+  if (ts.isForStatement(node)) {
+    return node.condition;
+  }
+  if (ts.isConditionalExpression(node)) {
+    return node.condition;
+  }
+  return undefined;
+}
+
+function grantResultEvidence(
+  call: ts.CallExpression,
+): {
+  binding?: string;
+  status:
+    | "unobserved"
+    | "captured-unchecked"
+    | "checked"
+    | "propagated";
+} {
+  const binding = assignedIdentifier(call);
+  if (!binding) {
+    return {
+      status: ts.isReturnStatement(call.parent)
+        ? "propagated"
+        : "unobserved",
+    };
+  }
+
+  const owner = executionOwner(call);
+  const callEnd = call.getEnd();
+  let checked = false;
+  const visit = (node: ts.Node): void => {
+    if (checked) return;
+    const condition = conditionExpression(node);
+    if (
+      condition &&
+      condition.getStart() > callEnd &&
+      containsIdentifier(
+        condition,
+        binding,
+      )
+    ) {
+      checked = true;
+      return;
+    }
+    ts.forEachChild(node, visit);
+  };
+  ts.forEachChild(owner, visit);
+
+  return {
+    binding,
+    status: checked
+      ? "checked"
+      : "captured-unchecked",
+  };
 }
 
 function itemStackIdentifier(
@@ -319,6 +430,8 @@ export function deriveScriptInventoryLifecycleEvidence(
         const item = node.arguments[0];
         const identifier =
           itemIdentifier(item);
+        const result =
+          grantResultEvidence(node);
         push(node, {
           kind: "item-grant",
           subjectExpression: receiver,
@@ -328,6 +441,14 @@ export function deriveScriptInventoryLifecycleEvidence(
           ...(identifier === undefined
             ? {}
             : { itemIdentifier: identifier }),
+          ...(result.binding === undefined
+            ? {}
+            : {
+                grantResultBinding:
+                  result.binding,
+              }),
+          grantResultStatus:
+            result.status,
         });
       } else if (method === "setEquipment") {
         const item = node.arguments[1];
@@ -472,6 +593,10 @@ export function deriveScriptInventoryLifecycleEvidence(
           item.itemIdentifier &&
         candidate.slotExpression ===
           item.slotExpression &&
+        candidate.grantResultBinding ===
+          item.grantResultBinding &&
+        candidate.grantResultStatus ===
+          item.grantResultStatus &&
         candidate.source.range?.lineStart ===
           item.source.range?.lineStart
       ) === index

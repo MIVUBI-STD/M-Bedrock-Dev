@@ -617,6 +617,7 @@ export interface GameplayWorldModel {
     completeResets: number;
     partialResets: number;
     copyMutationRisks: number;
+    grantVerificationGaps: number;
     grantRegions: number;
     dropRegions: number;
     knownEquipmentSlots: number;
@@ -647,6 +648,9 @@ export interface GameplayWorldModel {
         | "copy-writeback-risk"
         | "observed";
       itemGrants: number;
+      checkedItemGrants: number;
+      unverifiedItemGrants: number;
+      propagatedItemGrants: number;
       itemDrops: number;
     }[];
     restoreConflicts: readonly {
@@ -2440,6 +2444,8 @@ export function deriveGameplayWorldModel(
         source.inventoryLifecycle?.partialResets ?? 0,
       copyMutationRisks:
         source.inventoryLifecycle?.copyMutationRisks ?? 0,
+      grantVerificationGaps:
+        source.inventoryLifecycle?.grantVerificationGaps ?? 0,
       grantRegions:
         source.inventoryLifecycle?.grantRegions ?? 0,
       dropRegions:
@@ -2498,6 +2504,12 @@ export function deriveGameplayWorldModel(
           executionRegion: item.executionRegion,
           status: item.status,
           itemGrants: item.itemGrants,
+          checkedItemGrants:
+            item.checkedItemGrants,
+          unverifiedItemGrants:
+            item.unverifiedItemGrants,
+          propagatedItemGrants:
+            item.propagatedItemGrants,
           itemDrops: item.itemDrops,
         })) ?? [],
       restoreConflicts:

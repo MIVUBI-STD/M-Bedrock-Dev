@@ -25,6 +25,9 @@ export interface InventoryLifecycleRegionAssessment {
   clearedEquipmentSlots: readonly string[];
   equipmentCoverageComplete: boolean;
   itemGrants: number;
+  checkedItemGrants: number;
+  unverifiedItemGrants: number;
+  propagatedItemGrants: number;
   equipmentSets: number;
   itemDrops: number;
   copyMutations: readonly InventoryCopyMutationAssessment[];
@@ -61,6 +64,7 @@ export interface InventoryLifecycleAnalysis {
   completeResets: number;
   partialResets: number;
   copyMutationRisks: number;
+  grantVerificationGaps: number;
   grantRegions: number;
   dropRegions: number;
   knownEquipmentSlots: readonly string[];
@@ -153,9 +157,30 @@ function assessRegion(
     knownEquipmentSlots.every((slot) =>
       clearedEquipmentSlots.includes(slot)
     );
-  const itemGrants = evidence.filter(
+  const grantEvidence = evidence.filter(
     (item) => item.kind === "item-grant",
-  ).length;
+  );
+  const itemGrants = grantEvidence.length;
+  const checkedItemGrants =
+    grantEvidence.filter(
+      (item) =>
+        item.grantResultStatus ===
+        "checked",
+    ).length;
+  const unverifiedItemGrants =
+    grantEvidence.filter(
+      (item) =>
+        item.grantResultStatus ===
+          "unobserved" ||
+        item.grantResultStatus ===
+          "captured-unchecked",
+    ).length;
+  const propagatedItemGrants =
+    grantEvidence.filter(
+      (item) =>
+        item.grantResultStatus ===
+        "propagated",
+    ).length;
   const equipmentSets = evidence.filter(
     (item) => item.kind === "equipment-set",
   ).length;
@@ -186,6 +211,9 @@ function assessRegion(
     clearedEquipmentSlots,
     equipmentCoverageComplete,
     itemGrants,
+    checkedItemGrants,
+    unverifiedItemGrants,
+    propagatedItemGrants,
     equipmentSets,
     itemDrops,
     copyMutations: copies,
@@ -266,6 +294,14 @@ export function analyzeInventoryLifecycle(
         ).length,
       0,
     ),
+    grantVerificationGaps:
+      assessments.reduce(
+        (sum, item) =>
+          sum +
+          item.unverifiedItemGrants +
+          item.propagatedItemGrants,
+        0,
+      ),
     grantRegions: assessments.filter(
       (item) => item.itemGrants > 0,
     ).length,

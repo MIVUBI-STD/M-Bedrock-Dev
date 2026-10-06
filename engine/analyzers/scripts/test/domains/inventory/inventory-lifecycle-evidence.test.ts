@@ -80,4 +80,65 @@ describe("inventory lifecycle evidence", () => {
       slotExpression: "'Head'",
     });
   });
+
+  it("classifies addItem result handling without assuming grant success", () => {
+    const result =
+      deriveScriptInventoryLifecycleEvidence(
+        [
+          "function grantUnchecked(container, item) {",
+          "  container.addItem(item);",
+          "}",
+          "function grantCaptured(container, item) {",
+          "  const remainder = container.addItem(item);",
+          "  if (remainder) return false;",
+          "  return true;",
+          "}",
+          "function grantUncheckedCapture(container, item) {",
+          "  const remainder = container.addItem(item);",
+          "  return true;",
+          "}",
+          "function grantPropagated(container, item) {",
+          "  return container.addItem(item);",
+          "}",
+        ].join("\n"),
+        source,
+      );
+
+    expect(
+      result.filter(
+        (item) =>
+          item.kind === "item-grant",
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          executionRegion:
+            "function:grantUnchecked",
+          grantResultStatus:
+            "unobserved",
+        }),
+        expect.objectContaining({
+          executionRegion:
+            "function:grantCaptured",
+          grantResultBinding:
+            "remainder",
+          grantResultStatus: "checked",
+        }),
+        expect.objectContaining({
+          executionRegion:
+            "function:grantUncheckedCapture",
+          grantResultBinding:
+            "remainder",
+          grantResultStatus:
+            "captured-unchecked",
+        }),
+        expect.objectContaining({
+          executionRegion:
+            "function:grantPropagated",
+          grantResultStatus:
+            "propagated",
+        }),
+      ]),
+    );
+  });
 });

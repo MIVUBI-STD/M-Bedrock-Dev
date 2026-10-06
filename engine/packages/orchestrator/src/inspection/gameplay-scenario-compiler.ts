@@ -1398,6 +1398,32 @@ function runtimeEdgeState(
         "Inventory lifecycle",
       );
       if (contamination) return contamination;
+
+      const scopedGrantGaps =
+        scopedAssessments.filter(
+          (item) =>
+            item.unverifiedItemGrants > 0 ||
+            item.propagatedItemGrants > 0,
+        );
+      if (scopedGrantGaps.length > 0) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Scoped inventory grant path calls Container.addItem without source proof that the returned remainder/result is checked. Grant success remains unresolved until the full quantity commit is verified.",
+        };
+      }
+      const grantContamination =
+        aggregateCannotBeScoped(
+          world.inventory
+            .grantVerificationGaps > 0,
+          sourceLocators,
+          scopedAssessments.length,
+          "Inventory grant verification",
+        );
+      if (grantContamination) {
+        return grantContamination;
+      }
+
       if (
         world.inventory.unresolvedEquipmentSlotEvidence > 0 ||
         world.inventory.restoreOwnership.unknownIdentityGrants > 0 ||

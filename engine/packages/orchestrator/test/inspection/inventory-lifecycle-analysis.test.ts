@@ -155,4 +155,52 @@ describe("inventory lifecycle analysis", () => {
       ]),
     );
   });
+
+  it("keeps addItem success unresolved until the remainder/result is checked", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function unchecked(container, item) {",
+        "  container.addItem(item);",
+        "}",
+        "function checked(container, item) {",
+        "  const remainder = container.addItem(item);",
+        "  if (remainder) return false;",
+        "  return true;",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeInventoryLifecycle([script]);
+
+    expect(result.grantVerificationGaps)
+      .toBe(1);
+    expect(
+      result.assessments.find(
+        (item) =>
+          item.executionRegion ===
+          "function:unchecked",
+      ),
+    ).toMatchObject({
+      itemGrants: 1,
+      unverifiedItemGrants: 1,
+      checkedItemGrants: 0,
+    });
+    expect(
+      result.assessments.find(
+        (item) =>
+          item.executionRegion ===
+          "function:checked",
+      ),
+    ).toMatchObject({
+      itemGrants: 1,
+      unverifiedItemGrants: 0,
+      checkedItemGrants: 1,
+    });
+  });
 });
