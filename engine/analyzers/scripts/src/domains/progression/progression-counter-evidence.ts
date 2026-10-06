@@ -61,6 +61,13 @@ export interface ScriptProgressionStateTransitionEvidence {
   readonly source: SourceRef;
 }
 
+export interface ScriptProgressionAdvanceEvidence {
+  readonly counterId: string;
+  readonly effectTarget: string;
+  readonly executionRegion: string;
+  readonly source: SourceRef;
+}
+
 const COUNTER_NAME =
   /(?:wave|enemy|enemies|mob|mobs|remaining|alive|objective|progress|count)/i;
 
@@ -576,6 +583,99 @@ function completionControlsProgression(
   }
 
   return false;
+}
+
+function completionCounterInCondition(
+  expression: ts.Expression,
+): string | undefined {
+  if (
+    ts.isBinaryExpression(expression)
+  ) {
+    const direct =
+      completionCounter(expression);
+    if (direct) return direct;
+
+    if (
+      expression.operatorToken.kind ===
+        ts.SyntaxKind.AmpersandAmpersandToken ||
+      expression.operatorToken.kind ===
+        ts.SyntaxKind.BarBarToken
+    ) {
+      return (
+        completionCounterInCondition(
+          expression.left,
+        ) ??
+        completionCounterInCondition(
+          expression.right,
+        )
+      );
+    }
+  }
+
+  if (
+    ts.isParenthesizedExpression(expression)
+  ) {
+    return completionCounterInCondition(
+      expression.expression,
+    );
+  }
+
+  return undefined;
+}
+
+function progressionCallsInStatement(
+  statement: ts.Statement,
+  file: ts.SourceFile,
+  source: SourceRef,
+  counter: string,
+): ScriptProgressionAdvanceEvidence[] {
+  const output:
+    ScriptProgressionAdvanceEvidence[] = [];
+
+  const visit = (node: ts.Node): void => {
+    if (
+      node !== statement &&
+      (
+        ts.isFunctionDeclaration(node) ||
+        ts.isMethodDeclaration(node) ||
+        ts.isArrowFunction(node) ||
+        ts.isFunctionExpression(node)
+      )
+    ) {
+      return;
+    }
+
+    if (ts.isCallExpression(node)) {
+      const target =
+        node.expression.getText(file);
+      if (
+        PROGRESSION_EFFECT_NAME.test(
+          target,
+        )
+      ) {
+        output.push({
+          counterId: counter,
+          effectTarget: target,
+          executionRegion:
+            executionRegion(
+              node,
+              file,
+            ),
+          source:
+            nodeSource(
+              file,
+              node,
+              source,
+            ),
+        });
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(statement);
+  return output;
 }
 
 function completionCounter(
@@ -1164,6 +1264,62 @@ function transitionOwnedCallsAndEvents(
   };
 
   visit(statement);
+}
+
+export function deriveScriptProgressionAdvanceEvidence(
+  text: string,
+  source: SourceRef,
+): ScriptProgressionAdvanceEvidence[] {
+  const file = ts.createSourceFile(
+    source.relativePath,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    scriptKind(source.relativePath),
+  );
+  const output:
+    ScriptProgressionAdvanceEvidence[] = [];
+
+  const visit = (node: ts.Node): void => {
+    if (ts.isIfStatement(node)) {
+      const counter =
+        completionCounterInCondition(
+          node.expression,
+        );
+      if (counter) {
+        output.push(
+          ...progressionCallsInStatement(
+            node.thenStatement,
+            file,
+            source,
+            counter,
+          ),
+        );
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(file);
+
+  return output.sort((a, b) =>
+    a.executionRegion.localeCompare(
+      b.executionRegion,
+    ) ||
+    a.counterId.localeCompare(
+      b.counterId,
+    ) ||
+    a.effectTarget.localeCompare(
+      b.effectTarget,
+    ) ||
+    (
+      a.source.range?.lineStart ?? 0
+    ) -
+      (
+        b.source.range?.lineStart ?? 0
+      )
+  );
 }
 
 export function deriveScriptProgressionActiveTransitionEvidence(

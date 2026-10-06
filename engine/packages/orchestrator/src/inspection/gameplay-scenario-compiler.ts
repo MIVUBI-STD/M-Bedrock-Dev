@@ -812,6 +812,37 @@ function runtimeEdgeState(
         scenarioLabel ===
           "progression-wave-integrity" &&
         world.progression.actorAccounting
+          .duplicateProgressionAdvances > 0
+      ) {
+        const advances =
+          world.progression.actorAccounting
+            .progressionAdvances
+            .filter((item) =>
+              item.status ===
+                "duplicate"
+            )
+            .map((item) =>
+              item.counterId +
+              "→" +
+              item.effectTarget +
+              " calls=" +
+              String(item.calls) +
+              " region=" +
+              item.executionRegion
+            )
+            .sort();
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "A single source completion gate invokes the same progression effect more than once for the same counter: " +
+            advances.join("; ") +
+            ". This proves an exactly-once progression ownership violation and a static double-advance risk without runtime reproduction.",
+        };
+      }
+      if (
+        scenarioLabel ===
+          "progression-wave-integrity" &&
+        world.progression.actorAccounting
           .deadEndStateMachines > 0
       ) {
         const machines =

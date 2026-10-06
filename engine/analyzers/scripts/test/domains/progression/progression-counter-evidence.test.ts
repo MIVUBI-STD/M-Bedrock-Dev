@@ -3,6 +3,7 @@ import {
   deriveScriptProgressionActiveCallEvidence,
   deriveScriptProgressionActiveEventEvidence,
   deriveProgressionActiveStateValues,
+  deriveScriptProgressionAdvanceEvidence,
   deriveScriptProgressionActiveTransitionEvidence,
   deriveScriptProgressionStateTransitionEvidence,
 } from "../../../src/domains/progression/progression-counter-evidence.js";
@@ -209,6 +210,57 @@ describe("progression active event evidence", () => {
       );
 
     expect(result).toEqual([]);
+  });
+
+  it("captures duplicate progression effects under the same completion gate", () => {
+    const result =
+      deriveScriptProgressionAdvanceEvidence(
+        [
+          "let remainingEnemies = 0;",
+          "function maybeAdvance() {",
+          "  if (remainingEnemies === 0) {",
+          "    nextWave();",
+          "    nextWave();",
+          "  }",
+          "}",
+        ].join("\n"),
+        source,
+      );
+
+    expect(result).toHaveLength(2);
+    expect(result).toEqual([
+      expect.objectContaining({
+        counterId:
+          "remainingEnemies",
+        effectTarget: "nextWave",
+        executionRegion:
+          "function:maybeAdvance",
+      }),
+      expect.objectContaining({
+        counterId:
+          "remainingEnemies",
+        effectTarget: "nextWave",
+        executionRegion:
+          "function:maybeAdvance",
+      }),
+    ]);
+  });
+
+  it("keeps a single progression effect as one exactly-once candidate", () => {
+    const result =
+      deriveScriptProgressionAdvanceEvidence(
+        [
+          "let remainingEnemies = 0;",
+          "function maybeAdvance() {",
+          "  if (remainingEnemies === 0) {",
+          "    nextWave();",
+          "  }",
+          "}",
+        ].join("\n"),
+        source,
+      );
+
+    expect(result).toHaveLength(1);
   });
 
 });

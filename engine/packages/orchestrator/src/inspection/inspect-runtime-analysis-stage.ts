@@ -64,6 +64,7 @@ import {
 } from "./entity-event-evidence.js";
 import {
   deriveProgressionActiveStateValues,
+  deriveScriptProgressionAdvanceEvidence,
   deriveScriptProgressionActiveCallEvidence,
   deriveScriptProgressionActiveEventEvidence,
   deriveScriptProgressionActiveTransitionEvidence,
@@ -351,6 +352,15 @@ export function analyzeInspectionRuntimeState(
             item.node.source,
           )
     );
+  const progressionAdvanceEvidence =
+    input.parsedScripts.flatMap((item) =>
+      item.text === undefined
+        ? []
+        : deriveScriptProgressionAdvanceEvidence(
+            item.text,
+            item.node.source,
+          )
+    );
   const effectiveProgressionActiveEventEvidence = [
     ...progressionActiveEventEvidence,
     ...progressionActiveTransitionEvidence.flatMap(
@@ -425,6 +435,7 @@ export function analyzeInspectionRuntimeState(
       effectiveProgressionActiveEventEvidence,
       effectiveProgressionActiveCallEvidence,
       progressionStateTransitionEvidence,
+      progressionAdvanceEvidence,
     );
   const chunkLifecycle =
     analyzeChunkLifecycle(

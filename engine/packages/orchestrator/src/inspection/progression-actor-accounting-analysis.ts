@@ -1,6 +1,7 @@
 import type {
   CrossFileCallEdge,
   ParsedScriptFile,
+  ScriptProgressionAdvanceEvidence,
   ScriptProgressionCounterEvidence,
   ScriptProgressionStateTransitionEvidence,
   deriveProgressionActiveStateValues,
@@ -128,6 +129,18 @@ export interface ProgressionStateTransitionAssessment {
   readonly reason: string;
 }
 
+export interface ProgressionAdvanceOwnershipAssessment {
+  readonly scriptId: string;
+  readonly executionRegion: string;
+  readonly counterId: string;
+  readonly effectTarget: string;
+  readonly calls: number;
+  readonly status:
+    | "single"
+    | "duplicate";
+  readonly reason: string;
+}
+
 export interface ProgressionStateMachineAssessment {
   readonly scriptId: string;
   readonly tableName: string;
@@ -176,6 +189,9 @@ export interface ProgressionActorAccountingAnalysis {
   readonly deadEndStateMachines: number;
   readonly unresolvedStateMachines: number;
   readonly sourceEnteredDeadEndStates: number;
+  readonly progressionAdvances:
+    readonly ProgressionAdvanceOwnershipAssessment[];
+  readonly duplicateProgressionAdvances: number;
   readonly reconciledFromMatchedActorLifecycle: number;
   readonly unresolvedCounters: number;
 }
@@ -1869,6 +1885,81 @@ function stateTransitionAssessments(
     );
 }
 
+function progressionAdvanceOwnership(
+  scripts: readonly NormalizedScript[],
+  evidence:
+    readonly ScriptProgressionAdvanceEvidence[],
+): ProgressionAdvanceOwnershipAssessment[] {
+  const grouped =
+    new Map<
+      string,
+      ScriptProgressionAdvanceEvidence[]
+    >();
+
+  for (const item of evidence) {
+    const key = [
+      item.source.relativePath,
+      item.executionRegion,
+      item.counterId,
+      item.effectTarget,
+    ].join("\0");
+    grouped.set(
+      key,
+      [
+        ...(grouped.get(key) ?? []),
+        item,
+      ],
+    );
+  }
+
+  return [...grouped.values()]
+    .map((items) => {
+      const first = items[0]!;
+      const script =
+        scripts.find(
+          (item) =>
+            item.parsed.source.relativePath ===
+              first.source.relativePath,
+        );
+      const duplicate =
+        items.length > 1;
+      return {
+        scriptId:
+          script?.parsed.identifier ??
+          first.source.relativePath,
+        executionRegion:
+          first.executionRegion,
+        counterId:
+          first.counterId,
+        effectTarget:
+          first.effectTarget,
+        calls: items.length,
+        status:
+          duplicate
+            ? "duplicate" as const
+            : "single" as const,
+        reason:
+          duplicate
+            ? "The same progression effect is invoked more than once from the same completion gate region for the same counter."
+            : "The completion gate owns one direct invocation of this progression effect.",
+      };
+    })
+    .sort((a, b) =>
+      a.scriptId.localeCompare(
+        b.scriptId,
+      ) ||
+      a.executionRegion.localeCompare(
+        b.executionRegion,
+      ) ||
+      a.counterId.localeCompare(
+        b.counterId,
+      ) ||
+      a.effectTarget.localeCompare(
+        b.effectTarget,
+      )
+    );
+}
+
 const TERMINAL_GAMEPLAY_STATE =
   /^(?:complete|completed|finish|finished|done|victory|defeat|ended|end|success|successful|failure|failed|win|won|loss|lost|abort|aborted)$/i;
 
@@ -2097,9 +2188,16 @@ export function analyzeProgressionActorAccounting(
     readonly ScriptProgressionActiveCallEvidence[] = [],
   stateTransitionEvidence:
     readonly ScriptProgressionStateTransitionEvidence[] = [],
+  advanceEvidence:
+    readonly ScriptProgressionAdvanceEvidence[] = [],
 ): ProgressionActorAccountingAnalysis {
   const scripts =
     inputs.map(normalizedInput);
+  const progressionAdvances =
+    progressionAdvanceOwnership(
+      scripts,
+      advanceEvidence,
+    );
   const stateTransitions =
     stateTransitionAssessments(
       scripts,
@@ -2958,6 +3056,13 @@ export function analyzeProgressionActorAccounting(
             .length,
         0,
       ),
+    progressionAdvances,
+    duplicateProgressionAdvances:
+      progressionAdvances.filter(
+        (item) =>
+          item.status ===
+          "duplicate",
+      ).length,
     reconciledFromMatchedActorLifecycle:
       counters.filter(
         (item) =>

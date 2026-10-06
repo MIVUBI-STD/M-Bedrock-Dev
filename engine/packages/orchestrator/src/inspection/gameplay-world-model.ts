@@ -390,6 +390,18 @@ export interface GameplayWorldModel {
       deadEndStateMachines: number;
       unresolvedStateMachines: number;
       sourceEnteredDeadEndStates: number;
+      duplicateProgressionAdvances: number;
+      progressionAdvances: readonly {
+        scriptId: string;
+        executionRegion: string;
+        counterId: string;
+        effectTarget: string;
+        calls: number;
+        status:
+          | "single"
+          | "duplicate";
+        reason: string;
+      }[];
       stateMachines: readonly {
         scriptId: string;
         tableName: string;
@@ -2088,6 +2100,22 @@ export function deriveGameplayWorldModel(
         sourceEnteredDeadEndStates:
           source.progressionActorAccounting
             ?.sourceEnteredDeadEndStates ?? 0,
+        duplicateProgressionAdvances:
+          source.progressionActorAccounting
+            ?.duplicateProgressionAdvances ?? 0,
+        progressionAdvances:
+          source.progressionActorAccounting
+            ?.progressionAdvances.map((item) => ({
+              scriptId: item.scriptId,
+              executionRegion:
+                item.executionRegion,
+              counterId: item.counterId,
+              effectTarget:
+                item.effectTarget,
+              calls: item.calls,
+              status: item.status,
+              reason: item.reason,
+            })) ?? [],
         stateMachines:
           source.progressionActorAccounting
             ?.stateMachines.map((item) => ({

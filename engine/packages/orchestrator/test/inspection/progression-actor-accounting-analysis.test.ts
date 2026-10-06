@@ -6,6 +6,7 @@ import {
 import {
   deriveCrossFileCallEdges,
   deriveProgressionActiveStateValues,
+  deriveScriptProgressionAdvanceEvidence,
   deriveScriptProgressionActiveTransitionEvidence,
   deriveScriptProgressionStateTransitionEvidence,
   parseScriptFile,
@@ -1027,6 +1028,88 @@ describe(
       expect(
         result.activeTransitionProofs,
       ).toBeGreaterThan(0);
+    });
+
+    it("proves duplicate next-wave ownership under one completion gate", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "function maybeAdvance() {",
+        "  if (remainingEnemies === 0) {",
+        "    nextWave();",
+        "    nextWave();",
+        "  }",
+        "}",
+      ].join("\n");
+      const input = parsed(source);
+      const advances =
+        deriveScriptProgressionAdvanceEvidence(
+          source,
+          input.parsed.source,
+        );
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+          [],
+          [],
+          undefined,
+          [],
+          [],
+          [],
+          [],
+          advances,
+        );
+
+      expect(
+        result.duplicateProgressionAdvances,
+      ).toBe(1);
+      expect(
+        result.progressionAdvances[0],
+      ).toMatchObject({
+        counterId:
+          "remainingEnemies",
+        effectTarget: "nextWave",
+        calls: 2,
+        status: "duplicate",
+      });
+    });
+
+    it("accepts one next-wave invocation for one completion gate", () => {
+      const source = [
+        "let remainingEnemies = 0;",
+        "function maybeAdvance() {",
+        "  if (remainingEnemies === 0) {",
+        "    nextWave();",
+        "  }",
+        "}",
+      ].join("\n");
+      const input = parsed(source);
+      const advances =
+        deriveScriptProgressionAdvanceEvidence(
+          source,
+          input.parsed.source,
+        );
+
+      const result =
+        analyzeProgressionActorAccounting(
+          [input],
+          [],
+          [],
+          undefined,
+          [],
+          [],
+          [],
+          [],
+          advances,
+        );
+
+      expect(
+        result.duplicateProgressionAdvances,
+      ).toBe(0);
+      expect(
+        result.progressionAdvances[0]
+          ?.status,
+      ).toBe("single");
     });
 
     it("proves an authored active-reachable state-machine dead-end", () => {
