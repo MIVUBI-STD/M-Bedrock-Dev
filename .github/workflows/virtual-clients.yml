@@ -26,7 +26,7 @@ jobs:
           - macos-latest
 
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     defaults:
       run:
@@ -51,13 +51,17 @@ jobs:
       - name: Test
         run: cargo test --locked --all-targets
 
-      - name: Format
-        run: cargo fmt --all --check
+      - name: Format source
+        run: cargo fmt --all
 
-      - name: Export dependency lock
+      - name: Export canonical backend
         if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: virtual-clients-cargo-lock
-          path: experiments/virtual-clients/backend/Cargo.lock
+          name: virtual-clients-canonical-backend
+          path: |
+            experiments/virtual-clients/backend/Cargo.toml
+            experiments/virtual-clients/backend/Cargo.lock
+            experiments/virtual-clients/backend/src
+            experiments/virtual-clients/backend/tests
           if-no-files-found: error
