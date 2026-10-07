@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "projectId": "build-and-decode",
+  "projectName": "Build & Decode",
+  "taskClass": "DIAGNOSE",
+  "revision": 3,
+  "artifact": {
+    "artifactId": "drive:1oP3m7_WpC2GORzCCrOazmhBiWBvnntnI",
+    "artifactFingerprint": "sha256:4bae56cbb8bdd1f6d545c50c956faf967ee9be75d26010561b805e071b2936bd",
+    "version": "1.1.1"
+  },
+  "work": {},
+  "knowledge": {
+    "bugReportPath": "workspace/reports/Build-and-Decode-v1.1.1-BugReport.json"
+  },
+  "publication": {
+    "drive": {
+      "schemaVersion": 1,
+      "projectId": "build-and-decode",
+      "mapFolder": {
+        "folderId": "1nLQ-kW7tkSSUL9T_KJ7gvBzY9Rhq1GFW",
+        "label": "Build - Build & Decode"
+      },
+      "currentWorld": {
+        "fileId": "1oP3m7_WpC2GORzCCrOazmhBiWBvnntnI",
+        "fileName": "Build & Decode v1.1.1.mcworld",
+        "artifactFingerprint": "sha256:4bae56cbb8bdd1f6d545c50c956faf967ee9be75d26010561b805e071b2936bd",
+        "version": "1.1.1"
+      }
+    }
+  }
+}
