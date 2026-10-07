@@ -208,22 +208,22 @@ const PLANS: readonly ChunkKnowledgeValidationPlan[] = [
   {
     "knowledgeId": "chunks.script-tickingarea-manager-added",
     "family": "ticking-area-policy-probe",
-    "existingExperiment": null,
+    "existingExperiment": "script-ticking-area-manager",
     "requiredPredicates": [
       "script-ticking-area-created"
     ],
     "requiredHostActions": [],
-    "status": "probe-required"
+    "status": "experiment-ready"
   },
   {
     "knowledgeId": "chunks.script-tickingarea-manager-pack-scoped",
     "family": "ticking-area-policy-probe",
-    "existingExperiment": null,
+    "existingExperiment": "script-ticking-area-manager",
     "requiredPredicates": [
       "script-ticking-area-scope-observed"
     ],
     "requiredHostActions": [],
-    "status": "probe-required"
+    "status": "experiment-ready"
   },
   {
     "knowledgeId": "chunks.simulation-distance-ticks",
