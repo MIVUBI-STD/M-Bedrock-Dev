@@ -109,7 +109,6 @@ pub struct ClientStatus {
     pub minecraft_version: Option<String>,
     pub minecraft_running: Option<bool>,
     pub interactive_launcher_ready: Option<bool>,
-    pub interactive_launcher_ready: Option<bool>,
     pub lineage_parity: Option<ProfileParity>,
     pub version_parity: Option<ProfileParity>,
     pub vm_identity: Option<IdentityState>,
