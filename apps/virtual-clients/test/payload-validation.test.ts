@@ -33,8 +33,13 @@ const snapshot = () => ({
       pressure: { level: "NORMAL", canStartVirtual: true },
       clients: ["Native", "Virtual-01", "Virtual-02", "Virtual-03"].map(clientFor),
     },
-    host: { os: "Windows", osVersion: null, logicalCpus: 8, totalMemoryMb: 32768, availableMemoryMb: 16384 },
+    host: { os: "Windows", osVersion: null, cpu: null, logicalCpus: 8, totalMemoryMb: 32768, availableMemoryMb: 16384, graphics: [], hypervisorPresent: null, vbsStatus: null },
     provider: { id: null, version: null },
+    virtualHardware: [
+      { id: "Virtual-01", networkMode: "nat", networkRequiresAcceptance: true, networkConfigurationObserved: true, multiplayerVerified: false, graphics3dEnabled: true, graphicsPolicyReady: true },
+      { id: "Virtual-02", networkMode: "nat", networkRequiresAcceptance: true, networkConfigurationObserved: true, multiplayerVerified: false, graphics3dEnabled: true, graphicsPolicyReady: true },
+      { id: "Virtual-03", networkMode: "nat", networkRequiresAcceptance: true, networkConfigurationObserved: true, multiplayerVerified: false, graphics3dEnabled: true, graphicsPolicyReady: true },
+    ],
   },
 });
 
