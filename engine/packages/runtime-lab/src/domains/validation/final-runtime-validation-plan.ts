@@ -1,0 +1,23 @@
+export const FINAL_RUNTIME_KNOWLEDGE=[
+  "blockstate.block-access-can-fail-unloaded",
+  "blockstate.block-inventory-container",
+  "blockstate.container-events-separate",
+  "gametest.max-ticks-bounded",
+  "gametest.relation-test-validates-invariant",
+  "gametest.repeatable-environment",
+  "command-context.command-block-s-has-no-entity",
+  "command-context.selector-no-match-fails",
+  "education.agent.code-builder-companion",
+  "education.code-builder-agent",
+  "education.classroom-controls",
+  "education.dedicated-server-2026",
+  "environment.explosion-source-and-blocks",
+  "environment.relation-explosion-produces-world-mutation",
+  "observability.content-log-debugger-profiler",
+  "observability.visual-debug-spatial",
+  "education.npc.dialogue-open-loaded-ticking",
+  "entity.runtime-identifier-built-in-behavior",
+  "mount.add-remove-rider-runtime",
+  "performance.watchdog-termination-surface",
+  "persistence.watchdog-can-terminate-runtime"
+] as const;export function finalRuntimeValidationCoverage(){return{total:FINAL_RUNTIME_KNOWLEDGE.length,experimentReady:FINAL_RUNTIME_KNOWLEDGE.length,probeRequired:0};}
