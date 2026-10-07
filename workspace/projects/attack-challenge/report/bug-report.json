@@ -2,98 +2,71 @@
   "schema": "m-bedrock-bug-report/v2",
   "map": {
     "name": "Attack Challenge",
-    "mapVersion": "1.1.1",
-    "drive": "https://drive.google.com/file/d/14JStk_EK0XlAyBTdPLyUE2lCKyk9BKpX/view",
+    "mapVersion": "1.1.2",
+    "drive": "https://drive.google.com/file/d/1pUaupQNlb-bx4qPkgLACtmfdXpj4iccA/view",
     "baseVersion": "1.21.130",
-    "testedVersion": "Static source audit only; runtime not executed"
+    "testedVersion": "Full selected-artifact source/static audit of Drive v1.1.2. Historical v1.1.1 findings were revalidated but did not bound coverage. Six-arena runtime concurrency still requires direct simultaneous in-game confirmation; source capacity/residency architecture now supports six."
   },
   "repairBy": "developer",
   "bugs": [
     {
-      "id": "BUG-ATK-PRELOAD-INVENTORY",
+      "id": "BUG-ATK-LAST-SECOND-DOUBLE-END",
       "fixed": false,
       "severity": "major",
-      "category": "player-state",
+      "category": "game-state",
       "foundBy": "ai",
-      "title": "Reconnect during preload can bypass the fresh-session inventory wipe",
-      "problem": "A player can disconnect before the preload wipe and reconnect after it, carrying ordinary stale items into the new Attack session.",
-      "expected": "Every participant entering a fresh Attack session receives the same full inventory reset regardless of reconnect timing.",
-      "observed": "The wipe only targets players online at the preload callback, while reconnect and the first buy-phase loadout do not remove ordinary stale items.",
+      "issueType": "BUG",
+      "title": "A last-second flag capture can still resolve the same level as both timeout and victory",
+      "problem": "If the timer expires after a flag capture has already queued its victory callback, Attack can publish timeout/retry feedback and then accept the delayed victory for the same attempt. The late victory can also be scored with an invalid zero-duration attempt because timeout clears the attempt timestamps first.",
+      "expected": "Each level attempt has exactly one terminal outcome. Once timeout wins terminal ownership, a queued flag-capture callback cannot settle victory, score the level, or publish level-complete feedback.",
+      "observed": "FlagService.scoreFlag() queues endGame(arenaId, 'victory') one tick later. tickGameTimer() can call endGame(arenaId, 'timeout') first. The timeout retry branch clears startedAt and gameTimerEndsAt but leaves session.status active until the delayed retry. When the queued victory callback runs, endGame() has no terminal/reentrancy guard; hasGameTimerExpired() now returns false because gameTimerEndsAt is null, so victory is accepted. recordCompletedLevelScore() then sees cleared timing state, allowing the completion duration to collapse to zero before victory feedback/advance is scheduled.",
       "reproduction": [
-        "Carry a recognizable ordinary item before starting an Attack match.",
-        "Disconnect before the preload inventory-clear callback runs.",
-        "Reconnect after that callback while the session is still preloading.",
-        "Check whether the stale item remains when the match reaches the initial buy phase."
+        "Reach an active Attack level while carrying the enemy flag near the capture zone.",
+        "Capture the flag at the same boundary where the game timer reaches zero, so the capture callback is queued while the timer expiry path also runs.",
+        "Observe whether 'Time's up' / retry feedback and level-complete/victory feedback both occur for the same attempt.",
+        "Check the stored/exported level duration and score for an impossible zero/near-zero successful attempt."
       ],
-      "aiAnalysis": "Attack performs its full wipe only over players online when preload reaches the clear callback. The preloading reconnect path does not replay that boundary, and the initial buy-phase loadout uses partial managed-item cleanup rather than a full inventory clear.",
+      "aiAnalysis": "The timestamp check added in v1.1.2 only handles victory calls that still see the expired gameTimerEndsAt. It does not serialize terminal ownership. Timeout mutates the same session before the delayed FlagService victory callback executes, erasing the timestamp that the guard relies on. Because timeout schedules retry after 80 ticks while victory schedules advance after 60 ticks, victory can win the later transition while the player has already received timeout feedback. A terminal generation/outcome guard is required at endGame entry.",
       "relevantCode": [
         {
-          "file": "behavior_packs/BP/scripts/chunks/chunk-Y6V6JTGX.js",
-          "reason": "Owns Attack preload clearing, reconnect recovery, and loadout cleanup behavior."
+          "file": "behavior_packs/BP/scripts/chunks/chunk-4L7PEIZ4.js",
+          "reason": "FlagService.scoreFlag() defers the victory callback by one tick; tickGameTimer() independently calls timeout; endGame() lacks terminal ownership/reentrancy state and clears timing state in the timeout retry path."
         }
       ],
-      "suggestedFix": "Track the fresh-session inventory reset per player and replay the full clear on reconnect before preload or buy-phase continuation.",
+      "suggestedFix": "Claim one terminal outcome atomically per arena/attempt before mutating timers, score, feedback, or transitions. Ignore/cancel later terminal callbacks for that same attempt. Preserve the original terminal timestamp until the winning outcome has been fully settled.",
       "mustPreserve": [
-        "Normal kit-managed item cleanup must retain its current mid-session behavior."
-      ],
-      "issueType": "BUG"
+        "Normal flag captures before expiry still complete the level.",
+        "Normal timeout/wipe retry flow remains unchanged when it owns the terminal outcome.",
+        "Exactly-once level score/export records."
+      ]
     },
     {
-      "id": "BUG-ATK-RESPAWN-RECONNECT",
+      "id": "DM-ATK-RESULT-EXPORT-VERSION",
       "fixed": false,
-      "severity": "major",
-      "category": "player-state",
-      "foundBy": "ai",
-      "title": "Reconnect bypasses an active combat respawn countdown",
-      "problem": "A player can disconnect during the death countdown and reconnect back into active Attack gameplay before the intended respawn delay finishes.",
-      "expected": "A reconnecting player with a pending respawn stays in spectator/death state until the existing countdown ends.",
-      "observed": "CombatTracker restores the countdown, then GameManager restores survival, loadout, and gameplay position about five ticks later.",
-      "reproduction": [
-        "Start an Attack match and die during active combat.",
-        "Disconnect while the respawn countdown is running.",
-        "Reconnect before the countdown expires.",
-        "Check whether the player returns to active gameplay before the original countdown finishes."
-      ],
-      "aiAnalysis": "CombatTracker correctly owns pending respawns and restores spectator state on reconnect. GameManager independently restores active-session state shortly afterward without checking that pending respawn, overwriting the correct death lifecycle.",
-      "relevantCode": [
-        {
-          "file": "behavior_packs/BP/scripts/chunks/chunk-Y6V6JTGX.js",
-          "reason": "Contains pending respawn ownership and active-session reconnect recovery."
-        }
-      ],
-      "suggestedFix": "Make GameManager defer to the existing pending-respawn owner before restoring survival, loadout, or gameplay position.",
-      "mustPreserve": [
-        "Normal reconnect outside a pending respawn must continue restoring the active session."
-      ],
-      "issueType": "BUG"
-    },
-    {
-      "id": "DM-ATK-ARENA-CAPACITY",
-      "fixed": false,
-      "severity": "major",
-      "category": "multiplayer-session",
+      "severity": "minor",
+      "category": "ui-feedback",
       "foundBy": "ai",
       "issueType": "DESIGN_MISMATCH",
-      "title": "Six playable arenas expose only two concurrent sessions",
-      "problem": "Attack presents six playable arena surfaces, but only two can run at once; additional ready groups must queue despite having their own arena.",
-      "expected": "Presented independent arena capacity matches delivered concurrency, or the lower limit is explicitly authored as the player-facing capability.",
-      "observed": "Six arenas accept parties, but MAX_CONCURRENT_ARENAS limits active ticking-area leases to two and queues the third session.",
+      "title": "Game-results export still identifies Attack Challenge as v1.1.0",
+      "problem": "The v1.1.2 world and both pack manifests are version 1.1.2, but AttackGameResultsAdapter still exports map.version as 1.1.0, so result records can be attributed to the wrong build.",
+      "expected": "Human-facing pack metadata and machine-readable game-results exports identify the same selected artifact version: v1.1.2.",
+      "observed": "BP/RP manifests are [1,1,2], BP/RP language descriptions say 'Attack Challenge v1.1.2', and the Drive world is Attack Challenge v1.1.2.mcworld. AttackGameResultsAdapter still hardcodes ATTACK_MAP_INFO.version = '1.1.0'.",
       "reproduction": [
-        "Prepare valid parties in 3 different Attack arenas.",
-        "Start the first 2 arenas so both hold active arena leases.",
-        "Ready and start the third arena.",
-        "Check whether the third group is queued even though its own visible arena is otherwise available."
+        "Complete or force a score/export path in Attack Challenge v1.1.2.",
+        "Inspect the emitted Attack game-results payload.",
+        "Check map.version against the loaded world/pack version."
       ],
-      "aiAnalysis": "The selected artifact exposes six independent arena/join surfaces while runtime admission hard-caps arena ticking leases at two. The queue is a mitigation path, not evidence that the six visible arenas were authored to mean only two concurrent sessions.",
+      "aiAnalysis": "This is stale release metadata inside the results adapter, not a gameplay-state failure. It matters because exported QA/score records lose exact artifact provenance.",
       "relevantCode": [
         {
-          "file": "behavior_packs/BP/scripts/chunks/chunk-Y6V6JTGX.js",
-          "reason": "Defines the six Attack arena surfaces, MAX_CONCURRENT_ARENAS, ticking-area lease admission, and queue feedback."
+          "file": "behavior_packs/BP/scripts/chunks/chunk-4L7PEIZ4.js",
+          "reason": "AttackGameResultsAdapter hardcodes ATTACK_MAP_INFO.version to 1.1.0."
         }
       ],
-      "suggestedFix": "Reduce per-arena residency cost or use another proven simulation strategy so visible arena capacity can run concurrently; keep queueing as overflow handling.",
+      "suggestedFix": "Move Attack map version to one canonical release/version owner and consume it from pack/result presentation paths instead of maintaining a separate hardcoded results-adapter value.",
       "mustPreserve": [
-        "Arena isolation and existing queue feedback must remain intact."
+        "Existing score formula IDs and result schema.",
+        "Current v1.1.2 BP/RP manifest dependency parity."
       ]
     }
   ]
