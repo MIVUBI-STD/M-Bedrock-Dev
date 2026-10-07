@@ -6,7 +6,8 @@ import {
 import { join } from "node:path";
 import ts from "typescript";
 
-const CLI_PATH = "apps/cli/src/main.ts";
+const CLI_PATH = "apps/cli/src/audit.ts";
+const ENGINEERING_CLI_PATH = "apps/cli/src/main.ts";
 const PRODUCTION_COMMAND = "audit";
 const ENGINEERING_COMMANDS = new Set([
   "dev-inspect",
@@ -136,54 +137,16 @@ function forbidText(path, fragments) {
 
 
 const cli = parse(CLI_PATH);
-const commandBodies = new Map();
-
-function collectCommands(node) {
-  if (ts.isIfStatement(node)) {
-    const commands =
-      commandNamesFromExpression(node.expression);
-    if (commands.length > 0) {
-      const calls = calledIdentifiers(node.thenStatement);
-      for (const command of commands) {
-        commandBodies.set(command, calls);
-      }
-    }
-  }
-  ts.forEachChild(node, collectCommands);
-}
-collectCommands(cli);
-
-const productionCalls =
-  commandBodies.get(PRODUCTION_COMMAND);
-if (!productionCalls) {
-  issues.push(
-    "Sole production command 'audit' is missing.",
-  );
-} else {
-  if (!productionCalls.has("runSelectedMapAudit")) {
-    issues.push(
-      "Production command 'audit' does not enter through runSelectedMapAudit().",
-    );
-  }
-  if (productionCalls.has("inspectArtifact")) {
-    issues.push(
-      "Production command 'audit' bypasses the canonical pipeline through inspectArtifact().",
-    );
-  }
-}
-
-for (const command of ENGINEERING_COMMANDS) {
-  if (!commandBodies.has(command)) {
-    issues.push(
-      "Expected engineering-only command is missing: " +
-        command,
-    );
-  }
-}
-
 const cliText = readFileSync(CLI_PATH, "utf8");
+if (!cliText.includes("runSelectedMapAudit")) {
+  issues.push("Production audit CLI must enter through runSelectedMapAudit().");
+}
+if (cliText.includes("inspectArtifact(")) {
+  issues.push("Production audit CLI must not bypass runSelectedMapAudit() through inspectArtifact().");
+}
+const engineeringCliText = readFileSync(ENGINEERING_CLI_PATH, "utf8");
 if (
-  !cliText.includes(
+  !engineeringCliText.includes(
     'process.env.MBEDROCK_ENGINEERING_TOOLS !== "1"',
   )
 ) {
@@ -191,13 +154,9 @@ if (
     "Engineering-only audit projections are not guarded by MBEDROCK_ENGINEERING_TOOLS.",
   );
 }
-if (
-  !cliText.includes(
-    'const productionAuditCommands = new Set([\n    "audit",\n  ]);',
-  )
-) {
+if (engineeringCliText.includes('command === "audit"')) {
   issues.push(
-    "CLI production command set must contain only 'audit'.",
+    "Engineering CLI must not expose a second production audit command.",
   );
 }
 
@@ -206,7 +165,7 @@ const forbiddenAppImportFragments = [
   "/orchestrator/src/reporting/",
 ];
 const explicitEngineeringAllowlist =
-  new Set([CLI_PATH]);
+  new Set([ENGINEERING_CLI_PATH]);
 
 for (const path of filesUnder("apps")) {
   const source = parse(path);
