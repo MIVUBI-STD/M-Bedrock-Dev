@@ -129,8 +129,9 @@ function derivedFamilyCriterionEvidence(input: {
     ]),
   ].filter(Boolean);
   const impactEvidence =
-    link.impactPathComponentIds.length > 0
-      ? contradictionEvidence
+    link.impactPathComponentIds.length > 0 &&
+    link.impactPathEvidenceIds.length > 0
+      ? [...link.impactPathEvidenceIds]
       : [];
   const counterProofEvidence =
     counterProofCleared
@@ -194,6 +195,15 @@ export function assessReadyResolutionSaturation(
       ...(link?.evidenceIds ?? []),
       ...(resolution.evidenceIds ?? []),
       ...(resolution.counterProofSearch?.evidenceIds ?? []),
+      ...(link?.impactPathEvidenceIds ?? []),
+      ...(
+        (resolution.knowledgeRequirementIds ?? [])
+          .flatMap((id) =>
+            graph.knowledgeReceipts.find(
+              (item) => item.requirementId === id,
+            )?.evidenceIds ?? []
+          )
+      ),
     ]),
   ].sort();
   const knownEvidenceIds = new Set(evidenceIds);
