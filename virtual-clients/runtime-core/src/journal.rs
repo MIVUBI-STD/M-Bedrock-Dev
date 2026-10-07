@@ -1,7 +1,7 @@
 use crate::{
     error::{ErrorCode, ErrorReport},
     paths::runtime_root,
-    persistence::{read_text_recovering, write_text_transactional},
+    persistence::{read_text_recovering, reject_unsafe_existing_file, write_text_transactional},
 };
 use fs2::FileExt;
 use serde::{Deserialize, Serialize};
@@ -87,6 +87,9 @@ pub(crate) fn record_operation<T>(
         return;
     }
     let lock_path = root.join(".operation-history.lock");
+    if reject_unsafe_existing_file(&lock_path).is_err() {
+        return;
+    }
     let Ok(lock) = OpenOptions::new()
         .read(true)
         .write(true)
