@@ -2954,6 +2954,7 @@ export function deriveGameplayWorldModel(
       transitionResidue:
         [...(source.structures.transitionResidue ?? [])],
     },
+    analysisDemand: [...(source.analysisDemand ?? [])],
     platformKnowledge: {
       profileResolved:
         source.platformKnowledge?.profileResolved ?? false,
