@@ -24,7 +24,8 @@
           "artifactFingerprint": "sha256:fcfde94b403a8281bf8b2fd589658e74dd4becf7d941e7b3db9b66261ace75ae",
           "version": "1.0.4"
         }
-      }
+      },
+      "levelName": "Mysteries of Biomes v1.0.4"
     },
     {
       "level": 2,
@@ -46,7 +47,8 @@
           "artifactFingerprint": "sha256:e7dba9f91b1562c84fe6ce8d3229d52ca7229f54fa2c6085c0bde636be4ad247",
           "version": "2.1.1"
         }
-      }
+      },
+      "levelName": "Mysteries of Biomes v2.1.1"
     }
   ]
 }
