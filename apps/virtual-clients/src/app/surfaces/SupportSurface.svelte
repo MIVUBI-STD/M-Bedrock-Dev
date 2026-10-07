@@ -43,7 +43,7 @@
 <section class="support-tools">
   <button class="tool-card" on:click={() => (historyOpen = !historyOpen)}><strong>Operation history</strong><span>See recent starts, stops, restores, and failures.</span></button>
   <button class="tool-card" on:click={() => (diagnosticsOpen = !diagnosticsOpen)}><strong>Technical details</strong><span>View host, virtualization, and compatibility evidence.</span></button>
-  <button class="tool-card" disabled={busy === "support"} on:click={onCreateSupportBundle}><strong>{busy === "support" ? "Creating…" : "Create support bundle"}</strong><span>Generate a safe diagnostic package for troubleshooting.</span></button>
+  <button class="tool-card" disabled={busy === "support"} on:click={onCreateSupportBundle}><strong>{busy === "support" ? "Creating…" : "Create support bundle"}</strong><span>Generate a diagnostic package for troubleshooting.</span></button>
 </section>
 
 {#if historyOpen}
