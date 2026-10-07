@@ -81,6 +81,61 @@ function edgeStatus(
   return "PROVEN";
 }
 
+function impactPathFrom(
+  startId: string,
+  scenarioComponentIds: ReadonlySet<string>,
+  intent: GameplayIntentModel,
+): readonly string[] {
+  const terminalKinds = new Set<GameplayIntentNode["kind"]>([
+    "objective",
+    "outcome",
+  ]);
+  const byId = new Map(
+    intent.nodes.map((node) => [node.id, node]),
+  );
+  const queue: string[][] = [[startId]];
+  const visited = new Set<string>([startId]);
+
+  while (queue.length > 0) {
+    const path = queue.shift()!;
+    const currentId = path[path.length - 1]!;
+    const current = byId.get(currentId);
+    if (
+      path.length > 1 &&
+      current !== undefined &&
+      terminalKinds.has(current.kind)
+    ) {
+      return path;
+    }
+
+    const nextIds = intent.edges
+      .filter(
+        (edge) =>
+          edge.status !== "hypothesis" &&
+          edge.evidenceIds.length > 0 &&
+          edge.from === currentId &&
+          scenarioComponentIds.has(edge.to) &&
+          (
+            edge.kind === "produces" ||
+            edge.kind === "transitions-to" ||
+            edge.kind === "recovers-to" ||
+            edge.kind === "wins-by" ||
+            edge.kind === "loses-by" ||
+            edge.kind === "requires"
+          ),
+      )
+      .map((edge) => edge.to)
+      .sort();
+
+    for (const nextId of nextIds) {
+      if (visited.has(nextId)) continue;
+      visited.add(nextId);
+      queue.push([...path, nextId]);
+    }
+  }
+  return [];
+}
+
 function stageForNode(
   node: GameplayIntentNode,
 ): string {
@@ -2282,6 +2337,11 @@ export function compileGameplayScenarioGraph(
           ]),
         ].sort(),
         knowledgeRequirementIds: [],
+        impactPathComponentIds: impactPathFrom(
+          edge.to,
+          allowed,
+          input.intent,
+        ),
         intentEdgeKind: edge.kind,
         status: edgeStatus(edge),
         reason:
@@ -2389,6 +2449,11 @@ export function compileGameplayScenarioGraph(
             relevantRequirements.map((item) => item.id),
             knowledgeRequirements,
           ),
+        impactPathComponentIds: impactPathFrom(
+          anchorId,
+          new Set(scenario.componentIds),
+          input.intent,
+        ),
         ...runtimeEdgeState(
           component.id,
           input.world,
