@@ -35,7 +35,7 @@ fn temporary_path(path: &Path) -> io::Result<PathBuf> {
     Ok(parent.join(format!(".{name}.{}.tmp", std::process::id())))
 }
 
-fn reject_unsafe_existing_file(path: &Path) -> io::Result<()> {
+pub(crate) fn reject_unsafe_existing_file(path: &Path) -> io::Result<()> {
     let metadata = match fs::symlink_metadata(path) {
         Ok(metadata) => metadata,
         Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(()),
