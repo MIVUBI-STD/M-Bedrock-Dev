@@ -12,6 +12,7 @@ pub const GUEST_STATUS_SCHEMA: u32 = 3;
 pub const GUEST_AGENT_PROTOCOL_VERSION: u32 = 2;
 pub const GUEST_AGENT_MIN_STATUS_PROTOCOL: u32 = 1;
 pub const MINECRAFT_LAUNCH_SCHEMA: u32 = 1;
+const REQUEST_ID_HEADER: &str = "X-Virtual-Clients-Request-Id";
 
 pub fn guest_agent_protocol_compatible(protocol_version: u32) -> bool {
     (GUEST_AGENT_MIN_STATUS_PROTOCOL..=GUEST_AGENT_PROTOCOL_VERSION).contains(&protocol_version)
@@ -50,6 +51,21 @@ pub struct MinecraftLaunchResult {
     pub state: MinecraftLaunchState,
 }
 
+fn request_id() -> io::Result<String> {
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(|error| io::Error::new(io::ErrorKind::Other, error))?
+        .as_nanos();
+    Ok(format!("{nanos:032x}"))
+}
+
+fn response_request_id(headers: &str) -> Option<&str> {
+    headers.lines().find_map(|line| {
+        let (name, value) = line.split_once(':')?;
+        name.eq_ignore_ascii_case(REQUEST_ID_HEADER).then(|| value.trim())
+    })
+}
+
 pub fn launch_guest_minecraft(ip: &str, token: &str, timeout: Duration) -> io::Result<MinecraftLaunchResult> {
     let address = (ip, GUEST_AGENT_PORT)
         .to_socket_addrs()?
@@ -61,8 +77,9 @@ pub fn launch_guest_minecraft(ip: &str, token: &str, timeout: Duration) -> io::R
     let mut stream = TcpStream::connect_timeout(&address, timeout)?;
     stream.set_read_timeout(Some(timeout))?;
     stream.set_write_timeout(Some(timeout))?;
+    let request_id = request_id()?;
     let request = format!(
-        "POST /minecraft/launch HTTP/1.1\r\nHost: virtual-client\r\nX-Virtual-Clients-Token: {token}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
+        "POST /minecraft/launch HTTP/1.1\r\nHost: virtual-client\r\nX-Virtual-Clients-Token: {token}\r\n{REQUEST_ID_HEADER}: {request_id}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
     );
     stream.write_all(request.as_bytes())?;
     let mut response = Vec::new();
@@ -74,6 +91,9 @@ pub fn launch_guest_minecraft(ip: &str, token: &str, timeout: Duration) -> io::R
     let status_line = headers.lines().next().unwrap_or_default();
     if !status_line.contains(" 200 ") {
         return Err(io::Error::new(io::ErrorKind::Other, format!("guest agent launch returned {status_line}")));
+    }
+    if response_request_id(headers) != Some(request_id.as_str()) {
+        return Err(io::Error::new(io::ErrorKind::InvalidData, "guest agent launch response request identity mismatch"));
     }
     let result: MinecraftLaunchResult = serde_json::from_str(body.trim())
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
@@ -98,8 +118,9 @@ pub fn query_guest_status(ip: &str, token: &str, timeout: Duration) -> io::Resul
             "guest agent token is invalid",
         ));
     }
+    let request_id = request_id()?;
     let request = format!(
-        "GET /status HTTP/1.1\r\nHost: virtual-client\r\nX-Virtual-Clients-Token: {token}\r\nConnection: close\r\n\r\n"
+        "GET /status HTTP/1.1\r\nHost: virtual-client\r\nX-Virtual-Clients-Token: {token}\r\n{REQUEST_ID_HEADER}: {request_id}\r\nConnection: close\r\n\r\n"
     );
     stream.write_all(request.as_bytes())?;
 
@@ -121,6 +142,9 @@ pub fn query_guest_status(ip: &str, token: &str, timeout: Duration) -> io::Resul
             io::ErrorKind::Other,
             format!("guest agent returned {status_line}"),
         ));
+    }
+    if response_request_id(headers) != Some(request_id.as_str()) {
+        return Err(io::Error::new(io::ErrorKind::InvalidData, "guest agent status response request identity mismatch"));
     }
 
     let status: GuestStatus = serde_json::from_str(body.trim())
