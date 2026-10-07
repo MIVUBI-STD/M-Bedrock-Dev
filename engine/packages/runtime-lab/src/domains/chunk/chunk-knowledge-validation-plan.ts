@@ -35,7 +35,7 @@ const PLANS: readonly ChunkKnowledgeValidationPlan[] = [
   {
     "knowledgeId": "chunks.command-tickingarea-global-world-limit",
     "family": "ticking-area-policy-probe",
-    "existingExperiment": null,
+    "existingExperiment": "ticking-area-policy",
     "requiredPredicates": [
       "ticking-area-limit-observed"
     ],
@@ -43,19 +43,19 @@ const PLANS: readonly ChunkKnowledgeValidationPlan[] = [
       "chunk.set-temporary-ticking-area",
       "chunk.clear-temporary-ticking-area"
     ],
-    "status": "probe-required"
+    "status": "experiment-ready"
   },
   {
     "knowledgeId": "chunks.command-tickingarea-requires-cheats",
     "family": "ticking-area-policy-probe",
-    "existingExperiment": null,
+    "existingExperiment": "ticking-area-policy",
     "requiredPredicates": [
       "ticking-area-command-permission-observed"
     ],
     "requiredHostActions": [
       "chunk.set-temporary-ticking-area"
     ],
-    "status": "probe-required"
+    "status": "experiment-ready"
   },
   {
     "knowledgeId": "chunks.custom-dimensions-after-startup",
@@ -276,19 +276,19 @@ const PLANS: readonly ChunkKnowledgeValidationPlan[] = [
   {
     "knowledgeId": "chunks.tickingarea-exception",
     "family": "ticking-area-policy-probe",
-    "existingExperiment": null,
+    "existingExperiment": "ticking-area-policy",
     "requiredPredicates": [
       "ticking-area-exception-observed"
     ],
     "requiredHostActions": [
       "chunk.set-temporary-ticking-area"
     ],
-    "status": "probe-required"
+    "status": "experiment-ready"
   },
   {
     "knowledgeId": "chunks.tickingarea-limits",
     "family": "ticking-area-policy-probe",
-    "existingExperiment": null,
+    "existingExperiment": "ticking-area-policy",
     "requiredPredicates": [
       "ticking-area-limit-observed"
     ],
@@ -296,37 +296,37 @@ const PLANS: readonly ChunkKnowledgeValidationPlan[] = [
       "chunk.set-temporary-ticking-area",
       "chunk.clear-temporary-ticking-area"
     ],
-    "status": "probe-required"
+    "status": "experiment-ready"
   },
   {
     "knowledgeId": "chunks.tickingarea-moving-entity-exits-active-region",
     "family": "entity-lifecycle-probe",
-    "existingExperiment": null,
+    "existingExperiment": "entity-active-region",
     "requiredPredicates": [
       "moving-loader-region-exit-observed"
     ],
     "requiredHostActions": [],
-    "status": "probe-required"
+    "status": "experiment-ready"
   },
   {
     "knowledgeId": "chunks.try-teleport-unloaded-destination",
     "family": "teleport-spawn-probe",
-    "existingExperiment": null,
+    "existingExperiment": "unloaded-destination",
     "requiredPredicates": [
       "teleport-unloaded-destination-observed"
     ],
     "requiredHostActions": [],
-    "status": "probe-required"
+    "status": "experiment-ready"
   },
   {
     "knowledgeId": "teleport.spawn-entity-unloaded-chunk-error",
     "family": "teleport-spawn-probe",
-    "existingExperiment": null,
+    "existingExperiment": "unloaded-destination",
     "requiredPredicates": [
       "spawn-unloaded-location-observed"
     ],
     "requiredHostActions": [],
-    "status": "probe-required"
+    "status": "experiment-ready"
   }
 ] as const;
 
