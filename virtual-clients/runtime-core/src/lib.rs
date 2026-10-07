@@ -24,7 +24,7 @@ mod update;
 
 pub use base_preparation::{inspect_base_preparation, BasePreparationReport};
 pub use client::{
-    ActionAvailability, ClientId, ClientLifecycleActions, ClientState, ClientStatus,
+    ActionAvailability, ClientId, ClientLifecycleActions, ClientState, ClientStatus, ConnectionHealth,
     DestructiveConfirmation, IdentityState, LifecycleBlocker,
 };
 pub use command::{
