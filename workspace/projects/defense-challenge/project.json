@@ -9,14 +9,8 @@
     "artifactFingerprint": "sha256:edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee",
     "version": "1.1.1"
   },
-  "work": {},
-  "knowledge": {
-    "bugReportPath": "workspace/projects/defense-challenge/report/bug-report.json"
-  },
   "publication": {
     "drive": {
-      "schemaVersion": 1,
-      "projectId": "defense-challenge",
       "mapFolder": {
         "folderId": "1iuRAh8N8eY9GU4AJuJkY_OJKk0Udv-LA",
         "label": "Challenge - Defense Map"
