@@ -172,6 +172,7 @@ function auditStatusLabel(
 
 function auditFindingCard(
   finding: MapAuditHtmlFinding,
+  index: number,
 ): string {
   const severity =
     finding.status === "PROVEN"
@@ -180,135 +181,70 @@ function auditFindingCard(
   const validationRows =
     finding.status === "NEED_VALIDATION"
       ? [
-          '<div class="row"><div class="label">Why Unproven</div><div class="value">' +
+          '<div class="row"><b>Why Unproven</b><div>' +
             escapeHtml(
               finding.validationReason ??
                 "Deciding proof remains unresolved.",
             ) +
             "</div></div>",
-          '<div class="row"><div class="label">Missing Proof</div><div class="value">' +
+          '<div class="row"><b>Missing Proof</b><div>' +
             escapeHtml(
               finding.missingProof ??
                 "Exact deciding proof is not yet available.",
             ) +
             "</div></div>",
-          ...(finding.proofNavigation
+          ...(finding.validationTest
             ? [
-                '<div class="technical-row"><details class="technical proof-guide"><summary>Proof Guidance</summary>' +
-                  '<div class="proof-goal"><strong>Goal</strong><p>' +
-                  escapeHtml(finding.proofNavigation.proofGoal) +
-                  '</p></div>' +
-                  (finding.proofNavigation.missingClaims.length > 0
-                    ? '<div class="technical-sub"><strong>Missing Claims</strong><ul>' +
-                      finding.proofNavigation.missingClaims.map(
-                        (item) => '<li>' + escapeHtml(item) + '</li>',
-                      ).join("") +
-                      '</ul></div>'
-                    : '') +
-                  '<div class="technical-sub"><strong>Proof Route</strong><ol>' +
-                  finding.proofNavigation.route.map(
-                    (step) =>
-                      '<li><strong>' +
-                      escapeHtml(step.knowledgeDomain) +
-                      '</strong> — ' +
-                      escapeHtml(step.question) +
-                      ' <span class="proof-pref">[' +
-                      escapeHtml(step.evidencePreference) +
-                      ']</span></li>',
-                  ).join("") +
-                  '</ol></div>' +
-                  (finding.proofNavigation.familyProofCriteria.length > 0
-                    ? '<div class="technical-sub"><strong>Family Proof Criteria</strong><ul>' +
-                      finding.proofNavigation.familyProofCriteria.map(
-                        (item) =>
-                          '<li>' + escapeHtml(item) + '</li>',
-                      ).join("") +
-                      '</ul></div>'
-                    : '') +
-                  (finding.proofNavigation.historicalSearchHints.length > 0
-                    ? '<div class="technical-sub"><strong>Historical Search Hints</strong><ul>' +
-                      finding.proofNavigation.historicalSearchHints.map(
-                        (item) =>
-                          '<li>' + escapeHtml(item.question) + '</li>',
-                      ).join("") +
-                      '</ul></div>'
-                    : '') +
-                  (finding.proofNavigation.evidenceSubstitutions.length > 0
-                    ? '<div class="technical-sub"><strong>Evidence Substitution</strong><ul>' +
-                      finding.proofNavigation.evidenceSubstitutions.map(
-                        (item) =>
-                          '<li>' +
-                          escapeHtml(item.replaces) +
-                          ' → ' +
-                          escapeHtml(item.decisionRule) +
-                          '</li>',
-                      ).join("") +
-                      '</ul></div>'
-                    : '') +
-                  (finding.proofNavigation.runtimeLastResort
-                    ? '<div class="proof-note">Runtime is last resort after applicable static, cross-domain, or formal proof routes are exhausted.</div>'
-                    : '') +
-                  '</details></div>',
+                '<div class="row"><b>Validation Test</b><div>' +
+                  escapeHtml(finding.validationTest) +
+                  "</div></div>",
               ]
             : []),
         ]
       : [];
 
   return [
-    '<article class="issue-card audit-status-' +
-      finding.status.toLowerCase().replace("_", "-") +
-      '">',
-    '  <header class="issue-head">',
-    '    <div class="issue-number">•</div>',
-    '    <div class="severity">' +
-      escapeHtml(auditStatusLabel(finding)) +
-      "</div>",
-    '    <div class="issue-title"><h2>' +
-      escapeHtml(finding.issue) +
-      "</h2>",
-    '      <div class="meta-line"><span>' +
-      escapeHtml(finding.id) +
-      "</span><span>" +
-      escapeHtml(finding.issueType) +
-      "</span><span>" +
+    '<article class="issue">',
+    '<div class="ih">',
+    '<div class="tags"><span>' +
+      String(index).padStart(2, "0") +
+      '</span><span class="sev">' +
       escapeHtml(severity) +
-      "</span></div>",
-    "    </div>",
-    "  </header>",
-    '  <div class="issue-body">',
-    '<div class="row"><div class="label">How to Reproduce</div><div class="value">' +
-      orderedSteps(finding.reproduceSteps) +
-      "</div></div>",
-    '<div class="row"><div class="label">Observed</div><div class="value">' +
-      escapeHtml(finding.actual) +
-      "</div></div>",
-    '<div class="row"><div class="label">Expected</div><div class="value">' +
-      escapeHtml(finding.expected) +
-      "</div></div>",
+      '</span><span class="kind">' +
+      escapeHtml(finding.issueType) +
+      '</span><span class="status">' +
+      escapeHtml(auditStatusLabel(finding)) +
+      '</span></div>',
+    '<h3>' + escapeHtml(finding.issue) + '</h3>',
+    '<code>' + escapeHtml(finding.id) + '</code>',
+    '</div>',
+    '<details><summary>View Details</summary>',
     ...(finding.playerImpact
       ? [
-          '<div class="row"><div class="label">Player Impact</div><div class="value">' +
+          '<div class="row"><b>Issue</b><div>' +
             escapeHtml(finding.playerImpact) +
-            "</div></div>",
+            '</div></div>',
         ]
       : []),
+    '<div class="row"><b>How to Reproduce</b><div>' +
+      orderedSteps(finding.reproduceSteps) +
+      '</div></div>',
+    '<div class="row"><b>Observed</b><div>' +
+      escapeHtml(finding.actual) +
+      '</div></div>',
+    '<div class="row"><b>Expected</b><div>' +
+      escapeHtml(finding.expected) +
+      '</div></div>',
     ...validationRows,
-    '<div class="technical-row"><details class="technical"><summary>Technical Evidence</summary><div class="technical-text">' +
+    '<div class="row"><b>Technical Analysis</b><div class="tech">' +
       escapeHtml(
         "Gameplay Flow: " +
           finding.gameplayFlow +
           "\nFailure Domain: " +
-          finding.failureDomain +
-          "\nProof Ceiling: " +
-          finding.proofCeiling +
-          (finding.evidenceIds?.length
-            ? "\nEvidence: " +
-              finding.evidenceIds.join(", ")
-            : ""),
+          finding.failureDomain,
       ) +
-      "</div></details></div>",
-    "  </div>",
-    "</article>",
+      '</div></div>',
+    '</details></article>',
   ].join("\n");
 }
 
@@ -711,98 +647,71 @@ function auditContextSummary(
 function renderCompleteMapAuditHtml(
   audit: MapAuditHtmlInput,
 ): string {
+  const bugs = [...audit.bugs];
+  const designMismatches =
+    [...audit.designMismatches];
   const findings = [
-    ...audit.bugs,
-    ...audit.designMismatches,
+    ...bugs,
+    ...designMismatches,
   ];
-  const proven =
-    findings.filter(
-      (item) => item.status === "PROVEN",
-    );
+  const proven = findings.filter(
+    (item) => item.status === "PROVEN",
+  ).length;
   const needValidation =
-    findings.filter(
-      (item) =>
-        item.status === "NEED_VALIDATION",
-    );
-  const provenBugs =
-    audit.bugs.filter(
-      (item) => item.status === "PROVEN",
-    );
-  const pendingBugs =
-    audit.bugs.filter(
-      (item) =>
-        item.status === "NEED_VALIDATION",
-    );
-  const provenDesignMismatches =
-    audit.designMismatches.filter(
-      (item) => item.status === "PROVEN",
-    );
-  const pendingDesignMismatches =
-    audit.designMismatches.filter(
-      (item) =>
-        item.status === "NEED_VALIDATION",
-    );
+    findings.length - proven;
   const artifactLabel =
     audit.evidenceScope?.selectedArtifact ||
     audit.artifactId;
-
-  const baseCss = `
-body{margin:0;background:#eef1f5;color:#172033;font:15px/1.45 Arial,Helvetica,sans-serif}
-.report{width:min(1060px,calc(100% - 28px));margin:24px auto;background:#fff;border:1px solid #d9dee8;border-radius:14px;overflow:hidden}
-.hero{padding:28px 32px;background:#172b4d;color:#fff}.hero h1{margin:0 0 6px}.hero p{margin:0;opacity:.8}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #d9dee8}
-.metric{padding:16px 20px;border-right:1px solid #d9dee8}.metric:last-child{border-right:0}.metric span{display:block;color:#667085;font-size:11px;font-weight:700;text-transform:uppercase}.metric strong{font-size:18px}
-.section{padding:24px}.section h2{margin:0 0 14px}.section h3{margin:18px 0 10px;font-size:13px;color:#3157a4;text-transform:uppercase;letter-spacing:.04em}.note{padding:14px 18px;background:#fff8e6;border:1px solid #eed28a;border-radius:8px;margin-bottom:18px}.control-summary{border-bottom:1px solid #d9dee8;background:#fbfcfe}.control-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}.control-grid div{padding:12px 14px;border:1px solid #d9dee8;border-radius:8px;background:#fff}.control-grid span{display:block;color:#667085;font-size:10px;font-weight:800;text-transform:uppercase}.control-grid strong{display:block;margin-top:3px;font-size:13px}.user-intent{padding-top:16px;padding-bottom:16px;border-bottom:1px solid #d9dee8;background:#fdfefe}.user-intent>details>summary{cursor:pointer;color:#3157a4;font-size:12px;font-weight:800}.user-intent ul{margin:0;padding-left:18px}.audit-context{padding-top:16px;padding-bottom:16px;border-bottom:1px solid #d9dee8}.audit-context>details>summary{cursor:pointer;color:#3157a4;font-size:12px;font-weight:800}.audit-context-body{margin-top:12px;border:1px solid #d9dee8;border-radius:8px;overflow:hidden}.grounding{color:#667085;font-size:11px;text-transform:uppercase}.obligations{border-top:1px solid #d9dee8;background:#fbfcfe}.obligation-card{margin:0 0 10px;border:1px solid #d9dee8;border-radius:8px;background:#fff;overflow:hidden}.obligation-card>details>summary{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;cursor:pointer}.obligation-card>details>summary span{color:#667085;font-size:10px;font-weight:800;text-transform:uppercase}.obligation-body{border-top:1px solid #d9dee8}
-.issue-card{margin:0 0 18px;border:1px solid #d9dee8;border-radius:10px;overflow:hidden}.issue-head{display:grid;grid-template-columns:36px 130px 1fr;align-items:center;background:#f8fafc;border-bottom:1px solid #d9dee8}.issue-number,.severity{padding:10px 12px;font-size:12px;font-weight:800}.issue-title{padding:10px 14px 10px 0}.issue-title h2{margin:0;font-size:16px}.meta-line{display:flex;flex-wrap:wrap;gap:8px;margin-top:5px;color:#667085;font-size:10px;font-weight:700;text-transform:uppercase}
-.audit-status-proven .severity{color:#166534}.audit-status-need-validation .severity{color:#9a6700}
-.row{display:grid;grid-template-columns:150px minmax(0,1fr);border-bottom:1px solid #d9dee8}.label{padding:13px 15px;background:#f8fafc;color:#3157a4;font-size:12px;font-weight:800}.value{padding:13px 16px}.checklist{list-style:none;margin:0;padding:0}.checklist li+li{margin-top:7px}.technical-row{padding:12px 16px;background:#fcfcfd;border-top:1px solid #d9dee8}.technical summary{cursor:pointer;color:#3157a4;font-size:12px;font-weight:800}.technical-text{margin-top:9px;white-space:pre-wrap;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:#667085}.proof-goal p{margin:5px 0 0}.proof-guide ol,.proof-guide ul{margin:6px 0 0;padding-left:20px}.proof-pref{color:#667085;font-size:11px}.proof-note{margin-top:12px;padding:9px 11px;background:#fff8e6;border-radius:6px;color:#765d16;font-size:12px}
-@media(max-width:700px){.report{width:100%;margin:0;border-radius:0}.metrics{grid-template-columns:1fr}.control-grid{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}}
-@media print{body{background:#fff}.report{width:100%;margin:0;border:0}.issue-card{break-inside:avoid-page}.technical{display:block}.technical summary{list-style:none}.technical>*{display:block!important}input[type="checkbox"]{appearance:none;width:11px;height:11px;border:1px solid #555;vertical-align:middle}}
+  const severityCounts = findings
+    .filter((item) => item.status === "PROVEN")
+    .reduce(
+      (counts, item) => {
+        const severity = item.severity ?? "—";
+        counts.set(
+          severity,
+          (counts.get(severity) ?? 0) + 1,
+        );
+        return counts;
+      },
+      new Map<string, number>(),
+    );
+  const severitySummary =
+    [...severityCounts.entries()]
+      .map(([severity, count]) =>
+        String(count) + " " + severity,
+      )
+      .join(" · ") || "No proven severity";
+  const css = `
+*{box-sizing:border-box}body{margin:0;background:#eef1f5;font:14px Arial;color:#172033}.r{max-width:980px;margin:auto;background:#fff;min-height:100vh}.hero{padding:24px;background:#172b4d;color:#fff}.hero h1{margin:0}.hero p{margin:6px 0 0;font-size:11px;opacity:.8}.summary{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:10px solid #eef1f5}.summary div{padding:16px 18px;border-right:1px solid #d9dee8}.summary small{display:block;color:#667085;font-size:9px;font-weight:800}.summary strong{font-size:20px}.source{margin:14px;padding:12px 14px;background:#f8fafc;border:1px solid #d9dee8;border-radius:8px}.section{padding:0 14px 24px}.section h2{font-size:13px;border-bottom:1px solid #ddd;padding-bottom:6px}.issue{border:1px solid #d7dde7;border-radius:8px;margin:9px 0;overflow:hidden;background:#fff}.ih{padding:10px}.tags{display:flex;gap:6px;align-items:center}.tags span{font-size:9px;font-weight:800}.sev{background:#fff2dc;color:#8a5700;padding:2px 6px;border-radius:99px}.kind{background:#eef4ff;color:#3157a4;padding:2px 6px;border-radius:99px}.status{margin-left:auto;background:#f3f4f6;color:#475467;padding:2px 6px;border-radius:99px}.issue h3{margin:7px 0 3px;font-size:14px}.issue code{font-size:10px;color:#667085}.issue summary{cursor:pointer;padding:9px 10px;background:#f8fafc;color:#3157a4;font-weight:800}.row{display:grid;grid-template-columns:145px 1fr;border-top:1px solid #e5e7eb}.row>b{padding:10px;background:#f8fafc;color:#3157a4;font-size:10px}.row>div{padding:10px;font-size:12px}.row ol,.row ul{margin:0;padding-left:18px}.tech{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:10px}.empty{padding:14px;color:#667085;background:#f8fafc;border-radius:8px}@media(max-width:650px){.summary{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}.r{width:100%}}
 `;
 
+  let issueNumber = 1;
+  const bugHtml = bugs.length > 0
+    ? bugs.map((item) =>
+        auditFindingCard(item, issueNumber++),
+      ).join("\n")
+    : '<div class="empty">No reportable bug findings.</div>';
+  const mismatchHtml =
+    designMismatches.length > 0
+      ? designMismatches.map((item) =>
+          auditFindingCard(item, issueNumber++),
+        ).join("\n")
+      : '<div class="empty">No reportable design mismatches.</div>';
+
   return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escapeHtml(artifactLabel)} — Map Audit Report</title>
-<style>${baseCss}</style>
-</head>
-<body>
-<main class="report">
-  <section class="hero">
-    <h1>${escapeHtml(artifactLabel)} — Map Audit Report</h1>
-    <p>Map version ${escapeHtml(audit.mapVersion)} · selected-artifact audit</p>
-  </section>
-  <section class="metrics">
-    <div class="metric"><span>Total Findings</span><strong>${findings.length}</strong></div>
-    <div class="metric"><span>Proven</span><strong>${proven.length}</strong></div>
-    <div class="metric"><span>Need Validation</span><strong>${needValidation.length}</strong></div>
-    <div class="metric"><span>Audit Obligations</span><strong>${(audit.auditObligations ?? []).length}</strong></div>
-  </section>
-  ${auditControlSummary(audit)}
-  ${userIntentSummary(audit)}
-  ${auditContextSummary(audit)}
-  ${auditObligationsSection(audit)}
-  <section class="section">
-    <div class="note"><strong>Validation status:</strong> NEED VALIDATION identifies a material finding that still requires deciding proof. It remains listed until confirmed or disproved, and no final severity is assigned while unresolved.</div>
-    <h2>Bugs</h2>
-    <h3>PROVEN</h3>
-    ${provenBugs.length > 0 ? provenBugs.map(auditFindingCard).join("\n") : "<p>No proven bugs.</p>"}
-    <h3>NEED VALIDATION</h3>
-    ${pendingBugs.length > 0 ? pendingBugs.map(auditFindingCard).join("\n") : "<p>No unresolved bug findings.</p>"}
-  </section>
-  <section class="section">
-    <h2>Design Mismatches</h2>
-    <h3>PROVEN</h3>
-    ${provenDesignMismatches.length > 0 ? provenDesignMismatches.map(auditFindingCard).join("\n") : "<p>No proven design mismatches.</p>"}
-    <h3>NEED VALIDATION</h3>
-    ${pendingDesignMismatches.length > 0 ? pendingDesignMismatches.map(auditFindingCard).join("\n") : "<p>No unresolved design-mismatch findings.</p>"}
-  </section>
-  ${auditValidationPlan(audit)}
-</main>
-</body>
-</html>`;
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>${escapeHtml(artifactLabel)} — Bug Tracker</title><style>${css}</style></head>
+<body><main class="r">
+<section class="hero"><h1>${escapeHtml(artifactLabel)} — Bug Tracker</h1><p>Selected-artifact audit · client-facing findings projection</p></section>
+<section class="summary">
+<div><small>FINDINGS</small><strong>${findings.length}</strong></div>
+<div><small>BUGS</small><strong>${bugs.length}</strong></div>
+<div><small>DESIGN MISMATCH</small><strong>${designMismatches.length}</strong></div>
+<div><small>STATUS</small><strong>${proven} Proven · ${needValidation} Need Validation</strong></div>
+</section>
+<div class="source"><b>v${escapeHtml(audit.mapVersion)}</b><br>${escapeHtml(artifactLabel)}<br><small>${escapeHtml(severitySummary)}</small></div>
+<section class="section"><h2>BUGS</h2>${bugHtml}<h2>DESIGN MISMATCH</h2>${mismatchHtml}</section>
+</main></body></html>`;
 }
 
 async function main(): Promise<void> {
