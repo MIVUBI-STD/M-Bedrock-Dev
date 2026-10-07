@@ -88,7 +88,6 @@ export interface RuntimeStatus {
     availablePercent: number;
     cpuUsagePercent: number;
     level: "NORMAL" | "PRESSURE" | "CRITICAL";
-    canStartVirtual: boolean;
     startDecision: "START_NOW" | "WAIT" | "BLOCK";
   };
   clients: ClientStatus[];
