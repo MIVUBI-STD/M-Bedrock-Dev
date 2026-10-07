@@ -35,7 +35,7 @@ import { analyzeInventoryLifecycle } from "../inventory-lifecycle-analysis.js";
 import { analyzeInventoryContract } from "../inventory-contract-analysis.js";
 import { analyzeInventoryRestoreOwnership } from "../inventory-restore-ownership-analysis.js";
 import { analyzeCombatLifecycle } from "../combat-lifecycle-analysis.js";
-import { analyzeCombatContract } from "../combat-contract-analysis.js";
+import { analyzeCombatBehaviorContract } from "../combat-contract-analysis.js";
 import { analyzeChunkLifecycle } from "../chunk-lifecycle-analysis.js";
 import { analyzePersistenceSource } from "../persistence-source-analysis.js";
 import { analyzeRewardSources } from "../reward-source-analysis.js";
