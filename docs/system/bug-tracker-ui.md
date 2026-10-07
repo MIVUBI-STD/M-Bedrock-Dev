@@ -69,8 +69,8 @@ Hierarchy:
 Bug Tracker Report
 Map
 Version / Levels
-Source
 Summary
+Level / Source
 Bugs
 Design Mismatches
 Developer Notes
