@@ -31,11 +31,22 @@ export interface TrackerIssue {
   readonly mustPreserve?: readonly string[];
 }
 
+export interface TrackerDeveloperNote {
+  readonly id: string;
+  readonly type: "DEV_NOTE";
+  readonly title: string;
+  readonly problem: string;
+  readonly action: string;
+  readonly evidence: Readonly<Record<string, unknown>>;
+  readonly severity: null;
+}
+
 export interface TrackerLevel {
   readonly level: number | null;
   readonly version: string;
   readonly source: TrackerSourceBinding;
   readonly issues: readonly TrackerIssue[];
+  readonly devNotes: readonly TrackerDeveloperNote[];
 }
 
 export interface TrackerGame {
