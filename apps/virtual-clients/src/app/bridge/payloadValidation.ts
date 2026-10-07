@@ -159,7 +159,6 @@ export const updateCheck = shape<UpdateCheck>({
 export const supportBundle = shape<SupportBundleResult>({ capturedAtUnixMs: integer, path: text });
 export const baseProfile = shape<unknown>({
   schema: oneOf(3), minecraftVersion: text,
-  nativeInstallType: oneOf("DESKTOP", "STORE", "APP_BUNDLE", "UNKNOWN"),
   guestStatusSchema: integer, guestAgentProtocol: positiveInteger, guestAgentVersion: text,
   baseGenerationId: hex64,
 });
