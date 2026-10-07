@@ -33,6 +33,26 @@ A diverged replica is not automatically a bug. It becomes a causal candidate onl
 
 An incomplete/no-proof replica cannot inherit baseline safety.
 
+### Runtime replica evidence
+
+Direct runtime testing across every physical arena is valid gameplay evidence for the scenarios actually exercised.
+
+```text
+all physical arenas tested
++ same material gameplay path succeeds
+→ runtime evidence for playable replica behavior
+```
+
+It does not prove byte/block-level structural equivalence outside the exercised paths. When deterministic world-DB/topology comparison is available, use it to strengthen reusable baseline/delta proof rather than discarding valid runtime evidence.
+
+Record the distinction explicitly:
+
+- runtime-safe on exercised gameplay path;
+- structurally equivalent / bounded-equivalent / divergent / incomplete according to topology/world proof.
+
+Do not keep a broad NEED_VALIDATION merely because structural proof is unavailable when direct runtime evidence has already decided the player-visible claim being audited.
+
+
 ## Required audit order
 
 ```text
