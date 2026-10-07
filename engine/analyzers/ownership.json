@@ -22,7 +22,8 @@
       "modules": [
         "entities",
         "blocks",
-        "gameplay-intent"
+        "gameplay-intent",
+        "resource-pack"
       ]
     },
     "resolution": {

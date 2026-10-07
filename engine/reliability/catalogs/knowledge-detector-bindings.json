@@ -5036,6 +5036,72 @@
       ]
     },
     {
+      "knowledgeId": "feedback.animation-controller-load-initial-state",
+      "consumer": "resource-pack-animation-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/resource-pack/src/parse.ts",
+        "engine/analyzers/resource-pack/src/analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/resource-pack/test/animation.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "feedback.animation-controller-state-machine",
+      "consumer": "resource-pack-animation-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/resource-pack/src/parse.ts",
+        "engine/analyzers/resource-pack/src/analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/resource-pack/test/animation.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "feedback.animation-version-behavior-can-change",
+      "consumer": "resource-pack-animation-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/resource-pack/src/parse.ts",
+        "engine/analyzers/resource-pack/src/analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/resource-pack/test/animation.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "feedback.animation-vs-controller",
+      "consumer": "resource-pack-animation-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/resource-pack/src/parse.ts",
+        "engine/analyzers/resource-pack/src/analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/resource-pack/test/animation.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "feedback.molang-client-derived-state",
+      "consumer": "resource-pack-animation-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/resource-pack/src/parse.ts",
+        "engine/analyzers/resource-pack/src/analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/resource-pack/test/animation.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "feedback.relation-controller-validates-visual-state",
+      "consumer": "resource-pack-animation-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/resource-pack/src/parse.ts",
+        "engine/analyzers/resource-pack/src/analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/resource-pack/test/animation.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "worldstate.relation-global-setting-affects-all-arenas",
       "consumer": "world-rule-authority-analysis",
       "analyzerPaths": [

@@ -381,46 +381,10 @@
       "nextEvidenceOwner": "runtime-hazard-event"
     },
     {
-      "knowledgeId": "feedback.animation-controller-load-initial-state",
-      "status": "static-capability-gap",
-      "reason": "Initial client visual state requires structural animation-controller analysis before runtime validation.",
-      "nextEvidenceOwner": "resource-pack-animation-analysis"
-    },
-    {
-      "knowledgeId": "feedback.animation-controller-state-machine",
-      "status": "static-capability-gap",
-      "reason": "Repository currently lacks a structural resource-pack animation-controller parser.",
-      "nextEvidenceOwner": "resource-pack-animation-analysis"
-    },
-    {
-      "knowledgeId": "feedback.animation-version-behavior-can-change",
-      "status": "static-capability-gap",
-      "reason": "Resource-pack animation compatibility is not structurally modeled.",
-      "nextEvidenceOwner": "resource-pack-animation-analysis"
-    },
-    {
-      "knowledgeId": "feedback.animation-vs-controller",
-      "status": "static-capability-gap",
-      "reason": "Animations and controller transition logic are not structurally modeled yet.",
-      "nextEvidenceOwner": "resource-pack-animation-analysis"
-    },
-    {
-      "knowledgeId": "feedback.molang-client-derived-state",
-      "status": "static-capability-gap",
-      "reason": "Molang presentation-state expressions are not structurally analyzed yet.",
-      "nextEvidenceOwner": "resource-pack-animation-analysis"
-    },
-    {
       "knowledgeId": "feedback.particle-position-context",
       "status": "static-capability-gap",
       "reason": "Particle/resource-pack presentation context is not structurally modeled by the current source analyzers.",
       "nextEvidenceOwner": "resource-pack-feedback-analysis"
-    },
-    {
-      "knowledgeId": "feedback.relation-controller-validates-visual-state",
-      "status": "static-capability-gap",
-      "reason": "Animation-controller transition validation lacks a structural resource-pack analyzer.",
-      "nextEvidenceOwner": "resource-pack-animation-analysis"
     },
     {
       "knowledgeId": "feedback.relation-title-reset-restores-default-timing",
