@@ -8,7 +8,8 @@ export type ScriptCleanupResourceSurface =
   | "effect"
   | "scoreboard"
   | "deferred-callback"
-  | "input-permission"\n  | "mount-relationship";
+  | "input-permission"
+  | "mount-relationship";
 
 export interface ScriptCleanupResourceEvidence {
   surface: ScriptCleanupResourceSurface;
