@@ -2,7 +2,7 @@
 
 use m_bedrock_virtual_clients_core::{
     guest_agent_minecraft_profile, GuestStatus, GUEST_AGENT_PORT,
-    GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA,
+    GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA, MINECRAFT_LAUNCH_SCHEMA,
 };
 
 #[cfg(target_os = "windows")]
@@ -63,7 +63,7 @@ fn interactive_launcher_ready() -> bool {
 fn request_interactive_minecraft_launch() -> Result<m_bedrock_virtual_clients_core::MinecraftLaunchResult, Box<dyn std::error::Error>> {
     use m_bedrock_virtual_clients_core::{MinecraftLaunchResult, MinecraftLaunchState};
     if minecraft_process_running() {
-        return Ok(MinecraftLaunchResult { schema: 1, state: MinecraftLaunchState::AlreadyRunning });
+        return Ok(MinecraftLaunchResult { schema: MINECRAFT_LAUNCH_SCHEMA, state: MinecraftLaunchState::AlreadyRunning });
     }
 
     let address = interactive_launcher_address().parse()?;
@@ -79,7 +79,7 @@ fn request_interactive_minecraft_launch() -> Result<m_bedrock_virtual_clients_co
     stream.read_to_string(&mut response)?;
 
     if response.trim() == format!("OK:{request_id}") {
-        return Ok(MinecraftLaunchResult { schema: 1, state: MinecraftLaunchState::Launched });
+        return Ok(MinecraftLaunchResult { schema: MINECRAFT_LAUNCH_SCHEMA, state: MinecraftLaunchState::Launched });
     }
     if response.starts_with(&format!("ERROR:{request_id}:")) {
         return Err(io::Error::new(io::ErrorKind::Other, response.trim().to_string()).into());
