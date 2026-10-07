@@ -7,8 +7,8 @@ mod storage;
 mod vmx;
 
 pub(crate) use process::{command_output, command_output_with_timeout, wait_for_state};
-pub(crate) use storage::{cleanup_staging, ensure_parent, has_suspend_state, promote_staging_vm, remove_vm_container, staging_residue_count, vm_container};
-pub(crate) use vmx::{apply_virtual_hardware_policy, base_state_for_path, ensure_guest_token_for_path, guest_token_for_path, read_vmx_memory, read_vmx_value, rotate_guest_token_for_path, set_base_state_for_path, valid_guest_token, vm_identity_key, BASE_STATE_KEY, GUEST_TOKEN_KEY};
+pub(crate) use storage::{cleanup_staging, ensure_parent, has_suspend_state, promote_staging_vm, remove_vm_container, staging_residue_count};
+pub(crate) use vmx::{apply_virtual_hardware_policy, base_state_for_path, ensure_guest_token_for_path, guest_token_for_path, read_vmx_memory, read_vmx_value, set_base_state_for_path, vm_identity_key};
 
 use crate::{
     client::{ClientId, ClientState},
@@ -217,9 +217,9 @@ pub(crate) fn host_working_sets_mb() -> Vec<(ClientId, u64)> {
 mod tests {
     use super::{
         apply_virtual_hardware_policy, guest_token_for_path, guest_tools_state_ready,
-        listed_as_running, parse_guest_ip, snapshot_list_contains, valid_guest_token,
-        BASE_STATE_KEY, GUEST_TOKEN_KEY,
+        listed_as_running, parse_guest_ip, snapshot_list_contains,
     };
+    use super::vmx::{valid_guest_token, BASE_STATE_KEY, GUEST_TOKEN_KEY};
     use crate::profile::BaseState;
     use std::{
         fs,
