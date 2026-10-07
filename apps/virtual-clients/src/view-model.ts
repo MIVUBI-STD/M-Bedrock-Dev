@@ -57,12 +57,12 @@ export function stateLabel(state: ClientStatus["state"]): string {
 export function connectionHealthLabel(value: ClientStatus["connectionHealth"]): string {
   if (value === null) return "Connection state unknown";
   const labels: Record<NonNullable<ClientStatus["connectionHealth"]>, string> = {
-    VM_OFFLINE: "Virtual machine offline",
-    VM_RUNNING: "Virtual machine running",
-    GUEST_TOOLS_READY: "VMware Tools responding",
-    GUEST_AGENT_READY: "Guest Agent responding",
-    INTERACTIVE_LAUNCHER_READY: "Minecraft launcher available",
-    MINECRAFT_RUNNING: "Minecraft process running",
+    VM_OFFLINE: "Offline",
+    VM_RUNNING: "Starting services",
+    GUEST_TOOLS_READY: "Starting services",
+    GUEST_AGENT_READY: "Client services available",
+    INTERACTIVE_LAUNCHER_READY: "Minecraft can be launched",
+    MINECRAFT_RUNNING: "Minecraft is open",
   };
   return labels[value];
 }
@@ -153,7 +153,7 @@ export function updateLabel(state: UpdateState): string {
   const labels: Record<UpdateState, string> = {
     UP_TO_DATE: "Up to date",
     UPDATE_AVAILABLE: "Update available",
-    UPDATE_STAGED: "Update ready to install",
+    UPDATE_STAGED: "Installer prepared",
     UNAVAILABLE: "Update check unavailable",
   };
   return labels[state];
