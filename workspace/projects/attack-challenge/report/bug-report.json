@@ -23,7 +23,7 @@
         "Carry a recognizable ordinary item before starting an Attack match.",
         "Disconnect before the preload inventory-clear callback runs.",
         "Reconnect after that callback while the session is still preloading.",
-        "Confirm the stale item remains when the match reaches the initial buy phase."
+        "Check whether the stale item remains when the match reaches the initial buy phase."
       ],
       "aiAnalysis": "Attack performs its full wipe only over players online when preload reaches the clear callback. The preloading reconnect path does not replay that boundary, and the initial buy-phase loadout uses partial managed-item cleanup rather than a full inventory clear.",
       "relevantCode": [
@@ -52,7 +52,7 @@
         "Start an Attack match and die during active combat.",
         "Disconnect while the respawn countdown is running.",
         "Reconnect before the countdown expires.",
-        "Confirm the player returns to active gameplay before the original countdown finishes."
+        "Check whether the player returns to active gameplay before the original countdown finishes."
       ],
       "aiAnalysis": "CombatTracker correctly owns pending respawns and restores spectator state on reconnect. GameManager independently restores active-session state shortly afterward without checking that pending respawn, overwriting the correct death lifecycle.",
       "relevantCode": [
@@ -82,7 +82,7 @@
         "Prepare valid parties in 3 different Attack arenas.",
         "Start the first 2 arenas so both hold active arena leases.",
         "Ready and start the third arena.",
-        "Confirm the third group is queued even though its own visible arena is otherwise available."
+        "Check whether the third group is queued even though its own visible arena is otherwise available."
       ],
       "aiAnalysis": "The selected artifact exposes six independent arena/join surfaces while runtime admission hard-caps arena ticking leases at two. The queue is a mitigation path, not evidence that the six visible arenas were authored to mean only two concurrent sessions.",
       "relevantCode": [
