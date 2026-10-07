@@ -112,6 +112,43 @@ export function proofSaturationFamilyCriteria(
   return FAMILY_CRITERIA[domain].map((item) => item.description);
 }
 
+const FAMILY_COUNTERPROOF_DIMENSIONS: Readonly<
+  Partial<Record<string, readonly string[]>>
+> = {
+  "reconciliation-exhausted": [
+    "guard",
+    "exclusion",
+    "scope",
+  ],
+  "arena-counterproof-exhausted": [
+    "owner",
+    "guard",
+    "generation",
+    "cleanup",
+    "exclusion",
+    "scope",
+  ],
+  "idempotency-exclusion-exhausted": [
+    "guard",
+    "generation",
+    "exclusion",
+    "scope",
+  ],
+  "ownership-counterproof-exhausted": [
+    "owner",
+    "guard",
+    "exclusion",
+    "scope",
+  ],
+  "recovery-counterproof-exhausted": [
+    "owner",
+    "generation",
+    "cleanup",
+    "guard",
+    "scope",
+  ],
+};
+
 function derivedFamilyCriterionEvidence(input: {
   criterionId: string;
   link: GameplayScenarioGraph["causalLinks"][number] | undefined;
@@ -142,6 +179,31 @@ function derivedFamilyCriterionEvidence(input: {
       .length > 0
       ? evidenceIds
       : [];
+  const requiredCounterproofDimensions =
+    FAMILY_COUNTERPROOF_DIMENSIONS[criterionId] ?? [];
+  if (requiredCounterproofDimensions.length > 0) {
+    const receipts =
+      resolution.counterProofSearch?.dimensionReceipts ?? [];
+    const matched = requiredCounterproofDimensions.map(
+      (dimension) =>
+        receipts.find(
+          (receipt) =>
+            receipt.dimension === dimension &&
+            receipt.exhaustiveWithinScope === true &&
+            receipt.evidenceIds.length > 0,
+        ),
+    );
+    if (matched.some((receipt) => receipt === undefined)) {
+      return [];
+    }
+    return [
+      ...new Set(
+        matched.flatMap(
+          (receipt) => receipt?.evidenceIds ?? [],
+        ),
+      ),
+    ].sort();
+  }
   const dimensionEvidence = (
     dimensions: readonly string[],
   ): readonly string[] =>
@@ -174,11 +236,7 @@ function derivedFamilyCriterionEvidence(input: {
       "owner",
     ]);
   }
-  if (
-    criterionId.includes("counterproof") ||
-    criterionId.includes("exclusion") ||
-    criterionId.includes("reconciliation-exhausted")
-  ) {
+  if (criterionId.includes("exclusion")) {
     return counterProofEvidence;
   }
   if (
