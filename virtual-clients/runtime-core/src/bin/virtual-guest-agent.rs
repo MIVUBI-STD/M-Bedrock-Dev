@@ -173,18 +173,42 @@ fn handle(mut stream: TcpStream, token: &str) -> Result<(), Box<dyn std::error::
         )?;
         return Ok(());
     }
-    let request = String::from_utf8_lossy(&request[..size]);
-    let first_line = request.lines().next().unwrap_or_default();
+    let request = std::str::from_utf8(&request[..size]).map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "Guest Agent request is not valid UTF-8"))?;
+    if !request.contains("\r\n\r\n") {
+        stream.write_all(b"HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")?;
+        return Ok(());
+    }
+    let (headers, body) = request.split_once("\r\n\r\n").unwrap();
+    let first_line = headers.lines().next().unwrap_or_default();
+    if !body.is_empty() {
+        stream.write_all(b"HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")?;
+        return Ok(());
+    }
 
-    let supplied: Vec<&str> = request.lines().filter_map(|line| {
+    let supplied: Vec<&str> = headers.lines().filter_map(|line| {
         let (name, value) = line.split_once(':')?;
         name.eq_ignore_ascii_case("X-Virtual-Clients-Token")
             .then(|| value.trim())
     }).collect();
-    let request_ids: Vec<&str> = request.lines().filter_map(|line| {
+    let request_ids: Vec<&str> = headers.lines().filter_map(|line| {
         let (name, value) = line.split_once(':')?;
         name.eq_ignore_ascii_case(REQUEST_ID_HEADER).then(|| value.trim())
     }).collect();
+
+    let host_count = headers.lines().filter(|line| line.split_once(':').is_some_and(|(name, _)| name.eq_ignore_ascii_case("Host"))).count();
+    let content_lengths: Vec<&str> = headers.lines().filter_map(|line| {
+        let (name, value) = line.split_once(':')?;
+        name.eq_ignore_ascii_case("Content-Length").then(|| value.trim())
+    }).collect();
+    let transfer_encoding = headers.lines().any(|line| line.split_once(':').is_some_and(|(name, _)| name.eq_ignore_ascii_case("Transfer-Encoding")));
+    if host_count != 1
+        || transfer_encoding
+        || content_lengths.len() > 1
+        || content_lengths.first().is_some_and(|value| *value != "0")
+    {
+        stream.write_all(b"HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")?;
+        return Ok(());
+    }
 
     if supplied.len() != 1 || !timing_safe_token_eq(supplied[0], token) {
         stream.write_all(
