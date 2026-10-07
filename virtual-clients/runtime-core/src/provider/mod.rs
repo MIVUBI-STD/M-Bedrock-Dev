@@ -2,8 +2,12 @@
 mod fusion;
 #[cfg(target_os = "windows")]
 mod workstation;
+mod process;
+mod storage;
 mod vmx;
 
+pub(crate) use process::{command_output, command_output_with_timeout, wait_for_state};
+pub(crate) use storage::{cleanup_staging, ensure_parent, has_suspend_state, promote_staging_vm, remove_vm_container, staging_residue_count, vm_container};
 pub(crate) use vmx::{apply_virtual_hardware_policy, base_state_for_path, ensure_guest_token_for_path, guest_token_for_path, read_vmx_memory, read_vmx_value, rotate_guest_token_for_path, set_base_state_for_path, vm_identity_key, BASE_STATE_KEY, GUEST_TOKEN_KEY};
 
 use crate::{
@@ -12,13 +16,10 @@ use crate::{
     profile::current_base_vmx_path,
 };
 use std::{
-    ffi::OsStr,
-    fs, io,
+    io,
     net::IpAddr,
     path::{Path, PathBuf},
-    process::{Command, Stdio},
-    thread,
-    time::{Duration, Instant},
+    time::Duration,
 };
 use sysinfo::System;
 
@@ -27,7 +28,6 @@ use fusion::VmwareFusionProvider;
 #[cfg(target_os = "windows")]
 use workstation::VmwareWorkstationProvider;
 
-const COMMAND_TIMEOUT: Duration = Duration::from_secs(45);
 pub(crate) const DISK_STATE_TIMEOUT: Duration = Duration::from_secs(180);
 
 pub trait Provider {
@@ -150,166 +150,12 @@ fn client_vmx_path_under(client: ClientId, root: PathBuf) -> io::Result<PathBuf>
     ))
 }
 
-pub(crate) fn vm_container(vmx: &Path) -> io::Result<&Path> {
-    vmx.parent()
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "VMX has no parent directory"))
-}
-
-pub(crate) fn ensure_parent(path: &Path) -> io::Result<()> {
-    fs::create_dir_all(vm_container(path)?)
-}
-
-pub(crate) fn remove_vm_container(path: &Path) -> io::Result<()> {
-    let container = vm_container(path)?;
-    if container.exists() {
-        fs::remove_dir_all(container)?;
-    }
-    Ok(())
-}
-
-pub(crate) fn promote_staging_vm(staging_vmx: &Path, final_vmx: &Path) -> io::Result<()> {
-    if !staging_vmx.is_file() {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidData,
-            "provider reported clone success but staged VMX is missing",
-        ));
-    }
-
-    let staging = vm_container(staging_vmx)?;
-    let final_dir = vm_container(final_vmx)?;
-
-    if final_dir.exists() {
-        return Err(io::Error::new(
-            io::ErrorKind::AlreadyExists,
-            format!("client destination already exists: {}", final_dir.display()),
-        ));
-    }
-
-    let parent = final_dir
-        .parent()
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "client path has no parent"))?;
-    fs::create_dir_all(parent)?;
-    fs::rename(staging, final_dir)
-}
-
-pub(crate) fn command_output<I, S>(program: &Path, args: I) -> io::Result<String>
-where
-    I: IntoIterator<Item = S>,
-    S: AsRef<OsStr>,
-{
-    command_output_with_timeout(program, args, COMMAND_TIMEOUT)
-}
-
-pub(crate) fn command_output_with_timeout<I, S>(
-    program: &Path,
-    args: I,
-    timeout: Duration,
-) -> io::Result<String>
-where
-    I: IntoIterator<Item = S>,
-    S: AsRef<OsStr>,
-{
-    let mut child = Command::new(program)
-        .args(args)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()?;
-
-    let started = Instant::now();
-    loop {
-        if child.try_wait()?.is_some() {
-            let output = child.wait_with_output()?;
-            return require_success(
-                program,
-                output.status.success(),
-                &output.stdout,
-                &output.stderr,
-            );
-        }
-
-        if started.elapsed() >= timeout {
-            let _ = child.kill();
-            let _ = child.wait();
-            return Err(io::Error::new(
-                io::ErrorKind::TimedOut,
-                format!(
-                    "{} exceeded {}s timeout",
-                    program.display(),
-                    timeout.as_secs()
-                ),
-            ));
-        }
-
-        thread::sleep(Duration::from_millis(100));
-    }
-}
-
-fn require_success(
-    program: &Path,
-    success: bool,
-    stdout: &[u8],
-    stderr: &[u8],
-) -> io::Result<String> {
-    if success {
-        return Ok(String::from_utf8_lossy(stdout).trim().to_string());
-    }
-
-    let stderr = String::from_utf8_lossy(stderr).trim().to_string();
-    let stdout = String::from_utf8_lossy(stdout).trim().to_string();
-    let detail = if !stderr.is_empty() { stderr } else { stdout };
-
-    Err(io::Error::new(
-        io::ErrorKind::Other,
-        format!("{} failed: {}", program.display(), detail),
-    ))
-}
-
 pub(crate) fn listed_as_running(list_output: &str, vmx: &Path) -> bool {
     let target = vmx.to_string_lossy();
     list_output
         .lines()
         .map(str::trim)
         .any(|line| line.eq_ignore_ascii_case(&target))
-}
-
-pub(crate) fn has_suspend_state(vmx: &Path) -> bool {
-    let Ok(container) = vm_container(vmx) else {
-        return false;
-    };
-    let Ok(entries) = fs::read_dir(container) else {
-        return false;
-    };
-
-    entries.flatten().any(|entry| {
-        entry
-            .path()
-            .extension()
-            .and_then(OsStr::to_str)
-            .is_some_and(|extension| extension.eq_ignore_ascii_case("vmss"))
-    })
-}
-
-pub(crate) fn wait_for_state<F>(
-    mut predicate: F,
-    expected: bool,
-    timeout: Duration,
-) -> io::Result<()>
-where
-    F: FnMut() -> io::Result<bool>,
-{
-    let started = Instant::now();
-    loop {
-        if predicate()? == expected {
-            return Ok(());
-        }
-        if started.elapsed() >= timeout {
-            return Err(io::Error::new(
-                io::ErrorKind::TimedOut,
-                "virtual machine did not reach the expected power state",
-            ));
-        }
-        thread::sleep(Duration::from_millis(250));
-    }
 }
 
 pub(crate) fn parse_guest_ip(output: &str) -> Option<String> {
@@ -533,28 +379,3 @@ mod tests {
     }
 }
 
-pub(crate) fn staging_residue_count() -> io::Result<usize> {
-    let staging = staging_root()?;
-    if !staging.exists() {
-        return Ok(0);
-    }
-    Ok(fs::read_dir(staging)?.filter_map(Result::ok).count())
-}
-
-pub(crate) fn cleanup_staging() -> io::Result<()> {
-    let staging = staging_root()?;
-    if !staging.exists() {
-        return Ok(());
-    }
-
-    for entry in fs::read_dir(&staging)? {
-        let path = entry?.path();
-        if path.is_dir() {
-            fs::remove_dir_all(path)?;
-        } else {
-            fs::remove_file(path)?;
-        }
-    }
-
-    Ok(())
-}
