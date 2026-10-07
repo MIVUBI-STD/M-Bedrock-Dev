@@ -1,0 +1,73 @@
+{
+  "schema": "m-bedrock-dev-notes/v1",
+  "notes": [
+    {
+      "id": "DEV-ATK-SELECTION-STICK-PRODUCTION",
+      "type": "DEV_NOTE",
+      "title": "Entity Selection Stick Is Still Active in Production",
+      "problem": "EntitySelectionLogger is initialized in the production Attack bootstrap. Any valid player using a normal minecraft:stick records coordinates and receives ctf_attack debug messages; sneaking with the stick removes/clears selections. The handler has no admin check.",
+      "action": "Remove EntitySelectionLogger from the release bootstrap, or gate the entire tool through the existing PermissionService admin owner. A normal gameplay item should not implicitly activate developer instrumentation.",
+      "evidence": {
+        "artifactVersion": "1.1.2",
+        "source": "behavior_packs/BP/scripts/chunks/chunk-4L7PEIZ4.js",
+        "finding": "EntitySelectionLogger.init() subscribes to itemUse for minecraft:stick and is called unconditionally by the Attack bootstrap; addSelection() has no PermissionService check."
+      },
+      "severity": null
+    },
+    {
+      "id": "DEV-ATK-SCRIPT-EVENT-PERMISSION",
+      "type": "DEV_NOTE",
+      "title": "World-Mutating Script Events Do Not Use the Existing Admin Permission Owner",
+      "problem": "Attack ships an explicit PermissionService, but GameManager script-event handlers for reset/force-start/force-end/skip-level and setup/reset services do not check PermissionService.isAdmin() before mutating session/world state. Command-level reachability may still restrict ordinary players, so this is not classified as an ordinary-player exploit from source alone.",
+      "action": "Route developer/admin script-event handlers through one explicit permission gate before performing world or session mutations. Do not rely only on external command reachability as the privilege boundary.",
+      "evidence": {
+        "artifactVersion": "1.1.2",
+        "source": [
+          "behavior_packs/BP/scripts/chunks/chunk-4L7PEIZ4.js",
+          "behavior_packs/BP/scripts/chunks/chunk-EJPDS27P.js"
+        ],
+        "finding": "GameManager receives ctf_attack reset/force/skip events and setup/reset services receive world-mutating script events without calling PermissionService.isAdmin()."
+      },
+      "severity": null
+    },
+    {
+      "id": "DEV-ATK-HARDCODED-ADMIN-SECRET",
+      "type": "DEV_NOTE",
+      "title": "Admin Grant Secret Is Hard-Coded in the Shipped Behavior Script",
+      "problem": "permission.config embeds the admin grant/revoke secret directly in the distributed behavior script. Anyone with the world/add-on files can read the value, so it should not be treated as a durable secret boundary.",
+      "action": "Do not use a shipped static secret as the trust boundary. Prefer operator/host-controlled authorization or another runtime authority that is not recoverable from the distributed pack.",
+      "evidence": {
+        "artifactVersion": "1.1.2",
+        "source": "behavior_packs/BP/scripts/chunks/chunk-4L7PEIZ4.js",
+        "finding": "permissionConfig contains a literal secretCode and PermissionService compares incoming set_admin/remove_admin messages against it."
+      },
+      "severity": null
+    },
+    {
+      "id": "DEV-ATK-DEPRECATED-COMMAND-API",
+      "type": "DEV_NOTE",
+      "title": "Attack Still Relies Heavily on Deprecated Async Command Calls",
+      "problem": "The v1.1.2 compiled behavior scripts contain 34 runCommandAsync() call sites. This is technical-debt/API-migration risk rather than a proven current gameplay failure.",
+      "action": "Migrate command-backed operations to supported direct APIs or the current command surface where practical, prioritizing lifecycle-critical inventory, ticking-area, setup, camera, and reset paths. Keep behavior parity while migrating.",
+      "evidence": {
+        "artifactVersion": "1.1.2",
+        "finding": "Full compiled-script scan counts 34 occurrences of runCommandAsync(): 22 in chunk-4L7PEIZ4.js, 6 in chunk-EJPDS27P.js, and 6 in chunk-UUF652QC.js."
+      },
+      "severity": null
+    },
+    {
+      "id": "DEV-ATK-DAYLIGHT-GAMERULE-KEY",
+      "type": "DEV_NOTE",
+      "title": "Daylight-Cycle GameRules Property Uses the Wrong Casing",
+      "problem": "WorldData still declares doDaylightCycle while the Script API GameRules property is doDayLightCycle, so setup cannot reliably reassert the intended daylight-cycle rule through that property owner.",
+      "action": "Correct the existing WorldData key to doDayLightCycle and keep WorldManager as the single setup owner.",
+      "evidence": {
+        "artifactVersion": "1.1.2",
+        "source": "behavior_packs/BP/scripts/chunks/chunk-EJPDS27P.js",
+        "configuredKey": "doDaylightCycle",
+        "apiProperty": "doDayLightCycle"
+      },
+      "severity": null
+    }
+  ]
+}
