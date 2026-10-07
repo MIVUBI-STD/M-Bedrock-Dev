@@ -324,3 +324,21 @@ Before Map Audit Output V2 is treated as comprehensive:
 - Gameplay Model Closure must be `CLOSED`; both `OPEN` and `PARTIAL` block publication.
 
 If either closure is not fully closed, the human-facing report may still expose the honest partial finding set and exact unresolved obligations, but it must not claim comprehensive audit completion.
+## Optional cross-domain reasoning metadata
+
+A BUG or DESIGN_MISMATCH finding may carry an optional `reasoning` object when canonical causal-link reasoning passes evidence admission. This metadata does not create a new finding status or repair authority.
+
+Canonical fields:
+
+```text
+reportClassification
+diagnosticDisposition
+proofConfidence
+evidenceDomainSources[]
+evidenceChain[]
+unresolvedPredicates[]
+recommendedValidationPredicate
+recommendedReadOnlyProbeId
+```
+
+`reportClassification` is explanatory report vocabulary only. The canonical public finding status remains `PROVEN` or `NEED_VALIDATION`, and BUG versus DESIGN_MISMATCH remains the canonical issue type. Missing or rejected reasoning must not remove the underlying finding.
