@@ -79,7 +79,7 @@ const flows: Record<SetupAction, SetupExperience> = {
     steps: [
       "Replace the existing prepared environment with a clean one for the current Minecraft Education version.",
       "Repeat environment preparation and finalization.",
-      "Return here after the new Base is fully stopped.",
+      "Return here after the new prepared environment is fully stopped.",
     ],
   },
   PROVISION_VIRTUALS: {
