@@ -58,3 +58,5 @@ export * from "./cross-domain-runtime-probe-compiler.js";
 export * from "./causal-link-hypothesis-construction.js";
 
 export * from "./causal-link-evidence-construction.js";
+
+export * from "./causal-link-reasoning-coordinator.js";
