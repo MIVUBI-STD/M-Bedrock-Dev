@@ -24,7 +24,8 @@
           "artifactFingerprint": "sha256:6910cb83e6d5866896e29553398b3a889e3942f553f9a0423b365f0799018bf2",
           "version": "1.1.0"
         }
-      }
+      },
+      "levelName": "Five Nights at Z Village v1.1.0"
     },
     {
       "level": 2,
@@ -46,7 +47,8 @@
           "artifactFingerprint": "sha256:d515dcf21bc1665f41c0ae8d3b316721d1ef9ee4ba4ed0212ad7f0d36017d96b",
           "version": "1.2.2"
         }
-      }
+      },
+      "levelName": "Defense_Level_2_v1_2_0"
     }
   ]
 }
