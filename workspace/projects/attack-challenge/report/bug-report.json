@@ -5,7 +5,7 @@
     "mapVersion": "1.1.2",
     "drive": "https://drive.google.com/file/d/1pUaupQNlb-bx4qPkgLACtmfdXpj4iccA/view",
     "baseVersion": "1.21.130",
-    "testedVersion": "Adversarial selected-artifact audit of Drive v1.1.2. Runtime tester evidence overrides prior static capacity inference: separate Ready arenas queue while gameplay arenas are idle. Multi-arena playability is BLOCKED and must not be labeled SAFE/FIXED until runtime acceptance proves delivery. Other source-supported subsystems remain unproven unless backed by runtime or complete causal proof."
+    "testedVersion": "Full selected-artifact v1.1.2 audit using a closed Attack domain model: exactly 6 fixed physical arenas, 6 fixed arena parties, 1 party per arena, 1–5 players per party, and 15 sequential levels. Static/config evidence is not treated as delivered gameplay. Runtime evidence proves the arena-start allocator Blocker; deterministic artifact proof closes level assets/config projection, arena offsets, shop/kit coordinates, entity ownership, reconnect obligations, retry/advance ownership, and final-result wiring."
   },
   "repairBy": "developer",
   "bugs": [
@@ -16,15 +16,15 @@
       "category": "multiarena-runtime",
       "foundBy": "tester",
       "issueType": "BUG",
-      "title": "Startup stale-area cleanup can keep every ready arena permanently queued",
-      "problem": "Attack v1.1.2 can leave ready groups in 'Waiting for a free arena slot' even when no gameplay arena is active. The new startup gate requires every stale ticking-area removal to report success before _startupReady opens, but v1.1.2 treats a zero-success removal as failure/remaining work. The previous v1.1.1 implementation explicitly treated zero removals as the normal 'nothing left to remove' termination condition.",
-      "expected": "When stale-area cleanup finds an area already absent, that name is considered clean. Startup reaches READY and up to six valid arena requests can proceed to reservation/grant; queueing occurs only at a real capacity/resource boundary.",
+      "title": "Ready Arena 1–6 can be trapped in a startup queue even though Attack has no legitimate overflow arena",
+      "problem": "Attack has exactly six fixed physical arenas and exactly six corresponding parties; there is no seventh arena/party request that legitimately waits for gameplay capacity. In v1.1.2, any Ready Arena 1–6 can nevertheless remain on 'Waiting for a free arena slot' while gameplay arenas are idle because the global ticking-area startup gate can remain closed.",
+      "expected": "Each of the six fixed arenas owns its own party and is eligible to start independently when its party is valid and Ready. With MAX_CONCURRENT_ARENAS=6, visible capacity queueing is not a normal Attack gameplay state: there is no seventh arena/party. Internal lease work may serialize briefly, but a Ready Arena 1–6 must progress to countdown or report a concrete allocation failure rather than wait for a fictional free arena slot.",
       "observed": "Runtime testing with three players in separate otherwise-idle arenas shows ready groups at #2/#1 in queue and no arena starting. In v1.1.2 pumpQueue() returns immediately while _startupReady is false. cleanupStaleAreas() sets _startupReady only when every stale-area entry is removed; removeAllAreasNamed() returns true only for successCount > 0 or a recognized thrown 'missing area' error. By contrast, v1.1.1 removeAllAreasNamed() used runCommandSuccessCount() and stopped normally when removed === 0. Therefore a normal zero-success 'area absent' result can now be retained as unresolved stale work and globally hold the allocator closed.",
       "reproduction": [
-        "Start Attack Challenge v1.1.2 with no gameplay arena active.",
-        "Join separate arenas with multiple players and mark each party Ready.",
-        "Observe 'Waiting for a free arena slot' / queue positions even though the configured concurrency is 6 and no gameplay arena is consuming that capacity.",
-        "Confirm no arena reaches countdown while the queue remains below configured capacity."
+        "Start Attack Challenge v1.1.2 with all six gameplay arenas idle.",
+        "Join any fixed arena party (Arena 1–6) with 1–5 players and mark every member Ready.",
+        "Repeat with multiple different fixed arenas, as in the observed three-player test.",
+        "Observe that Ready arenas can display 'Waiting for a free arena slot' / queue positions instead of reaching countdown even though no legitimate overflow arena exists."
       ],
       "aiAnalysis": "This is a semantic regression in cleanup-result interpretation, not a capacity arithmetic problem. v1.1.2 correctly raises MAX_CONCURRENT_ARENAS to 6 and reduces each arena to one core, but introduces _startupReady as a hard global gate. The stale cleanup contract changed from '0 removals means cleanup complete for this name' in v1.1.1 to 'successCount must be >0, otherwise cleanup is unresolved' in v1.1.2 unless the command throws a specifically matched absence error. Because most stale names are expected not to exist, the gate can remain false forever. Runtime queue evidence matches this exact pre-reservation failure boundary.",
       "relevantCode": [
@@ -37,11 +37,12 @@
           "reason": "Previous cleanup semantics treated removed === 0 as the normal termination condition, demonstrating the semantic regression introduced by the new startup gate."
         }
       ],
-      "suggestedFix": "Restore idempotent cleanup semantics: distinguish 'already absent' from 'remove failed'. A zero-success remove for a non-existent named area must count as clean, or verify absence explicitly with a reliable native contract. Do not make global startup readiness depend on a regex-only thrown-error interpretation. Add a startup self-test that proves _startupReady opens with a clean world and that 1..6 below-capacity requests leave the visible queue.",
+      "suggestedFix": "Restore idempotent stale-area cleanup semantics so the global startup gate opens on a clean world. Then align the allocator/UI with Attack's fixed six-arena domain: internal lease serialization must not be presented as capacity overflow, and every valid Ready Arena 1–6 must either progress to countdown or surface a concrete allocation failure. Add acceptance for each fixed arena individually and all six concurrently; do not test or document a nonexistent Arena 7 overflow case.",
       "mustPreserve": [
+        "Exactly six fixed arena/party bindings.",
         "Six-arena one-core residency design.",
         "Idempotent cleanup of already-absent areas.",
-        "Queue feedback for genuine capacity overflow only.",
+        "Independent startability of every Arena 1–6.",
         "Stale lease cleanup after reload/crash."
       ]
     },
