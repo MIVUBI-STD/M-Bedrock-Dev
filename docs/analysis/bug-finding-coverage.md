@@ -301,6 +301,46 @@ release one slot → exactly one queued request advances
 
 If runtime queues below proven capacity, classify the capability as failing even when source constants advertise a larger maximum.
 
+## Effective-delivery and gate proof
+
+A configured capability is not closed until every blocking gate between user intent and delivered gameplay has been evaluated.
+
+For any advertised capacity, queue, allocator, lease, preload, or recovery system, reconstruct:
+
+```text
+user becomes eligible
+→ global/startup gates
+→ admission
+→ queue
+→ reservation
+→ native resource allocation
+→ readiness verification
+→ gameplay transition
+→ observable delivery
+```
+
+Never infer delivered capacity from constants, physical replicas, resource arithmetic, or intended architecture alone.
+
+### Below-capacity queue invariant
+
+If a system advertises capacity `N`, then for each `1..N` valid independent requests, a clean/idle runtime must not leave requests in an overflow queue solely because an internal startup/recovery gate failed to open.
+
+A visible queue below advertised capacity is a failure signal that requires causal investigation.
+
+### Idempotent cleanup semantic check
+
+For startup/recovery cleanup, explicitly test the already-clean case:
+
+```text
+resource exists  → cleanup removes it → clean
+resource absent  → cleanup recognizes absence → clean
+real removal error → not clean
+```
+
+Do not conflate `0 removed` / `already absent` with cleanup failure unless the platform contract proves that interpretation.
+
+When a new version changes cleanup return values, success predicates, error handling, or readiness gates, compare the semantic contract with the previous selected version. A refactor that reverses the meaning of `0`, `false`, absence, or idempotent success is a regression candidate even if the new architecture looks more robust.
+
 ## Per-replica gameplay parity matrix
 
 When a map exposes multiple playable arenas/replicas, source/config replica equivalence does not by itself close gameplay coverage. Build one parity matrix that projects every material gameplay subsystem across every playable replica.
