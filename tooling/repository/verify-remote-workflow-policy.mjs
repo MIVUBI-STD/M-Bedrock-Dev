@@ -6,6 +6,7 @@ const requiredPolicy = [
   ["README.md", "local checkout is **not required**"],
   ["AGENTS.md", "REMOTE_GITHUB is the normal ChatGPT execution mode"],
   ["GITHUB_RULES.md", "REMOTE_GITHUB is the normal ChatGPT repository context"],
+  ["GITHUB_RULES.md", "ChatGPT no-local-PC invariant"],
   ["docs/system/development-operations.md", "primary ChatGPT development mode is **REMOTE_GITHUB**"],
 ];
 
