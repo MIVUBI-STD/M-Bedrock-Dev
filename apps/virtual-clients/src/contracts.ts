@@ -110,7 +110,6 @@ export interface DoctorReport {
   baseVmPresent: boolean;
   baseVmStopped: boolean | null;
   baseState: BaseState | null;
-  readyForProvisioning: boolean;
   nextSetupAction: SetupAction;
   issues: HealthIssue[];
 }
