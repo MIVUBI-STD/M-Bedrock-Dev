@@ -962,6 +962,7 @@ impl VirtualClients {
     }
 
     fn stage_update_inner(&self) -> io::Result<StagedUpdate> {
+        let _lock = OperationLock::acquire()?;
         stage_update()
     }
 
