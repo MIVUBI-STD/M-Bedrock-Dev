@@ -632,7 +632,7 @@ mod tests {
     }
 
     #[test]
-    fn base_profile_parity_requires_current_agent_and_schema() {
+    fn base_profile_parity_requires_current_protocol_schema_and_minecraft_version() {
         let native = MinecraftProfile {
             version: "1.21.120.0".into(),
             install_type: MinecraftInstallType::Desktop,
@@ -647,11 +647,6 @@ mod tests {
             };
 
         assert!(base_profile_matches_native(&native, &current));
-
-        let different_package_version = BaseProfile {
-            ..current.clone()
-        };
-        assert!(base_profile_matches_native(&native, &different_package_version));
 
         let stale_protocol = BaseProfile {
             guest_agent_protocol: GUEST_AGENT_PROTOCOL_VERSION + 1,
