@@ -874,7 +874,7 @@
       ]
     },
     {
-      "knowledgeId": "cleanup-policy.baseline-restore-verify",
+      "knowledgeId": "cleanup-policy.baseline-restore-verified",
       "consumer": "arena-reset-closure-analysis",
       "analyzerPaths": [
         "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
