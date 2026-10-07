@@ -185,7 +185,6 @@ pub fn load_base_profile() -> io::Result<BaseProfile> {
 
 pub fn write_verified_base_profile(
     native: &MinecraftProfile,
-    _guest_agent_version: &str,
     guest_agent_protocol: u32,
 ) -> io::Result<BaseProfile> {
     let base = base_vmx_path_for_version(&native.version)?;
