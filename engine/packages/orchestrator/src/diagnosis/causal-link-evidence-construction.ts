@@ -50,6 +50,24 @@ export function constructCausalLinkEvidence(input: {
     domain: "static",
   });
 
+  if (link.impactPathComponentIds.length > 0) {
+    output.push({
+      predicate:
+        "causal-link:" + link.id + ":impact-path:none",
+      state:
+        link.impactPathEvidenceIds.length > 0
+          ? "present"
+          : "unknown",
+      evidenceId: evidenceId(
+        "impact-path",
+        link.impactPathEvidenceIds.length > 0
+          ? link.impactPathEvidenceIds
+          : [link.id],
+      ),
+      domain: "static",
+    });
+  }
+
   for (const requirementId of link.knowledgeRequirementIds) {
     const receipt = input.graph.knowledgeReceipts.find(
       (item) => item.requirementId === requirementId,
