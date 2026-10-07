@@ -32,6 +32,26 @@ function parse(path) {
 }
 
 const issues = [];
+const packageJson = JSON.parse(
+  readFileSync("package.json", "utf8"),
+);
+if (
+  packageJson.scripts?.audit !==
+    "tsx apps/cli/src/audit.ts"
+) {
+  issues.push(
+    "Production audit script must resolve only to apps/cli/src/audit.ts.",
+  );
+}
+if (
+  packageJson.scripts?.["bug-report-html"] !==
+    "tsx tooling/bug-report-documents/render.ts"
+) {
+  issues.push(
+    "Map Audit Report HTML script must resolve only to tooling/bug-report-documents/render.ts.",
+  );
+}
+
 
 const PIPELINE_PATH =
   "engine/packages/orchestrator/src/map-audit-pipeline.ts";
