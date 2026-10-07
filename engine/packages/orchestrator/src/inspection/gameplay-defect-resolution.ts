@@ -848,7 +848,20 @@ export function assessGameplayDefectResolutionGate(
   const runtimeAndGapResolutions: GameplayDefectResolution[] = [
     ...runtimeBlocked.map((link) => {
       const supplied = byId.get(link.id);
-      if (supplied) return supplied;
+      if (supplied) {
+        const scenario = graph.scenarios.find(
+          (item) => item.id === link.scenarioId,
+        );
+        issues.push(
+          ...validateResolution(
+            graph,
+            link,
+            supplied,
+            scenario,
+          ),
+        );
+        return supplied;
+      }
       const runtimeQuestion = runtimeQuestionFor(link);
       if (runtimeQuestion === undefined) {
         return {
@@ -877,8 +890,23 @@ export function assessGameplayDefectResolutionGate(
         narrowRuntimeQuestion: runtimeQuestion,
       };
     }),
-    ...detectionGaps.map((link) =>
-      byId.get(link.id) ?? ({
+    ...detectionGaps.map((link) => {
+      const supplied = byId.get(link.id);
+      if (supplied) {
+        const scenario = graph.scenarios.find(
+          (item) => item.id === link.scenarioId,
+        );
+        issues.push(
+          ...validateResolution(
+            graph,
+            link,
+            supplied,
+            scenario,
+          ),
+        );
+        return supplied;
+      }
+      return {
       causalLinkId: link.id,
       scenarioId: link.scenarioId,
       knowledgeRequirementIds: [...link.knowledgeRequirementIds],
@@ -889,7 +917,8 @@ export function assessGameplayDefectResolutionGate(
       detectionGapReason: link.reason,
       missingCapability:
         "Resolve the missing selected-artifact causal evidence before requesting runtime validation.",
-    })),
+      };
+    }),
   ];
 
   const resolutions: GameplayDefectResolution[] = [
