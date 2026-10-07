@@ -106,7 +106,7 @@ function unique(values: readonly string[] | undefined): readonly string[] {
   )].sort();
 }
 
-function requiredCounterProofDimensions(
+export function requiredCounterProofDimensions(
   graph: GameplayScenarioGraph,
   link: GameplayCausalLink,
   scenario:
