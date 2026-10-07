@@ -41,7 +41,7 @@ describe("gameplay issue taxonomy", () => {
       failureDomain:
         "progression-wave-objective",
       contributingDomains: [
-        ["chunk-simulation"],
+        "chunk-simulation",
         "entity-ai-combat",
         "progression-wave-objective",
       ],
@@ -78,9 +78,9 @@ describe("gameplay issue taxonomy", () => {
         knowledgeDomains: ["chunk-simulation"],
       }),
     ).toEqual({
-      failureDomain: ["chunk-simulation"],
+      failureDomain: "chunk-simulation",
       contributingDomains: [
-        ["chunk-simulation"],
+        "chunk-simulation",
       ],
       gameplayFlow: "SETUP",
     });
