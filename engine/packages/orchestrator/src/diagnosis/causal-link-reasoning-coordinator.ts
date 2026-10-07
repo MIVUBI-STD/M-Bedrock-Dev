@@ -55,6 +55,7 @@ export function reasonAboutCausalLinkFinding(input: {
   diagnosticDisposition: IntentDiagnosticDisposition;
   runtimeProbeTranscript?: RuntimeProbeTranscript;
   probeCandidates?: readonly DiagnosticProbeCandidate[];
+  expectedArtifactId?: string;
 }): CausalLinkReasoningReceipt {
   const construction = constructCausalLinkHypothesis({
     graph: input.graph,
@@ -77,6 +78,9 @@ export function reasonAboutCausalLinkFinding(input: {
     construction,
     ...(input.runtimeProbeTranscript
       ? { runtimeProbeTranscript: input.runtimeProbeTranscript }
+      : {}),
+    ...(input.expectedArtifactId
+      ? { expectedArtifactId: input.expectedArtifactId }
       : {}),
   });
   const assessment = assessCrossDomainHypotheses(
