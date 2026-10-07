@@ -5,6 +5,9 @@ const QUEUE = [];
 const SUPPORTED = new Set([
   "chunk-loaded",
   "entity-resolvable",
+  "entity-location",
+  "dimension-height-range",
+  "command-result",
   "tag-present",
   "scoreboard-value"
 ]);
@@ -53,6 +56,37 @@ function execute(request) {
     return {
       state: loaded ? "present" : "absent",
       value: loaded
+    };
+  }
+
+  if (query.kind === "entity-location") {
+    const entity = findEntity(query.entityId);
+    if (!entity) return { state: "unknown", note: "Entity is not currently resolvable." };
+    const dimensionId = entity.dimension?.id;
+    if (query.dimension && dimensionId !== query.dimension) {
+      return { state: "absent", value: dimensionId ?? "unknown" };
+    }
+    const { x, y, z } = entity.location;
+    return {
+      state: "present",
+      value: JSON.stringify({ dimension: dimensionId, x, y, z })
+    };
+  }
+
+  if (query.kind === "dimension-height-range") {
+    const dimension = world.getDimension(query.dimension);
+    const range = dimension.heightRange;
+    return {
+      state: "present",
+      value: JSON.stringify({ min: range.min, max: range.max })
+    };
+  }
+
+  if (query.kind === "command-result") {
+    const result = world.getDimension(query.dimension).runCommand(query.command);
+    return {
+      state: "present",
+      value: JSON.stringify(result)
     };
   }
 
