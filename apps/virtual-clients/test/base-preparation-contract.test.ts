@@ -20,7 +20,8 @@ describe("Base preparation public contract", () => {
         configuredVcpus: 2,
         graphics3dEnabled: true,
         networkPresent: true,
-        networkStartConnected: true
+        networkStartConnected: true,
+        networkConnectionType: "nat"
       }
     }), basePreparation);
     expect(report.basePresent).toBe(true);
