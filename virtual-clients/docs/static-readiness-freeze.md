@@ -65,3 +65,12 @@ Use `acceptance/windows/collect-acceptance.ps1` for machine evidence. A collecte
 - `multiplayerVerified=false` remains false until an actual multiplayer acceptance campaign proves otherwise.
 
 Do not promote LOCAL proof from documentation, source tests, package smoke, or hosted CI.
+
+
+## Build gate status
+
+The static architecture freeze does not imply a successful package build. A source revision is eligible for Windows acceptance only after the canonical Virtual Clients Package Smoke workflow has executed against that revision and completed successfully.
+
+Commits intentionally marked `[skip ci]` remain `STATIC_REVIEWED / BUILD_UNPROVEN` until an explicit non-skipped verification commit or equivalent canonical workflow execution covers the resulting source tree.
+
+Do not translate absence of workflow failures into PASS when no workflow ran.
