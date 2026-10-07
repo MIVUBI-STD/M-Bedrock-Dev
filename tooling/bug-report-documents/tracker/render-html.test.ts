@@ -60,6 +60,9 @@ describe("Golden Bug Tracker renderer", () => {
     expect(html).toContain("✓ PASSED");
     expect(html).toContain("✕ FAILED");
     expect(html).toContain("Tester Notes");
+    expect(html).toContain("Evidence · Optional");
+    expect(html).toContain("Optional notes");
+    expect(html.indexOf("TEST RESULT")).toBeLessThan(html.indexOf("Technical Details ↓"));
     expect(html).not.toContain("Mark fixed");
     expect(html).toContain('data-issue-id="BUG-GOLDEN-001"');
     expect(html).not.toContain("<details class=\"map\" open");
