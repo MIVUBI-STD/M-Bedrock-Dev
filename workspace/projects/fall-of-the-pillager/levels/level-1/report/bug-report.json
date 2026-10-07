@@ -24,7 +24,7 @@
         "Join the same Fall of the Pillager Level 1 arena with at least 2 players.",
         "Start normal active gameplay.",
         "Have Player A attack Player B with the normal combat weapon.",
-        "Confirm Player B receives damage and can be pushed into the knockdown/death lifecycle by the teammate."
+        "Check whether Player B receives damage and can be pushed into the knockdown/death lifecycle by the teammate."
       ],
       "aiAnalysis": "Session/team ownership exists, but the selected artifact does not install a teammate-source exclusion at the damage boundary. Because the ordinary player attack path remains reachable, same-session player damage can feed the map's custom knockdown/revive/death accounting.",
       "relevantCode": [
