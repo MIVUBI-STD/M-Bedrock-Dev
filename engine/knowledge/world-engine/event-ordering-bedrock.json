@@ -156,7 +156,7 @@
       "riskSurfaces": ["load-order", "startup-race"]
     },
     {
-      "id": "tick.currentTick-is-observation-not-transaction",
+      "id": "tick.current-tick-is-observation-not-transaction",
       "domain": "event-ordering",
       "subject": "system.currentTick",
       "statement": "system.currentTick identifies the current world tick, but matching tick numbers do not imply two callbacks share a single atomic transaction or observe identical mutable state.",
