@@ -1,7 +1,59 @@
 import { describe, expect, it } from "vitest";
-import { knowledgeIdsForRequirement } from "../src/inspection/gameplay-scenario-knowledge.js";
+import { expandGameplayKnowledgeRequirementIds, knowledgeIdsForRequirement } from "../src/inspection/gameplay-scenario-knowledge.js";
 
 describe("gameplay scenario knowledge selection", () => {
+  it("expands direct requirements through the existing RIG prerequisite topology", () => {
+    const requirements = [
+      {
+        id: "knowledge:s1:state-flow",
+        scenarioId: "s1",
+        domain: "state-flow" as const,
+        reason: "state",
+        capabilityIds: [],
+        dependsOnRequirementIds: [],
+        subjectIds: [],
+        componentIds: [],
+      },
+      {
+        id: "knowledge:s1:chunk-simulation",
+        scenarioId: "s1",
+        domain: "chunk-simulation" as const,
+        reason: "chunk",
+        capabilityIds: [],
+        dependsOnRequirementIds: [
+          "knowledge:s1:state-flow",
+          "knowledge:s1:platform-constraints",
+        ],
+        subjectIds: [],
+        componentIds: [],
+      },
+      {
+        id: "knowledge:s1:platform-constraints",
+        scenarioId: "s1",
+        domain: "platform-constraints" as const,
+        reason: "platform",
+        capabilityIds: [],
+        dependsOnRequirementIds: [
+          "knowledge:s1:state-flow",
+        ],
+        subjectIds: [],
+        componentIds: [],
+      },
+    ];
+
+    expect(
+      expandGameplayKnowledgeRequirementIds(
+        ["knowledge:s1:chunk-simulation"],
+        requirements,
+      ),
+    ).toEqual([
+      "knowledge:s1:chunk-simulation",
+      "knowledge:s1:platform-constraints",
+      "knowledge:s1:state-flow",
+    ]);
+  });
+
+
   it("selects only exact knowledge records relevant to the scenario domains", () => {
     const requirement = {
       id: "knowledge:s1:platform-constraints",
