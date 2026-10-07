@@ -3,11 +3,11 @@
   "projectId": "attack-challenge",
   "projectName": "Attack Challenge",
   "taskClass": "DIAGNOSE",
-  "revision": 2,
+  "revision": 3,
   "artifact": {
-    "artifactId": "drive:14JStk_EK0XlAyBTdPLyUE2lCKyk9BKpX",
-    "artifactFingerprint": "sha256:95bf318070b3948f0a0d1d093bae2f7b1a3a37e4d94e94d2adfc4d80a501ccba",
-    "version": "1.1.1"
+    "artifactId": "drive:1pUaupQNlb-bx4qPkgLACtmfdXpj4iccA",
+    "artifactFingerprint": "sha256:da4de986e384a978ede7c51fa4523ebf95c4b3d3133f355cd89c4b79feec45f4",
+    "version": "1.1.2"
   },
   "publication": {
     "drive": {
@@ -16,10 +16,10 @@
         "label": "Challenge - Attack Map"
       },
       "currentWorld": {
-        "fileId": "14JStk_EK0XlAyBTdPLyUE2lCKyk9BKpX",
-        "fileName": "Attack Challenge v1.1.1.mcworld",
-        "artifactFingerprint": "sha256:95bf318070b3948f0a0d1d093bae2f7b1a3a37e4d94e94d2adfc4d80a501ccba",
-        "version": "1.1.1"
+        "fileId": "1pUaupQNlb-bx4qPkgLACtmfdXpj4iccA",
+        "fileName": "Attack Challenge v1.1.2.mcworld",
+        "artifactFingerprint": "sha256:da4de986e384a978ede7c51fa4523ebf95c4b3d3133f355cd89c4b79feec45f4",
+        "version": "1.1.2"
       }
     }
   }
