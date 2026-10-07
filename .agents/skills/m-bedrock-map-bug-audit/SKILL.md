@@ -456,7 +456,7 @@ Severity:
 
 ## Output Contract
 
-Primary output uses Map Audit Output V2 and Production Bug Report V2.
+Primary audit output uses Map Audit Output V2. Approved gameplay findings use Production Bug Report V2. Concrete developer/release work that is not justified as BUG or DESIGN_MISMATCH uses the separate canonical Developer Note lane.
 
 Each issue must contain:
 
@@ -486,6 +486,20 @@ Tester instructions use player language:
 Reproduction is explanatory evidence, not a checkbox procedure. In HTML, one issue equals one checklist item. Setup/reproduction steps remain readable scenario detail and must not become individual checkboxes.
 
 Do not expose implementation details as reproduction steps.
+
+### Developer Notes
+
+Developer Notes follow `references/bug-report-contract.md` and `docs/analysis/developer-note-coverage.md`.
+
+A DEV NOTE requires:
+- concrete selected-artifact evidence;
+- clear engineering/release consequence;
+- specific affected scope;
+- actionable correction;
+- no duplicate BUG/DESIGN_MISMATCH root cause;
+- no speculative language.
+
+DEV NOTE has no gameplay severity and is never a fallback for NEED_VALIDATION. Published Bug Tracker presentation keeps BUGS, DESIGN MISMATCHES, and DEV NOTES as three separate lanes.
 
 ## Review
 
