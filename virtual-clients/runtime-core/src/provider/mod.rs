@@ -8,7 +8,7 @@ mod vmx;
 
 pub(crate) use process::{command_output, command_output_with_timeout, wait_for_state};
 pub(crate) use storage::{cleanup_staging, ensure_parent, has_suspend_state, promote_staging_vm, remove_vm_container, staging_residue_count, vm_container};
-pub(crate) use vmx::{apply_virtual_hardware_policy, base_state_for_path, ensure_guest_token_for_path, guest_token_for_path, read_vmx_memory, read_vmx_value, rotate_guest_token_for_path, set_base_state_for_path, vm_identity_key, BASE_STATE_KEY, GUEST_TOKEN_KEY};
+pub(crate) use vmx::{apply_virtual_hardware_policy, base_state_for_path, ensure_guest_token_for_path, guest_token_for_path, read_vmx_memory, read_vmx_value, rotate_guest_token_for_path, set_base_state_for_path, valid_guest_token, vm_identity_key, BASE_STATE_KEY, GUEST_TOKEN_KEY};
 
 use crate::{
     client::{ClientId, ClientState},
