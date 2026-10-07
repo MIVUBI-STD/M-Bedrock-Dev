@@ -1541,7 +1541,7 @@ export function prepareBugReportReviewFromAuditCandidates(
 /**
  * @deprecated Engine-internal compatibility route.
  * Production map audits must start with runSelectedMapAudit() and continue
- * with buildSelectedMapAuditReport(). Do not construct closure inputs manually.
+ * with buildApprovedBugReportFromAudit(). Do not construct closure inputs manually.
  */
 export function buildBugReportFromAuditCandidatesCompatibility(
   input: BuildBugReportFromAuditInput,
