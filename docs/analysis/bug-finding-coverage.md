@@ -272,6 +272,92 @@ For each relevant interaction examine guard, scope, exclusion, owner, generation
 
 Do not generate a Cartesian product of unrelated systems.
 
+## Per-replica gameplay parity matrix
+
+When a map exposes multiple playable arenas/replicas, source/config replica equivalence does not by itself close gameplay coverage. Build one parity matrix that projects every material gameplay subsystem across every playable replica.
+
+Minimum applicable columns:
+
+```text
+replica / arena
+→ admission / ready
+→ residency / preload
+→ spawn / teleport
+→ shop / NPC / dialogue
+→ kit / loadout
+→ inventory / equipment
+→ currency / chest economy
+→ objective / flag
+→ combat / death / respawn
+→ retry / progression
+→ terminal / score
+→ cleanup / reuse
+→ disconnect / reconnect
+```
+
+For offset-generated replicas, prove that every material coordinate-bearing dependency is either:
+- intentionally shared and reachable under a shared residency owner; or
+- transformed by the replica offset / arena-local owner.
+
+A single correctly offset spawn or arena boundary does not prove that shop NPCs, kit structures, storage chests, objectives, entity tags, cleanup bounds, and reconnect destinations are also replica-safe.
+
+### Inventory/economy writer closure
+
+For maps with kits, shops, upgrades, currency, or carried items, enumerate every material inventory/equipment/economy writer before declaring the domain safe:
+
+```text
+fresh-session clear
+loadout application
+kit change
+shop purchase
+currency consume / award / restore
+equipment replacement
+enchantment / upgrade
+death / respawn
+disconnect / reconnect
+retry
+level advance
+full inventory / overflow
+world item drop
+cleanup / return-to-lobby
+```
+
+For each writer prove:
+
+```text
+what may be removed
+what must be preserved
+what may move slots
+what may drop to world
+what is restored
+what happens on partial failure
+which arena/session owns the mutation
+```
+
+Explicitly challenge:
+- silent overwrite/deletion;
+- purchase charged without delivery;
+- delivery without charge;
+- duplicate restore;
+- stale loadout after reconnect;
+- kit swap erasing purchases/upgrades;
+- overflow drop followed by arena cleanup;
+- currency preserved through the wrong boundary;
+- shared chest/config coordinates across replicas.
+
+### Transaction atomicity
+
+Any gameplay exchange with two or more mutations must be treated as a transaction candidate:
+
+```text
+validate
+→ reserve / charge
+→ deliver / mutate
+→ commit feedback
+```
+
+If a later step can fail, prove rollback/refund/idempotency or classify the reachable partial state. Success feedback must only follow successful commit.
+
 ## Differential lifecycle coverage
 
 Compare equivalent goals reached by different paths when applicable:
