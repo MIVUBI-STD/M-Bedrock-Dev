@@ -8,3 +8,4 @@ export * from "./workspace.js";
 export * from "./report-lifecycle.js";
 
 export * from "./authorization.js";
+export * from "./atomic-write.js";
