@@ -27,3 +27,5 @@ export * from "./audit-risk.js";
 
 export * from "./gameplay-issue-taxonomy.js";
 export * from "./map-classification-audit-profile.js";
+
+export * from "./cross-domain-reasoning.js";
