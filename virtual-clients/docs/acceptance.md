@@ -245,9 +245,7 @@ Required proof:
   the guest application failed;
 - console-open failure after successful launch reports that VM + Minecraft are
   running but the client window could not be opened;
-- a running VM with `minecraftRunning=false` is presented as Minecraft closed
-  and offers Launch Minecraft; `minecraftRunning=true` is presented as
-  Minecraft ready;
+- a running VM with `minecraftRunning=false` remains a VM/runtime observation and may offer Launch Minecraft when backend action admission allows it; `minecraftRunning=true` is presented only as Minecraft process running, never as signed-in or multiplayer proof;
 - Guest Agent protocol v2 is required for launch capability. Protocol v1 remains
   status-readable for diagnosis/migration but is not sufficient for a current
   Base/client lineage;
@@ -322,7 +320,7 @@ Windows distribution acceptance requires:
 - staged installer Authenticode status is Valid and signer thumbprint matches both embedded publisher identity and manifest metadata;
 - update apply remains unavailable while any Virtual is RUNNING or SUSPENDED;
 - update staging never changes Native/Base/Virtual Minecraft lineage;
-- self-update remains disabled until trusted signature verification is implemented and accepted.
+- self-update remains disabled until an explicit apply implementation is reviewed and target-machine accepted; staging signature verification alone does not authorize execution.
 
 
 ## Windows acceptance execution
