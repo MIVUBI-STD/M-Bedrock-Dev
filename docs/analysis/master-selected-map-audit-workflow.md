@@ -534,6 +534,16 @@ Compound shared-capacity boundaries may add selected combinations such as:
 
 Do not brute-force unrelated combinations.
 
+## 4.4.1 Per-arena gameplay parity
+
+For multi-arena maps, MULTI_ARENA closure requires more than capacity and selector isolation.
+
+Project the complete material player journey through every playable arena, including arena-local dependencies such as shop/NPC access, kit/loadout delivery, inventory/economy state, objectives, death/respawn, retry/progression, terminal settlement, cleanup, and reconnect.
+
+Use replica normalization to avoid duplicated reasoning, but separately prove every coordinate-bearing or arena-bound dependency is correctly shared or offset. Any divergent dependency returns only that subsystem/replica to STRESS/PROVE.
+
+For inventory/economy-heavy maps, complete the writer inventory defined by the Bug-Finding Coverage System before declaring gameplay parity closed.
+
 ## 4.5 Capability Delivery
 
 Compare:
