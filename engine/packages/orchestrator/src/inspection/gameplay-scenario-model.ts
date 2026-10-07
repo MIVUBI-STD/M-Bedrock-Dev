@@ -82,6 +82,8 @@ export interface GameplayCausalLink {
   readonly dimensionEvidence: Readonly<Partial<Record<"owner" | "generation" | "cleanup" | "geometry" | "capability" | "world-rule" | "activation" | "representation", readonly string[]>>>;
   readonly intentEdgeKind?: import("../../../gameplay-intent/src/index.js").GameplayIntentEdgeKind;
   readonly status: GameplayCausalLinkStatus;
+  /** Required only for RUNTIME_BLOCKED; identifies the irreducible native-runtime semantic. */
+  readonly runtimeNativeReason?: "client-reconciliation" | "entity-navigation-manifestation" | "network-timing" | "engine-scheduling";
   readonly reason: string;
 }
 
