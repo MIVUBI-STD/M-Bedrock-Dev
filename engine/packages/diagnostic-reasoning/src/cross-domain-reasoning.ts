@@ -43,20 +43,15 @@ function confidence(
     return assessment.supportingEvidenceIds.length > 0 ? "low" : "unknown";
   }
 
-  const runtime = domains.includes("runtime");
-  const staticDomain = domains.includes("static");
-  const knowledge = domains.includes("knowledge");
   const independent = new Set(domains).size;
 
   if (
-    runtime &&
-    staticDomain &&
-    knowledge &&
+    assessment.disposition === "supported" &&
     assessment.missingRequiredPredicates.length === 0
   ) {
     return "proven";
   }
-  if (runtime && independent >= 2) return "high";
+  if (independent >= 3) return "high";
   if (independent >= 2) return "medium";
   return "low";
 }
