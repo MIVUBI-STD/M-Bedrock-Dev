@@ -164,9 +164,11 @@ function derivedFamilyCriterionEvidence(input: {
   }
   if (
     criterionId.includes("reachable") ||
-    criterionId.includes("grounded") ||
-    criterionId.includes("derived") ||
-    criterionId.includes("missing")
+    (
+      criterionId.includes("grounded") &&
+      !criterionId.includes("platform") &&
+      !criterionId.includes("residency")
+    )
   ) {
     return contradictionEvidence;
   }
