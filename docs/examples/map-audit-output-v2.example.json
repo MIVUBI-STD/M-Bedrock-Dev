@@ -39,7 +39,9 @@
       {
         "surface": "example",
         "status": "checked",
-        "evidenceIds": ["e:example"]
+        "evidenceIds": [
+          "e:example"
+        ]
       }
     ]
   },
@@ -65,12 +67,16 @@
       "informationMismatch": false,
       "issue": "Example proven gameplay defect",
       "playerImpact": "Required progression cannot complete.",
-      "reproduceSteps": ["Trigger the affected progression path."],
+      "reproduceSteps": [
+        "Trigger the affected progression path."
+      ],
       "expected": "Progression completes.",
       "actual": "Progression blocks.",
       "proofCeiling": "STATIC VERIFIED",
       "issueType": "BUG",
-      "contributingDomains": ["progression-wave-objective"],
+      "contributingDomains": [
+        "progression-wave-objective"
+      ],
       "severity": "Blocker",
       "counterEvidence": "cleared",
       "testerTriggerReady": true
@@ -82,12 +88,16 @@
       "failureDomain": "entity-ai-combat",
       "informationMismatch": false,
       "issue": "Example unresolved material finding",
-      "reproduceSteps": ["Exercise the exact unresolved entity behavior."],
+      "reproduceSteps": [
+        "Exercise the exact unresolved entity behavior."
+      ],
       "expected": "Entity behavior matches the grounded gameplay dependency.",
       "actual": "Static evidence cannot decide the native behavior.",
       "proofCeiling": "UNKNOWN",
       "issueType": "BUG",
-      "contributingDomains": ["entity-ai-combat"],
+      "contributingDomains": [
+        "entity-ai-combat"
+      ],
       "validationReason": "Native runtime behavior remains irreducible from selected-artifact evidence.",
       "missingProof": "Observed behavior for the exact unresolved entity interaction.",
       "validationTest": "Run only the affected interaction and record whether the dependency holds.",
@@ -96,7 +106,9 @@
         "recipeId": "proof:entity-combat-lifecycle",
         "proofGoal": "Resolve the exact entity behavior.",
         "provenClaims": [],
-        "missingClaims": ["Observed native behavior."],
+        "missingClaims": [
+          "Observed native behavior."
+        ],
         "route": [],
         "evidenceSubstitutions": [],
         "historicalSearchHints": [],
@@ -104,6 +116,20 @@
         "familyProofCriteria": [],
         "proofStopRule": "Stop when deciding proof is complete.",
         "runtimeLastResort": true
+      },
+      "reasoning": {
+        "reportClassification": "UNKNOWN",
+        "diagnosticDisposition": "runtime-proof-required",
+        "proofConfidence": "low",
+        "evidenceDomainSources": [
+          "static",
+          "knowledge"
+        ],
+        "evidenceChain": [],
+        "unresolvedPredicates": [
+          "causal-link:example:runtime:none"
+        ],
+        "recommendedValidationPredicate": "causal-link:example:runtime:none"
       }
     }
   ],
@@ -111,19 +137,31 @@
   "validationTests": [
     {
       "key": "example:entity-ai-combat",
-      "findingIds": ["NV-001"],
+      "findingIds": [
+        "NV-001"
+      ],
       "test": "Run only the affected interaction and record whether the dependency holds."
     }
   ],
   "honesty": {
     "policy": "no-hidden-material-finding",
     "status": "PASS",
-    "expectedVisibleResidueIds": ["NV-001"],
-    "visibleNeedValidationIds": ["NV-001"],
-    "expectedProvenIds": ["BUG-001"],
-    "visibleProvenIds": ["BUG-001"],
+    "expectedVisibleResidueIds": [
+      "NV-001"
+    ],
+    "visibleNeedValidationIds": [
+      "NV-001"
+    ],
+    "expectedProvenIds": [
+      "BUG-001"
+    ],
+    "visibleProvenIds": [
+      "BUG-001"
+    ],
     "missingVisibleResidueIds": [],
     "missingProvenProjectionIds": [],
-    "reasons": ["All tracked material findings remain visible."]
+    "reasons": [
+      "All tracked material findings remain visible."
+    ]
   }
 }
