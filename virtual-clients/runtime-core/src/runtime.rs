@@ -656,7 +656,7 @@ fn client_status_from_observations(
         memory_limit_mb: provider.memory_limit_mb(client).ok(),
         host_working_set_mb: working_set_for(working_sets, client),
         guest_tools_ready,
-        guest_agent_ready: Some(guest.is_some()),
+        guest_agent_ready: guest.map(|_| true),
         guest_agent_version: guest.map(|status| status.agent_version.clone()),
         minecraft_version,
         minecraft_running: guest.and_then(|status| status.minecraft_running),
