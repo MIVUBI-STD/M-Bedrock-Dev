@@ -1628,9 +1628,21 @@ impl VirtualClients {
         };
 
         let mut result = Vec::with_capacity(targets.len());
+        let mut stopped_by_batch = Vec::new();
         for client in &targets {
-            check_action_admission(provider.as_ref(), *client, LifecycleAction::Stop)?;
-            provider.stop(*client)?;
+            let client = *client;
+            let original_state = provider.status(client)?;
+            if let Err(error) = check_action_admission(provider.as_ref(), client, LifecycleAction::Stop) {
+                let failed = restore_batch_state(provider.as_ref(), &stopped_by_batch);
+                return Err(with_rollback_context(error, &failed));
+            }
+            if let Err(error) = provider.stop(client) {
+                let failed = restore_batch_state(provider.as_ref(), &stopped_by_batch);
+                return Err(with_rollback_context(error, &failed));
+            }
+            if original_state != ClientState::Stopped {
+                stopped_by_batch.push((client, original_state));
+            }
         }
 
         let working_sets = provider.host_working_sets_mb()?;
