@@ -16,6 +16,10 @@ if (!(Test-Path -LiteralPath $vmtoolsd -PathType Leaf)) {
 
 $root = Join-Path $env:ProgramData 'M-Bedrock\VirtualClients'
 $agent = Join-Path $root 'virtual-guest-agent.exe'
+$rootItem = Get-Item -LiteralPath $root -Force -ErrorAction SilentlyContinue
+if ($rootItem -and ($rootItem.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+  throw 'Guest Agent installation root must not be a reparse point.'
+}
 $taskName = 'M-Bedrock Virtual Guest Agent'
 New-Item -ItemType Directory -Path $root -Force | Out-Null
 
@@ -68,6 +72,13 @@ if ($installedRule.Direction -ne 'Inbound' -or $installedRule.Action -ne 'Allow'
 }
 
 $installed = Get-ScheduledTask -TaskName $taskName -ErrorAction Stop
+$installedAction = @($installed.Actions)
+if ($installedAction.Count -ne 1 -or $installedAction[0].Execute -ne $agent -or ![string]::IsNullOrWhiteSpace($installedAction[0].Arguments)) {
+  throw 'Guest Agent scheduled task does not point to the exact installed binary.'
+}
+if ($installed.Principal.UserId -ne 'SYSTEM' -or $installed.Principal.RunLevel -ne 'Highest') {
+  throw 'Guest Agent scheduled task principal does not match the SYSTEM policy.'
+}
 if ($installed.State -eq 'Disabled') {
   throw 'Guest Agent scheduled task was registered but is disabled.'
 }
