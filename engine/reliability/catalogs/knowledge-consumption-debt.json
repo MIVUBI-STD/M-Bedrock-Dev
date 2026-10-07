@@ -339,36 +339,6 @@
       "nextEvidenceOwner": "runtime-entity-state"
     },
     {
-      "knowledgeId": "entity.attack.melee-damage-component",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
-    },
-    {
-      "knowledgeId": "entity.attack.ranged-requires-shooter",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
-    },
-    {
-      "knowledgeId": "entity.break-door-navigation-owned",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
-    },
-    {
-      "knowledgeId": "entity.entity-sensor-fires-events",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
-    },
-    {
-      "knowledgeId": "entity.environment-sensor-fires-events",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
-    },
-    {
       "knowledgeId": "entity.event.cross-entity-tick-order",
       "status": "runtime-required",
       "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
@@ -379,12 +349,6 @@
       "status": "runtime-required",
       "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",
       "nextEvidenceOwner": "runtime-domain-validation"
-    },
-    {
-      "knowledgeId": "entity.open-door-needs-path-through-door",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
     },
     {
       "knowledgeId": "entity.relation-definition-requires-transition-integrity",
@@ -399,28 +363,10 @@
       "nextEvidenceOwner": "entity-behavior-semantic-analysis"
     },
     {
-      "knowledgeId": "entity.sensor.entity-conditional-event",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
-    },
-    {
-      "knowledgeId": "entity.sensor.environment-conditional-event",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
-    },
-    {
       "knowledgeId": "entity.spawn-event-summon-difference",
       "status": "static-capability-gap",
       "reason": "Summon-vs-natural entity spawn-event activation is not modeled by current entity event graph.",
       "nextEvidenceOwner": "entity-spawn-lifecycle-analysis"
-    },
-    {
-      "knowledgeId": "entity.stalk-pounce-needs-target-attack",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
     },
     {
       "knowledgeId": "environment.explosion-source-and-blocks",

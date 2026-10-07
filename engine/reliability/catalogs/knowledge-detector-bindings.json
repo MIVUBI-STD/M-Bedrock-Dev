@@ -1605,6 +1605,104 @@
       ]
     },
     {
+      "knowledgeId": "entity.attack.melee-damage-component",
+      "consumer": "entity-behavior-semantic-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/attack.ts",
+        "engine/analyzers/entities/src/navigation.ts",
+        "engine/analyzers/entities/src/behavior-prerequisites.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/entities/test/behavior-prerequisites.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.attack.ranged-requires-shooter",
+      "consumer": "entity-behavior-semantic-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/attack.ts",
+        "engine/analyzers/entities/src/navigation.ts",
+        "engine/analyzers/entities/src/behavior-prerequisites.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/entities/test/behavior-prerequisites.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.break-door-navigation-owned",
+      "consumer": "entity-behavior-semantic-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/navigation.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/entities/test/navigation.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.entity-sensor-fires-events",
+      "consumer": "entity-behavior-semantic-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/sensors.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/entities/test/attack-sensor.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.environment-sensor-fires-events",
+      "consumer": "entity-behavior-semantic-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/sensors.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/entities/test/attack-sensor.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.open-door-needs-path-through-door",
+      "consumer": "entity-behavior-semantic-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/attack.ts",
+        "engine/analyzers/entities/src/navigation.ts",
+        "engine/analyzers/entities/src/behavior-prerequisites.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/entities/test/behavior-prerequisites.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.sensor.entity-conditional-event",
+      "consumer": "entity-behavior-semantic-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/sensors.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/entities/test/attack-sensor.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.sensor.environment-conditional-event",
+      "consumer": "entity-behavior-semantic-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/sensors.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/entities/test/attack-sensor.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.stalk-pounce-needs-target-attack",
+      "consumer": "entity-behavior-semantic-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/attack.ts",
+        "engine/analyzers/entities/src/navigation.ts",
+        "engine/analyzers/entities/src/behavior-prerequisites.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/entities/test/behavior-prerequisites.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "entity.ai-priority-lower-number-higher",
       "consumer": "entity-ai-stack-analysis",
       "analyzerPaths": [

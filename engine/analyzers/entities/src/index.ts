@@ -1,4 +1,5 @@
 export * from "./attack.js";
+export * from "./behavior-prerequisites.js";
 export * from "./navigation.js";
 export * from "./parse.js";
 export * from "./reachability.js";
