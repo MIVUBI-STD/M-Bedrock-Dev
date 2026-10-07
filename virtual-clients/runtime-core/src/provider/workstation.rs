@@ -291,17 +291,32 @@ impl Provider for VmwareWorkstationProvider {
 
         let resume = has_suspend_state(&vmx);
         if resume {
-            command_output_with_timeout(
+            let result = command_output_with_timeout(
                 self.require_vmrun()?,
                 ["-T", "ws", "start", vmx.to_string_lossy().as_ref(), "gui"],
                 DISK_STATE_TIMEOUT,
-            )?;
+            );
+            if let Err(error) = result {
+                // vmrun may time out after the resume mutation has already
+                // completed. Reconcile observed provider state before surfacing
+                // an unknown-mutation failure to the lifecycle owner.
+                if self.running(&vmx).unwrap_or(false) {
+                    return Ok(ClientState::Running);
+                }
+                return Err(error);
+            }
             wait_for_state(|| self.running(&vmx), true, DISK_STATE_TIMEOUT)?;
         } else {
-            command_output(
+            let result = command_output(
                 self.require_vmrun()?,
                 ["-T", "ws", "start", vmx.to_string_lossy().as_ref(), "gui"],
-            )?;
+            );
+            if let Err(error) = result {
+                if self.running(&vmx).unwrap_or(false) {
+                    return Ok(ClientState::Running);
+                }
+                return Err(error);
+            }
             wait_for_state(|| self.running(&vmx), true, Duration::from_secs(15))?;
         }
         Ok(ClientState::Running)
