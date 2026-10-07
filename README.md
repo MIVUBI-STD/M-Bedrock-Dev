@@ -89,10 +89,11 @@ The exact selected map artifact is current gameplay authority. Historical eviden
 
 ```text
 planning/                    what should be worked on
-workspace/projects/          working/project continuity
-workspace/reports/           canonical current Bug Report V2
-workspace/developer-notes.json current Developer Note ledger
-workspace/publication/       derived human-facing publication output
+workspace/projects/          map-centric project continuity
+  <project>/report/          canonical current Bug Report V2 / Developer Notes
+  <project>/output/          derived current HTML + JSON tracker output
+  <project>/archive/vX.Y.Z/  intentionally retained historical report/output
+  <project>/levels/          level-scoped report/output/archive for multi-level games
 engine/reliability/history/  historical execution evidence
 engine/reliability/corpus/   reusable/frozen evaluation material
 ```
