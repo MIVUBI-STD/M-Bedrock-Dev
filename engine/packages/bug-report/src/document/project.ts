@@ -87,6 +87,8 @@ function projectIssue(
     category: bugFinderCategoryLabel(bug.category),
     title: bug.title,
     issue: bug.problem,
+    ...(bug.whyThisIsBug === undefined ? {} : { whyThisIsBug: bug.whyThisIsBug }),
+    ...(bug.impact === undefined ? {} : { impact: bug.impact }),
     reproduction: [...(bug.reproduction ?? [])],
     observed: bug.observed,
     expected: bug.expected,
