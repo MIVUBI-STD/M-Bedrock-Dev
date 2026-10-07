@@ -47,8 +47,8 @@
     <div>
       <span class="eyebrow">SETUP · CLIENT CHECK</span>
       <strong>Finish Windows first boot on all three clients</strong>
-      <small>Use Start first-time setup on each client, complete Windows first-run screens, then use Check clients. Guests remain running while you complete setup; compatibility is verified by Check clients.</small>
-      <small>Identity verification requires all three clients running together. This PC is recommended for {snapshot.doctor.maxRecommendedVirtualClients} simultaneous virtual clients; this recommendation is not a guarantee of available memory.</small>
+      <small>Use Start first-time setup on each client, complete Windows first-run screens, then use Check clients. Clients remain running while you complete setup; Check clients verifies their required runtime and identity state.</small>
+      <small>Check clients requires all three clients running together. This PC is currently recommended for {snapshot.doctor.maxRecommendedVirtualClients} simultaneous virtual clients; actual capacity still requires local testing.</small>
     </div>
     <button class="primary" disabled={Boolean(busy) || runningVirtuals < 3} on:click={onVerifyIdentities}>
       {busy === "verify-identities" ? "Checking…" : "Check clients"}
