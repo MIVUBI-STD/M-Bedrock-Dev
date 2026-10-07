@@ -436,7 +436,7 @@ function chunkRecoveryStaticProofs(
 } {
   const file = ts.createSourceFile(
     script.source.relativePath,
-    script.text,
+    script.text ?? "",
     ts.ScriptTarget.Latest,
     true,
     script.source.relativePath.endsWith(
@@ -622,7 +622,7 @@ function tickingAreaReliabilityProofs(
 } {
   const file = ts.createSourceFile(
     script.source.relativePath,
-    script.text,
+    script.text ?? "",
     ts.ScriptTarget.Latest,
     true,
     script.source.relativePath.endsWith(
@@ -808,7 +808,7 @@ function retryBudgetGuardRegions(
 ): ReadonlySet<string> {
   const file = ts.createSourceFile(
     script.source.relativePath,
-    script.text,
+    script.text ?? "",
     ts.ScriptTarget.Latest,
     true,
     script.source.relativePath.endsWith(
