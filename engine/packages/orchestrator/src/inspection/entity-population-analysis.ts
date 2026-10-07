@@ -157,7 +157,7 @@ function spawnIntentAssessments(
   for (const script of scripts) {
     const file = ts.createSourceFile(
       script.source.relativePath,
-      script.text,
+      script.text ?? "",
       ts.ScriptTarget.Latest,
       true,
       script.source.relativePath.endsWith(
