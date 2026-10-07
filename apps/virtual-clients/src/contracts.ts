@@ -116,14 +116,27 @@ export interface DiagnosticsReport {
   host: {
     os: string | null;
     osVersion: string | null;
+    cpu: string | null;
     logicalCpus: number;
     totalMemoryMb: number;
     availableMemoryMb: number;
+    graphics: string[];
+    hypervisorPresent: boolean | null;
+    vbsStatus: number | null;
   };
   provider: {
     id: string | null;
     version: string | null;
   };
+  virtualHardware: Array<{
+    id: Exclude<ClientId, "Native">;
+    networkMode: string | null;
+    networkRequiresAcceptance: boolean;
+    networkConfigurationObserved: boolean;
+    multiplayerVerified: boolean;
+    graphics3dEnabled: boolean | null;
+    graphicsPolicyReady: boolean;
+  }>;
 }
 
 export interface EngineSnapshot {
