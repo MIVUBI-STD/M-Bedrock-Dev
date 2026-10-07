@@ -1,3 +1,12 @@
+---
+id: document.system.bug-tracker-ui
+class: DOCUMENT
+domain: system
+role: DOMAIN
+authority: CANONICAL
+lifecycle: ACTIVE
+---
+
 # Bug Tracker UI Contract
 
 This document is the canonical presentation contract for Approved Bug Report V2 tracker output.
