@@ -433,7 +433,6 @@ mod tests {
             native_install_type: MinecraftInstallType::Desktop,
             guest_status_schema: GUEST_STATUS_SCHEMA,
             guest_agent_protocol: GUEST_AGENT_PROTOCOL_VERSION,
-            guest_agent_version: "0.1.0".into(),
             base_generation_id: "a".repeat(64),
             source: BaseProfileSource::LiveVerified,
         };
@@ -441,7 +440,6 @@ mod tests {
             schema: CLIENT_PROFILE_SCHEMA,
             base_minecraft_version: native.version.clone(),
             base_generation_id: base.base_generation_id.clone(),
-            created_by: "test".into(),
             verified_vm_identity: None,
             verified_windows_identity: None,
         };
@@ -820,7 +818,6 @@ mod tests {
             schema: crate::profile::CLIENT_PROFILE_SCHEMA,
             base_minecraft_version: "1.0.0".into(),
             base_generation_id: "c".repeat(64),
-            created_by: "test".into(),
             verified_vm_identity: Some(crate::profile::identity_fingerprint("uuid-a|mac-a")),
             verified_windows_identity: Some("windows-proof".into()),
         };
