@@ -9,12 +9,8 @@
     "artifactFingerprint": "sha256:1802103da030b448c4a91e98eeef6f53d95235abda761b35fc0ab4b8453f7c1d",
     "version": "1.0.1"
   },
-  "work": {},
-  "knowledge": {},
   "publication": {
     "drive": {
-      "schemaVersion": 1,
-      "projectId": "clockwork-vault",
       "mapFolder": {
         "folderId": "1y0B3EYlsVucjwOy9h8Rt5W1xVIJCvKQK",
         "label": "Skills - The Clockwork Vault"
