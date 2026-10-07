@@ -195,3 +195,19 @@ Missing information stays missing.
 - Completeness is never a reason to invent report content.
 
 Tester result is workspace state only: `SUCCESS` (Berhasil) or `FAILED` (Belum Berhasil). It never rewrites canonical finding verification.
+
+
+### Current JSON field semantics
+
+Keep the existing tracker field names until a deliberate schema-version migration is justified:
+
+- `issue`: concise player-visible problem;
+- `reproduction[]`: evidence-backed in-game actions/observations only;
+- `expected`: observable correct behavior;
+- `observed`: observed/source-proven evidence or mechanism already owned by the canonical report;
+- `technicalAnalysis`: deeper technical explanation when canonical data provides it;
+- `relevantCode[]`: developer evidence pointers;
+- `resolution`: evidence-backed recommended fix;
+- `mustPreserve[]`: behavior that a fix must not regress.
+
+Do not add aliases such as `problem` beside `issue`, `steps` beside `reproduction`, or `recommendedFix` beside `resolution` inside the same schema. Presentation labels may be clearer than storage names without duplicating data.
