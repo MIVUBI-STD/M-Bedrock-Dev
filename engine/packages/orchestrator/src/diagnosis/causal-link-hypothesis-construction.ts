@@ -47,6 +47,11 @@ export function constructCausalLinkHypothesis(input: {
     : input.graph.knowledgeRequirements.find(
         (item) => item.id === link.knowledgeRequirementId,
       );
+  const knowledgeReceipt = link.knowledgeRequirementId === undefined
+    ? undefined
+    : input.graph.knowledgeReceipts.find(
+        (item) => item.requirementId === link.knowledgeRequirementId,
+      );
 
   const contradiction = predicate(link.id, "contradiction");
   const runtime = input.resolution.disposition === "RUNTIME_PROOF_REQUIRED"
@@ -55,12 +60,21 @@ export function constructCausalLinkHypothesis(input: {
   const knowledgePredicate = knowledge === undefined
     ? undefined
     : predicate(link.id, "knowledge", knowledge.id);
+  const knowledgeClaimPredicates =
+    knowledgeReceipt?.knowledgeClaimIds.map(
+      (claimId) => predicate(
+        link.id,
+        "knowledge",
+        claimId,
+      ),
+    ) ?? [];
   const counterproof = predicate(link.id, "counterproof");
 
   const requiredPredicates = [
     contradiction,
     ...(runtime ? [runtime] : []),
     ...(knowledgePredicate ? [knowledgePredicate] : []),
+    ...knowledgeClaimPredicates,
   ];
   const falsifierPredicates = [counterproof];
 
