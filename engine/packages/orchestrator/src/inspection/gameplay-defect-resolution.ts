@@ -178,6 +178,42 @@ function requiredCounterProofDimensions(
     required.add("cleanup");
   }
 
+  if (
+    hasComponent(
+      "runtime:spatial",
+      "runtime:structures",
+      "runtime:arena-replica-integrity",
+    ) ||
+    hasKnowledge(
+      "spatial-authority",
+      "world-structure",
+    )
+  ) {
+    required.add("geometry");
+  }
+
+  if (
+    hasComponent("runtime:player-capability") ||
+    hasKnowledge("player-capability")
+  ) {
+    required.add("capability");
+    required.add("activation");
+  }
+
+  if (
+    hasComponent("runtime:world-rules") ||
+    hasKnowledge("world-rule-authority")
+  ) {
+    required.add("world-rule");
+  }
+
+  if (
+    hasComponent("runtime:client-reconciliation") ||
+    hasKnowledge("client-server-reconciliation")
+  ) {
+    required.add("representation");
+  }
+
   const scenarioText = [
     scenario?.label ?? "",
     scenario?.gameplayStage ?? "",
