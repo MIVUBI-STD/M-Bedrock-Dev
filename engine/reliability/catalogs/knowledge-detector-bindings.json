@@ -3,6 +3,76 @@
   "semantics": "Coverage bindings connect high-value knowledge/engineering facts to the production analyzer/check that consumes them and to a dedicated proof specification. This registry is a verification projection, not semantic authority.",
   "bindings": [
     {
+      "knowledgeId": "scoreboard.persistent-fake-player",
+      "consumer": "static-frontier-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/static-frontier-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/static-frontier-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "inventory.itemstack-can-carry-custom-state",
+      "consumer": "static-frontier-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/static-frontier-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/static-frontier-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "gametest.experimental",
+      "consumer": "static-frontier-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/static-frontier-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/static-frontier-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "feedback.particle-position-context",
+      "consumer": "static-frontier-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/static-frontier-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/static-frontier-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.spawn-event-summon-difference",
+      "consumer": "static-frontier-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/static-frontier-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/static-frontier-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "entity.relation-definition-requires-transition-integrity",
+      "consumer": "static-frontier-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/static-frontier-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/static-frontier-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "blockstate.block-components-many-surfaces",
+      "consumer": "static-frontier-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/static-frontier-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/static-frontier-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "ai-policy.ai-stack-contract",
       "consumer": "entity-ai-stack-analysis",
       "analyzerPaths": [

@@ -21,12 +21,6 @@
       "nextEvidenceOwner": "runtime-block-state"
     },
     {
-      "knowledgeId": "blockstate.block-components-many-surfaces",
-      "status": "static-capability-gap",
-      "reason": "Current block inspection does not structurally model all interactive block components.",
-      "nextEvidenceOwner": "interactive-block-component-analysis"
-    },
-    {
       "knowledgeId": "blockstate.block-inventory-container",
       "status": "runtime-required",
       "reason": "Container availability/content is runtime component state.",
@@ -220,9 +214,9 @@
     },
     {
       "knowledgeId": "education.agent.code-builder-companion",
-      "status": "static-capability-gap",
-      "reason": "Agent runtime is not structurally modeled.",
-      "nextEvidenceOwner": "education-runtime-analysis"
+      "status": "runtime-required",
+      "reason": "Agent availability and Code Builder companion behavior depend on the live Minecraft Education runtime/profile, not authored pack structure.",
+      "nextEvidenceOwner": "education-runtime-validation"
     },
     {
       "knowledgeId": "education.classroom-controls",
@@ -232,9 +226,9 @@
     },
     {
       "knowledgeId": "education.code-builder-agent",
-      "status": "static-capability-gap",
-      "reason": "Agent/external coding world mutation is not structurally modeled.",
-      "nextEvidenceOwner": "education-runtime-analysis"
+      "status": "runtime-required",
+      "reason": "Agent availability and Code Builder companion behavior depend on the live Minecraft Education runtime/profile, not authored pack structure.",
+      "nextEvidenceOwner": "education-runtime-validation"
     },
     {
       "knowledgeId": "education.dedicated-server-2026",
@@ -297,22 +291,10 @@
       "nextEvidenceOwner": "runtime-domain-validation"
     },
     {
-      "knowledgeId": "entity.relation-definition-requires-transition-integrity",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
-    },
-    {
       "knowledgeId": "entity.runtime-identifier-built-in-behavior",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "entity-behavior-semantic-analysis"
-    },
-    {
-      "knowledgeId": "entity.spawn-event-summon-difference",
-      "status": "static-capability-gap",
-      "reason": "Summon-vs-natural entity spawn-event activation is not modeled by current entity event graph.",
-      "nextEvidenceOwner": "entity-spawn-lifecycle-analysis"
+      "status": "runtime-required",
+      "reason": "runtime_identifier can invoke built-in game-code behavior beyond authored JSON, so static structure can identify the boundary but cannot prove the resulting behavior.",
+      "nextEvidenceOwner": "runtime-entity-behavior-validation"
     },
     {
       "knowledgeId": "environment.explosion-source-and-blocks",
@@ -325,18 +307,6 @@
       "status": "runtime-required",
       "reason": "Actual impacted-block mutation requires explosion event/runtime world evidence.",
       "nextEvidenceOwner": "runtime-hazard-event"
-    },
-    {
-      "knowledgeId": "feedback.particle-position-context",
-      "status": "static-capability-gap",
-      "reason": "Particle/resource-pack presentation context is not structurally modeled by the current source analyzers.",
-      "nextEvidenceOwner": "resource-pack-feedback-analysis"
-    },
-    {
-      "knowledgeId": "gametest.experimental",
-      "status": "static-capability-gap",
-      "reason": "GameTest version/track compatibility needs dedicated validation-harness compatibility analysis.",
-      "nextEvidenceOwner": "gametest-compatibility-analysis"
     },
     {
       "knowledgeId": "gametest.max-ticks-bounded",
@@ -433,12 +403,6 @@
       "status": "runtime-required",
       "reason": "Container validity depends on live entity lifecycle.",
       "nextEvidenceOwner": "runtime-inventory"
-    },
-    {
-      "knowledgeId": "inventory.itemstack-can-carry-custom-state",
-      "status": "static-capability-gap",
-      "reason": "Full item identity signatures need component/dynamic-property structural analysis.",
-      "nextEvidenceOwner": "item-identity-analysis"
     },
     {
       "knowledgeId": "inventory.relation-slot-validity-gates-write",
@@ -607,12 +571,6 @@
       "status": "runtime-required",
       "reason": "Actual in-memory cleanup completeness requires ownership/dataflow or runtime proof.",
       "nextEvidenceOwner": "runtime-player-session"
-    },
-    {
-      "knowledgeId": "scoreboard.persistent-fake-player",
-      "status": "static-capability-gap",
-      "reason": "Fake-player scoreboard persistence/scope is not structurally distinguished by current state-authority analysis.",
-      "nextEvidenceOwner": "scoreboard-state-analysis"
     },
     {
       "knowledgeId": "spatial.custom-dimension-travel-needs-loaded-arrival",
