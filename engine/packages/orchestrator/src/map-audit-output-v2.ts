@@ -36,6 +36,27 @@ import {
   type MapAuditQualityGates,
 } from "./map-audit-quality-gates.js";
 
+export interface MapAuditOutputV2FindingReasoning {
+  readonly classification:
+    | "PROVEN BUG"
+    | "LIKELY BUG"
+    | "RISK"
+    | "DESIGN MISMATCH"
+    | "UNKNOWN"
+    | "EXPECTED";
+  readonly confidence:
+    | "unknown"
+    | "low"
+    | "medium"
+    | "high"
+    | "proven";
+  readonly evidenceDomains: readonly string[];
+  readonly evidenceChain: readonly string[];
+  readonly unresolvedPredicates: readonly string[];
+  readonly recommendedValidation?: string;
+  readonly recommendedProbeId?: string;
+}
+
 export interface MapAuditOutputV2Finding {
   readonly id: string;
   readonly status: "PROVEN" | "NEED_VALIDATION";
@@ -63,6 +84,7 @@ export interface MapAuditOutputV2Finding {
   readonly validationGroupKey?: string;
   readonly proofNavigation?:
     NeedValidationAuditIssueProjection["proofNavigation"];
+  readonly reasoning?: MapAuditOutputV2FindingReasoning;
 }
 
 export interface MapAuditOutputControl {
