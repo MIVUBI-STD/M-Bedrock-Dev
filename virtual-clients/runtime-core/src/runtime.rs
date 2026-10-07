@@ -1040,11 +1040,7 @@ impl VirtualClients {
         };
 
         set_base_state_for_path(&base, BaseState::Registered)?;
-        write_verified_base_profile(
-            &native,
-            &proof.agent_version,
-            proof.protocol_version,
-        )
+        write_verified_base_profile(&native, proof.protocol_version)
     }
 
     fn open_base_for_finalization_inner(&self) -> io::Result<()> {
