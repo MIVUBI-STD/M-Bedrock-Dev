@@ -2275,6 +2275,47 @@ mod tests {
     }
 
     #[test]
+    fn start_batch_reconciles_a_timeout_that_mutated_provider_state() {
+        let provider = FakeProvider {
+            fail_start: Some(ClientId::Virtual02),
+            fail_after_start: true,
+            ..stopped_provider()
+        };
+        let error = super::execute_start_batch(
+            &provider,
+            &ClientId::VIRTUAL,
+            |_, _| Ok(()),
+            |client| provider.state(client),
+        )
+        .unwrap_err();
+        assert!(error.to_string().contains("injected start failure"));
+        assert_eq!(*provider.states.borrow(), [ClientState::Stopped; 3]);
+    }
+
+    #[test]
+    fn start_batch_never_rolls_back_a_preexisting_running_client() {
+        let provider = FakeProvider {
+            fail_start: Some(ClientId::Virtual03),
+            fail_after_start: true,
+            ..FakeProvider::new(
+                [ClientState::Running, ClientState::Stopped, ClientState::Stopped],
+                [Some("uuid-a|mac-a"), Some("uuid-b|mac-b"), Some("uuid-c|mac-c")],
+            )
+        };
+        let result = super::execute_start_batch(
+            &provider,
+            &ClientId::VIRTUAL,
+            |_, _| Ok(()),
+            |client| provider.state(client),
+        );
+        assert!(result.is_err());
+        assert_eq!(
+            *provider.states.borrow(),
+            [ClientState::Running, ClientState::Stopped, ClientState::Stopped]
+        );
+    }
+
+    #[test]
     fn start_batch_reports_rollback_failure_and_keeps_the_original_error() {
         let provider = FakeProvider {
             fail_start: Some(ClientId::Virtual02),
