@@ -116,6 +116,86 @@ For each discovered surface, record:
 
 If one of these cannot be grounded, record it as unknown rather than silently assuming normal behavior.
 
+## Complete player-flow reconstruction
+
+For every selected map, reconstruct the normal player experience as one continuous causal flow, not as disconnected subsystems.
+
+Minimum flow:
+
+```text
+ENTRY / LOBBY
+→ ADMISSION / READY
+→ SESSION SETUP
+→ ACTIVE ROUND / GAMEPLAY
+→ ROUND COMPLETION
+→ BETWEEN-ROUND TRANSITION
+→ NEXT-ROUND ELIGIBILITY
+→ TERMINAL DECISION
+→ RESULT SETTLEMENT
+→ RESULT PRESENTATION
+→ CLEANUP / RETURN
+→ REPLAY / RECOVERY
+```
+
+For every transition, distinguish:
+
+```text
+state decision
+≠ state mutation
+≠ player-facing message
+≠ result settlement
+≠ result presentation
+≠ cleanup
+```
+
+A transition is not fully modeled merely because its state mutation succeeds. The model must also account for what the player is told before and after the decision.
+
+### Transition-message ordering rule
+
+Before publishing a forward-looking message such as:
+
+- Next Round;
+- Next Wave;
+- Continue;
+- Victory;
+- Defeat;
+- Returning to Lobby;
+
+prove that the corresponding next state has already been selected or remains valid.
+
+Canonical causal check:
+
+```text
+current state completes
+→ decide actual next state
+→ publish matching player-facing transition
+→ execute transition
+```
+
+Flag this pattern for contradiction analysis:
+
+```text
+publish generic next-state message
+→ later decide whether that next state exists
+```
+
+This pattern can create a player-facing DESIGN_MISMATCH even when gameplay state itself remains correct.
+
+### Settlement/presentation separation
+
+Result correctness and result presentation are separate contracts:
+
+```text
+terminal condition
+→ settle authoritative result exactly once
+→ present that settled result to the player
+→ cleanup / return
+```
+
+A correct score/result commit does not prove that victory/defeat presentation is complete. Conversely, presentation must never recalculate or become a second result authority.
+
+When the artifact contains an authored result surface (title, form, scoreboard, sound, cinematic, message) that is disconnected from the terminal flow, compare authored capability with actual reachable presentation before classification.
+
 ## Phase C — Gameplay state model
 
 Build the complete major-state model, including:
