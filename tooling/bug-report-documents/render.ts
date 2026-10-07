@@ -111,7 +111,7 @@ function parseArgs(argv: readonly string[]): Args {
   let input = "";
   let outDir = "";
   let includeFixed = false;
-  let includeMinor = false;
+  let includeMinor = true;
 
   for (let i = 0; i < argv.length; i += 1) {
     const value = argv[i];
