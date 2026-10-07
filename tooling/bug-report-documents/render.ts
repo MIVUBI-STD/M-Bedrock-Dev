@@ -787,46 +787,100 @@ async function main(): Promise<void> {
     "workspace/projects",
   );
   const projectIds = await readdir(projectsRoot);
-  const projects = [];
+  const projects: ProjectRegistry["projects"][number][] = [];
+  const reportScopes: {
+    readonly projectId: string;
+    readonly sourceProjectId: string;
+    readonly projectName: string;
+    readonly version: string;
+    readonly reportRoot: string;
+  }[] = [];
+
   for (const projectId of projectIds) {
     try {
       const projectSource = await readFile(
         resolve(projectsRoot, projectId, "project.json"),
         "utf8",
       );
-      projects.push(JSON.parse(projectSource));
+      const project = JSON.parse(projectSource) as {
+        readonly projectId: string;
+        readonly projectName: string;
+        readonly artifact?: ProjectRegistry["projects"][number]["artifact"];
+        readonly publication?: ProjectRegistry["projects"][number]["publication"];
+        readonly levels?: readonly {
+          readonly level: number;
+          readonly levelName: string;
+          readonly artifact: ProjectRegistry["projects"][number]["artifact"];
+          readonly drive: NonNullable<ProjectRegistry["projects"][number]["publication"]>["drive"];
+        }[];
+      };
+
+      if (project.levels?.length) {
+        for (const level of project.levels) {
+          const sourceProjectId =
+            project.projectId + "-level-" + String(level.level);
+          projects.push({
+            projectId: sourceProjectId,
+            projectName: level.levelName,
+            artifact: level.artifact,
+            publication: { drive: level.drive },
+          });
+          reportScopes.push({
+            projectId: project.projectId,
+            sourceProjectId,
+            projectName: level.levelName,
+            version: level.artifact.version,
+            reportRoot: resolve(
+              projectsRoot,
+              project.projectId,
+              "levels",
+              "level-" + String(level.level),
+              "report",
+            ),
+          });
+        }
+      } else if (project.artifact) {
+        projects.push(project as ProjectRegistry["projects"][number]);
+        reportScopes.push({
+          projectId: project.projectId,
+          sourceProjectId: project.projectId,
+          projectName: project.projectName,
+          version: project.artifact.version,
+          reportRoot: resolve(
+            projectsRoot,
+            project.projectId,
+            "report",
+          ),
+        });
+      }
     } catch {
-      // A workspace directory without project.json is not a project authority.
+      // A workspace directory without valid project.json is not project authority.
     }
   }
+
   const registry: ProjectRegistry = { projects };
-  const sourceBinding = registry.projects.filter(
-    (project) =>
-      project.projectName === document.map.name &&
-      project.artifact.version === document.map.mapVersion,
+  const scopes = reportScopes.filter(
+    (scope) =>
+      scope.projectName === document.map.name &&
+      scope.version === document.map.mapVersion,
   );
-  if (sourceBinding.length !== 1) {
+  if (scopes.length !== 1) {
     throw new Error(
-      "Expected exactly one project workspace for " +
+      "Expected exactly one project/level workspace for " +
         document.map.name +
         " v" +
         document.map.mapVersion +
         ".",
     );
   }
-  const projectId = sourceBinding[0]!.projectId;
+  const scope = scopes[0]!;
   let developerNotes: DeveloperNoteRegistry = {
     schema: "m-bedrock-dev-notes/v1",
     notes: [],
   };
   try {
     const developerNotesSource = await readFile(
-      resolve(
-        projectsRoot,
-        projectId,
-        "report",
-        "developer-notes.json",
-      ),
+      resolve(scope.reportRoot, "developer-notes.json"),
       "utf8",
     );
     const localNotes = JSON.parse(developerNotesSource) as {
@@ -837,7 +891,7 @@ async function main(): Promise<void> {
       schema: localNotes.schema,
       notes: localNotes.notes.map((note) => ({
         ...note,
-        projectId,
+        projectId: scope.sourceProjectId,
       })),
     };
   } catch (error) {
