@@ -88,6 +88,37 @@
               ]
             },
             {
+              "id": "DM-DEF-SHEARS-SPECIAL-BEHAVIOR",
+              "type": "DESIGN_MISMATCH",
+              "severity": "MAJOR",
+              "verification": "VERIFIED",
+              "title": "Shears special enemy resolves to ordinary Tier 2 behavior with no special-behavior consumer",
+              "issue": "The manifest defines SHEARS as a distinct gameplay type, but runtime maps it to Tier 2 militia and only adds shears_carrier.",
+              "whyThisIsBug": "SHEARS is authored as a distinct enemy type in the Defense wave manifest, but its only runtime distinction is a shears_carrier tag that nothing in the selected artifact consumes. A named special enemy therefore has no implemented behavior that makes the special type meaningful.",
+              "impact": "A wave that is configured to introduce a Shears-specific threat behaves like an ordinary Tier 2 militia encounter. Players do not receive the intended mechanical variation, and level difficulty/composition no longer matches the authored special-enemy identity.",
+              "reproduction": [
+                "Reach a level that spawns the SHEARS special enemy.",
+                "Place the same valid defensive obstruction in the Shears path and in an ordinary Tier 2 militia path.",
+                "Compare the Shears enemy block interaction and combat behavior with ordinary Tier 2 militia.",
+                "Confirm whether any distinct Shears behavior is observable."
+              ],
+              "observed": "Across the selected artifact, shears_carrier appears only where the tag is added; no script, entity, controller, or behavior consumer reads it.",
+              "expected": "A distinct SHEARS gameplay type has an authoritative behavior consumer differentiating it from ordinary Tier 2 militia.",
+              "resolution": "Give SHEARS one explicit behavior owner or remove the distinct type if ordinary Tier 2 behavior is intended.",
+              "technicalAnalysis": "The special identity survives as metadata but not as behavior.",
+              "relevantCode": [
+                {
+                  "file": "behavior_packs/BP/scripts/chunks/ctf-defense-5V4T54X5.js",
+                  "reason": "SHEARS materialization and sole shears_carrier occurrence."
+                }
+              ],
+              "mustPreserve": [
+                "Tier 2 compatibility",
+                "Wave manifest identity",
+                "Arena-scoped ownership"
+              ]
+            },
+            {
               "id": "DM-DEF-FLAG-CAPTURE-AUTHORITY",
               "type": "DESIGN_MISMATCH",
               "severity": "MAJOR",
@@ -120,37 +151,6 @@
                 "Arena offsets",
                 "Flag warning feedback",
                 "Exactly-once defeat"
-              ]
-            },
-            {
-              "id": "DM-DEF-SHEARS-SPECIAL-BEHAVIOR",
-              "type": "DESIGN_MISMATCH",
-              "severity": "MAJOR",
-              "verification": "VERIFIED",
-              "title": "Shears special enemy resolves to ordinary Tier 2 behavior with no special-behavior consumer",
-              "issue": "The manifest defines SHEARS as a distinct gameplay type, but runtime maps it to Tier 2 militia and only adds shears_carrier.",
-              "whyThisIsBug": "SHEARS is authored as a distinct enemy type in the Defense wave manifest, but its only runtime distinction is a shears_carrier tag that nothing in the selected artifact consumes. A named special enemy therefore has no implemented behavior that makes the special type meaningful.",
-              "impact": "A wave that is configured to introduce a Shears-specific threat behaves like an ordinary Tier 2 militia encounter. Players do not receive the intended mechanical variation, and level difficulty/composition no longer matches the authored special-enemy identity.",
-              "reproduction": [
-                "Reach a level that spawns the SHEARS special enemy.",
-                "Place the same valid defensive obstruction in the Shears path and in an ordinary Tier 2 militia path.",
-                "Compare the Shears enemy block interaction and combat behavior with ordinary Tier 2 militia.",
-                "Confirm whether any distinct Shears behavior is observable."
-              ],
-              "observed": "Across the selected artifact, shears_carrier appears only where the tag is added; no script, entity, controller, or behavior consumer reads it.",
-              "expected": "A distinct SHEARS gameplay type has an authoritative behavior consumer differentiating it from ordinary Tier 2 militia.",
-              "resolution": "Give SHEARS one explicit behavior owner or remove the distinct type if ordinary Tier 2 behavior is intended.",
-              "technicalAnalysis": "The special identity survives as metadata but not as behavior.",
-              "relevantCode": [
-                {
-                  "file": "behavior_packs/BP/scripts/chunks/ctf-defense-5V4T54X5.js",
-                  "reason": "SHEARS materialization and sole shears_carrier occurrence."
-                }
-              ],
-              "mustPreserve": [
-                "Tier 2 compatibility",
-                "Wave manifest identity",
-                "Arena-scoped ownership"
               ]
             },
             {
@@ -189,36 +189,6 @@
               ]
             },
             {
-              "id": "DM-DEF-RESULT-EXPORT-VERSION",
-              "type": "DESIGN_MISMATCH",
-              "severity": "MINOR",
-              "verification": "VERIFIED",
-              "title": "Defense result records identify v1.1.3 as v1.1.0",
-              "issue": "Machine-readable level/run record IDs use stale release provenance.",
-              "whyThisIsBug": "The selected world, behavior pack, and resource pack are v1.1.3, but persisted Defense result IDs still identify the run as v1.1.0. Result provenance therefore does not match the artifact that produced it.",
-              "impact": "Automated analysis, debugging, comparison, and historical result tracking can attribute v1.1.3 gameplay data to the wrong release. This weakens version traceability and can cause results from different builds to be grouped incorrectly.",
-              "reproduction": [
-                "Complete or terminate a Defense run so level and run result records are persisted.",
-                "Inspect the generated Defense level and run record IDs.",
-                "Compare the version segment in those IDs with the selected world, BP, and RP version 1.1.3.",
-                "Confirm whether persisted record provenance still reports 1.1.0."
-              ],
-              "observed": "DEFENSE_RECORD_VERSION is hard-coded to 1.1.0 and embedded in level and run record IDs.",
-              "expected": "World/pack metadata and result persistence consume one canonical version and report 1.1.3.",
-              "resolution": "Consume one canonical release/version owner for persisted result provenance.",
-              "technicalAnalysis": "Selected world/BP/RP are v1.1.3 while score persistence carries the older literal.",
-              "relevantCode": [
-                {
-                  "file": "behavior_packs/BP/scripts/chunks/ctf-defense-5V4T54X5.js",
-                  "reason": "DEFENSE_RECORD_VERSION in score persistence."
-                }
-              ],
-              "mustPreserve": [
-                "Result schema",
-                "Score/economy record relationships"
-              ]
-            },
-            {
               "id": "DM-DEF-RETRY-MODE-CONFIG",
               "type": "DESIGN_MISMATCH",
               "severity": "MINOR",
@@ -251,6 +221,36 @@
                 "Killed-NPC preservation",
                 "Attempt accounting",
                 "Retry score multiplier"
+              ]
+            },
+            {
+              "id": "DM-DEF-RESULT-EXPORT-VERSION",
+              "type": "DESIGN_MISMATCH",
+              "severity": "MINOR",
+              "verification": "VERIFIED",
+              "title": "Defense result records identify v1.1.3 as v1.1.0",
+              "issue": "Machine-readable level/run record IDs use stale release provenance.",
+              "whyThisIsBug": "The selected world, behavior pack, and resource pack are v1.1.3, but persisted Defense result IDs still identify the run as v1.1.0. Result provenance therefore does not match the artifact that produced it.",
+              "impact": "Automated analysis, debugging, comparison, and historical result tracking can attribute v1.1.3 gameplay data to the wrong release. This weakens version traceability and can cause results from different builds to be grouped incorrectly.",
+              "reproduction": [
+                "Complete or terminate a Defense run so level and run result records are persisted.",
+                "Inspect the generated Defense level and run record IDs.",
+                "Compare the version segment in those IDs with the selected world, BP, and RP version 1.1.3.",
+                "Confirm whether persisted record provenance still reports 1.1.0."
+              ],
+              "observed": "DEFENSE_RECORD_VERSION is hard-coded to 1.1.0 and embedded in level and run record IDs.",
+              "expected": "World/pack metadata and result persistence consume one canonical version and report 1.1.3.",
+              "resolution": "Consume one canonical release/version owner for persisted result provenance.",
+              "technicalAnalysis": "Selected world/BP/RP are v1.1.3 while score persistence carries the older literal.",
+              "relevantCode": [
+                {
+                  "file": "behavior_packs/BP/scripts/chunks/ctf-defense-5V4T54X5.js",
+                  "reason": "DEFENSE_RECORD_VERSION in score persistence."
+                }
+              ],
+              "mustPreserve": [
+                "Result schema",
+                "Score/economy record relationships"
               ]
             }
           ],
