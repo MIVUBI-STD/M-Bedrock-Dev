@@ -12,7 +12,7 @@ import { trackerIssueIds, validateBugTrackerDocument } from "./validate.js";
 
 const cases = [
   { projectId: "attack-challenge", developerNotes: 0 },
-  { projectId: "defense-challenge", developerNotes: 0 },
+  { projectId: "defense-challenge", developerNotes: 9 },
   { projectId: "composite-challenge", developerNotes: 0 },
   { projectId: "the-circuit", developerNotes: 2 },
   { projectId: "build-and-decode", developerNotes: 6 },
@@ -94,8 +94,12 @@ describe("Golden Tracker real approved-report parity", () => {
       }
 
       if (testCase.projectId === "defense-challenge") {
-        expect(developerNoteCount).toBe(0);
-        expect(html).not.toContain("<h3>DEVELOPER NOTES");
+        expect(developerNoteCount).toBe(9);
+        expect(html).toContain("<h3>DEVELOPER NOTES");
+        expect(client.issues.every((issue) => issue.whyThisIsBug?.trim())).toBe(true);
+        expect(client.issues.every((issue) => issue.impact?.trim())).toBe(true);
+        expect(html).toContain("WHY THIS IS A BUG");
+        expect(html).toContain("IMPACT");
       }
 
       if (testCase.projectId === "build-and-decode") {
