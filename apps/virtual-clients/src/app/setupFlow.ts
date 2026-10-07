@@ -119,7 +119,7 @@ const flows: Record<SetupAction, SetupExperience> = {
     primaryLabel: "Open clients",
     steps: [
       "Open one virtual client and sign in to its Windows user.",
-      "Inside that Virtual, run `C:\\ProgramData\\M-Bedrock\\VirtualClients\\virtual-guest-agent.exe --register-interactive-launcher` once. This registers the Minecraft-only launcher for that Windows user."
+      "Inside that Virtual, double-click Enable Virtual Clients Launcher on the Windows desktop once.",
       "Confirm Virtual Clients reports the interactive launcher as active.",
       "Open Minecraft Education, complete Microsoft sign-in in that same virtual Windows session, and confirm the main menu appears.",
       "Stop that client and choose Save recovery point.",
