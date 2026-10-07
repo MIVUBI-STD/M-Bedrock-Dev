@@ -14,7 +14,8 @@ export type ArenaCleanupSurfaceKind =
   | "inventory"
   | "equipment"
   | "gamemode"
-  | "player-capability"\n  | "mount-relationship";
+  | "player-capability"
+  | "mount-relationship";
 
 export type ArenaCleanupEvidencePrecision =
   | "exact"
