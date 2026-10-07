@@ -4,9 +4,11 @@ import { proveNoopPackageRoundtrip } from "../../../engine/packages/orchestrator
 import { compareArtifactsForUpdate } from "../../../engine/packages/orchestrator/src/index.js";
 import {
   runSelectedMapAudit,
-  type InspectTargetProfile,
   type SelectedMapAuditRuntimeTarget,
-} from "../../../engine/packages/orchestrator/src/index.js";
+} from "../../../engine/packages/orchestrator/src/map-audit-pipeline.js";
+import type {
+  InspectTargetProfile,
+} from "../../../engine/packages/orchestrator/src/core/types.js";
 import { inspectArtifact } from "../../../engine/packages/orchestrator/src/inspection/inspect-artifact.js";
 import { buildEngineeringReviewProjection } from "../../../engine/packages/orchestrator/src/index.js";
 import { buildArenaEngineeringProjection } from "../../../engine/packages/orchestrator/src/index.js";
