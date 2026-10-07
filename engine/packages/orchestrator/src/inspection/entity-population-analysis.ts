@@ -691,7 +691,7 @@ export function analyzeEntityPopulationSources(
     scripts.reduce(
       (sum, script) =>
         sum +
-        script.commandLiterals.filter(
+        (script.commandLiterals ?? []).filter(
           (command) =>
             /^\/?summon\b/i.test(
               command.command.trim(),
@@ -703,7 +703,7 @@ export function analyzeEntityPopulationSources(
     scripts.reduce(
       (sum, script) =>
         sum +
-        script.eventSubscriptions.filter(
+        (script.eventSubscriptions ?? []).filter(
           (item) =>
             item.event ===
             "entityDie",
@@ -714,7 +714,7 @@ export function analyzeEntityPopulationSources(
     scripts.reduce(
       (sum, script) =>
         sum +
-        script.eventSubscriptions.filter(
+        (script.eventSubscriptions ?? []).filter(
           (item) =>
             item.event ===
             "entityRemove",
@@ -725,7 +725,7 @@ export function analyzeEntityPopulationSources(
     scripts.reduce(
       (sum, script) =>
         sum +
-        script.eventSubscriptions.filter(
+        (script.eventSubscriptions ?? []).filter(
           (item) =>
             item.event ===
             "entityLoad",
