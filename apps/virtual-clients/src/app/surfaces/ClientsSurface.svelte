@@ -35,6 +35,13 @@
   $: canStopAll = hasStoppableClient(virtuals, actions);
   $: startableVirtuals = virtuals.filter((client) => actionForClient(actions, client.id)?.start.allowed === true).length;
   $: pausedVirtuals = virtuals.filter((client) => client.state === "SUSPENDED").length;
+  $: hostPressure = snapshot.diagnostics.runtime.pressure;
+  $: hostResourceMessage =
+    hostPressure.startDecision === "BLOCK"
+      ? "Host resources are too constrained for another client."
+      : hostPressure.startDecision === "WAIT"
+        ? "Host is busy. The next client will wait briefly for resources to stabilize."
+        : `Host resources are ready · up to ${snapshot.doctor.maxRecommendedVirtualClients} virtual clients recommended.`;
 </script>
 
 <section class="hero compact clients-heading">
@@ -75,7 +82,7 @@
 <section class="batch-bar">
   <div>
     <strong>{runningVirtuals ? `${runningVirtuals} running` : "All clients are stopped"}{pausedVirtuals ? ` · ${pausedVirtuals} paused` : ""}</strong>
-    {#if !snapshot.diagnostics.runtime.pressure.canStartVirtual}<small>New starts are paused to protect this PC.</small>{/if}
+    <small>{hostResourceMessage}</small>
   </div>
   <div class="batch-actions">
     {#if setupAction !== "VERIFY_IDENTITIES" && startableVirtuals > 0}
