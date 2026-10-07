@@ -94,6 +94,17 @@ pub enum DestructiveConfirmation {
     ReprovisionAccountState,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ConnectionHealth {
+    VmOffline,
+    VmRunning,
+    GuestToolsReady,
+    GuestAgentReady,
+    InteractiveLauncherReady,
+    MinecraftRunning,
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClientStatus {
@@ -109,6 +120,7 @@ pub struct ClientStatus {
     pub minecraft_version: Option<String>,
     pub minecraft_running: Option<bool>,
     pub interactive_launcher_ready: Option<bool>,
+    pub connection_health: Option<ConnectionHealth>,
     pub lineage_parity: Option<ProfileParity>,
     pub version_parity: Option<ProfileParity>,
     pub vm_identity: Option<IdentityState>,
