@@ -29,6 +29,8 @@ const clientStatus = (state: ClientStatus["state"], minecraftRunning: boolean | 
   guestAgentVersion: null,
   minecraftVersion: null,
   minecraftRunning,
+  interactiveLauncherReady,
+  connectionHealth: null,
   lineageParity: null,
   versionParity: null,
   vmIdentity: null,
