@@ -124,6 +124,11 @@ export function projectClientDocumentToTracker(
   developerNotes: DeveloperNoteRegistry,
 ): BugTrackerDocument {
   validateDeveloperNoteRegistry(developerNotes);
+  const knownProjectIds = new Set(registry.projects.map((project) => project.projectId));
+  const orphanNote = developerNotes.notes.find((note) => !knownProjectIds.has(note.projectId));
+  if (orphanNote) {
+    throw new Error("Developer Note references unknown Project Registry project: " + orphanNote.id + " -> " + orphanNote.projectId + ".");
+  }
   const source = resolveSourceBinding(registry, document.map.name, document.map.mapVersion);
   const game: TrackerGame = {
     name: document.map.name,
