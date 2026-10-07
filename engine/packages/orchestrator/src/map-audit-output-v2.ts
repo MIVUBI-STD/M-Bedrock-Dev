@@ -37,24 +37,25 @@ import {
 } from "./map-audit-quality-gates.js";
 
 export interface MapAuditOutputV2FindingReasoning {
-  readonly classification:
+  readonly reportClassification:
     | "PROVEN BUG"
     | "LIKELY BUG"
     | "RISK"
     | "DESIGN MISMATCH"
     | "UNKNOWN"
     | "EXPECTED";
-  readonly confidence:
+  readonly diagnosticDisposition?: string;
+  readonly proofConfidence:
     | "unknown"
     | "low"
     | "medium"
     | "high"
     | "proven";
-  readonly evidenceDomains: readonly string[];
+  readonly evidenceDomainSources: readonly string[];
   readonly evidenceChain: readonly string[];
   readonly unresolvedPredicates: readonly string[];
-  readonly recommendedValidation?: string;
-  readonly recommendedProbeId?: string;
+  readonly recommendedValidationPredicate?: string;
+  readonly recommendedReadOnlyProbeId?: string;
 }
 
 export interface MapAuditOutputV2Finding {
@@ -312,6 +313,7 @@ function outcomeFor(
 
 function projectFinding(
   finding: AuditIssueProjection,
+  reasoningByCausalLinkId?: Readonly<Record<string, MapAuditOutputV2FindingReasoning>>,
 ): MapAuditOutputV2Finding {
   const base = {
     id: finding.causalLinkId,
@@ -342,6 +344,9 @@ function projectFinding(
       finding.status === "PROVEN"
         ? "cleared" as const
         : "unresolved" as const,
+    ...(reasoningByCausalLinkId?.[finding.causalLinkId] === undefined
+      ? {}
+      : { reasoning: reasoningByCausalLinkId[finding.causalLinkId] }),
   };
 
   if (finding.status === "PROVEN") {
@@ -387,6 +392,7 @@ export function projectMapAuditOutputV2(input: {
   readonly userIntent?: AuditUserIntentEnvelope;
   readonly control: MapAuditOutputControl;
   readonly fullMapReplica?: FullMapReplicaReceipt;
+  readonly reasoningByCausalLinkId?: Readonly<Record<string, MapAuditOutputV2FindingReasoning>>;
 }): MapAuditOutputV2 {
   const model =
     input.inspection.gameplayIntent.model;
@@ -672,7 +678,7 @@ export function projectMapAuditOutputV2(input: {
       notes: closure.reasons.join(" "),
     },
     bugs:
-      input.issueLanes.BUG.map(projectFinding),
+      input.issueLanes.BUG.map((finding) => projectFinding(finding, input.reasoningByCausalLinkId)),
     designMismatches:
       input.issueLanes.DESIGN_MISMATCH.map(
         projectFinding,
