@@ -8,22 +8,6 @@ import ts from "typescript";
 
 const CLI_PATH = "apps/cli/src/audit.ts";
 const ENGINEERING_CLI_PATH = "apps/cli/src/main.ts";
-const PRODUCTION_COMMAND = "audit";
-const ENGINEERING_COMMANDS = new Set([
-  "dev-inspect",
-  "dev-review",
-  "dev-workflow",
-  "dev-arena-audit",
-  "dev-probe-plan",
-  "dev-probe-replay",
-  "arena-adapter",
-  "arena-baseline",
-  "arena-corpus",
-  "arena-corpus-status",
-  "corpus-calibrate",
-  "script-usage",
-]);
-
 function filesUnder(root) {
   return readdirSync(root).flatMap((entry) => {
     const path = join(root, entry);
@@ -45,49 +29,6 @@ function parse(path) {
       ? ts.ScriptKind.TS
       : ts.ScriptKind.JS,
   );
-}
-
-function commandNamesFromExpression(expression) {
-  const names = new Set();
-  function visit(node) {
-    if (
-      ts.isBinaryExpression(node) &&
-      node.operatorToken.kind ===
-        ts.SyntaxKind.EqualsEqualsEqualsToken
-    ) {
-      const pairs = [
-        [node.left, node.right],
-        [node.right, node.left],
-      ];
-      for (const [left, right] of pairs) {
-        if (
-          ts.isIdentifier(left) &&
-          left.text === "command" &&
-          ts.isStringLiteralLike(right)
-        ) {
-          names.add(right.text);
-        }
-      }
-    }
-    ts.forEachChild(node, visit);
-  }
-  visit(expression);
-  return [...names];
-}
-
-function calledIdentifiers(statement) {
-  const names = new Set();
-  function visit(node) {
-    if (
-      ts.isCallExpression(node) &&
-      ts.isIdentifier(node.expression)
-    ) {
-      names.add(node.expression.text);
-    }
-    ts.forEachChild(node, visit);
-  }
-  visit(statement);
-  return names;
 }
 
 const issues = [];
@@ -136,7 +77,6 @@ function forbidText(path, fragments) {
 }
 
 
-const cli = parse(CLI_PATH);
 const cliText = readFileSync(CLI_PATH, "utf8");
 if (!cliText.includes("runSelectedMapAudit")) {
   issues.push("Production audit CLI must enter through runSelectedMapAudit().");
