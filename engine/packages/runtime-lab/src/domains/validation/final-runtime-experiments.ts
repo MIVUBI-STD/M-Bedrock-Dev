@@ -1,0 +1,23 @@
+import type { RuntimeActionCapability } from "../../core/action-capability.js";
+import type { RuntimeExperimentDefinition } from "../../core/types.js";
+export interface FinalRuntimeInput{id:string;title:string;targetProfileFingerprint:string;fixtureFingerprint:string;objectiveId:string;participant:string;minimumRunsPerArm?:number;}
+export const FINAL_RUNTIME_ACTION_CAPABILITIES:readonly RuntimeActionCapability[]=[
+{id:"final.reset",requiredContext:"LIVE_MINECRAFT",mutationRisk:"guarded",phases:["setup"],requiredParameters:{fixtureId:"string"}},
+{id:"final.block-state",requiredContext:"LIVE_MINECRAFT",mutationRisk:"guarded",phases:["stimulus"],requiredParameters:{variant:"string"}},
+{id:"final.gametest",requiredContext:"LIVE_MINECRAFT",mutationRisk:"guarded",phases:["stimulus"],requiredParameters:{variant:"string"}},
+{id:"final.command",requiredContext:"LIVE_MINECRAFT",mutationRisk:"guarded",phases:["stimulus"],requiredParameters:{variant:"string"}},
+{id:"final.hazard",requiredContext:"LIVE_MINECRAFT",mutationRisk:"guarded",phases:["stimulus"],requiredParameters:{variant:"string"}},
+{id:"final.education",requiredContext:"LIVE_MINECRAFT",mutationRisk:"guarded",phases:["stimulus"],requiredParameters:{variant:"string"}},
+{id:"final.observability",requiredContext:"LIVE_MINECRAFT",mutationRisk:"read-only",phases:["stimulus"],requiredParameters:{variant:"string"}},
+{id:"final.entity-special",requiredContext:"LIVE_MINECRAFT",mutationRisk:"guarded",phases:["stimulus"],requiredParameters:{variant:"string"}},
+{id:"final.watchdog",requiredContext:"LIVE_MINECRAFT",mutationRisk:"guarded",phases:["stimulus"],requiredParameters:{variant:"string"}},
+{id:"final.cleanup",requiredContext:"LIVE_MINECRAFT",mutationRisk:"guarded",phases:["teardown"],requiredParameters:{fixtureId:"string"}}];
+function make(i:FinalRuntimeInput,actionId:string,predicates:readonly string[],risk:"guarded"|"read-only"="guarded"):RuntimeExperimentDefinition{return{schemaVersion:1,id:i.id,title:i.title,domain:actionId.includes("gametest")?"compatibility":actionId.includes("watchdog")?"persistence":"state",requiredContext:"LIVE_MINECRAFT",mutationRisk:risk,targetProfileFingerprint:i.targetProfileFingerprint,fixtureFingerprint:i.fixtureFingerprint,protocol:[...(risk==="guarded"?[{id:"reset",phase:"setup" as const,actionId:"final.reset",parameters:{fixtureId:i.id}}]:[]),{id:"stimulus",phase:"stimulus",actionId,parameters:{variant:"$factor.variant"}},...predicates.map(predicate=>({id:"probe-"+predicate,phase:"observe" as const,actionId:"probe.scoreboard-value",parameters:{objectiveId:i.objectiveId,participant:i.participant,expected:1,predicate}})),...(risk==="guarded"?[{id:"cleanup",phase:"teardown" as const,actionId:"final.cleanup",parameters:{fixtureId:i.id}}]:[])],factors:[{id:"variant",description:"Controlled final-frontier runtime variant."}],arms:[{id:"control",role:"control",factorValues:{variant:"baseline"}},{id:"treatment",role:"treatment",factorValues:{variant:"edge"}}],outcomePredicateIds:predicates,minimumRunsPerArm:i.minimumRunsPerArm??2};}
+export const createBlockStateRuntimeExperiment=(i:FinalRuntimeInput)=>make(i,"final.block-state",["block-access-unloaded-observed","block-container-observed","container-event-separation-observed"]);
+export const createGameTestRuntimeExperiment=(i:FinalRuntimeInput)=>make(i,"final.gametest",["gametest-max-ticks-bounded","gametest-invariant-validation-observed","gametest-repeatability-observed"]);
+export const createCommandRuntimeExperiment=(i:FinalRuntimeInput)=>make(i,"final.command",["command-block-self-without-entity-observed","selector-no-match-failure-observed"]);
+export const createHazardRuntimeExperiment=(i:FinalRuntimeInput)=>make(i,"final.hazard",["explosion-source-blocks-observed","explosion-world-mutation-observed"]);
+export const createEducationRuntimeExperiment=(i:FinalRuntimeInput)=>make(i,"final.education",["education-agent-companion-observed","education-code-builder-agent-observed","education-classroom-controls-observed","education-dedicated-server-profile-observed","education-dialogue-loaded-ticking-observed"]);
+export const createObservabilityRuntimeExperiment=(i:FinalRuntimeInput)=>make(i,"final.observability",["content-log-debugger-profiler-observed","visual-debug-spatial-observed"],"read-only");
+export const createEntitySpecialRuntimeExperiment=(i:FinalRuntimeInput)=>make(i,"final.entity-special",["runtime-identifier-behavior-observed","mount-add-remove-rider-observed"]);
+export const createWatchdogRuntimeExperiment=(i:FinalRuntimeInput)=>make(i,"final.watchdog",["watchdog-termination-surface-observed","watchdog-persistence-interruption-observed"]);
