@@ -10,8 +10,8 @@
     ],
     "registryFingerprint": "69306b3a",
     "proofRegistry": "engine/reliability/catalogs/capability-proof-bindings.json",
-    "proofRegistryFingerprint": "d821e092",
-    "proofInventoryFingerprint": "40b638fb"
+    "proofRegistryFingerprint": "a8fa4f54",
+    "proofInventoryFingerprint": "76a1ec8b"
   },
   "summary": {
     "taskCapabilities": 55,
@@ -974,7 +974,7 @@
         "kind": "unit-contract",
         "executionContext": "REMOTE_GITHUB",
         "paths": [
-          "engine/packages/reliability-search/test/behavioral-pattern-library.test.ts"
+          "engine/packages/reliability-search/test/corpus/behavioral-pattern-library.test.ts"
         ]
       },
       "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
@@ -1007,7 +1007,7 @@
         "kind": "unit-contract",
         "executionContext": "REMOTE_GITHUB",
         "paths": [
-          "engine/packages/reliability-search/test/coverage-quality-dashboard.test.ts"
+          "engine/packages/reliability-search/test/coverage/coverage-quality-dashboard.test.ts"
         ]
       },
       "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
@@ -1040,7 +1040,7 @@
         "kind": "unit-contract",
         "executionContext": "REMOTE_GITHUB",
         "paths": [
-          "engine/packages/reliability-search/test/metamorphic-robustness.test.ts"
+          "engine/packages/reliability-search/test/robustness/metamorphic-robustness.test.ts"
         ]
       },
       "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
@@ -1073,7 +1073,7 @@
         "kind": "unit-contract",
         "executionContext": "REMOTE_GITHUB",
         "paths": [
-          "engine/packages/reliability-search/test/metamorphic-robustness.test.ts"
+          "engine/packages/reliability-search/test/robustness/metamorphic-robustness.test.ts"
         ]
       },
       "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
@@ -1168,7 +1168,7 @@
         "kind": "contract-only",
         "executionContext": "REMOTE_GITHUB",
         "paths": [
-          "engine/packages/runtime-lab/test/cross-version-differential-executor.test.ts"
+          "engine/packages/runtime-lab/test/differential/cross-version-differential-executor.test.ts"
         ],
         "note": "Binds fail-closed orchestration behavior only; live cross-version proof still requires LOCAL/LIVE Minecraft hosts."
       },
@@ -1202,7 +1202,7 @@
         "kind": "unit-contract",
         "executionContext": "REMOTE_GITHUB",
         "paths": [
-          "engine/packages/runtime-lab/test/cross-version-differential-plan.test.ts"
+          "engine/packages/runtime-lab/test/differential/cross-version-differential-plan.test.ts"
         ]
       },
       "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
@@ -1297,7 +1297,7 @@
         "kind": "unit-contract",
         "executionContext": "REMOTE_GITHUB",
         "paths": [
-          "engine/packages/reliability/test/runtime-session-replay.test.ts"
+          "engine/packages/reliability/test/runtime/runtime-session-replay.test.ts"
         ]
       },
       "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
@@ -1330,7 +1330,7 @@
         "kind": "unit-contract",
         "executionContext": "REMOTE_GITHUB",
         "paths": [
-          "engine/packages/project-model/test/runtime-semantic-convention.test.ts"
+          "engine/packages/project-model/test/runtime/runtime-semantic-convention.test.ts"
         ]
       },
       "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
@@ -1726,7 +1726,7 @@
         "kind": "unit-contract",
         "executionContext": "REMOTE_GITHUB",
         "paths": [
-          "engine/analyzers/scripts/test/source-recovery.test.ts"
+          "engine/analyzers/scripts/test/recovery/source-recovery.test.ts"
         ]
       },
       "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
@@ -1759,7 +1759,7 @@
         "kind": "unit-contract",
         "executionContext": "REMOTE_GITHUB",
         "paths": [
-          "engine/analyzers/scripts/test/semantic-flow-bindings.test.ts"
+          "engine/analyzers/scripts/test/flow/semantic-flow-bindings.test.ts"
         ]
       },
       "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
@@ -1792,7 +1792,7 @@
         "kind": "unit-contract",
         "executionContext": "REMOTE_GITHUB",
         "paths": [
-          "engine/analyzers/scripts/test/semantic-flow-witness.test.ts"
+          "engine/analyzers/scripts/test/flow/semantic-flow-witness.test.ts"
         ]
       },
       "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
@@ -1825,7 +1825,7 @@
         "kind": "unit-contract",
         "executionContext": "REMOTE_GITHUB",
         "paths": [
-          "engine/analyzers/scripts/test/source-map-binding.test.ts"
+          "engine/analyzers/scripts/test/recovery/source-map-binding.test.ts"
         ]
       },
       "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
