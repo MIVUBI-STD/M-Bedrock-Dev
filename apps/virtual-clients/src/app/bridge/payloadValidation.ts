@@ -163,7 +163,7 @@ export const baseProfile = shape<unknown>({
   schema: oneOf(3), minecraftVersion: text,
   nativeInstallType: oneOf("DESKTOP", "STORE", "APP_BUNDLE", "UNKNOWN"),
   guestStatusSchema: integer, guestAgentProtocol: positiveInteger, guestAgentVersion: text,
-  baseGenerationId: hex64, source: oneOf("LIVE_VERIFIED"),
+  baseGenerationId: hex64,
 });
 export const stagedUpdate = shape<unknown>({
   version: text, platform: text, installerPath: text, sha256: text, authenticodeThumbprint: text,
