@@ -41,7 +41,7 @@
       ? "Host resources are too constrained for another client."
       : hostPressure.startDecision === "WAIT"
         ? "Host is busy. The next client will wait briefly for resources to stabilize."
-        : `Host resources are ready · up to ${snapshot.doctor.maxRecommendedVirtualClients} virtual clients recommended.`;
+        : `Capacity estimate: up to ${snapshot.doctor.maxRecommendedVirtualClients} virtual clients based on CPU and memory.`;
 </script>
 
 <section class="hero compact clients-heading">
@@ -55,7 +55,7 @@
       <span class="eyebrow">SETUP · CLIENT CHECK</span>
       <strong>Finish Windows first boot on all three clients</strong>
       <small>Use Start first-time setup on each client, complete Windows first-run screens, then use Check clients. Clients remain running while you complete setup; Check clients verifies their required runtime and identity state.</small>
-      <small>Check clients requires all three clients running together. This PC is currently recommended for {snapshot.doctor.maxRecommendedVirtualClients} simultaneous virtual clients; actual capacity still requires local testing.</small>
+      <small>Check clients requires all three clients running together. CPU and memory estimate up to {snapshot.doctor.maxRecommendedVirtualClients} simultaneous virtual clients; actual capacity still requires local testing.</small>
     </div>
     <button class="primary" disabled={Boolean(busy) || runningVirtuals < 3} on:click={onVerifyIdentities}>
       {busy === "verify-identities" ? "Checking…" : "Check clients"}
