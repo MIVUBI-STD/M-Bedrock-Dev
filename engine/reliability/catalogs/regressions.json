@@ -1928,6 +1928,43 @@
       ],
       "expected": "After exact-once result settlement, the settled result is presented through the authored terminal-result surface before cleanup/return.",
       "observed": "finish() settles the result and publishes matchSummary() through chat, then resets. showFinalStandings() exists but has no production caller, and the terminal path has no winner title or victory sound."
+    },
+    {
+      "id": "reg_attack_1_1_2_terminal_outcome_race",
+      "canonicalIssueId": "reg_attack_1_1_2_terminal_outcome_race",
+      "title": "Deferred victory can race timeout and settle one attempt twice",
+      "issueType": "BUG",
+      "domain": "game-state",
+      "discoveredBy": "approved-ai",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "attack-challenge",
+        "reportPath": "workspace/projects/attack-challenge/report/bug-report.json",
+        "map": "Attack Challenge",
+        "mapVersion": "1.1.2",
+        "bugId": "BUG-ATK-LAST-SECOND-DOUBLE-END",
+        "canonicalIssueId": "reg_attack_1_1_2_terminal_outcome_race",
+        "artifactFingerprint": "sha256:da4de986e384a978ede7c51fa4523ebf95c4b3d3133f355cd89c4b79feec45f4"
+      },
+      "triggerTags": [
+        "terminal-collision",
+        "deferred-callback",
+        "timeout",
+        "victory",
+        "exactly-once"
+      ],
+      "capabilityTags": [
+        "gameplay-state",
+        "result-settlement",
+        "event-ordering"
+      ],
+      "reproduction": [
+        "Reach the flag capture boundary as the level timer reaches zero.",
+        "Allow the capture path to queue victory while timer expiry resolves timeout.",
+        "Observe whether the same attempt can receive both terminal outcomes or an invalid completion duration."
+      ],
+      "expected": "Exactly one terminal outcome owns each attempt; later terminal callbacks for the same attempt are rejected without mutating result, score, feedback, or transition state.",
+      "observed": "Timeout can clear attempt timing state before a previously queued victory callback executes; because terminal ownership is not locked, the delayed victory can subsequently be accepted."
     }
   ]
 }
