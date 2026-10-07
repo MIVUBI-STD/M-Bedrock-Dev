@@ -67,7 +67,7 @@
       "reproduction": [
         "Complete a normal Build & Decode match.",
         "Observe the completed result is committed and a chat summary may be sent.",
-        "Check whether the authored final standings UI is never displayed.",
+        "Observe whether the authored final standings UI appears before players return to the lobby.",
         "Observe players are reset/returned to the lobby without a dedicated final victory/result presentation."
       ],
       "aiAnalysis": "This is stronger than a general UX preference because the selected artifact itself contains a dedicated showFinalStandings() capability with an explicit end-of-game purpose, yet the playable terminal flow does not route to it.",
