@@ -41,7 +41,7 @@ Internal resolver states such as RUNTIME_PROOF_REQUIRED, DETECTION_GAP, COUNTERP
 
 Use these names consistently:
 
-- `Complete Bug Report` / `Map Audit Report` — human-facing complete finding set; includes PROVEN and NEED_VALIDATION across BUG and DESIGN_MISMATCH.
+- `Map Audit Report` — human-facing complete finding set; includes PROVEN and NEED_VALIDATION across BUG and DESIGN_MISMATCH.
 - `Approved Bug Report V2` — downstream approved PROVEN BUG ledger only.
 - `evidenceRoute` — conceptual name for static/runtime/tester evidence origin. It is not an audit workflow lane.
 
@@ -138,7 +138,7 @@ approvedBugReportV2
 → approved PROVEN BUG items only
 ```
 
-Do not use "Bug Report" to imply unresolved material findings may be omitted from the human-facing audit report.
+Use `Map Audit Report` for the complete audit output. Reserve `Bug Report V2` for the approved PROVEN BUG ledger. Do not introduce `Complete Bug Report` as a second name.
 
 ## Evidence-route boundary
 
