@@ -37,7 +37,7 @@ interface AuditIssueProjectionBase {
   readonly subjectIds: readonly string[];
   readonly componentIds: readonly string[];
   readonly evidenceIds: readonly string[];
-  readonly knowledgeRequirementId?: string;
+  readonly knowledgeRequirementIds?: readonly string[];
 }
 
 export interface ReadyAuditIssueProjection
@@ -150,13 +150,17 @@ export function projectionContext(
 
   const subjectIds = [...new Set(link.subjectIds)].sort();
   const componentIds = [...new Set(link.componentIds)].sort();
-  const knowledgeDomain =
-    link.knowledgeRequirementId === undefined
-      ? undefined
-      : graph.knowledgeRequirements.find(
-          (item) =>
-            item.id === link.knowledgeRequirementId,
-        )?.domain;
+  const knowledgeDomains =
+    link.knowledgeRequirementIds
+      .map((id) =>
+        graph.knowledgeRequirements.find(
+          (item) => item.id === id,
+        )?.domain
+      )
+      .filter((domain): domain is NonNullable<typeof domain> =>
+        domain !== undefined
+      );
+  const knowledgeDomain = knowledgeDomains[0];
   const relatedDelivery =
     relatedCapabilityDelivery(
       scenario.label,
@@ -295,11 +299,11 @@ export function projectReadyAuditIssues(
             ...link.evidenceIds,
             ...(resolution.evidenceIds ?? []),
           ])].sort(),
-          ...(resolution.knowledgeRequirementId === undefined
+          ...((resolution.knowledgeRequirementIds?.length ?? 0) === 0
             ? {}
             : {
-                knowledgeRequirementId:
-                  resolution.knowledgeRequirementId,
+                knowledgeRequirementIds:
+                  [...(resolution.knowledgeRequirementIds ?? [])],
               }),
         }];
       }),
