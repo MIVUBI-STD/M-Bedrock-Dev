@@ -42,38 +42,53 @@ export function constructCausalLinkHypothesis(input: {
   );
   if (!scenario) return undefined;
 
-  const knowledge = link.knowledgeRequirementId === undefined
-    ? undefined
-    : input.graph.knowledgeRequirements.find(
-        (item) => item.id === link.knowledgeRequirementId,
+  const knowledgeRequirements =
+    link.knowledgeRequirementIds
+      .map((id) =>
+        input.graph.knowledgeRequirements.find(
+          (item) => item.id === id,
+        )
+      )
+      .filter((item): item is NonNullable<typeof item> =>
+        item !== undefined
       );
-  const knowledgeReceipt = link.knowledgeRequirementId === undefined
-    ? undefined
-    : input.graph.knowledgeReceipts.find(
-        (item) => item.requirementId === link.knowledgeRequirementId,
+  const knowledgeReceipts =
+    link.knowledgeRequirementIds
+      .map((id) =>
+        input.graph.knowledgeReceipts.find(
+          (item) => item.requirementId === id,
+        )
+      )
+      .filter((item): item is NonNullable<typeof item> =>
+        item !== undefined
       );
 
   const contradiction = predicate(link.id, "contradiction");
   const runtime = input.resolution.disposition === "RUNTIME_PROOF_REQUIRED"
     ? predicate(link.id, "runtime")
     : undefined;
-  const knowledgePredicate = knowledge === undefined
-    ? undefined
-    : predicate(link.id, "knowledge", knowledge.id);
+  const knowledgeRequirementPredicates =
+    knowledgeRequirements.map((knowledge) =>
+      predicate(link.id, "knowledge", knowledge.id)
+    );
   const knowledgePredicates =
-    knowledgeReceipt?.knowledgeIds.map(
-      (claimId) => predicate(
-        link.id,
-        "knowledge",
-        claimId,
-      ),
-    ) ?? [];
+    knowledgeReceipts
+      .flatMap((receipt) => receipt.knowledgeIds)
+      .filter((id, index, all) => all.indexOf(id) === index)
+      .sort()
+      .map((knowledgeId) =>
+        predicate(
+          link.id,
+          "knowledge",
+          knowledgeId,
+        )
+      );
   const counterproof = predicate(link.id, "counterproof");
 
   const requiredPredicates = [
     contradiction,
     ...(runtime ? [runtime] : []),
-    ...(knowledgePredicate ? [knowledgePredicate] : []),
+    ...knowledgeRequirementPredicates,
     ...knowledgePredicates,
   ];
   const falsifierPredicates = [counterproof];
