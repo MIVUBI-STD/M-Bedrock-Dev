@@ -30,6 +30,8 @@ export const BUG_REPORT_V2_LABELS = {
   foundBy: "Found By",
   issueType: "Issue Type",
   problem: "Problem",
+  whyThisIsBug: "Why This Is a Bug",
+  impact: "Impact",
   expected: "Expected",
   observed: "Observed",
   reproduction: "Reproduction",
@@ -84,6 +86,8 @@ export interface BugReportV2Bug {
   readonly issueType?: BugReportV2IssueType;
   readonly title: string;
   readonly problem: string;
+  readonly whyThisIsBug?: string;
+  readonly impact?: string;
   readonly expected: string;
   readonly observed: string;
   readonly reproduction?: readonly string[];
@@ -304,6 +308,8 @@ function parseBug(
       "issueType",
       "title",
       "problem",
+      "whyThisIsBug",
+      "impact",
       "expected",
       "observed",
       "reproduction",
@@ -319,6 +325,8 @@ function parseBug(
   const id = requiredText(value, "id", path, issues);
   const title = requiredText(value, "title", path, issues);
   const problem = requiredText(value, "problem", path, issues);
+  const whyThisIsBug = value.whyThisIsBug === undefined ? undefined : requiredText(value, "whyThisIsBug", path, issues);
+  const impact = value.impact === undefined ? undefined : requiredText(value, "impact", path, issues);
   const expected = requiredText(value, "expected", path, issues);
   const observed = requiredText(value, "observed", path, issues);
 
@@ -416,6 +424,8 @@ function parseBug(
         : value.issueType as BugReportV2IssueType,
     title,
     problem,
+    ...(whyThisIsBug === undefined ? {} : { whyThisIsBug }),
+    ...(impact === undefined ? {} : { impact }),
     expected,
     observed,
     ...(reproduction === undefined ? {} : { reproduction }),
