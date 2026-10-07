@@ -61,6 +61,24 @@ Rules:
 
 This is an efficiency and integrity rule: unknown history stays unknown.
 
+### Full recheck before current-version publication
+
+When the current map version changes, the canonical Bug Report must not be refreshed from historical issue comparison alone.
+
+The upstream audit must first satisfy the [Master Selected-Map Audit Workflow](../analysis/master-selected-map-audit-workflow.md) new-version full-recheck gate and the [Bug-Finding Coverage System](../analysis/bug-finding-coverage.md) version-transition coverage rule.
+
+```text
+new map version
+→ full selected-artifact audit
+→ complete current-version finding set
+→ approval/reconciliation
+→ canonical Bug Report V2
+→ HTML + JSON publication
+```
+
+A historical-finding-only revalidation may update search knowledge, but it is insufficient evidence for report completeness and must not authorize final publication for the new version.
+
+
 ## Canonical lifecycle
 
 ```text
