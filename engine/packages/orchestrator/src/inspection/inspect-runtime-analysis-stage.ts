@@ -742,7 +742,7 @@ export function analyzeInspectionRuntimeState(
       parsedFunctionModels,
       structureProofs,
       input.target.mutationDependentActions ?? [],
-    ).assessments;
+    );
 
   const scriptMutationTransactions =
     analyzeScriptMutationTransactions(
