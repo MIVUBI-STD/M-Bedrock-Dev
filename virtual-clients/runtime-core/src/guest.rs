@@ -53,11 +53,10 @@ pub struct MinecraftLaunchResult {
 }
 
 fn request_id() -> io::Result<String> {
-    let nanos = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map_err(|error| io::Error::new(io::ErrorKind::Other, error))?
-        .as_nanos();
-    Ok(format!("{nanos:032x}"))
+    let mut bytes = [0u8; 16];
+    getrandom::getrandom(&mut bytes)
+        .map_err(|error| io::Error::new(io::ErrorKind::Other, error))?;
+    Ok(bytes.iter().map(|byte| format!("{byte:02x}")).collect())
 }
 
 fn single_response_header<'a>(headers: &'a str, target: &str) -> io::Result<Option<&'a str>> {
