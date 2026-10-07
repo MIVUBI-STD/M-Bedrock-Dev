@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { BugReportClientDocument } from "../../../engine/packages/bug-report/src/document/model.js";
-import { projectClientDocumentToTracker, resolveSourceBinding, type ProjectRegistry } from "./project.js";
+import { projectClientDocumentToTracker, resolveSourceBinding, type DeveloperNoteRegistry, type ProjectRegistry } from "./project.js";
 import { renderBugTrackerHtml } from "./render-html.js";
 import { trackerIssueIds, validateBugTrackerDocument } from "./validate.js";
 
@@ -11,6 +11,8 @@ const registry: ProjectRegistry = { projects: [{
   knowledge: { bugReportPath: "workspace/reports/Fixture-Map-v1.0.0-BugReport.json" },
   publication: { drive: { mapFolder: { folderId: "fixture-folder" }, currentWorld: { fileId: "fixture-world", fileName: "Fixture Map v1.0.0.mcworld", version: "1.0.0" } } },
 }] };
+
+const developerNotes: DeveloperNoteRegistry = { schema: "m-bedrock-dev-notes/v1", notes: [] };
 
 const client: BugReportClientDocument = {
   schema: "m-bedrock-bug-report-client-document/v1",
@@ -35,7 +37,7 @@ describe("Bug Tracker integration", () => {
     expect(source.bugReportPath).toContain("Fixture-Map");
   });
   it("projects and renders the same unique issue IDs", () => {
-    const tracker = projectClientDocumentToTracker(client, registry);
+    const tracker = projectClientDocumentToTracker(client, registry, developerNotes);
     validateBugTrackerDocument(tracker);
     expect(trackerIssueIds(tracker)).toEqual(["BUG-FIXTURE-001"]);
     expect(renderBugTrackerHtml(tracker)).toContain('data-issue-id="BUG-FIXTURE-001"');
