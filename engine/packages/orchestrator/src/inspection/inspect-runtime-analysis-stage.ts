@@ -411,6 +411,38 @@ export function analyzeInspectionRuntimeState(
       (item) => item.evidence.calls,
     ),
   ];
+  const terminalIdempotencyEvidence =
+    input.parsedScripts.flatMap((item) =>
+      item.text === undefined
+        ? []
+        : deriveScriptTerminalIdempotencyEvidence(
+            item.text,
+            item.node.source,
+          )
+    );
+  const terminalPrecedenceEvidence =
+    input.parsedScripts.flatMap((item) =>
+      item.text === undefined
+        ? []
+        : deriveScriptTerminalPrecedenceEvidence(
+            item.text,
+            item.node.source,
+          )
+    );
+
+  const arenaLifecycle =
+    analyzeArenaLifecycleConvergence(
+      scriptsFor("arena-lifecycle"),
+      demanded.has("arena-lifecycle")
+        ? crossFileCalls
+        : [],
+      demanded.has("arena-lifecycle")
+        ? terminalIdempotencyEvidence
+        : [],
+      demanded.has("arena-lifecycle")
+        ? terminalPrecedenceEvidence
+        : [],
+    );
   const progressionActorAccounting =
     analyzeProgressionActorAccounting(
       input.parsedScripts.map((item) => ({
@@ -450,39 +482,7 @@ export function analyzeInspectionRuntimeState(
     ...entityPopulationSourceDiagnostics(
       entityPopulation,
     ),
-  );\n\n  const terminalIdempotencyEvidence =
-    input.parsedScripts.flatMap((item) =>
-      item.text === undefined
-        ? []
-        : deriveScriptTerminalIdempotencyEvidence(
-            item.text,
-            item.node.source,
-          )
-    );
-  const terminalPrecedenceEvidence =
-    input.parsedScripts.flatMap((item) =>
-      item.text === undefined
-        ? []
-        : deriveScriptTerminalPrecedenceEvidence(
-            item.text,
-            item.node.source,
-          )
-    );
-
-  const arenaLifecycle =
-    analyzeArenaLifecycleConvergence(
-      scriptsFor("arena-lifecycle"),
-      demanded.has("arena-lifecycle")
-        ? crossFileCalls
-        : [],
-      demanded.has("arena-lifecycle")
-        ? terminalIdempotencyEvidence
-        : [],
-      demanded.has("arena-lifecycle")
-        ? terminalPrecedenceEvidence
-        : [],
-    );
-  const arenaCleanupSurfaces =
+  );\n\n\n\n  const arenaCleanupSurfaces =
     analyzeArenaCleanupSurfaces(
       scriptsFor("arena-lifecycle"),
     );
