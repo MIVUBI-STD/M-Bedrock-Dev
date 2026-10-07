@@ -26,6 +26,9 @@ import {
 import {
   DOMAIN_VALIDATION_ACTION_CAPABILITIES,
 } from "../domains/validation/domain-validation-experiments.js";
+import { EVENT_ORDERING_VALIDATION_ACTION_CAPABILITIES } from "../domains/ordering/event-ordering-validation-experiments.js";
+import { ENTITY_STATE_VALIDATION_ACTION_CAPABILITIES } from "../domains/entity/entity-state-validation-experiments.js";
+import { WORLD_MUTATION_VALIDATION_ACTION_CAPABILITIES } from "../domains/world/world-mutation-validation-experiments.js";
 import {
   MULTIPLAYER_SESSION_ACTION_CAPABILITIES,
 } from "../domains/multiplayer/multiplayer-session-experiment.js";
@@ -134,6 +137,9 @@ export const BEDROCK_RUNTIME_ACTION_CAPABILITIES:
       MULTIPLAYER_CONCURRENCY_ACTION_CAPABILITIES,
       INTERACTION_ACTION_CAPABILITIES,
       DOMAIN_VALIDATION_ACTION_CAPABILITIES,
+      EVENT_ORDERING_VALIDATION_ACTION_CAPABILITIES,
+      ENTITY_STATE_VALIDATION_ACTION_CAPABILITIES,
+      WORLD_MUTATION_VALIDATION_ACTION_CAPABILITIES,
       MULTIPLAYER_SESSION_ACTION_CAPABILITIES,
       MULTIPLAYER_STRESS_ACTION_CAPABILITIES,
       PERSISTENCE_RECOVERY_ACTION_CAPABILITIES,
