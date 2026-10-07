@@ -140,7 +140,7 @@ function platformClaimDomainsForScenario(
   return domains;
 }
 
-function knowledgeIdsForRequirement(
+export function knowledgeIdsForRequirement(
   world: GameplayWorldModel,
   requirement: GameplayKnowledgeRequirement,
   requirements: readonly GameplayKnowledgeRequirement[],
