@@ -14,7 +14,7 @@
       "fixed": false,
       "severity": "minor",
       "category": "ui-feedback",
-      "foundBy": "static/source revalidation",
+      "foundBy": "source audit",
       "issueType": "DESIGN_MISMATCH",
       "title": "Authored final-standings presentation is not used at match completion",
       "problem": "The current artifact still contains a dedicated final-standings UI for the end of a game, but the completed-match flow does not call it. The flow settles the result, sends the match summary as chat text, and proceeds directly into arena reset.",
