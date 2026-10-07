@@ -137,11 +137,30 @@ function platformClaimDomainsForScenario(
     domains.add("world-mutation");
   }
 
-  expandConditionalKnowledgeDomains(
-    domains,
-    world,
-  );
   return domains;
+}
+
+function knowledgeClaimIdsForRequirement(
+  world: GameplayWorldModel,
+  requirement: GameplayKnowledgeRequirement,
+  requirements: readonly GameplayKnowledgeRequirement[],
+): readonly string[] {
+  if (requirement.domain !== "platform-constraints") return [];
+
+  const relevantDomains = platformClaimDomainsForScenario(
+    requirement.scenarioId,
+    requirements,
+  );
+
+  return world.platformKnowledge.claims
+    .filter(
+      (claim) =>
+        relevantDomains.has(claim.domain) &&
+        claim.status !== "unknown",
+    )
+    .map((claim) => claim.relationId)
+    .filter((id, index, values) => values.indexOf(id) === index)
+    .sort();
 }
 
 function domainEvidence(
@@ -835,6 +854,7 @@ export function buildGameplayKnowledgeReceipts(
         subjectIds: [...requirement.subjectIds],
         componentIds: [...requirement.componentIds],
         evidenceIds: [],
+        knowledgeClaimIds: [],
         capabilityIdsUsed: [],
         reason:
           "Required Inspection Graph contains a prerequisite cycle at " +
@@ -872,6 +892,7 @@ export function buildGameplayKnowledgeReceipts(
         subjectIds: [...requirement.subjectIds],
         componentIds: [...requirement.componentIds],
         evidenceIds: [],
+        knowledgeClaimIds: [],
         capabilityIdsUsed: [],
         reason:
           "Required prerequisite inspection node(s) are not satisfied: " +
@@ -908,6 +929,11 @@ export function buildGameplayKnowledgeReceipts(
         subjectIds: [...requirement.subjectIds],
         componentIds: [...requirement.componentIds],
         evidenceIds,
+        knowledgeClaimIds: knowledgeClaimIdsForRequirement(
+          world,
+          requirement,
+          requirements,
+        ),
         capabilityIdsUsed: [],
         reason:
           "No analysis-planner capability is registered for this required gameplay knowledge domain.",
@@ -928,6 +954,7 @@ export function buildGameplayKnowledgeReceipts(
         subjectIds: [...requirement.subjectIds],
         componentIds: [...requirement.componentIds],
         evidenceIds: [],
+        knowledgeClaimIds: [],
         capabilityIdsUsed: [],
         reason:
           requirement.domain === "platform-constraints"
@@ -946,6 +973,11 @@ export function buildGameplayKnowledgeReceipts(
       subjectIds: [...requirement.subjectIds],
       componentIds: [...requirement.componentIds],
       evidenceIds,
+      knowledgeClaimIds: knowledgeClaimIdsForRequirement(
+        world,
+        requirement,
+        requirements,
+      ),
       capabilityIdsUsed,
       reason:
         requirement.domain === "platform-constraints"
