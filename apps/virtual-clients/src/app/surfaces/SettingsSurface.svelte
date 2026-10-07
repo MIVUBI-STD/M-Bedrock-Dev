@@ -12,7 +12,7 @@
 <section class="hero compact">
   <span class="eyebrow">SETTINGS</span>
   <h2>Performance & updates</h2>
-  <p>Virtual Clients manages safe performance automatically. Review resource limits and application update status here.</p>
+  <p>Review the current client limits, memory admission policy, and application update status.</p>
 </section>
 
 <section class="settings-card">
