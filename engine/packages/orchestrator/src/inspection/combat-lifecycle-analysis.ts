@@ -90,7 +90,7 @@ function explicitCombatScopeGuardsFor(
 ): number {
   const file = ts.createSourceFile(
     script.source.relativePath,
-    script.text,
+    script.text ?? "",
     ts.ScriptTarget.Latest,
     true,
     script.source.relativePath.endsWith(".ts")
