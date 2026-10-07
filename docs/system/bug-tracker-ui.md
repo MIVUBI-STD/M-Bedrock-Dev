@@ -230,6 +230,25 @@ Every canonical BUG, DESIGN_MISMATCH, and DEV_NOTE ID must appear exactly once i
 
 Tester workspace state may be included in a saved portable HTML/JSON copy, but it never mutates canonical issue facts.
 
+## Publication integrity
+
+Current `output/bug-tracker.html` and `output/bug-tracker.json` must be written through `tooling/bug-report-documents/render.ts` → `exportBugTracker()` → the canonical tracker renderer.
+
+Do not hand-author, partially patch, or maintain a second HTML implementation under a project output directory.
+
+Publication must fail if the rendered HTML loses a promised tester capability. The functional contract currently requires:
+
+- Passed / Failed controls;
+- Save as HTML;
+- Save JSON;
+- Load JSON;
+- Reset Tester Data;
+- embedded saved-workspace snapshot support;
+- evidence file input and rendered evidence collection;
+- exact canonical finding/Developer Note ID parity with JSON.
+
+A visible control without its canonical behavior is a publication defect, not an acceptable visual placeholder.
+
 ## Regression requirements
 
 Repository tests must protect at least:
