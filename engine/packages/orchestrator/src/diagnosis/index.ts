@@ -56,3 +56,5 @@ export * from "./telemetry-text.js";
 export * from "./cross-domain-runtime-probe-compiler.js";
 
 export * from "./causal-link-hypothesis-construction.js";
+
+export * from "./causal-link-evidence-construction.js";
