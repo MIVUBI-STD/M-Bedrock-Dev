@@ -58,6 +58,9 @@ jobs:
           if ($tauri.bundle.windows.allowDowngrades -ne $false) { throw 'Installer downgrade policy must remain disabled.' }
           if ($tauri.bundle.windows.nsis.startMenuFolder -ne 'M-Bedrock Virtual Clients') { throw 'Start Menu ownership drifted.' }
           if ($tauri.bundle.windows.nsis.installerHooks -ne 'windows/installer-hooks.nsh') { throw 'Installer process-in-use policy is not configured.' }
+          if ($tauri.bundle.publisher -ne 'MIVUBI-STD' -or [string]::IsNullOrWhiteSpace($tauri.bundle.shortDescription) -or [string]::IsNullOrWhiteSpace($tauri.bundle.longDescription)) {
+            throw 'Installer publisher/product metadata is incomplete.'
+          }
           $hooks = Get-Content src-tauri\windows\installer-hooks.nsh -Raw
           if ($hooks -notmatch 'NSIS_HOOK_PREINSTALL' -or $hooks -notmatch 'NSIS_HOOK_PREUNINSTALL' -or $hooks -match 'KillProcess|TerminateProcess') {
             throw 'Installer hooks must block an open desktop app without force-killing it.'
@@ -117,6 +120,11 @@ jobs:
           if ($repair.ExitCode -ne 0) { throw "Silent same-version repair failed with exit code $($repair.ExitCode)." }
           if (!(Test-Path -LiteralPath $repairTarget -PathType Leaf)) { throw 'Same-version repair did not restore packaged resources.' }
           if (!(Test-Path -LiteralPath $runtimeSentinel -PathType Leaf)) { throw 'Same-version repair modified runtime data.' }
+
+          $desktopVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo((Join-Path $installDir 'm-bedrock-virtual-clients.exe'))
+          if ($desktopVersion.ProductVersion -and $desktopVersion.ProductVersion -notlike "$($package.version)*") {
+            throw "Installed desktop version drifted from package version: $($desktopVersion.ProductVersion)"
+          }
 
           $uninstaller = @(Get-ChildItem -LiteralPath $installDir -Filter 'uninstall*.exe' -File)
           if ($uninstaller.Count -ne 1) {
