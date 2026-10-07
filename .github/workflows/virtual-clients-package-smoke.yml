@@ -115,6 +115,21 @@ jobs:
             throw 'Uninstall removed Virtual Clients runtime data.'
           }
 
+          # Reinstall after uninstall must reconnect to preserved runtime data.
+          $reinstall = Start-Process -FilePath $installer -ArgumentList @('/S', "/D=$installDir") -Wait -PassThru
+          if ($reinstall.ExitCode -ne 0) { throw "Silent reinstall failed with exit code $($reinstall.ExitCode)." }
+          if (!(Test-Path -LiteralPath (Join-Path $installDir 'm-bedrock-virtual-clients.exe') -PathType Leaf)) {
+            throw 'Desktop executable was not restored by reinstall.'
+          }
+          if (!(Test-Path -LiteralPath $runtimeSentinel -PathType Leaf)) {
+            throw 'Reinstall did not preserve existing runtime data.'
+          }
+
+          $reinstalledUninstaller = @(Get-ChildItem -LiteralPath $installDir -Filter 'uninstall*.exe' -File)
+          if ($reinstalledUninstaller.Count -ne 1) { throw 'Reinstall did not restore one canonical uninstaller.' }
+          $cleanup = Start-Process -FilePath $reinstalledUninstaller[0].FullName -ArgumentList @('/S') -Wait -PassThru
+          if ($cleanup.ExitCode -ne 0) { throw "Final cleanup uninstall failed with exit code $($cleanup.ExitCode)." }
+
           Remove-Item -LiteralPath $runtimeSentinel -Force
           "Silent install/uninstall + packaged resource verification PASS." >> $env:GITHUB_STEP_SUMMARY
 
