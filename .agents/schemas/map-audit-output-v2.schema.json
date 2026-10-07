@@ -656,6 +656,74 @@
               }
             },
             "additionalProperties": true
+          },
+          "reasoning": {
+            "type": "object",
+            "required": [
+              "reportClassification",
+              "proofConfidence",
+              "evidenceDomainSources",
+              "evidenceChain",
+              "unresolvedPredicates"
+            ],
+            "properties": {
+              "reportClassification": {
+                "enum": [
+                  "PROVEN BUG",
+                  "LIKELY BUG",
+                  "RISK",
+                  "DESIGN MISMATCH",
+                  "UNKNOWN",
+                  "EXPECTED"
+                ]
+              },
+              "diagnosticDisposition": {
+                "type": "string",
+                "minLength": 1
+              },
+              "proofConfidence": {
+                "enum": [
+                  "unknown",
+                  "low",
+                  "medium",
+                  "high",
+                  "proven"
+                ]
+              },
+              "evidenceDomainSources": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true
+              },
+              "evidenceChain": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true
+              },
+              "unresolvedPredicates": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true
+              },
+              "recommendedValidationPredicate": {
+                "type": "string",
+                "minLength": 1
+              },
+              "recommendedReadOnlyProbeId": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
           }
         },
         "allOf": [
@@ -1277,6 +1345,74 @@
               }
             },
             "additionalProperties": true
+          },
+          "reasoning": {
+            "type": "object",
+            "required": [
+              "reportClassification",
+              "proofConfidence",
+              "evidenceDomainSources",
+              "evidenceChain",
+              "unresolvedPredicates"
+            ],
+            "properties": {
+              "reportClassification": {
+                "enum": [
+                  "PROVEN BUG",
+                  "LIKELY BUG",
+                  "RISK",
+                  "DESIGN MISMATCH",
+                  "UNKNOWN",
+                  "EXPECTED"
+                ]
+              },
+              "diagnosticDisposition": {
+                "type": "string",
+                "minLength": 1
+              },
+              "proofConfidence": {
+                "enum": [
+                  "unknown",
+                  "low",
+                  "medium",
+                  "high",
+                  "proven"
+                ]
+              },
+              "evidenceDomainSources": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true
+              },
+              "evidenceChain": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true
+              },
+              "unresolvedPredicates": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true
+              },
+              "recommendedValidationPredicate": {
+                "type": "string",
+                "minLength": 1
+              },
+              "recommendedReadOnlyProbeId": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
           }
         },
         "allOf": [
