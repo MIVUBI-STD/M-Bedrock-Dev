@@ -136,9 +136,15 @@ for (const path of filesUnder("apps")) {
 requireText(PIPELINE_PATH, [
   'policy: "selected-map-audit-single-entry"',
   "runSelectedMapAudit",
+  "buildApprovedBugReportFromAudit",
   "issueLanes",
   "BUG:",
   "DESIGN_MISMATCH:",
+]);
+forbidText(PIPELINE_PATH, [
+  "buildSelectedMapAuditReport",
+  "BuildSelectedMapAuditReportInput",
+  "BuildSelectedMapAuditReportResult",
 ]);
 
 requireText(ISSUE_PROJECTION_PATH, [
