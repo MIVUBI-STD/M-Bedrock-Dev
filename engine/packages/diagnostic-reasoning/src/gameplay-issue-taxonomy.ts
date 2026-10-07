@@ -79,17 +79,15 @@ const COMPONENT_DOMAIN_HINTS:
 
 export function collectGameplayIssueDomains(input: {
   readonly componentIds: readonly string[];
-  readonly knowledgeDomain?: string;
+  readonly knowledgeDomains?: readonly string[];
 }): readonly GameplayIssueFailureDomain[] {
   const domains = new Set<GameplayIssueFailureDomain>();
 
-  if (
-    input.knowledgeDomain !== undefined &&
-    DOMAIN_BY_KNOWLEDGE[input.knowledgeDomain]
-  ) {
-    domains.add(
-      DOMAIN_BY_KNOWLEDGE[input.knowledgeDomain]!,
-    );
+  for (const knowledgeDomain of input.knowledgeDomains ?? []) {
+    const domain = DOMAIN_BY_KNOWLEDGE[knowledgeDomain];
+    if (domain !== undefined) {
+      domains.add(domain);
+    }
   }
 
   for (const [ids, domain] of COMPONENT_DOMAIN_HINTS) {
@@ -152,7 +150,7 @@ export function classifyGameplayIssue(input: {
   readonly gameplayStage: string;
   readonly scenarioLabel: string;
   readonly componentIds: readonly string[];
-  readonly knowledgeDomain?: string;
+  readonly knowledgeDomains?: readonly string[];
 }): GameplayIssueClassification {
   const gameplayFlow = flowStage(
     input.gameplayStage,
@@ -239,13 +237,20 @@ export function classifyGameplayIssue(input: {
     };
   }
 
-  if (
-    input.knowledgeDomain !== undefined &&
-    DOMAIN_BY_KNOWLEDGE[input.knowledgeDomain]
-  ) {
+  const knowledgeFailureDomains = [
+    ...new Set(
+      (input.knowledgeDomains ?? [])
+        .map((domain) => DOMAIN_BY_KNOWLEDGE[domain])
+        .filter(
+          (domain): domain is GameplayIssueFailureDomain =>
+            domain !== undefined,
+        ),
+    ),
+  ].sort();
+
+  if (knowledgeFailureDomains.length > 0) {
     return {
-      failureDomain:
-        DOMAIN_BY_KNOWLEDGE[input.knowledgeDomain]!,
+      failureDomain: knowledgeFailureDomains[0]!,
       contributingDomains:
         collectGameplayIssueDomains(input),
       gameplayFlow,
