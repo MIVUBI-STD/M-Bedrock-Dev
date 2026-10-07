@@ -65,7 +65,10 @@ export function admitMapAuditFindingReasoning(
             "A PROVEN audit finding requires a supported canonical hypothesis assessment.",
           );
         }
-        if (candidate.assessment.nextPredicate !== undefined) {
+        if (
+          candidate.assessment.nextPredicate !== undefined ||
+          candidate.assessment.missingRequiredPredicates.length > 0
+        ) {
           reasons.push(
             "A PROVEN audit finding cannot retain an unresolved required predicate.",
           );
