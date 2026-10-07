@@ -30,7 +30,8 @@ jobs:
         shell: bash
         run: |
           mkdir -p .portable-node
-          cp "$(command -v node)" .portable-node/node
+          cp -L "$(command -v node)" .portable-node/node
+          chmod +x .portable-node/node
           .portable-node/node --version
 
       - name: Write exact-source provenance
