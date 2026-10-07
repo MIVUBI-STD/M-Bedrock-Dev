@@ -121,12 +121,17 @@
     },
     {
       "id": "reg_defense_async_reset_lease_reuse_race",
-      "status": "candidate",
-      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_async_reset_lease_reuse_race",
+      "status": "ready",
+      "sourceRef": "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json",
       "readiness": {
-        "minimizedFixture": "missing",
+        "minimizedFixture": "external-verified-artifact",
         "artifactFingerprint": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee",
-        "frozenExpectation": "missing"
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-defense-v1-1-1-bug-def-lease-reset.json",
+        "externalArtifact": {
+          "provider": "google-drive",
+          "fileId": "1Y7G96SRBgSkfhlpnm8xFV3VpmzluvWh-",
+          "sha256": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee"
+        }
       },
       "evidenceRole": "positive",
       "priorityBasis": [
