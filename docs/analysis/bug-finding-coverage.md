@@ -272,6 +272,35 @@ For each relevant interaction examine guard, scope, exclusion, owner, generation
 
 Do not generate a Cartesian product of unrelated systems.
 
+## Effective-delivery proof
+
+Configured or theoretical capacity is not deliverable capacity.
+
+Do not close a capability from any subset of:
+
+- configured maximums;
+- number of physical arenas/replicas;
+- chunk/resource arithmetic;
+- correct offsets;
+- correct selectors/tags;
+- intended comments;
+- existence of retry/recovery code.
+
+For user-visible capabilities, enumerate every gate from user action to delivered behavior. A downstream mechanism can be correct while an earlier gate prevents all users from reaching it.
+
+For queue/capacity systems specifically, acceptance must challenge below-capacity behavior:
+
+```text
+0 active + 1 request → must deliver
+1 active + next request → must deliver if capacity >1
+...
+N requests below advertised capacity → no capacity queue
+capacity exhausted → queue may appear
+release one slot → exactly one queued request advances
+```
+
+If runtime queues below proven capacity, classify the capability as failing even when source constants advertise a larger maximum.
+
 ## Per-replica gameplay parity matrix
 
 When a map exposes multiple playable arenas/replicas, source/config replica equivalence does not by itself close gameplay coverage. Build one parity matrix that projects every material gameplay subsystem across every playable replica.
