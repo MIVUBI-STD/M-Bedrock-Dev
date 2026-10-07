@@ -478,10 +478,16 @@ impl Provider for VmwareWorkstationProvider {
             ],
             DISK_STATE_TIMEOUT,
         )?;
-        command_output(
+        let start = command_output(
             self.require_vmrun()?,
             ["-T", "ws", "start", vmx.to_string_lossy().as_ref(), "gui"],
-        )?;
+        );
+        if let Err(error) = start {
+            if self.running(&vmx).unwrap_or(false) {
+                return Ok(ClientState::Running);
+            }
+            return Err(error);
+        }
         wait_for_state(|| self.running(&vmx), true, Duration::from_secs(15))?;
         Ok(ClientState::Running)
     }
