@@ -56,6 +56,12 @@ jobs:
           if ($tauri.version -ne $package.version) { throw 'Tauri/package version drifted.' }
           if ($tauri.bundle.windows.nsis.installMode -ne 'currentUser') { throw 'Installer scope must remain currentUser.' }
           if ($tauri.bundle.windows.allowDowngrades -ne $false) { throw 'Installer downgrade policy must remain disabled.' }
+          if ($tauri.bundle.windows.nsis.startMenuFolder -ne 'M-Bedrock Virtual Clients') { throw 'Start Menu ownership drifted.' }
+          if ($tauri.bundle.windows.nsis.installerHooks -ne 'windows/installer-hooks.nsh') { throw 'Installer process-in-use policy is not configured.' }
+          $hooks = Get-Content src-tauri\windows\installer-hooks.nsh -Raw
+          if ($hooks -notmatch 'NSIS_HOOK_PREINSTALL' -or $hooks -notmatch 'NSIS_HOOK_PREUNINSTALL' -or $hooks -match 'KillProcess|TerminateProcess') {
+            throw 'Installer hooks must block an open desktop app without force-killing it.'
+          }
           $sidecars = Join-Path $PWD 'src-tauri\binaries'
           if (@(Get-ChildItem $sidecars -Filter 'virtual-clients-*-windows-msvc.exe' -File).Count -ne 1) { throw 'CLI sidecar missing.' }
           $guestAgent = Join-Path $PWD 'src-tauri\package-resources\guest\windows\virtual-guest-agent.exe'
