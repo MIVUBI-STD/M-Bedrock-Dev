@@ -10,6 +10,42 @@
   "repairBy": "developer",
   "bugs": [
     {
+      "id": "BUG-ATK-STARTUP-LEASE-QUEUE-DEADLOCK",
+      "fixed": false,
+      "severity": "blocker",
+      "category": "multiplayer-concurrency",
+      "foundBy": "tester",
+      "issueType": "BUG",
+      "title": "Ready arenas can remain queued while all physical arenas are idle",
+      "problem": "Attack Challenge v1.1.2 can leave ready teams in 'Waiting for a free arena slot' even when no gameplay arena is running. Runtime testing with three players assigned to separate arenas reproduced queue positions while the physical arenas were idle, preventing gameplay from starting.",
+      "expected": "After startup housekeeping completes, each valid ready arena acquires its own core lease immediately until the six-arena concurrency limit is reached. Three ready arenas with no active sessions must not enter a capacity queue.",
+      "observed": "Runtime evidence on v1.1.2 shows ready players receiving 'Waiting for a free arena slot — you are #2 in queue' and '#1 in queue' while the arenas are visibly idle. Source shows acquire() always enqueues first, and pumpQueue() refuses to grant any request while TickingAreaManager._startupReady is false. When startup is ready, pumpQueue() can synchronously reserve up to MAX_CONCURRENT_ARENAS=6, so three distinct ready arenas would not remain in the visible queue. _startupReady only becomes true after cleanupStaleAreas() reports every stale ticking-area removal successful.",
+      "reproduction": [
+        "Start/reload Attack Challenge v1.1.2 with no active gameplay sessions.",
+        "Use three players and place them into three different physical arenas.",
+        "Mark each arena/player ready so auto-start requests a lease.",
+        "Observe the chat after all members become ready.",
+        "Confirm players receive free-arena queue positions even though fewer than six arenas are active and no countdown begins."
+      ],
+      "aiAnalysis": "The v1.1.2 change raised MAX_CONCURRENT_ARENAS to 6 and reduced each arena to one core, but actual admission is fail-closed behind _startupReady. pumpQueue() returns before allocating any reservation whenever stale-area cleanup has not fully converged. cleanupStaleAreas() keeps _startupReady false if any removeAllAreasNamed() call returns false. removeAllAreasNamed() treats only successCount>0 or a recognized thrown 'missing area' error as success, so an unrecognized/idempotent removal result can keep startup globally blocked. The runtime symptom proves the effective concurrency path is still blocked before the six-arena allocator; exact native removal failure text/result should be logged to identify which stale entry prevents readiness.",
+      "relevantCode": [
+        {
+          "file": "behavior_packs/BP/scripts/chunks/chunk-4L7PEIZ4.js",
+          "reason": "pumpQueue() exits immediately while _startupReady is false; cleanupStaleAreas() is the only path that opens this gate and requires all stale-area removals to succeed."
+        },
+        {
+          "file": "behavior_packs/BP/scripts/chunks/chunk-4L7PEIZ4.js",
+          "reason": "removeAllAreasNamed() returns false for a resolved removal with successCount 0 and only recognizes a bounded set of thrown missing-area messages."
+        }
+      ],
+      "suggestedFix": "Do not globally block all arena admission on non-converging idempotent stale-name cleanup. Make stale removal explicitly idempotent across actual Bedrock command result/error forms, log the exact remaining stale names and native result/error, and open startup only after verified cleanup. Add a startup diagnostic exposing startupReady, staleAreas, reservations, heldLeases, and queue. Then prove 1→6 simultaneous arena leases in runtime, not only from MAX_CONCURRENT_ARENAS.",
+      "mustPreserve": [
+        "Stale leases from previous/reloaded sessions must not consume native ticking-area capacity.",
+        "No new arena may reuse a stale lease as if it were current-generation ownership.",
+        "The six-arena allocator and one-core-per-arena design."
+      ]
+    },
+    {
       "id": "BUG-ATK-LAST-SECOND-DOUBLE-END",
       "fixed": false,
       "severity": "major",
