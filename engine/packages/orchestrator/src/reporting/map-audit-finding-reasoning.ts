@@ -18,17 +18,18 @@ export function projectMapAuditFindingReasoning(input: {
   ].filter((value, index, all) => all.indexOf(value) === index).sort();
 
   return {
-    classification: input.projection.classification,
-    confidence: input.assessment.confidence,
-    evidenceDomains: [...input.assessment.domains],
+    reportClassification: input.projection.classification,
+    diagnosticDisposition: input.projection.authoritativeDisposition,
+    proofConfidence: input.assessment.confidence,
+    evidenceDomainSources: [...input.assessment.domains],
     evidenceChain,
     unresolvedPredicates:
       [...input.assessment.missingRequiredPredicates].sort(),
     ...(input.probe?.predicate
-      ? { recommendedValidation: input.probe.predicate }
+      ? { recommendedValidationPredicate: input.probe.predicate }
       : {}),
     ...(input.probe?.probeId
-      ? { recommendedProbeId: input.probe.probeId }
+      ? { recommendedReadOnlyProbeId: input.probe.probeId }
       : {}),
   };
 }
