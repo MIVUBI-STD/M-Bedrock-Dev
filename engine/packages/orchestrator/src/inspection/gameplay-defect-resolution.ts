@@ -173,11 +173,42 @@ function requiredCounterProofDimensions(
     required.add("exclusion");
   }
 
-  const recoveryLike =
+  const canonicalLifecycleStage =
+    scenario?.gameplayStage === "RECOVERY" ||
+    scenario?.gameplayStage === "CLEANUP_REPLAY" ||
+    scenario?.gameplayStage === "TERMINAL";
+  const lifecycleStructure =
+    hasComponent(
+      "runtime:persistence",
+      "runtime:arena-cleanup",
+      "runtime:arena",
+      "runtime:state",
+    ) ||
+    hasKnowledge(
+      "persistence-recovery",
+      "arena-lifecycle",
+      "temporal-ownership",
+      "state-flow",
+    );
+  const legacyLifecycleFallback =
     scenario !== undefined &&
+    ![
+      "ENTRY_JOIN",
+      "READY_START",
+      "SETUP",
+      "ACTIVE_GAMEPLAY",
+      "PROGRESSION",
+      "TERMINAL",
+      "CLEANUP_REPLAY",
+      "RECOVERY",
+    ].includes(scenario.gameplayStage) &&
     /reconnect|reload|repeated|deferred|recovery|terminal/i.test(
       scenario.label + " " + scenario.gameplayStage,
     );
+  const recoveryLike =
+    canonicalLifecycleStage ||
+    lifecycleStructure ||
+    legacyLifecycleFallback;
   const ownershipSensitive =
     hasComponent(
       "runtime:arena",
