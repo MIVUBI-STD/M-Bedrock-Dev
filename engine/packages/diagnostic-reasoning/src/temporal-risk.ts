@@ -9,7 +9,11 @@ export type TemporalRiskFactor =
   | "capacity-boundary"
   | "delayed-callback"
   | "fallback"
-  | "terminal-transition";
+  | "terminal-transition"
+  | "presentation-transition"
+  | "readiness-gate"
+  | "phase-mutation"
+  | "settlement";
 
 export interface TemporalInteractionInput {
   readonly leftSystem: string;
@@ -35,6 +39,10 @@ const HIGH_RISK = new Set<TemporalRiskFactor>([
   "capacity-boundary",
   "delayed-callback",
   "terminal-transition",
+  "presentation-transition",
+  "readiness-gate",
+  "phase-mutation",
+  "settlement",
 ]);
 
 export function prioritizeTemporalInteraction(

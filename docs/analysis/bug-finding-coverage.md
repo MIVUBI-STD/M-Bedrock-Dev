@@ -591,6 +591,91 @@ A `DETECTION_GAP` is a source/proof obligation, not a manual-test instruction. I
 
 Each unresolved runtime item becomes exactly one narrow Audit Obligation/question.
 
+
+## Lifecycle settlement, readiness, and presentation conservation
+
+The following failure families are mandatory cross-system pressure when their surfaces are discovered. They generalize across maps; do not encode map, entity, arena, or item names as detector rules.
+
+### Terminal entity settlement divergence
+
+When an entity can intercept or replace its normal fatal-damage/death path, reconstruct the full terminal chain:
+
+```text
+fatal condition
+→ authoritative terminal state
+→ combat/AI exclusion
+→ player-visible death feedback
+→ score / kill / objective settlement
+→ registry/progression settlement
+→ removal / replacement / despawn
+```
+
+Do not assume that disappearance, removal, despawn, replacement, or a custom dying animation is equivalent to the death event consumed by scoring/progression code.
+
+If gameplay settlement listens only to one terminal mechanism (for example a death observer), while a reachable entity path can terminate through another mechanism (for example explicit removal, replacement, or despawn), require one of:
+
+- an explicit shared settlement owner reached by every terminal path;
+- positive platform/source proof that the alternate path necessarily emits the consumed terminal event; or
+- an explicit unresolved obligation.
+
+A custom terminal presentation must not silently bypass exactly-once kill, score, retry-survivor, objective, or progression accounting.
+
+### Pending critical work is not readiness
+
+Queued/retrying/deferred work that is required for the playable state remains part of readiness until it has a terminal disposition.
+
+```text
+requested
+→ pending / retrying
+→ materialized
+→ verified
+→ registered
+→ gameplay-ready
+```
+
+Do not close setup/readiness merely because retry was scheduled or because the happy-path setup function returned. If required entities, objectives, structures, leases, inventory state, or other critical resources are still pending, gameplay activation must either remain gated or have an explicitly grounded degraded-mode contract.
+
+### Presentation transition ownership
+
+For transitions intended to hide intermediate world state (camera fades, black screens, loading overlays, cutscenes, teleport covers, input locks), reconstruct one ownership chain:
+
+```text
+acquire presentation
+→ prove/establish hidden or locked state
+→ perform hidden mutation / teleport / load
+→ prove destination readiness
+→ establish final camera/UI state
+→ release presentation
+→ release input
+```
+
+Fire-and-forget or independently scheduled acquire/release operations are temporal-risk evidence when gameplay mutation can proceed between them. A fixed delay is not readiness proof unless the selected-artifact/platform contract grounds that delay as sufficient.
+
+Check fresh start, retry, reconnect, level/stage advance, terminal return, and overlapping transition owners where applicable.
+
+### Player-facing information parity
+
+When multiple surfaces describe the same authoritative state (title, subtitle, chat, HUD, form, scoreboard, sound/cinematic cue), compare the semantic payload, not literal wording.
+
+Material fields such as state, attempt, multiplier, timer, score, capacity, objective, result, and required player action must not contradict or selectively omit information needed to understand the same decision.
+
+Different wording is allowed. Different gameplay meaning is not.
+
+### Phase-gated gameplay mutation
+
+Any player-triggered mutation that is intended for a bounded phase (kit/loadout selection, shop/setup actions, ready controls, objective interaction, developer controls) must be checked at the effect commit, not only at UI visibility.
+
+```text
+player trigger
+→ current session/arena owner
+→ current phase/generation eligibility
+→ authorization
+→ mutation
+```
+
+A reachable interaction surface plus a mutation path without a phase check is a mandatory intent/reachability challenge. Hidden UI alone is not an authorization boundary.
+
+
 ## Final conservation gate
 
 Before REPORT:
