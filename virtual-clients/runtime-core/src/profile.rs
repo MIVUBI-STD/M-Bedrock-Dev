@@ -224,6 +224,18 @@ pub fn write_verified_base_profile(
     Ok(profile)
 }
 
+pub fn remove_client_profile(client: ClientId) -> io::Result<()> {
+    if client.is_native() {
+        return Err(io::Error::new(io::ErrorKind::InvalidInput, "Native does not have Virtual lineage provenance"));
+    }
+    let path = client_profile_path(client.as_str())?;
+    match fs::remove_file(path) {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(error),
+    }
+}
+
 pub fn write_client_profile(
     client: ClientId,
     base_version: &str,
