@@ -1,137 +1,17 @@
 {
-  "schema": "m-bedrock-bug-report/v2",
+  "schema": "m-bedrock-bug-tracker/v1",
   "map": {
     "name": "The Gauntlet",
-    "mapVersion": "1.0.2",
-    "drive": "https://drive.google.com/file/d/1OFlUPQkRFK0qqtI-Pl3EUEMx2irAYeEJ/view",
-    "baseVersion": "1.21.130",
-    "testedVersion": "Full static/source audit of current Drive artifact v1.0.2 + tester runtime feedback"
+    "version": "1.0.3",
+    "fingerprint": "sha256:262ff9c04540dd05bd76b02c6c07e7b0f393efd0df2139c15a82884b1f15a498",
+    "gameModel": "6 fixed arenas · up to 5 players/arena · 15 sequential challenges"
   },
-  "repairBy": "developer",
-  "bugs": [
-    {
-      "id": "BUG-GNT-L6-RESPAWN-UI-LOCK",
-      "fixed": false,
-      "severity": "major",
-      "category": "player-lifecycle",
-      "foundBy": "tester",
-      "issueType": "BUG",
-      "title": "Lethal Dropper failure can leave the client stuck after respawn",
-      "problem": "A lethal fall in Level 6 can enter Minecraft native death/immediate-respawn while the Gauntlet also schedules its own Level 6 fall recovery. Tester runtime shows the player can return to the world with UI/input stuck and no usable movement or interaction until Minecraft is restarted.",
-      "expected": "A failed Dropper attempt follows one deterministic recovery path and returns the player to the Level 6 recovery checkpoint with normal movement, UI and controls.",
-      "observed": "Level 6 reacts to fall damage after damage has occurred and schedules custom teleport/vital recovery, while the world also has doImmediateRespawn enabled. Non-initial playerSpawn closes Gauntlet forms and returns without reconciling the active Level 6 run. In runtime testing, a lethal Dropper fall can respawn into a client state where movement and UI remain stuck until the client is relaunched.",
-      "reproduction": [
-        "Enter Level 6 Dropper in an active Gauntlet run.",
-        "Fail the Dropper with enough fall damage to die rather than only touching the normal fail recovery surface.",
-        "Allow Minecraft immediate respawn and the Gauntlet Level 6 recovery logic to run.",
-        "Observe the player returns to the world but can become unable to move or use the UI/controls.",
-        "Check whether closing and reopening Minecraft restores normal input."
-      ],
-      "aiAnalysis": "The failure has two competing recovery owners: native Minecraft death/respawn and the map's scheduled Level 6 custom recovery. playerSpawn does not reconcile non-initial respawns back into the active level state. doImmediateRespawn=true narrows the transition window and can contribute to the race, but changing that gamerule alone is not the preferred final fix.",
-      "relevantCode": [
-        {
-          "file": "selected Gauntlet behavior-pack gameplay bundle",
-          "reason": "Contains Level 6 fall-damage recovery, entity death handling, playerSpawn handling, HUD/form cleanup and world gamerule setup."
-        }
-      ],
-      "suggestedFix": "Prevent lethal native death during ordinary Level 6 Dropper failure. Detect the fail condition before death and immediately move the player to the Level 6 recovery checkpoint while restoring managed health/hunger/player state. Keep non-initial playerSpawn reconciliation as a fallback for unexpected deaths: resolve the active run/level, restore permissions and vitals, invalidate/re-publish HUD state, and teleport to the safe current-level checkpoint when required. Keep doImmediateRespawn only if the corrected single-owner recovery remains stable.",
-      "mustPreserve": [
-        "Fast Dropper retry pacing.",
-        "Normal death handling outside the Level 6 custom failure path.",
-        "Current developer skip/retry workflow."
-      ]
-    },
-    {
-      "id": "BUG-GNT-L9-POST-COMPLETE-FALL",
-      "fixed": false,
-      "severity": "major",
-      "category": "game-flow",
-      "foundBy": "tester",
-      "issueType": "BUG",
-      "title": "Player can fall and become trapped after Level 9 parkour is already complete",
-      "problem": "Level 9 fall recovery is tied to the running phase. Once the parkour is marked complete, the recovery path stops even though players still physically need to traverse the normal Level 9-to-Level 10 door transition. A player who falls during this post-completion window can end up below/outside the intended route.",
-      "expected": "Completing Level 9 keeps the normal door transition to Level 10, while any player who accidentally falls or becomes trapped after completion is recovered safely into the Level 10 entry area.",
-      "observed": "Tester runtime shows a player can finish the parkour and then fall below before completing the Level 10 transition. The Level 9 recovery logic no longer owns that player after the level-complete phase.",
-      "reproduction": [
-        "Complete Level 9 parkour normally.",
-        "Before entering Level 10 through the intended door, fall from the transition/finish area.",
-        "Check whether the normal Level 9 fall-recovery behavior returns the player to a usable route.",
-        "Observe the player can remain below or trapped after Level 9 has already been marked complete."
-      ],
-      "aiAnalysis": "This is a transition-boundary gap: gameplay state advances to Level 9 complete before physical player safety has transferred to Level 10. Recovery should remain defined until the next level entry is complete.",
-      "relevantCode": [
-        {
-          "file": "selected Gauntlet behavior-pack gameplay bundle",
-          "reason": "Contains Level 9 running/completion phases, fall recovery and Level 10 transition logic."
-        }
-      ],
-      "suggestedFix": "Keep the normal Level 9 to Level 10 door transition. After Level 9 completion, if a player falls outside the valid transition path or becomes trapped below the parkour area before entering Level 10, teleport only that player to a designated safe recovery position inside the Level 10 entry area.",
-      "mustPreserve": [
-        "Players still enter Level 10 through the intended normal door path when no failure occurs.",
-        "Level 9 completion remains a single authoritative progression transition."
-      ]
-    },
-    {
-      "id": "BUG-GNT-L15-ENTITY-RESET",
-      "fixed": false,
-      "severity": "major",
-      "category": "world-interaction",
-      "foundBy": "ai",
-      "issueType": "BUG",
-      "title": "Level 15 boss and marksman entities can survive arena reset into a later run",
-      "problem": "The general arena reset explicitly cleans Level 14 combat entities but does not own the Level 15 final boss and marksman-add cleanup. If a session ends or resets after those entities spawn, they can remain physically present while logical run state returns to idle/open.",
-      "expected": "Reset, abort, completion and arena reuse remove every gameplay entity owned by the previous Level 15 generation before another run can use the arena.",
-      "observed": "Level 15 has dedicated final-boss and marksman cleanup helpers, but the common arena reset path does not invoke complete Level 15 cleanup. Level 15 initialization removes normal wave mobs but does not provide an immediate general cleanup of a prior final boss/marksman generation.",
-      "reproduction": [
-        "Use the developer workflow to reach Level 15 quickly.",
-        "Advance until the final boss and marksman adds are spawned.",
-        "Exit, reset or otherwise terminate the active arena session before the encounter naturally removes every spawned entity.",
-        "Reuse the same arena for another run.",
-        "Check whether old Level 15 combat entities can remain present until later Level 15 sequencing performs narrower cleanup."
-      ],
-      "aiAnalysis": "Physical entity lifetime is wider than the common arena reset ownership. This can contaminate replay state and make the next run non-deterministic even though the run state has already been reset.",
-      "relevantCode": [
-        {
-          "file": "selected Gauntlet behavior-pack gameplay bundle",
-          "reason": "Contains resetArenaRuntimeState, Level 15 wave/final-boss/marksman spawn and cleanup helpers."
-        }
-      ],
-      "suggestedFix": "Make the canonical arena reset own the full Level 15 generation: remove Level 15 wave mobs, final boss and marksman adds using arena/generation-scoped tags before the arena becomes reusable. Reuse the existing Level 15 cleanup owner rather than adding a second cleanup path.",
-      "mustPreserve": [
-        "Arena isolation across all six arena replicas.",
-        "Authored non-gameplay entities outside the active Level 15 generation.",
-        "Normal Level 15 completion and scoring."
-      ]
-    },
-    {
-      "id": "BUG-GNT-CROSS-ARENA-PROGRESSION-GATE",
-      "fixed": false,
-      "severity": "minor",
-      "category": "multiplayer-session",
-      "foundBy": "ai",
-      "issueType": "BUG",
-      "title": "One timed-out arena can briefly pause maintenance for other active arenas",
-      "problem": "Several maintenance/verification systems use a global any-run progression-blocked predicate. When one arena reaches a timeout-blocked state, unrelated active arenas can temporarily stop their own maintenance/verification until that global condition clears.",
-      "expected": "A timeout or blocked progression state in one arena affects only that arena; other arena replicas continue independently.",
-      "observed": "The shared guard evaluates all current runs and returns early for multiple systems when any run is progression-blocked, creating a short cross-arena coupling window.",
-      "reproduction": [
-        "Run at least two Gauntlet arenas concurrently.",
-        "Place Arena A at a timed level and let its remaining timer reach the blocked/timeout boundary.",
-        "Keep Arena B active in a level that depends on periodic maintenance or verification.",
-        "Observe Arena B's guarded maintenance can pause while the global any-run blocked condition is true."
-      ],
-      "aiAnalysis": "The impact window appears short under the current tick interval, so this is not a proven concurrency blocker. It is still a real isolation defect because arena-local progression state is used as a global maintenance gate.",
-      "relevantCode": [
-        {
-          "file": "selected Gauntlet behavior-pack gameplay bundle",
-          "reason": "Contains isAnyRunProgressionBlocked() and the maintenance/verification systems guarded by it."
-        }
-      ],
-      "suggestedFix": "Replace the global any-run guard with arena-scoped progression checks so each maintenance/verification task is blocked only by the state of the arena it services.",
-      "mustPreserve": [
-        "Timeout handling for the affected arena.",
-        "Independent operation of all six arena replicas."
-      ]
-    }
-  ]
+  "summary": {
+    "bugs": 0,
+    "designMismatches": 0,
+    "developerNotes": 1,
+    "needsValidation": 0
+  },
+  "issues": [],
+  "designMismatches": []
 }
