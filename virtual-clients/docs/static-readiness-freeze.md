@@ -74,3 +74,10 @@ The static architecture freeze does not imply a successful package build. A sour
 Commits intentionally marked `[skip ci]` remain `STATIC_REVIEWED / BUILD_UNPROVEN` until an explicit non-skipped verification commit or equivalent canonical workflow execution covers the resulting source tree.
 
 Do not translate absence of workflow failures into PASS when no workflow ran.
+
+
+## Static security freeze
+
+Security architecture is frozen at this checkpoint. Existing boundaries include bounded Guest Agent transport, per-Virtual tokens, fixed launch actions, runtime metadata redirection rejection, update URL/hash/signature/staging containment, privileged Guest Agent task verification, and signed release/package evidence.
+
+Do not add a second authentication mechanism, privileged helper, firewall service, updater daemon, ACL framework or security database without target-machine evidence. Effective Windows ACLs, Scheduled Task ACLs, firewall enforcement, antivirus interaction, Windows session behavior and VMware guestinfo exposure remain LOCAL proof.
