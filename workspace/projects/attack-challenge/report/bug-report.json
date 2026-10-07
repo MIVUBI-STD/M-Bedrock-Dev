@@ -5,7 +5,7 @@
     "mapVersion": "1.1.2",
     "drive": "https://drive.google.com/file/d/1pUaupQNlb-bx4qPkgLACtmfdXpj4iccA/view",
     "baseVersion": "1.21.130",
-    "testedVersion": "Full selected-artifact source/static audit of Drive v1.1.2. Historical v1.1.1 findings were revalidated but did not bound coverage. Six-arena runtime concurrency still requires direct simultaneous in-game confirmation; source capacity/residency architecture now supports six."
+    "testedVersion": "Full selected-artifact source/static audit of Drive v1.1.2. Historical v1.1.1 findings were revalidated but did not bound coverage. Source proves six independent arena configs, MAX_CONCURRENT_ARENAS=6, one <=100-chunk resident core per arena, max 5 players per arena (30 map-level concurrent player slots), arena-scoped sessions/entities/flags/cleanup, and explicit reconnect recovery for countdown/preload/buy/active/pending-respawn/flag-carrier paths. Exact six-arena simultaneous runtime execution with connection churn remains the single narrow runtime capacity proof not executed in this audit."
   },
   "repairBy": "developer",
   "bugs": [
