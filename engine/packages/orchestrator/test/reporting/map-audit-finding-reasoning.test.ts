@@ -25,11 +25,12 @@ describe("map audit finding reasoning projection", () => {
       },
     });
     expect(result).toMatchObject({
-      classification:"LIKELY BUG",
-      confidence:"high",
+      reportClassification:"LIKELY BUG",
+      diagnosticDisposition:"confirmed-defect",
+      proofConfidence:"high",
       evidenceChain:["runtime:b","static:a"],
       unresolvedPredicates:["target-ready"],
-      recommendedProbeId:"chunk-ready",
+      recommendedReadOnlyProbeId:"chunk-ready",
     });
   });
 });
