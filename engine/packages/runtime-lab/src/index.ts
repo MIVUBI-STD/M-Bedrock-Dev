@@ -54,3 +54,5 @@ export * from "./differential/cross-version-differential-plan.js";
 export * from "./differential/cross-version-differential-executor.js";
 
 export * from "./knowledge/runtime-knowledge-validation-registry.js";
+
+export * from "./domains/chunk/chunk-knowledge-validation-plan.js";
