@@ -109,6 +109,24 @@ jobs:
           npx tauri build --bundles nsis --config src-tauri/tauri.signing.conf.json
           if ($LASTEXITCODE -ne 0) { throw "Tauri build failed: $LASTEXITCODE" }
 
+      - name: Sign and verify desktop executable
+        shell: pwsh
+        run: |
+          $thumbprint = $env:VIRTUAL_CLIENTS_PUBLISHER_CERT_THUMBPRINT
+          $desktop = Resolve-Path src-tauri\target\release\m-bedrock-virtual-clients.exe
+          & signtool.exe sign /sha1 $thumbprint /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 $desktop
+          if ($LASTEXITCODE -ne 0) { throw 'Failed to sign desktop executable.' }
+          $signature = Get-AuthenticodeSignature -LiteralPath $desktop
+          if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Thumbprint.Replace(' ', '').ToUpperInvariant() -ne $thumbprint) {
+            throw 'Desktop executable signature verification failed.'
+          }
+
+      - name: Rebuild signed NSIS installer with signed desktop payload
+        shell: pwsh
+        run: |
+          npx tauri build --bundles nsis --config src-tauri/tauri.signing.conf.json
+          if ($LASTEXITCODE -ne 0) { throw "Signed payload rebuild failed: $LASTEXITCODE" }
+
       - name: Resolve and verify installer
         id: installer
         shell: pwsh
@@ -154,6 +172,7 @@ jobs:
             guest_status_schema = [int]$guestSchema.Groups[1].Value
             publisher_certificate_thumbprint = $env:VIRTUAL_CLIENTS_PUBLISHER_CERT_THUMBPRINT
             payloads_authenticode_signed = $true
+            desktop_authenticode_signed = $true
             trust = 'authenticode-verified'
             self_update_runtime_enabled = $false
           } | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8 (Join-Path $dist 'build-provenance.json')
