@@ -37,9 +37,10 @@ Start-ScheduledTask -TaskName $taskName
 
 $publicDesktop = [Environment]::GetFolderPath('CommonDesktopDirectory')
 $interactiveSetup = Join-Path $publicDesktop 'Enable Virtual Clients Launcher.cmd'
+$batchAgent = $agent.Replace('%', '%%')
 @"
 @echo off
-"$agent" --register-interactive-launcher
+call "$batchAgent" --register-interactive-launcher
 if errorlevel 1 (
   echo.
   echo Virtual Clients launcher setup failed.
