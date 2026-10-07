@@ -50,8 +50,6 @@ pub struct OperationRecord {
     pub outcome: OperationOutcome,
     pub error_code: Option<ErrorCode>,
     pub retryable: bool,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub duration_ms: Option<u64>,
 }
 
 fn timestamp_ms() -> io::Result<u64> {
@@ -81,7 +79,6 @@ pub(crate) fn record_operation<T>(
     operation: OperationKind,
     target: Option<String>,
     result: &io::Result<T>,
-    duration_ms: Option<u64>,
 ) {
     let Ok(root) = runtime_root() else {
         return;
@@ -133,7 +130,6 @@ pub(crate) fn record_operation<T>(
         outcome,
         error_code,
         retryable,
-        duration_ms,
     });
 
     if history.len() > HISTORY_LIMIT {
@@ -163,7 +159,6 @@ mod tests {
             outcome: OperationOutcome::Success,
             error_code: None,
             retryable: false,
-            duration_ms: Some(1250),
         };
         let json = serde_json::to_string(&record).unwrap();
         assert!(!json.contains("password"));
