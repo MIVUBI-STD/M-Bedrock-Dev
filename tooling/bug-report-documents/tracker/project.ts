@@ -6,7 +6,7 @@ interface RegistryProject {
   readonly projectName: string;
   readonly artifact: { readonly artifactId: string; readonly artifactFingerprint: string; readonly version: string };
   readonly knowledge?: { readonly bugReportPath?: string };
-  readonly publication?: { readonly drive?: { readonly mapFolder?: { readonly folderId: string }; readonly currentWorld?: { readonly fileId: string; readonly fileName: string; readonly version: string } } };
+  readonly publication?: { readonly drive?: { readonly mapFolder?: { readonly folderId: string }; readonly currentWorld?: { readonly fileId: string; readonly fileName: string; readonly version: string; readonly artifactFingerprint?: string } } };
 }
 
 export interface ProjectRegistry { readonly projects: readonly RegistryProject[] }
@@ -30,6 +30,30 @@ interface TrackerDeveloperNoteSource {
 function driveUrl(id: string): string { return "https://drive.google.com/drive/folders/" + id; }
 function fileUrl(id: string): string { return "https://drive.google.com/file/d/" + id + "/view"; }
 
+export function validateDeveloperNoteRegistry(registry: DeveloperNoteRegistry): void {
+  const errors: string[] = [];
+  if (registry.schema !== "m-bedrock-dev-notes/v1") {
+    errors.push("Invalid Developer Note registry schema.");
+  }
+  const ids = registry.notes.map((note) => note.id);
+  if (new Set(ids).size !== ids.length) {
+    errors.push("Duplicate Developer Note ID.");
+  }
+  for (const note of registry.notes) {
+    if (note.type !== "DEV_NOTE") errors.push(note.id + ": invalid Developer Note type.");
+    if (note.severity !== null) errors.push(note.id + ": Developer Note severity must be null.");
+    if (!note.id.trim() || !note.projectId.trim() || !note.title.trim() || !note.problem.trim() || !note.action.trim()) {
+      errors.push(note.id || "<missing-id>" + ": incomplete Developer Note authority record.");
+    }
+    if (note.evidence === null || typeof note.evidence !== "object" || Array.isArray(note.evidence)) {
+      errors.push(note.id + ": Developer Note evidence must be an object.");
+    }
+  }
+  if (errors.length > 0) {
+    throw new Error("Developer Note registry validation failed:\n- " + errors.join("\n- "));
+  }
+}
+
 export function resolveSourceBinding(registry: ProjectRegistry, mapName: string, version: string): TrackerSourceBinding {
   const exact = registry.projects.filter((p) => p.projectName === mapName && p.artifact.version === version);
   if (exact.length !== 1) throw new Error("Expected exactly one project-registry binding for " + mapName + " v" + version + ".");
@@ -37,6 +61,15 @@ export function resolveSourceBinding(registry: ProjectRegistry, mapName: string,
   const drive = p.publication?.drive;
   if (!drive?.mapFolder?.folderId || !drive.currentWorld?.fileId || !drive.currentWorld.fileName) {
     throw new Error("Incomplete Drive binding for " + mapName + " v" + version + ".");
+  }
+  if (drive.currentWorld.version !== p.artifact.version) {
+    throw new Error("Project Registry version binding mismatch for " + mapName + ".");
+  }
+  if (p.artifact.artifactId !== "drive:" + drive.currentWorld.fileId) {
+    throw new Error("Project Registry artifact binding mismatch for " + mapName + ".");
+  }
+  if (drive.currentWorld.artifactFingerprint && drive.currentWorld.artifactFingerprint !== p.artifact.artifactFingerprint) {
+    throw new Error("Project Registry fingerprint binding mismatch for " + mapName + ".");
   }
   return {
     projectId: p.projectId,
@@ -90,6 +123,7 @@ export function projectClientDocumentToTracker(
   registry: ProjectRegistry,
   developerNotes: DeveloperNoteRegistry,
 ): BugTrackerDocument {
+  validateDeveloperNoteRegistry(developerNotes);
   const source = resolveSourceBinding(registry, document.map.name, document.map.mapVersion);
   const game: TrackerGame = {
     name: document.map.name,
