@@ -135,6 +135,79 @@ Do not mix:
 
 Historical material may create search pressure only. It cannot define current gameplay truth.
 
+## New-version full-recheck rule
+
+Selecting a newer/current map version always starts a **full selected-artifact audit**, not a historical-finding revalidation pass.
+
+```text
+previous-version report / QA / regression history
+→ search pressure only
+
+new selected .mcworld
+→ TARGET
+→ DISCOVERY
+→ UNDERSTAND
+→ MODEL
+→ STRESS
+→ PROVE
+→ REPORT
+```
+
+A new version may:
+- retain an old defect;
+- fix an old defect;
+- introduce a regression from a fix;
+- introduce an unrelated new defect;
+- expose a previously missed defect;
+- change cross-system, multiplayer, multi-arena, lifecycle, persistence, permission, UI, or cleanup behavior.
+
+Therefore:
+
+1. Do not use the previous report as the audit checklist.
+2. Do not stop after every historical finding has been revalidated.
+3. Do not infer that unchanged historical findings imply unchanged surrounding systems.
+4. Re-run all applicable coverage obligations against the exact new artifact.
+5. Historical findings may raise search priority and provide regression scenarios, but they never bound current coverage.
+6. A historical issue that is no longer supported by the current artifact is not carried forward merely for continuity.
+7. A current issue that was absent from history must still be admitted when current-artifact proof supports it.
+8. Report completeness is judged against current selected-artifact coverage, not against historical issue parity.
+
+Terminology:
+
+```text
+revalidation
+= check whether a known historical finding still applies
+
+full recheck / full audit
+= complete TARGET → DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE → REPORT
+  against the newly selected artifact
+```
+
+**Revalidation is a subset of full recheck. It can never close a new-version audit by itself.**
+
+### New-version closure gate
+
+Before REPORT can close for a newer version, prove:
+
+```text
+exact new artifact identity locked
++ all applicable current-version surfaces rediscovered
++ player journey reconstructed from current artifact
++ current state/ownership/progression contracts rebuilt or positively reused with evidence
++ applicable stress/interleaving/boundary families dispositioned
++ historical findings revalidated as one input, not the audit boundary
++ new/regression/missed-defect search completed
++ all material residue conserved through PROVEN / NEED_VALIDATION / Audit Obligation / safe disposition
+```
+
+If the work only compares the new artifact against findings from the previous report:
+
+```text
+NEW_VERSION_FULL_RECHECK = INCOMPLETE
+→ REPORT closure is blocked
+```
+
+
 ---
 
 # 1. TARGET — lock the exact artifact
