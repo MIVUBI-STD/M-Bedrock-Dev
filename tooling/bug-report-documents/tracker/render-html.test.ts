@@ -36,6 +36,8 @@ const fixture: BugTrackerDocument = {
         verification: "NEEDS_VERIFY",
         title: "Fixture issue",
         issue: "The fixture demonstrates the locked issue-card hierarchy.",
+        whyThisIsBug: "The fixture intentionally violates its expected visible-result contract.",
+        impact: "A reader can see how the defect changes the fixture result.",
         reproduction: ["Enter the fixture.", "Observe the wrong visible result."],
         observed: "The wrong result remains visible.",
         expected: "The expected result should be visible.",
@@ -61,6 +63,10 @@ describe("Golden Bug Tracker renderer", () => {
     expect(html).toContain("Test / Details ↓");
     expect(html).toContain("Collapse ↑");
     expect(html).toContain("NEEDS VALIDATION");
+    expect(html).toContain("WHY THIS IS A BUG");
+    expect(html).toContain("IMPACT");
+    expect(html).toContain("The fixture intentionally violates its expected visible-result contract.");
+    expect(html).toContain("A reader can see how the defect changes the fixture result.");
     expect(html).toContain("TEST IN-GAME");
     expect(html).toContain("EXPECTED");
     expect(html).toContain("Technical Details ↓");
