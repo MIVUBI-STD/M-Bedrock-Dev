@@ -9,6 +9,9 @@ import {
   CHUNK_LIFECYCLE_ACTION_CAPABILITIES,
 } from "../domains/chunk/chunk-lifecycle-experiments.js";
 import {
+  SCRIPT_TICKING_AREA_ACTION_CAPABILITIES,
+} from "../domains/chunk/script-ticking-area-experiment.js";
+import {
   ENTITY_NAVIGATION_ACTION_CAPABILITIES,
 } from "../domains/entity/entity-navigation-experiment.js";
 import {
@@ -119,6 +122,7 @@ export const BEDROCK_RUNTIME_ACTION_CAPABILITIES:
     mergeCapabilities([
       CHUNK_READINESS_ACTION_CAPABILITIES,
       CHUNK_LIFECYCLE_ACTION_CAPABILITIES,
+      SCRIPT_TICKING_AREA_ACTION_CAPABILITIES,
       ENTITY_NAVIGATION_ACTION_CAPABILITIES,
       GLOBAL_STATE_LEASE_ACTION_CAPABILITIES,
       MULTIPLAYER_CONCURRENCY_ACTION_CAPABILITIES,
