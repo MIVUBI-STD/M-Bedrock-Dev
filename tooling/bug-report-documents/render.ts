@@ -1,6 +1,7 @@
 import {
   mkdir,
   readFile,
+  readdir,
   writeFile,
 } from "node:fs/promises";
 import {
@@ -781,23 +782,73 @@ async function main(): Promise<void> {
     );
   }
 
-  const registryPath = resolve(
+  const projectsRoot = resolve(
     process.cwd(),
-    "workspace/project-registry.json",
+    "workspace/projects",
   );
-  const registrySource = await readFile(registryPath, "utf8");
-  const registry = JSON.parse(registrySource) as ProjectRegistry;
-  const developerNotesPath = resolve(
-    process.cwd(),
-    "workspace/developer-notes.json",
+  const projectIds = await readdir(projectsRoot);
+  const projects = [];
+  for (const projectId of projectIds) {
+    try {
+      const projectSource = await readFile(
+        resolve(projectsRoot, projectId, "project.json"),
+        "utf8",
+      );
+      projects.push(JSON.parse(projectSource));
+    } catch {
+      // A workspace directory without project.json is not a project authority.
+    }
+  }
+  const registry: ProjectRegistry = { projects };
+  const sourceBinding = registry.projects.filter(
+    (project) =>
+      project.projectName === document.map.name &&
+      project.artifact.version === document.map.mapVersion,
   );
-  const developerNotesSource = await readFile(
-    developerNotesPath,
-    "utf8",
-  );
-  const developerNotes = JSON.parse(
-    developerNotesSource,
-  ) as DeveloperNoteRegistry;
+  if (sourceBinding.length !== 1) {
+    throw new Error(
+      "Expected exactly one project workspace for " +
+        document.map.name +
+        " v" +
+        document.map.mapVersion +
+        ".",
+    );
+  }
+  const projectId = sourceBinding[0]!.projectId;
+  let developerNotes: DeveloperNoteRegistry = {
+    schema: "m-bedrock-dev-notes/v1",
+    notes: [],
+  };
+  try {
+    const developerNotesSource = await readFile(
+      resolve(
+        projectsRoot,
+        projectId,
+        "report",
+        "developer-notes.json",
+      ),
+      "utf8",
+    );
+    const localNotes = JSON.parse(developerNotesSource) as {
+      readonly schema: "m-bedrock-dev-notes/v1";
+      readonly notes: readonly Omit<DeveloperNoteRegistry["notes"][number], "projectId">[];
+    };
+    developerNotes = {
+      schema: localNotes.schema,
+      notes: localNotes.notes.map((note) => ({
+        ...note,
+        projectId,
+      })),
+    };
+  } catch (error) {
+    const code =
+      error !== null &&
+      typeof error === "object" &&
+      "code" in error
+        ? String(error.code)
+        : "";
+    if (code !== "ENOENT") throw error;
+  }
   const tracker = projectClientDocumentToTracker(
     document,
     registry,
