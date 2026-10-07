@@ -44,9 +44,9 @@ The release must contain:
 ```text
 M-Bedrock-Virtual-Clients-MAJOR.MINOR.PATCH-windows-x86_64.exe
 latest.json
-signing-proof.json
 SHA256SUMS.txt
 build-provenance.json
+installed-payloads.json
 ```
 
 Required proof:
@@ -55,8 +55,10 @@ Required proof:
 - exact semantic version;
 - installer asset name exactly matches the release version/platform;
 - Authenticode-valid installer;
+- Authenticode-valid installed CLI sidecar and Guest Agent;
+- installed desktop signature state recorded explicitly rather than assumed;
 - Authenticode signer thumbprint pinned into the release backend;
-- SHA-256 checksums;
+- installer SHA-256 plus per-file installed payload hashes;
 - runtime-schema compatibility;
 - Windows target-machine acceptance;
 - no auto-publish from an untrusted build.
@@ -91,7 +93,7 @@ Current backend distribution now includes:
 
 - current-user Windows installer definition;
 - tag-bound trusted release workflow;
-- release provenance + SHA256SUMS + Authenticode signing proof;
+- release provenance + SHA256SUMS + installed-payload integrity manifest;
 - read-only startup update check;
 - internal HTTPS transport using the operating-system trust store;
 - installer staging with SHA-256 verification;
