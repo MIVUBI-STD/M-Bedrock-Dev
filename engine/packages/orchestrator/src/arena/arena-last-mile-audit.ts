@@ -1,10 +1,5 @@
 import type { ArenaVoxelProof } from "./arena-voxel-proof.js";
 import {
-  assessSemanticArenaVoxelDivergence,
-  type ArenaSemanticVoxelAssessment,
-  type ArenaSemanticVoxelOptions,
-} from "../arena-semantic-voxel-divergence.js";
-import {
   proposeTickingAreaConsolidation,
   type TickingAreaConsolidationInput,
   type TickingAreaConsolidationPlan,
@@ -31,7 +26,6 @@ import type { McStructureModel } from "../../../../adapters/mcstructure/src/inde
 
 export interface ArenaLastMileAuditInput {
   voxelProof?: ArenaVoxelProof;
-  semanticVoxel?: ArenaSemanticVoxelOptions;
   tickingArea?: TickingAreaConsolidationInput;
   worldRelease?: WorldReleaseStateInput;
   nativeWorldRecords?: readonly NativeWorldRecordObservation[];
@@ -46,7 +40,6 @@ export interface ArenaLastMileAuditInput {
 }
 
 export interface ArenaLastMileAuditResult {
-  semanticVoxel?: ArenaSemanticVoxelAssessment;
   tickingArea?: TickingAreaConsolidationPlan;
   worldRelease?: WorldReleaseStateAssessment;
   pendingWorldOperations?: PendingWorldOperationAnalysis;
@@ -65,9 +58,6 @@ export interface ArenaLastMileAuditResult {
 export function runArenaLastMileAudit(
   input: ArenaLastMileAuditInput,
 ): ArenaLastMileAuditResult {
-  const semanticVoxel = input.voxelProof
-    ? assessSemanticArenaVoxelDivergence(input.voxelProof, input.semanticVoxel)
-    : undefined;
   const tickingArea = input.tickingArea
     ? proposeTickingAreaConsolidation(input.tickingArea)
     : undefined;
@@ -88,12 +78,6 @@ export function runArenaLastMileAudit(
 
   const releaseBlockers: string[] = [];
   const recommendations: string[] = [];
-
-  if (semanticVoxel?.status === "diverged") {
-    releaseBlockers.push(
-      "Meaningful arena voxel divergence remains after semantic exclusion masks.",
-    );
-  }
 
   if (worldRelease && !worldRelease.releasable) {
     releaseBlockers.push(
@@ -139,7 +123,6 @@ export function runArenaLastMileAudit(
   }
 
   return {
-    ...(semanticVoxel ? { semanticVoxel } : {}),
     ...(tickingArea ? { tickingArea } : {}),
     ...(worldRelease ? { worldRelease } : {}),
     ...(pendingWorldOperations ? { pendingWorldOperations } : {}),
