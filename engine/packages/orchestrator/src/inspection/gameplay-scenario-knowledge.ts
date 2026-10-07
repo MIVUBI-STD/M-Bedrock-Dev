@@ -854,7 +854,7 @@ export function buildGameplayKnowledgeReceipts(
         subjectIds: [...requirement.subjectIds],
         componentIds: [...requirement.componentIds],
         evidenceIds: [],
-        knowledgeIds,
+        knowledgeIds: [],
         capabilityIdsUsed: [],
         reason:
           "Required Inspection Graph contains a prerequisite cycle at " +
