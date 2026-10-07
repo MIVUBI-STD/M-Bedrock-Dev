@@ -1,0 +1,77 @@
+import type {
+  CrossDomainHypothesisAssessment,
+  FindingReportProjection,
+  MinimalProbeRecommendation,
+} from "../../../diagnostic-reasoning/src/index.js";
+import type { AuditIssueProjection } from "../map-audit-issue-projection.js";
+import type { MapAuditOutputV2FindingReasoning } from "../map-audit-output-v2.js";
+import { projectMapAuditFindingReasoning } from "./map-audit-finding-reasoning.js";
+
+export interface MapAuditFindingReasoningCandidate {
+  causalLinkId: string;
+  projection: FindingReportProjection;
+  assessment: CrossDomainHypothesisAssessment;
+  probe?: MinimalProbeRecommendation;
+}
+
+export interface MapAuditFindingReasoningAdmission {
+  admitted: Readonly<Record<string, MapAuditOutputV2FindingReasoning>>;
+  rejected: readonly {
+    causalLinkId: string;
+    reasons: readonly string[];
+  }[];
+}
+
+export function admitMapAuditFindingReasoning(
+  findings: readonly AuditIssueProjection[],
+  candidates: readonly MapAuditFindingReasoningCandidate[],
+): MapAuditFindingReasoningAdmission {
+  const findingsById = new Map(
+    findings.map((finding) => [finding.causalLinkId, finding] as const),
+  );
+  const admitted: Record<string, MapAuditOutputV2FindingReasoning> = {};
+  const rejected: { causalLinkId: string; reasons: string[] }[] = [];
+
+  for (const candidate of candidates) {
+    const reasons: string[] = [];
+    const finding = findingsById.get(candidate.causalLinkId);
+    if (!finding) {
+      reasons.push("No audit finding owns this causalLinkId.");
+    }
+    if (
+      candidate.assessment.supportingEvidenceIds.length === 0 &&
+      candidate.assessment.eliminatingEvidenceIds.length === 0
+    ) {
+      reasons.push("Reasoning requires at least one concrete evidence id.");
+    }
+    if (finding) {
+      const findingEvidence = new Set(finding.evidenceIds);
+      const reasoningEvidence = [
+        ...candidate.assessment.supportingEvidenceIds,
+        ...candidate.assessment.eliminatingEvidenceIds,
+      ];
+      if (!reasoningEvidence.some((id) => findingEvidence.has(id))) {
+        reasons.push("Reasoning evidence does not intersect the owning audit finding.");
+      }
+      if (
+        finding.status === "PROVEN" &&
+        candidate.projection.reportClassification === "UNKNOWN"
+      ) {
+        reasons.push("A PROVEN audit finding cannot attach UNKNOWN report reasoning.");
+      }
+    }
+
+    if (reasons.length > 0) {
+      rejected.push({
+        causalLinkId: candidate.causalLinkId,
+        reasons,
+      });
+      continue;
+    }
+
+    admitted[candidate.causalLinkId] =
+      projectMapAuditFindingReasoning(candidate);
+  }
+
+  return { admitted, rejected };
+}
