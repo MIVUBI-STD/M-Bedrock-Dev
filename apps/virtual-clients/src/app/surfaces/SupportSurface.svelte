@@ -23,7 +23,7 @@
 <section class="support-summary">
   <article><span>Setup health</span><strong>{blockers.length === 0 ? "No blockers" : `${blockers.length} blocker${blockers.length === 1 ? "" : "s"}`}</strong></article>
   <article><span>Available memory</span><strong>{Math.round(snapshot.diagnostics.host.availableMemoryMb / 1024)} GB</strong></article>
-  <article><span>Resource pressure</span><strong>{snapshot.diagnostics.runtime.pressure.level}</strong></article>
+  <article><span>Resource pressure</span><strong>{snapshot.diagnostics.runtime.pressure.startDecision}</strong></article>
   <article><span>Virtualization</span><strong>{snapshot.doctor.provider ?? "Unavailable"}</strong></article>
 </section>
 
