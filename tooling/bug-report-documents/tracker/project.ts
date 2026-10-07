@@ -18,7 +18,7 @@ export interface DeveloperNoteRegistry {
 
 interface TrackerDeveloperNoteSource {
   readonly id: string;
-  readonly projectId: string;
+  readonly projectId?: string;
   readonly type: "DEV_NOTE";
   readonly title: string;
   readonly problem: string;
@@ -42,7 +42,7 @@ export function validateDeveloperNoteRegistry(registry: DeveloperNoteRegistry): 
   for (const note of registry.notes) {
     if (note.type !== "DEV_NOTE") errors.push(note.id + ": invalid Developer Note type.");
     if (note.severity !== null) errors.push(note.id + ": Developer Note severity must be null.");
-    if (!note.id.trim() || !note.projectId.trim() || !note.title.trim() || !note.problem.trim() || !note.action.trim()) {
+    if (!note.id.trim() || !note.title.trim() || !note.problem.trim() || !note.action.trim()) {
       errors.push((note.id || "<missing-id>") + ": incomplete Developer Note authority record.");
     }
     if (note.evidence === null || typeof note.evidence !== "object" || Array.isArray(note.evidence)) {
@@ -106,7 +106,7 @@ function developerNotesForProject(
   projectId: string,
 ): TrackerDeveloperNote[] {
   return registry.notes
-    .filter((note) => note.projectId === projectId)
+    .filter((note) => note.projectId === undefined || note.projectId === projectId)
     .map((note) => ({
       id: note.id,
       type: note.type,
@@ -125,7 +125,7 @@ export function projectClientDocumentToTracker(
 ): BugTrackerDocument {
   validateDeveloperNoteRegistry(developerNotes);
   const knownProjectIds = new Set(registry.projects.map((project) => project.projectId));
-  const orphanNote = developerNotes.notes.find((note) => !knownProjectIds.has(note.projectId));
+  const orphanNote = developerNotes.notes.find((note) => note.projectId !== undefined && !knownProjectIds.has(note.projectId));
   if (orphanNote) {
     throw new Error("Developer Note references unknown Project Registry project: " + orphanNote.id + " -> " + orphanNote.projectId + ".");
   }
