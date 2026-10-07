@@ -125,7 +125,7 @@ export function projectBugReportClientDocument(
   const includeFixed =
     options.includeFixed ?? false;
   const includeMinor =
-    options.includeMinor ?? false;
+    options.includeMinor ?? true;
 
   const visible = report.bugs
     .filter((bug) =>
@@ -175,12 +175,12 @@ export function projectBugReportClientDocument(
 
   const statement =
     issues.length === 0
-      ? "No gameplay-blocking or materially disruptive open issues are recorded for this report."
+      ? "No open findings are recorded for this report."
       : (
           String(issues.length) +
-          " gameplay-blocking or materially disruptive issue" +
+          " open finding" +
           (issues.length === 1 ? "" : "s") +
-          " are included in this client report."
+          " are included in this report."
         );
 
   return {
@@ -189,7 +189,7 @@ export function projectBugReportClientDocument(
     title:
       report.map.name + " — Bug Report",
     subtitle:
-      "Player-visible gameplay issues requiring attention",
+      "Current approved gameplay and design findings",
     map: {
       name: report.map.name,
       mapVersion: report.map.mapVersion,
