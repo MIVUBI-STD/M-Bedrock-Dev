@@ -823,6 +823,35 @@ export function buildGameplayKnowledgeRequirements(
   });
 }
 
+export function expandGameplayKnowledgeRequirementIds(
+  requirementIds: readonly string[],
+  requirements: readonly GameplayKnowledgeRequirement[],
+): readonly string[] {
+  const byId = new Map(
+    requirements.map((item) => [item.id, item]),
+  );
+  const expanded = new Set<string>();
+  const visiting = new Set<string>();
+
+  const visit = (id: string): void => {
+    if (expanded.has(id) || visiting.has(id)) return;
+    const requirement = byId.get(id);
+    if (requirement === undefined) return;
+
+    visiting.add(id);
+    for (const dependencyId of requirement.dependsOnRequirementIds) {
+      visit(dependencyId);
+    }
+    visiting.delete(id);
+    expanded.add(id);
+  };
+
+  for (const id of requirementIds) {
+    visit(id);
+  }
+  return [...expanded].sort();
+}
+
 export function buildGameplayKnowledgeReceipts(
   requirements: readonly GameplayKnowledgeRequirement[],
   world: GameplayWorldModel,
