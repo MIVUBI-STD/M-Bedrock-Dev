@@ -60,7 +60,7 @@ export function admitMapAuditFindingReasoning(
         reasons.push("A PROVEN audit finding cannot attach UNKNOWN report reasoning.");
       }
       if (finding.status === "PROVEN") {
-        if (candidate.assessment.status !== "supported") {
+        if (candidate.assessment.disposition !== "supported") {
           reasons.push(
             "A PROVEN audit finding requires a supported canonical hypothesis assessment.",
           );
