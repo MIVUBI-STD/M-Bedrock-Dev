@@ -14,6 +14,7 @@ const reportPaths = [
   "workspace/reports/Attack-Challenge-v1.1.1-BugReport.json",
   "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json",
   "workspace/reports/Composite-Challenge-v1.1.1-BugReport.json",
+  "workspace/reports/The-Circuit-v1.0.2-BugReport.json",
 ] as const;
 
 describe("Golden Tracker real approved-report parity", () => {
@@ -51,6 +52,24 @@ describe("Golden Tracker real approved-report parity", () => {
       expect(html).toContain("Drive Folder ↗");
       expect(html).toContain("World File ↗");
       expect(html).not.toContain('<details class="map" open');
+
+      const developerNoteCount = tracker.games.flatMap((game) =>
+        game.levels.flatMap((level) => level.devNotes),
+      ).length;
+
+      if (reportPath === "workspace/reports/The-Circuit-v1.0.2-BugReport.json") {
+        expect(developerNoteCount).toBe(2);
+        expect(html).toContain("DEV-CIR-FORTIFY-WAVE-PREVIEW");
+        expect(html).toContain("DEV-CIR-BLOCK-BREAK-FEEDBACK");
+        expect(html).toContain("DEV NOTE");
+        expect(html).toContain("REFERENCE");
+        expect(html).not.toContain("Mark fixed");
+      }
+
+      if (reportPath === "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json") {
+        expect(developerNoteCount).toBe(0);
+        expect(html).toContain("DEV NOTES<span>0</span>");
+      }
     });
   }
 });
