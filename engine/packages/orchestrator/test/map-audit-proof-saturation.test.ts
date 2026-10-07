@@ -28,6 +28,7 @@ function graph(impactPathComponentIds: readonly string[]) {
       ],
       impactPathComponentIds,
       impactPathEvidenceIds: impactPathComponentIds.length > 0 ? ["source:impact"] : [],
+      dimensionEvidence: {},
     }],
     knowledgeReceipts: [
       { requirementId: "knowledge:s1:chunk-simulation", evidenceIds: ["knowledge:chunk"] },
