@@ -39,6 +39,16 @@ Canonical manifests live under `engine/reliability/corpus/`.
 - reveal acceptance expectations to detector-development work before output is frozen;
 - turn benchmark results into production Bug Report findings.
 
+## Execution authority
+
+Benchmark execution must use the same canonical capability that owns the evaluated artifact shape.
+
+- real selected-map artifacts (`.mcworld` / approved packaged map) → `runSelectedMapAudit()` / CLI `audit`; never a dev projection or historical report;
+- minimized analyzer fixtures → the production analyzer/capability that owns that fixture contract;
+- benchmark scripts own validation, blind comparison, scoring, and aggregation only. They must not implement a second detector or a second map-audit pipeline.
+
+A reduced fixture is not evidence that the full selected-map production flow passed. A real-map replay may be scored as production audit coverage only when artifact identity/fingerprint and frozen expectation are ready.
+
 ## Workflow
 
 Artifact identity → frozen expectation → current detector → freeze observed output → compare → result class → quality metrics → bounded development handoff if needed.
