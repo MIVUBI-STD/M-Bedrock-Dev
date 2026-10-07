@@ -12,6 +12,7 @@ import type {
 import {
   buildGameplayKnowledgeReceipts,
   buildGameplayKnowledgeRequirements,
+  expandGameplayKnowledgeRequirementIds,
   gameplayScenarioNeighborhoodNodeIds,
   requiredKnowledgeDomainsForIntentScenario,
   requiredKnowledgeDomainsForPreset,
@@ -2387,12 +2388,10 @@ export function compileGameplayScenarioGraph(
                 ]),
               ].sort(),
         knowledgeRequirementIds:
-          relevantRequirements
-            .map((item) => item.id)
-            .filter((id, index, all) =>
-              all.indexOf(id) === index
-            )
-            .sort(),
+          expandGameplayKnowledgeRequirementIds(
+            relevantRequirements.map((item) => item.id),
+            knowledgeRequirements,
+          ),
         ...runtimeEdgeState(
           component.id,
           input.world,
