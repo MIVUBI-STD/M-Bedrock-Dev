@@ -822,6 +822,7 @@ export async function runSelectedMapAudit(
 export interface ResolveSelectedMapAuditInput {
   readonly audit: SelectedMapAuditRun;
   readonly basedOnAuditRevision: string;
+  readonly runtimeProbeTranscript?: RuntimeProbeTranscript;
   readonly resolutions:
     readonly GameplayDefectResolution[];
 }
@@ -872,7 +873,7 @@ export function resolveSelectedMapAudit(
     updatedInspection,
     input.audit.demandReconciliation,
     input.audit.userIntent,
-    undefined,
+    input.runtimeProbeTranscript,
   );
 }
 
