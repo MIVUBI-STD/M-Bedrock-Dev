@@ -33,8 +33,8 @@ BugReportClientDocument
 → validateBugTrackerDocument()
 → Golden HTML renderer
 → exportBugTracker()
-→ Bug-Tracker-Report.json
-→ Bug-Tracker-Report.html
+→ bug-tracker.json
+→ bug-tracker.html
 ```
 
 The output JSON and HTML must contain exactly the same canonical IDs. Missing, duplicated, or renderer-invented IDs fail export.
@@ -120,8 +120,8 @@ Approved Bug Report V2
 → Bug Tracker projection
 → tracker validation
 → Golden renderer
-→ Bug-Tracker-Report.html
-→ Bug-Tracker-Report.json
+→ bug-tracker.html
+→ bug-tracker.json
 ```
 
 Golden Tracker is unconditional for Approved Bug Report V2; there is no presentation feature flag.
