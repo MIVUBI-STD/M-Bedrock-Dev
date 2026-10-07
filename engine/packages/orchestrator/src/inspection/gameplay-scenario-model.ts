@@ -76,6 +76,8 @@ export interface GameplayCausalLink {
   readonly knowledgeRequirementIds: readonly string[];
   /** Proven selected-artifact dependency path from this link toward a player-facing objective/outcome. */
   readonly impactPathComponentIds: readonly string[];
+  /** Selected-artifact evidence for every proven edge in impactPathComponentIds. Empty when no complete proven path exists. */
+  readonly impactPathEvidenceIds: readonly string[];
   readonly intentEdgeKind?: import("../../../gameplay-intent/src/index.js").GameplayIntentEdgeKind;
   readonly status: GameplayCausalLinkStatus;
   readonly reason: string;
