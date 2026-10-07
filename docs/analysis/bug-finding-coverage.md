@@ -44,6 +44,38 @@ The selected artifact is the only current gameplay authority.
 - Runtime verification resolves only irreducible behavior.
 - Old versions and archived reports are historical search hints only.
 
+### Version-transition coverage rule
+
+Coverage resets against the exact selected artifact whenever the selected map version changes.
+
+Historical coverage receipts, old report counts, and old finding lists do not satisfy current-version coverage by themselves.
+
+```text
+old version coverage
+→ regression/search hints
+
+new version
+→ fresh surface accounting
+→ fresh player-flow coverage
+→ fresh vital-domain coverage
+→ fresh cross-system/boundary stress
+→ fresh proof/conservation closure
+```
+
+Reuse is allowed only for a current-artifact fact that is positively proven equivalent and still applicable. Reuse must preserve the evidence binding to the new artifact; it is not inherited merely because files, names, or version lineage look similar.
+
+A current-version coverage summary must account for:
+- historical findings revalidated;
+- newly introduced surfaces/deltas;
+- unchanged-but-currently-proven applicable surfaces;
+- regression paths created by fixes/changes;
+- unrelated new candidates;
+- previously missed candidates discovered by the fresh sweep;
+- all unresolved material residue.
+
+A zero-new-finding result is valid only after these current-version coverage layers close. It cannot be concluded from historical parity.
+
+
 ## Surface accounting
 
 Every material surface must record:
