@@ -31,6 +31,8 @@
     "category": "Utility",
     "publisher": "MIVUBI-STD",
     "shortDescription": "Desktop manager for multiple Minecraft Education virtual clients.",
+    "longDescription": "M-Bedrock Virtual Clients manages isolated Minecraft Education virtual clients while keeping virtualization, account setup, recovery, and diagnostics under explicit user control.",
+    "copyright": "Copyright © MIVUBI-STD",
     "targets": [
       "nsis"
     ],
