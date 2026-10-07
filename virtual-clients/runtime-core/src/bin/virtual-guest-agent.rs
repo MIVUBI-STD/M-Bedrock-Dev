@@ -38,6 +38,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 const INTERACTIVE_LAUNCHER_PORT: u16 = 47832;
 const MAX_GUEST_REQUEST_BYTES: usize = 4096;
 const MAX_INTERACTIVE_REQUEST_BYTES: u64 = 512;
+const REQUEST_ID_HEADER: &str = "X-Virtual-Clients-Request-Id";
 const MINECRAFT_PROCESS_START_TIMEOUT: Duration = Duration::from_secs(30);
 const INTERACTIVE_LAUNCH_TIMEOUT: Duration = Duration::from_secs(35);
 
@@ -180,6 +181,10 @@ fn handle(mut stream: TcpStream, token: &str) -> Result<(), Box<dyn std::error::
         name.eq_ignore_ascii_case("X-Virtual-Clients-Token")
             .then(|| value.trim())
     }).collect();
+    let request_ids: Vec<&str> = request.lines().filter_map(|line| {
+        let (name, value) = line.split_once(':')?;
+        name.eq_ignore_ascii_case(REQUEST_ID_HEADER).then(|| value.trim())
+    }).collect();
 
     if supplied.len() != 1 || !timing_safe_token_eq(supplied[0], token) {
         stream.write_all(
@@ -187,6 +192,17 @@ fn handle(mut stream: TcpStream, token: &str) -> Result<(), Box<dyn std::error::
         )?;
         return Ok(());
     }
+
+    if request_ids.len() != 1
+        || request_ids[0].len() != 32
+        || !request_ids[0].chars().all(|character| character.is_ascii_hexdigit())
+    {
+        stream.write_all(
+            b"HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+        )?;
+        return Ok(());
+    }
+    let request_id = request_ids[0];
 
     match first_line {
         "GET /status HTTP/1.1" => {
@@ -199,11 +215,11 @@ fn handle(mut stream: TcpStream, token: &str) -> Result<(), Box<dyn std::error::
                 interactive_launcher_ready: Some(interactive_launcher_ready()),
                 machine_identity: guest_machine_identity(),
             };
-            write_json(&mut stream, &status)
+            write_json(&mut stream, request_id, &status)
         }
         "POST /minecraft/launch HTTP/1.1" => {
             let result = launch_minecraft()?;
-            write_json(&mut stream, &result)
+            write_json(&mut stream, request_id, &result)
         }
         _ => {
             stream.write_all(
@@ -215,10 +231,10 @@ fn handle(mut stream: TcpStream, token: &str) -> Result<(), Box<dyn std::error::
 }
 
 
-fn write_json(stream: &mut TcpStream, value: &impl serde::Serialize) -> Result<(), Box<dyn std::error::Error>> {
+fn write_json(stream: &mut TcpStream, request_id: &str, value: &impl serde::Serialize) -> Result<(), Box<dyn std::error::Error>> {
     let body = serde_json::to_string(value)?;
     let response = format!(
-        "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+        "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n{REQUEST_ID_HEADER}: {request_id}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
         body.len(),
         body
     );
