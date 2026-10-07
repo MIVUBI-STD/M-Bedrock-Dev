@@ -21,10 +21,10 @@ concurrently on one physical Windows host.
 | Identity | Same account used concurrently where license/policy forbids it | Surface account/license failure separately from VM/network health | Minecraft/account | manual |
 | Isolation | V1/V2/V3 configured with distinct accounts | Stop/start/reset preserve only the selected Virtual's session | recovery + guest disk | Windows |
 | Isolation | Base image contains user auth | Block acceptance; Base must remain account-clean | Base preparation | manual |
-| Process | Minecraft already running | Launch request is idempotent; no duplicate instance | Guest Agent launcher | Windows |
-| Process | Minecraft launch times out | VM remains running; offer Launch Minecraft retry | runtime + UI | Windows |
-| Process | VM console open fails after launch | Report console-open failure without claiming Minecraft failed | provider/open | Windows |
-| Concurrency | Start three Virtuals | VM and Minecraft launches remain staggered; no launch storm | runtime pressure policy | Windows |
+| Process | Minecraft already running | Launch request is idempotent; no duplicate instance | Guest Agent launcher | source + Windows |
+| Process | Minecraft launch times out | VM remains running; offer Launch Minecraft retry | runtime + UI | source + Windows |
+| Process | VM console open fails after launch | Report console-open failure without claiming Minecraft failed | provider/open | source + Windows |
+| Concurrency | Start three Virtuals | VM and Minecraft launches remain staggered; no launch storm | runtime pressure policy | source + Windows |
 | Concurrency | Native + 3 Virtual all active | All four menus remain interactive concurrently | host capability | Windows |
 | CPU/RAM | host pressure becomes CRITICAL | Block new starts; do not kill existing clients | resource admission | Windows |
 | GPU | three VMware 3D guests + Native | Observe renderer stability; do not invent GPU thresholds without evidence | acceptance | Windows |
