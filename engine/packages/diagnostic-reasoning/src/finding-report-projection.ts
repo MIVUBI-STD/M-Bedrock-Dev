@@ -15,10 +15,9 @@ export type FindingReportClassification =
   | "EXPECTED";
 
 export interface FindingReportProjection {
-  classification: FindingReportClassification;
-  authoritativeDisposition: IntentDiagnosticDisposition;
-  confidence: CrossDomainConfidence;
-  repairEligibleByClassification: boolean;
+  reportClassification: FindingReportClassification;
+  diagnosticDisposition: IntentDiagnosticDisposition;
+  proofConfidence: CrossDomainConfidence;
   reasons: readonly string[];
 }
 
@@ -30,8 +29,8 @@ export function projectFindingClassification(
   >,
 ): FindingReportProjection {
   const base = {
-    authoritativeDisposition: disposition,
-    confidence: assessment.confidence,
+    diagnosticDisposition: disposition,
+    proofConfidence: assessment.confidence,
   } as const;
 
   if (disposition === "confirmed-defect") {
@@ -41,8 +40,7 @@ export function projectFindingClassification(
       assessment.missingRequiredPredicates.length === 0;
     return {
       ...base,
-      classification: proven ? "PROVEN BUG" : "LIKELY BUG",
-      repairEligibleByClassification: proven,
+      reportClassification: proven ? "PROVEN BUG" : "LIKELY BUG",
       reasons: [
         proven
           ? "Confirmed defect is fully supported by the current cross-domain proof chain."
@@ -54,8 +52,7 @@ export function projectFindingClassification(
   if (disposition === "designed-behavior") {
     return {
       ...base,
-      classification: "EXPECTED",
-      repairEligibleByClassification: false,
+      reportClassification: "EXPECTED",
       reasons: ["Observed behavior matches grounded gameplay intent."],
     };
   }
@@ -63,8 +60,7 @@ export function projectFindingClassification(
   if (disposition === "design-review") {
     return {
       ...base,
-      classification: "DESIGN MISMATCH",
-      repairEligibleByClassification: false,
+      reportClassification: "DESIGN MISMATCH",
       reasons: ["Behavior requires design review rather than automatic defect repair."],
     };
   }
@@ -75,8 +71,7 @@ export function projectFindingClassification(
   ) {
     return {
       ...base,
-      classification: "RISK",
-      repairEligibleByClassification: false,
+      reportClassification: "RISK",
       reasons: [
         disposition === "engine-constraint"
           ? "Evidence points to an engine constraint, not an implementation defect."
@@ -87,8 +82,7 @@ export function projectFindingClassification(
 
   return {
     ...base,
-    classification: "UNKNOWN",
-    repairEligibleByClassification: false,
+    reportClassification: "UNKNOWN",
     reasons: [
       disposition === "runtime-proof-required"
         ? "Runtime proof is still required."
