@@ -112,6 +112,44 @@
         "finding": "Full production-script search finds definitions of capturePersistentShopItemsFromManagedSlots()/restorePreservedShopItems() but no callers; applyPlayerLoadout() ignores preservePersistentShopItems and preserves non-kit items through clearKitManagedItems plus slot displacement."
       },
       "severity": null
+    },
+    {
+      "id": "DEV-ATK-KIT-SELECTION-PHASE-OWNERSHIP",
+      "type": "DEV_NOTE",
+      "title": "Kit Selection Has No Explicit Gameplay-Phase Gate",
+      "problem": "KitManager accepts kit selection and immediately reapplies the selected loadout whenever the selection event is reachable. The handler does not check whether the player's arena is in buy_phase versus active gameplay. Current artifact evidence does not establish that mid-combat selector reachability is intended or physically available on every level, so this is not promoted to a gameplay BUG.",
+      "action": "Define one explicit kit-change policy. If kit changes are preparation-only, enforce buy_phase at the KitManager owner; if live switching is intended, document it and preserve purchased-item/economy semantics deliberately.",
+      "evidence": {
+        "artifactVersion": "1.1.2",
+        "source": "behavior_packs/BP/scripts/chunks/chunk-4L7PEIZ4.js",
+        "finding": "kit:select and kit-selector entity triggers call setSelectedKit(); setSelectedKit() persists the kit and calls applySelectedKitNow() without checking GameManager session phase."
+      },
+      "severity": null
+    },
+    {
+      "id": "DEV-ATK-DEAD-SHOP-PRESERVATION-HELPERS",
+      "type": "DEV_NOTE",
+      "title": "Dedicated Persistent-Shop-Item Preservation Helpers Are Not Used",
+      "problem": "KitManager contains capturePersistentShopItemsFromManagedSlots() and restorePreservedShopItems(), and startBuyPhase carries a preservePersistentShopItems option, but production search finds no call that uses those helpers to implement that option. Current purchased-item survival instead depends on clearing only kit-managed items and moving displaced non-kit items.",
+      "action": "Remove the dead preservation helpers/option if the slot-based policy is canonical, or connect them through one tested preservation owner. Keep the actual inventory contract explicit so future kit changes do not accidentally revive two competing preservation strategies.",
+      "evidence": {
+        "artifactVersion": "1.1.2",
+        "source": "behavior_packs/BP/scripts/chunks/chunk-4L7PEIZ4.js",
+        "finding": "capturePersistentShopItemsFromManagedSlots() and restorePreservedShopItems() are defined but have no production callers; preservePersistentShopItems is passed through transition calls but not consumed by applyPlayerLoadout()."
+      },
+      "severity": null
+    },
+    {
+      "id": "DEV-ATK-DRIVE-CHANGELOG-STALE",
+      "type": "DEV_NOTE",
+      "title": "Drive Changelog Still Identifies v1.1.1 as Current",
+      "problem": "The selected Drive world is Attack Challenge v1.1.2 and the BP/RP metadata are v1.1.2, but the Drive changelog still labels v1.1.1 as Current. This can misroute QA and version comparison even though the artifact itself is correctly versioned.",
+      "action": "Update the Drive changelog/current-version marker to v1.1.2 and keep artifact identity derived from the actual current world file rather than prose metadata.",
+      "evidence": {
+        "artifactVersion": "1.1.2",
+        "finding": "Drive folder contains Attack Challenge v1.1.2.mcworld uploaded 7 Oct 2026 while the fetched changelog still presents v1.1.1 as Current."
+      },
+      "severity": null
     }
   ]
 }
