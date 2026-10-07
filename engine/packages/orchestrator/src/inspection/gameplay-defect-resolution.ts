@@ -113,9 +113,7 @@ function requiredCounterProofDimensions(
     GameplayScenarioGraph["scenarios"][number] | undefined,
 ): readonly CounterProofSearchDimension[] {
   const required = new Set<CounterProofSearchDimension>([
-    "guard",
     "scope",
-    "exclusion",
   ]);
   const components = new Set(link.componentIds);
   const knowledgeDomains = new Set(
@@ -133,6 +131,47 @@ function requiredCounterProofDimensions(
     ids.some((id) => components.has(id));
   const hasKnowledge = (...domains: string[]) =>
     domains.some((domain) => knowledgeDomains.has(domain as any));
+
+  const guardSensitive =
+    hasComponent(
+      "runtime:player-capability",
+      "runtime:inventory",
+      "runtime:arena",
+      "runtime:persistence",
+      "runtime:state",
+    ) ||
+    hasKnowledge(
+      "state-flow",
+      "arena-lifecycle",
+      "multiplayer-interleaving",
+      "inventory-state",
+      "persistence-recovery",
+      "temporal-ownership",
+    );
+  if (guardSensitive) {
+    required.add("guard");
+  }
+
+  const exclusionSensitive =
+    hasComponent(
+      "runtime:arena",
+      "runtime:inventory",
+      "runtime:persistence",
+      "runtime:combat",
+      "runtime:entities",
+    ) ||
+    hasKnowledge(
+      "arena-lifecycle",
+      "multiplayer-interleaving",
+      "inventory-state",
+      "persistence-recovery",
+      "combat-lifecycle",
+      "entity-behavior",
+      "temporal-ownership",
+    );
+  if (exclusionSensitive) {
+    required.add("exclusion");
+  }
 
   const recoveryLike =
     scenario !== undefined &&
