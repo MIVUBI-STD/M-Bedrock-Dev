@@ -540,7 +540,7 @@ export function analyzeInspectionRuntimeState(
         : [],
     );
   const combatPolicy =
-    analyzeCombatContract(
+    analyzeCombatBehaviorContract(
       combatLifecycle,
       input.combatRuntimeTelemetry,
       input.target.combatContract ?? input.target.combatPolicy,
