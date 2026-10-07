@@ -54,6 +54,19 @@ export function stateLabel(state: ClientStatus["state"]): string {
   return labels[state];
 }
 
+export function connectionHealthLabel(value: ClientStatus["connectionHealth"]): string {
+  if (value === null) return "Connection state unknown";
+  const labels: Record<NonNullable<ClientStatus["connectionHealth"]>, string> = {
+    VM_OFFLINE: "Virtual machine offline",
+    VM_RUNNING: "Virtual machine running",
+    GUEST_TOOLS_READY: "VMware Tools responding",
+    GUEST_AGENT_READY: "Guest Agent responding",
+    INTERACTIVE_LAUNCHER_READY: "Minecraft launcher available",
+    MINECRAFT_RUNNING: "Minecraft process running",
+  };
+  return labels[value];
+}
+
 export function clientDisplayName(id: ClientStatus["id"]): string {
   if (id === "Native") return "This PC";
   return `Virtual ${Number(id.slice(-2))}`;
