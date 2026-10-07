@@ -9,9 +9,8 @@ pub(crate) struct HostCapacity {
 }
 
 pub(crate) fn current_host_capacity() -> HostCapacity {
-    let mut system = System::new();
+    let mut system = System::new_all();
     system.refresh_memory();
-    system.refresh_cpu_list();
     let logical_cpus = system.cpus().len();
     let total_memory_gb = system.total_memory() as f64 / 1024.0 / 1024.0 / 1024.0;
     HostCapacity {
