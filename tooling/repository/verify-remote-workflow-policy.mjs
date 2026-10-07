@@ -21,10 +21,26 @@ for (const [path, phrase] of requiredPolicy) {
   }
 }
 
-if (!existsSync("tooling/repository/remote-execution-snapshot.mjs")) {
+if (!existsSync(".github/workflows/package-source.yml")) {
   failures.push(
-    "Missing REMOTE_GITHUB execution snapshot recipe: tooling/repository/remote-execution-snapshot.mjs",
+    "Missing REMOTE_GITHUB portable workspace transport: .github/workflows/package-source.yml",
   );
+} else {
+  const portableWorkflow = readFileSync(
+    ".github/workflows/package-source.yml",
+    "utf8",
+  );
+  for (const required of [
+    "workflow_dispatch:",
+    "m-bedrock-dev-portable",
+    "retention-days: 1",
+  ]) {
+    if (!portableWorkflow.includes(required)) {
+      failures.push(
+        "Portable workspace workflow must preserve: " + required,
+      );
+    }
+  }
 }
 
 if (existsSync("package.json")) {
@@ -34,9 +50,6 @@ if (existsSync("package.json")) {
   }
   if (Object.prototype.hasOwnProperty.call(pkg.scripts ?? {}, "verify:ready")) {
     failures.push("Generic npm script 'verify:ready' is forbidden; use verify:local-ready for optional local readiness.");
-  }
-  if (!Object.prototype.hasOwnProperty.call(pkg.scripts ?? {}, "snapshot:remote-execution")) {
-    failures.push("Remote execution snapshot command is missing: snapshot:remote-execution");
   }
   if (!Object.prototype.hasOwnProperty.call(pkg.scripts ?? {}, "verify:local-ready")) {
     failures.push("Optional local readiness script is missing: verify:local-ready");
