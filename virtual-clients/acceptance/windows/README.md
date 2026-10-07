@@ -35,3 +35,19 @@ Do not infer `PASS` from source tests, CI, documentation, configured NAT, proces
 Run stages in table order. Stop escalation when a stage fails. Diagnose the first wrong owner before attempting later concurrency, account or multiplayer stages.
 
 Use `collect-acceptance.ps1` before and after meaningful runtime transitions. Preserve each output as evidence for the campaign rather than overwriting previous captures.
+
+
+## Performance evidence
+
+Use `performance-contract.json` during target-machine performance acceptance. Record measurements as observations, not conclusions.
+
+The purpose is to calibrate the single automatic performance policy with real Native + Virtual-01/02/03 evidence. Do not change configured RAM, vCPU, GPU policy or startup thresholds from an incomplete run. Missing measurements remain unknown; they are never treated as zero or PASS.
+
+At minimum, capture the host baseline, each Virtual VM start duration, Guest Agent readiness duration, Minecraft readiness duration, observed host working set, 3D-graphics observation, resolution, peak host CPU during sequential startup, concurrent Minecraft count and operator responsiveness.
+
+Performance acceptance must distinguish:
+- capacity: what the hardware should reasonably support;
+- pressure: whether another client should start now;
+- experience: whether Native and the running Virtual clients remain usable together.
+
+The benchmark harness does not automatically declare a performance PASS. Threshold calibration is a separate evidence review after representative target machines have been measured.
