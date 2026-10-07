@@ -27,7 +27,12 @@ function graph(impactPathComponentIds: readonly string[]) {
         "knowledge:s1:platform-constraints",
       ],
       impactPathComponentIds,
+      impactPathEvidenceIds: impactPathComponentIds.length > 0 ? ["source:impact"] : [],
     }],
+    knowledgeReceipts: [
+      { requirementId: "knowledge:s1:chunk-simulation", evidenceIds: ["knowledge:chunk"] },
+      { requirementId: "knowledge:s1:platform-constraints", evidenceIds: ["knowledge:platform"] },
+    ],
     knowledgeRequirements: [
       { id: "knowledge:s1:chunk-simulation", domain: "chunk-simulation" },
       { id: "knowledge:s1:platform-constraints", domain: "platform-constraints" },
