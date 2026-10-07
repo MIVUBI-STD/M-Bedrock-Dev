@@ -3615,27 +3615,7 @@
       ]
     },
     {
-      "knowledgeId": "player.relation.initial-spawn-gates-session-ready",
-      "consumer": "player-session-lifecycle-analysis",
-      "analyzerPaths": [
-        "engine/packages/orchestrator/src/inspection/player-session-lifecycle-analysis.ts"
-      ],
-      "proofPaths": [
-        "engine/packages/orchestrator/test/inspection/player-session-lifecycle-analysis.test.ts"
-      ]
-    },
-    {
       "knowledgeId": "player.relation.join-precedes-initial-spawn",
-      "consumer": "player-session-lifecycle-analysis",
-      "analyzerPaths": [
-        "engine/packages/orchestrator/src/inspection/player-session-lifecycle-analysis.ts"
-      ],
-      "proofPaths": [
-        "engine/packages/orchestrator/test/inspection/player-session-lifecycle-analysis.test.ts"
-      ]
-    },
-    {
-      "knowledgeId": "player.relation.leave-deactivates-current-session",
       "consumer": "player-session-lifecycle-analysis",
       "analyzerPaths": [
         "engine/packages/orchestrator/src/inspection/player-session-lifecycle-analysis.ts"
