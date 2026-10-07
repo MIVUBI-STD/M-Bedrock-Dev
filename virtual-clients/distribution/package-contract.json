@@ -14,7 +14,8 @@
     "distribution/release-channel.json",
     "distribution/test-upgrade.ps1",
     "distribution/write-payload-manifest.ps1",
-    "distribution/install-lifecycle-policy.json"
+    "distribution/install-lifecycle-policy.json",
+    "acceptance/windows/performance-contract.json"
   ],
   "preservedRuntimeRelativePath": "M-Bedrock/VirtualClients"
 }
