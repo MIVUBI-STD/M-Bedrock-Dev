@@ -27,7 +27,7 @@ doctor
 → Sysprep /generalize /oobe /mode:vm
 → Base shuts down
 → baseState = FINALIZED
-→ readyForProvisioning = true
+→ doctor nextSetupAction = PROVISION_VIRTUALS
 ```
 
 Changing/updating Native Minecraft without rebuilding/re-registering Base must produce:
@@ -135,7 +135,7 @@ Required observations:
 - with Virtual-01/02/03 running together, each reports `windowsIdentity = UNIQUE`;
 - 4 GB is treated as a ceiling, not measured resident use;
 - host working-set telemetry is plausible;
-- CRITICAL pressure blocks new starts without killing existing clients;
+- `startDecision = BLOCK` blocks new starts without killing existing clients;
 - suspend/resume remains usable;
 - QA_READY reset affects only the selected Virtual;
 - reprovision affects only the selected fully stopped Virtual;
@@ -187,7 +187,7 @@ time:
 - audio does not block launch or make the workflow unusable;
 - host CPU, committed memory, resident working sets, GPU memory/3D usage and
   disk pressure remain observable while all four are active;
-- CRITICAL host pressure blocks additional starts without killing already
+- `startDecision = BLOCK` blocks additional starts without killing already
   running clients;
 - suspend/resume one Virtual does not terminate or corrupt the other three;
 - restarting/resetting one Virtual does not move another account/session into
