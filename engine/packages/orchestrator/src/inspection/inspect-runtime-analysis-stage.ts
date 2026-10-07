@@ -39,7 +39,7 @@ import { analyzeCombatBehaviorContract } from "../combat-contract-analysis.js";
 import { analyzeChunkLifecycle } from "../chunk-lifecycle-analysis.js";
 import { analyzePersistenceSource } from "../persistence-source-analysis.js";
 import { analyzeRewardSources } from "../reward-source-analysis.js";
-import { analyzeEconomyContract } from "../economy-contract-analysis.js";
+import { analyzeEconomyBehaviorContract } from "../economy-contract-analysis.js";
 import { createDiagnostic } from "../../../diagnostics/src/index.js";
 import {
   derivePreflightKnowledgeDemand,
