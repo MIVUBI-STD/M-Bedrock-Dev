@@ -1,0 +1,67 @@
+# Virtual Clients — Static Readiness Freeze
+
+Status: REMOTE_GITHUB source boundary. This document is not target-machine proof.
+
+## Static-covered
+
+The current source establishes these contracts without claiming Windows/VMware/Minecraft runtime acceptance:
+
+- one Native Minecraft version authority with Base and Virtual lineage gates;
+- bounded lifecycle admission owned by the backend;
+- provider-state reconciliation for ambiguous lifecycle mutations where authoritative facts exist;
+- fail-closed handling when destructive mutation outcomes cannot be proven;
+- rollback isolation for multi-client start, stop and suspend flows;
+- per-Virtual Guest Agent tokens rotated from inherited Base state;
+- bounded Guest Agent request/response transport with request correlation;
+- explicit Guest Agent status and launch protocol compatibility;
+- loopback-only interactive launcher handoff;
+- connection evidence separated from setup, sign-in and multiplayer readiness;
+- resource ceiling separated from observed host working set and pressure;
+- runtime schema downgrade protection;
+- idempotent Guest Agent install/repair/uninstall lifecycle;
+- bounded firewall policy for Guest Agent TCP 47831;
+- trusted release identity, installer hash, Authenticode and provenance contracts;
+- update staging without self-apply;
+- privacy-bounded support evidence and Windows acceptance collector.
+
+## Architecture freeze rule
+
+Do not add another lifecycle manager, networking layer, retry framework, readiness state machine, credential mechanism, resource scheduler, or update executor without target-machine evidence that an existing owner cannot express the required behavior.
+
+Source changes after this checkpoint should be limited to:
+1. correctness defects with a concrete first owner;
+2. contract/documentation drift;
+3. security/privacy defects;
+4. deterministic regression coverage for an existing contract; or
+5. changes justified by LOCAL_WINDOWS / VMWARE / MINECRAFT acceptance evidence.
+
+## Local proof required
+
+The following remain intentionally unproven by source inspection:
+
+- VMware Workstation can run Virtual-01, Virtual-02 and Virtual-03 concurrently on the target host;
+- Native Minecraft Education plus all three Virtual Minecraft clients remain interactive concurrently;
+- SYSTEM Guest Agent starts after guest boot and remains reachable;
+- the per-user interactive launcher starts after Windows login and replaces stale processes correctly;
+- Minecraft Education launches in the intended interactive Windows session;
+- Microsoft authentication surfaces remain inside the correct Virtual and deep-link completion returns to that client;
+- four distinct licensed accounts can coexist under the intended tenant/policy;
+- QA_READY preserves the intended account/session state after reset;
+- stop/start, suspend/resume and host reboot preserve each Virtual independently;
+- actual CPU, RAM, disk and GPU behavior is acceptable with Native + three Virtuals;
+- VMware 3D acceleration is usable in all three guests concurrently;
+- NAT supports the required Native↔Virtual and Virtual↔Virtual multiplayer topology;
+- disconnect/reconnect and suspend/resume multiplayer behavior is usable;
+- Window Layout identifies and arranges the real Minecraft/VMware windows correctly;
+- install/repair/uninstall scripts behave as designed on the canonical Windows guest;
+- signed installer staging and release artifacts behave correctly on the target Windows machine.
+
+## Acceptance entrypoint
+
+Use `acceptance/windows/collect-acceptance.ps1` for machine evidence. A collected field is evidence only for what it directly observes. In particular:
+
+- `connectionHealth=MINECRAFT_RUNNING` means a Minecraft process was observed;
+- `networkConfigurationObserved=true` means a VM network configuration was observed;
+- `multiplayerVerified=false` remains false until an actual multiplayer acceptance campaign proves otherwise.
+
+Do not promote LOCAL proof from documentation, source tests, package smoke, or hosted CI.
