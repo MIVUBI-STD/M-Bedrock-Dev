@@ -13,6 +13,7 @@ pub const GUEST_AGENT_PROTOCOL_VERSION: u32 = 2;
 pub const GUEST_AGENT_MIN_STATUS_PROTOCOL: u32 = 1;
 pub const MINECRAFT_LAUNCH_SCHEMA: u32 = 1;
 const REQUEST_ID_HEADER: &str = "X-Virtual-Clients-Request-Id";
+const MAX_GUEST_RESPONSE_BYTES: u64 = 32 * 1024;
 
 pub fn guest_agent_protocol_compatible(protocol_version: u32) -> bool {
     (GUEST_AGENT_MIN_STATUS_PROTOCOL..=GUEST_AGENT_PROTOCOL_VERSION).contains(&protocol_version)
@@ -83,7 +84,10 @@ pub fn launch_guest_minecraft(ip: &str, token: &str, timeout: Duration) -> io::R
     );
     stream.write_all(request.as_bytes())?;
     let mut response = Vec::new();
-    stream.take(8 * 1024).read_to_end(&mut response)?;
+    stream.take(MAX_GUEST_RESPONSE_BYTES + 1).read_to_end(&mut response)?;
+    if response.len() as u64 > MAX_GUEST_RESPONSE_BYTES {
+        return Err(io::Error::new(io::ErrorKind::InvalidData, "guest agent launch response exceeds the configured limit"));
+    }
     let response = String::from_utf8(response)
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
     let (headers, body) = response.split_once("\r\n\r\n")
@@ -125,7 +129,10 @@ pub fn query_guest_status(ip: &str, token: &str, timeout: Duration) -> io::Resul
     stream.write_all(request.as_bytes())?;
 
     let mut response = Vec::new();
-    stream.take(32 * 1024).read_to_end(&mut response)?;
+    stream.take(MAX_GUEST_RESPONSE_BYTES + 1).read_to_end(&mut response)?;
+    if response.len() as u64 > MAX_GUEST_RESPONSE_BYTES {
+        return Err(io::Error::new(io::ErrorKind::InvalidData, "guest agent status response exceeds the configured limit"));
+    }
     let response = String::from_utf8(response)
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
 
@@ -194,10 +201,15 @@ mod tests {
     use super::{
         guest_agent_launch_compatible, guest_agent_protocol_compatible, validate_guest_status, GuestStatus,
         MinecraftLaunchResult, MinecraftLaunchState, GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA,
-        MINECRAFT_LAUNCH_SCHEMA,
+        MINECRAFT_LAUNCH_SCHEMA, MAX_GUEST_RESPONSE_BYTES,
     };
     use crate::profile::{MinecraftInstallType, MinecraftProfile};
     use std::io;
+
+    #[test]
+    fn guest_response_limit_is_explicit() {
+        assert_eq!(MAX_GUEST_RESPONSE_BYTES, 32 * 1024);
+    }
 
     #[test]
     fn guest_identity_fingerprint_format_is_strict() {
