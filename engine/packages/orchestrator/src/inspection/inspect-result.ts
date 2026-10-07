@@ -316,7 +316,6 @@ export function buildInspectionResult(
     inventoryLifecycle,
     inventoryPolicy,
     inventoryRestoreOwnership,
-    capabilityMutationFootprint,
     combatLifecycle,
     chunkLifecycle,
     persistenceSource,
