@@ -3,6 +3,7 @@ use crate::{
     doctor::DoctorReport,
     journal::{read_operation_history, OperationRecord},
     paths::runtime_root,
+    provider::staging_residue_count,
     persistence::write_text_transactional,
 };
 use serde::Serialize;
@@ -40,6 +41,7 @@ pub struct SupportBundle {
     pub privacy: SupportPrivacy,
     pub snapshot: EngineSnapshot,
     pub operation_history: Vec<OperationRecord>,
+    pub staging_residue_count: usize,
 }
 
 #[derive(Debug, Serialize)]
@@ -81,6 +83,7 @@ pub(crate) fn write_support_bundle(snapshot: EngineSnapshot) -> io::Result<Suppo
         },
         snapshot,
         operation_history: read_operation_history().unwrap_or_default(),
+        staging_residue_count: staging_residue_count().unwrap_or(0),
     };
     let json = serde_json::to_string_pretty(&bundle)
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
