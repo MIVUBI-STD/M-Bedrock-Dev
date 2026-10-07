@@ -385,7 +385,7 @@
       </div>
       {#if snapshot}
         <div class="ready-state" class:attention={!setupComplete || blockers.length > 0}>
-          {setupComplete && blockers.length === 0 ? "Ready" : blockers.length ? "Needs attention" : "Setup required"}
+          {setupComplete && blockers.length === 0 ? "Setup complete" : blockers.length ? "Needs attention" : "Setup required"}
         </div>
       {/if}
     </header>
