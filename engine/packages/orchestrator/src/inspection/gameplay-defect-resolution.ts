@@ -767,15 +767,25 @@ export function assessGameplayDefectResolutionGate(
     .filter((link) => link.status === "CONTRADICTED")
     .slice()
     .sort((a, b) => a.id.localeCompare(b.id));
+  const runtimeBlocked = graph.causalLinks
+    .filter((link) => link.status === "RUNTIME_BLOCKED")
+    .slice()
+    .sort((a, b) => a.id.localeCompare(b.id));
+  const detectionGaps = graph.causalLinks
+    .filter((link) => link.status === "DETECTION_GAP")
+    .slice()
+    .sort((a, b) => a.id.localeCompare(b.id));
 
-  const contradictedIds = new Set(
-    contradicted.map((link) => link.id),
-  );
+  const resolvableIds = new Set([
+    ...contradicted,
+    ...runtimeBlocked,
+    ...detectionGaps,
+  ].map((link) => link.id));
   const byId = new Map<string, GameplayDefectResolution>();
   const issues: string[] = [];
 
   for (const resolution of suppliedResolutions) {
-    if (!contradictedIds.has(resolution.causalLinkId)) {
+    if (!resolvableIds.has(resolution.causalLinkId)) {
       issues.push(
         "Resolution references a causal link that is not currently CONTRADICTED: " +
           resolution.causalLinkId +
@@ -794,7 +804,35 @@ export function assessGameplayDefectResolutionGate(
     byId.set(resolution.causalLinkId, resolution);
   }
 
-  const resolutions: GameplayDefectResolution[] = contradicted.map((link) => {
+  const runtimeAndGapResolutions: GameplayDefectResolution[] = [
+    ...runtimeBlocked.map((link) => ({
+      causalLinkId: link.id,
+      scenarioId: link.scenarioId,
+      knowledgeRequirementIds: [...link.knowledgeRequirementIds],
+      subjectIds: [...link.subjectIds],
+      componentIds: [...link.componentIds],
+      evidenceIds: [...link.evidenceIds],
+      disposition: "RUNTIME_PROOF_REQUIRED" as const,
+      runtimeReason: link.reason,
+      narrowRuntimeQuestion:
+        "Does the native runtime exhibit the unresolved behavior for this exact dependency under the selected-artifact scenario?",
+    })),
+    ...detectionGaps.map((link) => ({
+      causalLinkId: link.id,
+      scenarioId: link.scenarioId,
+      knowledgeRequirementIds: [...link.knowledgeRequirementIds],
+      subjectIds: [...link.subjectIds],
+      componentIds: [...link.componentIds],
+      evidenceIds: [...link.evidenceIds],
+      disposition: "DETECTION_GAP" as const,
+      detectionGapReason: link.reason,
+      missingCapability:
+        "Resolve the missing selected-artifact causal evidence before requesting runtime validation.",
+    })),
+  ];
+
+  const resolutions: GameplayDefectResolution[] = [
+    ...contradicted.map((link) => {
     const supplied = byId.get(link.id);
     if (supplied) {
       const scenario = graph.scenarios.find(
@@ -938,7 +976,9 @@ export function assessGameplayDefectResolutionGate(
               "GAMEPLAY_TRANSLATION_REQUIRED" as const,
           }),
     };
-  });
+  }),
+    ...runtimeAndGapResolutions,
+  ];
 
   const idsFor = (
     disposition: GameplayDefectResolutionDisposition,
