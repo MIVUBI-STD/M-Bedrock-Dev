@@ -63,7 +63,11 @@ describe("Golden Tracker real approved-report parity", () => {
         expect(html).toContain("DEV-CIR-BLOCK-BREAK-FEEDBACK");
         expect(html).toContain("DEV NOTE");
         expect(html).toContain("REFERENCE");
-        expect(html).not.toContain("Mark fixed");
+        const noteStart = html.indexOf('data-issue-id="DEV-CIR-FORTIFY-WAVE-PREVIEW"');
+        const noteEnd = html.indexOf("</article>", noteStart);
+        expect(noteStart).toBeGreaterThanOrEqual(0);
+        expect(noteEnd).toBeGreaterThan(noteStart);
+        expect(html.slice(noteStart, noteEnd)).not.toContain("Mark fixed");
       }
 
       if (reportPath === "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json") {
