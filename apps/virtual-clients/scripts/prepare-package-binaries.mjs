@@ -9,6 +9,21 @@ const manifest = resolve(backendRoot, "Cargo.toml");
 const binaries = resolve(appRoot, "src-tauri", "binaries");
 const guestResources = resolve(appRoot, "src-tauri", "package-resources", "guest", "windows");
 const appPackage = JSON.parse(readFileSync(resolve(appRoot, "package.json"), "utf8"));
+const packageContract = JSON.parse(readFileSync(resolve(repoRoot, "virtual-clients", "distribution", "package-contract.json"), "utf8"));
+const tauriBase = JSON.parse(readFileSync(resolve(appRoot, "src-tauri", "tauri.conf.json"), "utf8"));
+const tauriPackage = JSON.parse(readFileSync(resolve(appRoot, "src-tauri", "tauri.package.conf.json"), "utf8"));
+if (packageContract.schema !== 1 || !Array.isArray(packageContract.requiredFiles)) {
+  throw new Error("Unsupported or invalid Virtual Clients package contract.");
+}
+const resourceDestinations = new Set([
+  ...Object.values(tauriBase.bundle?.resources ?? {}),
+  ...Object.values(tauriPackage.bundle?.resources ?? {}),
+]);
+for (const requiredRoot of ["guest/windows/", "acceptance/windows/", "distribution/release-channel.json", "distribution/package-contract.json"]) {
+  if (![...resourceDestinations].some((destination) => destination === requiredRoot || destination.startsWith(requiredRoot))) {
+    throw new Error(`Tauri package resources do not cover required package root: ${requiredRoot}`);
+  }
+}
 const backendCargo = readFileSync(manifest, "utf8");
 const backendVersion = /^version\s*=\s*"([^"]+)"\s*$/m.exec(backendCargo)?.[1];
 if (!backendVersion || backendVersion !== appPackage.version) {
