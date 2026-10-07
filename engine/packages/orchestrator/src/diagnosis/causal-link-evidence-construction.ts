@@ -50,13 +50,13 @@ export function constructCausalLinkEvidence(input: {
     domain: "static",
   });
 
-  if (link.knowledgeRequirementId) {
+  for (const requirementId of link.knowledgeRequirementIds) {
     const receipt = input.graph.knowledgeReceipts.find(
-      (item) => item.requirementId === link.knowledgeRequirementId,
+      (item) => item.requirementId === requirementId,
     );
     const predicate =
       "causal-link:" + link.id + ":knowledge:" +
-      link.knowledgeRequirementId;
+      requirementId;
     output.push({
       predicate,
       state:
@@ -69,10 +69,29 @@ export function constructCausalLinkEvidence(input: {
         "knowledge-receipt",
         receipt?.evidenceIds.length
           ? receipt.evidenceIds
-          : [link.knowledgeRequirementId],
+          : [requirementId],
       ),
       domain: "knowledge",
     });
+
+    for (const knowledgeId of receipt?.knowledgeIds ?? []) {
+      output.push({
+        predicate:
+          "causal-link:" + link.id + ":knowledge:" +
+          knowledgeId,
+        state:
+          receipt?.status === "SATISFIED"
+            ? "present"
+            : "absent",
+        evidenceId: evidenceId(
+          "knowledge-record",
+          receipt?.evidenceIds.length
+            ? receipt.evidenceIds
+            : [knowledgeId],
+        ),
+        domain: "knowledge",
+      });
+    }
   }
 
   const counterProofIds = [
