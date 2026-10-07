@@ -3,7 +3,7 @@
 This tooling renders one self-contained HTML file from either:
 
 - **SelectedMapAuditRun / Map Audit Output V2** → Map Audit Report, using the canonical `mapAuditReport` projection and showing every material `PROVEN` and `NEED_VALIDATION` finding across BUG and DESIGN_MISMATCH;
-- **Approved Bug Report V2** → approved PROVEN issue ledger view, preserving separate BUG and DESIGN_MISMATCH sections.
+- **Approved Bug Report V2 + Project Registry + canonical Developer Notes** → Golden Bug Tracker, preserving three parallel lanes: BUGS, DESIGN MISMATCHES, and DEV NOTES.
 
 ## Flow
 
@@ -15,8 +15,10 @@ Map Audit Output V2
 or
 
 Approved Bug Report V2 JSON
-→ approved-issue client projection
-→ self-contained HTML
++ Project Registry
++ workspace/developer-notes.json
+→ approved-issue + Developer Note projection
+→ Golden Bug Tracker HTML
 ```
 
 HTML is presentation only. It must not invent, promote, hide, or backfill audit facts.
@@ -25,7 +27,7 @@ HTML is presentation only. It must not invent, promote, hide, or backfill audit 
 
 For **Map Audit Output V2**, all material findings are shown. NEED_VALIDATION findings are labeled **NEED VALIDATION / UNPROVEN**, include the exact missing proof and validation test, and never receive a final severity.
 
-For **Approved Bug Report V2**, the approved-ledger filters remain: open Blocker/Major issues by default; `--include-minor` and `--include-fixed` broaden only that approved-ledger view.
+For **Approved Bug Report V2**, the approved-ledger filters remain: open Blocker/Major issues by default; `--include-minor` and `--include-fixed` broaden only that approved gameplay-finding view. Developer Notes are filtered by project identity, have no gameplay severity, and are always presented in their separate DEV NOTES lane.
 
 ## Usage
 
