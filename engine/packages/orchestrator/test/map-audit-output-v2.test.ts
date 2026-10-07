@@ -148,6 +148,18 @@ describe("Map Audit Output V2 projection", () => {
         blockingCheckpointIds: [],
         reasons: [],
       },
+      reasoningByCausalLinkId: {
+        "link:unresolved": {
+          reportClassification: "LIKELY BUG",
+          diagnosticDisposition: "confirmed-defect",
+          proofConfidence: "high",
+          evidenceDomainSources: ["static"],
+          evidenceChain: ["e:objective"],
+          unresolvedPredicates: ["objective-runtime-outcome"],
+          recommendedValidationPredicate: "objective-runtime-outcome",
+          recommendedReadOnlyProbeId: "objective-state-probe",
+        },
+      },
       honesty: {
         policy: "no-hidden-material-finding",
         status: "PASS",
@@ -167,6 +179,14 @@ describe("Map Audit Output V2 projection", () => {
       .toEqual(["PROVEN", "NEED_VALIDATION"]);
     expect(report.bugs[1]?.missingProof)
       .toBe("One exact runtime observation.");
+    expect(report.bugs[0]?.reasoning).toBeUndefined();
+    expect(report.bugs[1]?.reasoning).toMatchObject({
+      reportClassification: "LIKELY BUG",
+      diagnosticDisposition: "confirmed-defect",
+      proofConfidence: "high",
+      unresolvedPredicates: ["objective-runtime-outcome"],
+      recommendedReadOnlyProbeId: "objective-state-probe",
+    });
     expect(report.unresolved.status)
       .toBe("HAS_UNRESOLVED");
     expect(report.unresolved.needValidationIds)
