@@ -148,3 +148,28 @@ provider unavailable
 ```
 
 A staged path is surfaced only while the staged installer file still exists. Missing staged files are not presented as usable update state.
+
+
+## Installer ownership authority
+
+Canonical installer behavior is defined by:
+
+- `package-contract.json` — files that a valid installed package must contain;
+- `install-lifecycle-policy.json` — operations the installer may and may not own;
+- `write-payload-manifest.ps1` — integrity evidence for installed package files;
+- Tauri `tauri.conf.json` — Windows install scope and shell integration;
+- `windows/installer-hooks.nsh` — desktop process-in-use gate.
+
+Documentation must not redefine these policies.
+
+## Desktop executable signing boundary
+
+The trusted release records the Authenticode state of the desktop executable from the installed package. The current build does not claim the desktop executable is independently signed unless that installed artifact verifies successfully. CLI sidecar and Guest Agent signing are mandatory trusted-release gates; the NSIS installer itself is also mandatory signed.
+
+Do not add a build-sign-build sequence and call it desktop signing proof. Independent desktop signing requires a package boundary that demonstrably preserves the signed executable bytes.
+
+## Windows lifecycle
+
+The desktop installer owns application files, Start Menu integration, repair, upgrade and uninstall registration. It does not own runtime-schema migration, Base/Virtual lifecycle, Guest Agent removal from existing VMs, or deletion of Virtual Clients runtime data.
+
+Same-version installation is the repair path. Newer package versions may upgrade the desktop package. Downgrades remain disabled. Runtime compatibility after package replacement is decided by runtime-core schema authority, not by NSIS.
