@@ -3153,6 +3153,61 @@
       ]
     },
     {
+      "knowledgeId": "persistence.dynamic-properties-survive-restart",
+      "consumer": "persistent-state-reconciliation",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/persistence/persistent-reconciliation.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/persistence/persistent-reconciliation.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "persistence.dynamic-property-absence-distinct",
+      "consumer": "persistent-state-reconciliation",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/persistence/persistent-reconciliation.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/persistence/persistent-reconciliation.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "persistence.relation-watchdog-requires-journal",
+      "consumer": "persistent-state-reconciliation",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/persistence/persistent-reconciliation.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/persistence/persistent-reconciliation.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "persistence.relation-worldload-gates-reconcile",
+      "consumer": "persistent-state-reconciliation",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/persistence/persistent-reconciliation.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/persistence/persistent-reconciliation.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "persistence.root-state-not-world-ready",
+      "consumer": "persistent-state-reconciliation",
+      "analyzerPaths": [
+        "engine/analyzers/scripts/src/domains/persistence/persistent-reconciliation.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/scripts/test/domains/persistence/persistent-reconciliation.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "persistence.shutdown-restricted",
       "consumer": "chunk-lifecycle-analysis",
       "analyzerPaths": [

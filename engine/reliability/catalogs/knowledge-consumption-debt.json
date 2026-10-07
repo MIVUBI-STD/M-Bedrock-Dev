@@ -663,36 +663,6 @@
       "nextEvidenceOwner": "permission-profile-analysis"
     },
     {
-      "knowledgeId": "persistence.dynamic-properties-survive-restart",
-      "status": "static-capability-gap",
-      "reason": "Durable-vs-session reconciliation needs explicit persistence ownership analysis beyond scope alone.",
-      "nextEvidenceOwner": "persistent-state-reconciliation"
-    },
-    {
-      "knowledgeId": "persistence.dynamic-property-absence-distinct",
-      "status": "static-capability-gap",
-      "reason": "Absent/cleared/migrated state needs explicit persistence migration analysis.",
-      "nextEvidenceOwner": "persistent-state-reconciliation"
-    },
-    {
-      "knowledgeId": "persistence.relation-watchdog-requires-journal",
-      "status": "static-capability-gap",
-      "reason": "Durable journal policy needs explicit persistence transaction analysis.",
-      "nextEvidenceOwner": "persistent-state-reconciliation"
-    },
-    {
-      "knowledgeId": "persistence.relation-worldload-gates-reconcile",
-      "status": "static-capability-gap",
-      "reason": "Recovery ordering needs explicit persistence reconciliation analysis.",
-      "nextEvidenceOwner": "persistent-state-reconciliation"
-    },
-    {
-      "knowledgeId": "persistence.root-state-not-world-ready",
-      "status": "static-capability-gap",
-      "reason": "Startup/worldLoad reconciliation needs dedicated persistence recovery analysis.",
-      "nextEvidenceOwner": "persistent-state-reconciliation"
-    },
-    {
       "knowledgeId": "persistence.watchdog-can-terminate-runtime",
       "status": "runtime-required",
       "reason": "Watchdog termination is a runtime failure mode.",

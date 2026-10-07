@@ -1,4 +1,5 @@
 import type { BlockCustomComponentRegistrationEvidence } from "../domains/automation/block-custom-component-evidence.js";
+import type { PersistentReconciliationEvidence } from "../domains/persistence/persistent-reconciliation.js";
 import type { ScriptEconomyEvidence } from "../domains/economy/economy-evidence.js";
 import type {
   ScriptProgressionActorRegistryEvidence,
@@ -445,6 +446,7 @@ export interface ParsedScriptFile {
   identifier: string;
   source: SourceRef;
   blockCustomComponentRegistrations?: BlockCustomComponentRegistrationEvidence[];
+  persistentReconciliation?: PersistentReconciliationEvidence;
   imports: ScriptImport[];
   events: ScriptEventSubscription[];
   dynamicProperties: DynamicPropertyAccess[];

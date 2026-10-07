@@ -48,3 +48,5 @@ export * from "./recovery/source-recovery.js";
 export * from "./recovery/source-map-binding.js";
 
 export * from "./flow/semantic-flow-witness.js";
+
+export * from "./domains/persistence/persistent-reconciliation.js";
