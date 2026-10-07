@@ -19,7 +19,7 @@ use crate::{
     profile::{
         client_lineage_parity, current_base_vmx_path, identity_fingerprint, load_base_profile,
         load_client_profile, native_minecraft_profile, profile_status,
-        require_base_matches_native, require_client_matches_native, write_client_profile,
+        remove_client_profile, require_base_matches_native, require_client_matches_native, write_client_profile,
         write_verified_base_profile, write_verified_client_identities, BaseProfile, BaseState,
         MinecraftProfile, ProfileParity, ProfileStatus,
     },
@@ -1181,7 +1181,12 @@ impl VirtualClients {
             let previous = provider.status(client)?;
             provider.provision(client)?;
             if previous == ClientState::NotProvisioned {
-                write_client_profile(client, &native.version, &base_generation_id)?;
+                if let Err(error) = write_client_profile(client, &native.version, &base_generation_id) {
+                    return Err(io::Error::new(
+                        error.kind(),
+                        format!("{} was provisioned but lineage provenance could not be committed; start remains blocked until provenance is repaired: {error}", client.as_str()),
+                    ));
+                }
             }
         }
 
@@ -1245,8 +1250,14 @@ impl VirtualClients {
         })?;
         check_action_admission(provider.as_ref(), client, LifecycleAction::Reprovision)?;
 
+        remove_client_profile(client)?;
         provider.reprovision(client)?;
-        write_client_profile(client, &native.version, &base_generation_id)?;
+        if let Err(error) = write_client_profile(client, &native.version, &base_generation_id) {
+            return Err(io::Error::new(
+                error.kind(),
+                format!("{} was reprovisioned but lineage provenance could not be committed; start remains blocked until provenance is repaired: {error}", client.as_str()),
+            ));
+        }
         let working_sets = provider.host_working_sets_mb()?;
         let native_profile = native_minecraft_profile();
         client_status(
