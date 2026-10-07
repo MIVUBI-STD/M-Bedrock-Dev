@@ -13,6 +13,8 @@ import type {
 import type {
   GameplayScenarioGraph,
 } from "../inspection/gameplay-scenario-model.js";
+import type { RuntimeScope } from "../../../project-model/src/index.js";
+import { assessRuntimeGenerationIntegrity } from "./runtime-generation-integrity.js";
 
 function evidenceId(prefix: string, ids: readonly string[]): string {
   return prefix + ":" + ids.slice().sort().join("+");
@@ -24,6 +26,7 @@ export function constructCausalLinkEvidence(input: {
   construction: CausalLinkHypothesisConstruction;
   runtimeProbeTranscript?: RuntimeProbeTranscript;
   expectedArtifactId?: string;
+  expectedRuntimeScope?: RuntimeScope;
 }): CrossDomainEvidenceObservation[] {
   const link = input.graph.causalLinks.find(
     (item) => item.id === input.construction.causalLinkId,
@@ -105,7 +108,11 @@ export function constructCausalLinkEvidence(input: {
             exchange.request.incidentId === link.id &&
             exchange.request.predicate === runtimePredicate &&
             exchange.response.ok &&
-            exchange.response.evidence.proofAuthority === "live-runtime",
+            exchange.response.evidence.proofAuthority === "live-runtime" &&
+            assessRuntimeGenerationIntegrity(
+              exchange,
+              input.expectedRuntimeScope,
+            ).status !== "STALE",
         ) ?? [];
     if (exchanges.length === 0) {
       output.push({
