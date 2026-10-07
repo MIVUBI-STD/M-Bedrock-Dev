@@ -164,6 +164,24 @@ mod tests {
         fs::remove_dir_all(root).unwrap();
     }
 
+    #[cfg(unix)]
+    #[test]
+    fn metadata_symlink_is_rejected() {
+        use std::os::unix::fs::symlink;
+        let root = unique_temp_dir("symlink");
+        fs::create_dir_all(&root).unwrap();
+        let target = root.join("target.txt");
+        let path = root.join("state.json");
+        fs::write(&target, "private\n").unwrap();
+        symlink(&target, &path).unwrap();
+
+        assert!(read_text_recovering(&path).is_err());
+        assert!(write_text_transactional(&path, "replacement\n").is_err());
+        assert_eq!(fs::read_to_string(&target).unwrap(), "private\n");
+
+        fs::remove_dir_all(root).unwrap();
+    }
+
     fn unique_temp_dir(label: &str) -> PathBuf {
         let nonce = SystemTime::now()
             .duration_since(UNIX_EPOCH)
