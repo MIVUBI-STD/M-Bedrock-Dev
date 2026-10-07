@@ -7,7 +7,7 @@ This directory is the deterministic bridge between canonical Bug Report data and
 ```text
 Bug Report V2        → approved BUG / DESIGN_MISMATCH facts
 Developer Notes       → canonical DEV_NOTE facts
-Project Registry      → artifact/version/Drive binding
+project workspace      → artifact/version/Drive binding
 Golden UI             → presentation
 Tester Workspace      → local comments/images/fixed state only
 ```
@@ -17,7 +17,7 @@ No layer may duplicate another layer's authority.
 The Golden Tracker has three presentation lanes:
 - **BUGS** — gameplay BUG findings from approved Bug Report V2;
 - **DESIGN MISMATCHES** — approved DESIGN_MISMATCH findings;
-- **DEV NOTES** — canonical developer/release notes from `workspace/developer-notes.json`.
+- **DEV NOTES** — canonical developer/release notes from the matching project/level `report/developer-notes.json`.
 
 DEV NOTE is a parallel reference lane, not an issue type, not a severity, and not a fallback for NEED_VALIDATION. Its admission semantics are owned by `docs/analysis/developer-note-coverage.md`.
 
@@ -25,8 +25,8 @@ DEV NOTE is a parallel reference lane, not an issue type, not a severity, and no
 
 ```text
 BugReportClientDocument
-+ workspace/developer-notes.json
-+ workspace/project-registry.json
++ matching project/level report/developer-notes.json
++ matching project.json Drive binding
 → authority validation
 → projectClientDocumentToTracker()
 → BugTrackerDocument
@@ -42,7 +42,7 @@ The output JSON and HTML must contain exactly the same canonical IDs. Missing, d
 ## Files
 
 - `model.ts` — small presentation projection model.
-- `project.ts` — binds issue facts to the exact Project Registry source.
+- `project.ts` — binds issue facts to the exact project workspace source.
 - `validate.ts` — hard pre-render gate.
 - `export.ts` — deterministic JSON/HTML parity and output.
 - `../golden/` — frozen visual contract and zero-data template.
@@ -59,7 +59,7 @@ Generation fails on:
 - missing Observed/Expected;
 - forbidden internal/prompt language in tester-facing fields;
 - malformed or duplicate Developer Note authority records;
-- inconsistent Project Registry artifact/current-world binding;
+- inconsistent project workspace artifact/current-world binding;
 - HTML/JSON canonical-ID mismatch in either direction.
 
 ## Deliberate boundaries
@@ -78,7 +78,7 @@ The migration is complete for Approved Bug Report V2 presentation.
 
 - Approved Bug Report V2 has one presentation path: Golden Tracker.
 - Map Audit Output V2 retains its separate Map Audit renderer.
-- Project Registry remains the only source-binding authority.
+- project workspace remains the only source-binding authority.
 - Golden UI remains the only Approved Bug Report presentation authority.
 - Legacy Approved Bug Report HTML helpers were removed from the entrypoint.
 
@@ -95,7 +95,7 @@ Local execution and CI are not workflow gates for this lane.
 
 Readiness is established by repository-source review and deterministic contracts:
 - authority separation remains intact;
-- Project Registry is the only source-binding owner;
+- project workspace is the only source-binding owner;
 - Golden UI remains the only tracker presentation contract;
 - validation fails closed on malformed tracker data;
 - real approved-report fixtures remain committed as regression specifications;
@@ -116,7 +116,7 @@ Map Audit Output V2
 
 Approved Bug Report V2
 → existing parser + client quality gate
-→ Project Registry binding
+→ project workspace binding
 → Bug Tracker projection
 → tracker validation
 → Golden renderer
