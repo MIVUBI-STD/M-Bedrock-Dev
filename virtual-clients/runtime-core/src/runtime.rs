@@ -15,6 +15,7 @@ use crate::{
         LifecycleAction, LifecycleFacts,
     },
     paths::runtime_root,
+    persistence::reject_unsafe_existing_file,
     policy::{engine_policy, EnginePolicy, MAX_VIRTUAL_CLIENTS},
     profile::{
         client_lineage_parity, current_base_vmx_path, identity_fingerprint, load_base_profile,
@@ -75,6 +76,7 @@ impl OperationLock {
         let root = runtime_root()?;
         fs::create_dir_all(&root)?;
         let path = root.join(".operation.lock");
+        reject_unsafe_existing_file(&path)?;
         let file = OpenOptions::new()
             .read(true)
             .write(true)
