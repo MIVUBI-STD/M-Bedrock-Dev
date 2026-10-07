@@ -60,7 +60,10 @@
           "English"
         ],
         "displayLanguageSelector": false,
-        "installerIcon": "icons/icon.ico"
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico",
+        "startMenuFolder": "M-Bedrock Virtual Clients",
+        "installerHooks": "windows/installer-hooks.nsh"
       }
     }
   }
