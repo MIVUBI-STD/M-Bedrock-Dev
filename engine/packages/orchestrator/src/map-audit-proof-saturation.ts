@@ -179,9 +179,18 @@ function derivedFamilyCriterionEvidence(input: {
       .length > 0
       ? evidenceIds
       : [];
-  const requiredCounterproofDimensions =
+  const familyCounterproofDimensions =
     FAMILY_COUNTERPROOF_DIMENSIONS[criterionId] ?? [];
-  if (requiredCounterproofDimensions.length > 0) {
+  const searchedDimensions =
+    resolution.counterProofSearch?.searchedDimensions ?? [];
+  const requiredCounterproofDimensions =
+    familyCounterproofDimensions.filter((dimension) =>
+      searchedDimensions.includes(dimension as any)
+    );
+  if (
+    familyCounterproofDimensions.length > 0 &&
+    requiredCounterproofDimensions.length > 0
+  ) {
     const receipts =
       resolution.counterProofSearch?.dimensionReceipts ?? [];
     const matched = requiredCounterproofDimensions.map(
