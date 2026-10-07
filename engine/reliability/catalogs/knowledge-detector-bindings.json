@@ -3552,7 +3552,7 @@
       ]
     },
     {
-      "knowledgeId": "player-policy.post-defer-validation",
+      "knowledgeId": "multiplayer-policy.post-defer-validation",
       "consumer": "arena-lifecycle-analysis",
       "analyzerPaths": [
         "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts",
