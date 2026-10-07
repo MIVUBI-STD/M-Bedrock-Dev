@@ -51,6 +51,32 @@ const DOMAIN_BY_KNOWLEDGE:
     "state-flow": "state-ownership",
   };
 
+const FAILURE_DOMAIN_PRIMARY_ORDER:
+  readonly GameplayIssueFailureDomain[] = [
+    "state-ownership",
+    "temporal-async",
+    "player-lifecycle",
+    "arena-multi-arena",
+    "persistence-recovery",
+    "chunk-simulation",
+    "entity-ai-combat",
+    "inventory-economy",
+    "world-structure-mutation",
+    "boundary-capacity",
+    "platform-performance",
+    "ui-feedback-information",
+    "progression-wave-objective",
+  ];
+
+function primaryKnowledgeFailureDomain(
+  domains: readonly GameplayIssueFailureDomain[],
+): GameplayIssueFailureDomain | undefined {
+  const present = new Set(domains);
+  return FAILURE_DOMAIN_PRIMARY_ORDER.find(
+    (domain) => present.has(domain),
+  );
+}
+
 const COMPONENT_DOMAIN_HINTS:
   readonly [
     readonly string[],
@@ -248,9 +274,13 @@ export function classifyGameplayIssue(input: {
     ),
   ].sort();
 
-  if (knowledgeFailureDomains.length > 0) {
+  const primaryKnowledgeDomain =
+    primaryKnowledgeFailureDomain(
+      knowledgeFailureDomains,
+    );
+  if (primaryKnowledgeDomain !== undefined) {
     return {
-      failureDomain: knowledgeFailureDomains[0]!,
+      failureDomain: primaryKnowledgeDomain,
       contributingDomains:
         collectGameplayIssueDomains(input),
       gameplayFlow,
