@@ -21,7 +21,7 @@
 
 <section class="hero setup-intro">
   <span class="eyebrow">SETUP · STEP {Math.min(phaseIndex + 1, 4)} OF 4</span>
-  <h2>Let's get your clients ready</h2>
+  <h2>Set up your virtual clients</h2>
   <p>Follow one step at a time. Virtual Clients checks each result before continuing.</p>
 </section>
 
