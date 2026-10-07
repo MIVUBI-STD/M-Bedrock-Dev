@@ -91,6 +91,8 @@ function issueFromClient(issue: BugReportClientDocument["issues"][number]): Trac
     verification: "VERIFIED",
     title: issue.title,
     issue: issue.issue,
+    ...(issue.whyThisIsBug ? { whyThisIsBug: issue.whyThisIsBug } : {}),
+    ...(issue.impact ? { impact: issue.impact } : {}),
     reproduction: issue.reproduction,
     observed: issue.observed,
     expected: issue.expected,
