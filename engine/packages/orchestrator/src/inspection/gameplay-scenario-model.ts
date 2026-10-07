@@ -78,6 +78,8 @@ export interface GameplayCausalLink {
   readonly impactPathComponentIds: readonly string[];
   /** Selected-artifact evidence for every proven edge in impactPathComponentIds. Empty when no complete proven path exists. */
   readonly impactPathEvidenceIds: readonly string[];
+  /** Bounded world-model evidence already scoped to this dependency, keyed by proof dimension. */
+  readonly dimensionEvidence: Readonly<Partial<Record<"owner" | "generation" | "cleanup" | "geometry" | "capability" | "world-rule" | "activation" | "representation", readonly string[]>>>;
   readonly intentEdgeKind?: import("../../../gameplay-intent/src/index.js").GameplayIntentEdgeKind;
   readonly status: GameplayCausalLinkStatus;
   readonly reason: string;
