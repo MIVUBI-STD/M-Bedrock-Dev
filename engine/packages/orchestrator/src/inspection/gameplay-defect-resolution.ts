@@ -352,6 +352,52 @@ function overlapping(
   return right.some((item) => set.has(item));
 }
 
+function dimensionEvidenceFor(
+  graph: GameplayScenarioGraph,
+  contradicted: GameplayCausalLink,
+  dimension: CounterProofSearchDimension,
+): readonly string[] {
+  const scoped = graph.causalLinks.filter(
+    (candidate) =>
+      candidate.scenarioId === contradicted.scenarioId &&
+      (
+        candidate.id === contradicted.id ||
+        overlapping(candidate.subjectIds, contradicted.subjectIds) ||
+        overlapping(candidate.componentIds, contradicted.componentIds)
+      ),
+  );
+
+  const componentHints: Readonly<Record<CounterProofSearchDimension, readonly string[]>> = {
+    owner: ["runtime:arena", "runtime:persistence", "runtime:inventory", "runtime:state"],
+    guard: [],
+    generation: ["runtime:arena", "runtime:persistence"],
+    scope: [],
+    cleanup: ["runtime:arena-cleanup", "runtime:structures", "runtime:inventory"],
+    exclusion: [],
+    geometry: ["runtime:spatial", "runtime:structures", "runtime:arena-replica-integrity"],
+    capability: ["runtime:player-capability"],
+    "world-rule": ["runtime:world-rules"],
+    activation: ["runtime:player-capability"],
+    representation: ["runtime:client-reconciliation"],
+  };
+  const hints = componentHints[dimension];
+
+  return [
+    ...new Set(
+      scoped
+        .filter(
+          (candidate) =>
+            hints.length === 0 ||
+            candidate.componentIds.some((id) =>
+              hints.includes(id)
+            ),
+        )
+        .flatMap((candidate) => candidate.evidenceIds)
+        .filter(Boolean),
+    ),
+  ].sort();
+}
+
 function automaticCounterProofSearch(
   graph: GameplayScenarioGraph,
   contradicted: GameplayCausalLink,
@@ -364,11 +410,15 @@ function automaticCounterProofSearch(
       scenario,
     );
   const automaticallySearchable =
-    requiredDimensions.filter(
-      (dimension) =>
-        dimension === "guard" ||
-        dimension === "scope" ||
-        dimension === "exclusion",
+    requiredDimensions.filter((dimension) =>
+      dimension === "guard" ||
+      dimension === "scope" ||
+      dimension === "exclusion" ||
+      dimensionEvidenceFor(
+        graph,
+        contradicted,
+        dimension,
+      ).length > 0
     );
   const scopeIds = [
     ...new Set([
@@ -406,12 +456,23 @@ function automaticCounterProofSearch(
     policy: "bounded-counterproof-search",
     searchedDimensions: automaticallySearchable,
     dimensionReceipts:
-      automaticallySearchable.map((dimension) => ({
-        dimension,
-        scopeIds,
-        evidenceIds,
-        exhaustiveWithinScope: true,
-      })),
+      automaticallySearchable.map((dimension) => {
+        const dimensionEvidence =
+          dimensionEvidenceFor(
+            graph,
+            contradicted,
+            dimension,
+          );
+        return {
+          dimension,
+          scopeIds,
+          evidenceIds:
+            dimensionEvidence.length > 0
+              ? dimensionEvidence
+              : evidenceIds,
+          exhaustiveWithinScope: true,
+        };
+      }),
     scopeIds,
     evidenceIds,
     // This receipt is exhaustive only within the already-closed selected-
