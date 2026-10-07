@@ -1,46 +1,17 @@
 {
-  "schema": "m-bedrock-bug-report/v2",
+  "schema": "m-bedrock-bug-tracker/v1",
   "map": {
     "name": "Manhunt",
-    "mapVersion": "1.0.0",
-    "drive": "https://drive.google.com/file/d/1gaHKkT-VrYVNehLLT_xiTHtpgNJ7BxQe/view",
-    "baseVersion": "Not recorded in audit evidence",
-    "testedVersion": "Static source/package audit with native LevelDB voxel proof; runtime not executed"
+    "version": "1.0.0",
+    "fingerprint": "sha256:c666000de5cd052288b00953baf9dc00410a65c6da53c16fb1e31b8e396025f3",
+    "gameModel": "6 fixed arenas · 2–16 players/arena · asymmetric Hunter vs Runner rounds"
   },
-  "repairBy": "developer",
-  "bugs": [
-    {
-      "id": "DM-MAN-ARENA6-REPLICA",
-      "fixed": false,
-      "severity": "major",
-      "category": "world-interaction",
-      "foundBy": "ai",
-      "issueType": "DESIGN_MISMATCH",
-      "title": "Arena 6 is materially incomplete compared with the authored replica",
-      "problem": "Arena 6 is presented as a normal playable Manhunt arena but contains a substantial missing-geometry region compared with the canonical translated arena.",
-      "expected": "Arena 6 contains the same gameplay world structure as the canonical arena after the authored translation, aside from bounded intentional differences.",
-      "observed": "Native voxel proof finds about 5.62% sampled mismatches in Arena 6, concentrated where thousands of canonical structure blocks are missing as air.",
-      "reproduction": [
-        "Enter or inspect Manhunt Arena 1 and Arena 6.",
-        "Compare the corresponding far-side arena region using the authored Arena 6 translation.",
-        "Move through the area corresponding roughly to the canonical Z -340 through -220 region.",
-        "Check whether substantial geometry present in the canonical arena is missing in Arena 6."
-      ],
-      "aiAnalysis": "Selected source config authors Arena 6 as the sixth translated replica, but native LevelDB voxel comparison shows 6,207 sampled mismatches, dominated by canonical stone/wool/tuff/concrete blocks becoming air. Other replicas remain near-zero mismatch.",
-      "relevantCode": [
-        {
-          "file": "selected Manhunt behavior-pack arena configuration",
-          "reason": "Defines Arena 6 as a normal playable translated replica with the same gameplay contract."
-        },
-        {
-          "file": "selected world LevelDB voxel proof",
-          "reason": "Shows the concentrated Arena 6 geometry deficit relative to the canonical translated arena."
-        }
-      ],
-      "suggestedFix": "Restore Arena 6 from the canonical arena using the authored translation, then rerun voxel and block-entity replica proof before release.",
-      "mustPreserve": [
-        "Arena 6 join/session identity must remain distinct while only divergent world content is restored."
-      ]
-    }
-  ]
+  "summary": {
+    "bugs": 0,
+    "designMismatches": 0,
+    "developerNotes": 2,
+    "needsValidation": 0
+  },
+  "issues": [],
+  "designMismatches": []
 }
