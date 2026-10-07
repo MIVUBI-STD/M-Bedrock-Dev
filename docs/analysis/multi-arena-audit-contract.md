@@ -33,6 +33,41 @@ A diverged replica is not automatically a bug. It becomes a causal candidate onl
 
 An incomplete/no-proof replica cannot inherit baseline safety.
 
+### Effective-concurrency proof
+
+Configured capacity is not deliverable capacity.
+
+```text
+MAX_CONCURRENT_ARENAS = N
++ N physical arenas
++ resource budget appears sufficient
+≠ N arenas can actually start
+```
+
+Before closing a concurrency finding, trace the complete admission-to-commit path:
+
+```text
+ready/admission
+→ startup/recovery gates
+→ queue insertion
+→ reservation
+→ native resource allocation
+→ readiness verification
+→ countdown/start commit
+```
+
+Every gate that can hold a request before reservation is part of concurrency capacity. In particular, a global startup/recovery gate can reduce effective capacity to zero even when the configured cap is six.
+
+For queue-backed systems, prove at runtime at least:
+
+- an idle world can start one arena;
+- multiple independent ready arenas leave the visible queue and acquire concurrently;
+- queue position appears only when a real deliverable resource limit is reached;
+- stale/recovery cleanup cannot hold all fresh requests indefinitely;
+- failure diagnostics expose the exact gate/resource preventing allocation.
+
+Do not close a historical concurrency bug from constants, resource arithmetic, or static topology alone when the player-visible claim is that multiple sessions can actually start.
+
 ### Runtime replica evidence
 
 Direct runtime testing across every physical arena is valid gameplay evidence for the scenarios actually exercised.
