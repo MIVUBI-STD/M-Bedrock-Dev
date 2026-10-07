@@ -638,6 +638,14 @@ mod tests {
     }
 }
 
+pub(crate) fn staging_residue_count() -> io::Result<usize> {
+    let staging = staging_root()?;
+    if !staging.exists() {
+        return Ok(0);
+    }
+    Ok(fs::read_dir(staging)?.filter_map(Result::ok).count())
+}
+
 pub(crate) fn cleanup_staging() -> io::Result<()> {
     let staging = staging_root()?;
     if !staging.exists() {
