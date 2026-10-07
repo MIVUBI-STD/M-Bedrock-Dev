@@ -36,6 +36,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 const INTERACTIVE_LAUNCHER_PORT: u16 = 47832;
+const MINECRAFT_PROCESS_START_TIMEOUT: Duration = Duration::from_secs(30);
 const INTERACTIVE_LAUNCH_TIMEOUT: Duration = Duration::from_secs(35);
 
 fn interactive_launcher_address() -> String {
@@ -271,7 +272,7 @@ fn launch_minecraft_interactive() -> Result<(), Box<dyn std::error::Error>> {
         ).into());
     }
 
-    let deadline = std::time::Instant::now() + Duration::from_secs(30);
+    let deadline = std::time::Instant::now() + MINECRAFT_PROCESS_START_TIMEOUT;
     while std::time::Instant::now() < deadline {
         if minecraft_process_running() {
             return Ok(());
