@@ -56,6 +56,7 @@ export function reasonAboutCausalLinkFinding(input: {
   runtimeProbeTranscript?: RuntimeProbeTranscript;
   probeCandidates?: readonly DiagnosticProbeCandidate[];
   expectedArtifactId?: string;
+  expectedRuntimeScope?: import("../../../project-model/src/index.js").RuntimeScope;
 }): CausalLinkReasoningReceipt {
   const construction = constructCausalLinkHypothesis({
     graph: input.graph,
@@ -81,6 +82,9 @@ export function reasonAboutCausalLinkFinding(input: {
       : {}),
     ...(input.expectedArtifactId
       ? { expectedArtifactId: input.expectedArtifactId }
+      : {}),
+    ...(input.expectedRuntimeScope
+      ? { expectedRuntimeScope: input.expectedRuntimeScope }
       : {}),
   });
   const assessment = assessCrossDomainHypotheses(
