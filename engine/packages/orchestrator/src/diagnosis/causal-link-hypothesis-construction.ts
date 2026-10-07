@@ -18,7 +18,7 @@ export interface CausalLinkHypothesisConstruction {
 
 function predicate(
   causalLinkId: string,
-  role: "contradiction" | "runtime" | "counterproof" | "knowledge",
+  role: "contradiction" | "runtime" | "counterproof" | "knowledge" | "impact-path",
   ownerId?: string,
 ): string {
   return [
@@ -83,10 +83,15 @@ export function constructCausalLinkHypothesis(input: {
           knowledgeId,
         )
       );
+  const impactPath =
+    link.impactPathComponentIds.length > 0
+      ? predicate(link.id, "impact-path")
+      : undefined;
   const counterproof = predicate(link.id, "counterproof");
 
   const requiredPredicates = [
     contradiction,
+    ...(impactPath ? [impactPath] : []),
     ...(runtime ? [runtime] : []),
     ...knowledgeRequirementPredicates,
     ...knowledgePredicates,
