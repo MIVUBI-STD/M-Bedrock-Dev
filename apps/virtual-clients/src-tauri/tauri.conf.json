@@ -43,7 +43,8 @@
     "resources": {
       "../../../virtual-clients/guest/windows/": "guest/windows/",
       "../../../virtual-clients/acceptance/windows/": "acceptance/windows/",
-      "../../../virtual-clients/distribution/release-channel.json": "distribution/release-channel.json"
+      "../../../virtual-clients/distribution/release-channel.json": "distribution/release-channel.json",
+      "../../../virtual-clients/distribution/package-contract.json": "distribution/package-contract.json"
     },
     "windows": {
       "allowDowngrades": false,
