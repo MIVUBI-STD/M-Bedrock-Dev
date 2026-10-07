@@ -22,7 +22,31 @@ for (const [key, value] of Object.entries(readiness)) {
   }
 }
 
-if (!item.sourceRef) {
+const externalArtifact = item.externalArtifact;
+if (externalArtifact !== undefined) {
+  if (externalArtifact.provider !== "google-drive") {
+    errors.push("externalArtifact.provider must be google-drive");
+  }
+  if (
+    typeof externalArtifact.fileId !== "string" ||
+    externalArtifact.fileId.length === 0
+  ) {
+    errors.push("externalArtifact.fileId is required");
+  }
+  if (
+    typeof externalArtifact.sha256 !== "string" ||
+    !/^[a-f0-9]{64}$/.test(externalArtifact.sha256)
+  ) {
+    errors.push("externalArtifact.sha256 must be a lowercase SHA-256");
+  }
+  if (
+    readiness.artifactFingerprint !== undefined &&
+    readiness.artifactFingerprint !== "missing" &&
+    readiness.artifactFingerprint !== externalArtifact.sha256
+  ) {
+    errors.push("external artifact SHA-256 does not match readiness.artifactFingerprint");
+  }
+} else if (!item.sourceRef) {
   errors.push("sourceRef is required");
 } else {
   const [sourcePath] = String(item.sourceRef).split("#");
