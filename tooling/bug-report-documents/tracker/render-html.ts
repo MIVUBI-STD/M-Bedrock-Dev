@@ -14,8 +14,8 @@ function issueHtml(i:TrackerIssue,n:number):string {
    i.expected.trim()?'<section class="expected-block"><h5>EXPECTED</h5><p>'+e(i.expected)+'</p></section>':"",
  ].join("");
  const technical=[
-   i.observed.trim()?row(needs?"Evidence":"Observed",e(i.observed)):"",
-   i.technicalAnalysis?.trim()?row("Technical Analysis",e(i.technicalAnalysis)):"",
+   i.observed.trim()?row(needs?"Evidence / Known State":"Observed Behavior / Evidence",e(i.observed)):"",
+   i.technicalAnalysis?.trim()?row("Why It Happens / Technical Analysis",e(i.technicalAnalysis)):"",
    i.relevantCode?.length?row("Relevant Code",'<ul>'+i.relevantCode.map(x=>'<li><code>'+e(x.file)+'</code> — '+e(x.reason)+'</li>').join("")+'</ul>'):"",
    i.resolution?.trim()?row("Recommended Fix",e(i.resolution)):"",
    i.mustPreserve?.length?row("Must Preserve",'<ul>'+i.mustPreserve.map(x=>'<li>'+e(x)+'</li>').join("")+'</ul>'):"",
