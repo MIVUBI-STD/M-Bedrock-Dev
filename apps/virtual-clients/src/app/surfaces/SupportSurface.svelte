@@ -16,7 +16,7 @@
 
 <section class="hero compact">
   <span class="eyebrow">HELP & SUPPORT</span>
-  <h2>{blockers.length === 0 ? "System looks good" : "Some items need attention"}</h2>
+  <h2>{blockers.length === 0 ? "No setup blockers" : "Some items need attention"}</h2>
   <p>Normal use stays simple. Technical details are available here only when you need them.</p>
 </section>
 
@@ -42,7 +42,7 @@
 
 <section class="support-tools">
   <button class="tool-card" on:click={() => (historyOpen = !historyOpen)}><strong>Operation history</strong><span>See recent starts, stops, restores, and failures.</span></button>
-  <button class="tool-card" on:click={() => (diagnosticsOpen = !diagnosticsOpen)}><strong>Technical details</strong><span>View CPU, memory, identities, and backend status.</span></button>
+  <button class="tool-card" on:click={() => (diagnosticsOpen = !diagnosticsOpen)}><strong>Technical details</strong><span>View host, virtualization, and compatibility evidence.</span></button>
   <button class="tool-card" disabled={busy === "support"} on:click={onCreateSupportBundle}><strong>{busy === "support" ? "Creating…" : "Create support bundle"}</strong><span>Generate a safe diagnostic package for troubleshooting.</span></button>
 </section>
 
