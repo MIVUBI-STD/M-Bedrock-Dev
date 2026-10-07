@@ -20,6 +20,7 @@ const fixture: BugTrackerDocument = {
         worldFile: "https://drive.google.com/file/d/file/view",
         worldFilename: "Golden Fixture v1.0.0.mcworld",
       },
+      devNotes: [],
       issues: [{
         id: "BUG-GOLDEN-001",
         type: "BUG",
