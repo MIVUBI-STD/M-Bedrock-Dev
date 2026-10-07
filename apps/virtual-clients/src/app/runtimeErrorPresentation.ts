@@ -19,8 +19,8 @@ const copy: Record<string, { title: string; message: string }> = {
     message: "Windows blocked this operation because additional permission is required.",
   },
   INVALID_DATA: {
-    title: "Runtime data needs attention",
-    message: "Virtual Clients found runtime state that does not match the expected configuration.",
+    title: "Client data needs attention",
+    message: "Virtual Clients found saved state that does not match the current setup.",
   },
   OPERATION_BUSY: {
     title: "Another operation is running",
@@ -39,8 +39,8 @@ const copy: Record<string, { title: string; message: string }> = {
     message: "This operation is not supported on the current system.",
   },
   IO_FAILURE: {
-    title: "Runtime communication failed",
-    message: "A required filesystem, VMware, or guest communication step could not be completed.",
+    title: "Client operation failed",
+    message: "Virtual Clients could not complete a required client or system step.",
   },
   DESKTOP_OPERATION_FAILED: {
     title: "Desktop operation failed",
