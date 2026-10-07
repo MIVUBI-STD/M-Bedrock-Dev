@@ -606,6 +606,79 @@ This separates BUG from DESIGN_MISMATCH without treating platform constraints as
 
 ---
 
+## 4.6 Whole-Game Simulation Closure
+
+Before final publication, replay the selected map as one closed game rather than as isolated subsystem checks.
+
+Build a scenario matrix from the reconstructed domain model:
+
+```text
+normal start
+→ every authored progression stage
+→ every terminal outcome
+→ cleanup
+→ replay/reuse
+
+plus applicable interleavings:
+multiplayer / every fixed arena
+disconnect / reconnect
+death / pending respawn
+inventory / kit / shop / upgrade
+entity delay / retry / exhaustion
+objective boundary
+timeout boundary
+reset / preserved-world transition
+old-run deferred work vs new run
+late-game maximum authored pressure
+```
+
+For each scenario:
+
+1. walk the complete owner/state transition chain;
+2. enumerate every deferred callback and competing writer;
+3. search for a blocking proof before promoting a candidate;
+4. test the inverse cleanup/recovery path;
+5. project the scenario across every fixed replica using proven equivalence;
+6. include authored late-game maxima rather than extrapolating only from early levels.
+
+Publication may close only when every applicable scenario has one explicit disposition:
+
+```text
+PROVEN finding
+NEED_VALIDATION with one irreducible deciding question
+REJECTED by counter-proof
+DEV NOTE under its own admission contract
+NOT_APPLICABLE with grounded domain reason
+```
+
+Do not use `SOURCE-SUPPORTED BUT UNPROVEN` as the final disposition of an applicable publication-blocking gameplay scenario. Continue deterministic proof until it reaches one of the dispositions above, or isolate the exact irreducible runtime question.
+
+### Domain-first scenario rule
+
+Generic stress patterns must be translated through the selected map's closed domain model before use.
+
+Examples:
+
+- fixed six-arena game → do not invent a seventh arena or overflow actor;
+- reset only on authored levels → stress those exact reset boundaries and preserved-build boundaries;
+- team wipe that intentionally does not end Defense → do not import terminal semantics from Attack;
+- fixed party-to-arena binding → capacity scenarios must respect that topology.
+
+A generic detector that requires an actor/state the selected map cannot produce is rejected before testing.
+
+### Final false-claim gate
+
+Before writing SAFE, FIXED, WORKING, PLAYABLE, or equivalent user-facing language, ask:
+
+```text
+What exact selected-artifact evidence proves effective delivery?
+What gate could still prevent it?
+What runtime evidence contradicts it?
+What counter-proof closes the suspected failure?
+```
+
+If only implementation intent/configuration is proven, describe exactly that implementation fact instead of claiming delivered gameplay behavior.
+
 # 5. STRESS — attack lifecycle and cross-system failure paths
 
 ## Goal
