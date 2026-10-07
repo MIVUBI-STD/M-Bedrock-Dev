@@ -3,11 +3,11 @@
   "projectId": "the-gauntlet",
   "projectName": "The Gauntlet",
   "taskClass": "DIAGNOSE",
-  "revision": 3,
+  "revision": 4,
   "artifact": {
-    "artifactId": "drive:1OFlUPQkRFK0qqtI-Pl3EUEMx2irAYeEJ",
-    "artifactFingerprint": "sha256:d53363c5e9e909e6c5c1e9ffde37354b2c2444c8ed31708d93759a955acced95",
-    "version": "1.0.2"
+    "artifactId": "drive:1OacHDdktt1wfXPSAMXwaReF6MurA7HYy",
+    "artifactFingerprint": "sha256:262ff9c04540dd05bd76b02c6c07e7b0f393efd0df2139c15a82884b1f15a498",
+    "version": "1.0.3"
   },
   "publication": {
     "drive": {
@@ -16,10 +16,10 @@
         "label": "Minigame - The Gauntlet"
       },
       "currentWorld": {
-        "fileId": "1OFlUPQkRFK0qqtI-Pl3EUEMx2irAYeEJ",
-        "fileName": "The Gauntlet v1.0.2.mcworld",
-        "artifactFingerprint": "sha256:d53363c5e9e909e6c5c1e9ffde37354b2c2444c8ed31708d93759a955acced95",
-        "version": "1.0.2"
+        "fileId": "1OacHDdktt1wfXPSAMXwaReF6MurA7HYy",
+        "fileName": "The Gauntlet v1.0.3.mcworld",
+        "artifactFingerprint": "sha256:262ff9c04540dd05bd76b02c6c07e7b0f393efd0df2139c15a82884b1f15a498",
+        "version": "1.0.3"
       }
     }
   }
