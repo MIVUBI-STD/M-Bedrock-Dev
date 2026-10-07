@@ -11,6 +11,7 @@ mod guest;
 mod journal;
 mod lifecycle_admission;
 mod minecraft_runtime;
+mod operation_lock;
 mod paths;
 mod persistence;
 mod policy;
