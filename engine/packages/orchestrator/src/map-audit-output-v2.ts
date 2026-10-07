@@ -681,7 +681,7 @@ export function projectMapAuditOutputV2(input: {
       input.issueLanes.BUG.map((finding) => projectFinding(finding, input.reasoningByCausalLinkId)),
     designMismatches:
       input.issueLanes.DESIGN_MISMATCH.map(
-        projectFinding,
+        (finding) => projectFinding(finding, input.reasoningByCausalLinkId),
       ),
     auditObligations:
       [...(input.auditObligations ?? [])],
