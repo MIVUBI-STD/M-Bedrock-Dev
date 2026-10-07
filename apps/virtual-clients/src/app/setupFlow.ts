@@ -77,7 +77,7 @@ const flows: Record<SetupAction, SetupExperience> = {
     description: "The prepared environment is interrupted or no longer matches Minecraft Education on this PC. Reusing it would be unsafe.",
     primaryLabel: "Environment rebuilt",
     steps: [
-      "Replace the existing prepared Base with a clean Base for the current Minecraft Education version.",
+      "Replace the existing prepared environment with a clean one for the current Minecraft Education version.",
       "Repeat environment preparation and finalization.",
       "Return here after the new Base is fully stopped.",
     ],
@@ -105,7 +105,7 @@ const flows: Record<SetupAction, SetupExperience> = {
     description: "Each virtual client must finish Windows first boot before Virtual Clients can confirm that all client identities are unique.",
     primaryLabel: "Open clients",
     steps: [
-      "Use Start first-time setup on each virtual client; its VMware window opens for Windows setup.",
+      "Use Start first-time setup on each virtual client; its client window opens for Windows setup.",
       "Complete Windows first-run setup in each client if Windows asks.",
       "Inside each client, double-click Enable Virtual Clients Launcher on the Windows desktop once.",
       "Keep all three clients running together, then use Check clients after Windows setup completes.",
