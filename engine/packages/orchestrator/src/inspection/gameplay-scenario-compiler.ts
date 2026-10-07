@@ -136,6 +136,28 @@ function impactPathFrom(
   return [];
 }
 
+function impactPathEvidenceIds(
+  path: readonly string[],
+  intent: GameplayIntentModel,
+): readonly string[] {
+  if (path.length < 2) return [];
+  const evidence: string[] = [];
+  for (let index = 0; index < path.length - 1; index += 1) {
+    const from = path[index]!;
+    const to = path[index + 1]!;
+    const edge = intent.edges.find(
+      (item) =>
+        item.from === from &&
+        item.to === to &&
+        item.status !== "hypothesis" &&
+        item.evidenceIds.length > 0,
+    );
+    if (edge === undefined) return [];
+    evidence.push(...edge.evidenceIds);
+  }
+  return [...new Set(evidence)].sort();
+}
+
 function stageForNode(
   node: GameplayIntentNode,
 ): string {
@@ -2342,6 +2364,10 @@ export function compileGameplayScenarioGraph(
           allowed,
           input.intent,
         ),
+        impactPathEvidenceIds: impactPathEvidenceIds(
+          impactPathFrom(edge.to, allowed, input.intent),
+          input.intent,
+        ),
         intentEdgeKind: edge.kind,
         status: edgeStatus(edge),
         reason:
@@ -2452,6 +2478,14 @@ export function compileGameplayScenarioGraph(
         impactPathComponentIds: impactPathFrom(
           anchorId,
           new Set(scenario.componentIds),
+          input.intent,
+        ),
+        impactPathEvidenceIds: impactPathEvidenceIds(
+          impactPathFrom(
+            anchorId,
+            new Set(scenario.componentIds),
+            input.intent,
+          ),
           input.intent,
         ),
         ...runtimeEdgeState(
