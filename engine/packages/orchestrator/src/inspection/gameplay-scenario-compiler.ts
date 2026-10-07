@@ -752,6 +752,7 @@ function runtimeEdgeState(
       ) {
         return {
           status: "RUNTIME_BLOCKED",
+          runtimeNativeReason: "client-reconciliation" as const,
           reason:
             "Server-side cancellation of a client-predicted world mutation is source-proven, but actual client visual reconciliation is native runtime behavior. One narrow multi-client comparison is required; broad manual playthrough is not.",
         };
