@@ -140,55 +140,134 @@ function dimensionEvidenceForRuntimeComponent(
   componentId: string,
   world: GameplayWorldModel,
 ): GameplayCausalLink["dimensionEvidence"] {
-  const evidence = (id: string): readonly string[] => [id];
+  const fallback = (id: string): readonly string[] => [id];
+  const ids = (values: readonly string[], id: string) =>
+    values.length > 0 ? [...new Set(values)].sort() : fallback(id);
+
   switch (componentId) {
-    case "runtime:arena":
+    case "runtime:arena": {
+      const ownerIds = world.arenas.globalState.assessments.map(
+        (item) =>
+          "arena-global:" +
+          item.mutationId +
+          ":" +
+          item.status,
+      );
       return {
-        owner: evidence("runtime:arena"),
-        generation: evidence("runtime:arena"),
+        owner: ids(ownerIds, "runtime:arena"),
+        generation: fallback("runtime:arena"),
       };
-    case "runtime:arena-cleanup":
+    }
+    case "runtime:arena-cleanup": {
+      const cleanupIds = world.arenas.cleanup.lifecycle.assessments.map(
+        (item) =>
+          "arena-cleanup:" +
+          item.scriptId +
+          ":" +
+          item.tableName +
+          ":" +
+          item.status,
+      );
       return {
-        cleanup: evidence("runtime:arena-cleanup"),
-        owner: evidence("runtime:arena-cleanup"),
+        cleanup: ids(cleanupIds, "runtime:arena-cleanup"),
+        owner: ids(cleanupIds, "runtime:arena-cleanup"),
       };
-    case "runtime:persistence":
+    }
+    case "runtime:persistence": {
+      const propertyIds = (world.persistence?.propertiesDetail ?? []).map(
+        (item) =>
+          "persistence:" +
+          item.scriptId +
+          ":" +
+          item.propertyId +
+          ":" +
+          item.scope +
+          ":" +
+          item.lifetime,
+      );
       return {
-        owner: evidence("runtime:persistence"),
-        generation: evidence("runtime:persistence"),
-        cleanup: evidence("runtime:persistence"),
+        owner: ids(propertyIds, "runtime:persistence"),
+        generation: ids(propertyIds, "runtime:persistence"),
+        cleanup: ids(propertyIds, "runtime:persistence"),
       };
-    case "runtime:inventory":
+    }
+    case "runtime:inventory": {
+      const inventoryIds = world.inventory.assessments.map(
+        (item) =>
+          "inventory:" +
+          item.scriptId +
+          ":" +
+          item.executionRegion +
+          ":" +
+          item.status,
+      );
       return {
-        owner: evidence("runtime:inventory"),
-        cleanup: evidence("runtime:inventory"),
+        owner: ids(inventoryIds, "runtime:inventory"),
+        cleanup: ids(inventoryIds, "runtime:inventory"),
       };
+    }
     case "runtime:structures":
       return {
-        cleanup: evidence("runtime:structures"),
-        geometry: evidence("runtime:structures"),
+        cleanup: fallback("runtime:structures"),
+        geometry: fallback("runtime:structures"),
       };
     case "runtime:spatial":
       return {
-        geometry: evidence("runtime:spatial"),
+        geometry: fallback("runtime:spatial"),
       };
-    case "runtime:arena-replica-integrity":
+    case "runtime:arena-replica-integrity": {
+      const replicaIds = world.arenas.replicaProof.flatMap(
+        (item) =>
+          item.evidenceIds.length > 0
+            ? item.evidenceIds
+            : [
+                "arena-replica:" +
+                item.arenaId +
+                ":" +
+                item.status,
+              ],
+      );
       return {
-        geometry: evidence("runtime:arena-replica-integrity"),
+        geometry: ids(
+          replicaIds,
+          "runtime:arena-replica-integrity",
+        ),
       };
-    case "runtime:player-capability":
+    }
+    case "runtime:player-capability": {
+      const capabilityIds = world.capabilityExposure.exposures.flatMap(
+        (item) =>
+          item.evidenceIds.length > 0
+            ? item.evidenceIds
+            : [
+                "capability:" +
+                item.capabilityId +
+                ":" +
+                item.status,
+              ],
+      );
       return {
-        capability: evidence("runtime:player-capability"),
-        activation: evidence("runtime:player-capability"),
+        capability: ids(
+          capabilityIds,
+          "runtime:player-capability",
+        ),
+        activation: ids(
+          capabilityIds,
+          "runtime:player-capability",
+        ),
       };
+    }
     case "runtime:world-rules":
       return {
-        "world-rule": evidence("runtime:environment"),
+        "world-rule": fallback("runtime:environment"),
       };
     case "runtime:client-reconciliation":
       return world.clientReconciliation.predictedMutationCancellations > 0
         ? {}
-        : { representation: evidence("runtime:client-reconciliation") };
+        : {
+            representation:
+              fallback("runtime:client-reconciliation"),
+          };
     default:
       return {};
   }
