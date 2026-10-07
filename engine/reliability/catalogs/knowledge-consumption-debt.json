@@ -609,24 +609,6 @@
       "nextEvidenceOwner": "runtime-probe"
     },
     {
-      "knowledgeId": "permissions.command-level-separate",
-      "status": "static-capability-gap",
-      "reason": "Custom command permission-level eligibility is not structurally modeled.",
-      "nextEvidenceOwner": "permission-profile-analysis"
-    },
-    {
-      "knowledgeId": "permissions.player-level-semantics",
-      "status": "static-capability-gap",
-      "reason": "Visitor/Member/Operator/Custom capability matrix is not structurally modeled by current capability analysis.",
-      "nextEvidenceOwner": "permission-profile-analysis"
-    },
-    {
-      "knowledgeId": "permissions.relation-command-level-gates-dev-command",
-      "status": "static-capability-gap",
-      "reason": "Dev-command gating needs explicit command permission profile analysis.",
-      "nextEvidenceOwner": "permission-profile-analysis"
-    },
-    {
       "knowledgeId": "persistence.watchdog-can-terminate-runtime",
       "status": "runtime-required",
       "reason": "Watchdog termination is a runtime failure mode.",

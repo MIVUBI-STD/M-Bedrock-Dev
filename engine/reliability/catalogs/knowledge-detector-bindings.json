@@ -3123,6 +3123,42 @@
       ]
     },
     {
+      "knowledgeId": "permissions.command-level-separate",
+      "consumer": "permission-profile-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/permission-profile-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/permission-profile-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "permissions.player-level-semantics",
+      "consumer": "permission-profile-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/permission-profile-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/permission-profile-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "permissions.relation-command-level-gates-dev-command",
+      "consumer": "permission-profile-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/permission-profile-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/player-capability-surface-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/permission-profile-analysis.test.ts",
+        "engine/packages/orchestrator/test/inspection/player-capability-surface-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "permissions.command-permission-level-runtime",
       "consumer": "player-capability-surface-analysis",
       "analyzerPaths": [
