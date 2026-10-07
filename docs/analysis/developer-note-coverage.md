@@ -309,10 +309,10 @@ A map's Developer Note pass closes only when every applicable category is accoun
 Current Developer Note state is persisted separately from Bug Report V2 at:
 
 ```text
-workspace/developer-notes.json
+workspace/projects/<project-id>/report/developer-notes.json
 ```
 
-Do not store Developer Notes inside `workspace/reports/` or use them as gameplay issue authority.
+For multi-level projects, use `workspace/projects/<project-id>/levels/<level>/report/developer-notes.json`. Developer Notes remain separate from gameplay issue authority even though both live under the map/level report domain.
 
 ## Report Contract
 
