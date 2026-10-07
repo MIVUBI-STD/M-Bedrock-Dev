@@ -352,6 +352,38 @@ function overlapping(
   return right.some((item) => set.has(item));
 }
 
+function dimensionScopeClosed(
+  graph: GameplayScenarioGraph,
+  contradicted: GameplayCausalLink,
+  dimension: CounterProofSearchDimension,
+): boolean {
+  const relevant = graph.causalLinks.filter(
+    (candidate) =>
+      candidate.scenarioId === contradicted.scenarioId &&
+      (
+        candidate.id === contradicted.id ||
+        overlapping(candidate.subjectIds, contradicted.subjectIds) ||
+        overlapping(candidate.componentIds, contradicted.componentIds)
+      ),
+  );
+  if (relevant.length === 0) return false;
+  return relevant.every(
+    (candidate) =>
+      candidate.evidenceIds.length > 0 &&
+      candidate.status !== "DETECTION_GAP" &&
+      candidate.status !== "RUNTIME_BLOCKED",
+  ) && (
+    dimension === "guard" ||
+    dimension === "scope" ||
+    dimension === "exclusion" ||
+    dimensionEvidenceFor(
+      graph,
+      contradicted,
+      dimension,
+    ).length > 0
+  );
+}
+
 function dimensionEvidenceFor(
   graph: GameplayScenarioGraph,
   contradicted: GameplayCausalLink,
@@ -470,7 +502,12 @@ function automaticCounterProofSearch(
             dimensionEvidence.length > 0
               ? dimensionEvidence
               : evidenceIds,
-          exhaustiveWithinScope: true,
+          exhaustiveWithinScope:
+            dimensionScopeClosed(
+              graph,
+              contradicted,
+              dimension,
+            ),
         };
       }),
     scopeIds,
