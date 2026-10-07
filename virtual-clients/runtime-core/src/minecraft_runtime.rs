@@ -1,5 +1,8 @@
 use std::{io, time::Duration};
 
+const GUEST_STATUS_TIMEOUT: Duration = Duration::from_secs(2);
+const MINECRAFT_LAUNCH_REQUEST_TIMEOUT: Duration = Duration::from_secs(40);
+
 use crate::{
     client::ClientId,
     guest::{
@@ -23,7 +26,7 @@ pub fn ensure_running(provider: &dyn Provider, client: ClientId) -> io::Result<(
             format!("{} Guest Agent token is missing", client.as_str()),
         )
     })?;
-    let status = query_guest_status(&ip, &token, Duration::from_secs(2))?;
+    let status = query_guest_status(&ip, &token, GUEST_STATUS_TIMEOUT)?;
     if !guest_agent_launch_compatible(status.protocol_version) {
         return Err(io::Error::new(
             io::ErrorKind::Unsupported,
@@ -44,5 +47,5 @@ pub fn ensure_running(provider: &dyn Provider, client: ClientId) -> io::Result<(
             ),
         ));
     }
-    launch_guest_minecraft(&ip, &token, Duration::from_secs(35)).map(|_| ())
+    launch_guest_minecraft(&ip, &token, MINECRAFT_LAUNCH_REQUEST_TIMEOUT).map(|_| ())
 }
