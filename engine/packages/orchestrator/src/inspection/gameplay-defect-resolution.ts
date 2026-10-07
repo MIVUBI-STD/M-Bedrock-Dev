@@ -61,7 +61,7 @@ export interface FamilyProofReceipt {
 export interface GameplayDefectResolution {
   readonly causalLinkId: string;
   readonly scenarioId?: string;
-  readonly knowledgeRequirementId?: string;
+  readonly knowledgeRequirementIds?: readonly string[];
   readonly subjectIds?: readonly string[];
   readonly componentIds?: readonly string[];
   readonly evidenceIds?: readonly string[];
@@ -572,11 +572,11 @@ export function assessGameplayDefectResolutionGate(
     return {
       causalLinkId: link.id,
       scenarioId: link.scenarioId,
-      ...(link.knowledgeRequirementId === undefined
+      ...(link.knowledgeRequirementIds.length === 0
         ? {}
         : {
-            knowledgeRequirementId:
-              link.knowledgeRequirementId,
+            knowledgeRequirementIds:
+              [...link.knowledgeRequirementIds],
           }),
       subjectIds: [...link.subjectIds],
       componentIds: [...link.componentIds],
