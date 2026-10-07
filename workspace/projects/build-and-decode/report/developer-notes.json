@@ -78,6 +78,21 @@
         "artifactVersion": "1.1.3"
       },
       "severity": null
+    },
+    {
+      "id": "DEV-BAD-PLAYER-DATA-ORPHAN",
+      "type": "DEV_NOTE",
+      "title": "Player Initialization Properties Are Written but Never Consumed",
+      "problem": "WelcomeManager writes one world dynamic property named player_<scoreboardParticipantId> containing player name/id data for initialized players. The v1.1.3 production scripts contain no reader or cleanup path for those properties, so the records persist as orphaned per-player state.",
+      "action": "Remove the unused player_<participantId> persistence if it has no release purpose, or give it one explicit reader and lifecycle owner with bounded cleanup. Do not keep write-only per-player world properties indefinitely.",
+      "evidence": {
+        "source": [
+          "behavior_packs/Build_Decode_BP/scripts/modules/welcome/WelcomeManager.js"
+        ],
+        "finding": "savePlayerData() writes player_<participantId>. Full production-script search finds no getDynamicProperty/read path for that namespace and no deletion path.",
+        "artifactVersion": "1.1.3"
+      },
+      "severity": null
     }
   ]
 }
