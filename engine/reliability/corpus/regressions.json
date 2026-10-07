@@ -142,6 +142,69 @@
       "artifactFile": "Defense Challenge v1.1.1.mcworld"
     },
     {
+      "id": "reg_defense_challenge_1_1_1_bug_def_preload_inventory",
+      "status": "ready",
+      "sourceRef": "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json",
+      "artifactFile": "Defense Challenge v1.1.1.mcworld",
+      "readiness": {
+        "minimizedFixture": "external-verified-artifact",
+        "artifactFingerprint": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-defense-v1-1-1-bug-def-preload-inventory.json",
+        "externalArtifact": {
+          "provider": "google-drive",
+          "fileId": "1Y7G96SRBgSkfhlpnm8xFV3VpmzluvWh-",
+          "sha256": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee"
+        }
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_defense_challenge_1_1_1_bug_def_respawn_reconnect",
+      "status": "ready",
+      "sourceRef": "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json",
+      "artifactFile": "Defense Challenge v1.1.1.mcworld",
+      "readiness": {
+        "minimizedFixture": "external-verified-artifact",
+        "artifactFingerprint": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-defense-v1-1-1-bug-def-respawn-reconnect.json",
+        "externalArtifact": {
+          "provider": "google-drive",
+          "fileId": "1Y7G96SRBgSkfhlpnm8xFV3VpmzluvWh-",
+          "sha256": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee"
+        }
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_defense_challenge_1_1_1_bug_def_wave_retry",
+      "status": "ready",
+      "sourceRef": "workspace/reports/Defense-Challenge-v1.1.1-BugReport.json",
+      "artifactFile": "Defense Challenge v1.1.1.mcworld",
+      "readiness": {
+        "minimizedFixture": "external-verified-artifact",
+        "artifactFingerprint": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee",
+        "frozenExpectation": "engine/reliability/corpus/expectations/reg-defense-v1-1-1-bug-def-wave-retry.json",
+        "externalArtifact": {
+          "provider": "google-drive",
+          "fileId": "1Y7G96SRBgSkfhlpnm8xFV3VpmzluvWh-",
+          "sha256": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee"
+        }
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
       "id": "reg_defense_cutscene_reconnect_loadout_loss",
       "status": "candidate",
       "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_cutscene_reconnect_loadout_loss",
