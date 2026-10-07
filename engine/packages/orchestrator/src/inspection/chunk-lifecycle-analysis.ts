@@ -1,4 +1,4 @@
-import type {
+import ts from "typescript";\nimport type {
   ParsedScriptFile,
   ScriptChunkLifecycleEvidence,
 } from "../../../../analyzers/scripts/src/index.js";
