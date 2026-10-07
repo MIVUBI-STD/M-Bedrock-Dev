@@ -100,7 +100,6 @@ const doctor = shape({
   platform: text, provider: nullable(text), logicalCpus: integer,
   totalMemoryGb: number, availableMemoryGb: number, maxRecommendedVirtualClients: integer,
   baseVmPresent: boolean, baseVmStopped: nullable(boolean), baseState: nullable(baseState),
-  readyForProvisioning: boolean,
   nextSetupAction: oneOf(
     "RUNTIME_DATA_INCOMPATIBLE", "INSTALL_PROVIDER", "INSTALL_NATIVE_MINECRAFT",
     "PREPARE_BASE", "REGISTER_BASE", "FINALIZE_BASE", "REBUILD_BASE",
