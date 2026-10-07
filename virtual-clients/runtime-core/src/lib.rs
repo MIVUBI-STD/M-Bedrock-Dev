@@ -48,7 +48,7 @@ pub use policy::{
     engine_policy, EnginePolicy, MAX_VIRTUAL_CLIENTS, READY_SNAPSHOT_NAME, VIRTUAL_VCPUS,
 };
 pub use profile::{
-    BaseProfile, BaseProfileSource, BaseState, MinecraftInstallType, MinecraftProfile,
+    BaseProfile, BaseState, MinecraftInstallType, MinecraftProfile,
     ProfileParity, ProfileStatus,
 };
 pub use resources::{HostPressure, PressureLevel, VIRTUAL_MEMORY_LIMIT_MB};
