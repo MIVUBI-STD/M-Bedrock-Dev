@@ -81,6 +81,27 @@ derived output wrong       → upstream canonical owner
 
 CI failure is evidence, not permission to edit the easiest file.
 
+## 4.1 ChatGPT no-local-PC invariant
+
+For ChatGPT-owned repository and selected-artifact work, do not hand execution back to the user's local PC merely because the GitHub connector does not expose clone/archive or shell execution.
+
+Use the strongest ChatGPT-accessible route in this order:
+
+```text
+authenticated GitHub source
+→ authenticated artifact source
+→ ChatGPT execution environment/materialization when executable artifact proof is required
+→ exact bounded result
+```
+
+Do not instruct the user to clone the repository, run npm/Node commands, execute the audit CLI, or provide a local checkout as the default continuation of a REMOTE_GITHUB task.
+
+A user-local action is allowed only when:
+- the user explicitly chooses a LOCAL_* context; or
+- the remaining claim inherently requires software/hardware that ChatGPT cannot execute, such as interactive Minecraft gameplay.
+
+Connector inconvenience is not proof that a user-local PC is required.
+
 ## 5. GitHub-first partition
 
 Exhaust independent GitHub-verifiable work before handoff.
