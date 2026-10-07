@@ -11,7 +11,10 @@ const FORBIDDEN_VISIBLE_TERMS = [
 
 export function trackerIssueIds(document: BugTrackerDocument): string[] {
   return document.games.flatMap((game) =>
-    game.levels.flatMap((level) => level.issues.map((issue) => issue.id)),
+    game.levels.flatMap((level) => [
+      ...level.issues.map((issue) => issue.id),
+      ...level.devNotes.map((note) => note.id),
+    ]),
   );
 }
 
@@ -32,6 +35,17 @@ export function validateBugTrackerDocument(document: BugTrackerDocument): void {
       if (!source.artifactFingerprint.trim()) errors.push(game.name + ": artifact fingerprint is required.");
       if (!["http://", "https://"].some((prefix) => source.driveFolder.startsWith(prefix))) errors.push(game.name + ": invalid Drive Folder URL.");
       if (!["http://", "https://"].some((prefix) => source.worldFile.startsWith(prefix))) errors.push(game.name + ": invalid World File URL.");
+      for (const note of level.devNotes) {
+        if (note.type !== "DEV_NOTE") errors.push(note.id + ": invalid Developer Note type.");
+        if (note.severity !== null) errors.push(note.id + ": Developer Note severity must be null.");
+        if (!note.id.trim() || !note.title.trim() || !note.problem.trim() || !note.action.trim()) {
+          errors.push(game.name + ": incomplete Developer Note.");
+        }
+        const visible = [note.title, note.problem, note.action].join(" ").toLowerCase();
+        for (const term of FORBIDDEN_VISIBLE_TERMS) {
+          if (visible.includes(term)) errors.push(note.id + ": forbidden internal UI term: " + term);
+        }
+      }
       for (const issue of level.issues) {
         if (!["BUG", "DESIGN_MISMATCH"].includes(issue.type)) errors.push(issue.id + ": invalid issue type.");
         if (!["BLOCKER", "MAJOR", "MINOR"].includes(issue.severity)) errors.push(issue.id + ": invalid severity.");
