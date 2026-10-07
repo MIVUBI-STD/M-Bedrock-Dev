@@ -681,6 +681,7 @@ function assembleSelectedMapAuditRun(
         ...(runtimeProbeTranscript
           ? { runtimeProbeTranscript }
           : {}),
+        expectedArtifactId: identity.artifactId,
       });
       return receipt.status === "ADMITTED" && receipt.reasoning
         ? [[finding.causalLinkId, receipt.reasoning] as const]
