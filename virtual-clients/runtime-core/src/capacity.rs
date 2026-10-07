@@ -1,4 +1,26 @@
 use crate::client::ClientId;
+use sysinfo::System;
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(crate) struct HostCapacity {
+    pub logical_cpus: usize,
+    pub total_memory_gb: f64,
+    pub recommended_virtual_clients: usize,
+}
+
+pub(crate) fn current_host_capacity() -> HostCapacity {
+    let mut system = System::new();
+    system.refresh_memory();
+    system.refresh_cpu_list();
+    let logical_cpus = system.cpus().len();
+    let total_memory_gb = system.total_memory() as f64 / 1024.0 / 1024.0 / 1024.0;
+    HostCapacity {
+        logical_cpus,
+        total_memory_gb,
+        recommended_virtual_clients: recommended_virtual_clients(total_memory_gb, logical_cpus),
+    }
+}
+
 
 pub(crate) fn recommended_virtual_clients(total_memory_gb: f64, logical_cpus: usize) -> usize {
     recommended_by_memory(total_memory_gb)
