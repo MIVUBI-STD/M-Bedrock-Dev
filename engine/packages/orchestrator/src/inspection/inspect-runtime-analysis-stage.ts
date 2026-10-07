@@ -258,27 +258,6 @@ export function analyzeInspectionRuntimeState(
       input.scripts,
     );
 
-  const entityPopulation =
-    analyzeEntityPopulationSources(
-      input.parsedEntities.map(
-        (item) => item.parsed,
-      ),
-      parsedScriptModels,
-      {
-        naturalMobSpawning:
-          worldRuleAuthority
-            .naturalMobSpawning,
-        generationBoundRegistryAuthorities:
-          progressionActorAccounting
-            .generationBoundRegistryAuthorities,
-      },
-    );
-  diagnostics.push(
-    ...entityPopulationSourceDiagnostics(
-      entityPopulation,
-    ),
-  );
-
   const entityAiStack =
     input.entityAiStack;
   const routeNavigationEnvironment =
@@ -452,7 +431,26 @@ export function analyzeInspectionRuntimeState(
       progressionAdvanceEvidence,
       progressionOrdinalAdvanceEvidence,
       progressionIdempotencyEvidence,
-    );\n\n  const terminalIdempotencyEvidence =
+    );\n\n  const entityPopulation =
+    analyzeEntityPopulationSources(
+      input.parsedEntities.map(
+        (item) => item.parsed,
+      ),
+      parsedScriptModels,
+      {
+        naturalMobSpawning:
+          worldRuleAuthority
+            .naturalMobSpawning,
+        generationBoundRegistryAuthorities:
+          progressionActorAccounting
+            .generationBoundRegistryAuthorities,
+      },
+    );
+  diagnostics.push(
+    ...entityPopulationSourceDiagnostics(
+      entityPopulation,
+    ),
+  );\n\n  const terminalIdempotencyEvidence =
     input.parsedScripts.flatMap((item) =>
       item.text === undefined
         ? []
