@@ -28,6 +28,7 @@ export interface CounterProofDimensionReceipt {
   readonly dimension: CounterProofSearchDimension;
   readonly scopeIds: readonly string[];
   readonly evidenceIds: readonly string[];
+  readonly exhaustiveWithinScope: boolean;
 }
 
 export interface CounterProofSearchReceipt {
@@ -409,6 +410,7 @@ function automaticCounterProofSearch(
         dimension,
         scopeIds,
         evidenceIds,
+        exhaustiveWithinScope: true,
       })),
     scopeIds,
     evidenceIds,
