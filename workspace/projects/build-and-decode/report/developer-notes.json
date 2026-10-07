@@ -93,6 +93,22 @@
         "artifactVersion": "1.1.3"
       },
       "severity": null
+    },
+    {
+      "id": "DEV-BAD-DUPLICATE-GAME-CONFIG",
+      "type": "DEV_NOTE",
+      "title": "Legacy Capacity and Timing Config Is Still Shipped but Unused",
+      "problem": "GuessTheBuildData still declares minPlayers, maxPlayers, roundStartCountdown, and lobby.waitingTime, while v1.1.3 runtime admission and timing use ArenaConfig.RULES. Full production-script search finds no consumer for those GameData fields.",
+      "action": "Remove the unused GameData capacity/timing declarations or route the active gameplay owner through one canonical configuration source. Keep one editable authority for each capacity/timing concept.",
+      "evidence": {
+        "source": [
+          "behavior_packs/Build_Decode_BP/scripts/modules/guessthebuild/GuessTheBuildData.js",
+          "behavior_packs/Build_Decode_BP/scripts/modules/arena/ArenaConfig.js"
+        ],
+        "finding": "GameData.minPlayers/maxPlayers/roundStartCountdown/lobby.waitingTime have no production consumers; RULES.minPlayers/maxPlayers and active arena countdown owners are used instead.",
+        "artifactVersion": "1.1.3"
+      },
+      "severity": null
     }
   ]
 }
