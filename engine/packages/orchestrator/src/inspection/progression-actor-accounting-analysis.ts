@@ -1,3 +1,4 @@
+import { deriveProgressionActiveStateValues } from "../../../../analyzers/scripts/src/index.js";
 import type {
   CrossFileCallEdge,
   ParsedScriptFile,
@@ -6,7 +7,6 @@ import type {
   ScriptProgressionIdempotencyEvidence,
   ScriptProgressionOrdinalAdvanceEvidence,
   ScriptProgressionStateTransitionEvidence,
-  deriveProgressionActiveStateValues,
 } from "../../../../analyzers/scripts/src/index.js";
 import {
   analyzeEntityTransitionReachability,
