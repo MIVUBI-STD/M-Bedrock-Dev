@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "projectId": "fall-of-the-pillager-l2",
+  "projectName": "Fall of the Pillager Level 2",
+  "taskClass": "DIAGNOSE",
+  "revision": 1,
+  "artifact": {
+    "artifactId": "drive:1m9JnjTHqUP39OWQVpmWGpmetUTx6Vqaa",
+    "artifactFingerprint": "sha256:9b66dab3550d45a2e1b16aebaaabca85676e969179e2a2f3f557f973abe43889",
+    "version": "2.2.2"
+  },
+  "work": {},
+  "knowledge": {},
+  "publication": {
+    "drive": {
+      "schemaVersion": 1,
+      "projectId": "fall-of-the-pillager-l2",
+      "mapFolder": {
+        "folderId": "1I_xw7AuYuBW-CKE98n3DKcZzPfUDo-VG",
+        "label": "PvP - Fall of the Pillager / Level 2"
+      },
+      "currentWorld": {
+        "fileId": "1m9JnjTHqUP39OWQVpmWGpmetUTx6Vqaa",
+        "fileName": "Fall of the Pillager Level 2 v2.2.2.mcworld",
+        "artifactFingerprint": "sha256:9b66dab3550d45a2e1b16aebaaabca85676e969179e2a2f3f557f973abe43889",
+        "version": "2.2.2"
+      }
+    }
+  }
+}
