@@ -5,10 +5,11 @@ This directory is the deterministic bridge between canonical Bug Report data and
 ## Authority
 
 ```text
-Bug Report V2      → issue facts
-Project Registry   → artifact/version/Drive binding
-Golden UI          → presentation
-Tester Workspace   → local notes/images/fixed state only
+Bug Report V2        → approved BUG / DESIGN_MISMATCH facts
+Developer Notes       → canonical DEV_NOTE facts
+Project Registry      → artifact/version/Drive binding
+Golden UI             → presentation
+Tester Workspace      → local comments/images/fixed state only
 ```
 
 No layer may duplicate another layer's authority.
@@ -24,7 +25,9 @@ DEV NOTE is a parallel reference lane, not an issue type, not a severity, and no
 
 ```text
 BugReportClientDocument
++ workspace/developer-notes.json
 + workspace/project-registry.json
+→ authority validation
 → projectClientDocumentToTracker()
 → BugTrackerDocument
 → validateBugTrackerDocument()
@@ -34,7 +37,7 @@ BugReportClientDocument
 → Bug-Tracker-Report.html
 ```
 
-The output JSON and HTML must contain the same issue IDs.
+The output JSON and HTML must contain exactly the same canonical IDs. Missing, duplicated, or renderer-invented IDs fail export.
 
 ## Files
 
@@ -55,7 +58,9 @@ Generation fails on:
 - missing reproduction;
 - missing Observed/Expected;
 - forbidden internal/prompt language in tester-facing fields;
-- HTML/JSON issue-ID mismatch.
+- malformed or duplicate Developer Note authority records;
+- inconsistent Project Registry artifact/current-world binding;
+- HTML/JSON canonical-ID mismatch in either direction.
 
 ## Deliberate boundaries
 
