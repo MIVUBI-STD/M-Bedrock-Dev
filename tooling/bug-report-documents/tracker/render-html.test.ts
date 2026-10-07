@@ -20,7 +20,15 @@ const fixture: BugTrackerDocument = {
         worldFile: "https://drive.google.com/file/d/file/view",
         worldFilename: "Golden Fixture v1.0.0.mcworld",
       },
-      devNotes: [],
+      devNotes: [{
+        id: "DEV-GOLDEN-001",
+        type: "DEV_NOTE",
+        title: "Fixture developer note",
+        problem: "The fixture preserves the Developer Notes lane.",
+        action: "Keep the Developer Notes lane after gameplay findings.",
+        evidence: { source: "fixture" },
+        severity: null,
+      }],
       issues: [{
         id: "BUG-GOLDEN-001",
         type: "BUG",
@@ -42,10 +50,11 @@ describe("Golden Bug Tracker renderer", () => {
     validateBugTrackerDocument(fixture);
     const html = renderBugTrackerHtml(fixture);
     expect(html).toContain("Bug Tracker Report");
-    expect(html).toContain(">Maps<");
+    expect(html).toContain("MAP REPORT");
+    expect(html).not.toContain(">Maps<");
+    expect(html).not.toContain("Expand Map ↓");
     expect(html).toContain("Needs Validation");
-    expect(html).toContain("Expand Map ↓");
-    expect(html).toContain("Collapse Map ↑");
+    expect(html).toContain("DEVELOPER NOTES");
     expect(html).toContain("LEVEL 1");
     expect(html).toContain("Drive Folder ↗");
     expect(html).toContain("World File ↗");
@@ -60,12 +69,36 @@ describe("Golden Bug Tracker renderer", () => {
     expect(html).toContain("✓ PASSED");
     expect(html).toContain("✕ FAILED");
     expect(html).toContain("Tester Notes");
+    expect(html).toContain("Save as HTML");
+    expect(html).toContain("Save JSON");
+    expect(html).not.toContain("Export");
     expect(html).toContain("Evidence · Optional");
     expect(html).toContain("Optional notes");
     expect(html.indexOf("TEST RESULT")).toBeLessThan(html.indexOf("Technical Details ↓"));
     expect(html).not.toContain("Mark fixed");
     expect(html).toContain('data-issue-id="BUG-GOLDEN-001"');
-    expect(html).not.toContain("<details class=\"map\" open");
+    expect(html).not.toContain("<details class=\"map\"");
+    expect(html.indexOf("BUGS")).toBeLessThan(html.indexOf("DEVELOPER NOTES"));
+  });
+
+  it("renders a combined briefing with column-major map navigation", () => {
+    const second = {
+      ...fixture.games[0]!,
+      name: "Second Fixture",
+      levels: fixture.games[0]!.levels.map((level) => ({
+        ...level,
+        source: { ...level.source, projectId: "second-fixture", artifactId: "drive:second" },
+        issues: level.issues.map((issue) => ({ ...issue, id: "BUG-SECOND-001" })),
+        devNotes: level.devNotes.map((note) => ({ ...note, id: "DEV-SECOND-001" })),
+      })),
+    };
+    const combined: BugTrackerDocument = { ...fixture, games: [fixture.games[0]!, second] };
+    const html = renderBugTrackerHtml(combined);
+    expect(html).toContain(">Maps<");
+    expect(html).toContain("Expand Map ↓");
+    expect(html).toContain("grid-auto-flow:column");
+    expect(html).toContain("data-map-link=\"1\"");
+    expect(html).toContain("data-map-link=\"2\"");
   });
 
   it("preserves unknown information as absent UI instead of inventing content", () => {
