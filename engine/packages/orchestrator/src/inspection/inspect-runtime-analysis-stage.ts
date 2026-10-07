@@ -258,6 +258,28 @@ export function analyzeInspectionRuntimeState(
       input.scripts,
     );
 
+  const progressionActorAccounting =
+    analyzeProgressionActorAccounting(
+      input.parsedScripts.map((item) => ({
+        parsed: item.parsed,
+        ...(item.text === undefined
+          ? {}
+          : { text: item.text }),
+      })),
+      crossFileCalls,
+      input.parsedEntities.map(
+        (item) => item.parsed,
+      ),
+      arenaLifecycle,
+      entityEventEvidence,
+      effectiveProgressionActiveEventEvidence,
+      effectiveProgressionActiveCallEvidence,
+      progressionStateTransitionEvidence,
+      progressionAdvanceEvidence,
+      progressionOrdinalAdvanceEvidence,
+      progressionIdempotencyEvidence,
+    );
+
   const entityPopulation =
     analyzeEntityPopulationSources(
       input.parsedEntities.map(
@@ -500,27 +522,6 @@ export function analyzeInspectionRuntimeState(
   const combatLifecycle =
     analyzeCombatLifecycle(
       scriptsFor("combat-lifecycle"),
-    );
-  const progressionActorAccounting =
-    analyzeProgressionActorAccounting(
-      input.parsedScripts.map((item) => ({
-        parsed: item.parsed,
-        ...(item.text === undefined
-          ? {}
-          : { text: item.text }),
-      })),
-      crossFileCalls,
-      input.parsedEntities.map(
-        (item) => item.parsed,
-      ),
-      arenaLifecycle,
-      entityEventEvidence,
-      effectiveProgressionActiveEventEvidence,
-      effectiveProgressionActiveCallEvidence,
-      progressionStateTransitionEvidence,
-      progressionAdvanceEvidence,
-      progressionOrdinalAdvanceEvidence,
-      progressionIdempotencyEvidence,
     );
   const chunkLifecycle =
     analyzeChunkLifecycle(
