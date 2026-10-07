@@ -51,7 +51,6 @@ pub use profile::{
     BaseProfile, BaseState, MinecraftInstallType, MinecraftProfile,
     ProfileParity, ProfileStatus,
 };
-pub use resources::{HostPressure, StartDecision, VIRTUAL_MEMORY_LIMIT_MB};
 pub use runtime::{ResourceView, RuntimeStatus, VirtualClients};
 pub use schema::{SchemaState, SchemaStatus, CURRENT_RUNTIME_SCHEMA};
 pub use support::{EngineSnapshot, SupportBundleResult};
