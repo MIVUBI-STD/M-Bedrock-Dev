@@ -24,7 +24,7 @@
         "Enter or inspect Manhunt Arena 1 and Arena 6.",
         "Compare the corresponding far-side arena region using the authored Arena 6 translation.",
         "Move through the area corresponding roughly to the canonical Z -340 through -220 region.",
-        "Confirm substantial geometry present in the canonical arena is missing in Arena 6."
+        "Check whether substantial geometry present in the canonical arena is missing in Arena 6."
       ],
       "aiAnalysis": "Selected source config authors Arena 6 as the sixth translated replica, but native LevelDB voxel comparison shows 6,207 sampled mismatches, dominated by canonical stone/wool/tuff/concrete blocks becoming air. Other replicas remain near-zero mismatch.",
       "relevantCode": [
