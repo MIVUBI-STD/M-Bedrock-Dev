@@ -188,7 +188,7 @@ fn collect_lifecycle_facts(
     let saved_vm_identity_matches = client_profile.as_ref().map_or(true, |profile| {
         profile.saved_vm_identity_matches(current_vm.as_deref())
     });
-    let identity_verified = client_profile.as_ref().is_some_and(|profile| {
+    let identity_provenance_bound = client_profile.as_ref().is_some_and(|profile| {
         profile.identity_provenance_matches(current_vm.as_deref())
     });
     let client_compatible = client_lineage_parity(
@@ -217,7 +217,7 @@ fn collect_lifecycle_facts(
         vm_identity_duplicate: vm_identity == IdentityState::Duplicate,
         vm_identity_unique: vm_identity == IdentityState::Unique,
         fresh_client_profile,
-        identity_verified,
+        identity_provenance_bound,
         base_finalized_and_stopped,
         can_start: can_start_virtual,
     })
