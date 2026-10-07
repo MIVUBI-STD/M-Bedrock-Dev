@@ -16,4 +16,4 @@ export * from "./reliability-fingerprint.js";
 export * from "./retest-catalog.js";
 export * from "./retest-plan.js";
 export * from "./retest-plan-directory.js";
-export * from "./package-roundtrip-proof.js";\n
+export * from "./package-roundtrip-proof.js";
