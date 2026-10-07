@@ -193,23 +193,20 @@ function requiredCounterProofDimensions(
   }
 
   if (
-    hasComponent("runtime:player-capability") ||
-    hasKnowledge("player-capability")
+    hasComponent("runtime:player-capability")
   ) {
     required.add("capability");
     required.add("activation");
   }
 
   if (
-    hasComponent("runtime:world-rules") ||
-    hasKnowledge("world-rule-authority")
+    hasComponent("runtime:world-rules")
   ) {
     required.add("world-rule");
   }
 
   if (
-    hasComponent("runtime:client-reconciliation") ||
-    hasKnowledge("client-server-reconciliation")
+    hasComponent("runtime:client-reconciliation")
   ) {
     required.add("representation");
   }
