@@ -171,3 +171,27 @@ Browser workspace state is stored separately from the embedded canonical report.
 `Export HTML Snapshot` embeds the current tester state into the standalone exported HTML so the report can be moved or archived as one file.
 
 `Import JSON` restores tester state. `Reset Tester Data` clears only tester workspace state; canonical issue facts remain unchanged.
+
+
+## Information contract
+
+The tracker serves two readers from one projection:
+
+- tester: Problem → Test In-Game → Expected → Berhasil / Belum Berhasil → Notes/Evidence;
+- developer: Problem → Technical Details → evidence/mechanism already present in canonical data → Recommended Fix when present.
+
+Do not repeat map/version/source inside each issue; that context belongs to the level source card.
+
+### Evidence honesty
+
+Missing information stays missing.
+
+- Empty reproduction remains an empty array and the HTML omits Test In-Game.
+- Empty Expected is omitted.
+- Missing technical analysis is omitted.
+- Missing recommended fix is omitted.
+- Renderer must not infer a cause, trigger, reproduction step, evidence, or fix from adjacent fields.
+- Technical Analysis is not renamed to Cause unless canonical authority explicitly owns a causal statement.
+- Completeness is never a reason to invent report content.
+
+Tester result is workspace state only: `SUCCESS` (Berhasil) or `FAILED` (Belum Berhasil). It never rewrites canonical finding verification.
