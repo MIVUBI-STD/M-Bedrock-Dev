@@ -15,6 +15,7 @@ import {
 import {
   projectClientDocumentToTracker,
   type ProjectRegistry,
+  type DeveloperNoteRegistry,
 } from "./tracker/project.js";
 import { renderBugTrackerHtml } from "./tracker/render-html.js";
 import { exportBugTracker } from "./tracker/export.js";
@@ -786,9 +787,21 @@ async function main(): Promise<void> {
   );
   const registrySource = await readFile(registryPath, "utf8");
   const registry = JSON.parse(registrySource) as ProjectRegistry;
+  const developerNotesPath = resolve(
+    process.cwd(),
+    "workspace/developer-notes.json",
+  );
+  const developerNotesSource = await readFile(
+    developerNotesPath,
+    "utf8",
+  );
+  const developerNotes = JSON.parse(
+    developerNotesSource,
+  ) as DeveloperNoteRegistry;
   const tracker = projectClientDocumentToTracker(
     document,
     registry,
+    developerNotes,
   );
   await mkdir(args.outDir, { recursive: true });
   await exportBugTracker(
