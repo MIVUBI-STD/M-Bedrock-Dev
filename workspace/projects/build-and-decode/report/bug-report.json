@@ -5,7 +5,7 @@
     "mapVersion": "1.1.3",
     "drive": "https://drive.google.com/file/d/1JxOTJn3kYJVYvT-9WsZ044ZK4boMLlLP/view",
     "baseVersion": "Not recorded in audit evidence",
-    "testedVersion": "Current Drive artifact v1.1.3; full selected-artifact audit in progress. Current canonical finding is source-proven; final report completeness is not yet claimed."
+    "testedVersion": "Full selected-artifact audit of current Drive artifact v1.1.3, including source/static proof and tester runtime feedback. All four physical arenas were exercised by tester and reported safe on tested gameplay paths; no structural byte-level equivalence claim is implied."
   },
   "repairBy": "developer",
   "bugs": [
