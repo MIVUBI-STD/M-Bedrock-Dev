@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "scope": "WINDOWS_TARGET_MACHINE",
+  "clients": ["Native", "Virtual-01", "Virtual-02", "Virtual-03"],
+  "measurements": [
+    "host.logicalCpus",
+    "host.totalMemoryMb",
+    "host.availableMemoryMbBefore",
+    "host.availableMemoryMbAfter",
+    "host.cpuUsagePercentBefore",
+    "host.cpuUsagePercentPeak",
+    "virtual.configuredMemoryMb",
+    "virtual.configuredVcpus",
+    "virtual.vmStartMs",
+    "virtual.guestAgentReadyMs",
+    "virtual.minecraftReadyMs",
+    "virtual.hostWorkingSetMb",
+    "virtual.graphics3dObserved",
+    "virtual.resolutionObserved",
+    "session.concurrentMinecraftClients",
+    "session.operatorResponsivenessObserved"
+  ],
+  "rules": {
+    "runtimeThresholdsAreProvisional": true,
+    "measurementDoesNotImplyPass": true,
+    "missingMeasurementIsNotZero": true,
+    "doNotAutoTuneMemory": true,
+    "doNotAutoTuneVcpus": true,
+    "doNotChangeGpuPolicyFromBenchmarkHarness": true
+  }
+}
