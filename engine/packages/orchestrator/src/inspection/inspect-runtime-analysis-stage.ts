@@ -546,7 +546,7 @@ export function analyzeInspectionRuntimeState(
       input.target.combatContract ?? input.target.combatPolicy,
     );
   const economyPolicy =
-    analyzeEconomyContract(
+    analyzeEconomyBehaviorContract(
       rewardSources,
       input.target.economyContract ?? input.target.economyPolicy,
     );
