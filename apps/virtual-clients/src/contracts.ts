@@ -10,6 +10,7 @@ export type ClientState =
   | "ERROR";
 export type ProfileParity = "MATCH" | "MISMATCH" | "UNKNOWN";
 export type IdentityState = "UNKNOWN" | "UNIQUE" | "DUPLICATE";
+export type ConnectionHealth = "VM_OFFLINE" | "VM_RUNNING" | "GUEST_TOOLS_READY" | "GUEST_AGENT_READY" | "INTERACTIVE_LAUNCHER_READY" | "MINECRAFT_RUNNING";
 export type BaseState = "REGISTERED" | "FINALIZING" | "FINALIZED";
 export type HealthSeverity = "BLOCKER" | "WARNING";
 
@@ -67,6 +68,7 @@ export interface ClientStatus {
   minecraftVersion: string | null;
   minecraftRunning: boolean | null;
   interactiveLauncherReady: boolean | null;
+  connectionHealth: ConnectionHealth | null;
   lineageParity: ProfileParity | null;
   versionParity: ProfileParity | null;
   vmIdentity: IdentityState | null;
