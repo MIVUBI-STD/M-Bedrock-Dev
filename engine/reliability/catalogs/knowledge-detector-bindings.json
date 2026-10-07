@@ -5041,6 +5041,36 @@
       ]
     },
     {
+      "knowledgeId": "worldstate.commandblocks-enabled-global",
+      "consumer": "world-rule-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/world-rule-authority-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/world-rule-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "worldstate.difficulty-world-level",
+      "consumer": "world-rule-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/world-rule-authority-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/world-rule-authority-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "worldstate.time-weather-world-level",
+      "consumer": "world-rule-authority-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/world-rule-authority-analysis.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/world-rule-authority-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "worldstate.domobspawning-global",
       "consumer": "world-rule-authority-analysis",
       "analyzerPaths": [

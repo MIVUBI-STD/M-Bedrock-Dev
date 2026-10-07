@@ -61,15 +61,15 @@ export function analyzeWorldRuleAuthority(
       writes.push({
         scriptId: script.identifier,
         executionRegion: command.executionRegion ?? "module",
-        rule: match[1]!,
-        value: match[2]!,
+        rule,
+        value,
         source: command.source,
       });
     }
 
     const text = item.text ?? "";
     const propertyPattern =
-      /\b(doMobSpawning|doDaylightCycle|doWeatherCycle|keepInventory|mobGriefing|naturalRegeneration|pvp|sendCommandFeedback|fallDamage|showTags)\s*(?:=|:)\s*(true|false|-?\d+)\b/gi;
+      /\b(doMobSpawning|doDaylightCycle|doWeatherCycle|commandBlocksEnabled|keepInventory|mobGriefing|naturalRegeneration|pvp|sendCommandFeedback|fallDamage|showTags|difficulty|time|weather)\s*(?:=|:)\s*(true|false|-?\d+)\b/gi;
     for (const match of text.matchAll(propertyPattern)) {
       writes.push({
         scriptId: script.identifier,

@@ -823,24 +823,6 @@
       "status": "runtime-required",
       "reason": "This fact depends on live engine/world/event/permission state or runtime outcome beyond current static proof.",
       "nextEvidenceOwner": "runtime-world-mutation"
-    },
-    {
-      "knowledgeId": "worldstate.commandblocks-enabled-global",
-      "status": "static-capability-gap",
-      "reason": "Global command-block execution enablement is not yet modeled by world-rule authority analysis.",
-      "nextEvidenceOwner": "world-rule-authority-analysis"
-    },
-    {
-      "knowledgeId": "worldstate.difficulty-world-level",
-      "status": "static-capability-gap",
-      "reason": "Shared difficulty mutation is not yet part of the canonical world-rule authority surface.",
-      "nextEvidenceOwner": "world-rule-authority-analysis"
-    },
-    {
-      "knowledgeId": "worldstate.time-weather-world-level",
-      "status": "static-capability-gap",
-      "reason": "Shared time/weather mutations are not yet modeled by world-rule authority analysis.",
-      "nextEvidenceOwner": "world-rule-authority-analysis"
     }
   ]
 }

@@ -98,3 +98,26 @@ describe("world rule authority analysis", () => {
     expect(result.commandSummonPaths).toBeGreaterThan(0);
   });
 });
+
+  it("tracks command-block enablement, difficulty, time and weather as shared world state", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function setup(player) {",
+        "  player.runCommand('gamerule commandBlocksEnabled false');",
+        "  player.runCommand('difficulty hard');",
+        "  player.runCommand('time set night');",
+        "  player.runCommand('weather clear');",
+        "}",
+      ].join("\n"),
+      { artifactId: "fixture", relativePath: "scripts/main.ts" },
+    );
+
+    const result = analyzeWorldRuleAuthority([script]);
+    expect(result.writes.map((item) => item.rule)).toEqual(expect.arrayContaining([
+      "commandBlocksEnabled",
+      "world:difficulty",
+      "world:time",
+      "world:weather",
+    ]));
+  });
