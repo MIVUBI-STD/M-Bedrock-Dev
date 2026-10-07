@@ -58,3 +58,5 @@ export * from "./knowledge/runtime-knowledge-validation-registry.js";
 export * from "./domains/chunk/chunk-knowledge-validation-plan.js";
 
 export * from "./domains/chunk/chunk-probe-experiments.js";
+
+export * from "./domains/chunk/chunk-lifecycle-experiments.js";
