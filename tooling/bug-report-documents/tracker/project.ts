@@ -1,5 +1,5 @@
 import type { BugReportClientDocument } from "../../../engine/packages/bug-report/src/document/model.js";
-import type { BugTrackerDocument, TrackerGame, TrackerIssue, TrackerSourceBinding } from "./model.js";
+import type { BugTrackerDocument, TrackerDeveloperNote, TrackerGame, TrackerIssue, TrackerSourceBinding } from "./model.js";
 
 interface RegistryProject {
   readonly projectId: string;
@@ -10,6 +10,22 @@ interface RegistryProject {
 }
 
 export interface ProjectRegistry { readonly projects: readonly RegistryProject[] }
+
+export interface DeveloperNoteRegistry {
+  readonly schema: "m-bedrock-dev-notes/v1";
+  readonly notes: readonly TrackerDeveloperNoteSource[];
+}
+
+interface TrackerDeveloperNoteSource {
+  readonly id: string;
+  readonly projectId: string;
+  readonly type: "DEV_NOTE";
+  readonly title: string;
+  readonly problem: string;
+  readonly action: string;
+  readonly evidence: Readonly<Record<string, unknown>>;
+  readonly severity: null;
+}
 
 function driveUrl(id: string): string { return "https://drive.google.com/drive/folders/" + id; }
 function fileUrl(id: string): string { return "https://drive.google.com/file/d/" + id + "/view"; }
@@ -52,11 +68,32 @@ function issueFromClient(issue: BugReportClientDocument["issues"][number]): Trac
   };
 }
 
-export function projectClientDocumentToTracker(document: BugReportClientDocument, registry: ProjectRegistry): BugTrackerDocument {
+function developerNotesForProject(
+  registry: DeveloperNoteRegistry,
+  projectId: string,
+): TrackerDeveloperNote[] {
+  return registry.notes
+    .filter((note) => note.projectId === projectId)
+    .map((note) => ({
+      id: note.id,
+      type: note.type,
+      title: note.title,
+      problem: note.problem,
+      action: note.action,
+      evidence: note.evidence,
+      severity: note.severity,
+    }));
+}
+
+export function projectClientDocumentToTracker(
+  document: BugReportClientDocument,
+  registry: ProjectRegistry,
+  developerNotes: DeveloperNoteRegistry,
+): BugTrackerDocument {
   const source = resolveSourceBinding(registry, document.map.name, document.map.mapVersion);
   const game: TrackerGame = {
     name: document.map.name,
-    levels: [{ level: null, version: document.map.mapVersion, source, issues: document.issues.map(issueFromClient) }],
+    levels: [{ level: null, version: document.map.mapVersion, source, issues: document.issues.map(issueFromClient), devNotes: developerNotesForProject(developerNotes, source.projectId) }],
   };
   return { schema: "m-bedrock-bug-tracker/v1", title: "Bug Tracker Report", games: [game] };
 }
