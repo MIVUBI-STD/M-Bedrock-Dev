@@ -273,30 +273,9 @@ Every frontend command response now requires a payload validator in addition to 
 STOPPED is displayed as Stopped, Native as Managed externally, and completed setup as Setup complete. These labels do not establish Minecraft gameplay readiness. Returning to the visible Clients page refreshes backend truth; no periodic heavyweight diagnostic polling or new persisted state is introduced.
 
 
-## Naming and module boundary
+## Naming and presentation boundary
 
-The admission module is private to the existing crate. It owns power-state
-validation and the combined admission decision. Runtime collects
-`LifecycleFacts`, calls `require_lifecycle_admission` before mutation, and uses
-`evaluate_lifecycle_admission` for the read-only action projection. The requiring
-function delegates to that same evaluator; it does not own a second policy.
-Eight existing policy regression tests live beside this owner. Runtime tests
-continue to cover provider orchestration and rollback.
-
-Presentation uses one term per operation:
-- Recreate virtual client: replace the selected client from Base; destructive.
-- Save recovery point: save the configured checkpoint after account setup.
-- Restore recovery point: revert to that checkpoint, discarding later changes.
-- Refresh: retrieve current displayed state, not recreate a client.
-- Setup complete: setup milestones finished, not proof of a playable session.
-- Pause / Paused / Resume: UI wording for suspend / SUSPENDED / start-resume;
-  the guest is not an active multiplayer participant while paused.
-
-Machine-facing schema-1 command names, state enums and QA_READY snapshot identity
-remain unchanged. Presentation labels translate those identifiers; no command
-aliases or second persisted state are introduced. Command-boundary activity is
-implemented with schema 2 operation events; detailed internal VM-stage progress
-and measured target-machine performance remain separate acceptance work.
+Machine-facing schema-1 commands, state enums and the `QA_READY` checkpoint identity remain stable. Presentation may translate them into user-facing labels such as Recreate virtual client, Save recovery point, Restore recovery point, Refresh, Setup complete, and Pause/Resume. These labels are presentation only: they do not create aliases, new commands, or persisted state.
 
 ## First-time setup boot and command activity
 
