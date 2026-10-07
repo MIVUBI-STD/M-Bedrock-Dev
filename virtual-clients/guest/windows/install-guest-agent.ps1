@@ -58,3 +58,11 @@ if ($rule) {
 }
 New-NetFirewallRule -DisplayName 'M-Bedrock Virtual Guest Agent' -Direction Inbound -Action Allow -Program $agent -Protocol TCP -LocalPort 47831 -RemoteAddress LocalSubnet -Profile Any | Out-Null
 
+$installed = Get-ScheduledTask -TaskName $taskName -ErrorAction Stop
+if ($installed.State -eq 'Disabled') {
+  throw 'Guest Agent scheduled task was registered but is disabled.'
+}
+if (!(Test-Path -LiteralPath $agent -PathType Leaf)) {
+  throw 'Guest Agent executable is missing after installation.'
+}
+
