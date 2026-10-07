@@ -107,6 +107,7 @@ function unique(values: readonly string[] | undefined): readonly string[] {
 }
 
 function requiredCounterProofDimensions(
+  graph: GameplayScenarioGraph,
   link: GameplayCausalLink,
   scenario:
     GameplayScenarioGraph["scenarios"][number] | undefined,
@@ -117,17 +118,42 @@ function requiredCounterProofDimensions(
     "exclusion",
   ]);
   const components = new Set(link.componentIds);
+  const knowledgeDomains = new Set(
+    link.knowledgeRequirementIds
+      .map((id) =>
+        graph.knowledgeRequirements.find(
+          (item) => item.id === id,
+        )?.domain
+      )
+      .filter((domain): domain is NonNullable<typeof domain> =>
+        domain !== undefined
+      ),
+  );
+  const hasComponent = (...ids: string[]) =>
+    ids.some((id) => components.has(id));
+  const hasKnowledge = (...domains: string[]) =>
+    domains.some((domain) => knowledgeDomains.has(domain as any));
+
   const recoveryLike =
     scenario !== undefined &&
     /reconnect|reload|repeated|deferred|recovery|terminal/i.test(
       scenario.label + " " + scenario.gameplayStage,
     );
   const ownershipSensitive =
-    [...components].some((id) =>
-      id === "runtime:arena" ||
-      id === "runtime:persistence" ||
-      id === "runtime:chunks" ||
-      id === "runtime:inventory"
+    hasComponent(
+      "runtime:arena",
+      "runtime:persistence",
+      "runtime:chunks",
+      "runtime:inventory",
+      "runtime:state",
+    ) ||
+    hasKnowledge(
+      "arena-lifecycle",
+      "multiplayer-interleaving",
+      "persistence-recovery",
+      "inventory-state",
+      "temporal-ownership",
+      "state-flow",
     ) ||
     (scenario?.playerCounts.some((count) => count > 1) ?? false);
   if (ownershipSensitive) {
@@ -135,10 +161,17 @@ function requiredCounterProofDimensions(
   }
   if (
     recoveryLike ||
-    [...components].some((id) =>
-      id === "runtime:arena" ||
-      id === "runtime:persistence" ||
-      id === "runtime:chunks"
+    hasComponent(
+      "runtime:arena",
+      "runtime:persistence",
+      "runtime:chunks",
+      "runtime:arena-cleanup",
+    ) ||
+    hasKnowledge(
+      "arena-lifecycle",
+      "persistence-recovery",
+      "chunk-simulation",
+      "temporal-ownership",
     )
   ) {
     required.add("generation");
