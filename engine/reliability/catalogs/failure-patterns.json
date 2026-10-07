@@ -1011,6 +1011,40 @@
         "Overlap terminal callbacks within one or adjacent ticks.",
         "Verify exactly one result, one score commit, one feedback path, and one transition."
       ]
+    },
+    {
+      "id": "startup-cleanup-absence-deadlock",
+      "title": "Already-absent cleanup result keeps a global readiness gate closed",
+      "domain": "state",
+      "summary": "A startup allocator/recovery gate requires cleanup success, but idempotent absence/zero-removal is interpreted as unresolved failure, so all otherwise-valid requests remain queued before reservation.",
+      "invariantIds": [
+        "runtime.effective-capacity-delivery"
+      ],
+      "triggerTags": [
+        "startup-gate",
+        "cleanup",
+        "queue",
+        "allocator",
+        "idempotency",
+        "absence"
+      ],
+      "capabilityTags": [
+        "multiplayer-session",
+        "resource-allocation",
+        "recovery"
+      ],
+      "supportingRegressionIds": [],
+      "detectionHints": [
+        "Trace every global readiness gate before queue reservation.",
+        "Test cleanup semantics for resource present, already absent, and real removal failure.",
+        "Compare zero/successCount/false/error semantics with the previous version when cleanup code changes.",
+        "Treat a visible queue below configured capacity as a contradiction requiring root-cause proof."
+      ],
+      "retestFocus": [
+        "Clean world with no stale resources: first valid request must leave queue.",
+        "One through advertised-capacity independent requests must reserve/start without overflow queue.",
+        "Crash/reload stale resources must be removed idempotently and readiness must reopen."
+      ]
     }
   ]
 }
