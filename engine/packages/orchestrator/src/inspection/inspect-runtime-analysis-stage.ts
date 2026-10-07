@@ -256,7 +256,7 @@ export function analyzeInspectionRuntimeState(
       : [];
   const interactionLifecycle =
     analyzeInteractionLifecycle(
-      input.scripts,
+      input.parsedScripts,
     );
 
   const entityAiStack =
