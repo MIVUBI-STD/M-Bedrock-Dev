@@ -51,6 +51,8 @@ output/
 
 Do not publish or regenerate only one side of the pair. Historical HTML-only files are legacy derived artifacts, not the current output contract.
 
+Current filenames stay stable across releases. Version identity comes from the current project/level binding and report data; retained older artifacts use the explicit `archive/vX.Y.Z/` path. This avoids filename churn and ambiguous `latest/final` aliases.
+
 ## Files
 
 - `model.ts` — small presentation projection model.
