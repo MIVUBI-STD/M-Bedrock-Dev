@@ -135,9 +135,6 @@ export interface DiagnosticsReport {
   virtualHardware: Array<{
     id: Exclude<ClientId, "Native">;
     networkMode: string | null;
-    networkRequiresAcceptance: boolean;
-    networkConfigurationObserved: boolean;
-    multiplayerVerified: boolean;
     graphics3dEnabled: boolean | null;
   }>;
 }
