@@ -24,7 +24,7 @@ function issueHtml(i:TrackerIssue,n:number):string {
 }
 function developerNoteHtml(note:TrackerDeveloperNote,n:number):string {
  const evidence=e(JSON.stringify(note.evidence,null,2));
- return '<article class="issue devnote" data-issue-id="'+e(note.id)+'"><div class="ih"><div class="tags"><span>'+String(n).padStart(2,"0")+'</span><span class="sev">DEV NOTE</span><span class="status reference">REFERENCE</span></div><h4>'+e(note.title)+'</h4><div class="issue-id">'+e(note.id)+'</div><details><summary><span class="expand">View Details ↓</span><span class="collapse">Collapse Details ↑</span></summary><div class="detail">'+row("Developer Note",e(note.problem))+row("Evidence","<pre>"+evidence+"</pre>")+row("Action",e(note.action))+row("Developer Notes",'<textarea class="dev-notes"></textarea>')+'</div></details></div></article>';
+ return '<article class="issue devnote" data-issue-id="'+e(note.id)+'"><details><summary class="ih"><div class="tags"><span>'+String(n).padStart(2,"0")+'</span><span class="sev">DEV NOTE · REFERENCE</span></div><h4>'+e(note.title)+'</h4><div class="issue-id">'+e(note.id)+'</div><div class="detail-action"><span class="expand">View Details ↓</span><span class="collapse">Collapse ↑</span></div></summary><div class="detail">'+row("Developer Note",e(note.problem))+row("Evidence","<pre>"+evidence+"</pre>")+row("Action",e(note.action))+'<section class="tester-workspace"><label>Developer Notes <span>· Optional</span></label><textarea class="dev-notes" placeholder="Optional notes"></textarea></section></div></details></article>';
 }
 
 function developerNoteGroup(items:readonly TrackerDeveloperNote[],start:number):string {
