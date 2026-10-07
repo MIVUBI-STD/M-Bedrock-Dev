@@ -46,6 +46,38 @@
         "artifactVersion": "1.1.3"
       },
       "severity": null
+    },
+    {
+      "id": "DEV-BAD-DEBUG-PICKER-IN-RELEASE",
+      "type": "DEV_NOTE",
+      "title": "Temporary Debug Picker Is Still Included in Release",
+      "problem": "The v1.1.3 production entrypoint imports scripts/dev/debug-stick.js on every world load. The module identifies itself as a standalone temporary coordinate picker and registers block-interaction and script-event diagnostics. Its interactive paths are explicitly admin-gated, so current selected-artifact evidence does not justify a gameplay BUG.",
+      "action": "Remove the temporary debug picker from the production bootstrap when it is no longer required, or make its release inclusion an explicit maintained developer capability. Keep the existing explicit admin permission gate if the tool remains shipped.",
+      "evidence": {
+        "source": [
+          "behavior_packs/Build_Decode_BP/scripts/main.js",
+          "behavior_packs/Build_Decode_BP/scripts/dev/debug-stick.js"
+        ],
+        "finding": "main.js imports ./dev/debug-stick.js unconditionally. The module calls itself a temporary coordinate picker and registers interaction/status/export diagnostics; all actionable paths check PermissionData.isAdmin(player).",
+        "artifactVersion": "1.1.3"
+      },
+      "severity": null
+    },
+    {
+      "id": "DEV-BAD-SETUP-EVENT-PERMISSION",
+      "type": "DEV_NOTE",
+      "title": "Entity Setup Script Event Has No Explicit Permission Gate",
+      "problem": "SetupManager handles the setup:entity script event by killing and respawning configured setup entities, but the handler does not check the source against the canonical PermissionData admin owner. Current selected-artifact evidence proves the missing explicit gate, but does not prove that an ordinary player can invoke the script event in the delivered runtime.",
+      "action": "Route setup:entity through the existing admin permission owner before mutating world entities. Do not rely on implicit command/runtime reachability as the only privilege boundary.",
+      "evidence": {
+        "source": [
+          "behavior_packs/Build_Decode_BP/scripts/modules/setup/SetupManager.js",
+          "behavior_packs/Build_Decode_BP/scripts/modules/permission/PermissionData.js"
+        ],
+        "finding": "SetupManager subscribes to scriptEventReceive and executes setupEntities(event.sourceEntity) for setup:entity without PermissionData.isAdmin or another explicit permission check.",
+        "artifactVersion": "1.1.3"
+      },
+      "severity": null
     }
   ]
 }
