@@ -66,8 +66,8 @@ pub(crate) fn write_support_bundle(snapshot: EngineSnapshot) -> io::Result<Suppo
         app_version: env!("CARGO_PKG_VERSION"),
         included_sections: ["snapshot", "operationHistory", "stagingResidueCount"],
         snapshot,
-        operation_history: read_operation_history().unwrap_or_default(),
-        staging_residue_count: staging_residue_count().unwrap_or(0),
+        operation_history: read_operation_history()?,
+        staging_residue_count: staging_residue_count()?,
     };
     let json = serde_json::to_string_pretty(&bundle)
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
