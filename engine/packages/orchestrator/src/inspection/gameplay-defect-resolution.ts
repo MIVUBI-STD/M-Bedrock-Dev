@@ -413,10 +413,13 @@ function dimensionEvidenceFor(
     representation: ["runtime:client-reconciliation"],
   };
   const hints = componentHints[dimension];
+  const directDimensionEvidence =
+    contradicted.dimensionEvidence[dimension] ?? [];
 
   return [
-    ...new Set(
-      scoped
+    ...new Set([
+      ...directDimensionEvidence,
+      ...scoped
         .filter(
           (candidate) =>
             hints.length === 0 ||
@@ -424,9 +427,12 @@ function dimensionEvidenceFor(
               hints.includes(id)
             ),
         )
-        .flatMap((candidate) => candidate.evidenceIds)
+        .flatMap((candidate) => [
+          ...candidate.evidenceIds,
+          ...(candidate.dimensionEvidence[dimension] ?? []),
+        ])
         .filter(Boolean),
-    ),
+    ]),
   ].sort();
 }
 
