@@ -70,7 +70,6 @@ pub struct BaseProfile {
     pub guest_status_schema: u32,
     #[serde(default)]
     pub guest_agent_protocol: u32,
-    pub guest_agent_version: String,
     #[serde(default)]
     pub base_generation_id: String,
 }
@@ -82,7 +81,6 @@ pub struct ClientProfile {
     pub base_minecraft_version: String,
     #[serde(default)]
     pub base_generation_id: String,
-    pub created_by: String,
     #[serde(default)]
     pub verified_vm_identity: Option<String>,
     #[serde(default)]
@@ -187,7 +185,7 @@ pub fn load_base_profile() -> io::Result<BaseProfile> {
 
 pub fn write_verified_base_profile(
     native: &MinecraftProfile,
-    guest_agent_version: &str,
+    _guest_agent_version: &str,
     guest_agent_protocol: u32,
 ) -> io::Result<BaseProfile> {
     let base = base_vmx_path_for_version(&native.version)?;
@@ -204,7 +202,6 @@ pub fn write_verified_base_profile(
         native_install_type: native.install_type.clone(),
         guest_status_schema: GUEST_STATUS_SCHEMA,
         guest_agent_protocol,
-        guest_agent_version: guest_agent_version.to_string(),
         base_generation_id: new_base_generation_id()?,
     };
 
@@ -244,7 +241,6 @@ pub fn write_client_profile(
         schema: CLIENT_PROFILE_SCHEMA,
         base_minecraft_version: base_version.to_string(),
         base_generation_id: base_generation_id.to_string(),
-        created_by: env!("CARGO_PKG_VERSION").to_string(),
         verified_vm_identity: None,
         verified_windows_identity: None,
     };
@@ -600,7 +596,6 @@ mod tests {
             native_install_type: MinecraftInstallType::Desktop,
             guest_status_schema: GUEST_STATUS_SCHEMA,
             guest_agent_protocol: GUEST_AGENT_PROTOCOL_VERSION,
-            guest_agent_version: "0.1.0".into(),
             base_generation_id: "a".repeat(64),
             };
 
@@ -623,7 +618,6 @@ mod tests {
             schema: CLIENT_PROFILE_SCHEMA,
             base_minecraft_version: "1.21.120.0".into(),
             base_generation_id: "c".repeat(64),
-            created_by: "0.1.0".into(),
             verified_vm_identity: Some("a".repeat(64)),
             verified_windows_identity: Some("b".repeat(64)),
         };
@@ -650,14 +644,12 @@ mod tests {
             native_install_type: MinecraftInstallType::Desktop,
             guest_status_schema: GUEST_STATUS_SCHEMA,
             guest_agent_protocol: GUEST_AGENT_PROTOCOL_VERSION,
-            guest_agent_version: "older-compatible-package".into(),
             base_generation_id: "a".repeat(64),
             };
 
         assert!(base_profile_matches_native(&native, &current));
 
         let different_package_version = BaseProfile {
-            guest_agent_version: "newer-compatible-package".into(),
             ..current.clone()
         };
         assert!(base_profile_matches_native(&native, &different_package_version));
@@ -695,7 +687,6 @@ mod tests {
             schema: super::CLIENT_PROFILE_SCHEMA,
             base_minecraft_version: "1.0.0".into(),
             base_generation_id: "c".repeat(64),
-            created_by: "test".into(),
             verified_vm_identity: Some(super::identity_fingerprint("uuid-a|mac-a")),
             verified_windows_identity: Some("windows-proof".into()),
         };
@@ -714,7 +705,6 @@ mod tests {
             schema: super::CLIENT_PROFILE_SCHEMA,
             base_minecraft_version: "1.0.0".into(),
             base_generation_id: "c".repeat(64),
-            created_by: "test".into(),
             verified_vm_identity: None,
             verified_windows_identity: None,
         };
