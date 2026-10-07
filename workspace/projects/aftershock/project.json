@@ -9,12 +9,8 @@
     "artifactFingerprint": "sha256:b8bff14da9e71bf58f9d3b277408ec00d51d1193cee5c8eb1b3f7644584fbab9",
     "version": "1.0.4"
   },
-  "work": {},
-  "knowledge": {},
   "publication": {
     "drive": {
-      "schemaVersion": 1,
-      "projectId": "aftershock",
       "mapFolder": {
         "folderId": "1UlSPenQ81KPLfE_XYX_nzEMoSGikvtco",
         "label": "Skills - Aftershock"
