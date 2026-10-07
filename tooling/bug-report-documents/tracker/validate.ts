@@ -53,7 +53,7 @@ export function validateBugTrackerDocument(document: BugTrackerDocument): void {
         if (!issue.id.trim() || !issue.title.trim() || !issue.issue.trim()) {
           errors.push(game.name + ": incomplete issue identity.");
         }
-        const visible = [issue.title, issue.issue, ...issue.reproduction, issue.observed, issue.expected, issue.resolution ?? ""].join(" ").toLowerCase();
+        const visible = [issue.title, issue.issue, issue.whyThisIsBug ?? "", issue.impact ?? "", ...issue.reproduction, issue.observed, issue.expected, issue.resolution ?? ""].join(" ").toLowerCase();
         for (const term of FORBIDDEN_VISIBLE_TERMS) {
           if (visible.includes(term)) errors.push(issue.id + ": forbidden internal UI term: " + term);
         }
