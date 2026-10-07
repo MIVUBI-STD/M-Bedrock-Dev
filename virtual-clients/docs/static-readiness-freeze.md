@@ -81,3 +81,23 @@ Do not translate absence of workflow failures into PASS when no workflow ran.
 Security architecture is frozen at this checkpoint. Existing boundaries include bounded Guest Agent transport, per-Virtual tokens, fixed launch actions, runtime metadata redirection rejection, update URL/hash/signature/staging containment, privileged Guest Agent task verification, and signed release/package evidence.
 
 Do not add a second authentication mechanism, privileged helper, firewall service, updater daemon, ACL framework or security database without target-machine evidence. Effective Windows ACLs, Scheduled Task ACLs, firewall enforcement, antivirus interaction, Windows session behavior and VMware guestinfo exposure remain LOCAL proof.
+
+
+## Final static handoff
+
+Static architecture, security, performance-policy structure and anti-slop cleanup are frozen here. Do not continue speculative refactoring after this checkpoint. Reopen source architecture only for a concrete correctness/security defect or target-machine evidence.
+
+The highest-risk unproven boundaries are:
+
+1. three VMware guests running concurrently without host instability;
+2. Native + Virtual-01/02/03 Minecraft Education remaining interactive together;
+3. VMware 3D acceleration actually functioning in every guest, not merely configured in VMX;
+4. SYSTEM Guest Agent plus per-user interactive launcher crossing the Windows session boundary correctly;
+5. four distinct licensed Microsoft/Minecraft sessions remaining isolated and persistent;
+6. QA_READY preserving the intended per-Virtual account state without contaminating Base or another Virtual;
+7. NAT/firewall/router behavior supporting the required multiplayer topology;
+8. effective Windows ACL, Scheduled Task, firewall and antivirus behavior matching the static security assumptions;
+9. actual RAM, CPU, GPU and disk contention validating the provisional automatic startup thresholds;
+10. installer/repair/uninstall behavior on the canonical target Windows machine.
+
+When LOCAL testing becomes available, exercise these boundaries before tuning performance numbers or adding fallback mechanisms. A failed boundary should be fixed at its existing owner first; do not introduce a second manager, scheduler, compatibility layer or state machine unless the existing owner cannot represent the proven requirement.
