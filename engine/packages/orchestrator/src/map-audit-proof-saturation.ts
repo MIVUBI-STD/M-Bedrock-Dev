@@ -142,7 +142,38 @@ function derivedFamilyCriterionEvidence(input: {
       .length > 0
       ? evidenceIds
       : [];
+  const dimensionEvidence = (
+    dimensions: readonly string[],
+  ): readonly string[] =>
+    resolution.counterProofSearch?.dimensionReceipts
+      .filter(
+        (receipt) =>
+          dimensions.includes(receipt.dimension) &&
+          receipt.exhaustiveWithinScope === true,
+      )
+      .flatMap((receipt) => receipt.evidenceIds) ?? [];
 
+  if (criterionId === "commit-revalidation-missing") {
+    return dimensionEvidence([
+      "generation",
+      "guard",
+      "exclusion",
+    ]);
+  }
+  if (criterionId === "cleanup-containment-missing") {
+    return dimensionEvidence([
+      "cleanup",
+      "geometry",
+      "scope",
+    ]);
+  }
+  if (criterionId === "restore-outcome-derived") {
+    return dimensionEvidence([
+      "generation",
+      "cleanup",
+      "owner",
+    ]);
+  }
   if (
     criterionId.includes("counterproof") ||
     criterionId.includes("exclusion") ||
