@@ -166,7 +166,11 @@ fn vm_identity_state(provider: &dyn Provider, client: ClientId) -> IdentityState
     )
 }
 
-fn collect_lifecycle_facts(provider: &dyn Provider, client: ClientId) -> io::Result<LifecycleFacts> {
+fn collect_lifecycle_facts(
+    provider: &dyn Provider,
+    client: ClientId,
+    can_start_virtual: bool,
+) -> io::Result<LifecycleFacts> {
     let state = provider.status(client)?;
     let ready_snapshot = if state == ClientState::NotProvisioned {
         Some(false)
@@ -215,7 +219,7 @@ fn collect_lifecycle_facts(provider: &dyn Provider, client: ClientId) -> io::Res
         fresh_client_profile,
         identity_verified,
         base_finalized_and_stopped,
-        can_start: current_host_pressure().can_start_virtual,
+        can_start: can_start_virtual,
     })
 }
 
@@ -224,7 +228,12 @@ fn check_action_admission(
     client: ClientId,
     action: LifecycleAction,
 ) -> io::Result<()> {
-    require_lifecycle_admission(client, action, &collect_lifecycle_facts(provider, client)?)
+    let can_start_virtual = current_host_pressure().can_start_virtual;
+    require_lifecycle_admission(
+        client,
+        action,
+        &collect_lifecycle_facts(provider, client, can_start_virtual)?,
+    )
 }
 
 fn restore_batch_state(
@@ -726,10 +735,11 @@ impl VirtualClients {
                 .collect());
         };
 
+        let can_start_virtual = current_host_pressure().can_start_virtual;
         ClientId::VIRTUAL
             .into_iter()
             .map(|client| {
-                let facts = collect_lifecycle_facts(provider.as_ref(), client)?;
+                let facts = collect_lifecycle_facts(provider.as_ref(), client, can_start_virtual)?;
                 let action = |kind| evaluate_lifecycle_admission(client, kind, &facts);
                 Ok(ClientLifecycleActions {
                     id: client.as_str(),
