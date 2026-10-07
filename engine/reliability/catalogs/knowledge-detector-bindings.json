@@ -5167,6 +5167,28 @@
       ]
     },
     {
+      "knowledgeId": "feedback.relation-title-reset-restores-default-timing",
+      "consumer": "client-feedback-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/client-feedback-analysis.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/client-feedback-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "feedback.title-has-clear-reset-times",
+      "consumer": "client-feedback-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/client-feedback-analysis.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/client-feedback-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "feedback.animation-controller-load-initial-state",
       "consumer": "resource-pack-animation-analysis",
       "analyzerPaths": [

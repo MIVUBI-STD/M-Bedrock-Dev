@@ -369,18 +369,6 @@
       "nextEvidenceOwner": "resource-pack-feedback-analysis"
     },
     {
-      "knowledgeId": "feedback.relation-title-reset-restores-default-timing",
-      "status": "static-capability-gap",
-      "reason": "Title reset/timing state lacks structural lifecycle analysis.",
-      "nextEvidenceOwner": "client-feedback-analysis"
-    },
-    {
-      "knowledgeId": "feedback.title-has-clear-reset-times",
-      "status": "static-capability-gap",
-      "reason": "Title timing/reset lifecycle lacks a structural command/UI feedback analyzer.",
-      "nextEvidenceOwner": "client-feedback-analysis"
-    },
-    {
       "knowledgeId": "gametest.experimental",
       "status": "static-capability-gap",
       "reason": "GameTest version/track compatibility needs dedicated validation-harness compatibility analysis.",
