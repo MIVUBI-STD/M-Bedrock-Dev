@@ -313,6 +313,7 @@ export function requiredCounterProofDimensions(
   ].join(" ");
 
   if (
+    !required.has("geometry") &&
     /escape|boundary|contain|flight|fly|path|travers|spatial|geometry|barrier|collision/i.test(
       scenarioText,
     )
@@ -321,6 +322,7 @@ export function requiredCounterProofDimensions(
   }
 
   if (
+    !required.has("capability") &&
     /admin|roommaster|operator|permission|creative|spectator|capabilit|privileg|spawn.?egg|manual.?spawn/i.test(
       scenarioText,
     )
@@ -330,6 +332,7 @@ export function requiredCounterProofDimensions(
   }
 
   if (
+    !required.has("world-rule") &&
     /gamerule|natural.?spawn|mob.?spawn|weather|daylight|world.?setting/i.test(
       scenarioText,
     )
@@ -338,6 +341,7 @@ export function requiredCounterProofDimensions(
   }
 
   if (
+    !required.has("representation") &&
     /client|visual|waterlog|prediction|desync|ghost|render|reconcil/i.test(
       scenarioText,
     )
