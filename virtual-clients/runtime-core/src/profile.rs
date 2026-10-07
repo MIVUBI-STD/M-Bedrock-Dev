@@ -61,12 +61,6 @@ impl BaseState {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum BaseProfileSource {
-    LiveVerified,
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BaseProfile {
@@ -79,7 +73,6 @@ pub struct BaseProfile {
     pub guest_agent_version: String,
     #[serde(default)]
     pub base_generation_id: String,
-    pub source: BaseProfileSource,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -213,7 +206,6 @@ pub fn write_verified_base_profile(
         guest_agent_protocol,
         guest_agent_version: guest_agent_version.to_string(),
         base_generation_id: new_base_generation_id()?,
-        source: BaseProfileSource::LiveVerified,
     };
 
     let path = base_profile_path_for_version(&native.version)?;
@@ -567,7 +559,7 @@ fn normalized_version(value: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::{
-        base_profile_matches_native, normalized_version, BaseProfile, BaseProfileSource, BaseState,
+        base_profile_matches_native, normalized_version, BaseProfile, BaseState,
         ClientProfile, MinecraftInstallType, MinecraftProfile, BASE_PROFILE_SCHEMA,
         CLIENT_PROFILE_SCHEMA,
     };
@@ -610,8 +602,7 @@ mod tests {
             guest_agent_protocol: GUEST_AGENT_PROTOCOL_VERSION,
             guest_agent_version: "0.1.0".into(),
             base_generation_id: "a".repeat(64),
-            source: BaseProfileSource::LiveVerified,
-        };
+            };
 
         let json = serde_json::to_string(&profile).unwrap();
         let decoded: BaseProfile = serde_json::from_str(&json).unwrap();
@@ -661,8 +652,7 @@ mod tests {
             guest_agent_protocol: GUEST_AGENT_PROTOCOL_VERSION,
             guest_agent_version: "older-compatible-package".into(),
             base_generation_id: "a".repeat(64),
-            source: BaseProfileSource::LiveVerified,
-        };
+            };
 
         assert!(base_profile_matches_native(&native, &current));
 
