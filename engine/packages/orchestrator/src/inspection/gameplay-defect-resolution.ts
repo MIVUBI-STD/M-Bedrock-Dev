@@ -602,6 +602,23 @@ function dimensionEvidenceFor(
   ].sort();
 }
 
+function runtimeQuestionFor(
+  link: GameplayCausalLink,
+): string | undefined {
+  switch (link.runtimeNativeReason) {
+    case "client-reconciliation":
+      return "Does the affected client visually reconcile the source-proven cancelled mutation, or does stale/ghost state remain visible?";
+    case "entity-navigation-manifestation":
+      return "Does the source-grounded navigation state manifest as the predicted entity pathing failure in the selected scenario?";
+    case "network-timing":
+      return "Under the selected network timing condition, does the source-grounded ordering ambiguity manifest in the predicted gameplay outcome?";
+    case "engine-scheduling":
+      return "Under the selected engine scheduling condition, does the source-grounded timing dependency manifest in the predicted gameplay outcome?";
+    default:
+      return undefined;
+  }
+}
+
 function automaticCounterProofSearch(
   graph: GameplayScenarioGraph,
   contradicted: GameplayCausalLink,
@@ -839,7 +856,8 @@ export function assessGameplayDefectResolutionGate(
       disposition: "RUNTIME_PROOF_REQUIRED" as const,
       runtimeReason: link.reason,
       narrowRuntimeQuestion:
-        "Does the native runtime exhibit the unresolved behavior for this exact dependency under the selected-artifact scenario?",
+        runtimeQuestionFor(link) ??
+        "Runtime-native reason is missing; do not execute a broad validation test.",
     })),
     ...detectionGaps.map((link) =>
       byId.get(link.id) ?? ({
