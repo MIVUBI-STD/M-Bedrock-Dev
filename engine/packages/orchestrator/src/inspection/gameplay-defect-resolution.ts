@@ -539,6 +539,8 @@ export function assessGameplayDefectResolutionGate(
       ]),
     ].sort();
 
+    const impactPathLabels = link.impactPathComponentIds.map((id) => graph.components.find((component) => component.id === id)?.label ?? id);
+    const propagatedConsequence = impactPathLabels.length > 0 ? "Dependency impact path: " + impactPathLabels.join(" -> ") + "." : undefined;
     const translationReady =
       scenario !== undefined &&
       link.purpose.trim().length > 0 &&
@@ -614,9 +616,7 @@ export function assessGameplayDefectResolutionGate(
               gameplayTrigger:
                 scenario.purpose,
               gameplayConsequence:
-                "A required dependency for " +
-                scenario.label +
-                " is contradicted, so the scenario can produce an incorrect or blocked player-visible result.",
+                propagatedConsequence ?? ("A required dependency for " + scenario.label + " is contradicted, so the scenario can produce an incorrect or blocked player-visible result."),
               expectedOutcome:
                 link.purpose,
               actualOutcome:
