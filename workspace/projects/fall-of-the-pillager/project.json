@@ -24,7 +24,8 @@
           "artifactFingerprint": "sha256:6df1be2f50404a0b89c2fb08f4d90a4c02eb4d51123ff9c5e03e9860b99938b1",
           "version": "1.1.0"
         }
-      }
+      },
+      "levelName": "Fall of the Pillager v1.1.0"
     },
     {
       "level": 2,
@@ -46,7 +47,8 @@
           "artifactFingerprint": "sha256:9b66dab3550d45a2e1b16aebaaabca85676e969179e2a2f3f557f973abe43889",
           "version": "2.2.2"
         }
-      }
+      },
+      "levelName": "Fall of the Pillager Level 2 v2.2.2"
     }
   ]
 }
