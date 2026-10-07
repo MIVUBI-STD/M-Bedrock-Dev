@@ -1,25 +1,16 @@
 # Workspace Agent Rules
 
-Applies to working artifacts, project execution data, and tracked report handoff under `workspace/`.
-
-## Canonical layout
-
-The workspace structure and ownership rules are defined by:
-
-- `workspace/README.md` — human-readable workspace contract.
-- `workspace/ownership.json` — machine-readable ownership contract.
-
-Do not duplicate the workspace tree in this file.
+Use `workspace/README.md` as the canonical workspace layout contract. Do not duplicate that tree here.
 
 ## Invariants
 
-- Original artifact/source is immutable.
-- Working copies are disposable/rebuildable from source + patch history where possible.
-- Output packages never overwrite the original artifact.
-- Project evidence, patches, state, and generated outputs remain separated by their canonical workspace owners.
-- Derived indexes/caches are not source authority.
+- Preserve existing report, audit, Drive, approval, and publication semantics while reorganizing physical storage.
+- Discover projects from `workspace/projects/**/project.json`; do not create a second global project registry.
+- Keep canonical report state inside its project or level `report/` scope.
+- Keep generated HTML/JSON inside the matching `output/` scope.
+- Never read generated output back as canonical report state.
+- Original/current artifact identity must remain bound to the exact Drive file/version/fingerprint.
+- Do not create empty optional folders or speculative lifecycle trees.
+- Do not flatten a real multi-level game into unrelated top-level projects.
 - Private user artifacts remain ignored and must not be committed.
-- `workspace/reports/` is the only tracked canonical current Bug Report V2 handoff surface.
-- `workspace/developer-notes.json` owns current Developer Notes and must not be merged into Bug Report V2 state.
-- `workspace/publication/` contains derived publication output only; it must never be read back as canonical report/project state.
-- Planning/todo intent does not belong in `workspace/`; repository planning belongs in `planning/`.
+- Planning/todo intent belongs in `planning/`, not `workspace/`.
