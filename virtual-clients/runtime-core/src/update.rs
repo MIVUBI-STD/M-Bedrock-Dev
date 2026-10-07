@@ -228,6 +228,9 @@ pub fn stage_update() -> io::Result<StagedUpdate> {
         ));
     }
 
+    if temporary.exists() {
+        fs::remove_file(&temporary)?;
+    }
     download_to(&platform.url, &temporary, MAX_INSTALLER_BYTES)?;
     let actual = sha256_file(&temporary)?;
     if !actual.eq_ignore_ascii_case(&platform.sha256) {
