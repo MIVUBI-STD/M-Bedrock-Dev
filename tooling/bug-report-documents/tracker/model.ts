@@ -22,6 +22,8 @@ export interface TrackerIssue {
   readonly verification: TrackerVerification;
   readonly title: string;
   readonly issue: string;
+  readonly whyThisIsBug?: string;
+  readonly impact?: string;
   readonly reproduction: readonly string[];
   readonly observed: string;
   readonly expected: string;
