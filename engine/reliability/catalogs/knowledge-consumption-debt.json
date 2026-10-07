@@ -561,12 +561,6 @@
       "nextEvidenceOwner": "runtime-domain-validation"
     },
     {
-      "knowledgeId": "loot.table-multipool-conditional",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "loot-table-analysis"
-    },
-    {
       "knowledgeId": "mount.add-remove-rider-runtime",
       "status": "runtime-required",
       "reason": "Current riders and seat relationships are live runtime state.",

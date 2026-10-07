@@ -12,3 +12,4 @@ export * from "./runtime-evidence.js";
 export * from "./ai-stack.js";
 export * from "./loot.js";
 export * from "./mounts.js";\n
+export * from "./loot-table.js";

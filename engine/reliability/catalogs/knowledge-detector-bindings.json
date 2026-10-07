@@ -2656,6 +2656,16 @@
       ]
     },
     {
+      "knowledgeId": "loot.table-multipool-conditional",
+      "consumer": "loot-table-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/entities/src/loot-table.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/entities/test/loot-table.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "loot.command-can-spawn-or-inject",
       "consumer": "economy-contract-analysis",
       "analyzerPaths": [
