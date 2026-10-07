@@ -22,6 +22,7 @@ mod resources;
 mod runtime;
 mod schema;
 mod support;
+mod startup;
 mod update;
 
 pub use base_preparation::{inspect_base_preparation, BasePreparationReport};
