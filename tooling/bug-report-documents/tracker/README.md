@@ -1,6 +1,6 @@
 # Bug Tracker Projection Pipeline
 
-This directory is the deterministic bridge between canonical Bug Report data and the frozen Golden Bug Tracker presentation.
+This directory is the deterministic bridge between canonical Bug Report data and the canonical Bug Tracker presentation. UI structure, vocabulary, interaction, Map Report, and Combined Report behavior are owned by `docs/system/bug-tracker-ui.md`.
 
 ## Authority
 
@@ -59,7 +59,7 @@ Current filenames stay stable across releases. Version identity comes from the c
 - `project.ts` — binds issue facts to the exact project workspace source.
 - `validate.ts` — hard pre-render gate.
 - `export.ts` — deterministic JSON/HTML parity and output.
-- `../golden/` — frozen visual contract and zero-data template.
+- `../golden/` — visual regression references; `docs/system/bug-tracker-ui.md` owns the current presentation contract.
 
 ## Validation
 
@@ -69,8 +69,7 @@ Generation fails on:
 - missing World File;
 - missing world filename;
 - missing artifact fingerprint;
-- missing reproduction;
-- missing Observed/Expected;
+- malformed required identity/source binding;
 - forbidden internal/prompt language in tester-facing fields;
 - malformed or duplicate Developer Note authority records;
 - inconsistent project workspace artifact/current-world binding;
@@ -149,17 +148,19 @@ Do not reintroduce a second Approved Bug Report renderer.
 
 The standalone Golden Tracker supports tester workspace state without mutating canonical issue facts.
 
-Per issue:
-- Tester Notes;
-- Mark Fixed;
+Per gameplay finding:
+- Passed / Failed tester result;
+- optional Tester Notes;
 - evidence image paste / drag-drop / browse;
 - optional attachment caption;
 - image preview;
 - attachment removal.
 
+Developer Notes remain a separate reference lane and only expose optional Developer Notes workspace text.
+
 Browser workspace state is stored separately from the embedded canonical report.
 
-`Export JSON` produces:
+`Save JSON` produces:
 
 ```json
 {
@@ -168,16 +169,16 @@ Browser workspace state is stored separately from the embedded canonical report.
 }
 ```
 
-`Export HTML Snapshot` embeds the current tester state into the standalone exported HTML so the report can be moved or archived as one file.
+`Save as HTML` embeds the current tester state into the standalone exported HTML so the report can be moved or archived as one file.
 
-`Import JSON` restores tester state. `Reset Tester Data` clears only tester workspace state; canonical issue facts remain unchanged.
+`Load JSON` restores tester state. `Reset Tester Data` clears only tester workspace state; canonical issue facts remain unchanged.
 
 
 ## Information contract
 
 The tracker serves two readers from one projection:
 
-- tester: Problem → Test In-Game → Expected → Berhasil / Belum Berhasil → Notes/Evidence;
+- tester: Problem → Test In-Game → Expected → Passed / Failed → Notes/Evidence;
 - developer: Problem → Technical Details → evidence/mechanism already present in canonical data → Recommended Fix when present.
 
 Do not repeat map/version/source inside each issue; that context belongs to the level source card.
@@ -194,7 +195,7 @@ Missing information stays missing.
 - Technical Analysis is not renamed to Cause unless canonical authority explicitly owns a causal statement.
 - Completeness is never a reason to invent report content.
 
-Tester result is workspace state only: `SUCCESS` (Berhasil) or `FAILED` (Belum Berhasil). It never rewrites canonical finding verification.
+Tester result is workspace state only: Passed or Failed. It never rewrites canonical finding verification.
 
 
 ### Current JSON field semantics
@@ -211,3 +212,24 @@ Keep the existing tracker field names until a deliberate schema-version migratio
 - `mustPreserve[]`: behavior that a fix must not regress.
 
 Do not add aliases such as `problem` beside `issue`, `steps` beside `reproduction`, or `recommendedFix` beside `resolution` inside the same schema. Presentation labels may be clearer than storage names without duplicating data.
+
+
+## Canonical UI contract
+
+Do not derive new presentation rules from historical generated HTML.
+
+The reproducible UI contract is:
+
+`docs/system/bug-tracker-ui.md`
+
+It owns:
+- Map Report as the default one-game presentation;
+- Combined Report as the multi-game briefing presentation;
+- column-major Maps navigation;
+- fixed lane order Bugs → Design Mismatches → Developer Notes;
+- English-only UI vocabulary;
+- desktop readability and active-state hierarchy;
+- Save-as-HTML tester workflow;
+- evidence-honesty and no-invention presentation rules.
+
+Renderer changes must update or preserve its regression requirements.
