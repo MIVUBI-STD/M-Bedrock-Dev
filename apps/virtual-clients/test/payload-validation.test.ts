@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
-  actionAvailability, baseProfile, clientStatus, enginePolicy, engineSnapshot,
+  actionAvailability, basePreparation, baseProfile, clientStatus, enginePolicy, engineSnapshot,
   displayList, lifecycleActions, operationHistory, updateCheck, windowArrangement,
 } from "../src/app/bridge/payloadValidation.js";
 
@@ -59,6 +59,24 @@ describe("Backend payload shapes", () => {
     invalid.diagnostics.host.availableMemoryMb = 16;
     invalid.diagnostics.runtime.pressure.level = "MAYBE";
     expect(engineSnapshot(invalid)).toBe(false);
+  });
+
+  it("validates interactive launcher readiness explicitly", () => {
+    expect(clientStatus({ ...clientFor("Virtual-01"), interactiveLauncherReady: true })).toBe(true);
+    expect(clientStatus({ ...clientFor("Virtual-01"), interactiveLauncherReady: "ready" })).toBe(false);
+  });
+
+  it("validates observed VMware network mode in Base preflight", () => {
+    const value = {
+      platform: "windows", provider: "vmware-workstation", providerVersion: "1",
+      nativeVersion: "1.21.120.0", nativeInstallType: "DESKTOP",
+      baseExpectedPath: "C:\\Base\\Base.vmx", basePresent: true, baseStopped: true,
+      baseState: "FINALIZED", configuredMemoryMb: 4096, configuredVcpus: 2,
+      graphics3dEnabled: true, networkPresent: true, networkStartConnected: true,
+      networkConnectionType: "nat",
+    };
+    expect(basePreparation(value)).toBe(true);
+    expect(basePreparation({ ...value, networkConnectionType: 7 })).toBe(false);
   });
 
   it("rejects unknown client states and mismatched Native identity", () => {
