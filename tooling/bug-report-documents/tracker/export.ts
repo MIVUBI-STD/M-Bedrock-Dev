@@ -12,10 +12,20 @@ export async function exportBugTracker(document: BugTrackerDocument, outDir: str
   const json = JSON.stringify(document, null, 2) + "\n";
   const html = renderHtml(document);
   const ids = trackerIssueIds(document);
-  for (const id of ids) {
-    if (!html.includes('data-issue-id="' + id.replaceAll("&", "&amp;").replaceAll('"', "&quot;") + '"')) {
-      throw new Error("HTML/JSON parity failed for issue " + id + ".");
-    }
+  const renderedIds = [...html.matchAll(/data-issue-id="([^"]+)"/g)].map((match) =>
+    match[1]!
+      .replaceAll("&quot;", '"')
+      .replaceAll("&amp;", "&"),
+  );
+  const canonicalIds = new Set(ids);
+  const renderedIdSet = new Set(renderedIds);
+  if (
+    renderedIds.length !== ids.length ||
+    renderedIdSet.size !== renderedIds.length ||
+    canonicalIds.size !== renderedIdSet.size ||
+    ids.some((id) => !renderedIdSet.has(id))
+  ) {
+    throw new Error("HTML/JSON issue-ID parity failed.");
   }
   await writeFile(join(outDir, "Bug-Tracker-Report.json"), json, "utf8");
   await writeFile(join(outDir, "Bug-Tracker-Report.html"), html, "utf8");
