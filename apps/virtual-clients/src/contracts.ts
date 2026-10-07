@@ -83,8 +83,13 @@ export interface RuntimeStatus {
     parity: ProfileParity;
   };
   pressure: {
-    level: string;
+    totalMemoryMb: number;
+    availableMemoryMb: number;
+    availablePercent: number;
+    cpuUsagePercent: number;
+    level: "NORMAL" | "PRESSURE" | "CRITICAL";
     canStartVirtual: boolean;
+    startDecision: "START_NOW" | "WAIT" | "BLOCK";
   };
   clients: ClientStatus[];
 }
