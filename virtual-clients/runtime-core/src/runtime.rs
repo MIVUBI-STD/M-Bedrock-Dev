@@ -1,6 +1,6 @@
 use crate::{
     client::{
-        ActionAvailability, ClientId, ClientLifecycleActions, ClientState, ClientStatus,
+        ActionAvailability, ClientId, ClientLifecycleActions, ClientState, ClientStatus, ConnectionHealth,
         DestructiveConfirmation, IdentityState, LifecycleBlocker,
     },
     diagnostics::{collect as collect_diagnostics, DiagnosticsReport},
@@ -701,6 +701,7 @@ fn client_status_from_observations(
             minecraft_version: None,
             minecraft_running: None,
             interactive_launcher_ready: None,
+            connection_health: None,
             lineage_parity: Some(ProfileParity::Unknown),
             version_parity: Some(ProfileParity::Unknown),
             vm_identity: Some(IdentityState::Unknown),
@@ -714,6 +715,8 @@ fn client_status_from_observations(
         .map(|minecraft| minecraft.version.clone());
     let parity = version_parity(native, guest);
 
+    let guest_tools_ready = provider.guest_tools_ready(client).ok().flatten();
+    let connection_health = connection_health(state, guest_tools_ready, guest);
     Ok(ClientStatus {
         id: client.as_str(),
         native: false,
@@ -721,17 +724,38 @@ fn client_status_from_observations(
         ready_snapshot: Some(provider.has_ready(client).unwrap_or(false)),
         memory_limit_mb: provider.memory_limit_mb(client).ok(),
         host_working_set_mb: working_set_for(working_sets, client),
-        guest_tools_ready: provider.guest_tools_ready(client).ok().flatten(),
+        guest_tools_ready,
         guest_agent_ready: Some(guest.is_some()),
         guest_agent_version: guest.map(|status| status.agent_version.clone()),
         minecraft_version,
         minecraft_running: guest.and_then(|status| status.minecraft_running),
         interactive_launcher_ready: guest.and_then(|status| status.interactive_launcher_ready),
+        connection_health,
         lineage_parity: Some(lineage_parity(native, client)),
         version_parity: Some(parity),
         vm_identity: Some(vm_identity_state_from_observations(client, observations)),
         windows_identity: Some(windows_identity_state(client, observations)),
     })
+}
+
+fn connection_health(state: ClientState, guest_tools_ready: Option<bool>, guest: Option<&GuestStatus>) -> Option<ConnectionHealth> {
+    if state != ClientState::Running {
+        return (!matches!(state, ClientState::NotProvisioned | ClientState::Error))
+            .then_some(ConnectionHealth::VmOffline);
+    }
+    if guest.and_then(|status| status.minecraft_running) == Some(true) {
+        return Some(ConnectionHealth::MinecraftRunning);
+    }
+    if guest.and_then(|status| status.interactive_launcher_ready) == Some(true) {
+        return Some(ConnectionHealth::InteractiveLauncherReady);
+    }
+    if guest.is_some() {
+        return Some(ConnectionHealth::GuestAgentReady);
+    }
+    if guest_tools_ready == Some(true) {
+        return Some(ConnectionHealth::GuestToolsReady);
+    }
+    Some(ConnectionHealth::VmRunning)
 }
 
 fn client_status(
@@ -1270,6 +1294,7 @@ impl VirtualClients {
                 .map(|profile| profile.version.clone()),
             minecraft_running: None,
             interactive_launcher_ready: None,
+            connection_health: None,
             lineage_parity: None,
             version_parity: None,
             vm_identity: None,
@@ -1436,6 +1461,7 @@ impl VirtualClients {
             minecraft_version: None,
             minecraft_running: None,
             interactive_launcher_ready: None,
+            connection_health: None,
             lineage_parity: Some(ProfileParity::Match),
             version_parity: Some(ProfileParity::Unknown),
             vm_identity: Some(vm_identity_state(provider.as_ref(), client)),
