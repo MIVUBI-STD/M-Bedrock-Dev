@@ -918,7 +918,6 @@ function designMismatchCandidateIssues(
     audit.issueLanes.DESIGN_MISMATCH
       .filter((item) => item.status === "PROVEN")
       .map((item) => item.causalLinkId),
-    ),
   );
   const issues: string[] = [];
 
