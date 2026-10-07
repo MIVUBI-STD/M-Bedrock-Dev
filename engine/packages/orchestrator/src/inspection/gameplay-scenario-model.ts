@@ -31,7 +31,7 @@ export interface GameplayKnowledgeReceipt {
   readonly status: GameplayKnowledgeReceiptStatus;
   readonly evidenceIds: readonly string[];
   /** Exact engine knowledge relations/facts that materially support this scenario requirement. */
-  readonly knowledgeClaimIds: readonly string[];
+  readonly knowledgeIds: readonly string[];
   readonly capabilityIdsUsed: readonly string[];
   readonly subjectIds: readonly string[];
   readonly componentIds: readonly string[];
