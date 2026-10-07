@@ -393,7 +393,13 @@ fn guest_agent_token() -> io::Result<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::timing_safe_token_eq;
+    use super::{timing_safe_token_eq, MAX_GUEST_REQUEST_BYTES, MAX_INTERACTIVE_REQUEST_BYTES};
+
+    #[test]
+    fn transport_limits_are_small_and_explicit() {
+        assert_eq!(MAX_GUEST_REQUEST_BYTES, 4096);
+        assert_eq!(MAX_INTERACTIVE_REQUEST_BYTES, 512);
+    }
 
     #[test]
     fn guest_token_comparison_requires_exact_match() {
