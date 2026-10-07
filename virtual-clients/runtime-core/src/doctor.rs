@@ -398,7 +398,7 @@ mod tests {
     use crate::{
         guest::{GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA},
         profile::{
-            BaseProfile, BaseProfileSource, BaseState, ClientProfile, MinecraftInstallType,
+            BaseProfile, BaseState, ClientProfile, MinecraftInstallType,
             MinecraftProfile, ProfileParity, BASE_PROFILE_SCHEMA, CLIENT_PROFILE_SCHEMA,
         },
         schema::{SchemaState, SchemaStatus},
@@ -434,7 +434,6 @@ mod tests {
             guest_status_schema: GUEST_STATUS_SCHEMA,
             guest_agent_protocol: GUEST_AGENT_PROTOCOL_VERSION,
             base_generation_id: "a".repeat(64),
-            source: BaseProfileSource::LiveVerified,
         };
         let current = ClientProfile {
             schema: CLIENT_PROFILE_SCHEMA,
