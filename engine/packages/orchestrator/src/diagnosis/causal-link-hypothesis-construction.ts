@@ -110,7 +110,12 @@ export function constructCausalLinkHypothesis(input: {
     },
     evidenceIds: [...new Set([
       ...link.evidenceIds,
+      ...link.impactPathEvidenceIds,
+      ...knowledgeReceipts.flatMap(
+        (receipt) => receipt.evidenceIds,
+      ),
       ...(input.resolution.evidenceIds ?? []),
+      ...(input.resolution.counterProofSearch?.evidenceIds ?? []),
     ])].sort(),
     requiredPredicateIds: requiredPredicates,
     falsifierPredicateIds: falsifierPredicates,
