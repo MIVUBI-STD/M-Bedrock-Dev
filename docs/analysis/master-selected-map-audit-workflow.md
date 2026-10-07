@@ -534,6 +534,52 @@ Compound shared-capacity boundaries may add selected combinations such as:
 
 Do not brute-force unrelated combinations.
 
+## Runtime contradiction precedence
+
+A direct selected-artifact runtime contradiction overrides static plausibility immediately.
+
+```text
+config/source predicts success
++
+runtime reproduces failure
+→ RUNTIME-CONTRADICTED
+→ previous SAFE/FIXED label is invalid
+→ reopen causal chain downstream and upstream
+```
+
+Do not defend a static conclusion by citing intended capacity, comments, arithmetic, or apparently correct code after runtime has contradicted delivery.
+
+### Delivery-proof vocabulary
+
+Use these meanings strictly:
+
+- `PROVEN`: selected-artifact evidence closes reachability, contract, contradiction/conformance, consequence, and counter-proof.
+- `RUNTIME-CONTRADICTED`: runtime disproves a source/config success claim; treat the affected capability as failing until root cause/fix is proven.
+- `SOURCE-SUPPORTED BUT UNPROVEN`: implementation appears to support the capability, but effective runtime delivery has not been demonstrated.
+- `REJECTED`: candidate lacks a reachable contradiction after counter-proof.
+
+Never translate `SOURCE-SUPPORTED BUT UNPROVEN` into SAFE, FIXED, WORKING, PLAYABLE, or equivalent user-facing language.
+
+### End-to-end gate closure
+
+For any capability with admission, startup, queue, lease, preload, readiness, recovery, or other gates, audit the entire delivery chain rather than only the target mechanism.
+
+Example:
+
+```text
+Ready
+→ global startup gates
+→ queue admission
+→ reservation
+→ native resource allocation
+→ readiness verification
+→ countdown
+→ preload
+→ gameplay active
+```
+
+A correct mechanism after a closed gate does not prove the capability is deliverable.
+
 ## 4.4.1 Per-arena gameplay parity
 
 For multi-arena maps, MULTI_ARENA closure requires more than capacity and selector isolation.
