@@ -49,7 +49,7 @@ describe("causal link hypothesis construction", () => {
           domain: "platform-constraints",
           status: "SATISFIED",
           evidenceIds: ["analysis:platform-constraints"],
-          knowledgeClaimIds: ["chunks.relation.player-proximity-activates-simulation"],
+          knowledgeIds: ["chunks.relation.player-proximity-activates-simulation"],
           capabilityIdsUsed: ["analysis:platform-constraints"],
           subjectIds: ["subject"],
           componentIds: ["c1"],
