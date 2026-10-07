@@ -161,6 +161,10 @@ jobs:
           & (Join-Path $installDir 'distribution\write-payload-manifest.ps1') -Root $installDir -OutputPath $payloadManifest
 
           $desktop = Join-Path $installDir 'm-bedrock-virtual-clients.exe'
+          $desktopVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($desktop)
+          if ($desktopVersion.ProductVersion -and $desktopVersion.ProductVersion -notlike '${{ steps.release.outputs.version }}*') {
+            throw "Installed desktop ProductVersion drifted: $($desktopVersion.ProductVersion)"
+          }
           $desktopSignature = Get-AuthenticodeSignature -LiteralPath $desktop
           $desktopSigned = $desktopSignature.Status -eq 'Valid' -and $desktopSignature.SignerCertificate -and $desktopSignature.SignerCertificate.Thumbprint.Replace(' ', '').ToUpperInvariant() -eq $thumbprint
 
@@ -171,7 +175,9 @@ jobs:
           if (!(Test-Path -LiteralPath $sentinel -PathType Leaf)) { throw 'Trusted uninstall removed runtime data.' }
           Remove-Item -LiteralPath $sentinel -Force
 
+          $payloadManifestSha256 = (Get-FileHash -LiteralPath $payloadManifest -Algorithm SHA256).Hash.ToLowerInvariant()
           "payload_manifest=$payloadManifest" >> $env:GITHUB_OUTPUT
+          "payload_manifest_sha256=$payloadManifestSha256" >> $env:GITHUB_OUTPUT
           "desktop_signed=$($desktopSigned.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
 
       - name: Build trusted release metadata
@@ -197,6 +203,8 @@ jobs:
             desktop_stack = 'tauri2-svelte5'
             installer = $installer.Name
             installer_sha256 = $hash
+            installed_payload_manifest = 'installed-payloads.json'
+            installed_payload_manifest_sha256 = '${{ steps.installed.outputs.payload_manifest_sha256 }}'
             runtime_schema = [int]$runtimeSchema.Groups[1].Value
             guest_agent_version = '${{ steps.release.outputs.version }}'
             guest_agent_protocol = [int]$guestProtocol.Groups[1].Value
