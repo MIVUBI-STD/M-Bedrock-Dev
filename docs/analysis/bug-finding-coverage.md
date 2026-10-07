@@ -347,6 +347,29 @@ Explicitly challenge:
 
 ### Transaction atomicity
 
+Any gameplay exchange with two or more mutations must be treated as a transaction candidate, but a defensive failure branch is not proof that the failure is reachable.
+
+Before promoting a partial-transaction candidate to PROVEN, establish both:
+
+```text
+reachable failure trigger on the selected artifact
++
+missing/incorrect rollback, refund, idempotency, or commit handling
+→ reachable wrong player state
+```
+
+The following evidence alone is insufficient to prove a gameplay defect:
+
+- a `try/catch` exists;
+- an API/command can theoretically throw;
+- an error message exists;
+- rollback/refund code is absent;
+- a fallback branch exists;
+- an operation is asynchronous;
+- a hypothetical full-inventory/network/platform failure was not observed in selected-artifact evidence.
+
+If no concrete reachable failure trigger can be established after source, platform-contract, and selected-artifact counter-proof, reject the gameplay finding. Do not preserve it as NEED_VALIDATION merely because failure is theoretically imaginable.
+
 Any gameplay exchange with two or more mutations must be treated as a transaction candidate:
 
 ```text
