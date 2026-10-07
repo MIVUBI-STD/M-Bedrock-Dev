@@ -16,14 +16,24 @@ if (!(Test-Path -LiteralPath $vmtoolsd -PathType Leaf)) {
 
 $root = Join-Path $env:ProgramData 'M-Bedrock\VirtualClients'
 $agent = Join-Path $root 'virtual-guest-agent.exe'
+$taskName = 'M-Bedrock Virtual Guest Agent'
 New-Item -ItemType Directory -Path $root -Force | Out-Null
+
+# Repair/upgrade is idempotent. Stop the existing SYSTEM task before replacing
+# its executable so a running process cannot keep an old binary alive.
+$existingTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+if ($existingTask) {
+  Stop-ScheduledTask -InputObject $existingTask -ErrorAction SilentlyContinue
+}
+Get-Process -Name 'virtual-guest-agent' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 Copy-Item -LiteralPath $AgentSource -Destination $agent -Force
 
 $action = New-ScheduledTaskAction -Execute $agent
 $trigger = New-ScheduledTaskTrigger -AtStartup
 $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit ([TimeSpan]::Zero)
-Register-ScheduledTask -TaskName 'M-Bedrock Virtual Guest Agent' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null
+Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null
+Start-ScheduledTask -TaskName $taskName
 
 $publicDesktop = [Environment]::GetFolderPath('CommonDesktopDirectory')
 $interactiveSetup = Join-Path $publicDesktop 'Enable Virtual Clients Launcher.cmd'
