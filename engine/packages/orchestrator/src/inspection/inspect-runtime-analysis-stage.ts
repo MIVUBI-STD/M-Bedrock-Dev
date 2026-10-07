@@ -1,4 +1,4 @@
-import {
+import { assessArenaResetClosure } from "../arena/arena-reset-closure-analysis.js";\nimport {
   entityHasConfiguredTargeting,
   entityHasNavigation,
   entityRuntimeKey,
