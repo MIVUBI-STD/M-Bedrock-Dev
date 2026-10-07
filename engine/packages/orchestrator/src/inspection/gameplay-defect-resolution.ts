@@ -805,7 +805,8 @@ export function assessGameplayDefectResolutionGate(
   }
 
   const runtimeAndGapResolutions: GameplayDefectResolution[] = [
-    ...runtimeBlocked.map((link) => ({
+    ...runtimeBlocked.map((link) =>
+      byId.get(link.id) ?? ({
       causalLinkId: link.id,
       scenarioId: link.scenarioId,
       knowledgeRequirementIds: [...link.knowledgeRequirementIds],
@@ -817,7 +818,8 @@ export function assessGameplayDefectResolutionGate(
       narrowRuntimeQuestion:
         "Does the native runtime exhibit the unresolved behavior for this exact dependency under the selected-artifact scenario?",
     })),
-    ...detectionGaps.map((link) => ({
+    ...detectionGaps.map((link) =>
+      byId.get(link.id) ?? ({
       causalLinkId: link.id,
       scenarioId: link.scenarioId,
       knowledgeRequirementIds: [...link.knowledgeRequirementIds],
