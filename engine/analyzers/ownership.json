@@ -21,6 +21,7 @@
       "purpose": "Derive entity and gameplay-intent semantics from authored evidence.",
       "modules": [
         "entities",
+        "blocks",
         "gameplay-intent"
       ]
     },

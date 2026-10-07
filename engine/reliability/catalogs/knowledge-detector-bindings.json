@@ -194,6 +194,28 @@
       ]
     },
     {
+      "knowledgeId": "automation.block-tick-random-interval",
+      "consumer": "block-automation-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/blocks/src/parse.ts",
+        "engine/analyzers/blocks/src/automation.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/blocks/test/automation.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "automation.queued-ticking-deprecated",
+      "consumer": "block-automation-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/blocks/src/parse.ts",
+        "engine/analyzers/blocks/src/automation.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/blocks/test/automation.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "automation.chain-conditional-depends-previous",
       "consumer": "command-block-chain-analysis",
       "analyzerPaths": [

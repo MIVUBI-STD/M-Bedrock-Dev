@@ -21,18 +21,6 @@
       "nextEvidenceOwner": "block-automation-analysis"
     },
     {
-      "knowledgeId": "automation.block-tick-random-interval",
-      "status": "static-capability-gap",
-      "reason": "Block minecraft:tick components are not structurally parsed.",
-      "nextEvidenceOwner": "block-automation-analysis"
-    },
-    {
-      "knowledgeId": "automation.queued-ticking-deprecated",
-      "status": "static-capability-gap",
-      "reason": "Legacy queued_ticking compatibility lacks block-component compatibility analysis.",
-      "nextEvidenceOwner": "block-automation-analysis"
-    },
-    {
       "knowledgeId": "automation.redstone-update-needs-consumer",
       "status": "static-capability-gap",
       "reason": "Redstone consumer/callback contract is not structurally modeled.",
