@@ -845,20 +845,37 @@ export function assessGameplayDefectResolutionGate(
   }
 
   const runtimeAndGapResolutions: GameplayDefectResolution[] = [
-    ...runtimeBlocked.map((link) =>
-      byId.get(link.id) ?? ({
-      causalLinkId: link.id,
-      scenarioId: link.scenarioId,
-      knowledgeRequirementIds: [...link.knowledgeRequirementIds],
-      subjectIds: [...link.subjectIds],
-      componentIds: [...link.componentIds],
-      evidenceIds: [...link.evidenceIds],
-      disposition: "RUNTIME_PROOF_REQUIRED" as const,
-      runtimeReason: link.reason,
-      narrowRuntimeQuestion:
-        runtimeQuestionFor(link) ??
-        "Runtime-native reason is missing; do not execute a broad validation test.",
-    })),
+    ...runtimeBlocked.map((link) => {
+      const supplied = byId.get(link.id);
+      if (supplied) return supplied;
+      const runtimeQuestion = runtimeQuestionFor(link);
+      if (runtimeQuestion === undefined) {
+        return {
+          causalLinkId: link.id,
+          scenarioId: link.scenarioId,
+          knowledgeRequirementIds: [...link.knowledgeRequirementIds],
+          subjectIds: [...link.subjectIds],
+          componentIds: [...link.componentIds],
+          evidenceIds: [...link.evidenceIds],
+          disposition: "DETECTION_GAP" as const,
+          detectionGapReason:
+            "RUNTIME_BLOCKED causal link has no typed runtime-native semantic boundary.",
+          missingCapability:
+            "Classify the irreducible runtime semantic before requesting validation.",
+        };
+      }
+      return {
+        causalLinkId: link.id,
+        scenarioId: link.scenarioId,
+        knowledgeRequirementIds: [...link.knowledgeRequirementIds],
+        subjectIds: [...link.subjectIds],
+        componentIds: [...link.componentIds],
+        evidenceIds: [...link.evidenceIds],
+        disposition: "RUNTIME_PROOF_REQUIRED" as const,
+        runtimeReason: link.reason,
+        narrowRuntimeQuestion: runtimeQuestion,
+      };
+    }),
     ...detectionGaps.map((link) =>
       byId.get(link.id) ?? ({
       causalLinkId: link.id,
