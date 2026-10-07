@@ -281,6 +281,18 @@ Rules:
 7. Work Session, project registry, Audit Obligations, semantic evidence, caches, and control-plane state stay outside Drive.
 
 Drive is approved human-facing storage, not the engine/project-state database. Repository project/level identity is bound to Drive by the matching `project.json`; GitHub and Drive do not mirror folder-for-folder.
+
+Version history is intentionally split by responsibility:
+
+```text
+Drive Development/Versions/
+→ retained map binaries and build history
+
+GitHub project/level archive/vX.Y.Z/
+→ only retained historical report/output artifacts
+```
+
+Do not copy archived .mcworld binaries into GitHub merely to mirror Drive. Do not create GitHub archive entries for versions that have no historical report/output worth retaining.
 ## Drive root
 
 The configured Drive root stays map-centric:
