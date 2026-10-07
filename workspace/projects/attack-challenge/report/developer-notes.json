@@ -68,6 +68,20 @@
         "apiProperty": "doDayLightCycle"
       },
       "severity": null
+    },
+    {
+      "id": "DEV-ATK-CHANGELOG-STALE",
+      "type": "DEV_NOTE",
+      "title": "Drive Changelog Still Marks v1.1.1 as Current",
+      "problem": "The selected Drive folder now contains Attack Challenge v1.1.2.mcworld, but the adjacent Attack Challenge changelog still declares v1.1.1 as Current. This creates release-authority ambiguity even though the current world artifact and pack manifests identify v1.1.2.",
+      "action": "Update the Drive changelog so Current Version and Version History identify v1.1.2, and keep the current-world artifact as the release authority.",
+      "evidence": {
+        "artifactVersion": "1.1.2",
+        "worldFileId": "1pUaupQNlb-bx4qPkgLACtmfdXpj4iccA",
+        "changelogDocumentId": "13RaNOcQWbk93hCU1Y2-uD2vTDY2hdh2u4peZN0y2GVc",
+        "finding": "Drive world filename is Attack Challenge v1.1.2.mcworld while the changelog text says Current Version v1.1.1 / v1.1.1 — Current."
+      },
+      "severity": null
     }
   ]
 }
