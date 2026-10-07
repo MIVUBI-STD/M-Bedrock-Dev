@@ -861,8 +861,8 @@ async function main(): Promise<void> {
     renderBugTrackerHtml,
   );
   process.stdout.write(
-    join(args.outDir, "Bug-Tracker-Report.html") + "\n" +
-    join(args.outDir, "Bug-Tracker-Report.json") + "\n",
+    join(args.outDir, "bug-tracker.html") + "\n" +
+    join(args.outDir, "bug-tracker.json") + "\n",
   );
 }
 
