@@ -9,14 +9,8 @@
     "artifactFingerprint": "sha256:c7a208ccb943d214de6bb6d2f15f265f8dba2b794ae56da40a11bef24162776a",
     "version": "1.1.1"
   },
-  "work": {},
-  "knowledge": {
-    "bugReportPath": "workspace/projects/composite-challenge/report/bug-report.json"
-  },
   "publication": {
     "drive": {
-      "schemaVersion": 1,
-      "projectId": "composite-challenge",
       "mapFolder": {
         "folderId": "1Pbe0zhS8iGsyvTocmJgeLzb8GG-8Rb3h",
         "label": "Challenge - Composite Map"
