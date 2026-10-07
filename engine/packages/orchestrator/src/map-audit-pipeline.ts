@@ -119,6 +119,9 @@ import {
   diagnosticDispositionForDefectResolution,
 } from "./diagnosis/defect-resolution-diagnostic-disposition.js";
 import {
+  assessReasoningMonotonicity,
+} from "./reporting/reasoning-monotonicity.js";
+import {
   auditCandidateGroupCoverageIssues,
   groupReadyAuditIssuesForCandidateCoverage,
   type ReadyAuditCandidateGroup,
@@ -870,12 +873,41 @@ export function resolveSelectedMapAudit(
     hiddenGameplayDefects: hidden,
     mandatoryAuditProcedure,
   };
-  return assembleSelectedMapAuditRun(
+  const nextAudit = assembleSelectedMapAuditRun(
     updatedInspection,
     input.audit.demandReconciliation,
     input.audit.userIntent,
     input.runtimeProbeTranscript,
   );
+  const previousReasoning = Object.fromEntries([
+    ...input.audit.mapAuditReport.bugs,
+    ...input.audit.mapAuditReport.designMismatches,
+  ].flatMap((finding) =>
+    finding.reasoning
+      ? [[finding.id, finding.reasoning] as const]
+      : []
+  ));
+  const nextReasoning = Object.fromEntries([
+    ...nextAudit.mapAuditReport.bugs,
+    ...nextAudit.mapAuditReport.designMismatches,
+  ].flatMap((finding) =>
+    finding.reasoning
+      ? [[finding.id, finding.reasoning] as const]
+      : []
+  ));
+  const monotonicityIssues = assessReasoningMonotonicity(
+    previousReasoning,
+    nextReasoning,
+  );
+  if (monotonicityIssues.length > 0) {
+    throw new Error(
+      "Refusing non-monotonic reasoning resolution: " +
+      monotonicityIssues.map((issue) =>
+        issue.causalLinkId + ": " + issue.reason
+      ).join("; "),
+    );
+  }
+  return nextAudit;
 }
 
 function designMismatchCandidateIssues(
