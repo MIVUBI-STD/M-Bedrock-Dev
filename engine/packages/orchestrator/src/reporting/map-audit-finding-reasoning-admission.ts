@@ -74,10 +74,10 @@ export function admitMapAuditFindingReasoning(
           );
         }
         if (
-          candidate.projection.reportClassification !== "PROVEN"
+          candidate.projection.reportClassification !== "PROVEN BUG"
         ) {
           reasons.push(
-            "A PROVEN audit finding requires PROVEN report reasoning classification.",
+            "A PROVEN audit finding requires PROVEN BUG reasoning classification.",
           );
         }
       }
