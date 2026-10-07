@@ -484,7 +484,7 @@ impl Provider for VmwareWorkstationProvider {
             self.stop(client)?;
         }
 
-        command_output_with_timeout(
+        let revert = command_output_with_timeout(
             self.require_vmrun()?,
             [
                 "-T",
@@ -494,7 +494,15 @@ impl Provider for VmwareWorkstationProvider {
                 READY_SNAPSHOT_NAME,
             ],
             DISK_STATE_TIMEOUT,
-        )?;
+        );
+        if let Err(error) = revert {
+            // Snapshot revert has no cheap provider fact that proves the exact
+            // disk state reached. Do not replay an unknown destructive mutation.
+            return Err(io::Error::new(
+                error.kind(),
+                format!("QA_READY revert outcome is unknown; inspect the VM before retrying: {error}"),
+            ));
+        }
         let start = command_output(
             self.require_vmrun()?,
             ["-T", "ws", "start", vmx.to_string_lossy().as_ref(), "gui"],
