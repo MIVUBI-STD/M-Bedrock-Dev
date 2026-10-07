@@ -69,3 +69,19 @@ per-device memory. Keep the existing host-pressure authority and low-graphics
 profile until target-machine evidence shows that a different ceiling improves
 three-guest concurrency without destabilizing the host.
 
+
+
+## Network design principles
+
+Virtual Clients keeps networking deliberately narrower than a general application gateway.
+
+Adopted principles:
+- local-only helper transport stays bound to loopback;
+- Guest Agent transport remains authenticated per Virtual and exposes bounded product actions only;
+- health/readiness and gameplay capability remain separate observations;
+- ambiguous mutation outcomes are reconciled from provider truth before any retry;
+- mutation requests are never automatically replayed when their outcome is unknown;
+- malformed or unsupported protocol input fails closed;
+- Internet connectivity is diagnostic evidence only and never proves Minecraft multiplayer readiness.
+
+Do not copy a generic HTTP/MCP gateway into Virtual Clients. Add transport machinery only when an existing bounded owner cannot express a proven product requirement.
