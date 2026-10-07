@@ -1,4 +1,5 @@
 use crate::{
+    capacity::current_host_capacity,
     client::{
         ActionAvailability, ClientId, ClientLifecycleActions, ClientState, ClientStatus, ConnectionHealth,
         DestructiveConfirmation, IdentityState, LifecycleBlocker,
@@ -1287,7 +1288,7 @@ impl VirtualClients {
         }
 
         let _lock = OperationLock::acquire_shared()?;
-        let host = doctor();
+        let capacity = current_host_capacity();
 
         let provider = current_platform_provider().ok_or_else(|| {
             io::Error::new(
@@ -1330,7 +1331,7 @@ impl VirtualClients {
 
         Ok(ResourceView {
             requested_virtual_clients: count,
-            recommended_virtual_clients: host.max_recommended_virtual_clients,
+            recommended_virtual_clients: capacity.recommended_virtual_clients,
             running_virtual_clients: running,
             suspended_virtual_clients: suspended,
             stopped_virtual_clients: stopped,
