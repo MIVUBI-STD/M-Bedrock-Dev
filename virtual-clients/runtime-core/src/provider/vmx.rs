@@ -1,5 +1,4 @@
 use crate::{
-    client::ClientId,
     policy::VIRTUAL_VCPUS,
     profile::BaseState,
     resources::VIRTUAL_MEMORY_LIMIT_MB,
@@ -72,11 +71,6 @@ pub(crate) fn rotate_guest_token_for_path(vmx: &Path) -> io::Result<String> {
     output.push('\n');
     fs::write(vmx, output)?;
     Ok(token)
-}
-
-pub(crate) fn guest_token(client: ClientId, vmx: &Path) -> io::Result<Option<String>> {
-    let _ = client;
-    guest_token_for_path(vmx)
 }
 
 pub(crate) fn valid_guest_token(token: &str) -> bool {
