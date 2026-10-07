@@ -4964,7 +4964,7 @@
       ]
     },
     {
-      "knowledgeId": "tick.currentTick-is-observation-not-transaction",
+      "knowledgeId": "tick.current-tick-is-observation-not-transaction",
       "consumer": "event-ordering-analysis",
       "analyzerPaths": [
         "engine/analyzers/scripts/src/parser/parse.ts",
