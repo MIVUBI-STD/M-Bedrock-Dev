@@ -160,7 +160,6 @@ export function projectionContext(
       .filter((domain): domain is NonNullable<typeof domain> =>
         domain !== undefined
       );
-  const knowledgeDomain = knowledgeDomains[0];
   const relatedDelivery =
     relatedCapabilityDelivery(
       scenario.label,
@@ -180,9 +179,7 @@ export function projectionContext(
       gameplayStage: scenario.gameplayStage,
       scenarioLabel: scenario.label,
       componentIds,
-      ...(knowledgeDomain === undefined
-        ? {}
-        : { knowledgeDomain }),
+      knowledgeDomains,
     });
 
   return {
@@ -190,7 +187,7 @@ export function projectionContext(
     scenario,
     subjectIds,
     componentIds,
-    knowledgeDomain,
+    knowledgeDomains,
     playerFacingEvidenceIds,
     informationMismatch:
       relatedDelivery.some(
