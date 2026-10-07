@@ -30,8 +30,25 @@ fn temporary_path(path: &Path) -> io::Result<PathBuf> {
     Ok(parent.join(format!(".{name}.{}.tmp", std::process::id())))
 }
 
+fn reject_unsafe_existing_file(path: &Path) -> io::Result<()> {
+    let metadata = match fs::symlink_metadata(path) {
+        Ok(metadata) => metadata,
+        Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(()),
+        Err(error) => return Err(error),
+    };
+    if metadata.file_type().is_symlink() || !metadata.file_type().is_file() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!("metadata path is not a regular file: {}", path.display()),
+        ));
+    }
+    Ok(())
+}
+
 fn recover_interrupted_replace(path: &Path) -> io::Result<()> {
     let backup = backup_path(path)?;
+    reject_unsafe_existing_file(path)?;
+    reject_unsafe_existing_file(&backup)?;
 
     match (path.exists(), backup.exists()) {
         (false, true) => fs::rename(backup, path),
@@ -54,6 +71,8 @@ pub(crate) fn write_text_transactional(path: &Path, contents: &str) -> io::Resul
 
     let temporary = temporary_path(path)?;
     let backup = backup_path(path)?;
+    reject_unsafe_existing_file(&temporary)?;
+    reject_unsafe_existing_file(&backup)?;
     if temporary.exists() {
         fs::remove_file(&temporary)?;
     }
