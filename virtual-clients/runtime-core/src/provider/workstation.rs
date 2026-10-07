@@ -440,7 +440,7 @@ impl Provider for VmwareWorkstationProvider {
             ));
         }
 
-        command_output_with_timeout(
+        let result = command_output_with_timeout(
             self.require_vmrun()?,
             [
                 "-T",
@@ -450,7 +450,13 @@ impl Provider for VmwareWorkstationProvider {
                 READY_SNAPSHOT_NAME,
             ],
             DISK_STATE_TIMEOUT,
-        )?;
+        );
+        if let Err(error) = result {
+            if self.has_ready(client).unwrap_or(false) {
+                return Ok(ClientState::Stopped);
+            }
+            return Err(error);
+        }
         Ok(ClientState::Stopped)
     }
 
