@@ -6,6 +6,8 @@ import {
   type IntentDiagnosticDisposition,
 } from "../../../diagnostic-reasoning/src/index.js";
 import type {
+  DiagnosticProbeDefinition,
+  RuntimeProbeBinding,
   RuntimeProbeTranscript,
 } from "../../../project-model/src/index.js";
 import type {
@@ -26,6 +28,9 @@ import {
 import {
   admitMapAuditFindingReasoning,
 } from "../reporting/map-audit-finding-reasoning-admission.js";
+import {
+  deriveCrossDomainProbeCandidates,
+} from "./cross-domain-probe-candidate-adapter.js";
 
 export type CausalLinkReasoningStatus =
   | "ADMITTED"
@@ -55,6 +60,8 @@ export function reasonAboutCausalLinkFinding(input: {
   diagnosticDisposition: IntentDiagnosticDisposition;
   runtimeProbeTranscript?: RuntimeProbeTranscript;
   probeCandidates?: readonly DiagnosticProbeCandidate[];
+  probeDefinitions?: readonly DiagnosticProbeDefinition[];
+  runtimeProbeBindings?: readonly RuntimeProbeBinding[];
   expectedArtifactId?: string;
   expectedRuntimeScope?: import("../../../project-model/src/index.js").RuntimeScope;
 }): CausalLinkReasoningReceipt {
@@ -110,9 +117,17 @@ export function reasonAboutCausalLinkFinding(input: {
     input.diagnosticDisposition,
     assessment,
   );
+  const canonicalProbeCandidates =
+    input.probeDefinitions && input.runtimeProbeBindings
+      ? deriveCrossDomainProbeCandidates(
+          assessment.hypothesisId,
+          input.probeDefinitions,
+          input.runtimeProbeBindings,
+        )
+      : [];
   const probe = planMinimalCrossDomainProbes(
     [assessment],
-    input.probeCandidates ?? [],
+    input.probeCandidates ?? canonicalProbeCandidates,
   )[0];
 
   const admission = admitMapAuditFindingReasoning(
