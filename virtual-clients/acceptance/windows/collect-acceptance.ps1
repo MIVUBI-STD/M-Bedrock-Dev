@@ -78,6 +78,9 @@ $summary = [ordered]@{
         guestToolsReady = $_.guestToolsReady
         guestAgentReady = $_.guestAgentReady
         guestAgentVersion = $_.guestAgentVersion
+        connectionHealth = $_.connectionHealth
+        interactiveLauncherReady = $_.interactiveLauncherReady
+        minecraftRunning = $_.minecraftRunning
         minecraftVersion = $_.minecraftVersion
         lineageParity = [string]$_.lineageParity
         versionParity = [string]$_.versionParity
@@ -86,6 +89,26 @@ $summary = [ordered]@{
       }
     }
   )
+  virtualHardware = @(
+    $diagnostics.virtualHardware | ForEach-Object {
+      [ordered]@{
+        id = $_.id
+        networkMode = $_.networkMode
+        networkConfigurationObserved = $_.networkConfigurationObserved
+        multiplayerVerified = $_.multiplayerVerified
+        graphics3dEnabled = $_.graphics3dEnabled
+        graphicsPolicyReady = $_.graphicsPolicyReady
+      }
+    }
+  )
+  host = [ordered]@{
+    logicalCpus = $diagnostics.host.logicalCpus
+    totalMemoryMb = $diagnostics.host.totalMemoryMb
+    availableMemoryMb = $diagnostics.host.availableMemoryMb
+    hypervisorPresent = $diagnostics.host.hypervisorPresent
+    vbsStatus = $diagnostics.host.vbsStatus
+    graphics = @($diagnostics.host.graphics)
+  }
   resources = [ordered]@{
     requestedVirtualClients = $resources.requestedVirtualClients
     runningVirtualClients = $resources.runningVirtualClients
