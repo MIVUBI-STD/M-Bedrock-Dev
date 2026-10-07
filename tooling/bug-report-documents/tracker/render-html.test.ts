@@ -42,6 +42,8 @@ describe("Golden Bug Tracker renderer", () => {
     validateBugTrackerDocument(fixture);
     const html = renderBugTrackerHtml(fixture);
     expect(html).toContain("Bug Tracker Report");
+    expect(html).toContain(">Maps<");
+    expect(html).toContain("Needs Validation");
     expect(html).toContain("Expand Map ↓");
     expect(html).toContain("Collapse Map ↑");
     expect(html).toContain("LEVEL 1");
@@ -54,8 +56,10 @@ describe("Golden Bug Tracker renderer", () => {
     expect(html).toContain("EXPECTED");
     expect(html).toContain("Technical Details ↓");
     expect(html).toContain("Recommended Fix");
-    expect(html).toContain("✓ Berhasil");
-    expect(html).toContain("✕ Belum Berhasil");
+    expect(html).toContain("TEST RESULT");
+    expect(html).toContain("✓ PASSED");
+    expect(html).toContain("✕ FAILED");
+    expect(html).toContain("Tester Notes");
     expect(html).not.toContain("Mark fixed");
     expect(html).toContain('data-issue-id="BUG-GOLDEN-001"');
     expect(html).not.toContain("<details class=\"map\" open");
@@ -83,8 +87,8 @@ describe("Golden Bug Tracker renderer", () => {
     expect(html).not.toContain("TEST IN-GAME");
     expect(html).not.toContain("EXPECTED");
     expect(html).not.toContain("Recommended Fix");
-    expect(html).toContain("✓ Berhasil");
-    expect(html).toContain("✕ Belum Berhasil");
+    expect(html).toContain("✓ PASSED");
+    expect(html).toContain("✕ FAILED");
   });
 
   it("rejects duplicate issue IDs before rendering", () => {
