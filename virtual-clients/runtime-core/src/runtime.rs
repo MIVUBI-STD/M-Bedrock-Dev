@@ -9,6 +9,7 @@ use crate::{
         guest_agent_protocol_compatible, query_guest_status, GuestStatus,
         GUEST_AGENT_PROTOCOL_VERSION,
     },
+    identity::classify_identity_state,
     journal::{record_operation, OperationKind},
     lifecycle_admission::{
         evaluate_lifecycle_admission, require_lifecycle_admission, validate_power_state,
@@ -74,32 +75,6 @@ fn require_base_finalization_state(state: Option<BaseState>) -> io::Result<()> {
         io::ErrorKind::InvalidInput,
         "Base can be opened for finalization only while it is REGISTERED",
     ))
-}
-
-fn identity_components(value: &str) -> Option<(&str, &str)> {
-    let (uuid, mac) = value.split_once('|')?;
-    let (uuid, mac) = (uuid.trim(), mac.trim());
-    (!uuid.is_empty() && !mac.is_empty() && !mac.contains('|')).then_some((uuid, mac))
-}
-
-fn classify_identity_state<'a>(
-    current: Option<&'a str>,
-    peers: impl IntoIterator<Item = Option<&'a str>>,
-) -> IdentityState {
-    let Some((uuid, mac)) = current.and_then(identity_components) else {
-        return IdentityState::Unknown;
-    };
-
-    for peer in peers {
-        let Some((peer_uuid, peer_mac)) = peer.and_then(identity_components) else {
-            return IdentityState::Unknown;
-        };
-        if uuid.eq_ignore_ascii_case(peer_uuid) || mac.eq_ignore_ascii_case(peer_mac) {
-            return IdentityState::Duplicate;
-        }
-    }
-
-    IdentityState::Unique
 }
 
 #[derive(Debug, Clone)]
