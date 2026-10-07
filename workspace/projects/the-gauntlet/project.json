@@ -9,14 +9,8 @@
     "artifactFingerprint": "sha256:d53363c5e9e909e6c5c1e9ffde37354b2c2444c8ed31708d93759a955acced95",
     "version": "1.0.2"
   },
-  "work": {},
-  "knowledge": {
-    "bugReportPath": "workspace/projects/the-gauntlet/report/bug-report.json"
-  },
   "publication": {
     "drive": {
-      "schemaVersion": 1,
-      "projectId": "the-gauntlet",
       "mapFolder": {
         "folderId": "1m7BYH2uCoayAJOzKfTpySJbyyX9cc7NM",
         "label": "Minigame - The Gauntlet"
