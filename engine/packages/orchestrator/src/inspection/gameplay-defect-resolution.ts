@@ -801,6 +801,29 @@ export function assessGameplayDefectResolutionGate(
       );
       continue;
     }
+    const sourceLink = graph.causalLinks.find(
+      (link) => link.id === resolution.causalLinkId,
+    );
+    if (
+      sourceLink?.status === "DETECTION_GAP" &&
+      resolution.disposition === "RUNTIME_PROOF_REQUIRED"
+    ) {
+      issues.push(
+        resolution.causalLinkId +
+          ": DETECTION_GAP cannot be converted into runtime validation; resolve the missing analysis capability/evidence first.",
+      );
+      continue;
+    }
+    if (
+      sourceLink?.status === "RUNTIME_BLOCKED" &&
+      resolution.disposition === "CONFIRMED_DEFECT_READY"
+    ) {
+      issues.push(
+        resolution.causalLinkId +
+          ": RUNTIME_BLOCKED cannot become CONFIRMED_DEFECT_READY without a runtime-backed causal-link refresh.",
+      );
+      continue;
+    }
     byId.set(resolution.causalLinkId, resolution);
   }
 
