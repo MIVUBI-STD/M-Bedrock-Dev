@@ -250,6 +250,29 @@ function requiredCounterProofDimensions(
     required.add("representation");
   }
 
+  if (
+    hasComponent("runtime:chunks") ||
+    hasKnowledge("chunk-simulation")
+  ) {
+    required.add("owner");
+    required.add("cleanup");
+  }
+
+  if (
+    hasComponent("runtime:combat", "runtime:entities") ||
+    hasKnowledge("combat-lifecycle", "entity-behavior")
+  ) {
+    required.add("exclusion");
+  }
+
+  if (
+    hasComponent("runtime:inventory", "runtime:economy") ||
+    hasKnowledge("inventory-state", "economy-reward")
+  ) {
+    required.add("owner");
+    required.add("exclusion");
+  }
+
   const scenarioText = [
     scenario?.label ?? "",
     scenario?.gameplayStage ?? "",
