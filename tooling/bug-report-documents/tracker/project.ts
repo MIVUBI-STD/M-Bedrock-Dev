@@ -43,7 +43,7 @@ export function validateDeveloperNoteRegistry(registry: DeveloperNoteRegistry): 
     if (note.type !== "DEV_NOTE") errors.push(note.id + ": invalid Developer Note type.");
     if (note.severity !== null) errors.push(note.id + ": Developer Note severity must be null.");
     if (!note.id.trim() || !note.projectId.trim() || !note.title.trim() || !note.problem.trim() || !note.action.trim()) {
-      errors.push(note.id || "<missing-id>" + ": incomplete Developer Note authority record.");
+      errors.push((note.id || "<missing-id>") + ": incomplete Developer Note authority record.");
     }
     if (note.evidence === null || typeof note.evidence !== "object" || Array.isArray(note.evidence)) {
       errors.push(note.id + ": Developer Note evidence must be an object.");
