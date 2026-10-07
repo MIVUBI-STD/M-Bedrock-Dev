@@ -18,8 +18,8 @@
 <section class="settings-card">
   <div>
     <span class="eyebrow">PERFORMANCE</span>
-    <h3>Automatic resource management</h3>
-    <p>New clients start only when this PC has enough available memory. Running clients are never stopped automatically.</p>
+    <h3>Memory admission</h3>
+    <p>Virtual Clients checks available host memory before starting another client. The configured memory value is a ceiling, not measured usage. Running clients are never stopped automatically.</p>
   </div>
   <div class="setting-meta">
     <span>{policy?.virtualMemoryLimitMb ? `${policy.virtualMemoryLimitMb / 1024} GB` : "—"} ceiling per client</span>
@@ -39,7 +39,7 @@
       {#if update.state === "UPDATE_AVAILABLE"}
         <button class="secondary" disabled={Boolean(busy)} on:click={onStageUpdate}>{busy === "stage-update" ? "Preparing…" : "Prepare update"}</button>
       {:else if update.state === "UPDATE_STAGED"}
-        <span class="badge">Ready to install</span>
+        <span class="badge">Installer prepared</span>
       {/if}
     </div>
   </section>
