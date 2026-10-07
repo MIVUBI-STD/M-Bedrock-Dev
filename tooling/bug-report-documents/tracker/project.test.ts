@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { BugReportClientDocument } from "../../../engine/packages/bug-report/src/document/model.js";
-import { projectClientDocumentToTracker, resolveSourceBinding, type DeveloperNoteRegistry, type ProjectRegistry } from "./project.js";
+import { projectClientDocumentToTracker, resolveSourceBinding, validateDeveloperNoteRegistry, type DeveloperNoteRegistry, type ProjectRegistry } from "./project.js";
 import { renderBugTrackerHtml } from "./render-html.js";
 import { trackerIssueIds, validateBugTrackerDocument } from "./validate.js";
 
@@ -59,5 +59,49 @@ describe("Bug Tracker integration", () => {
   it("fails closed when registry identity is ambiguous", () => {
     const ambiguous: ProjectRegistry = { projects: [...registry.projects, registry.projects[0]!] };
     expect(() => resolveSourceBinding(ambiguous, "Fixture Map", "1.0.0")).toThrow(/exactly one/);
+  });
+
+  it("fails closed when Project Registry current-world version disagrees with artifact authority", () => {
+    const broken: ProjectRegistry = {
+      projects: [{
+        ...registry.projects[0]!,
+        publication: {
+          drive: {
+            mapFolder: { folderId: "fixture-folder" },
+            currentWorld: { fileId: "fixture-world", fileName: "Fixture Map v0.9.0.mcworld", version: "0.9.0" },
+          },
+        },
+      }],
+    };
+    expect(() => resolveSourceBinding(broken, "Fixture Map", "1.0.0")).toThrow(/version binding mismatch/);
+  });
+
+  it("fails closed when Project Registry current-world file disagrees with artifact authority", () => {
+    const broken: ProjectRegistry = {
+      projects: [{
+        ...registry.projects[0]!,
+        publication: {
+          drive: {
+            mapFolder: { folderId: "fixture-folder" },
+            currentWorld: { fileId: "other-world", fileName: "Fixture Map v1.0.0.mcworld", version: "1.0.0" },
+          },
+        },
+      }],
+    };
+    expect(() => resolveSourceBinding(broken, "Fixture Map", "1.0.0")).toThrow(/artifact binding mismatch/);
+  });
+
+  it("rejects malformed Developer Note authority before projection", () => {
+    const duplicate: DeveloperNoteRegistry = {
+      ...developerNotes,
+      notes: [...developerNotes.notes, developerNotes.notes[0]!],
+    };
+    expect(() => validateDeveloperNoteRegistry(duplicate)).toThrow(/Duplicate Developer Note ID/);
+
+    const wrongSeverity = {
+      ...developerNotes,
+      notes: [{ ...developerNotes.notes[0]!, severity: "major" }],
+    } as unknown as DeveloperNoteRegistry;
+    expect(() => validateDeveloperNoteRegistry(wrongSeverity)).toThrow(/severity must be null/);
   });
 });
