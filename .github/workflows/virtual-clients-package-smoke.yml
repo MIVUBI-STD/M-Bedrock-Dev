@@ -50,6 +50,12 @@ jobs:
           if ($installers.Count -ne 1) { throw "Expected exactly one Tauri NSIS installer, found $($installers.Count)." }
           $installer = $installers[0]
           if ($installer.Length -le 0) { throw 'Tauri NSIS installer is empty.' }
+          $tauri = Get-Content src-tauri\tauri.conf.json -Raw | ConvertFrom-Json
+          $package = Get-Content package.json -Raw | ConvertFrom-Json
+          if ($tauri.productName -ne 'M-Bedrock Virtual Clients' -or $tauri.identifier -ne 'com.mivubi.mbedrock.virtualclients') { throw 'Installer product identity drifted.' }
+          if ($tauri.version -ne $package.version) { throw 'Tauri/package version drifted.' }
+          if ($tauri.bundle.windows.nsis.installMode -ne 'currentUser') { throw 'Installer scope must remain currentUser.' }
+          if ($tauri.bundle.windows.allowDowngrades -ne $false) { throw 'Installer downgrade policy must remain disabled.' }
           $sidecars = Join-Path $PWD 'src-tauri\binaries'
           if (@(Get-ChildItem $sidecars -Filter 'virtual-clients-*-windows-msvc.exe' -File).Count -ne 1) { throw 'CLI sidecar missing.' }
           $guestAgent = Join-Path $PWD 'src-tauri\package-resources\guest\windows\virtual-guest-agent.exe'
