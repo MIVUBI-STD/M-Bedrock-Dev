@@ -341,6 +341,43 @@ Do not conflate `0 removed` / `already absent` with cleanup failure unless the p
 
 When a new version changes cleanup return values, success predicates, error handling, or readiness gates, compare the semantic contract with the previous selected version. A refactor that reverses the meaning of `0`, `false`, absence, or idempotent success is a regression candidate even if the new architecture looks more robust.
 
+## Closed domain model before subsystem audit
+
+Before applying generic concurrency, queue, multiplayer, or replica heuristics, reconstruct the selected map's finite gameplay domain from artifact authority.
+
+Record at minimum when applicable:
+
+```text
+physical playable units and exact cardinality
+party/team cardinality and binding
+players per party/team
+whether units are fixed, allocated, or dynamically created
+level/stage cardinality
+legal session states
+legal transitions
+resource ownership
+whether a queue is a gameplay concept, internal serialization, or impossible by design
+```
+
+Do not invent generic overflow cases. For a fixed six-arena map with exactly six arena-bound parties and advertised six-arena concurrency, a hypothetical seventh arena request is outside the domain and must not appear in acceptance criteria.
+
+Generic detector vocabulary must be translated through the map model before use:
+
+```text
+"capacity overflow"
+→ identify the actual domain actor that can exceed capacity
+→ if no such actor exists, reject the scenario
+
+"queue"
+→ identify who can legally queue and why
+→ distinguish internal work serialization from player-facing capacity queue
+
+"replica"
+→ identify whether it is dynamically assigned or permanently bound
+```
+
+A subsystem audit performed without this closed domain model is incomplete even if individual source mechanisms were inspected.
+
 ## Per-replica gameplay parity matrix
 
 When a map exposes multiple playable arenas/replicas, source/config replica equivalence does not by itself close gameplay coverage. Build one parity matrix that projects every material gameplay subsystem across every playable replica.
