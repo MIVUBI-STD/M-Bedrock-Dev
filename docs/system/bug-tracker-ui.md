@@ -137,6 +137,8 @@ Test / Details
 Expanded gameplay finding:
 
 ```text
+Why This Is a Bug   only when canonical rationale exists
+Impact              only when canonical impact exists
 Test In-Game       only when canonical reproduction exists
 Expected           only when canonical expected behavior exists
 Test Result
@@ -153,7 +155,9 @@ Technical Details order:
 4. Recommended Fix
 5. Must Preserve
 
-Missing canonical information stays missing. The renderer must never invent reproduction, expected behavior, cause, evidence, code ownership, or a fix to make the card look complete.
+Why This Is a Bug explains the grounded contract/design contradiction that makes the finding wrong. Impact explains the concrete gameplay, player, state, fairness, progression, or maintenance consequence. They are canonical facts, not renderer inference.
+
+Missing canonical information stays missing. The renderer must never invent rationale, impact, reproduction, expected behavior, cause, evidence, code ownership, or a fix to make the card look complete.
 
 ## Interaction states
 
@@ -261,6 +265,7 @@ Repository tests must protect at least:
 - lane numbering is independent;
 - Passed and Failed controls exist;
 - Mark Fixed and Export do not return;
+- Why This Is a Bug and Impact render only from explicit canonical data;
 - Technical Details only render from available canonical data;
 - unknown information is omitted rather than synthesized;
 - Developer Notes remain a separate reference lane;
