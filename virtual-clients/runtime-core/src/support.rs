@@ -4,7 +4,7 @@ use crate::{
     journal::{read_operation_history, OperationRecord},
     paths::runtime_root,
     provider::staging_residue_count,
-    persistence::write_text_transactional,
+    persistence::{reject_unsafe_existing_file, write_text_transactional},
 };
 use serde::Serialize;
 use std::{
@@ -101,7 +101,8 @@ fn prune_support_bundles(root: &Path) -> io::Result<()> {
         .filter_map(Result::ok)
         .map(|entry| entry.path())
         .filter(|path| {
-            path.is_file()
+            reject_unsafe_existing_file(path).is_ok()
+                && path.is_file()
                 && path
                     .file_name()
                     .and_then(|name| name.to_str())
