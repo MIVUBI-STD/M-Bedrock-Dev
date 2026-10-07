@@ -18,8 +18,8 @@ export function projectMapAuditFindingReasoning(input: {
   ].filter((value, index, all) => all.indexOf(value) === index).sort();
 
   return {
-    reportClassification: input.projection.classification,
-    diagnosticDisposition: input.projection.authoritativeDisposition,
+    reportClassification: input.projection.reportClassification,
+    diagnosticDisposition: input.projection.diagnosticDisposition,
     proofConfidence: input.assessment.confidence,
     evidenceDomainSources: [...input.assessment.domains],
     evidenceChain,
