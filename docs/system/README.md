@@ -19,6 +19,7 @@ It does not own planning, current project state, or chronological proof history.
 - [Authority Model](./authority-model.md) — semantic authority and proof boundaries.
 - [Behavioral World Model](./behavioral-world-model.md) — executable state/transition/temporal model boundary.
 - [Bug Report Ownership](./bug-report-ownership.md) — current audit truth vs approved Bug Report V2 ownership.
+- [Bug Tracker UI](./bug-tracker-ui.md) — canonical Map Report / Combined Report presentation, tester workflow, Save behavior, and reproducible UI vocabulary.
 - [Canonical Naming](./canonical-naming.md) — repository-wide terminology and filesystem disambiguation.
 - [Development Discipline](./development-discipline.md) — minimum complete change and anti-overdevelopment rules.
 - [Development Operations](./development-operations.md) — remote-GitHub-first development, optional local tooling, verification, and delivery routing.
