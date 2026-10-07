@@ -159,23 +159,30 @@ function registerFactCatalog(
 ) {
   const catalog = readJson(path);
 
-  for (const fact of catalog.facts ?? []) {
+  const entries = [
+    ...(catalog.facts ?? []),
+    ...(catalog.relations ?? []),
+  ];
+
+  for (const entry of entries) {
     if (
-      typeof fact.id !== "string" ||
-      !fact.id.trim() ||
-      typeof fact.domain !== "string" ||
-      !fact.domain.trim()
+      typeof entry.id !== "string" ||
+      !entry.id.trim() ||
+      typeof entry.domain !== "string" ||
+      !entry.domain.trim()
     ) {
-      throw new Error("Invalid knowledge fact in " + path);
+      throw new Error(
+        "Invalid knowledge fact/relation in " + path,
+      );
     }
 
     addResource(resources, seen, {
-      id: "knowledge." + fact.id,
+      id: "knowledge." + entry.id,
       class: "KNOWLEDGE",
-      domain: slug(fact.domain),
+      domain: slug(entry.domain),
       authority,
       path,
-      locator: fact.id,
+      locator: entry.id,
       lifecycle: "ACTIVE",
     });
   }
