@@ -3,6 +3,15 @@ use sysinfo::System;
 
 pub const VIRTUAL_MEMORY_LIMIT_MB: u64 = 4096;
 
+// Provisional admission thresholds. These protect against obvious host
+// contention; target-machine acceptance must calibrate them before they are
+// described as performance-optimal.
+const MEMORY_CRITICAL_PERCENT: u8 = 15;
+const MEMORY_PRESSURE_PERCENT: u8 = 25;
+const MIN_START_AVAILABLE_MEMORY_MB: u64 = 2048;
+const CPU_WAIT_PERCENT: u8 = 80;
+const CPU_SATURATED_PERCENT: u8 = 95;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum PressureLevel {
@@ -43,10 +52,10 @@ pub fn evaluate_pressure(
     };
     let cpu_usage_percent = cpu_usage_percent.min(100);
 
-    let memory_critical = available_percent < 15 || available_memory_mb < 2048;
-    let memory_pressure = available_percent < 25;
-    let cpu_critical = cpu_usage_percent >= 95;
-    let cpu_pressure = cpu_usage_percent >= 80;
+    let memory_critical = available_percent < MEMORY_CRITICAL_PERCENT || available_memory_mb < MIN_START_AVAILABLE_MEMORY_MB;
+    let memory_pressure = available_percent < MEMORY_PRESSURE_PERCENT;
+    let cpu_critical = cpu_usage_percent >= CPU_SATURATED_PERCENT;
+    let cpu_pressure = cpu_usage_percent >= CPU_WAIT_PERCENT;
 
     let level = if memory_critical {
         PressureLevel::Critical
