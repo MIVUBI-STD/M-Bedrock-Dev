@@ -21,10 +21,10 @@
       "expected": "Normal players in the main lobby and non-builder roles are Adventure with normal lobby abilities; Creative is granted only by the active builder role or an explicitly authorized maintenance role.",
       "observed": "The current artifact has world GameType=Creative and ForceGameType disabled. ArenaService.enterMainLobby() teleports and clears the player but does not set Adventure, disable mayfly, or restore mute state. WelcomeManager also does not normalize gamemode. AntiCheatManager contains corrective logic but is not registered by production main.js.",
       "reproduction": [
-        "Join Build & Decode v1.1.1 as a normal non-admin player with a fresh/first spawn.",
+        "Join Build & Decode as a normal non-admin player with a fresh/first spawn.",
         "Allow the normal welcome/main-lobby flow to complete.",
         "Check the player's gamemode.",
-        "Confirm the player remains in Creative instead of being normalized to the lobby Adventure role."
+        "Check whether the player remains in Creative instead of being normalized to the lobby Adventure role."
       ],
       "aiAnalysis": "This is a role-state ownership gap, not only a world-default setting. The selected artifact repeatedly establishes Adventure as the safe non-builder state, but enterMainLobby does not enforce that state. Relying only on changing the world default would still leave stale returning-player state possible.",
       "relevantCode": [
@@ -65,9 +65,9 @@
       "expected": "The authored end-of-match presentation is reachable from the completed-match flow so players receive a clear terminal result before the arena resets and returns them to the lobby.",
       "observed": "GuessTheBuildUI.showFinalStandings() is implemented and documented as the end-of-game standings presentation, but no production caller invokes it. ArenaService.finish() commits the result, sends matchSummary() only as chat text, and immediately proceeds into resetArena().",
       "reproduction": [
-        "Complete a normal Build & Decode match in v1.1.1.",
+        "Complete a normal Build & Decode match.",
         "Observe the completed result is committed and a chat summary may be sent.",
-        "Confirm the authored final standings UI is never displayed.",
+        "Check whether the authored final standings UI is never displayed.",
         "Observe players are reset/returned to the lobby without a dedicated final victory/result presentation."
       ],
       "aiAnalysis": "This is stronger than a general UX preference because the selected artifact itself contains a dedicated showFinalStandings() capability with an explicit end-of-game purpose, yet the playable terminal flow does not route to it.",
