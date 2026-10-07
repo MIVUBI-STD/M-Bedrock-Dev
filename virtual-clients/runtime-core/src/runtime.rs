@@ -652,7 +652,7 @@ fn client_status_from_observations(
         id: client.as_str(),
         native: false,
         state,
-        ready_snapshot: Some(provider.has_ready(client).unwrap_or(false)),
+        ready_snapshot: provider.has_ready(client).ok(),
         memory_limit_mb: provider.memory_limit_mb(client).ok(),
         host_working_set_mb: working_set_for(working_sets, client),
         guest_tools_ready,
