@@ -6,7 +6,7 @@ import {
   projectBugReportClientDocument,
   reviewBugReportClientDocument,
 } from "../../../engine/packages/bug-report/src/index.js";
-import { projectClientDocumentToTracker, type ProjectRegistry } from "./project.js";
+import { projectClientDocumentToTracker, type DeveloperNoteRegistry, type ProjectRegistry } from "./project.js";
 import { renderBugTrackerHtml } from "./render-html.js";
 import { trackerIssueIds, validateBugTrackerDocument } from "./validate.js";
 
@@ -19,9 +19,10 @@ const reportPaths = [
 describe("Golden Tracker real approved-report parity", () => {
   for (const reportPath of reportPaths) {
     it(reportPath, async () => {
-      const [source, registrySource] = await Promise.all([
+      const [source, registrySource, developerNotesSource] = await Promise.all([
         readFile(resolve(reportPath), "utf8"),
         readFile(resolve("workspace/project-registry.json"), "utf8"),
+        readFile(resolve("workspace/developer-notes.json"), "utf8"),
       ]);
       const parsed = parseBugReportV2Json(source);
       expect(parsed.ok).toBe(true);
@@ -36,12 +37,13 @@ describe("Golden Tracker real approved-report parity", () => {
       const tracker = projectClientDocumentToTracker(
         client,
         JSON.parse(registrySource) as ProjectRegistry,
+        JSON.parse(developerNotesSource) as DeveloperNoteRegistry,
       );
       validateBugTrackerDocument(tracker);
       const ids = trackerIssueIds(tracker);
       const html = renderBugTrackerHtml(tracker);
 
-      expect(ids.length).toBe(client.issues.length);
+      expect(ids.length).toBe(client.issues.length + tracker.games.flatMap((game) => game.levels.flatMap((level) => level.devNotes)).length);
       expect(new Set(ids).size).toBe(ids.length);
       for (const id of ids) {
         expect(html).toContain('data-issue-id="' + id + '"');
