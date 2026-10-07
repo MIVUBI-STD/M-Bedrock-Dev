@@ -1328,6 +1328,7 @@ impl VirtualClients {
                     minecraft_version: None,
                     minecraft_running: None,
                     interactive_launcher_ready: None,
+                    connection_health: None,
                     lineage_parity: Some(ProfileParity::Unknown),
                     version_parity: Some(ProfileParity::Unknown),
                     vm_identity: Some(IdentityState::Unknown),
