@@ -14,14 +14,6 @@ const CPU_SATURATED_PERCENT: u8 = 95;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum PressureLevel {
-    Normal,
-    Pressure,
-    Critical,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum StartDecision {
     StartNow,
     Wait,
@@ -35,7 +27,6 @@ pub struct HostPressure {
     pub available_memory_mb: u64,
     pub available_percent: u8,
     pub cpu_usage_percent: u8,
-    pub level: PressureLevel,
     pub start_decision: StartDecision,
 }
 
@@ -56,14 +47,6 @@ pub fn evaluate_pressure(
     let cpu_critical = cpu_usage_percent >= CPU_SATURATED_PERCENT;
     let cpu_pressure = cpu_usage_percent >= CPU_WAIT_PERCENT;
 
-    let level = if memory_critical {
-        PressureLevel::Critical
-    } else if memory_pressure || cpu_critical {
-        PressureLevel::Pressure
-    } else {
-        PressureLevel::Normal
-    };
-
     let start_decision = if memory_critical {
         StartDecision::Block
     } else if memory_pressure || cpu_pressure {
@@ -77,7 +60,6 @@ pub fn evaluate_pressure(
         available_memory_mb,
         available_percent,
         cpu_usage_percent,
-        level,
         start_decision,
     }
 }
@@ -98,40 +80,35 @@ pub fn current_host_pressure() -> HostPressure {
 
 #[cfg(test)]
 mod tests {
-    use super::{evaluate_pressure, PressureLevel, StartDecision};
+    use super::{evaluate_pressure, StartDecision};
 
     #[test]
     fn healthy_host_can_start_immediately() {
         let report = evaluate_pressure(16 * 1024, 6 * 1024, 35);
-        assert_eq!(report.level, PressureLevel::Normal);
         assert_eq!(report.start_decision, StartDecision::StartNow);
     }
 
     #[test]
     fn memory_pressure_waits_instead_of_starting_into_contention() {
         let report = evaluate_pressure(16 * 1024, 3 * 1024, 35);
-        assert_eq!(report.level, PressureLevel::Pressure);
         assert_eq!(report.start_decision, StartDecision::Wait);
     }
 
     #[test]
     fn cpu_pressure_waits_without_reclassifying_memory() {
         let report = evaluate_pressure(16 * 1024, 8 * 1024, 85);
-        assert_eq!(report.level, PressureLevel::Normal);
         assert_eq!(report.start_decision, StartDecision::Wait);
     }
 
     #[test]
     fn critical_memory_blocks_new_virtual() {
         let report = evaluate_pressure(16 * 1024, 1536, 20);
-        assert_eq!(report.level, PressureLevel::Critical);
         assert_eq!(report.start_decision, StartDecision::Block);
     }
 
     #[test]
     fn cpu_saturation_delays_but_does_not_kill_existing_clients() {
         let report = evaluate_pressure(16 * 1024, 8 * 1024, 97);
-        assert_eq!(report.level, PressureLevel::Pressure);
         assert_eq!(report.start_decision, StartDecision::Wait);
     }
 }
