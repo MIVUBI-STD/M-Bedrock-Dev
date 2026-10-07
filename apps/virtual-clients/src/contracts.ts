@@ -140,7 +140,6 @@ export interface DiagnosticsReport {
     networkConfigurationObserved: boolean;
     multiplayerVerified: boolean;
     graphics3dEnabled: boolean | null;
-    graphicsPolicyReady: boolean;
   }>;
 }
 
