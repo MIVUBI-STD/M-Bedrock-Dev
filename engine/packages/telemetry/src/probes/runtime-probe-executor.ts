@@ -27,6 +27,17 @@ export interface RuntimeProbeBackend {
     objectiveId: string,
     participant: string,
   ): RuntimeProbeLookup<number>;
+  entityLocation(
+    entityId: string,
+    dimension?: string,
+  ): RuntimeProbeLookup<string>;
+  dimensionHeightRange(
+    dimension: string,
+  ): RuntimeProbeLookup<string>;
+  commandResult(
+    dimension: string,
+    command: string,
+  ): RuntimeProbeLookup<string>;
 }
 
 export interface RuntimeProbeExecutor {
@@ -128,6 +139,20 @@ function booleanLookup(
   );
 }
 
+function scalarLookup(
+  request: RuntimeProbeRequest,
+  tick: number,
+  result: RuntimeProbeLookup<string>,
+): RuntimeProbeResponse {
+  if (result.status === "unknown") {
+    return unknownResponse(request, tick, result.error ?? "Runtime value unavailable.");
+  }
+  if (result.status === "missing") {
+    return successfulResponse(request, tick, "absent");
+  }
+  return successfulResponse(request, tick, "present", result.value);
+}
+
 function scoreboardLookup(
   request: RuntimeProbeRequest,
   query: Extract<RuntimeProbeQuery, { kind: "scoreboard-value" }>,
@@ -180,6 +205,30 @@ export function createRuntimeProbeExecutor(
               request,
               tick,
               backend.entityResolvable(request.query.entityId),
+            );
+          case "entity-location":
+            return scalarLookup(
+              request,
+              tick,
+              backend.entityLocation(
+                request.query.entityId,
+                request.query.dimension,
+              ),
+            );
+          case "dimension-height-range":
+            return scalarLookup(
+              request,
+              tick,
+              backend.dimensionHeightRange(request.query.dimension),
+            );
+          case "command-result":
+            return scalarLookup(
+              request,
+              tick,
+              backend.commandResult(
+                request.query.dimension,
+                request.query.command,
+              ),
             );
           case "tag-present":
             return booleanLookup(
