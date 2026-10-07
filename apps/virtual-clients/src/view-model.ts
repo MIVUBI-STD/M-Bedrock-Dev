@@ -125,7 +125,12 @@ export function primaryClientAction(
 ): { kind: "open" | "start" | "start-setup" | "launch-minecraft"; label: string } | undefined {
   if (!actions) return undefined;
 
-  if (client.state === "RUNNING" && client.minecraftRunning === false && client.interactiveLauncherReady === true) {
+  if (
+    client.state === "RUNNING"
+    && client.minecraftRunning === false
+    && client.interactiveLauncherReady === true
+    && actions.open.allowed
+  ) {
     return { kind: "launch-minecraft", label: "Launch Minecraft" };
   }
   if (client.state === "RUNNING" && actions.open.allowed) {
