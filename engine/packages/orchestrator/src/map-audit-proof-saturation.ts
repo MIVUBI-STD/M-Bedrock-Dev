@@ -236,9 +236,6 @@ function derivedFamilyCriterionEvidence(input: {
       "owner",
     ]);
   }
-  if (criterionId.includes("exclusion")) {
-    return counterProofEvidence;
-  }
   if (
     criterionId.includes("player-impact") ||
     criterionId.includes("gameplay-dependency-affected") ||
