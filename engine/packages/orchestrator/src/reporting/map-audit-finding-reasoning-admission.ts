@@ -59,6 +59,25 @@ export function admitMapAuditFindingReasoning(
       ) {
         reasons.push("A PROVEN audit finding cannot attach UNKNOWN report reasoning.");
       }
+      if (finding.status === "PROVEN") {
+        if (candidate.assessment.status !== "supported") {
+          reasons.push(
+            "A PROVEN audit finding requires a supported canonical hypothesis assessment.",
+          );
+        }
+        if (candidate.assessment.nextPredicate !== undefined) {
+          reasons.push(
+            "A PROVEN audit finding cannot retain an unresolved required predicate.",
+          );
+        }
+        if (
+          candidate.projection.reportClassification !== "PROVEN"
+        ) {
+          reasons.push(
+            "A PROVEN audit finding requires PROVEN report reasoning classification.",
+          );
+        }
+      }
     }
 
     if (reasons.length > 0) {
