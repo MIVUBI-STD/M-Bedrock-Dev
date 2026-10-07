@@ -2355,6 +2355,25 @@ mod tests {
     }
 
     #[test]
+    fn restore_batch_state_recovers_stopped_and_suspended_clients() {
+        let provider = FakeProvider::new(
+            [ClientState::Stopped, ClientState::Stopped, ClientState::Stopped],
+            [Some("uuid-a|mac-a"), Some("uuid-b|mac-b"), Some("uuid-c|mac-c")],
+        );
+        let failed = restore_batch_state(
+            &provider,
+            &[
+                (ClientId::Virtual01, ClientState::Running),
+                (ClientId::Virtual02, ClientState::Suspended),
+            ],
+        );
+        assert!(failed.is_empty());
+        assert_eq!(provider.state(ClientId::Virtual01).unwrap(), ClientState::Running);
+        assert_eq!(provider.state(ClientId::Virtual02).unwrap(), ClientState::Suspended);
+        assert_eq!(provider.state(ClientId::Virtual03).unwrap(), ClientState::Stopped);
+    }
+
+    #[test]
     fn start_batch_reports_rollback_failure_and_keeps_the_original_error() {
         let provider = FakeProvider {
             fail_start: Some(ClientId::Virtual02),
