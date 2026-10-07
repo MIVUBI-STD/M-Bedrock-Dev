@@ -88,7 +88,7 @@ function assessEntity(
 
       const movementGoalPriorities =
         Object.entries(
-          state.components,
+          state.components ?? {},
         )
           .filter(([component]) =>
             /^minecraft:behavior\./.test(
