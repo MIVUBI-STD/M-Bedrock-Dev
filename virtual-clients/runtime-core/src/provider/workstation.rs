@@ -332,7 +332,7 @@ impl Provider for VmwareWorkstationProvider {
             });
         }
 
-        command_output_with_timeout(
+        let result = command_output_with_timeout(
             self.require_vmrun()?,
             [
                 "-T",
@@ -342,7 +342,13 @@ impl Provider for VmwareWorkstationProvider {
                 "soft",
             ],
             DISK_STATE_TIMEOUT,
-        )?;
+        );
+        if let Err(error) = result {
+            if !self.running(&vmx).unwrap_or(true) && has_suspend_state(&vmx) {
+                return Ok(ClientState::Suspended);
+            }
+            return Err(error);
+        }
         wait_for_state(|| self.running(&vmx), false, DISK_STATE_TIMEOUT)?;
         Ok(ClientState::Suspended)
     }
@@ -362,10 +368,16 @@ impl Provider for VmwareWorkstationProvider {
             }
         }
 
-        command_output(
+        let soft_stop = command_output(
             self.require_vmrun()?,
             ["-T", "ws", "stop", vmx.to_string_lossy().as_ref(), "soft"],
-        )?;
+        );
+        if let Err(error) = soft_stop {
+            if !self.running(&vmx).unwrap_or(true) && !has_suspend_state(&vmx) {
+                return Ok(ClientState::Stopped);
+            }
+            return Err(error);
+        }
 
         if wait_for_state(|| self.running(&vmx), false, Duration::from_secs(12)).is_err() {
             command_output(
@@ -387,10 +399,16 @@ impl Provider for VmwareWorkstationProvider {
             ));
         }
 
-        command_output(
+        let result = command_output(
             self.require_vmrun()?,
             ["-T", "ws", "reset", vmx.to_string_lossy().as_ref(), "soft"],
-        )?;
+        );
+        if let Err(error) = result {
+            if self.running(&vmx).unwrap_or(false) {
+                return Ok(ClientState::Running);
+            }
+            return Err(error);
+        }
         wait_for_state(|| self.running(&vmx), true, Duration::from_secs(15))?;
         Ok(ClientState::Running)
     }
