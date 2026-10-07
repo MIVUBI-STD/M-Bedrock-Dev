@@ -142,12 +142,23 @@ export function assessReadyResolutionSaturation(
     ]),
   ].sort();
 
+  const knowledgeDomains =
+    (resolution.knowledgeRequirementIds ?? [])
+      .map((id) =>
+        graph.knowledgeRequirements.find(
+          (item) => item.id === id,
+        )?.domain
+      )
+      .filter((domain): domain is NonNullable<typeof domain> =>
+        domain !== undefined
+      );
   const classification = classifyGameplayIssue({
     gameplayStage:
       scenario?.gameplayStage ?? "ACTIVE_GAMEPLAY",
     scenarioLabel:
       scenario?.label ?? resolution.scenarioId ?? "unknown",
     componentIds,
+    knowledgeDomains,
   });
 
   const counterProofIds =
