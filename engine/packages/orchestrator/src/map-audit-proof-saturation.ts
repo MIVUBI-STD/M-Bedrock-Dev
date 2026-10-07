@@ -112,6 +112,67 @@ export function proofSaturationFamilyCriteria(
   return FAMILY_CRITERIA[domain].map((item) => item.description);
 }
 
+function derivedFamilyCriterionEvidence(input: {
+  criterionId: string;
+  link: GameplayScenarioGraph["causalLinks"][number] | undefined;
+  resolution: GameplayDefectResolution;
+  evidenceIds: readonly string[];
+  counterProofCleared: boolean;
+}): readonly string[] {
+  const { criterionId, link, resolution, evidenceIds, counterProofCleared } = input;
+  if (link === undefined || link.status !== "CONTRADICTED") return [];
+
+  const contradictionEvidence = [
+    ...new Set([
+      ...link.evidenceIds,
+      ...(resolution.evidenceIds ?? []),
+    ]),
+  ].filter(Boolean);
+  const impactEvidence =
+    link.impactPathComponentIds.length > 0
+      ? contradictionEvidence
+      : [];
+  const counterProofEvidence =
+    counterProofCleared
+      ? [...(resolution.counterProofSearch?.evidenceIds ?? [])]
+      : [];
+  const knowledgeEvidence =
+    (resolution.knowledgeRequirementIds ?? [])
+      .length > 0
+      ? evidenceIds
+      : [];
+
+  if (
+    criterionId.includes("counterproof") ||
+    criterionId.includes("exclusion") ||
+    criterionId.includes("reconciliation-exhausted")
+  ) {
+    return counterProofEvidence;
+  }
+  if (
+    criterionId.includes("player-impact") ||
+    criterionId.includes("gameplay-dependency-affected") ||
+    criterionId.includes("player-degradation-derived")
+  ) {
+    return impactEvidence;
+  }
+  if (
+    criterionId.includes("platform-constraint") ||
+    criterionId.includes("residency-requirement")
+  ) {
+    return knowledgeEvidence;
+  }
+  if (
+    criterionId.includes("reachable") ||
+    criterionId.includes("grounded") ||
+    criterionId.includes("derived") ||
+    criterionId.includes("missing")
+  ) {
+    return contradictionEvidence;
+  }
+  return [];
+}
+
 export function assessReadyResolutionSaturation(
   graph: GameplayScenarioGraph,
   resolution: GameplayDefectResolution,
@@ -249,18 +310,35 @@ export function assessReadyResolutionSaturation(
           classification.failureDomain
           ? familyReceiptById.get(criterion.id)
           : undefined;
+      const explicitEvidence =
+        receipt?.satisfied === true &&
+        receipt.evidenceIds.length > 0 &&
+        receipt.evidenceIds.every((id) =>
+          knownEvidenceIds.has(id)
+        )
+          ? [...receipt.evidenceIds]
+          : [];
+      const derivedEvidence =
+        explicitEvidence.length > 0
+          ? []
+          : derivedFamilyCriterionEvidence({
+              criterionId: criterion.id,
+              link,
+              resolution,
+              evidenceIds,
+              counterProofCleared,
+            }).filter((id) => knownEvidenceIds.has(id));
+      const criterionEvidence = [
+        ...new Set([
+          ...explicitEvidence,
+          ...derivedEvidence,
+        ]),
+      ].sort();
       return {
         id: criterion.id,
         description: criterion.description,
-        satisfied:
-          receipt?.satisfied === true &&
-          receipt.evidenceIds.length > 0 &&
-          receipt.evidenceIds.every((id) =>
-            knownEvidenceIds.has(id)
-          ),
-        evidenceIds: [
-          ...(receipt?.evidenceIds ?? []),
-        ],
+        satisfied: criterionEvidence.length > 0,
+        evidenceIds: criterionEvidence,
       };
     });
 
