@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 
@@ -8,6 +8,12 @@ const backendRoot = resolve(repoRoot, "virtual-clients", "runtime-core");
 const manifest = resolve(backendRoot, "Cargo.toml");
 const binaries = resolve(appRoot, "src-tauri", "binaries");
 const guestResources = resolve(appRoot, "src-tauri", "package-resources", "guest", "windows");
+const appPackage = JSON.parse(readFileSync(resolve(appRoot, "package.json"), "utf8"));
+const backendCargo = readFileSync(manifest, "utf8");
+const backendVersion = /^version\s*=\s*"([^"]+)"\s*$/m.exec(backendCargo)?.[1];
+if (!backendVersion || backendVersion !== appPackage.version) {
+  throw new Error(`Package/backend version mismatch: desktop=${appPackage.version}, backend=${backendVersion ?? "unknown"}`);
+}
 
 const run = (program, args, cwd = appRoot) => {
   const result = spawnSync(program, args, {
