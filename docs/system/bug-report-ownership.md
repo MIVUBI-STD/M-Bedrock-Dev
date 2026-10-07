@@ -217,3 +217,11 @@ Do not add, without a proven need:
 - speculative bug reconstruction.
 
 The system optimizes for trustworthy current-version recording, low ambiguity, and minimal duplicated state.
+
+## Presentation contract
+
+Approved Bug Report V2 presentation does not own new gameplay facts.
+
+Canonical HTML presentation, Map Report / Combined Report scope, tester interaction, Save behavior, lane order, and UI vocabulary are owned by [Bug Tracker UI](./bug-tracker-ui.md).
+
+The renderer may omit absent optional information, but it must not infer or invent missing report content.
