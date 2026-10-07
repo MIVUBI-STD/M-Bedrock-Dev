@@ -76,9 +76,6 @@ async function main(): Promise<void> {
     probeContext,
   } = parseCliTargetOptions(rawArgs);
   const [input, secondInput, thirdInput] = args;
-  const productionAuditCommands = new Set([
-    "audit",
-  ]);
   const engineeringAuditTools = new Set([
     "dev-inspect",
     "dev-review",
@@ -93,9 +90,6 @@ async function main(): Promise<void> {
     "corpus-calibrate",
     "script-usage",
   ]);
-  const productionAuditCommand =
-    command !== undefined &&
-    productionAuditCommands.has(command);
 
   if (
     command !== undefined &&
@@ -107,19 +101,6 @@ async function main(): Promise<void> {
         " is an engineering/reliability-only command. " +
         "Use 'audit <map.mcworld>' for production map bug analysis. " +
         "Set MBEDROCK_ENGINEERING_TOOLS=1 only for bounded engine development.",
-    );
-  }
-
-  if (
-    productionAuditCommand &&
-    (
-      (target.contractSourceRoots?.length ?? 0) > 0 ||
-      arenaRegionContractsPath !== undefined
-    )
-  ) {
-    throw new Error(
-      "Production selected-map audit accepts gameplay authority only from the selected artifact. " +
-        "External --contract-source-root and --arena-region-contracts inputs are engineering-only.",
     );
   }
 
@@ -160,7 +141,6 @@ async function main(): Promise<void> {
   }
 
   if (
-    !productionAuditCommand &&
     arenaRegionContractsPath
   ) {
     target.arenaRegionContracts =
@@ -498,40 +478,6 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === "audit" && input) {
-    const telemetry = telemetryPath
-      ? await loadTelemetryFile(resolve(telemetryPath))
-      : undefined;
-    const probeTranscript = probeTranscriptPath
-      ? await loadRuntimeProbeTranscript(
-          resolve(probeTranscriptPath),
-        )
-      : undefined;
-    const audit = await runSelectedMapAudit({
-      artifactPath: resolve(input),
-      target: selectedMapAuditRuntimeTarget(target),
-      knowledgeCatalog: knowledge,
-      telemetry: telemetry ?? [],
-      ...(probeTranscript === undefined
-        ? {}
-        : { runtimeProbeTranscript: probeTranscript }),
-    });
-    console.log(
-      JSON.stringify(
-        audit.mapAuditReport,
-        null,
-        2,
-      ),
-    );
-    if (
-      audit.mapAuditReport.control.status ===
-      "BLOCKED"
-    ) {
-      process.exitCode = 1;
-    }
-    return;
-  }
-
   if (command === "dev-workflow" && input) {
     const telemetry = telemetryPath
       ? await loadTelemetryFile(resolve(telemetryPath))
@@ -660,7 +606,6 @@ async function main(): Promise<void> {
 
   if (
     (telemetryPath || probeTranscriptPath) &&
-    command !== "audit" &&
     command !== "dev-inspect" &&
     command !== "dev-review" &&
     command !== "dev-arena-audit" &&
