@@ -61,8 +61,8 @@ The following remain intentionally unproven by source inspection:
 Use `acceptance/windows/collect-acceptance.ps1` for machine evidence. A collected field is evidence only for what it directly observes. In particular:
 
 - `connectionHealth=MINECRAFT_RUNNING` means a Minecraft process was observed;
-- `networkConfigurationObserved=true` means a VM network configuration was observed;
-- `multiplayerVerified=false` remains false until an actual multiplayer acceptance campaign proves otherwise.
+- `networkMode` records a provider network configuration only when one was observed;
+- multiplayer remains unproven until an actual multiplayer acceptance stage passes; there is no synthetic verification boolean.
 
 Do not promote LOCAL proof from documentation, source tests, package smoke, or hosted CI.
 
