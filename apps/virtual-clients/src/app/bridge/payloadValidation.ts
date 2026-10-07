@@ -90,7 +90,6 @@ const runtimeStatus = shape({
     availableMemoryMb: number,
     availablePercent: integer,
     cpuUsagePercent: integer,
-    level: oneOf("NORMAL", "PRESSURE", "CRITICAL"),
     startDecision: oneOf("START_NOW", "WAIT", "BLOCK"),
   }),
   clients: (value) => clientList(value) && value.length === clientIds.length,
