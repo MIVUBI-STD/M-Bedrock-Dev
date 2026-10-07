@@ -116,6 +116,14 @@ fn register_interactive_launcher() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[cfg(target_os = "windows")]
+fn request_interactive_shutdown() -> Result<(), Box<dyn std::error::Error>> {
+    let address = interactive_launcher_address().parse()?;
+    let mut stream = TcpStream::connect_timeout(&address, Duration::from_millis(300))?;
+    stream.set_write_timeout(Some(Duration::from_millis(300)))?;
+    stream.write_all(b"SHUTDOWN\n")?;
+    Ok(())
+}
+
 fn run_interactive_launcher() -> Result<(), Box<dyn std::error::Error>> {
     if !interactive_session_available() {
         return Err(io::Error::new(io::ErrorKind::PermissionDenied, "Interactive launcher must run in an interactive Windows user session").into());
