@@ -82,6 +82,36 @@
         "finding": "Drive world filename is Attack Challenge v1.1.2.mcworld while the changelog text says Current Version v1.1.1 / v1.1.1 — Current."
       },
       "severity": null
+    },
+    {
+      "id": "DEV-ATK-KIT-SELECTION-PHASE-GATE",
+      "type": "DEV_NOTE",
+      "title": "Kit Selection Immediately Refreshes Loadout Without a Gameplay-Phase Gate",
+      "problem": "KitManager accepts kit selection from its entity/script-event path and immediately reapplies the player's loadout. The handler does not check whether the arena is in buy_phase versus active combat. The in-arena kit structure contains the kit selector entities, so phase ownership should be explicit even though current source alone does not prove that players can reach/use those selectors during every active level.",
+      "action": "Make the intended kit-change window explicit. If kit changes are preparation-only, gate selection through the player's arena session status before applying a fresh loadout. If active-combat switching is intended, document it and preserve purchased-item handling deliberately.",
+      "evidence": {
+        "artifactVersion": "1.1.2",
+        "source": [
+          "behavior_packs/BP/entities/daigon/kit_selector.json",
+          "behavior_packs/BP/scripts/chunks/chunk-4L7PEIZ4.js",
+          "behavior_packs/BP/structures/kit.mcstructure"
+        ],
+        "finding": "Kit selector interactions trigger kit selection; setSelectedKit() persists the selection and immediately calls applySelectedKitNow() with no session-phase check. kit.mcstructure contains kit-selector entities and is loaded once per enabled arena."
+      },
+      "severity": null
+    },
+    {
+      "id": "DEV-ATK-UNUSED-SHOP-PRESERVATION-HELPERS",
+      "type": "DEV_NOTE",
+      "title": "Dedicated Shop-Item Preservation Helpers Are Dead Code",
+      "problem": "KitManager defines capturePersistentShopItemsFromManagedSlots() and restorePreservedShopItems(), and startBuyPhase carries a preservePersistentShopItems option, but the current production loadout path does not call those helpers. Actual survival of purchases relies on generic non-kit item displacement/preservation behavior instead.",
+      "action": "Remove the unused preservation path or connect one clear inventory-preservation owner. Avoid maintaining a named preservePersistentShopItems contract that is not actually consumed by applyPlayerLoadout().",
+      "evidence": {
+        "artifactVersion": "1.1.2",
+        "source": "behavior_packs/BP/scripts/chunks/chunk-4L7PEIZ4.js",
+        "finding": "Full production-script search finds definitions of capturePersistentShopItemsFromManagedSlots()/restorePreservedShopItems() but no callers; applyPlayerLoadout() ignores preservePersistentShopItems and preserves non-kit items through clearKitManagedItems plus slot displacement."
+      },
+      "severity": null
     }
   ]
 }
