@@ -32,7 +32,7 @@ use crate::{
     },
     resources::{current_host_pressure, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
     startup::wait_until_start_is_safe,
-    schema::{ensure_runtime_schema, inspect_runtime_schema, SchemaState},
+    schema::{inspect_runtime_schema, SchemaState},
     support::{capture_time_ms, write_support_bundle, EngineSnapshot, SupportBundleResult},
     update::{check_update, stage_update, StagedUpdate, UpdateCheck},
 };
