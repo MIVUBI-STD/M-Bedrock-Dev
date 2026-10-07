@@ -31,3 +31,5 @@ export * from "./map-classification-audit-profile.js";
 export * from "./cross-domain-reasoning.js";
 
 export * from "./minimal-probe-planner.js";
+
+export * from "./finding-report-projection.js";
