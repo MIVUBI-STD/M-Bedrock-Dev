@@ -976,6 +976,41 @@
         "Run actor interactions against restored/placed blockers.",
         "Repeat after reset and second run."
       ]
+    },
+    {
+      "id": "terminal-outcome-double-commit",
+      "title": "Competing terminal events can commit the same attempt twice",
+      "domain": "state",
+      "summary": "Two valid terminal triggers overlap in time and both mutate one attempt because there is no single terminal owner, generation guard, or idempotent commit boundary.",
+      "invariantIds": [
+        "gameplay.terminal-outcome-exactly-once"
+      ],
+      "triggerTags": [
+        "terminal",
+        "timeout",
+        "victory",
+        "deferred",
+        "race"
+      ],
+      "capabilityTags": [
+        "gameplay-state",
+        "event-ordering",
+        "result-settlement"
+      ],
+      "supportingRegressionIds": [
+        "reg_attack_1_1_2_terminal_outcome_race"
+      ],
+      "detectionHints": [
+        "Enumerate every terminal writer for one attempt, including timeout, objective success, wipe, admin/force-end, disconnect abort, and deferred callbacks.",
+        "Compare event ordering when one terminal writer clears state used by another writer's guard.",
+        "Require one attempt-scoped terminal owner or idempotent commit guard before result, score, feedback, or transition mutation.",
+        "Challenge deferred terminal callbacks after another terminal path has already committed."
+      ],
+      "retestFocus": [
+        "Trigger objective completion at the timeout boundary.",
+        "Overlap terminal callbacks within one or adjacent ticks.",
+        "Verify exactly one result, one score commit, one feedback path, and one transition."
+      ]
     }
   ]
 }
