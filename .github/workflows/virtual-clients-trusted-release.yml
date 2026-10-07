@@ -125,6 +125,55 @@ jobs:
           "path=$installer" >> $env:GITHUB_OUTPUT
           "dir=$releaseDir" >> $env:GITHUB_OUTPUT
 
+      - name: Verify installed trusted payload
+        id: installed
+        shell: pwsh
+        run: |
+          $installer = '${{ steps.installer.outputs.path }}'
+          $installDir = Join-Path $env:RUNNER_TEMP 'virtual-clients-trusted-install'
+          if (Test-Path -LiteralPath $installDir) { Remove-Item -LiteralPath $installDir -Recurse -Force }
+
+          $runtimeRoot = Join-Path $env:LOCALAPPDATA 'M-Bedrock\VirtualClients'
+          New-Item -ItemType Directory -Path $runtimeRoot -Force | Out-Null
+          $sentinel = Join-Path $runtimeRoot 'trusted-release-preserve.txt'
+          'preserve-runtime-data' | Set-Content -LiteralPath $sentinel -Encoding utf8
+
+          $install = Start-Process -FilePath $installer -ArgumentList @('/S', "/D=$installDir") -Wait -PassThru
+          if ($install.ExitCode -ne 0) { throw "Trusted installer install failed: $($install.ExitCode)" }
+
+          $contractPath = Join-Path $installDir 'distribution\package-contract.json'
+          if (!(Test-Path -LiteralPath $contractPath -PathType Leaf)) { throw 'Installed trusted package is missing package contract.' }
+          $contract = Get-Content -LiteralPath $contractPath -Raw | ConvertFrom-Json
+          foreach ($relative in @($contract.requiredFiles)) {
+            $path = Join-Path $installDir ($relative -replace '/', '\')
+            if (!(Test-Path -LiteralPath $path -PathType Leaf)) { throw "Installed trusted payload is missing: $relative" }
+          }
+
+          $thumbprint = $env:VIRTUAL_CLIENTS_PUBLISHER_CERT_THUMBPRINT
+          foreach ($relative in @('virtual-clients.exe', 'guest/windows/virtual-guest-agent.exe')) {
+            $path = Join-Path $installDir ($relative -replace '/', '\')
+            $signature = Get-AuthenticodeSignature -LiteralPath $path
+            $actual = if ($signature.SignerCertificate) { $signature.SignerCertificate.Thumbprint.Replace(' ', '').ToUpperInvariant() } else { '' }
+            if ($signature.Status -ne 'Valid' -or $actual -ne $thumbprint) { throw "Installed payload signature verification failed: $relative" }
+          }
+
+          $payloadManifest = Join-Path '${{ steps.installer.outputs.dir }}' 'installed-payloads.json'
+          & (Join-Path $installDir 'distribution\write-payload-manifest.ps1') -Root $installDir -OutputPath $payloadManifest
+
+          $desktop = Join-Path $installDir 'm-bedrock-virtual-clients.exe'
+          $desktopSignature = Get-AuthenticodeSignature -LiteralPath $desktop
+          $desktopSigned = $desktopSignature.Status -eq 'Valid' -and $desktopSignature.SignerCertificate -and $desktopSignature.SignerCertificate.Thumbprint.Replace(' ', '').ToUpperInvariant() -eq $thumbprint
+
+          $uninstaller = @(Get-ChildItem -LiteralPath $installDir -Filter 'uninstall*.exe' -File)
+          if ($uninstaller.Count -ne 1) { throw 'Trusted installation must contain one uninstaller.' }
+          $uninstall = Start-Process -FilePath $uninstaller[0].FullName -ArgumentList @('/S') -Wait -PassThru
+          if ($uninstall.ExitCode -ne 0) { throw "Trusted installer uninstall failed: $($uninstall.ExitCode)" }
+          if (!(Test-Path -LiteralPath $sentinel -PathType Leaf)) { throw 'Trusted uninstall removed runtime data.' }
+          Remove-Item -LiteralPath $sentinel -Force
+
+          "payload_manifest=$payloadManifest" >> $env:GITHUB_OUTPUT
+          "desktop_signed=$($desktopSigned.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+
       - name: Build trusted release metadata
         working-directory: ${{ github.workspace }}
         shell: pwsh
@@ -154,8 +203,8 @@ jobs:
             guest_status_schema = [int]$guestSchema.Groups[1].Value
             publisher_certificate_thumbprint = $env:VIRTUAL_CLIENTS_PUBLISHER_CERT_THUMBPRINT
             payloads_authenticode_signed = $true
-            desktop_authenticode_signed = $false
-            desktop_signing_status = 'PENDING_PACKAGE_BOUNDARY'
+            desktop_authenticode_signed = [bool]::Parse('${{ steps.installed.outputs.desktop_signed }}')
+            desktop_signing_status = if ([bool]::Parse('${{ steps.installed.outputs.desktop_signed }}')) { 'VERIFIED_INSTALLED_PAYLOAD' } else { 'UNSIGNED_INSTALLED_PAYLOAD' }
             trust = 'authenticode-verified'
             self_update_runtime_enabled = $false
           } | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8 (Join-Path $dist 'build-provenance.json')
@@ -168,4 +217,4 @@ jobs:
           gh release view $tag --repo $env:GITHUB_REPOSITORY 2>$null
           if ($LASTEXITCODE -eq 0) { throw "Stable release $tag already exists." }
           $global:LASTEXITCODE = 0
-          gh release create $tag '${{ steps.installer.outputs.path }}' "${{ steps.installer.outputs.dir }}\latest.json#latest.json" "${{ steps.installer.outputs.dir }}\SHA256SUMS.txt#SHA256SUMS.txt" "${{ steps.installer.outputs.dir }}\build-provenance.json#build-provenance.json" --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title "M-Bedrock Virtual Clients v${{ steps.release.outputs.version }}" --notes "Authenticode-verified Virtual Clients release. Exact source SHA: $env:GITHUB_SHA."
+          gh release create $tag '${{ steps.installer.outputs.path }}' "${{ steps.installer.outputs.dir }}\latest.json#latest.json" "${{ steps.installer.outputs.dir }}\SHA256SUMS.txt#SHA256SUMS.txt" "${{ steps.installer.outputs.dir }}\build-provenance.json#build-provenance.json" "${{ steps.installed.outputs.payload_manifest }}#installed-payloads.json" --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title "M-Bedrock Virtual Clients v${{ steps.release.outputs.version }}" --notes "Authenticode-verified Virtual Clients release. Exact source SHA: $env:GITHUB_SHA."
