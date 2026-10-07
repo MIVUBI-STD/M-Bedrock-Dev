@@ -686,6 +686,17 @@ export function assessGameplayDefectResolutionGate(
             dimension,
           ),
       );
+    const requiredDimensionEvidenceIds = [
+      ...new Set(
+        automaticSearch.dimensionReceipts
+          .filter((receipt) =>
+            requiredDimensions.includes(
+              receipt.dimension,
+            )
+          )
+          .flatMap((receipt) => receipt.evidenceIds),
+      ),
+    ].sort();
 
     return {
       causalLinkId: link.id,
@@ -698,7 +709,19 @@ export function assessGameplayDefectResolutionGate(
           }),
       subjectIds: [...link.subjectIds],
       componentIds: [...link.componentIds],
-      evidenceIds: [...link.evidenceIds],
+      evidenceIds: [
+        ...new Set([
+          ...link.evidenceIds,
+          ...link.impactPathEvidenceIds,
+          ...requiredDimensionEvidenceIds,
+          ...link.knowledgeRequirementIds.flatMap(
+            (id) =>
+              graph.knowledgeReceipts.find(
+                (item) => item.requirementId === id,
+              )?.evidenceIds ?? [],
+          ),
+        ]),
+      ].sort(),
       ...(blockingCounterProofEvidenceIds.length > 0
         ? {
             counterProofEvidenceIds:
