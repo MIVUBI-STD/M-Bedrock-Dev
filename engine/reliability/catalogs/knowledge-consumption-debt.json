@@ -237,18 +237,6 @@
       "nextEvidenceOwner": "education-runtime-analysis"
     },
     {
-      "knowledgeId": "education.allow.build-permission",
-      "status": "static-capability-gap",
-      "reason": "Education specialty-block permission semantics are not structurally analyzed.",
-      "nextEvidenceOwner": "education-permission-analysis"
-    },
-    {
-      "knowledgeId": "education.border.force-field",
-      "status": "static-capability-gap",
-      "reason": "Education border permission/traversal semantics are not structurally analyzed.",
-      "nextEvidenceOwner": "education-permission-analysis"
-    },
-    {
       "knowledgeId": "education.classroom-controls",
       "status": "runtime-required",
       "reason": "Classroom/admin controls can alter live runtime state outside pack ownership.",
@@ -267,22 +255,10 @@
       "nextEvidenceOwner": "runtime-education-profile"
     },
     {
-      "knowledgeId": "education.deny.build-restriction",
-      "status": "static-capability-gap",
-      "reason": "Education specialty-block permission semantics are not structurally analyzed.",
-      "nextEvidenceOwner": "education-permission-analysis"
-    },
-    {
       "knowledgeId": "education.npc.dialogue-open-loaded-ticking",
       "status": "runtime-required",
       "reason": "NPC existence/loading/ticking is runtime entity/chunk state.",
       "nextEvidenceOwner": "runtime-dialogue"
-    },
-    {
-      "knowledgeId": "education.specialty-block-identifiers",
-      "status": "static-capability-gap",
-      "reason": "Education specialty-block presence lacks dedicated profile/block analysis.",
-      "nextEvidenceOwner": "education-permission-analysis"
     },
     {
       "knowledgeId": "effects.event-mutation-delayed-until-entity-tick",

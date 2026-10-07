@@ -1488,6 +1488,58 @@
       ]
     },
     {
+      "knowledgeId": "education.allow.build-permission",
+      "consumer": "education-permission-analysis",
+      "analyzerPaths": [
+        "engine/adapters/mcstructure/src/semantics.ts",
+        "engine/analyzers/manifest/src/education.ts",
+        "engine/analyzers/blocks/src/education-permission.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/blocks/test/education-permission.test.ts",
+        "engine/adapters/mcstructure/test/footprint.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "education.border.force-field",
+      "consumer": "education-permission-analysis",
+      "analyzerPaths": [
+        "engine/adapters/mcstructure/src/semantics.ts",
+        "engine/analyzers/manifest/src/education.ts",
+        "engine/analyzers/blocks/src/education-permission.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/blocks/test/education-permission.test.ts",
+        "engine/adapters/mcstructure/test/footprint.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "education.deny.build-restriction",
+      "consumer": "education-permission-analysis",
+      "analyzerPaths": [
+        "engine/adapters/mcstructure/src/semantics.ts",
+        "engine/analyzers/manifest/src/education.ts",
+        "engine/analyzers/blocks/src/education-permission.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/blocks/test/education-permission.test.ts",
+        "engine/adapters/mcstructure/test/footprint.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "education.specialty-block-identifiers",
+      "consumer": "education-permission-analysis",
+      "analyzerPaths": [
+        "engine/adapters/mcstructure/src/semantics.ts",
+        "engine/analyzers/manifest/src/education.ts",
+        "engine/analyzers/blocks/src/education-permission.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/blocks/test/education-permission.test.ts",
+        "engine/adapters/mcstructure/test/footprint.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "education.code-builder.support",
       "consumer": "education-profile-analysis",
       "analyzerPaths": [
