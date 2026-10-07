@@ -203,6 +203,8 @@ Tester result is workspace state only: Passed or Failed. It never rewrites canon
 Keep the existing tracker field names until a deliberate schema-version migration is justified:
 
 - `issue`: concise player-visible problem;
+- `whyThisIsBug`: grounded reason the observed condition violates the intended contract or approved design;
+- `impact`: concrete gameplay, player-state, fairness, progression, or maintenance consequence;
 - `reproduction[]`: evidence-backed in-game actions/observations only;
 - `expected`: observable correct behavior;
 - `observed`: observed/source-proven evidence or mechanism already owned by the canonical report;
