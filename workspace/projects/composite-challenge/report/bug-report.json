@@ -23,7 +23,7 @@
         "Start a Composite Challenge arena and progress to gameplay that spawns or moves entities far from players.",
         "Keep players away from the remote spawn or pathing region.",
         "Continue until the game depends on that distant simulation region.",
-        "Confirm remote spawning, pathing, or wave progression can stop because the arena region is not kept ticking."
+        "Check whether remote spawning, pathing, or wave progression can stop because the arena region is not kept ticking."
       ],
       "aiAnalysis": "Arena configuration defines and offsets per-arena ticking regions, but the only runtime tickingarea-add owner consumes WorldData entries for lobby and permission. No second creation path or persisted arena ticking-area names were found in the selected artifact.",
       "relevantCode": [
@@ -56,7 +56,7 @@
         "Run a Composite arena and change blocks covered by the arena reset.",
         "End or reset the match.",
         "Start the same arena again before reset processing finishes.",
-        "Confirm blocks can continue changing underneath the new session during setup or gameplay."
+        "Check whether blocks can continue changing underneath the new session during setup or gameplay."
       ],
       "aiAnalysis": "ResetMapService performs a chunked multi-tick reset, but resetGame discards its Promise and saves the default idle session immediately. Start validation does not consult ResetMapService's reset-in-progress state, so the same arena can be admitted again before mutation ends.",
       "relevantCode": [
@@ -86,7 +86,7 @@
         "Carry a recognizable non-session item before starting a Composite arena.",
         "Disconnect before the preload inventory clear runs.",
         "Reconnect after the clear while the session is still preloading.",
-        "Confirm the stale item remains when preparation or gameplay begins."
+        "Check whether the stale item remains when preparation or gameplay begins."
       ],
       "aiAnalysis": "The full inventory clear iterates only players online at preload time. Reconnect during preloading restores state and position without clearing inventory, while preparation applies loadouts with clearAllSlots disabled.",
       "relevantCode": [
@@ -116,7 +116,7 @@
         "Run Composite Attack concurrently in Arena A and Arena B.",
         "In Arena B, take the red flag and remain alive as its active carrier.",
         "Complete, retry, or reset Arena A so its flag cleanup runs.",
-        "Confirm Arena B drops or returns its flag even though its carrier did not die or disconnect."
+        "Check whether Arena B drops or returns its flag even though its carrier did not die or disconnect."
       ],
       "aiAnalysis": "Carrier identity is split between arena-local flagStates and the global ctf_composite_attack_flag_carrier tag. FlagService.cleanup(arenaId) removes that tag from all world players, so Arena A cleanup invalidates Arena B's otherwise-valid carrier.",
       "relevantCode": [
@@ -145,7 +145,7 @@
         "Keep Player A outside the active Composite arena while standing near dirt.",
         "Start gameplay in Arena B.",
         "Wait for the periodic floor-maintenance interval.",
-        "Confirm dirt around Player A changes to grass path despite Player A not belonging to Arena B."
+        "Check whether dirt around Player A changes to grass path despite Player A not belonging to Arena B."
       ],
       "aiAnalysis": "Defense and Attack maintenance loops are entered per active arena, but the fill command executes as global @a. The command therefore escapes arena ownership and mutates nearby world state around unrelated players.",
       "relevantCode": [
