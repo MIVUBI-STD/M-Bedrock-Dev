@@ -701,9 +701,9 @@ function renderCompleteMapAuditHtml(
 
   return `<!doctype html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
-<title>${escapeHtml(artifactLabel)} — Bug Tracker</title><style>${css}</style></head>
+<title>${escapeHtml(artifactLabel)} — Map Audit Report</title><style>${css}</style></head>
 <body><main class="r">
-<section class="hero"><h1>${escapeHtml(artifactLabel)} — Bug Tracker</h1><p>Selected-artifact audit · client-facing findings projection</p></section>
+<section class="hero"><h1>${escapeHtml(artifactLabel)} — Map Audit Report</h1><p>Selected-artifact audit findings projection</p></section>
 <section class="summary">
 <div><small>FINDINGS</small><strong>${findings.length}</strong></div>
 <div><small>BUGS</small><strong>${bugs.length}</strong></div>
