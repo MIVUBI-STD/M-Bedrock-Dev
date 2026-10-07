@@ -31,6 +31,7 @@ const clientId = oneOf(...clientIds);
 const virtualId = oneOf(...virtualIds);
 const parity = oneOf("MATCH", "MISMATCH", "UNKNOWN");
 const identity = oneOf("UNKNOWN", "UNIQUE", "DUPLICATE");
+const connectionHealth = oneOf("VM_OFFLINE", "VM_RUNNING", "GUEST_TOOLS_READY", "GUEST_AGENT_READY", "INTERACTIVE_LAUNCHER_READY", "MINECRAFT_RUNNING");
 const baseState = oneOf("REGISTERED", "FINALIZING", "FINALIZED");
 const errorCode = oneOf(
   "INVALID_INPUT", "NOT_FOUND", "PERMISSION_DENIED", "INVALID_DATA",
@@ -61,7 +62,7 @@ const clientShape = shape<ClientStatus>({
   readySnapshot: nullable(boolean),
   memoryLimitMb: nullable(integer), hostWorkingSetMb: nullable(integer),
   guestToolsReady: nullable(boolean), guestAgentReady: nullable(boolean),
-  guestAgentVersion: nullable(text), minecraftVersion: nullable(text), minecraftRunning: nullable(boolean), interactiveLauncherReady: nullable(boolean),
+  guestAgentVersion: nullable(text), minecraftVersion: nullable(text), minecraftRunning: nullable(boolean), interactiveLauncherReady: nullable(boolean), connectionHealth: nullable(connectionHealth),
   lineageParity: nullable(parity), versionParity: nullable(parity),
   vmIdentity: nullable(identity), windowsIdentity: nullable(identity),
 });
