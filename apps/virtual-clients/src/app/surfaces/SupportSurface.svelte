@@ -21,7 +21,7 @@
 </section>
 
 <section class="support-summary">
-  <article><span>System</span><strong>{blockers.length === 0 ? "Ready" : `${blockers.length} blocker${blockers.length === 1 ? "" : "s"}`}</strong></article>
+  <article><span>Setup health</span><strong>{blockers.length === 0 ? "No blockers" : `${blockers.length} blocker${blockers.length === 1 ? "" : "s"}`}</strong></article>
   <article><span>Available memory</span><strong>{Math.round(snapshot.diagnostics.host.availableMemoryMb / 1024)} GB</strong></article>
   <article><span>Resource pressure</span><strong>{snapshot.diagnostics.runtime.pressure.level}</strong></article>
   <article><span>Virtualization</span><strong>{snapshot.doctor.provider ?? "Unavailable"}</strong></article>
@@ -30,7 +30,7 @@
 <section class="support-card">
   <header><div><span class="eyebrow">WHAT NEEDS ATTENTION</span><h3>{blockers.length} blockers · {warnings.length} warnings</h3></div></header>
   {#if issues.length === 0}
-    <div class="healthy-empty"><strong>Everything is ready</strong><span>No backend blocker or warning is currently reported.</span></div>
+    <div class="healthy-empty"><strong>No setup issues reported</strong><span>No backend blocker or warning is currently reported. Runtime and multiplayer acceptance are separate.</span></div>
   {:else}
     <div class="issue-list">
       {#each issues as issue}
