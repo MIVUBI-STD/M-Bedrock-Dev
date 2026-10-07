@@ -64,3 +64,5 @@ export * from "./causal-link-reasoning-coordinator.js";
 export * from "./defect-resolution-diagnostic-disposition.js";
 
 export * from "./runtime-generation-integrity.js";
+
+export * from "./cross-domain-probe-candidate-adapter.js";
