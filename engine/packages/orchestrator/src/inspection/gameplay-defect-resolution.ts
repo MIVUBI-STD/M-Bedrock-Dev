@@ -516,7 +516,15 @@ function automaticCounterProofSearch(
     // artifact scenario graph. Runtime-unknown semantics never reach this
     // branch as a source-confirmed contradiction; they remain RUNTIME_BLOCKED
     // or DETECTION_GAP with targeted test obligations.
-    exhaustiveWithinScope: true,
+    exhaustiveWithinScope:
+      requiredDimensions.every((dimension) =>
+        automaticallySearchable.includes(dimension) &&
+        dimensionScopeClosed(
+          graph,
+          contradicted,
+          dimension,
+        )
+      ),
     conclusion:
       blocking.length > 0
         ? "BLOCKING_PROOF_FOUND"
