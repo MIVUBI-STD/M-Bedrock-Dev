@@ -60,11 +60,36 @@ fn request_id() -> io::Result<String> {
     Ok(format!("{nanos:032x}"))
 }
 
-fn response_request_id(headers: &str) -> Option<&str> {
-    headers.lines().find_map(|line| {
+fn single_response_header<'a>(headers: &'a str, target: &str) -> io::Result<Option<&'a str>> {
+    let values: Vec<&str> = headers.lines().skip(1).filter_map(|line| {
         let (name, value) = line.split_once(':')?;
-        name.eq_ignore_ascii_case(REQUEST_ID_HEADER).then(|| value.trim())
-    })
+        name.eq_ignore_ascii_case(target).then(|| value.trim())
+    }).collect();
+    match values.as_slice() {
+        [] => Ok(None),
+        [value] => Ok(Some(*value)),
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, format!("guest agent response contains duplicate {target} headers"))),
+    }
+}
+
+fn validate_response(headers: &str, body: &str, request_id: &str) -> io::Result<()> {
+    if headers.lines().next() != Some("HTTP/1.1 200 OK") {
+        return Err(io::Error::new(io::ErrorKind::Other, format!("guest agent returned {}", headers.lines().next().unwrap_or_default())));
+    }
+    if single_response_header(headers, REQUEST_ID_HEADER)? != Some(request_id) {
+        return Err(io::Error::new(io::ErrorKind::InvalidData, "guest agent response request identity mismatch"));
+    }
+    if single_response_header(headers, "Content-Type")? != Some("application/json") {
+        return Err(io::Error::new(io::ErrorKind::InvalidData, "guest agent response content type is invalid"));
+    }
+    let content_length = single_response_header(headers, "Content-Length")?
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "guest agent response is missing Content-Length"))?
+        .parse::<usize>()
+        .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "guest agent response Content-Length is invalid"))?;
+    if content_length != body.as_bytes().len() {
+        return Err(io::Error::new(io::ErrorKind::InvalidData, "guest agent response Content-Length does not match body"));
+    }
+    Ok(())
 }
 
 pub fn launch_guest_minecraft(ip: &str, token: &str, timeout: Duration) -> io::Result<MinecraftLaunchResult> {
@@ -92,13 +117,7 @@ pub fn launch_guest_minecraft(ip: &str, token: &str, timeout: Duration) -> io::R
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
     let (headers, body) = response.split_once("\r\n\r\n")
         .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "guest agent launch response is malformed"))?;
-    let status_line = headers.lines().next().unwrap_or_default();
-    if !status_line.contains(" 200 ") {
-        return Err(io::Error::new(io::ErrorKind::Other, format!("guest agent launch returned {status_line}")));
-    }
-    if response_request_id(headers) != Some(request_id.as_str()) {
-        return Err(io::Error::new(io::ErrorKind::InvalidData, "guest agent launch response request identity mismatch"));
-    }
+    validate_response(headers, body, &request_id)?;
     let result: MinecraftLaunchResult = serde_json::from_str(body.trim())
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
     if result.schema != MINECRAFT_LAUNCH_SCHEMA {
@@ -143,16 +162,7 @@ pub fn query_guest_status(ip: &str, token: &str, timeout: Duration) -> io::Resul
         )
     })?;
 
-    let status_line = headers.lines().next().unwrap_or_default();
-    if !status_line.contains(" 200 ") {
-        return Err(io::Error::new(
-            io::ErrorKind::Other,
-            format!("guest agent returned {status_line}"),
-        ));
-    }
-    if response_request_id(headers) != Some(request_id.as_str()) {
-        return Err(io::Error::new(io::ErrorKind::InvalidData, "guest agent status response request identity mismatch"));
-    }
+    validate_response(headers, body, &request_id)?;
 
     let status: GuestStatus = serde_json::from_str(body.trim())
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
@@ -199,12 +209,26 @@ fn validate_guest_status(status: &GuestStatus) -> io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::{
-        guest_agent_launch_compatible, guest_agent_protocol_compatible, validate_guest_status, GuestStatus,
+        guest_agent_launch_compatible, guest_agent_protocol_compatible, validate_guest_status, validate_response, GuestStatus,
         MinecraftLaunchResult, MinecraftLaunchState, GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA,
         MINECRAFT_LAUNCH_SCHEMA, MAX_GUEST_RESPONSE_BYTES,
     };
     use crate::profile::{MinecraftInstallType, MinecraftProfile};
     use std::io;
+
+    #[test]
+    fn guest_response_parser_fails_closed_on_ambiguous_headers() {
+        let request_id = "a".repeat(32);
+        let body = "{}";
+        let valid = format!("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nX-Virtual-Clients-Request-Id: {request_id}\r\nContent-Length: 2");
+        validate_response(&valid, body, &request_id).unwrap();
+
+        let duplicate = format!("{valid}\r\nX-Virtual-Clients-Request-Id: {request_id}");
+        assert_eq!(validate_response(&duplicate, body, &request_id).unwrap_err().kind(), io::ErrorKind::InvalidData);
+
+        let wrong_length = format!("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nX-Virtual-Clients-Request-Id: {request_id}\r\nContent-Length: 3");
+        assert_eq!(validate_response(&wrong_length, body, &request_id).unwrap_err().kind(), io::ErrorKind::InvalidData);
+    }
 
     #[test]
     fn guest_response_limit_is_explicit() {
