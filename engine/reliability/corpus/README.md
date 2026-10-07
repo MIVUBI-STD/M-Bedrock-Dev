@@ -20,6 +20,15 @@ gameplay-understanding.md    human-readable calibration corpus context and seman
 - Runtime-only behavior is not converted into a static defect when runtime proof is missing.
 - A corpus change requires provenance independent of the implementation under test.
 
+## Execution boundary
+
+Corpus cases do not define an alternate detector.
+
+- Real-map cases are replayed through the canonical selected-map audit entrypoint.
+- Reduced fixtures are replayed through their owning production analyzer/capability.
+- Historical reports/catalogs are comparison or search-pressure inputs only; they are never fed into the production audit as defect evidence.
+- Metrics from reduced fixtures and real-map production replay must remain distinguishable; do not claim end-to-end map recall from analyzer-only fixtures.
+
 ## Case lifecycle
 
 ```text
