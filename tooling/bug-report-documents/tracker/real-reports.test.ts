@@ -15,6 +15,7 @@ const cases = [
   { projectId: "defense-challenge", developerNotes: 0 },
   { projectId: "composite-challenge", developerNotes: 0 },
   { projectId: "the-circuit", developerNotes: 2 },
+  { projectId: "build-and-decode", developerNotes: 6 },
 ] as const;
 
 describe("Golden Tracker real approved-report parity", () => {
@@ -69,6 +70,9 @@ describe("Golden Tracker real approved-report parity", () => {
       expect(html).toContain("Drive Folder ↗");
       expect(html).toContain("World File ↗");
       expect(html).not.toContain('<details class="map" open');
+      expect(html).toContain("Save as HTML");
+      expect(html).toContain('id="workspace-snapshot"');
+      expect(html).toContain('class="files"');
 
       const developerNoteCount = tracker.games.flatMap((game) =>
         game.levels.flatMap((level) => level.devNotes),
@@ -91,7 +95,16 @@ describe("Golden Tracker real approved-report parity", () => {
 
       if (testCase.projectId === "defense-challenge") {
         expect(developerNoteCount).toBe(0);
-        expect(html).toContain("DEV NOTES<span>0</span>");
+        expect(html).not.toContain("<h3>DEVELOPER NOTES");
+      }
+
+      if (testCase.projectId === "build-and-decode") {
+        expect(client.issues.length).toBe(2);
+        expect(client.issues.every((issue) => issue.issueType === "DESIGN_MISMATCH")).toBe(true);
+        expect(client.issues.every((issue) => issue.severity === "minor")).toBe(true);
+        expect(developerNoteCount).toBe(6);
+        expect(html).toContain("BUG-BAD-FINAL-RESULT-PRESENTATION");
+        expect(html).toContain("BUG-BAD-LAST-ROUND-NEXT-ROUND");
       }
     });
   }
