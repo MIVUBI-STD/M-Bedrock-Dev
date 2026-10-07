@@ -17,3 +17,5 @@ export * from "./static-report-confirmation-adapter.js";
 export * from "./tester-report-confirmation-adapter.js";
 
 export * from "./map-audit-finding-reasoning.js";
+
+export * from "./map-audit-finding-reasoning-admission.js";
