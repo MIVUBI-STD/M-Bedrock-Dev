@@ -1,136 +1,107 @@
 # Workspace
 
-Workspace has three responsibilities only:
+Workspace is map-centric. Open one project folder to find its current repository state.
+
+## Root
 
 ```text
 workspace/
-├─ projects/<project-id>/  ignored working continuity for each project
-├─ project-registry.json   tracked compact current-project registry
-├─ reports/                tracked canonical Bug Report V2 state
-├─ developer-notes.json    tracked current Developer Note ledger
-├─ publication/            derived human-facing publication artifacts
-├─ drive-root.json         tracked Google Drive root binding
-└─ ownership.json          workspace ownership contract
+├── README.md
+├── drive-root.json
+└── projects/
 ```
 
-There is no `local/`, `active/`, or `saved/` lifecycle tree.
+- `README.md` owns the workspace navigation contract.
+- `drive-root.json` is the single global Google Drive root binding.
+- `projects/` contains every game/map project.
+- Do not add global report ledgers, publication folders, or project registries. Global indexes are derived from `projects/**/project.json`.
 
-Project lifecycle is derived from approval/publication proof references. It is not stored as a parallel status field, and a project never moves folders because of lifecycle changes.
+## Single-level project
 
-## Project workspace
-
-Canonical project shape:
+Use the shallow form when the project has one independently versioned map:
 
 ```text
-workspace/projects/<project-id>/
-├─ source/     immutable project input/extracted source representation
-├─ design/     map-scoped authoring/reference material
-├─ working/    mutable working copy / transaction target
-├─ output/     generated packages and non-canonical deliverables
-├─ evidence/   project-scoped diagnostics/evidence, not report authority
-├─ patches/    explicit patch transactions/history
-└─ state/      project/session/audit continuity metadata
-   ├─ work-session.json
-   ├─ approvals/<snapshot-fingerprint>.json
-   └─ publications/<snapshot-fingerprint>.json
+projects/<project-id>/
+├── project.json
+├── report/
+│   ├── bug-report.json
+│   └── developer-notes.json   # only when notes exist
+└── output/
+    ├── bug-tracker.html
+    └── bug-tracker.json
 ```
 
-### Ownership
+## Multi-level project
 
-- `source/` = what the project started from.
-- `design/` = map-scoped authoring/reference material.
-- `working/` = current mutable work.
-- `output/` = generated deliverables.
-- `evidence/` = diagnostic evidence supporting work; never canonical bug state.
-- `patches/` = explicit mutation history.
-- `state/` = resumable project/work-session state.
-
-Do not create project-local `reports/`. Canonical current bug-report state has exactly one owner:
+When one game has multiple independently versioned levels, keep one project identity and separate level scopes:
 
 ```text
-workspace/reports/
+projects/<project-id>/
+├── project.json
+└── levels/
+    ├── level-1/
+    │   ├── report/
+    │   │   ├── bug-report.json
+    │   │   └── developer-notes.json   # only when needed
+    │   └── output/
+    │       ├── bug-tracker.html
+    │       └── bug-tracker.json
+    └── level-2/
+        ├── report/
+        └── output/
 ```
 
-This avoids two report stores with competing authority.
+Do not create `levels/` for a single-level project. Do not flatten independent levels into separate top-level projects.
 
-## Project registry
+## Ownership
 
-`workspace/project-registry.json` is a compact tracked index.
+`project.json`
+: Project/game identity and exact Google Drive artifact binding. It is the repository bridge to Drive.
 
-It stores project identity, artifact binding, Work Session pointer, canonical Bug Report pointer, one `DriveProjectBinding`, and active approval/publication proof fingerprints.
+`report/bug-report.json`
+: Canonical approved Bug Report V2 state for that map/level.
 
-It does not copy audit stage/revision/next-action, historical issue IDs, issue narratives, or lifecycle/readiness/completion status.
+`report/developer-notes.json`
+: Canonical DEV_NOTE state for that map/level. It remains separate from Bug Report V2.
 
-Derived lifecycle:
+`output/bug-tracker.html`
+: Derived human-facing report. Optimize for reading and retest workflow.
+
+`output/bug-tracker.json`
+: Derived complete structured projection for developers, tooling, and AI. It is not a second canonical report.
+
+HTML and JSON output are generated from the same validated projection and must contain the same canonical IDs.
+
+## Optional project data
+
+Create additional folders only when real content requires them. Do not pre-create empty architecture.
+
+A project being actively modified may use `map/` for project-local source/working material. Evidence may live under `report/evidence/` when it is useful to the report workflow. These locations never replace the selected current .mcworld as gameplay authority.
+
+## Drive relationship
+
+Google Drive remains the human-facing map/source/version store defined by `docs/system/drive-storage.md`.
+
+GitHub and Drive do not mirror folder-for-folder. They synchronize identity:
 
 ```text
-no approval proof      → working
-approval proof         → approved
-approval + publication → drive-published
+project.json
+↕
+Drive map/level folder
+↕
+current world file ID + version + fingerprint
 ```
 
-Detailed evidence and execution state stay inside the ignored project workspace.
-## Canonical report state
+A mismatched file ID, version, or fingerprint is a synchronization error; do not silently accept it.
 
-`workspace/reports/` stores only repository-tracked canonical Bug Report V2 current state for audited map versions.
+## Invariants
 
-It is the persisted bug-report authority. Generated HTML/PDF or project diagnostics belong in project `output/` or `evidence/` and are derived/non-canonical.
-
-## Developer Notes
-
-`workspace/developer-notes.json` is the current cross-project Developer Note ledger.
-
-Developer Notes are concrete engineering/release actions that are not gameplay BUG or DESIGN_MISMATCH findings. They must not be stored in `workspace/reports/` and must not inflate gameplay issue totals.
-
-## Publication outputs
-
-`workspace/publication/` contains generated human-facing publication bundles such as standalone HTML/JSON validation snapshots.
-
-These files are derived outputs. They do not become canonical issue state and must remain reproducible from canonical report/project inputs.
-
-Intermediate publication aggregates may exist only as generated build inputs and must be clearly marked non-authoritative. Do not read publication output back into canonical Bug Report state.
-
-## Audit authority
-
-For gameplay audit, the selected current `.mcworld` is the sole current gameplay source of truth.
-
-`workspace/projects/<project-id>/design/game-design.json`, when present, is authoring/reference material. It does not override the selected map artifact during audit.
-
-## Google Drive
-
-Google Drive is the approved human-facing storage for map binaries, source-development files, and approved derived deliverables.
-
-Canonical guidance:
-
-```text
-docs/system/drive-storage.md
-```
-
-Tracked root pointer:
-
-```text
-workspace/drive-root.json
-```
-
-Per-project Drive folder/current-world binding has one owner: `workspace/project-registry.json` through `ProjectRecord.publication.drive`. Project state must not keep a second Drive folder binding.
-
-Internal Work Session, caches, audit control state, or engine metadata are not copied to Drive.
-
-## Continuity rule
-
-A project always keeps one identity/path:
-
-```text
-workspace/projects/<project-id>/
-```
-
-Work Session owns detailed execution progress. Project Registry stores only the Work Session ID/revision pointer.
-
-Approval readiness, lifecycle status, and Drive completion are derived views, never parallel stored state.
-## Gameplay Contract rule
-
-Gameplay Contract is derived for the current scope from evidence inside the selected map version.
-
-It is rebuildable and is not a second persisted authority.
-
-If the selected map does not contain enough evidence to ground a material rule, keep that rule unknown. Do not import intent from stale documents or older builds.
+- One game = one project folder.
+- One independently versioned level = one level scope.
+- One fact = one canonical owner.
+- Current selected .mcworld remains gameplay authority.
+- BUG, DESIGN_MISMATCH, DEV_NOTE, and NEED_VALIDATION semantics do not change because of physical storage.
+- Output is derived and never read back as canonical report state.
+- Git history is revision history; do not add duplicate history ledgers.
+- Optional folders exist only when they contain useful data.
+- Prefer the shallowest valid structure.
