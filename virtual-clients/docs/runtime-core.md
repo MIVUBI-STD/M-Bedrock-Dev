@@ -30,7 +30,7 @@ Rust owns runtime truth.
 - `runtime.rs` — observation collection, lifecycle orchestration and mutation serialization.
 - `lifecycle_admission.rs` — pure lifecycle eligibility shared by action projection and execution; no provider, filesystem or Guest Agent access.
 - `profile.rs` — Native Minecraft detection, Base provenance and version parity.
-- `guest.rs` — read-only Guest Agent protocol.
+- `guest.rs` — bounded Guest Agent status and fixed Minecraft-launch protocol.
 - `resources.rs` — host pressure policy.
 - `client.rs` — public instance/status contract.
 - `doctor.rs` — provider, Base, capacity and parity readiness.
@@ -193,6 +193,8 @@ The user-facing desktop lives at `apps/virtual-clients/`; this runtime core is o
 
 
 ## Public contract
+
+The crate root is an internal integration surface for the CLI and Tauri adapter; it is not a third-party SDK stability promise. Do not remove root exports based only on repository-search absence—CLI/Tauri/tests and platform-gated code must be checked first. Machine-facing compatibility is defined by the versioned JSON/wire schemas below, not by preserving every Rust `pub use` forever.
 
 The backend has one public contract schema for CLI/application-boundary JSON.
 
