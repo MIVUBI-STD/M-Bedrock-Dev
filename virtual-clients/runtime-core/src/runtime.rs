@@ -2367,6 +2367,28 @@ mod tests {
     }
 
     #[test]
+    fn connection_health_is_a_strict_evidence_projection() {
+        let guest = |minecraft_running, interactive_launcher_ready| GuestStatus {
+            schema: crate::guest::GUEST_STATUS_SCHEMA,
+            protocol_version: crate::guest::GUEST_AGENT_PROTOCOL_VERSION,
+            agent_version: "test".into(),
+            minecraft: None,
+            minecraft_running,
+            interactive_launcher_ready,
+            machine_identity: None,
+        };
+
+        assert_eq!(connection_health(ClientState::Stopped, None, None), Some(ConnectionHealth::VmOffline));
+        assert_eq!(connection_health(ClientState::Running, None, None), Some(ConnectionHealth::VmRunning));
+        assert_eq!(connection_health(ClientState::Running, Some(true), None), Some(ConnectionHealth::GuestToolsReady));
+        assert_eq!(connection_health(ClientState::Running, Some(true), Some(&guest(Some(false), Some(false)))), Some(ConnectionHealth::GuestAgentReady));
+        assert_eq!(connection_health(ClientState::Running, Some(true), Some(&guest(Some(false), Some(true)))), Some(ConnectionHealth::InteractiveLauncherReady));
+        assert_eq!(connection_health(ClientState::Running, Some(true), Some(&guest(Some(true), Some(false)))), Some(ConnectionHealth::MinecraftRunning));
+        assert_eq!(connection_health(ClientState::NotProvisioned, None, None), None);
+        assert_eq!(connection_health(ClientState::Error, None, None), None);
+    }
+
+    #[test]
     fn restore_batch_state_recovers_stopped_and_suspended_clients() {
         let provider = FakeProvider::new(
             [ClientState::Stopped, ClientState::Stopped, ClientState::Stopped],
