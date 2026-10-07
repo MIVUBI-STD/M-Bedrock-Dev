@@ -128,7 +128,7 @@ pub(super) struct LifecycleFacts {
     pub(super) client_compatible: bool,
     pub(super) saved_vm_identity_matches: bool,
     pub(super) vm_identity_duplicate: bool,
-    pub(super) identity_verified: bool,
+    pub(super) identity_provenance_bound: bool,
     pub(super) fresh_client_profile: bool,
     pub(super) vm_identity_unique: bool,
     pub(super) base_finalized_and_stopped: bool,
@@ -200,7 +200,7 @@ pub(super) fn evaluate_lifecycle_admission(
     {
         return blocked("First-time setup requires a fresh client, unique VM identity, no recovery point, and a finalized stopped Base.");
     }
-    if action == LifecycleAction::SetReady && !facts.identity_verified {
+    if action == LifecycleAction::SetReady && !facts.identity_provenance_bound {
         return blocked("Verify client identities before saving a recovery point.");
     }
     if matches!(action, LifecycleAction::Start | LifecycleAction::Reset | LifecycleAction::StartSetup)
@@ -409,7 +409,7 @@ mod tests {
             client_compatible: true,
             saved_vm_identity_matches: true,
             vm_identity_duplicate: false,
-            identity_verified: true,
+            identity_provenance_bound: true,
             fresh_client_profile: false,
             vm_identity_unique: true,
             base_finalized_and_stopped: true,
@@ -494,11 +494,11 @@ mod tests {
     #[test]
     fn recovery_point_admission_requires_identity_and_known_snapshot_state() {
         let mut facts = admitted_facts(ClientState::Stopped);
-        facts.identity_verified = false;
+        facts.identity_provenance_bound = false;
         assert!(!super::evaluate_lifecycle_admission(
             ClientId::Virtual01, LifecycleAction::SetReady, &facts,
         ).allowed);
-        facts.identity_verified = true;
+        facts.identity_provenance_bound = true;
         facts.ready_snapshot = None;
         assert!(!super::evaluate_lifecycle_admission(
             ClientId::Virtual01, LifecycleAction::SetReady, &facts,
@@ -555,7 +555,7 @@ mod tests {
     #[test]
     fn first_boot_requires_fresh_profile_unique_vm_and_no_recovery_point() {
         let base = super::LifecycleFacts {
-            identity_verified: false,
+            identity_provenance_bound: false,
             fresh_client_profile: true,
             ..admitted_facts(ClientState::Stopped)
         };
