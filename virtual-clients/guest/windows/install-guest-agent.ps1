@@ -52,11 +52,19 @@ echo You can continue account setup now.
 pause
 "@ | Set-Content -LiteralPath $interactiveSetup -Encoding ASCII
 
-$rule = Get-NetFirewallRule -DisplayName 'M-Bedrock Virtual Guest Agent' -ErrorAction SilentlyContinue
+$ruleName = 'M-Bedrock Virtual Guest Agent'
+$rule = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
 if ($rule) {
   $rule | Remove-NetFirewallRule
 }
-New-NetFirewallRule -DisplayName 'M-Bedrock Virtual Guest Agent' -Direction Inbound -Action Allow -Program $agent -Protocol TCP -LocalPort 47831 -RemoteAddress LocalSubnet -Profile Any | Out-Null
+New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -Action Allow -Program $agent -Protocol TCP -LocalPort 47831 -RemoteAddress LocalSubnet -Profile Any | Out-Null
+$installedRule = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction Stop
+$portFilter = $installedRule | Get-NetFirewallPortFilter
+$addressFilter = $installedRule | Get-NetFirewallAddressFilter
+$appFilter = $installedRule | Get-NetFirewallApplicationFilter
+if ($installedRule.Direction -ne 'Inbound' -or $installedRule.Action -ne 'Allow' -or $portFilter.Protocol -ne 'TCP' -or $portFilter.LocalPort -ne '47831' -or $addressFilter.RemoteAddress -ne 'LocalSubnet' -or $appFilter.Program -ne $agent) {
+  throw 'Guest Agent firewall rule does not match the bounded transport policy.'
+}
 
 $installed = Get-ScheduledTask -TaskName $taskName -ErrorAction Stop
 if ($installed.State -eq 'Disabled') {
