@@ -23,7 +23,7 @@
         "Enter an Orb L2 session and obtain enough coins for a valid weapon or armor upgrade.",
         "Open the normal upgrade UI and buy the next available tier.",
         "Wait for the purchase result.",
-        "Confirm the upgrade fails while the spent coins remain deducted."
+        "Check whether the upgrade fails while the spent coins remain deducted."
       ],
       "aiAnalysis": "UpgradeManager validates the tier and coin cost, consumes coins, then passes an undeclared material identifier into weapon or armor replacement. The resulting ReferenceError is caught as an upgrade failure, but the already consumed currency is not refunded.",
       "relevantCode": [
@@ -52,7 +52,7 @@
         "Start Orb of the Illusioner Level 2 and reach active Offense gameplay.",
         "Restart the world while the active match is still in progress.",
         "Rejoin after the world finishes loading and wait a few seconds for recovery.",
-        "Confirm the arena resets and players return to the lobby instead of the match resuming."
+        "Check whether the arena resets and players return to the lobby instead of the match resuming."
       ],
       "aiAnalysis": "The reload path schedules validateBarricadeStates after restoration. That method references selectedBarricades even though the identifier exists only as a parameter elsewhere. The resulting ReferenceError is classified as an arena recovery failure, causing disposal/reset.",
       "relevantCode": [
