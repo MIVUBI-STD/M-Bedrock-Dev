@@ -14,8 +14,8 @@ describe("gameplay issue taxonomy", () => {
           "runtime:arena",
           "runtime:arena-capacity",
         ],
-        knowledgeDomain:
-          "multiplayer-interleaving",
+        knowledgeDomains:
+          ["multiplayer-interleaving"],
       }),
     ).toEqual({
       failureDomain: "arena-multi-arena",
@@ -35,13 +35,13 @@ describe("gameplay issue taxonomy", () => {
           "runtime:entities",
           "runtime:chunks",
         ],
-        knowledgeDomain: "entity-behavior",
+        knowledgeDomains: ["entity-behavior"],
       }),
     ).toEqual({
       failureDomain:
         "progression-wave-objective",
       contributingDomains: [
-        "chunk-simulation",
+        ["chunk-simulation"],
         "entity-ai-combat",
         "progression-wave-objective",
       ],
@@ -58,7 +58,7 @@ describe("gameplay issue taxonomy", () => {
           "runtime:economy",
           "runtime:inventory",
         ],
-        knowledgeDomain: "economy-reward",
+        knowledgeDomains: ["economy-reward"],
       }),
     ).toEqual({
       failureDomain: "inventory-economy",
@@ -75,12 +75,12 @@ describe("gameplay issue taxonomy", () => {
         gameplayStage: "SETUP",
         scenarioLabel: "spawn-readiness",
         componentIds: ["runtime:chunks"],
-        knowledgeDomain: "chunk-simulation",
+        knowledgeDomains: ["chunk-simulation"],
       }),
     ).toEqual({
-      failureDomain: "chunk-simulation",
+      failureDomain: ["chunk-simulation"],
       contributingDomains: [
-        "chunk-simulation",
+        ["chunk-simulation"],
       ],
       gameplayFlow: "SETUP",
     });
@@ -109,8 +109,8 @@ describe("gameplay issue taxonomy", () => {
         gameplayStage: "READY_START",
         scenarioLabel: "arena-availability-feedback",
         componentIds: ["runtime:arena"],
-        knowledgeDomain:
-          "multiplayer-interleaving",
+        knowledgeDomains:
+          ["multiplayer-interleaving"],
       }),
     ).toEqual({
       failureDomain:
@@ -132,8 +132,8 @@ describe("gameplay issue taxonomy", () => {
           "runtime:persistence",
           "runtime:async-command-transaction",
         ],
-        knowledgeDomain:
-          "temporal-ownership",
+        knowledgeDomains:
+          ["temporal-ownership"],
       }),
     ).toEqual({
       failureDomain: "temporal-async",
@@ -142,6 +142,31 @@ describe("gameplay issue taxonomy", () => {
         "temporal-async",
       ],
       gameplayFlow: "RECOVERY",
+    });
+  });
+
+  it("keeps one semantic primary while retaining all cross-domain contributors", () => {
+    expect(
+      classifyGameplayIssue({
+        gameplayStage: "ACTIVE_GAMEPLAY",
+        scenarioLabel: "generic-runtime-failure",
+        componentIds: [],
+        knowledgeDomains: [
+          "platform-constraints",
+          "chunk-simulation",
+          "temporal-ownership",
+          "state-flow",
+        ],
+      }),
+    ).toEqual({
+      failureDomain: "state-ownership",
+      contributingDomains: [
+        "chunk-simulation",
+        "platform-performance",
+        "state-ownership",
+        "temporal-async",
+      ],
+      gameplayFlow: "ACTIVE_GAMEPLAY",
     });
   });
 
