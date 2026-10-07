@@ -66,3 +66,5 @@ export * from "./defect-resolution-diagnostic-disposition.js";
 export * from "./runtime-generation-integrity.js";
 
 export * from "./cross-domain-probe-candidate-adapter.js";
+
+export * from "./cross-domain-runtime-handoff.js";
