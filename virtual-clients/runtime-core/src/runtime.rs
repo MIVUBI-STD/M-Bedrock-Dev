@@ -14,8 +14,8 @@ use crate::{
         evaluate_lifecycle_admission, require_lifecycle_admission, validate_power_state,
         LifecycleAction, LifecycleFacts,
     },
+    operation_lock::OperationLock,
     paths::runtime_root,
-    persistence::reject_unsafe_existing_file,
     policy::{engine_policy, EnginePolicy, MAX_VIRTUAL_CLIENTS},
     profile::{
         client_lineage_parity, current_base_vmx_path, identity_fingerprint, load_base_profile,
@@ -33,10 +33,9 @@ use crate::{
     support::{capture_time_ms, write_support_bundle, EngineSnapshot, SupportBundleResult},
     update::{check_update, stage_update, StagedUpdate, UpdateCheck},
 };
-use fs2::FileExt;
 use serde::Serialize;
 use std::{
-    fs::{self, File, OpenOptions},
+    fs,
     io, thread,
     time::Duration,
 };
@@ -65,62 +64,6 @@ pub struct ResourceView {
     pub observed_working_set_mb: u64,
     pub observed_working_set_instances: usize,
     pub pressure: HostPressure,
-}
-
-struct OperationLock {
-    file: File,
-}
-
-impl OperationLock {
-    fn open() -> io::Result<(std::path::PathBuf, File)> {
-        let root = runtime_root()?;
-        fs::create_dir_all(&root)?;
-        let path = root.join(".operation.lock");
-        reject_unsafe_existing_file(&path)?;
-        let file = OpenOptions::new()
-            .read(true)
-            .write(true)
-            .create(true)
-            .open(path)?;
-        Ok((root, file))
-    }
-
-    fn acquire() -> io::Result<Self> {
-        let (root, file) = Self::open()?;
-        FileExt::try_lock_exclusive(&file).map_err(|error| {
-            if error.kind() == io::ErrorKind::WouldBlock {
-                io::Error::new(
-                    io::ErrorKind::WouldBlock,
-                    "another Virtual Clients operation is already running",
-                )
-            } else {
-                error
-            }
-        })?;
-        ensure_runtime_schema(&root)?;
-        Ok(Self { file })
-    }
-
-    fn acquire_shared() -> io::Result<Self> {
-        let (_, file) = Self::open()?;
-        FileExt::try_lock_shared(&file).map_err(|error| {
-            if error.kind() == io::ErrorKind::WouldBlock {
-                io::Error::new(
-                    io::ErrorKind::WouldBlock,
-                    "Virtual Clients state is being modified",
-                )
-            } else {
-                error
-            }
-        })?;
-        Ok(Self { file })
-    }
-}
-
-impl Drop for OperationLock {
-    fn drop(&mut self) {
-        let _ = FileExt::unlock(&self.file);
-    }
 }
 
 fn require_base_finalization_state(state: Option<BaseState>) -> io::Result<()> {
