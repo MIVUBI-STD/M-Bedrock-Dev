@@ -228,8 +228,15 @@ export function projectReadyAuditIssues(
 
   return sortIssues(
     gate.resolutions
-      .filter((resolution) =>
+      .filter((resolution) => {
+        const link = graph.causalLinks.find(
+          (item) =>
+            item.id === resolution.causalLinkId,
+        );
+        return (
         ready.has(resolution.causalLinkId) &&
+        resolution.disposition === "CONFIRMED_DEFECT_READY" &&
+        link?.status === "CONTRADICTED" &&
         assessReadyResolutionSaturation(
           graph,
           resolution,
@@ -240,7 +247,8 @@ export function projectReadyAuditIssues(
         nonEmpty(resolution.expectedOutcome) &&
         nonEmpty(resolution.actualOutcome) &&
         nonEmpty(resolution.affectedScope)
-      )
+        );
+      })
       .flatMap((resolution) => {
         const context = projectionContext(
           graph,
