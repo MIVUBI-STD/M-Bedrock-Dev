@@ -687,6 +687,20 @@ Affected Scope
 Blocking Proof Cleared
 ```
 
+### Reachability-before-failure rule
+
+A defensive/error branch proves only that the implementation anticipates a failure class. It does not prove that selected-map gameplay can enter that branch.
+
+For exception, fallback, rollback, refund, overflow, or command-failure candidates:
+
+```text
+error-handling branch exists
+≠ failure reachable
+≠ player consequence proven
+```
+
+First prove a concrete selected-artifact trigger or applicable platform contract that reaches the failure branch under the audited gameplay conditions. If reachability cannot be established and no current player-visible contradiction remains, reject the candidate rather than promoting a hypothetical failure to BUG or NEED_VALIDATION.
+
 Do not replace claim closure with a generic confidence score.
 
 ## 6.0 Proof-promotion rule
