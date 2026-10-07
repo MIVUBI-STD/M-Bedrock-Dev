@@ -254,7 +254,7 @@ export type PayloadValidator<T> = (value: unknown) => value is T;
 export function parseSuccessEnvelope<T>(raw: string, validate: PayloadValidator<T>): T {
   const parsed: unknown = JSON.parse(raw);
   if (!isRecord(parsed) || parsed.schema !== PUBLIC_CONTRACT_SCHEMA || !("data" in parsed)) {
-    throw new Error("Backend response does not match public contract schema 1.");
+    throw new Error(`Backend response does not match public contract schema ${PUBLIC_CONTRACT_SCHEMA}.`);
   }
   if (!validate(parsed.data)) {
     throw new Error("Backend response data does not match the requested command contract.");
