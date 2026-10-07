@@ -19,3 +19,5 @@ export * from "./tester-report-confirmation-adapter.js";
 export * from "./map-audit-finding-reasoning.js";
 
 export * from "./map-audit-finding-reasoning-admission.js";
+
+export * from "./reasoning-monotonicity.js";
