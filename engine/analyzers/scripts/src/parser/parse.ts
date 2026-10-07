@@ -74,6 +74,7 @@ import {
 } from "../domains/persistence/persistent-data-lifecycle.js";
 import { inferPersistentStateScopes } from "../domains/persistence/persistent-state-scope.js";
 import { inferPersistentStateLifetimes } from "../domains/persistence/persistent-state-lifetime.js";
+import { deriveBlockCustomComponentRegistrations } from "../domains/automation/block-custom-component-evidence.js";
 
 function scriptKind(path: string): ts.ScriptKind {
   if (path.endsWith(".ts")) return ts.ScriptKind.TS;
@@ -1895,6 +1896,8 @@ export function parseScriptFile(
       text,
       source,
     );
+  const blockCustomComponentRegistrations =
+    deriveBlockCustomComponentRegistrations(text, source);
   const topLevelFunctionNames = new Set(
     file.statements
       .filter(ts.isFunctionDeclaration)
@@ -2659,6 +2662,7 @@ export function parseScriptFile(
   return {
     identifier,
     source,
+    blockCustomComponentRegistrations,
     arenaAuthorityEvidence,
     arenaAuthorityPaths,
     persistenceIdempotencyGuards,

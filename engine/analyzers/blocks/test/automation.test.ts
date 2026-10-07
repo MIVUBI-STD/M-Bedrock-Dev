@@ -64,3 +64,50 @@ describe("block automation analysis", () => {
     });
   });
 });
+
+import { analyzeBlockCustomComponentContracts } from "../src/automation.js";
+
+describe("block custom component contracts", () => {
+  it("correlates tick and redstone prerequisites with registered callbacks", () => {
+    const block = parseBlockDefinition({
+      "minecraft:block": {
+        components: {
+          "demo:clock": {},
+          "minecraft:tick": { interval_range: [20, 20], looping: true },
+          "minecraft:redstone_consumer": {},
+        },
+      },
+    }, source);
+
+    expect(analyzeBlockCustomComponentContracts(block, [{
+      componentId: "demo:clock",
+      callbacks: ["onTick", "onRedstoneUpdate"],
+      source,
+    }])).toEqual([
+      expect.objectContaining({
+        componentId: "demo:clock",
+        tickTrigger: "configured",
+        redstoneConsumer: "configured",
+        status: "resolved",
+      }),
+    ]);
+  });
+
+  it("keeps missing callback prerequisites explicit", () => {
+    const block = parseBlockDefinition({
+      "minecraft:block": {
+        components: { "demo:clock": {} },
+      },
+    }, source);
+
+    expect(analyzeBlockCustomComponentContracts(block, [{
+      componentId: "demo:clock",
+      callbacks: ["onTick", "onRedstoneUpdate"],
+      source,
+    }])[0]).toMatchObject({
+      tickTrigger: "missing",
+      redstoneConsumer: "missing",
+      status: "incomplete",
+    });
+  });
+});

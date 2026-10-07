@@ -15,3 +15,12 @@ export interface BlockTickSchedule {
   timingStatus: "explicit" | "partial";
   source: SourceRef;
 }
+
+export interface BlockCustomComponentContract {
+  componentId: string;
+  callbacks: readonly ("onTick" | "onRandomTick" | "onRedstoneUpdate" | "onStepOn" | "onStepOff")[];
+  tickTrigger: "configured" | "missing" | "not-applicable";
+  redstoneConsumer: "configured" | "missing" | "not-applicable";
+  status: "resolved" | "incomplete";
+  source: SourceRef;
+}

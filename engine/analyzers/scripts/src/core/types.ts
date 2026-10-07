@@ -1,3 +1,4 @@
+import type { BlockCustomComponentRegistrationEvidence } from "../domains/automation/block-custom-component-evidence.js";
 import type { ScriptEconomyEvidence } from "../domains/economy/economy-evidence.js";
 import type {
   ScriptProgressionActorRegistryEvidence,
@@ -443,6 +444,7 @@ export interface ScriptCapabilityUse {
 export interface ParsedScriptFile {
   identifier: string;
   source: SourceRef;
+  blockCustomComponentRegistrations?: BlockCustomComponentRegistrationEvidence[];
   imports: ScriptImport[];
   events: ScriptEventSubscription[];
   dynamicProperties: DynamicPropertyAccess[];

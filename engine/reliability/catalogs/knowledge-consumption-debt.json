@@ -15,24 +15,6 @@
       "nextEvidenceOwner": "runtime-domain-validation"
     },
     {
-      "knowledgeId": "automation.block-custom-events",
-      "status": "static-capability-gap",
-      "reason": "Block custom component callback registration is not structurally parsed.",
-      "nextEvidenceOwner": "block-automation-analysis"
-    },
-    {
-      "knowledgeId": "automation.redstone-update-needs-consumer",
-      "status": "static-capability-gap",
-      "reason": "Redstone consumer/callback contract is not structurally modeled.",
-      "nextEvidenceOwner": "block-automation-analysis"
-    },
-    {
-      "knowledgeId": "automation.relation-block-tick-activates-callback",
-      "status": "static-capability-gap",
-      "reason": "Block tick-to-callback relation lacks structural block automation analysis.",
-      "nextEvidenceOwner": "block-automation-analysis"
-    },
-    {
       "knowledgeId": "blockstate.block-access-can-fail-unloaded",
       "status": "runtime-required",
       "reason": "Loaded/accessibility state is runtime chunk/world state.",
