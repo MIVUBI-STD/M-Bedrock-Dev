@@ -105,8 +105,9 @@ function developerNotesForProject(
   registry: DeveloperNoteRegistry,
   projectId: string,
 ): TrackerDeveloperNote[] {
+  const hasScopedNotes = registry.notes.some((note) => note.projectId !== undefined);
   return registry.notes
-    .filter((note) => note.projectId === undefined || note.projectId === projectId)
+    .filter((note) => hasScopedNotes ? note.projectId === projectId : true)
     .map((note) => ({
       id: note.id,
       type: note.type,
