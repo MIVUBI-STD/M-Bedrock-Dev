@@ -12,7 +12,19 @@ const registry: ProjectRegistry = { projects: [{
   publication: { drive: { mapFolder: { folderId: "fixture-folder" }, currentWorld: { fileId: "fixture-world", fileName: "Fixture Map v1.0.0.mcworld", version: "1.0.0" } } },
 }] };
 
-const developerNotes: DeveloperNoteRegistry = { schema: "m-bedrock-dev-notes/v1", notes: [] };
+const developerNotes: DeveloperNoteRegistry = {
+  schema: "m-bedrock-dev-notes/v1",
+  notes: [{
+    id: "DEV-FIXTURE-001",
+    projectId: "fixture-map",
+    type: "DEV_NOTE",
+    title: "Fixture Developer Note",
+    problem: "A concrete release condition needs developer attention.",
+    action: "Correct the existing release owner.",
+    evidence: { source: "fixture" },
+    severity: null,
+  }],
+};
 
 const client: BugReportClientDocument = {
   schema: "m-bedrock-bug-report-client-document/v1",
@@ -39,8 +51,10 @@ describe("Bug Tracker integration", () => {
   it("projects and renders the same unique issue IDs", () => {
     const tracker = projectClientDocumentToTracker(client, registry, developerNotes);
     validateBugTrackerDocument(tracker);
-    expect(trackerIssueIds(tracker)).toEqual(["BUG-FIXTURE-001"]);
+    expect(trackerIssueIds(tracker)).toEqual(["BUG-FIXTURE-001", "DEV-FIXTURE-001"]);
     expect(renderBugTrackerHtml(tracker)).toContain('data-issue-id="BUG-FIXTURE-001"');
+    expect(renderBugTrackerHtml(tracker)).toContain('data-issue-id="DEV-FIXTURE-001"');
+    expect(renderBugTrackerHtml(tracker)).toContain("DEV NOTES");
   });
   it("fails closed when registry identity is ambiguous", () => {
     const ambiguous: ProjectRegistry = { projects: [...registry.projects, registry.projects[0]!] };
