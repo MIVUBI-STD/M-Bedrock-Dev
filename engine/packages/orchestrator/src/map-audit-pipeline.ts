@@ -113,6 +113,12 @@ import {
   type AuditUserIntentEnvelope,
 } from "./map-audit-user-intent.js";
 import {
+  reasonAboutCausalLinkFinding,
+} from "./diagnosis/causal-link-reasoning-coordinator.js";
+import {
+  diagnosticDispositionForDefectResolution,
+} from "./diagnosis/defect-resolution-diagnostic-disposition.js";
+import {
   auditCandidateGroupCoverageIssues,
   groupReadyAuditIssuesForCandidateCoverage,
   type ReadyAuditCandidateGroup,
@@ -589,6 +595,7 @@ function assembleSelectedMapAuditRun(
   inspection: InspectArtifactResult,
   reconciliation: AuditDemandReconciliation,
   userIntent?: AuditUserIntentEnvelope,
+  runtimeProbeTranscript?: RuntimeProbeTranscript,
 ): SelectedMapAuditRun {
   const identity =
     deriveSelectedMapAuditIdentity(inspection);
@@ -653,6 +660,34 @@ function assembleSelectedMapAuditRun(
     auditObligations:
       control.auditObligations,
   });
+  const allFindings = [
+    ...control.issueLanes.BUG,
+    ...control.issueLanes.DESIGN_MISMATCH,
+  ];
+  const reasoningByCausalLinkId = Object.fromEntries(
+    allFindings.flatMap((finding) => {
+      const resolution = scenario.defectResolution.resolutions.find(
+        (item) => item.causalLinkId === finding.causalLinkId,
+      );
+      if (!resolution) return [];
+      const receipt = reasonAboutCausalLinkFinding({
+        graph: scenario.graph,
+        resolution,
+        finding,
+        diagnosticDisposition:
+          diagnosticDispositionForDefectResolution(
+            resolution.disposition,
+          ),
+        ...(runtimeProbeTranscript
+          ? { runtimeProbeTranscript }
+          : {}),
+      });
+      return receipt.status === "ADMITTED" && receipt.reasoning
+        ? [[finding.causalLinkId, receipt.reasoning] as const]
+        : [];
+    }),
+  );
+
   const mapAuditReport =
     projectMapAuditOutputV2({
       inspection,
@@ -663,6 +698,9 @@ function assembleSelectedMapAuditRun(
       validationTests:
         control.validationTests,
       honesty: control.honesty,
+      ...(Object.keys(reasoningByCausalLinkId).length === 0
+        ? {}
+        : { reasoningByCausalLinkId }),
       ...(userIntent === undefined
         ? {}
         : { userIntent }),
@@ -777,6 +815,7 @@ export async function runSelectedMapAudit(
     inspection,
     reconciliation,
     userIntent,
+    input.runtimeProbeTranscript,
   );
 }
 
@@ -833,6 +872,7 @@ export function resolveSelectedMapAudit(
     updatedInspection,
     input.audit.demandReconciliation,
     input.audit.userIntent,
+    undefined,
   );
 }
 
