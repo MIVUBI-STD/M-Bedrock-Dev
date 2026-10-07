@@ -139,6 +139,27 @@ export function validateRuntimeProbeRequest(input: unknown): string[] {
         errors.push("entity-resolvable.entityId must be a non-empty string.");
       }
       break;
+    case "entity-location":
+      if (!nonEmpty(input.query.entityId)) {
+        errors.push("entity-location.entityId must be a non-empty string.");
+      }
+      if (input.query.dimension !== undefined && !nonEmpty(input.query.dimension)) {
+        errors.push("entity-location.dimension must be non-empty when provided.");
+      }
+      break;
+    case "dimension-height-range":
+      if (!nonEmpty(input.query.dimension)) {
+        errors.push("dimension-height-range.dimension must be a non-empty string.");
+      }
+      break;
+    case "command-result":
+      if (!nonEmpty(input.query.dimension)) {
+        errors.push("command-result.dimension must be a non-empty string.");
+      }
+      if (!nonEmpty(input.query.command)) {
+        errors.push("command-result.command must be a non-empty string.");
+      }
+      break;
     case "tag-present":
       if (
         input.query.subjectKind !== "player" &&
