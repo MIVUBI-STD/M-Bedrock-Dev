@@ -29,7 +29,8 @@ use crate::{
         base_state_for_path, cleanup_staging, current_platform_provider,
         ensure_guest_token_for_path, guest_token, set_base_state_for_path, Provider,
     },
-    resources::{current_host_pressure, start_delay_secs, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
+    resources::{current_host_pressure, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
+    startup::wait_until_start_is_safe,
     schema::{ensure_runtime_schema, inspect_runtime_schema, SchemaState},
     support::{capture_time_ms, write_support_bundle, EngineSnapshot, SupportBundleResult},
     update::{check_update, stage_update, StagedUpdate, UpdateCheck},
@@ -1442,9 +1443,7 @@ impl VirtualClients {
                 )?;
                 completed += 1;
                 if completed < target_count {
-                    thread::sleep(Duration::from_secs(start_delay_secs(
-                        current_host_pressure().level,
-                    )));
+                    wait_until_start_is_safe()?;
                 }
                 Ok(status)
             },
@@ -1470,7 +1469,7 @@ impl VirtualClients {
                 ));
             }
             if index + 1 < targets.len() {
-                thread::sleep(Duration::from_secs(start_delay_secs(current_host_pressure().level)));
+                wait_until_start_is_safe()?;
             }
         }
         Ok(statuses)
