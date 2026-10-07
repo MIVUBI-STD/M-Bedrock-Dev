@@ -27,6 +27,6 @@ export async function exportBugTracker(document: BugTrackerDocument, outDir: str
   ) {
     throw new Error("HTML/JSON issue-ID parity failed.");
   }
-  await writeFile(join(outDir, "Bug-Tracker-Report.json"), json, "utf8");
-  await writeFile(join(outDir, "Bug-Tracker-Report.html"), html, "utf8");
+  await writeFile(join(outDir, "bug-tracker.json"), json, "utf8");
+  await writeFile(join(outDir, "bug-tracker.html"), html, "utf8");
 }
