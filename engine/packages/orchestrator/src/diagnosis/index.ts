@@ -62,3 +62,5 @@ export * from "./causal-link-evidence-construction.js";
 export * from "./causal-link-reasoning-coordinator.js";
 
 export * from "./defect-resolution-diagnostic-disposition.js";
+
+export * from "./runtime-generation-integrity.js";
