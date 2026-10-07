@@ -23,6 +23,7 @@ export function constructCausalLinkEvidence(input: {
   resolution: GameplayDefectResolution;
   construction: CausalLinkHypothesisConstruction;
   runtimeProbeTranscript?: RuntimeProbeTranscript;
+  expectedArtifactId?: string;
 }): CrossDomainEvidenceObservation[] {
   const link = input.graph.causalLinks.find(
     (item) => item.id === input.construction.causalLinkId,
@@ -93,32 +94,44 @@ export function constructCausalLinkEvidence(input: {
   if (
     input.construction.requiredPredicateIds.includes(runtimePredicate)
   ) {
-    const exchanges =
-      input.runtimeProbeTranscript?.exchanges.filter(
-        (exchange) =>
-          exchange.request.incidentId === link.id &&
-          exchange.request.predicate === runtimePredicate,
-      ) ?? [];
+    const transcriptArtifactMismatch =
+      input.runtimeProbeTranscript?.artifactId !== undefined &&
+      input.expectedArtifactId !== undefined &&
+      input.runtimeProbeTranscript.artifactId !== input.expectedArtifactId;
+    const exchanges = transcriptArtifactMismatch
+      ? []
+      : input.runtimeProbeTranscript?.exchanges.filter(
+          (exchange) =>
+            exchange.request.incidentId === link.id &&
+            exchange.request.predicate === runtimePredicate &&
+            exchange.response.ok &&
+            exchange.response.evidence.proofAuthority === "live-runtime",
+        ) ?? [];
     if (exchanges.length === 0) {
       output.push({
         predicate: runtimePredicate,
         state: "unknown",
-        evidenceId: "runtime-unobserved:" + link.id,
+        evidenceId: transcriptArtifactMismatch
+          ? "runtime-artifact-mismatch:" + link.id
+          : "runtime-unobserved:" + link.id,
         domain: "runtime",
       });
     } else {
-      const states = exchanges.map((exchange) => exchange.response.state);
+      const decisiveStates = [...new Set(
+        exchanges.map((exchange) => exchange.response.state)
+          .filter((state) => state !== "unknown"),
+      )];
       const state =
-        states.includes("present")
-          ? "present"
-          : states.every((item) => item === "absent")
-            ? "absent"
-            : "unknown";
+        decisiveStates.length === 1
+          ? decisiveStates[0]!
+          : "unknown";
       output.push({
         predicate: runtimePredicate,
         state,
         evidenceId: evidenceId(
-          "runtime-probe",
+          decisiveStates.length > 1
+            ? "runtime-conflict"
+            : "runtime-probe",
           exchanges.map((exchange) =>
             exchange.response.evidence.id
           ),
