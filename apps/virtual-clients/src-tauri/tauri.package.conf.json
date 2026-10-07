@@ -4,6 +4,9 @@
       "binaries/virtual-clients"
     ],
     "resources": {
+      "../../../virtual-clients/guest/windows/": "guest/windows/",
+      "../../../virtual-clients/acceptance/windows/": "acceptance/windows/",
+      "../../../virtual-clients/distribution/release-channel.json": "distribution/release-channel.json",
       "package-resources/guest/windows/virtual-guest-agent.exe": "guest/windows/virtual-guest-agent.exe"
     }
   }
