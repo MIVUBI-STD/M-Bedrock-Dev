@@ -115,7 +115,7 @@
         "Pick up the enemy flag.",
         "Disconnect before returning it to the home flag.",
         "Reconnect or inspect the arena state.",
-        "Check whether the enemy flag has not returned to base and the carrier visual/state is inconsistent."
+        "Check whether the enemy flag returns to base and whether the carrier visual/state is consistent after the disconnect."
       ],
       "aiAnalysis": "CaptureRunRoundService subscribes to playerSpawn but not playerLeave. _ensureFlags skips enemy-flag spawning whenever carrierPlayerId is non-null. No disconnect path calls _clearCarrier(), so carrier ownership can remain stale across the offline interval. This differs from Attack/Composite flag services, which explicitly invoke handleCarrierDeath on playerLeave.",
       "relevantCode": [
