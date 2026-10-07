@@ -438,33 +438,34 @@ pub fn profile_status() -> ProfileStatus {
 }
 
 pub fn require_base_matches_native() -> io::Result<ProfileStatus> {
-    let status = profile_status();
-
-    match status.parity {
-        ProfileParity::Match => Ok(status),
-        ProfileParity::Mismatch => {
-            let native = status
-                .native
-                .as_ref()
-                .map(|profile| profile.version.as_str())
-                .unwrap_or("unknown");
-            let base = status
-                .base
-                .as_ref()
-                .map(|profile| profile.minecraft_version.as_str())
-                .unwrap_or("unknown");
-            Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                format!(
-                    "Minecraft Education version mismatch: Native={native}, Base={base}. Prepare and register a Base matching Native before starting Virtual clients."
-                ),
-            ))
-        }
-        ProfileParity::Unknown => Err(io::Error::new(
+    let native = native_minecraft_profile().ok_or_else(|| {
+        io::Error::new(
             io::ErrorKind::NotFound,
-            "Minecraft Education parity cannot be proven. Native version and registered Base profile are both required.",
-        )),
+            "Native Minecraft Education version could not be detected",
+        )
+    })?;
+    let base = load_base_profile().map_err(|error| {
+        io::Error::new(
+            error.kind(),
+            format!("registered Base profile cannot be used: {error}"),
+        )
+    })?;
+
+    if !base_profile_matches_native(&native, &base) {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!(
+                "registered Base profile does not match current Native/Guest Agent compatibility requirements (Native={}, Base={})",
+                native.version, base.minecraft_version
+            ),
+        ));
     }
+
+    Ok(ProfileStatus {
+        native: Some(native),
+        base: Some(base),
+        parity: ProfileParity::Match,
+    })
 }
 
 #[cfg(target_os = "windows")]
