@@ -29,7 +29,7 @@ describe("causal link hypothesis construction", () => {
           evidenceIds: ["e1"],
           subjectIds: ["subject"],
           componentIds: ["c1"],
-          knowledgeRequirementIds: ["k1"], impactPathComponentIds: [], impactPathEvidenceIds: [],
+          knowledgeRequirementIds: ["k1"], impactPathComponentIds: [], impactPathEvidenceIds: [], dimensionEvidence: {},
           status: "CONTRADICTED",
           reason: "Dependency is contradicted",
         }],
