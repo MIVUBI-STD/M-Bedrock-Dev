@@ -136,6 +136,64 @@ function impactPathFrom(
   return [];
 }
 
+function dimensionEvidenceForRuntimeComponent(
+  componentId: string,
+  world: GameplayWorldModel,
+): GameplayCausalLink["dimensionEvidence"] {
+  const evidence = (id: string): readonly string[] => [id];
+  switch (componentId) {
+    case "runtime:arena":
+      return {
+        owner: evidence("runtime:arena"),
+        generation: evidence("runtime:arena"),
+      };
+    case "runtime:arena-cleanup":
+      return {
+        cleanup: evidence("runtime:arena-cleanup"),
+        owner: evidence("runtime:arena-cleanup"),
+      };
+    case "runtime:persistence":
+      return {
+        owner: evidence("runtime:persistence"),
+        generation: evidence("runtime:persistence"),
+        cleanup: evidence("runtime:persistence"),
+      };
+    case "runtime:inventory":
+      return {
+        owner: evidence("runtime:inventory"),
+        cleanup: evidence("runtime:inventory"),
+      };
+    case "runtime:structures":
+      return {
+        cleanup: evidence("runtime:structures"),
+        geometry: evidence("runtime:structures"),
+      };
+    case "runtime:spatial":
+      return {
+        geometry: evidence("runtime:spatial"),
+      };
+    case "runtime:arena-replica-integrity":
+      return {
+        geometry: evidence("runtime:arena-replica-integrity"),
+      };
+    case "runtime:player-capability":
+      return {
+        capability: evidence("runtime:player-capability"),
+        activation: evidence("runtime:player-capability"),
+      };
+    case "runtime:world-rules":
+      return {
+        "world-rule": evidence("runtime:environment"),
+      };
+    case "runtime:client-reconciliation":
+      return world.clientReconciliation.predictedMutationCancellations > 0
+        ? {}
+        : { representation: evidence("runtime:client-reconciliation") };
+    default:
+      return {};
+  }
+}
+
 function impactPathEvidenceIds(
   path: readonly string[],
   intent: GameplayIntentModel,
@@ -2368,6 +2426,7 @@ export function compileGameplayScenarioGraph(
           impactPathFrom(edge.to, allowed, input.intent),
           input.intent,
         ),
+        dimensionEvidence: {},
         intentEdgeKind: edge.kind,
         status: edgeStatus(edge),
         reason:
@@ -2488,6 +2547,11 @@ export function compileGameplayScenarioGraph(
           ),
           input.intent,
         ),
+        dimensionEvidence:
+          dimensionEvidenceForRuntimeComponent(
+            component.id,
+            input.world,
+          ),
         ...runtimeEdgeState(
           component.id,
           input.world,
