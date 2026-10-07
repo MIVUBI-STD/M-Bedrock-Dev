@@ -79,6 +79,7 @@ jobs:
         shell: pwsh
         run: |
           $installer = '${{ steps.package.outputs.installer_path }}'
+          $packageVersion = (Get-Content package.json -Raw | ConvertFrom-Json).version
           $installDir = Join-Path $env:RUNNER_TEMP 'virtual-clients-package-smoke-install'
           if (Test-Path -LiteralPath $installDir) {
             Remove-Item -LiteralPath $installDir -Recurse -Force
@@ -122,7 +123,7 @@ jobs:
           if (!(Test-Path -LiteralPath $runtimeSentinel -PathType Leaf)) { throw 'Same-version repair modified runtime data.' }
 
           $desktopVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo((Join-Path $installDir 'm-bedrock-virtual-clients.exe'))
-          if ($desktopVersion.ProductVersion -and $desktopVersion.ProductVersion -notlike "$($package.version)*") {
+          if ($desktopVersion.ProductVersion -and $desktopVersion.ProductVersion -notlike "$packageVersion*") {
             throw "Installed desktop version drifted from package version: $($desktopVersion.ProductVersion)"
           }
 
