@@ -57,14 +57,14 @@ const resolution = {
 };
 
 describe("map audit proof saturation", () => {
-  it("does not infer player-impact proof without a grounded gameplay impact path", () => {
+  it("does not infer absence-style proof from a generic contradiction", () => {
     const result = assessReadyResolutionSaturation(
       graph([]),
       resolution as any,
     );
     expect(result.saturated).toBe(false);
     expect(result.missingFamilyCriteriaIds).toContain(
-      "gameplay-dependency-affected",
+      "platform-constraint-bound",
     );
   });
 
