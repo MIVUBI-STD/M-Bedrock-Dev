@@ -55,7 +55,7 @@
       "reproduction": [
         "Complete Level 9 parkour normally.",
         "Before entering Level 10 through the intended door, fall from the transition/finish area.",
-        "Check whether the normal Level 9 fall-recovery behavior no longer returns the player to a usable route.",
+        "Check whether the normal Level 9 fall-recovery behavior returns the player to a usable route.",
         "Observe the player can remain below or trapped after Level 9 has already been marked complete."
       ],
       "aiAnalysis": "This is a transition-boundary gap: gameplay state advances to Level 9 complete before physical player safety has transferred to Level 10. Recovery should remain defined until the next level entry is complete.",
