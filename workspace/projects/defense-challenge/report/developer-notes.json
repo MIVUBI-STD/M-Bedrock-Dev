@@ -5,12 +5,12 @@
       "id": "DEV-DEF-RESET-PARTIAL-RESULT-NOT-ENFORCED",
       "type": "DEV_NOTE",
       "title": "Partial Reset Results Are Recorded but Not Enforced Before Arena Reuse",
-      "problem": "ResetMapService can return a successful result containing skippedChunks when a coverage recovery operation fails. lastResetResultByArena records that result, but no current consumer rejects arena reuse or retries the skipped chunks solely because skippedChunks is non-empty. Current selected-artifact evidence does not prove that the recovery-failure path occurs during normal v1.1.3 gameplay, so this is not promoted to a gameplay BUG.",
-      "action": "Make reset completion explicit: either retry/resolve every skipped reset chunk before cleanup is considered complete, or surface a hard reset failure that prevents reuse. Consume lastResetResultByArena rather than storing it as diagnostics only.",
+      "problem": "ResetMapService can resolve with skippedChunks after a coverage recovery failure, while reuse consumers do not reject reuse solely because skippedChunks is non-empty.",
+      "action": "Retry or resolve skipped chunks before cleanup completes, or surface a hard reset failure that blocks reuse.",
       "evidence": {
         "artifactVersion": "1.1.3",
         "source": "behavior_packs/BP/scripts/chunks/ctf-defense-5V4T54X5.js",
-        "finding": "processChunksOverTime() records recovery failures in skippedChunks and resolves; lastResetResultByArena stores the result, while waitForArenaCleanup()/startGame() do not inspect skippedChunks."
+        "finding": "processChunksOverTime() records skippedChunks and resolves; reuse does not inspect skippedChunks."
       },
       "severity": null
     },
@@ -18,25 +18,12 @@
       "id": "DEV-DEF-KIT-SELECTION-PHASE-GATE",
       "type": "DEV_NOTE",
       "title": "Kit Selection Immediately Reapplies Loadout Without an Explicit Gameplay-Phase Gate",
-      "problem": "setSelectedKit() persists the kit and immediately calls applySelectedKitNow() without checking whether the arena is in preparation/buy phase or active combat. Current artifact evidence does not prove unintended normal-player selector reachability during combat.",
-      "action": "Define one kit-change policy. If kit changes are preparation-only, enforce that phase at the KitManager owner rather than relying on physical/UI reachability.",
+      "problem": "setSelectedKit() persists the selection, clears effects and immediately reapplies loadout without an explicit session-phase authorization check. Current source does not establish that combat-time kit changes are forbidden by Defense design.",
+      "action": "Define one authoritative kit-change policy; if preparation-only, enforce it at effect commit.",
       "evidence": {
         "artifactVersion": "1.1.3",
         "source": "behavior_packs/BP/scripts/chunks/ctf-defense-5V4T54X5.js",
-        "finding": "setSelectedKit() has no GameManager phase check and immediately refreshes loadout."
-      },
-      "severity": null
-    },
-    {
-      "id": "DEV-DEF-SELECTION-STICK-PRODUCTION",
-      "type": "DEV_NOTE",
-      "title": "Entity Selection Stick Is Still Active in Production",
-      "problem": "EntitySelectionLogger subscribes to normal minecraft:stick use and records player coordinates without an explicit PermissionService check.",
-      "action": "Remove EntitySelectionLogger from release bootstrap or gate the complete tool behind developer permission.",
-      "evidence": {
-        "artifactVersion": "1.1.3",
-        "source": "behavior_packs/BP/scripts/chunks/ctf-defense-5V4T54X5.js",
-        "finding": "EntitySelectionLogger itemUse handler accepts minecraft:stick and addSelection() has no permission gate."
+        "finding": "setSelectedKit() has no GameManager phase check and immediately calls applySelectedKitNow()."
       },
       "severity": null
     },
@@ -44,24 +31,90 @@
       "id": "DEV-DEF-SCRIPT-EVENT-PERMISSION",
       "type": "DEV_NOTE",
       "title": "Several World-Mutating Script Events Do Not Use the Existing Developer Permission Owner",
-      "problem": "reset_game, force_end, force_start, force_fail and reset_map handlers mutate session/world state without calling PermissionService.canUseDeveloperTools(). skip_level is permission-gated, demonstrating an existing authority owner. Ordinary-player command reachability is not claimed.",
-      "action": "Route every developer/admin mutation event through the same PermissionService gate.",
+      "problem": "Several reset/force mutation handlers do not call PermissionService.canUseDeveloperTools(), while skip_level does. Ordinary-player command reachability is not claimed.",
+      "action": "Route every developer/admin world or session mutation through one explicit PermissionService gate.",
       "evidence": {
         "artifactVersion": "1.1.3",
         "source": "behavior_packs/BP/scripts/chunks/ctf-defense-5V4T54X5.js",
-        "finding": "handleResetCommand(), handleForceEndCommand(), handleForceStartCommand(), handleForceFailCommand() and ResetMapService script event do not check developer permission; handleSkipLevelCommand() does."
+        "finding": "reset/force handlers and reset-map event lack the same internal permission owner used by skip_level."
       },
       "severity": null
     },
     {
-      "id": "DEV-DEF-DRIVE-CHANGELOG-STALE",
+      "id": "DEV-DEF-HARDCODED-ADMIN-SECRET",
       "type": "DEV_NOTE",
-      "title": "Drive Changelog Still Marks v1.1.1 as Current",
-      "problem": "The selected world and BP/RP manifests are v1.1.3, while the Drive changelog still identifies v1.1.1 as Current.",
-      "action": "Update the Drive changelog/current marker to v1.1.3 and keep selected-world identity as artifact authority.",
+      "title": "Admin Grant Secret Is Embedded in the Production Behavior Script",
+      "problem": "Permission configuration contains a literal admin grant/revoke secret in the distributed production BP.",
+      "action": "Use host/operator-controlled authorization rather than a static secret recoverable from the distributed pack.",
       "evidence": {
         "artifactVersion": "1.1.3",
-        "finding": "Drive selected world is Defense Challenge v1.1.3.mcworld and both manifests are [1,1,3], while the fetched changelog is stale."
+        "source": "behavior_packs/BP/scripts/chunks/ctf-defense-5V4T54X5.js",
+        "finding": "permissionConfig contains a literal secretCode used by PermissionService."
+      },
+      "severity": null
+    },
+    {
+      "id": "DEV-DEF-UNUSED-SHOP-PRESERVATION-HELPER",
+      "type": "DEV_NOTE",
+      "title": "Dedicated Persistent-Shop Preservation Helper Is Unused",
+      "problem": "A dedicated persistent-shop capture helper exists but the current loadout path relies on generic non-kit preservation instead.",
+      "action": "Remove the dead helper/option contract or connect one clear preservation owner.",
+      "evidence": {
+        "artifactVersion": "1.1.3",
+        "source": "behavior_packs/BP/scripts/chunks/ctf-defense-5V4T54X5.js",
+        "finding": "Persistent-shop-specific helper is defined without a production caller."
+      },
+      "severity": null
+    },
+    {
+      "id": "DEV-DEF-SHOP-DELIVERY-ATOMICITY",
+      "type": "DEV_NOTE",
+      "title": "Command-Delivered Shop Purchase Is Not Atomic",
+      "problem": "For giveCommand items, coins and purchase telemetry are committed before command delivery succeeds; failure has no rollback. Current source does not prove the configured Speed Potion command fails.",
+      "action": "Commit charge/telemetry after delivery succeeds, or refund/rollback on failure.",
+      "evidence": {
+        "artifactVersion": "1.1.3",
+        "source": "behavior_packs/BP/scripts/chunks/chunk-WCOAVJ75.js",
+        "finding": "_executePurchase() consumes coins and notifies purchase before awaiting giveCommand; catch path does not refund."
+      },
+      "severity": null
+    },
+    {
+      "id": "DEV-DEF-BLOCK-BREAK-GLOBAL-SCHEDULER",
+      "type": "DEV_NOTE",
+      "title": "Block-Break Scheduling Budget Is Shared Across All Six Arenas",
+      "problem": "BlockBreakService scans arenas in fixed order with global concurrency/start counters. Source proves coupling but not starvation or objective corruption.",
+      "action": "Use per-arena budgets or fair rotation if independent timing is required.",
+      "evidence": {
+        "artifactVersion": "1.1.3",
+        "source": "behavior_packs/BP/scripts/chunks/ctf-defense-5V4T54X5.js",
+        "finding": "scanAllArenas() uses one global start counter and one global breakStates cap across arena_1 through arena_6."
+      },
+      "severity": null
+    },
+    {
+      "id": "DEV-DEF-TEAM-WIPE-COMMENT-STALE",
+      "type": "DEV_NOTE",
+      "title": "CombatTracker Team-Wipe Comment Contradicts the Implemented Defense Outcome",
+      "problem": "A source comment says Defense wipes do not end the game, while GameManager routes team_wipe into level defeat/retry. The implemented path is treated as current behavior.",
+      "action": "Update or remove the stale comment.",
+      "evidence": {
+        "artifactVersion": "1.1.3",
+        "source": "behavior_packs/BP/scripts/chunks/ctf-defense-5V4T54X5.js",
+        "finding": "CombatTracker comment and GameManager team-wipe consumer describe different outcomes."
+      },
+      "severity": null
+    },
+    {
+      "id": "DEV-DEF-L15-COMPLETION-COINS-DEAD-CONFIG",
+      "type": "DEV_NOTE",
+      "title": "Level 15 Completion-Coin Entry Is Unreachable",
+      "problem": "LEVEL_COMPLETION_COINS contains a 25-coin Level 15 entry, but completion coins are awarded only when a next level exists. Current source does not establish that final victory must award those coins.",
+      "action": "Remove the dead Level 15 entry or explicitly award it on final victory if intended.",
+      "evidence": {
+        "artifactVersion": "1.1.3",
+        "source": "behavior_packs/BP/scripts/chunks/ctf-defense-5V4T54X5.js",
+        "finding": "Level 15 goes directly to victory; awardLevelCompletionCoins() is called only on the next-level branch."
       },
       "severity": null
     }
