@@ -60,6 +60,28 @@ describe("Bug Tracker export boundary", () => {
       expect(json).toContain('"DEV-EXPORT-001"');
       expect(html).toContain('data-issue-id="BUG-EXPORT-001"');
       expect(html).toContain('data-issue-id="DEV-EXPORT-001"');
+      expect(html).toContain('id="saveHtml"');
+      expect(html).toContain('id="saveJson"');
+      expect(html).toContain('id="importJson"');
+      expect(html).toContain('id="resetData"');
+      expect(html).toContain('id="workspace-snapshot"');
+      expect(html).toContain('class="files"');
+      expect(html).toContain('class="pics"');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects a renderer that drops a canonical UI capability", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "bug-tracker-export-"));
+    try {
+      await expect(
+        exportBugTracker(
+          fixture,
+          dir,
+          (document) => renderBugTrackerHtml(document).replace('id="saveHtml"', 'id="missingSaveHtml"'),
+        ),
+      ).rejects.toThrow(/functional contract/);
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
