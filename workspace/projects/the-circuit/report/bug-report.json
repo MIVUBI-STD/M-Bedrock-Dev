@@ -24,7 +24,7 @@
         "Start a Circuit round that grants the normal block resources.",
         "Use 2 supplied oak planks to craft sticks.",
         "Hold or use a stick as a normal non-developer player.",
-        "Confirm DebugStick coordinate-selection output appears."
+        "Check whether DebugStick coordinate-selection output appears."
       ],
       "aiAnalysis": "The production bootstrap initializes DebugStickService and its item-use path has no developer/admin gate. Circuit supplies oak planks as starting/shop resources and active gameplay uses Survival, so vanilla crafting closes the trigger reachability path.",
       "relevantCode": [
@@ -54,7 +54,7 @@
         "Complete Station 3 / Fortify through its final tier while leaving building resources in the resource chest.",
         "Continue normally into Station 4 / Loadout Trial.",
         "Open the base/resource chest before spending the Loadout Trial budget.",
-        "Confirm items from Station 3 remain instead of the chest starting empty."
+        "Check whether items from Station 3 remain instead of the chest starting empty."
       ],
       "aiAnalysis": "Loadout Trial defines reset chest (1,-48,-135), the same location used by the Fortify resource chest, and _beginPreview calls _clearResetChests(). Because the runtime test still retains prior-station items, the reset path is not reliably taking effect across the Fortify → Loadout Trial handoff. The bug is proven by runtime behavior; the precise timing/ownership failure should be fixed without weakening the reset contract.",
       "relevantCode": [
@@ -84,7 +84,7 @@
         "Complete Station 3 / Fortify and continue through the normal handoff to Station 4.",
         "Start Loadout Trial Tier 2.",
         "Observe the shared route/gate area that Fortify restores.",
-        "Confirm a spruce-wood barricade remains and attacking NPCs cannot break it."
+        "Check whether a spruce-wood barricade remains and attacking NPCs cannot break it."
       ],
       "aiAnalysis": "Capture Run explicitly calls FortifyBuildService.ensureGateOpen() because Fortify cleanup restores the shared gate to spruce wood. LoadoutTrialRoundService.prepare() lacks the equivalent call. LastStandPathObstructionService marks spruce_wood unsupported because its break-rule sets only include wool/glass, oak_planks, and terracotta. The handoff therefore creates an unreachable break condition for the NPC wave.",
       "relevantCode": [
@@ -115,7 +115,7 @@
         "Pick up the enemy flag.",
         "Disconnect before returning it to the home flag.",
         "Reconnect or inspect the arena state.",
-        "Confirm the enemy flag has not returned to base and the carrier visual/state is inconsistent."
+        "Check whether the enemy flag has not returned to base and the carrier visual/state is inconsistent."
       ],
       "aiAnalysis": "CaptureRunRoundService subscribes to playerSpawn but not playerLeave. _ensureFlags skips enemy-flag spawning whenever carrierPlayerId is non-null. No disconnect path calls _clearCarrier(), so carrier ownership can remain stale across the offline interval. This differs from Attack/Composite flag services, which explicitly invoke handleCarrierDeath on playerLeave.",
       "relevantCode": [
