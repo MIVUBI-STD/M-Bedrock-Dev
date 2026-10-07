@@ -24,7 +24,8 @@
           "artifactFingerprint": "sha256:7557e129a7cc148d1a610fac7a65f90a240debdcca7fbec989414f9c43274444",
           "version": "1.2.1"
         }
-      }
+      },
+      "levelName": "Orb of the Illusioner Level 1 v1.2.1"
     },
     {
       "level": 2,
@@ -46,7 +47,8 @@
           "artifactFingerprint": "sha256:b17661f9330f4a80301a6a2559b0dcf945204fa6ed9d8d3cf75f7350b369cb2e",
           "version": "1.1.0"
         }
-      }
+      },
+      "levelName": "Orb of the Illusioner Level 2"
     }
   ]
 }
