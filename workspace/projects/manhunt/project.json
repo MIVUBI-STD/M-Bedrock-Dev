@@ -11,7 +11,7 @@
   },
   "work": {},
   "knowledge": {
-    "bugReportPath": "workspace/reports/Manhunt-v1.0.0-BugReport.json"
+    "bugReportPath": "workspace/projects/manhunt/report/bug-report.json"
   },
   "publication": {
     "drive": {
