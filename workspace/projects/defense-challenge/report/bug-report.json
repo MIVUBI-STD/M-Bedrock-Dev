@@ -23,7 +23,7 @@
         "Start a Defense match in an arena.",
         "End or reset the match so the arena begins its map reset.",
         "Start a new match in the same arena before reset work finishes.",
-        "Confirm the new match loses its arena ticking areas and gameplay simulation can stop."
+        "Check whether the new match loses its arena ticking areas and gameplay simulation can stop."
       ],
       "aiAnalysis": "Arena/session cleanup exposes the arena as reusable before asynchronous reset completion. The next run can reuse the existing ticking-area lease, while the previous run's delayed cleanup still owns a release path and removes that lease underneath the new run.",
       "relevantCode": [
@@ -53,7 +53,7 @@
         "Reach Defense Level 15, Wave 3.",
         "Trigger the delayed enemy group while its spawn chunk is not ready.",
         "Let the first spawn attempt fail and queue its retry.",
-        "Confirm the wave can advance as cleared before the delayed enemies actually spawn."
+        "Check whether the wave can advance as cleared before the delayed enemies actually spawn."
       ],
       "aiAnalysis": "WaveScheduler removes the delayed group from pending accounting immediately after the first spawn attempt, while EntityLoader may still own retries. Hostile-clearance reconciliation then sees zero live tagged enemies and can complete the wave even though required spawns remain outstanding.",
       "relevantCode": [
@@ -83,7 +83,7 @@
         "Start a Defense match and die during active combat.",
         "Disconnect while the respawn countdown is still running.",
         "Reconnect before the countdown expires.",
-        "Confirm the player returns to active gameplay before the original respawn delay finishes."
+        "Check whether the player returns to active gameplay before the original respawn delay finishes."
       ],
       "aiAnalysis": "CombatTracker owns pending respawn state and correctly restores spectator/countdown on reconnect. GameManager independently handles the same reconnect and later restores active gameplay without consulting that pending-respawn owner.",
       "relevantCode": [
@@ -113,7 +113,7 @@
         "Carry a recognizable non-session item in an inventory slot.",
         "Start a Defense match, then disconnect before the preload inventory wipe runs.",
         "Reconnect after the wipe while the session is still preloading.",
-        "Confirm the stale item remains when the new match reaches buy or gameplay phase."
+        "Check whether the stale item remains when the new match reaches buy or gameplay phase."
       ],
       "aiAnalysis": "The fresh-session wipe is implemented as a batch action over players online at one preload tick rather than a per-player session invariant. Reconnect during preload does not reconcile the missed full clear, and later loadout refresh uses a partial managed-item cleanup.",
       "relevantCode": [
@@ -143,7 +143,7 @@
         "Prepare valid parties in 3 different Defense arenas.",
         "Start the first 2 arenas so both hold active arena leases.",
         "Ready and start the third arena.",
-        "Confirm the third group is queued even though its own visible arena is otherwise available."
+        "Check whether the third group is queued even though its own visible arena is otherwise available."
       ],
       "aiAnalysis": "Defense exposes six arena/join surfaces, while runtime admission allows only two held arena leases. Each active arena uses three residency regions. Queueing explains the implementation constraint but does not erase the delivered-capacity mismatch.",
       "relevantCode": [
