@@ -12,6 +12,9 @@ function backend(overrides: Partial<RuntimeProbeBackend> = {}): RuntimeProbeBack
     entityResolvable: () => ({ status: "value", value: true }),
     tagPresent: () => ({ status: "value", value: true }),
     scoreboardValue: () => ({ status: "value", value: 5 }),
+    entityLocation: () => ({ status: "value", value: '{"dimension":"overworld","x":0,"y":64,"z":0}' }),
+    dimensionHeightRange: () => ({ status: "value", value: '{"min":-64,"max":320}' }),
+    commandResult: () => ({ status: "value", value: '{"successCount":1}' }),
     ...overrides,
   };
 }
@@ -90,6 +93,23 @@ describe("runtime probe executor", () => {
       tag: "ready",
     }));
     expect(tag.state).toBe("absent");
+  });
+
+  it("executes reusable location, height-range and command-result probes", () => {
+    const executor = createRuntimeProbeExecutor(backend());
+    expect(executor.execute(request({
+      kind: "entity-location",
+      entityId: "entity-1",
+    })).state).toBe("present");
+    expect(executor.execute(request({
+      kind: "dimension-height-range",
+      dimension: "overworld",
+    })).state).toBe("present");
+    expect(executor.execute(request({
+      kind: "command-result",
+      dimension: "overworld",
+      command: "tickingarea list",
+    })).state).toBe("present");
   });
 
   it("compares scoreboard values against an expected value", () => {
