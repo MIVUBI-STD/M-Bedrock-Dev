@@ -2280,6 +2280,7 @@ export function compileGameplayScenarioGraph(
             edge.to,
           ]),
         ].sort(),
+        knowledgeRequirementIds: [],
         intentEdgeKind: edge.kind,
         status: edgeStatus(edge),
         reason:
@@ -2321,6 +2322,19 @@ export function compileGameplayScenarioGraph(
                 item.scenarioId === scenarioId &&
                 item.domain === knowledgeDomain,
             );
+      const relevantRequirements =
+        knowledgeRequirements.filter(
+          (item) =>
+            item.scenarioId === scenarioId &&
+            (
+              item.id === requirement?.id ||
+              item.componentIds.includes(component.id) ||
+              item.componentIds.includes(anchorId) ||
+              item.subjectIds.some((id) =>
+                scenario.sourceSubjectIds.includes(id)
+              )
+            ),
+        );
       const receipt =
         requirement === undefined
           ? undefined
@@ -2372,12 +2386,13 @@ export function compileGameplayScenarioGraph(
                   anchorId,
                 ]),
               ].sort(),
-        ...(requirement === undefined
-          ? {}
-          : {
-              knowledgeRequirementId:
-                requirement.id,
-            }),
+        knowledgeRequirementIds:
+          relevantRequirements
+            .map((item) => item.id)
+            .filter((id, index, all) =>
+              all.indexOf(id) === index
+            )
+            .sort(),
         ...runtimeEdgeState(
           component.id,
           input.world,
