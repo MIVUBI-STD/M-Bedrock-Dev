@@ -13,6 +13,20 @@ export type RuntimeProbeQuery =
       entityId: string;
     }
   | {
+      kind: "entity-location";
+      entityId: string;
+      dimension?: string;
+    }
+  | {
+      kind: "dimension-height-range";
+      dimension: string;
+    }
+  | {
+      kind: "command-result";
+      dimension: string;
+      command: string;
+    }
+  | {
       kind: "tag-present";
       subjectKind: "player" | "entity";
       subjectId: string;
