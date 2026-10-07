@@ -216,6 +216,15 @@ mod tests {
     use std::io;
 
     #[test]
+    fn request_identity_is_random_fixed_width_hex() {
+        let first = super::request_id().unwrap();
+        let second = super::request_id().unwrap();
+        assert_eq!(first.len(), 32);
+        assert!(first.chars().all(|character| character.is_ascii_hexdigit()));
+        assert_ne!(first, second);
+    }
+
+    #[test]
     fn guest_response_parser_fails_closed_on_ambiguous_headers() {
         let request_id = "a".repeat(32);
         let body = "{}";
