@@ -39,6 +39,18 @@ BugReportClientDocument
 
 The output JSON and HTML must contain exactly the same canonical IDs. Missing, duplicated, or renderer-invented IDs fail export.
 
+## Output contract
+
+Every generated tracker output is a pair from one validated `BugTrackerDocument`:
+
+```text
+output/
+├── bug-tracker.html   human-facing
+└── bug-tracker.json   complete developer/AI projection
+```
+
+Do not publish or regenerate only one side of the pair. Historical HTML-only files are legacy derived artifacts, not the current output contract.
+
 ## Files
 
 - `model.ts` — small presentation projection model.
