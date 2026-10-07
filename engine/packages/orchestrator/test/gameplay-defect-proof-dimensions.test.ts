@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assessGameplayDefectResolutionGate } from "../src/inspection/gameplay-defect-resolution.js";
+import { assessGameplayDefectResolutionGate, requiredCounterProofDimensions } from "../src/inspection/gameplay-defect-resolution.js";
 
 function graph(componentIds: readonly string[], domain?: string) {
   return {
@@ -33,6 +33,38 @@ function graph(componentIds: readonly string[], domain?: string) {
 }
 
 describe("gameplay defect proof dimensions", () => {
+  it("derives recovery proof from canonical gameplay stage without lifecycle keywords", () => {
+    const value = graph(["runtime:state"], "state-flow") as any;
+    value.scenarios[0].label = "phase-seven";
+    value.scenarios[0].gameplayStage = "RECOVERY";
+    const dimensions = requiredCounterProofDimensions(
+      value,
+      value.causalLinks[0],
+      value.scenarios[0],
+    );
+    expect(dimensions).toEqual(
+      expect.arrayContaining([
+        "scope",
+        "guard",
+        "owner",
+        "generation",
+        "cleanup",
+      ]),
+    );
+  });
+
+  it("does not let lifecycle keywords override a canonical active-gameplay stage by themselves", () => {
+    const value = graph([], undefined) as any;
+    value.scenarios[0].label = "reconnect-looking-name";
+    value.scenarios[0].gameplayStage = "ACTIVE_GAMEPLAY";
+    const dimensions = requiredCounterProofDimensions(
+      value,
+      value.causalLinks[0],
+      value.scenarios[0],
+    );
+    expect(dimensions).toEqual(["scope"]);
+  });
+
   it("does not require unrelated guard/exclusion proof for pure geometry", () => {
     const gate = assessGameplayDefectResolutionGate(
       graph(["runtime:spatial"], "spatial-authority"),
