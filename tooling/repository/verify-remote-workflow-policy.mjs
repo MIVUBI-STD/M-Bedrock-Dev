@@ -21,6 +21,12 @@ for (const [path, phrase] of requiredPolicy) {
   }
 }
 
+if (!existsSync("tooling/repository/remote-execution-snapshot.mjs")) {
+  failures.push(
+    "Missing REMOTE_GITHUB execution snapshot recipe: tooling/repository/remote-execution-snapshot.mjs",
+  );
+}
+
 if (existsSync("package.json")) {
   const pkg = JSON.parse(readFileSync("package.json", "utf8"));
   if (Object.prototype.hasOwnProperty.call(pkg.scripts ?? {}, "check")) {
@@ -28,6 +34,9 @@ if (existsSync("package.json")) {
   }
   if (Object.prototype.hasOwnProperty.call(pkg.scripts ?? {}, "verify:ready")) {
     failures.push("Generic npm script 'verify:ready' is forbidden; use verify:local-ready for optional local readiness.");
+  }
+  if (!Object.prototype.hasOwnProperty.call(pkg.scripts ?? {}, "snapshot:remote-execution")) {
+    failures.push("Remote execution snapshot command is missing: snapshot:remote-execution");
   }
   if (!Object.prototype.hasOwnProperty.call(pkg.scripts ?? {}, "verify:local-ready")) {
     failures.push("Optional local readiness script is missing: verify:local-ready");
