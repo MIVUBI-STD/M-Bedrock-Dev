@@ -25,20 +25,10 @@ pub struct EngineSnapshot {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SupportPrivacy {
-    pub contains_credentials: bool,
-    pub contains_account_identifiers: bool,
-    pub contains_tokens: bool,
-    pub contains_world_content: bool,
-    pub contains_absolute_runtime_paths: bool,
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
 pub struct SupportBundle {
     pub schema: u32,
     pub app_version: &'static str,
-    pub privacy: SupportPrivacy,
+    pub included_sections: [&'static str; 3],
     pub snapshot: EngineSnapshot,
     pub operation_history: Vec<OperationRecord>,
     pub staging_residue_count: usize,
@@ -74,13 +64,7 @@ pub(crate) fn write_support_bundle(snapshot: EngineSnapshot) -> io::Result<Suppo
     let bundle = SupportBundle {
         schema: 1,
         app_version: env!("CARGO_PKG_VERSION"),
-        privacy: SupportPrivacy {
-            contains_credentials: false,
-            contains_account_identifiers: false,
-            contains_tokens: false,
-            contains_world_content: false,
-            contains_absolute_runtime_paths: false,
-        },
+        included_sections: ["snapshot", "operationHistory", "stagingResidueCount"],
         snapshot,
         operation_history: read_operation_history().unwrap_or_default(),
         staging_residue_count: staging_residue_count().unwrap_or(0),
@@ -122,27 +106,10 @@ fn prune_support_bundles(root: &Path) -> io::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use super::{SupportPrivacy, SUPPORT_BUNDLE_LIMIT};
+    use super::SUPPORT_BUNDLE_LIMIT;
 
     #[test]
     fn support_bundle_retention_is_bounded() {
         assert_eq!(SUPPORT_BUNDLE_LIMIT, 10);
-    }
-
-    #[test]
-    fn support_privacy_contract_excludes_sensitive_content() {
-        let privacy = SupportPrivacy {
-            contains_credentials: false,
-            contains_account_identifiers: false,
-            contains_tokens: false,
-            contains_world_content: false,
-            contains_absolute_runtime_paths: false,
-        };
-
-        assert!(!privacy.contains_credentials);
-        assert!(!privacy.contains_account_identifiers);
-        assert!(!privacy.contains_tokens);
-        assert!(!privacy.contains_world_content);
-        assert!(!privacy.contains_absolute_runtime_paths);
     }
 }
