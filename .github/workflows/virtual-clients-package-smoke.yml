@@ -95,6 +95,13 @@ jobs:
           if (!(Test-Path -LiteralPath $contractPath -PathType Leaf)) { throw 'Installed package is missing package-contract.json.' }
           $contract = Get-Content -LiteralPath $contractPath -Raw | ConvertFrom-Json
           if ($contract.schema -ne 1) { throw 'Unsupported package contract schema.' }
+          $lifecycle = Get-Content -LiteralPath (Join-Path $installDir 'distribution\install-lifecycle-policy.json') -Raw | ConvertFrom-Json
+          if ($lifecycle.schema -ne 1 -or $lifecycle.installer.allowSameVersionRepair -ne $true -or $lifecycle.installer.allowUpgrade -ne $true -or $lifecycle.installer.allowDowngrade -ne $false) {
+            throw 'Installed lifecycle policy is invalid.'
+          }
+          if ($lifecycle.runtimeData.installerMayMigrate -ne $false -or $lifecycle.runtimeData.installerMayDelete -ne $false -or $lifecycle.virtualMachines.installerMayStop -ne $false -or $lifecycle.virtualMachines.installerMayDelete -ne $false -or $lifecycle.virtualMachines.installerMayReprovision -ne $false -or $lifecycle.guest.desktopUninstallMayRemoveGuestAgent -ne $false) {
+            throw 'Installer ownership expanded beyond its allowed boundary.'
+          }
           foreach ($relative in @($contract.requiredFiles)) {
             $path = Join-Path $installDir ($relative -replace '/', '\')
             if (!(Test-Path -LiteralPath $path -PathType Leaf)) {
