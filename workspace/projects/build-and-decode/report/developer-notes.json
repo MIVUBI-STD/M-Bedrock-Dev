@@ -33,21 +33,6 @@
       "severity": null
     },
     {
-      "id": "DEV-BAD-GUESSER-MAYFLY-POLICY",
-      "type": "DEV_NOTE",
-      "title": "Clarify Whether Guessers Should Receive Mayfly During Active Rounds",
-      "problem": "In v1.1.3, the active-round role application still enables mayfly for every playing participant, including Adventure-mode guessers. Current artifact evidence is insufficient to classify this as a defect, but it materially changes how guessers can move and view the build.",
-      "action": "Confirm the intended guesser movement policy. If flight is builder-only, scope mayfly to builders in both activateRound() and reconnect/applyRole(); otherwise document that guesser flight is intentional.",
-      "evidence": {
-        "source": [
-          "behavior_packs/Build_Decode_BP/scripts/modules/guessthebuild/GuessTheBuildManager.js"
-        ],
-        "finding": "activateRound() sets builders to Creative and guessers to Adventure, then applies 'ability @s mayfly true' to every playing participant.",
-        "artifactVersion": "1.1.3"
-      },
-      "severity": null
-    },
-    {
       "id": "DEV-BAD-DEBUG-PICKER-IN-RELEASE",
       "type": "DEV_NOTE",
       "title": "Temporary Debug Picker Is Still Included in Release",
