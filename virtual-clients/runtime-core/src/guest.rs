@@ -11,6 +11,7 @@ pub const GUEST_AGENT_PORT: u16 = 47831;
 pub const GUEST_STATUS_SCHEMA: u32 = 3;
 pub const GUEST_AGENT_PROTOCOL_VERSION: u32 = 2;
 pub const GUEST_AGENT_MIN_STATUS_PROTOCOL: u32 = 1;
+pub const MINECRAFT_LAUNCH_SCHEMA: u32 = 1;
 
 pub fn guest_agent_protocol_compatible(protocol_version: u32) -> bool {
     (GUEST_AGENT_MIN_STATUS_PROTOCOL..=GUEST_AGENT_PROTOCOL_VERSION).contains(&protocol_version)
@@ -76,7 +77,7 @@ pub fn launch_guest_minecraft(ip: &str, token: &str, timeout: Duration) -> io::R
     }
     let result: MinecraftLaunchResult = serde_json::from_str(body.trim())
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
-    if result.schema != 1 {
+    if result.schema != MINECRAFT_LAUNCH_SCHEMA {
         return Err(io::Error::new(io::ErrorKind::InvalidData, "unsupported Minecraft launch response schema"));
     }
     Ok(result)
@@ -168,7 +169,8 @@ fn validate_guest_status(status: &GuestStatus) -> io::Result<()> {
 mod tests {
     use super::{
         guest_agent_launch_compatible, guest_agent_protocol_compatible, validate_guest_status, GuestStatus,
-        GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA,
+        MinecraftLaunchResult, MinecraftLaunchState, GUEST_AGENT_PROTOCOL_VERSION, GUEST_STATUS_SCHEMA,
+        MINECRAFT_LAUNCH_SCHEMA,
     };
     use crate::profile::{MinecraftInstallType, MinecraftProfile};
     use std::io;
@@ -222,6 +224,17 @@ mod tests {
         );
         status.protocol_version = GUEST_AGENT_PROTOCOL_VERSION;
         validate_guest_status(&status).unwrap();
+    }
+
+    #[test]
+    fn minecraft_launch_result_has_one_schema_owner() {
+        let result = MinecraftLaunchResult {
+            schema: MINECRAFT_LAUNCH_SCHEMA,
+            state: MinecraftLaunchState::AlreadyRunning,
+        };
+        let json = serde_json::to_value(result).unwrap();
+        assert_eq!(json["schema"], MINECRAFT_LAUNCH_SCHEMA);
+        assert_eq!(json["state"], "ALREADY_RUNNING");
     }
 
     #[test]
