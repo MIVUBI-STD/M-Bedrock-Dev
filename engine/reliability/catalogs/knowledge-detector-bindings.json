@@ -1488,6 +1488,42 @@
       ]
     },
     {
+      "knowledgeId": "education.code-builder.support",
+      "consumer": "education-profile-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/manifest/src/education.ts",
+        "engine/analyzers/manifest/src/compatibility.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/manifest/test/education.test.ts",
+        "engine/analyzers/manifest/test/compatibility.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "education.relation-profile-gates-shared-fact",
+      "consumer": "education-profile-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/manifest/src/education.ts",
+        "engine/analyzers/manifest/src/compatibility.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/manifest/test/education.test.ts",
+        "engine/analyzers/manifest/test/compatibility.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "education.version-track-distinct",
+      "consumer": "education-profile-analysis",
+      "analyzerPaths": [
+        "engine/analyzers/manifest/src/education.ts",
+        "engine/analyzers/manifest/src/compatibility.ts"
+      ],
+      "proofPaths": [
+        "engine/analyzers/manifest/test/education.test.ts",
+        "engine/analyzers/manifest/test/compatibility.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "education.npc.dialogue-change-player-scope",
       "consumer": "dialogue-command-graph",
       "analyzerPaths": [

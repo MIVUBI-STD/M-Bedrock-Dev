@@ -261,12 +261,6 @@
       "nextEvidenceOwner": "education-runtime-analysis"
     },
     {
-      "knowledgeId": "education.code-builder.support",
-      "status": "static-capability-gap",
-      "reason": "Code Builder capability is not represented in target profile analysis.",
-      "nextEvidenceOwner": "education-profile-analysis"
-    },
-    {
       "knowledgeId": "education.dedicated-server-2026",
       "status": "runtime-required",
       "reason": "Dedicated-server scale/deployment behavior requires target runtime profile validation.",
@@ -285,22 +279,10 @@
       "nextEvidenceOwner": "runtime-dialogue"
     },
     {
-      "knowledgeId": "education.relation-profile-gates-shared-fact",
-      "status": "static-capability-gap",
-      "reason": "Shared Bedrock assumptions need explicit Education target-profile gating.",
-      "nextEvidenceOwner": "education-profile-analysis"
-    },
-    {
       "knowledgeId": "education.specialty-block-identifiers",
       "status": "static-capability-gap",
       "reason": "Education specialty-block presence lacks dedicated profile/block analysis.",
       "nextEvidenceOwner": "education-permission-analysis"
-    },
-    {
-      "knowledgeId": "education.version-track-distinct",
-      "status": "static-capability-gap",
-      "reason": "Education/Bedrock version-profile compatibility needs explicit edition profile analysis.",
-      "nextEvidenceOwner": "education-profile-analysis"
     },
     {
       "knowledgeId": "effects.event-mutation-delayed-until-entity-tick",
