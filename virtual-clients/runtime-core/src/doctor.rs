@@ -86,7 +86,6 @@ pub struct DoctorReport {
     pub runtime_schema: SchemaStatus,
     pub runtime_profile: ProfileStatus,
     pub clients: Vec<DoctorClient>,
-    pub ready_for_provisioning: bool,
     pub next_setup_action: SetupAction,
     pub issues: Vec<HealthIssue>,
 }
@@ -359,13 +358,6 @@ pub fn doctor() -> DoctorReport {
         &clients,
     );
 
-    let ready_for_provisioning = provider.is_some()
-        && base_vm_present
-        && base_vm_stopped == Some(true)
-        && base_state == Some(BaseState::Finalized)
-        && runtime_profile.parity == ProfileParity::Match
-        && schema_allows_provisioning(&runtime_schema);
-
     let issues = collect_health_issues(
         &runtime_schema,
         provider.is_some(),
@@ -391,7 +383,6 @@ pub fn doctor() -> DoctorReport {
         runtime_schema,
         runtime_profile: runtime_profile.clone(),
         clients,
-        ready_for_provisioning,
         next_setup_action,
         issues,
     }
