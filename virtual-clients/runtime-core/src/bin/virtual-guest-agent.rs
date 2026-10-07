@@ -75,7 +75,10 @@ fn request_interactive_minecraft_launch() -> Result<m_bedrock_virtual_clients_co
     stream.set_read_timeout(Some(INTERACTIVE_LAUNCH_TIMEOUT))?;
     stream.set_write_timeout(Some(Duration::from_secs(2)))?;
 
-    let request_id = format!("{:016x}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_nanos());
+    let mut request_bytes = [0u8; 8];
+    getrandom::getrandom(&mut request_bytes)
+        .map_err(|error| io::Error::new(io::ErrorKind::Other, error.to_string()))?;
+    let request_id: String = request_bytes.iter().map(|byte| format!("{byte:02x}")).collect();
     stream.write_all(format!("MINECRAFT_EDUCATION {request_id}\n").as_bytes())?;
     stream.shutdown(Shutdown::Write)?;
     let mut response = String::new();
