@@ -64,7 +64,7 @@ describe("causal link hypothesis construction", () => {
       resolution: {
         causalLinkId: "l1",
         scenarioId: "s1",
-        knowledgeRequirementIds: ["k1"], impactPathComponentIds: [], impactPathEvidenceIds: [],
+        knowledgeRequirementIds: ["k1"],
         evidenceIds: ["e1"],
         disposition: "RUNTIME_PROOF_REQUIRED",
         runtimeReason: "Runtime needed",
