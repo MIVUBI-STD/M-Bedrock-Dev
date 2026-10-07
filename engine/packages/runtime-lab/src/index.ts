@@ -65,3 +65,6 @@ export * from "./domains/chunk/script-ticking-area-experiment.js";
 
 export * from "./domains/interaction/interaction-experiments.js";
 export * from "./domains/interaction/interaction-knowledge-validation-plan.js";
+
+export * from "./domains/validation/domain-validation-experiments.js";
+export * from "./domains/validation/domain-knowledge-validation-plan.js";
