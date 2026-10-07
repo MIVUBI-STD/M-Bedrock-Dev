@@ -854,7 +854,7 @@ export function buildGameplayKnowledgeReceipts(
         subjectIds: [...requirement.subjectIds],
         componentIds: [...requirement.componentIds],
         evidenceIds: [],
-        knowledgeIds: [],
+        knowledgeIds,
         capabilityIdsUsed: [],
         reason:
           "Required Inspection Graph contains a prerequisite cycle at " +
@@ -919,6 +919,11 @@ export function buildGameplayKnowledgeReceipts(
         requirement,
         requirements,
       );
+    const knowledgeIds = knowledgeIdsForRequirement(
+      world,
+      requirement,
+      requirements,
+    );
 
     if (requirement.capabilityIds.length === 0) {
       const receipt: GameplayKnowledgeReceipt = {
@@ -929,11 +934,7 @@ export function buildGameplayKnowledgeReceipts(
         subjectIds: [...requirement.subjectIds],
         componentIds: [...requirement.componentIds],
         evidenceIds,
-        knowledgeIds: knowledgeIdsForRequirement(
-          world,
-          requirement,
-          requirements,
-        ),
+        knowledgeIds,
         capabilityIdsUsed: [],
         reason:
           "No analysis-planner capability is registered for this required gameplay knowledge domain.",
@@ -944,7 +945,11 @@ export function buildGameplayKnowledgeReceipts(
 
     if (
       capabilityIdsUsed.length === 0 ||
-      evidenceIds.length === 0
+      evidenceIds.length === 0 ||
+      (
+        requirement.domain === "platform-constraints" &&
+        knowledgeIds.length === 0
+      )
     ) {
       const receipt: GameplayKnowledgeReceipt = {
         requirementId: requirement.id,
@@ -973,11 +978,7 @@ export function buildGameplayKnowledgeReceipts(
       subjectIds: [...requirement.subjectIds],
       componentIds: [...requirement.componentIds],
       evidenceIds,
-      knowledgeIds: knowledgeIdsForRequirement(
-        world,
-        requirement,
-        requirements,
-      ),
+      knowledgeIds,
       capabilityIdsUsed,
       reason:
         requirement.domain === "platform-constraints"
