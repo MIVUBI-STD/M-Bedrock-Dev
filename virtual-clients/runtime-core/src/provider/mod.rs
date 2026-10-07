@@ -180,23 +180,6 @@ pub(crate) fn guest_tools_state_ready(state: &str) -> bool {
     state.trim().eq_ignore_ascii_case("running")
 }
 
-fn remove_vmx_value(lines: &mut Vec<String>, key: &str) {
-    let prefix = format!("{key} =");
-    lines.retain(|line| !line.trim_start().starts_with(&prefix));
-}
-
-fn set_vmx_value(lines: &mut Vec<String>, key: &str, value: &str) {
-    let prefix = format!("{key} =");
-    if let Some(line) = lines
-        .iter_mut()
-        .find(|line| line.trim_start().starts_with(&prefix))
-    {
-        *line = format!("{key} = \"{value}\"");
-    } else {
-        lines.push(format!("{key} = \"{value}\""));
-    }
-}
-
 pub(crate) fn host_working_sets_mb() -> Vec<(ClientId, u64)> {
     let system = System::new_all();
     let mut result = Vec::new();
