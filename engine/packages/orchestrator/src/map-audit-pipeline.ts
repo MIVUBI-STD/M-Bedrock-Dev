@@ -1086,13 +1086,13 @@ export function prepareSelectedMapAuditReview(
   });
 }
 
-export interface BuildSelectedMapAuditReportInput
+export interface BuildApprovedBugReportFromAuditInput
   extends PrepareSelectedMapAuditReviewInput {
   readonly approved: ApprovedBugSet;
   readonly repairBy: BugReportV2RepairBy;
 }
 
-export interface BuildSelectedMapAuditReportResult
+export interface BuildApprovedBugReportFromAuditResult
   extends BuildBugReportFromAuditResult {
   /**
    * Complete human-facing audit finding set. This is the honest report surface:
@@ -1119,7 +1119,7 @@ export interface BuildSelectedMapAuditReportResult
 function completeSelectedMapAuditFindingProjection(
   audit: SelectedMapAuditRun,
 ): Pick<
-  BuildSelectedMapAuditReportResult,
+  BuildApprovedBugReportFromAuditResult,
   | "findings"
   | "proven"
   | "needValidation"
@@ -1162,12 +1162,12 @@ function completeSelectedMapAuditFindingProjection(
 }
 
 /**
- * Canonical production-report continuation. It cannot be called without the
+ * Canonical approved Bug Report V2 continuation. It cannot be called without the
  * original SelectedMapAuditRun and therefore cannot bypass procedure closure.
  */
-export function buildSelectedMapAuditReport(
-  input: BuildSelectedMapAuditReportInput,
-): BuildSelectedMapAuditReportResult {
+export function buildApprovedBugReportFromAudit(
+  input: BuildApprovedBugReportFromAuditInput,
+): BuildApprovedBugReportFromAuditResult {
   const inspection = input.audit.inspection;
   const authorityIssues =
     selectedMapAuditReviewAuthorityIssues(
