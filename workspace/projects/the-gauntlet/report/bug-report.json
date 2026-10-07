@@ -25,7 +25,7 @@
         "Fail the Dropper with enough fall damage to die rather than only touching the normal fail recovery surface.",
         "Allow Minecraft immediate respawn and the Gauntlet Level 6 recovery logic to run.",
         "Observe the player returns to the world but can become unable to move or use the UI/controls.",
-        "Confirm closing and reopening Minecraft restores normal input."
+        "Check whether closing and reopening Minecraft restores normal input."
       ],
       "aiAnalysis": "The failure has two competing recovery owners: native Minecraft death/respawn and the map's scheduled Level 6 custom recovery. playerSpawn does not reconcile non-initial respawns back into the active level state. doImmediateRespawn=true narrows the transition window and can contribute to the race, but changing that gamerule alone is not the preferred final fix.",
       "relevantCode": [
@@ -55,7 +55,7 @@
       "reproduction": [
         "Complete Level 9 parkour normally.",
         "Before entering Level 10 through the intended door, fall from the transition/finish area.",
-        "Confirm the normal Level 9 fall-recovery behavior no longer returns the player to a usable route.",
+        "Check whether the normal Level 9 fall-recovery behavior no longer returns the player to a usable route.",
         "Observe the player can remain below or trapped after Level 9 has already been marked complete."
       ],
       "aiAnalysis": "This is a transition-boundary gap: gameplay state advances to Level 9 complete before physical player safety has transferred to Level 10. Recovery should remain defined until the next level entry is complete.",
@@ -87,7 +87,7 @@
         "Advance until the final boss and marksman adds are spawned.",
         "Exit, reset or otherwise terminate the active arena session before the encounter naturally removes every spawned entity.",
         "Reuse the same arena for another run.",
-        "Confirm old Level 15 combat entities can remain present until later Level 15 sequencing performs narrower cleanup."
+        "Check whether old Level 15 combat entities can remain present until later Level 15 sequencing performs narrower cleanup."
       ],
       "aiAnalysis": "Physical entity lifetime is wider than the common arena reset ownership. This can contaminate replay state and make the next run non-deterministic even though the run state has already been reset.",
       "relevantCode": [
