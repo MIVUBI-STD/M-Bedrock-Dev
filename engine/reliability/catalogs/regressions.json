@@ -1854,6 +1854,80 @@
       ],
       "expected": "Time bonuses follow the selected artifact's Points.timebonus table: +10 through 8s, +5 through 10s, +4 through 15s, +3 through 25s, +2 through 30s, +1 through 50s, then 0.",
       "observed": "The scoring function gives +5 instead of +10 through 8s, +2 instead of +3 from 16-25s, and 0 instead of +1 from 31-50s. These points feed player/team scores and can change standings and persisted leaderboard results."
+    },
+    {
+      "id": "reg_build_decode_1_1_3_dm_last_round_next_round",
+      "canonicalIssueId": "reg_build_decode_1_1_3_dm_last_round_next_round",
+      "title": "Final round publishes a next-round transition before terminal eligibility is decided",
+      "issueType": "DESIGN_MISMATCH",
+      "domain": "ui",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "build-and-decode",
+        "reportPath": "workspace/projects/build-and-decode/report/bug-report.json",
+        "map": "Build & Decode",
+        "mapVersion": "1.1.3",
+        "bugId": "BUG-BAD-LAST-ROUND-NEXT-ROUND",
+        "canonicalIssueId": "reg_build_decode_1_1_3_dm_last_round_next_round",
+        "artifactFingerprint": "sha256:6ccbaa4889749982131f4dc641598bc3ad0a1026e2c583a2e5994a1b60eaa7d0"
+      },
+      "triggerTags": [
+        "design-mismatch",
+        "gameplay",
+        "minor",
+        "ui-feedback",
+        "terminal-transition"
+      ],
+      "capabilityTags": [
+        "ui-state",
+        "gameplay-state",
+        "terminal-flow"
+      ],
+      "reproduction": [
+        "Play through the final playable round.",
+        "Observe the round-end HUD.",
+        "Check whether it says 'Next round in …' even though the match ends after that countdown."
+      ],
+      "expected": "Terminal eligibility is decided before transition messaging, so the final round communicates match completion rather than a nonexistent next round.",
+      "observed": "The round-end owner unconditionally publishes 'Next round in …'; only after the countdown does prepareRound()/selectRound() determine there is no next round and call finish()."
+    },
+    {
+      "id": "reg_build_decode_1_1_3_dm_terminal_result_presentation",
+      "canonicalIssueId": "reg_build_decode_1_1_3_dm_terminal_result_presentation",
+      "title": "Settled match result is only published through chat while authored final-result UI is disconnected",
+      "issueType": "DESIGN_MISMATCH",
+      "domain": "ui",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Canonical Bug Report V2",
+        "projectId": "build-and-decode",
+        "reportPath": "workspace/projects/build-and-decode/report/bug-report.json",
+        "map": "Build & Decode",
+        "mapVersion": "1.1.3",
+        "bugId": "BUG-BAD-FINAL-RESULT-PRESENTATION",
+        "canonicalIssueId": "reg_build_decode_1_1_3_dm_terminal_result_presentation",
+        "artifactFingerprint": "sha256:6ccbaa4889749982131f4dc641598bc3ad0a1026e2c583a2e5994a1b60eaa7d0"
+      },
+      "triggerTags": [
+        "design-mismatch",
+        "gameplay",
+        "minor",
+        "ui-feedback",
+        "terminal-presentation"
+      ],
+      "capabilityTags": [
+        "ui-state",
+        "result-settlement",
+        "terminal-flow"
+      ],
+      "reproduction": [
+        "Complete a normal match.",
+        "Observe the terminal result presentation.",
+        "Check whether a dedicated winner title/final standings UI appears before reset."
+      ],
+      "expected": "After exact-once result settlement, the settled result is presented through the authored terminal-result surface before cleanup/return.",
+      "observed": "finish() settles the result and publishes matchSummary() through chat, then resets. showFinalStandings() exists but has no production caller, and the terminal path has no winner title or victory sound."
     }
   ]
 }
