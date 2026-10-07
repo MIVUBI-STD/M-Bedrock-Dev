@@ -40,14 +40,6 @@
       "authority": "official",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
-    },
-    {
-      "id": "mivubi-player-runtime-policy-v1",
-      "title": "MIVUBI Player Runtime Policy",
-      "url": "project://knowledge/player-runtime-bedrock",
-      "authority": "project-policy",
-      "confidence": "designed",
-      "retrievedDate": "2026-09-24"
     }
   ],
   "facts": [
@@ -277,43 +269,6 @@
       "sourceIds": [
         "ms-player-world-after-events",
         "ms-player-join-event"
-      ]
-    },
-    {
-      "id": "player.relation.initial-spawn-gates-session-ready",
-      "domain": "player-session",
-      "subject": "initialSpawn",
-      "kind": "gates",
-      "object": "project-player-readiness-reconciliation",
-      "classification": "project-policy",
-      "applicability": {
-        "editions": [
-          "bedrock",
-          "education"
-        ]
-      },
-      "sourceIds": [
-        "ms-multiplayer-aware-scripts",
-        "mivubi-player-runtime-policy-v1"
-      ]
-    },
-    {
-      "id": "player.relation.leave-deactivates-current-session",
-      "domain": "player-session",
-      "subject": "playerLeave",
-      "kind": "deactivates",
-      "object": "current-connection-session",
-      "classification": "project-policy",
-      "applicability": {
-        "editions": [
-          "bedrock",
-          "education"
-        ]
-      },
-      "sourceIds": [
-        "ms-player-world-after-events",
-        "ms-multiplayer-aware-scripts",
-        "mivubi-player-runtime-policy-v1"
       ]
     }
   ]
