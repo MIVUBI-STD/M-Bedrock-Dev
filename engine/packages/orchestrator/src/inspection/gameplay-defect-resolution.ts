@@ -353,6 +353,7 @@ export function requiredCounterProofDimensions(
 }
 
 function validateResolution(
+  graph: GameplayScenarioGraph,
   link: GameplayCausalLink,
   resolution: GameplayDefectResolution,
   scenario:
@@ -900,6 +901,7 @@ export function assessGameplayDefectResolutionGate(
       );
       issues.push(
         ...validateResolution(
+          graph,
           link,
           supplied,
           scenario,
