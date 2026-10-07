@@ -30,7 +30,7 @@ use crate::{
         base_state_for_path, cleanup_staging, current_platform_provider,
         ensure_guest_token_for_path, guest_token, set_base_state_for_path, Provider,
     },
-    resources::{current_host_pressure, HostPressure, VIRTUAL_MEMORY_LIMIT_MB},
+    resources::{current_host_pressure, HostPressure, StartDecision, VIRTUAL_MEMORY_LIMIT_MB},
     startup::wait_until_start_is_safe,
     schema::{inspect_runtime_schema, SchemaState},
     support::{capture_time_ms, write_support_bundle, EngineSnapshot, SupportBundleResult},
@@ -228,7 +228,7 @@ fn check_action_admission(
     client: ClientId,
     action: LifecycleAction,
 ) -> io::Result<()> {
-    let can_start_virtual = current_host_pressure().can_start_virtual;
+    let can_start_virtual = current_host_pressure().start_decision != StartDecision::Block;
     require_lifecycle_admission(
         client,
         action,
@@ -735,7 +735,7 @@ impl VirtualClients {
                 .collect());
         };
 
-        let can_start_virtual = current_host_pressure().can_start_virtual;
+        let can_start_virtual = current_host_pressure().start_decision != StartDecision::Block;
         ClientId::VIRTUAL
             .into_iter()
             .map(|client| {
