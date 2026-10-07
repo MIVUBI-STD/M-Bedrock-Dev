@@ -113,10 +113,16 @@ export const engineSnapshot = shape<EngineSnapshot>({
     appVersion: text,
     runtime: runtimeStatus,
     host: shape({
-      os: nullable(text), osVersion: nullable(text), logicalCpus: integer,
-      totalMemoryMb: integer, availableMemoryMb: integer,
+      os: nullable(text), osVersion: nullable(text), cpu: nullable(text), logicalCpus: integer,
+      totalMemoryMb: integer, availableMemoryMb: integer, graphics: arrayOf(text),
+      hypervisorPresent: nullable(boolean), vbsStatus: nullable(integer),
     }),
     provider: shape({ id: nullable(text), version: nullable(text) }),
+    virtualHardware: arrayOf(shape({
+      id: virtualId, networkMode: nullable(text), networkRequiresAcceptance: boolean,
+      networkConfigurationObserved: boolean, multiplayerVerified: boolean,
+      graphics3dEnabled: nullable(boolean), graphicsPolicyReady: boolean,
+    })),
   }),
 });
 export const enginePolicy = shape<EnginePolicy>({
