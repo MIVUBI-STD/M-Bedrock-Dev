@@ -8,6 +8,7 @@ mod diagnostics;
 mod doctor;
 mod error;
 mod guest;
+mod identity;
 mod journal;
 mod lifecycle_admission;
 mod minecraft_runtime;
