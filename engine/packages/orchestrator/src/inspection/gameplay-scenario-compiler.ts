@@ -2330,10 +2330,7 @@ export function compileGameplayScenarioGraph(
             (
               item.id === requirement?.id ||
               item.componentIds.includes(component.id) ||
-              item.componentIds.includes(anchorId) ||
-              item.subjectIds.some((id) =>
-                scenario.sourceSubjectIds.includes(id)
-              )
+              item.componentIds.includes(anchorId)
             ),
         );
       const receipt =
