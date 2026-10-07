@@ -25,6 +25,8 @@ approved PROVEN BUG subset
 
 There is one authority per scope. Bug Report V2 must never be treated as proof that unresolved audit findings do not exist.
 
+Developer Notes are a third publication lane with separate authority: `workspace/developer-notes.json` owns concrete developer/release notes admitted under `docs/analysis/developer-note-coverage.md`. DEV NOTE is not BUG, not DESIGN_MISMATCH, has no gameplay severity, and must never be used as a fallback for NEED_VALIDATION.
+
 Physical placement does not create ownership. A copy, preview, export, spreadsheet, PDF, or external QA note is not authoritative merely because it contains bug information.
 
 ## Authorities
@@ -33,6 +35,7 @@ Physical placement does not create ownership. A copy, preview, export, spreadshe
 |---|---|
 | Complete selected-map audit finding truth | `SelectedMapAuditRun` / Map Audit Report projection |
 | Approved bug semantics and lifecycle | `engine/packages/bug-report/` |
+| Developer/release note state | `workspace/developer-notes.json` + `docs/analysis/developer-note-coverage.md` admission contract |
 | Persisted schema | `engine/schemas/bug-report/v2.schema.json` |
 | Current canonical bug-report state | `workspace/reports/*.json` |
 | Human-facing published report | derived self-contained HTML snapshot |
