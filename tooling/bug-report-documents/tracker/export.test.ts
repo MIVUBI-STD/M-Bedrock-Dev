@@ -53,8 +53,8 @@ describe("Bug Tracker export boundary", () => {
     try {
       await exportBugTracker(fixture, dir, renderBugTrackerHtml);
       const [json, html] = await Promise.all([
-        readFile(join(dir, "Bug-Tracker-Report.json"), "utf8"),
-        readFile(join(dir, "Bug-Tracker-Report.html"), "utf8"),
+        readFile(join(dir, "bug-tracker.json"), "utf8"),
+        readFile(join(dir, "bug-tracker.html"), "utf8"),
       ]);
       expect(json).toContain('"BUG-EXPORT-001"');
       expect(json).toContain('"DEV-EXPORT-001"');
