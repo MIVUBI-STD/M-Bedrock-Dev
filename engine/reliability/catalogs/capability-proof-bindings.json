@@ -232,7 +232,7 @@
       "capabilityId": "reliability.behavior-patterns",
       "kind": "unit-contract",
       "paths": [
-        "engine/packages/reliability-search/test/behavioral-pattern-library.test.ts"
+        "engine/packages/reliability-search/test/corpus/behavioral-pattern-library.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
@@ -240,7 +240,7 @@
       "capabilityId": "reliability.coverage-quality",
       "kind": "unit-contract",
       "paths": [
-        "engine/packages/reliability-search/test/coverage-quality-dashboard.test.ts"
+        "engine/packages/reliability-search/test/coverage/coverage-quality-dashboard.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
@@ -248,7 +248,7 @@
       "capabilityId": "reliability.metamorphic",
       "kind": "unit-contract",
       "paths": [
-        "engine/packages/reliability-search/test/metamorphic-robustness.test.ts"
+        "engine/packages/reliability-search/test/robustness/metamorphic-robustness.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
@@ -256,7 +256,7 @@
       "capabilityId": "reliability.parser-robustness",
       "kind": "unit-contract",
       "paths": [
-        "engine/packages/reliability-search/test/metamorphic-robustness.test.ts"
+        "engine/packages/reliability-search/test/robustness/metamorphic-robustness.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
@@ -280,7 +280,7 @@
       "capabilityId": "runtime.cross-version-differential-executor",
       "kind": "contract-only",
       "paths": [
-        "engine/packages/runtime-lab/test/cross-version-differential-executor.test.ts"
+        "engine/packages/runtime-lab/test/differential/cross-version-differential-executor.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB",
       "note": "Binds fail-closed orchestration behavior only; live cross-version proof still requires LOCAL/LIVE Minecraft hosts."
@@ -289,7 +289,7 @@
       "capabilityId": "runtime.cross-version-differential-plan",
       "kind": "unit-contract",
       "paths": [
-        "engine/packages/runtime-lab/test/cross-version-differential-plan.test.ts"
+        "engine/packages/runtime-lab/test/differential/cross-version-differential-plan.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
@@ -313,7 +313,7 @@
       "capabilityId": "runtime.record-replay-contract",
       "kind": "unit-contract",
       "paths": [
-        "engine/packages/reliability/test/runtime-session-replay.test.ts"
+        "engine/packages/reliability/test/runtime/runtime-session-replay.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
@@ -321,7 +321,7 @@
       "capabilityId": "runtime.semantic-convention",
       "kind": "unit-contract",
       "paths": [
-        "engine/packages/project-model/test/runtime-semantic-convention.test.ts"
+        "engine/packages/project-model/test/runtime/runtime-semantic-convention.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
@@ -417,7 +417,7 @@
       "capabilityId": "source.scripts.recovery",
       "kind": "unit-contract",
       "paths": [
-        "engine/analyzers/scripts/test/source-recovery.test.ts"
+        "engine/analyzers/scripts/test/recovery/source-recovery.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
@@ -425,7 +425,7 @@
       "capabilityId": "source.scripts.semantic-flow",
       "kind": "unit-contract",
       "paths": [
-        "engine/analyzers/scripts/test/semantic-flow-bindings.test.ts"
+        "engine/analyzers/scripts/test/flow/semantic-flow-bindings.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
@@ -433,7 +433,7 @@
       "capabilityId": "source.scripts.semantic-flow-witness",
       "kind": "unit-contract",
       "paths": [
-        "engine/analyzers/scripts/test/semantic-flow-witness.test.ts"
+        "engine/analyzers/scripts/test/flow/semantic-flow-witness.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
@@ -441,7 +441,7 @@
       "capabilityId": "source.scripts.source-map",
       "kind": "unit-contract",
       "paths": [
-        "engine/analyzers/scripts/test/source-map-binding.test.ts"
+        "engine/analyzers/scripts/test/recovery/source-map-binding.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     }
