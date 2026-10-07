@@ -33,6 +33,15 @@ type MapAuditHtmlInput = import(
 type MapAuditHtmlFinding =
   MapAuditHtmlInput["bugs"][number];
 
+function safeSegment(value: string): string {
+  const normalized = value
+    .replace(/[<>:"/\\|?*\u0000-\u001F]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/[. ]+$/g, "");
+  return normalized || "Map Audit";
+}
+
 function isMapAuditHtmlInput(
   value: unknown,
 ): value is MapAuditHtmlInput {
