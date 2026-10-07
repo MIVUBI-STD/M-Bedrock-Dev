@@ -60,8 +60,8 @@ export function constructCausalLinkHypothesis(input: {
   const knowledgePredicate = knowledge === undefined
     ? undefined
     : predicate(link.id, "knowledge", knowledge.id);
-  const knowledgeClaimPredicates =
-    knowledgeReceipt?.knowledgeClaimIds.map(
+  const knowledgePredicates =
+    knowledgeReceipt?.knowledgeIds.map(
       (claimId) => predicate(
         link.id,
         "knowledge",
@@ -74,7 +74,7 @@ export function constructCausalLinkHypothesis(input: {
     contradiction,
     ...(runtime ? [runtime] : []),
     ...(knowledgePredicate ? [knowledgePredicate] : []),
-    ...knowledgeClaimPredicates,
+    ...knowledgePredicates,
   ];
   const falsifierPredicates = [counterproof];
 
