@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 
 mod base_preparation;
+mod capacity;
 mod client;
 mod command;
 mod contract;
