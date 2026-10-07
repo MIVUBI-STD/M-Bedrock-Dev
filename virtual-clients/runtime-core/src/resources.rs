@@ -36,7 +36,6 @@ pub struct HostPressure {
     pub available_percent: u8,
     pub cpu_usage_percent: u8,
     pub level: PressureLevel,
-    pub can_start_virtual: bool,
     pub start_decision: StartDecision,
 }
 
@@ -79,7 +78,6 @@ pub fn evaluate_pressure(
         available_percent,
         cpu_usage_percent,
         level,
-        can_start_virtual: start_decision != StartDecision::Block,
         start_decision,
     }
 }
@@ -107,7 +105,6 @@ mod tests {
         let report = evaluate_pressure(16 * 1024, 6 * 1024, 35);
         assert_eq!(report.level, PressureLevel::Normal);
         assert_eq!(report.start_decision, StartDecision::StartNow);
-        assert!(report.can_start_virtual);
     }
 
     #[test]
@@ -115,7 +112,6 @@ mod tests {
         let report = evaluate_pressure(16 * 1024, 3 * 1024, 35);
         assert_eq!(report.level, PressureLevel::Pressure);
         assert_eq!(report.start_decision, StartDecision::Wait);
-        assert!(report.can_start_virtual);
     }
 
     #[test]
@@ -123,7 +119,6 @@ mod tests {
         let report = evaluate_pressure(16 * 1024, 8 * 1024, 85);
         assert_eq!(report.level, PressureLevel::Normal);
         assert_eq!(report.start_decision, StartDecision::Wait);
-        assert!(report.can_start_virtual);
     }
 
     #[test]
@@ -131,7 +126,6 @@ mod tests {
         let report = evaluate_pressure(16 * 1024, 1536, 20);
         assert_eq!(report.level, PressureLevel::Critical);
         assert_eq!(report.start_decision, StartDecision::Block);
-        assert!(!report.can_start_virtual);
     }
 
     #[test]
@@ -139,6 +133,5 @@ mod tests {
         let report = evaluate_pressure(16 * 1024, 8 * 1024, 97);
         assert_eq!(report.level, PressureLevel::Pressure);
         assert_eq!(report.start_decision, StartDecision::Wait);
-        assert!(report.can_start_virtual);
     }
 }
