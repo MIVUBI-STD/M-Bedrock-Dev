@@ -5,10 +5,9 @@ describe("map audit finding reasoning projection", () => {
   it("projects evidence chain and minimal validation without changing proof status", () => {
     const result = projectMapAuditFindingReasoning({
       projection: {
-        classification: "LIKELY BUG",
-        authoritativeDisposition: "confirmed-defect",
-        confidence: "high",
-        repairEligibleByClassification: false,
+        reportClassification: "LIKELY BUG",
+        diagnosticDisposition: "confirmed-defect",
+        proofConfidence: "high",
         reasons: [],
       },
       assessment: {
