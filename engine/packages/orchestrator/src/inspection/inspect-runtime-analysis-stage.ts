@@ -485,7 +485,9 @@ export function analyzeInspectionRuntimeState(
     ...entityPopulationSourceDiagnostics(
       entityPopulation,
     ),
-  );\n\n\n\n  const arenaCleanupSurfaces =
+  );
+
+  const arenaCleanupSurfaces =
     analyzeArenaCleanupSurfaces(
       scriptsFor("arena-lifecycle"),
     );
