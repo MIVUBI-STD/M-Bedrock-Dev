@@ -239,6 +239,12 @@ function catalogReliability(resources, seen) {
     const root = "engine/reliability/" + bucket;
 
     for (const rawPath of reliabilityFiles(root)) {
+      if (
+        bucket === "history" &&
+        !rawPath.endsWith(".json")
+      ) {
+        continue;
+      }
       const path = rawPath.replaceAll("\\", "/");
       const rel = relative(root, rawPath).replaceAll("\\", "/");
       addResource(resources, seen, {
