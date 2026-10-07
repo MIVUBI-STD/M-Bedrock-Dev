@@ -5,10 +5,42 @@
     "mapVersion": "1.1.2",
     "drive": "https://drive.google.com/file/d/1pUaupQNlb-bx4qPkgLACtmfdXpj4iccA/view",
     "baseVersion": "1.21.130",
-    "testedVersion": "Full selected-artifact audit of Drive v1.1.2 across complete gameplay flow, six-arena source parity, shop/kit/inventory/economy writers, combat/death/respawn, retry/advance, terminal settlement, cleanup, and connection/reconnect paths. Source architecture supports six concurrent arena leases with one core ticking area per arena. Direct six-simultaneous-session runtime stress remains the narrow performance/runtime confirmation; no source-level two-arena blocker remains."
+    "testedVersion": "Adversarial selected-artifact audit of Drive v1.1.2. Runtime tester evidence overrides prior static capacity inference: separate Ready arenas queue while gameplay arenas are idle. Multi-arena playability is BLOCKED and must not be labeled SAFE/FIXED until runtime acceptance proves delivery. Other source-supported subsystems remain unproven unless backed by runtime or complete causal proof."
   },
   "repairBy": "developer",
   "bugs": [
+    {
+      "id": "BUG-ATK-READY-ARENAS-STUCK-IN-LEASE-QUEUE",
+      "fixed": false,
+      "severity": "blocker",
+      "category": "multiarena-runtime",
+      "foundBy": "tester",
+      "issueType": "BUG",
+      "title": "Ready arenas remain queued even when no gameplay arena is running",
+      "problem": "Players can join separate Attack arenas and become Ready, but the game reports 'Waiting for a free arena slot' even while the physical arenas are idle. This blocks normal game start and invalidates the intended multi-arena capacity.",
+      "expected": "With fewer than the supported concurrent arena count active, every valid Ready arena acquires its runtime residency and proceeds to countdown/preload without entering a free-slot queue.",
+      "observed": "Runtime test on v1.1.2 with only three players assigned across separate arenas shows Ready arenas reporting queue positions (#2 then #1) while no gameplay arena is running. Source confirms start requests enter TickingAreaManager.acquire(); pumpQueue() refuses all reservations while the global _startupReady gate is false. _startupReady becomes true only after cleanupStaleAreas() considers every legacy/dynamic ticking-area name successfully removed.",
+      "reproduction": [
+        "Start Attack Challenge v1.1.2 with three players.",
+        "Place the players into separate arenas so each arena has a valid Ready party.",
+        "Ready all three arenas while no Attack gameplay arena is already active.",
+        "Observe that the arenas remain in 'Waiting for a free arena slot' queue instead of entering countdown/preload."
+      ],
+      "aiAnalysis": "The runtime evidence disproves the previous capacity inference based on MAX_CONCURRENT_ARENAS=6 and one core area per arena. At this player count, pumpQueue() would immediately reserve all three requests if _startupReady were true because _reservations.size is below 6. Remaining in the visible queue therefore proves the allocator is gated before reservation. The strongest source boundary is startup stale-area cleanup: pumpQueue() returns immediately while _startupReady is false, and cleanupStaleAreas() only opens the gate when every configured legacy/current lease name and operation area is considered removed. Exact native removal failure/absence semantics still require runtime/content-log instrumentation; do not claim a narrower native cause without that evidence.",
+      "relevantCode": [
+        {
+          "file": "behavior_packs/BP/scripts/chunks/chunk-4L7PEIZ4.js",
+          "reason": "TickingAreaManager.pumpQueue() returns while _startupReady is false; cleanupStaleAreas() controls that global gate; acquire() places otherwise-valid arena requests into the visible queue."
+        }
+      ],
+      "suggestedFix": "Instrument and repair the startup residency gate rather than only changing MAX_CONCURRENT_ARENAS. Startup cleanup must deterministically distinguish absent areas from real removal failures, expose its unresolved names/reasons, and allow allocation once stale ownership is actually clear. Add a runtime acceptance test that starts 1, 2, 3, then up to 6 independent Ready arenas and fails the release if any queues below proven capacity.",
+      "mustPreserve": [
+        "Crash/stale ticking-area cleanup before reusing names.",
+        "No duplicate lease names after reload.",
+        "Per-arena lease cleanup and generation cancellation.",
+        "Queue behavior only when real deliverable capacity is exhausted."
+      ]
+    },
     {
       "id": "BUG-ATK-STARTUP-LEASE-QUEUE-DEADLOCK",
       "fixed": false,
