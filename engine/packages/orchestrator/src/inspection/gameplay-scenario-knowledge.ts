@@ -140,7 +140,7 @@ function platformClaimDomainsForScenario(
   return domains;
 }
 
-function knowledgeClaimIdsForRequirement(
+function knowledgeIdsForRequirement(
   world: GameplayWorldModel,
   requirement: GameplayKnowledgeRequirement,
   requirements: readonly GameplayKnowledgeRequirement[],
@@ -854,7 +854,7 @@ export function buildGameplayKnowledgeReceipts(
         subjectIds: [...requirement.subjectIds],
         componentIds: [...requirement.componentIds],
         evidenceIds: [],
-        knowledgeClaimIds: [],
+        knowledgeIds: [],
         capabilityIdsUsed: [],
         reason:
           "Required Inspection Graph contains a prerequisite cycle at " +
@@ -892,7 +892,7 @@ export function buildGameplayKnowledgeReceipts(
         subjectIds: [...requirement.subjectIds],
         componentIds: [...requirement.componentIds],
         evidenceIds: [],
-        knowledgeClaimIds: [],
+        knowledgeIds: [],
         capabilityIdsUsed: [],
         reason:
           "Required prerequisite inspection node(s) are not satisfied: " +
@@ -929,7 +929,7 @@ export function buildGameplayKnowledgeReceipts(
         subjectIds: [...requirement.subjectIds],
         componentIds: [...requirement.componentIds],
         evidenceIds,
-        knowledgeClaimIds: knowledgeClaimIdsForRequirement(
+        knowledgeIds: knowledgeIdsForRequirement(
           world,
           requirement,
           requirements,
@@ -954,7 +954,7 @@ export function buildGameplayKnowledgeReceipts(
         subjectIds: [...requirement.subjectIds],
         componentIds: [...requirement.componentIds],
         evidenceIds: [],
-        knowledgeClaimIds: [],
+        knowledgeIds: [],
         capabilityIdsUsed: [],
         reason:
           requirement.domain === "platform-constraints"
@@ -973,7 +973,7 @@ export function buildGameplayKnowledgeReceipts(
       subjectIds: [...requirement.subjectIds],
       componentIds: [...requirement.componentIds],
       evidenceIds,
-      knowledgeClaimIds: knowledgeClaimIdsForRequirement(
+      knowledgeIds: knowledgeIdsForRequirement(
         world,
         requirement,
         requirements,
