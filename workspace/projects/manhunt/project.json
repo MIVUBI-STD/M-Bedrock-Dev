@@ -9,14 +9,8 @@
     "artifactFingerprint": "sha256:c666000de5cd052288b00953baf9dc00410a65c6da53c16fb1e31b8e396025f3",
     "version": "1.0.0"
   },
-  "work": {},
-  "knowledge": {
-    "bugReportPath": "workspace/projects/manhunt/report/bug-report.json"
-  },
   "publication": {
     "drive": {
-      "schemaVersion": 1,
-      "projectId": "manhunt",
       "mapFolder": {
         "folderId": "1ar_P9hA-eHJiG5yRYPep4YwASwVC6g9y",
         "label": "PvP - Manhunt"
