@@ -14,7 +14,7 @@ const clientFor = (id: string) => ({
   id, native: id === "Native", state: id === "Native" ? "MANUAL" : "STOPPED",
   readySnapshot: null, memoryLimitMb: null, hostWorkingSetMb: null,
   guestToolsReady: null, guestAgentReady: null, guestAgentVersion: null,
-  minecraftVersion: null, minecraftRunning: null, interactiveLauncherReady: null, lineageParity: null, versionParity: null,
+  minecraftVersion: null, minecraftRunning: null, interactiveLauncherReady: null, connectionHealth: null, lineageParity: null, versionParity: null,
   vmIdentity: null, windowsIdentity: null,
 });
 const snapshot = () => ({
@@ -59,6 +59,11 @@ describe("Backend payload shapes", () => {
     invalid.diagnostics.host.availableMemoryMb = 16;
     invalid.diagnostics.runtime.pressure.level = "MAYBE";
     expect(engineSnapshot(invalid)).toBe(false);
+  });
+
+  it("validates connection health without inventing gameplay readiness", () => {
+    expect(clientStatus({ ...clientFor("Virtual-01"), connectionHealth: "GUEST_AGENT_READY" })).toBe(true);
+    expect(clientStatus({ ...clientFor("Virtual-01"), connectionHealth: "MULTIPLAYER_READY" })).toBe(false);
   });
 
   it("validates interactive launcher readiness explicitly", () => {
