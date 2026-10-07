@@ -109,25 +109,33 @@ pub fn check_update() -> io::Result<UpdateCheck> {
     let manifest = match fetch_manifest(&policy) {
         Ok(manifest) => manifest,
         Err(error) => {
+            let (staged_path, reason) = match staged_update() {
+                Ok(staged) => (
+                    staged
+                        .filter(|item| Path::new(&item.installer_path).is_file())
+                        .map(|item| item.installer_path),
+                    error.to_string(),
+                ),
+                Err(staged_error) => (
+                    None,
+                    format!("{error}; staged update metadata is unreadable: {staged_error}"),
+                ),
+            };
             return Ok(UpdateCheck {
                 state: UpdateState::Unavailable,
                 current_version: env!("CARGO_PKG_VERSION"),
                 latest_version: None,
                 can_apply_now: false,
                 self_update_enabled: policy.self_update_runtime_enabled,
-                staged_path: staged_update()
-                    .ok()
-                    .flatten()
-                    .filter(|item| Path::new(&item.installer_path).is_file())
-                    .map(|item| item.installer_path),
-                reason: Some(error.to_string()),
+                staged_path,
+                reason: Some(reason),
             })
         }
     };
 
     let latest = parse_version(&manifest.version)?;
     let current = parse_version(env!("CARGO_PKG_VERSION"))?;
-    let staged = staged_update().ok().flatten();
+    let staged = staged_update()?;
     let platform = manifest.platforms.get(current_platform()).ok_or_else(|| {
         io::Error::new(io::ErrorKind::NotFound, "update manifest has no package for this platform")
     })?;
