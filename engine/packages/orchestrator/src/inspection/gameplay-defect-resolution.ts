@@ -327,6 +327,7 @@ function validateResolution(
       }
       const requiredDimensions =
         requiredCounterProofDimensions(
+          graph,
           link,
           scenario,
         );
@@ -515,6 +516,7 @@ function automaticCounterProofSearch(
 ): CounterProofSearchReceipt {
   const requiredDimensions =
     requiredCounterProofDimensions(
+      graph,
       contradicted,
       scenario,
     );
@@ -745,6 +747,7 @@ export function assessGameplayDefectResolutionGate(
       );
     const requiredDimensions =
       requiredCounterProofDimensions(
+        graph,
         link,
         scenario,
       );
