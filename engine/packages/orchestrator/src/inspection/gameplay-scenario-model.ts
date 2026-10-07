@@ -74,6 +74,8 @@ export interface GameplayCausalLink {
   readonly componentIds: readonly string[];
   /** All scenario knowledge requirements that materially support this dependency. */
   readonly knowledgeRequirementIds: readonly string[];
+  /** Proven selected-artifact dependency path from this link toward a player-facing objective/outcome. */
+  readonly impactPathComponentIds: readonly string[];
   readonly intentEdgeKind?: import("../../../gameplay-intent/src/index.js").GameplayIntentEdgeKind;
   readonly status: GameplayCausalLinkStatus;
   readonly reason: string;
