@@ -173,11 +173,25 @@ fn staged_update_matches(
     manifest: &PlatformManifest,
     installer_exists: bool,
 ) -> bool {
+    let path_is_contained = staged_installer_path_is_contained(staged).unwrap_or(false);
     installer_exists
+        && path_is_contained
         && staged.version == version
         && staged.platform == platform
         && staged.sha256.eq_ignore_ascii_case(&manifest.sha256)
         && staged.authenticode_thumbprint.eq_ignore_ascii_case(&manifest.authenticode_thumbprint)
+}
+
+fn staged_installer_path_is_contained(staged: &StagedUpdate) -> io::Result<bool> {
+    let expected_root = update_staging_root()?.join(&staged.version);
+    let installer = Path::new(&staged.installer_path);
+    if !installer.is_absolute() {
+        return Ok(false);
+    }
+    let Some(parent) = installer.parent() else {
+        return Ok(false);
+    };
+    Ok(parent == expected_root)
 }
 
 pub fn stage_update() -> io::Result<StagedUpdate> {
