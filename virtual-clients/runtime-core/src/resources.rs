@@ -85,12 +85,12 @@ pub fn evaluate_pressure(
 }
 
 pub fn current_host_pressure() -> HostPressure {
-    let mut system = System::new();
+    let mut system = System::new_all();
     system.refresh_memory();
-    system.refresh_cpu_usage();
+    system.refresh_cpu();
     std::thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
-    system.refresh_cpu_usage();
-    let cpu = system.global_cpu_usage().round().clamp(0.0, 100.0) as u8;
+    system.refresh_cpu();
+    let cpu = system.global_cpu_info().cpu_usage().round().clamp(0.0, 100.0) as u8;
     evaluate_pressure(
         system.total_memory() / 1024 / 1024,
         system.available_memory() / 1024 / 1024,
