@@ -1,4 +1,5 @@
-import { assessArenaResetClosure } from "../arena/arena-reset-closure-analysis.js";\nimport {
+import { assessArenaResetClosure } from "../arena/arena-reset-closure-analysis.js";
+import {
   entityHasConfiguredTargeting,
   entityHasNavigation,
   entityRuntimeKey,
@@ -463,7 +464,9 @@ export function analyzeInspectionRuntimeState(
       progressionAdvanceEvidence,
       progressionOrdinalAdvanceEvidence,
       progressionIdempotencyEvidence,
-    );\n\n  const entityPopulation =
+    );
+
+  const entityPopulation =
     analyzeEntityPopulationSources(
       input.parsedEntities.map(
         (item) => item.parsed,
