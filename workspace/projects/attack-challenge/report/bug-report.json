@@ -68,37 +68,6 @@
         "Existing score formula IDs and result schema.",
         "Current v1.1.2 BP/RP manifest dependency parity."
       ]
-    },
-    {
-      "id": "BUG-ATK-SHOP-COMMAND-PURCHASE-NONATOMIC",
-      "fixed": false,
-      "severity": "minor",
-      "category": "inventory-economy",
-      "foundBy": "ai",
-      "issueType": "BUG",
-      "title": "A command-backed shop purchase consumes coins before delivery is confirmed",
-      "problem": "The Speed Potion purchase removes its 12 coins before running the give command. If that command fails, the player loses the coins, receives no potion, and the shop still continues into its generic purchased-success message.",
-      "expected": "A shop transaction either delivers the purchased item and charges the player once, or fails without consuming currency and without reporting success.",
-      "observed": "ShopManager._executePurchase() calls consumeCoins() before player.runCommandAsync(itemDef.giveCommand). The catch path only logs and sends 'Failed to give item'; it does not refund the consumed coins or return before the generic 'Purchased ...' success message below the branch.",
-      "reproduction": [
-        "Open the Attack shop and choose the Speed Potion purchase path.",
-        "Cause the command-backed item delivery to fail or become unavailable.",
-        "Check the player's coin balance and shop messages.",
-        "Observe whether 12 coins were consumed despite no potion being delivered and whether a generic purchase-success message still follows the failure."
-      ],
-      "aiAnalysis": "The transaction commits currency before delivery and has no rollback. This is an atomicity defect isolated to command-backed shop items; normal ItemStack purchases add/drop the item after charging and do not use this failure branch.",
-      "relevantCode": [
-        {
-          "file": "behavior_packs/BP/scripts/chunks/chunk-EJPDS27P.js",
-          "reason": "ShopManager._executePurchase() consumes coins before runCommandAsync(giveCommand), catches delivery failure without refund/return, then sends the generic purchase-success message."
-        }
-      ],
-      "suggestedFix": "Make delivery and currency consumption one transaction: validate/deliver first and charge only on success, or refund and return on delivery failure. Never emit the generic purchase-success message after a failed delivery.",
-      "mustPreserve": [
-        "Normal insufficient-funds behavior.",
-        "Existing prices and item definitions.",
-        "Inventory-full fallback for ItemStack purchases."
-      ]
     }
   ]
 }
