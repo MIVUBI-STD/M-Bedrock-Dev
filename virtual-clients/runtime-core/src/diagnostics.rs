@@ -31,6 +31,8 @@ pub struct VirtualHardwareDiagnostics {
     pub id: &'static str,
     pub network_mode: Option<String>,
     pub network_requires_acceptance: bool,
+    pub network_configuration_observed: bool,
+    pub multiplayer_verified: bool,
     pub graphics_3d_enabled: Option<bool>,
     pub graphics_policy_ready: bool,
 }
@@ -62,6 +64,8 @@ pub fn collect(runtime: RuntimeStatus) -> io::Result<DiagnosticsReport> {
                 VirtualHardwareDiagnostics {
                     id: client.as_str(),
                     network_requires_acceptance: network_mode.is_some(),
+                    network_configuration_observed: network_mode.is_some(),
+                    multiplayer_verified: false,
                     network_mode,
                     graphics_policy_ready: graphics_3d_enabled == Some(true),
                     graphics_3d_enabled,
@@ -75,6 +79,8 @@ pub fn collect(runtime: RuntimeStatus) -> io::Result<DiagnosticsReport> {
                 id: client.as_str(),
                 network_mode: None,
                 network_requires_acceptance: false,
+                network_configuration_observed: false,
+                multiplayer_verified: false,
                 graphics_3d_enabled: None,
                 graphics_policy_ready: false,
             })
