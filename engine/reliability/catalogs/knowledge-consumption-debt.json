@@ -201,18 +201,6 @@
       "nextEvidenceOwner": "runtime-chunk-lifecycle"
     },
     {
-      "knowledgeId": "cinematic.camera-methods-restricted-execution",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "cinematic-control-analysis"
-    },
-    {
-      "knowledgeId": "cinematic.fade-has-independent-timing",
-      "status": "static-capability-gap",
-      "reason": "Current structural analyzers do not model this semantic surface with dedicated proof.",
-      "nextEvidenceOwner": "cinematic-control-analysis"
-    },
-    {
       "knowledgeId": "combat.projectile-block-destruction-separate-gamerule",
       "status": "runtime-required",
       "reason": "This behavior depends on live engine outcome, handle validity, loaded world state, measured cost, or version-specific runtime semantics.",

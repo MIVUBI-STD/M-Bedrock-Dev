@@ -709,6 +709,28 @@
       ]
     },
     {
+      "knowledgeId": "cinematic.camera-methods-restricted-execution",
+      "consumer": "cinematic-control-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/cinematic-control-analysis.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/cinematic-control-analysis.test.ts"
+      ]
+    },
+    {
+      "knowledgeId": "cinematic.fade-has-independent-timing",
+      "consumer": "cinematic-control-analysis",
+      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/cinematic-control-analysis.ts",
+        "engine/analyzers/scripts/src/parser/parse.ts"
+      ],
+      "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/cinematic-control-analysis.test.ts"
+      ]
+    },
+    {
       "knowledgeId": "cinematic.camera-clear-ends-active-perspective",
       "consumer": "cinematic-control-analysis",
       "analyzerPaths": [
