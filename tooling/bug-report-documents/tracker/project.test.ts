@@ -104,4 +104,12 @@ describe("Bug Tracker integration", () => {
     } as unknown as DeveloperNoteRegistry;
     expect(() => validateDeveloperNoteRegistry(wrongSeverity)).toThrow(/severity must be null/);
   });
+
+  it("rejects Developer Notes bound to an unknown project", () => {
+    const orphan: DeveloperNoteRegistry = {
+      ...developerNotes,
+      notes: [{ ...developerNotes.notes[0]!, projectId: "missing-project" }],
+    };
+    expect(() => projectClientDocumentToTracker(client, registry, orphan)).toThrow(/unknown Project Registry project/);
+  });
 });
