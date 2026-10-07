@@ -47,11 +47,44 @@ describe("Golden Bug Tracker renderer", () => {
     expect(html).toContain("LEVEL 1");
     expect(html).toContain("Drive Folder ↗");
     expect(html).toContain("World File ↗");
-    expect(html).toContain("View Details ↓");
-    expect(html).toContain("Collapse Details ↑");
-    expect(html).toContain("NEEDS VERIFY");
+    expect(html).toContain("Test / Details ↓");
+    expect(html).toContain("Collapse ↑");
+    expect(html).toContain("NEEDS VALIDATION");
+    expect(html).toContain("TEST IN-GAME");
+    expect(html).toContain("EXPECTED");
+    expect(html).toContain("Technical Details ↓");
+    expect(html).toContain("Recommended Fix");
+    expect(html).toContain("✓ Berhasil");
+    expect(html).toContain("✕ Belum Berhasil");
+    expect(html).not.toContain("Mark fixed");
     expect(html).toContain('data-issue-id="BUG-GOLDEN-001"');
     expect(html).not.toContain("<details class=\"map\" open");
+  });
+
+  it("preserves unknown information as absent UI instead of inventing content", () => {
+    const level = fixture.games[0]!.levels[0]!;
+    const sparse: BugTrackerDocument = {
+      ...fixture,
+      games: [{
+        ...fixture.games[0]!,
+        levels: [{
+          ...level,
+          issues: [{
+            ...level.issues[0]!,
+            reproduction: [],
+            observed: "",
+            expected: "",
+            resolution: undefined,
+          }],
+        }],
+      }],
+    };
+    const html = renderBugTrackerHtml(sparse);
+    expect(html).not.toContain("TEST IN-GAME");
+    expect(html).not.toContain("EXPECTED");
+    expect(html).not.toContain("Recommended Fix");
+    expect(html).toContain("✓ Berhasil");
+    expect(html).toContain("✕ Belum Berhasil");
   });
 
   it("rejects duplicate issue IDs before rendering", () => {
