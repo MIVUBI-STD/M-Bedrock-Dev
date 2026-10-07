@@ -357,6 +357,13 @@ function dimensionScopeClosed(
   contradicted: GameplayCausalLink,
   dimension: CounterProofSearchDimension,
 ): boolean {
+  const evidenceIds = dimensionEvidenceFor(
+    graph,
+    contradicted,
+    dimension,
+  );
+  if (evidenceIds.length === 0) return false;
+
   const relevant = graph.causalLinks.filter(
     (candidate) =>
       candidate.scenarioId === contradicted.scenarioId &&
@@ -364,6 +371,10 @@ function dimensionScopeClosed(
         candidate.id === contradicted.id ||
         overlapping(candidate.subjectIds, contradicted.subjectIds) ||
         overlapping(candidate.componentIds, contradicted.componentIds)
+      ) &&
+      (
+        candidate.id === contradicted.id ||
+        (candidate.dimensionEvidence[dimension]?.length ?? 0) > 0
       ),
   );
   if (relevant.length === 0) return false;
@@ -372,15 +383,6 @@ function dimensionScopeClosed(
       candidate.evidenceIds.length > 0 &&
       candidate.status !== "DETECTION_GAP" &&
       candidate.status !== "RUNTIME_BLOCKED",
-  ) && (
-    dimension === "guard" ||
-    dimension === "scope" ||
-    dimension === "exclusion" ||
-    dimensionEvidenceFor(
-      graph,
-      contradicted,
-      dimension,
-    ).length > 0
   );
 }
 
