@@ -3,11 +3,11 @@
   "projectId": "build-and-decode",
   "projectName": "Build & Decode",
   "taskClass": "DIAGNOSE",
-  "revision": 3,
+  "revision": 4,
   "artifact": {
-    "artifactId": "drive:1oP3m7_WpC2GORzCCrOazmhBiWBvnntnI",
-    "artifactFingerprint": "sha256:4bae56cbb8bdd1f6d545c50c956faf967ee9be75d26010561b805e071b2936bd",
-    "version": "1.1.1"
+    "artifactId": "drive:1JxOTJn3kYJVYvT-9WsZ044ZK4boMLlLP",
+    "artifactFingerprint": "sha256:6ccbaa4889749982131f4dc641598bc3ad0a1026e2c583a2e5994a1b60eaa7d0",
+    "version": "1.1.3"
   },
   "publication": {
     "drive": {
@@ -16,10 +16,10 @@
         "label": "Build - Build & Decode"
       },
       "currentWorld": {
-        "fileId": "1oP3m7_WpC2GORzCCrOazmhBiWBvnntnI",
-        "fileName": "Build & Decode v1.1.1.mcworld",
-        "artifactFingerprint": "sha256:4bae56cbb8bdd1f6d545c50c956faf967ee9be75d26010561b805e071b2936bd",
-        "version": "1.1.1"
+        "fileId": "1JxOTJn3kYJVYvT-9WsZ044ZK4boMLlLP",
+        "fileName": "Build & Decode v1.1.3.mcworld",
+        "artifactFingerprint": "sha256:6ccbaa4889749982131f4dc641598bc3ad0a1026e2c583a2e5994a1b60eaa7d0",
+        "version": "1.1.3"
       }
     }
   }
