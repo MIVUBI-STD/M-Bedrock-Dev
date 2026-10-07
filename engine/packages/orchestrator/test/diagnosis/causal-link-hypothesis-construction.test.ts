@@ -29,7 +29,7 @@ describe("causal link hypothesis construction", () => {
           evidenceIds: ["e1"],
           subjectIds: ["subject"],
           componentIds: ["c1"],
-          knowledgeRequirementId: "k1",
+          knowledgeRequirementIds: [ "k1",
           status: "CONTRADICTED",
           reason: "Dependency is contradicted",
         }],
@@ -64,7 +64,7 @@ describe("causal link hypothesis construction", () => {
       resolution: {
         causalLinkId: "l1",
         scenarioId: "s1",
-        knowledgeRequirementId: "k1",
+        knowledgeRequirementIds: [ "k1",
         evidenceIds: ["e1"],
         disposition: "RUNTIME_PROOF_REQUIRED",
         runtimeReason: "Runtime needed",
