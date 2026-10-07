@@ -65,7 +65,7 @@ The latest completed human-facing report may live in the root:
 <Map Name> - Bug Report.pdf
 ```
 
-This PDF is a derived published snapshot only. Canonical Bug Report V2 JSON remains in `workspace/reports/` and is the only persisted bug-state authority.
+This PDF is a derived published snapshot only. Canonical Bug Report V2 JSON remains in the matching project/level `report/bug-report.json` and is the only persisted bug-state authority.
 
 Do not:
 
@@ -280,7 +280,7 @@ Rules:
 6. Material artifact/report/deliverable changes invalidate active approval/publication proofs.
 7. Work Session, project registry, Audit Obligations, semantic evidence, caches, and control-plane state stay outside Drive.
 
-Drive is approved human-facing storage, not the engine/project-state database.
+Drive is approved human-facing storage, not the engine/project-state database. Repository project/level identity is bound to Drive by the matching `project.json`; GitHub and Drive do not mirror folder-for-folder.
 ## Drive root
 
 The configured Drive root stays map-centric:
