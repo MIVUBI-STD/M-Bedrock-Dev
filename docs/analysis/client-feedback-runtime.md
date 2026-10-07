@@ -101,6 +101,34 @@ status marker
 
 Do not depend only on historical events like 'arena became occupied' to paint the UI. A client joining later must be able to reconstruct the current visual state from authority.
 
+## Transition and terminal feedback
+
+Player-facing transition text is a projection of the already-decided gameplay transition.
+
+Preferred order:
+
+```text
+current state completes
+→ determine actual next state
+→ publish matching transition feedback
+→ execute transition
+```
+
+Do not publish a generic forward transition such as `Next Round`, `Next Wave`, or `Continue` before proving that the corresponding state exists. If terminal eligibility is decided later, feedback can become false while gameplay state remains technically correct.
+
+Terminal result feedback is also separate from result authority:
+
+```text
+terminal condition
+→ settle authoritative result exactly once
+→ present the settled result
+→ cleanup / return
+```
+
+Review title, subtitle, actionbar, chat, form, scoreboard, sound, and cinematic surfaces as distinct presentation channels. A correct chat result does not prove that an authored final-result form/title/sound is reachable, and a presentation surface must not recalculate the authoritative winner/result.
+
+When the selected artifact contains a dedicated terminal presentation surface that has no reachable production caller, compare that authored capability with the actual terminal flow as a DESIGN_MISMATCH candidate.
+
 ## Analyzer diagnostics
 
 - FEEDBACK_PRESENTATION_USED_AS_AUTHORITY
@@ -118,6 +146,8 @@ Do not depend only on historical events like 'arena became occupied' to paint th
 - FEEDBACK_LOBBY_STATUS_WRONG_COLOR
 - FEEDBACK_VISUAL_POSTCONDITION_UNVERIFIED
 - FEEDBACK_ANIMATION_VERSION_REGRESSION
+- FEEDBACK_TRANSITION_PUBLISHED_BEFORE_NEXT_STATE
+- FEEDBACK_TERMINAL_RESULT_PRESENTATION_DISCONNECTED
 
 ## Review questions
 
