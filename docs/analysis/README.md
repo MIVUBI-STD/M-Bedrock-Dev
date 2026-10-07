@@ -92,7 +92,7 @@ Load only when the canonical procedure activates the concern:
 - [Gameplay Model Closure](./gameplay-model-closure.md) — UNDERSTAND closure semantics.
 - [Bug-Finding Coverage System](./bug-finding-coverage.md) — canonical coverage accounting, blind spots, cross-system stress, proof conservation, and anti-suppression gate.
 - [Audit Execution Flow](./audit-execution-flow.md) — reader-facing player-flow projection only.
-- [Map Audit Report V2](./map-audit-report-v2-schema.md) — **Complete Bug Report**; human-facing full finding set across `PROVEN` and `NEED_VALIDATION`, with separate `BUG` and `DESIGN_MISMATCH` lanes.
+- [Map Audit Report V2](./map-audit-report-v2-schema.md) — canonical human-facing full finding set across `PROVEN` and `NEED_VALIDATION`, with separate `BUG` and `DESIGN_MISMATCH` lanes.
 - [Approved Bug Report V2](./gameplay-bug-report-v2.md) — downstream persisted approved `PROVEN BUG` ledger only.
 
 None of these documents may authorize continuation independently of the Mandatory Audit Procedure receipt.
