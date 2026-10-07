@@ -746,7 +746,7 @@ export function analyzeInspectionRuntimeState(
     );
 
   const resetMutationTransactions =
-    mutationTransactions.filter(
+    mutationTransactions.assessments.filter(
       (item) =>
         /(?:reset|cleanup|restore|baseline)/i.test(
           item.rootFunctionId,
