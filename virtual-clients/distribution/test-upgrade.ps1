@@ -27,6 +27,12 @@ if ($currentSemver -le $previousSemver) {
   throw "Upgrade fixture requires CurrentInstaller newer than PreviousInstaller. previous=$previousVersion current=$currentVersion"
 }
 
+$policyPath = Join-Path $PSScriptRoot 'install-lifecycle-policy.json'
+$policy = Get-Content -LiteralPath $policyPath -Raw | ConvertFrom-Json
+if ($policy.schema -ne 1 -or $policy.installer.allowUpgrade -ne $true -or $policy.installer.allowDowngrade -ne $false -or $policy.runtimeData.owner -ne 'runtime-core' -or $policy.runtimeData.installerMayMigrate -ne $false -or $policy.runtimeData.installerMayDelete -ne $false) {
+  throw 'Installer lifecycle policy is invalid or unsupported.'
+}
+
 $runtimeRoot = Join-Path $env:LOCALAPPDATA 'M-Bedrock\VirtualClients'
 New-Item -ItemType Directory -Path $runtimeRoot -Force | Out-Null
 $sentinel = Join-Path $runtimeRoot 'upgrade-fixture-preserve.txt'
