@@ -51,7 +51,8 @@
     "verify:detection-corpus": "node .agents/skills/m-bedrock-detection-benchmark/scripts/validate-corpus.mjs",
     "status:detection-corpus": "node .agents/skills/m-bedrock-detection-benchmark/scripts/corpus-status.mjs",
     "score:detection-benchmark": "node .agents/skills/m-bedrock-detection-benchmark/scripts/score-benchmark.mjs",
-    "aggregate:detection-benchmark": "node .agents/skills/m-bedrock-detection-benchmark/scripts/aggregate-runs.mjs"
+    "aggregate:detection-benchmark": "node .agents/skills/m-bedrock-detection-benchmark/scripts/aggregate-runs.mjs",
+    "freeze:detection-observation": "node .agents/skills/m-bedrock-detection-benchmark/scripts/freeze-observed-map-audit.mjs"
   },
   "dependencies": {
     "@8crafter/leveldb-zlib": "1.6.0",
