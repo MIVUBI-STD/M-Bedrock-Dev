@@ -121,7 +121,11 @@ pub(crate) fn record_operation<T>(
         return;
     };
 
-    let mut history = read_operation_history().unwrap_or_default();
+    let mut history = match read_operation_history() {
+        Ok(history) => history,
+        Err(error) if error.kind() == io::ErrorKind::NotFound => Vec::new(),
+        Err(_) => return,
+    };
     history.push(OperationRecord {
         schema: HISTORY_SCHEMA,
         timestamp_unix_ms,
