@@ -41,7 +41,9 @@
       "mustPreserve": [
         "Dynamic front-selection semantics",
         "South dual-route behavior from Level 10 onward"
-      ]
+      ],
+      "whyThisIsBug": "Levels 5–9 explicitly restrict which fronts are active. OPPOSITE is applied after that level-domain selection but its result is not checked against the same active-direction list, so the runtime can use a front that the current level configuration did not enable.",
+      "impact": "Players can be attacked from South before South is introduced by the level progression. Defensive positioning, block placement, team coverage, and encounter difficulty can therefore differ from the authored Level 5–9 front layout."
     },
     {
       "id": "BUG-DEF-RELOAD-DEFERRED-WAVE-TIMELINE",
@@ -76,7 +78,9 @@
         "Killed-NPC preservation",
         "Exactly-once wave launch",
         "Level 15 configured composition"
-      ]
+      ],
+      "whyThisIsBug": "A persisted active session must resume the same outstanding encounter work, not merely remember which wave index was last launched. The current recovery state cannot reconstruct remaining delays or delayed sub-groups, so reload changes the encounter that was in progress.",
+      "impact": "After reload, a pending wave can arrive at the wrong time, and Level 15 can permanently omit the delayed East/West group of six NPCs. This changes combat pressure and can make the resumed run easier or structurally different from the pre-reload run."
     },
     {
       "id": "DM-DEF-SHEARS-SPECIAL-BEHAVIOR",
@@ -107,7 +111,9 @@
         "Tier 2 compatibility",
         "Wave manifest identity",
         "Arena-scoped ownership"
-      ]
+      ],
+      "whyThisIsBug": "SHEARS is authored as a distinct enemy type in the Defense wave manifest, but its only runtime distinction is a shears_carrier tag that nothing in the selected artifact consumes. A named special enemy therefore has no implemented behavior that makes the special type meaningful.",
+      "impact": "A wave that is configured to introduce a Shears-specific threat behaves like an ordinary Tier 2 militia encounter. Players do not receive the intended mechanical variation, and level difficulty/composition no longer matches the authored special-enemy identity."
     },
     {
       "id": "DM-DEF-FLAG-CAPTURE-AUTHORITY",
@@ -142,7 +148,9 @@
         "Arena offsets",
         "Flag warning feedback",
         "Exactly-once defeat"
-      ]
+      ],
+      "whyThisIsBug": "The arena configuration presents captureZone as the flag-detection boundary, but runtime defeat is decided by a separate hard-coded 1.3 horizontal / 1.5 vertical radius. Two different authorities therefore describe the same objective boundary.",
+      "impact": "Warning and defeat behavior can be reasoned about from different spatial rules. Designers and developers can tune captureZone without changing the actual defeat trigger, creating misleading configuration and making flag-balance changes unreliable."
     },
     {
       "id": "DM-DEF-CRAFTING-UI",
@@ -177,7 +185,9 @@
         "Inventory access",
         "Kit selection",
         "Shop interactions"
-      ]
+      ],
+      "whyThisIsBug": "The approved Defense requirement is to disable the crafting UI itself during gameplay. The selected artifact only changes specific recipes and does not remove or disable the crafting interface, so the implemented behavior does not satisfy the approved UI rule.",
+      "impact": "Players can still access a gameplay surface that is supposed to be unavailable. This makes the interaction rules inconsistent and leaves crafting visible even when individual recipes have been restricted."
     },
     {
       "id": "DM-DEF-RETRY-MODE-CONFIG",
@@ -212,7 +222,9 @@
         "Killed-NPC preservation",
         "Attempt accounting",
         "Retry score multiplier"
-      ]
+      ],
+      "whyThisIsBug": "The canonical configuration declares full_level_restart, while the actual retry implementation preserves killed NPCs and resumes remaining encounter state. The declared mode is not the behavior the game executes.",
+      "impact": "Developers reading or changing retryMode can reasonably expect a full restart but receive checkpoint-style recovery instead. Future balancing, fixes, or tooling can make incorrect decisions because configuration and runtime semantics disagree."
     },
     {
       "id": "DM-DEF-RESULT-EXPORT-VERSION",
@@ -242,7 +254,9 @@
       "mustPreserve": [
         "Result schema",
         "Score/economy record relationships"
-      ]
+      ],
+      "whyThisIsBug": "The selected world, behavior pack, and resource pack are v1.1.3, but persisted Defense result IDs still identify the run as v1.1.0. Result provenance therefore does not match the artifact that produced it.",
+      "impact": "Automated analysis, debugging, comparison, and historical result tracking can attribute v1.1.3 gameplay data to the wrong release. This weakens version traceability and can cause results from different builds to be grouped incorrectly."
     }
   ]
 }
