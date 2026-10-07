@@ -13,6 +13,13 @@ Tester Workspace   → local notes/images/fixed state only
 
 No layer may duplicate another layer's authority.
 
+The Golden Tracker has three presentation lanes:
+- **BUGS** — gameplay BUG findings from approved Bug Report V2;
+- **DESIGN MISMATCHES** — approved DESIGN_MISMATCH findings;
+- **DEV NOTES** — canonical developer/release notes from `workspace/developer-notes.json`.
+
+DEV NOTE is a parallel reference lane, not an issue type, not a severity, and not a fallback for NEED_VALIDATION. Its admission semantics are owned by `docs/analysis/developer-note-coverage.md`.
+
 ## Flow
 
 ```text
