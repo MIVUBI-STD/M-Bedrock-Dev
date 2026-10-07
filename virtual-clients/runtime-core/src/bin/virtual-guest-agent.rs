@@ -36,6 +36,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 const INTERACTIVE_LAUNCHER_PORT: u16 = 47832;
+const MAX_GUEST_REQUEST_BYTES: usize = 4096;
+const MAX_INTERACTIVE_REQUEST_BYTES: u64 = 512;
 const MINECRAFT_PROCESS_START_TIMEOUT: Duration = Duration::from_secs(30);
 const INTERACTIVE_LAUNCH_TIMEOUT: Duration = Duration::from_secs(35);
 
@@ -123,7 +125,13 @@ fn run_interactive_launcher() -> Result<(), Box<dyn std::error::Error>> {
         stream.set_read_timeout(Some(Duration::from_secs(2)))?;
         stream.set_write_timeout(Some(INTERACTIVE_LAUNCH_TIMEOUT))?;
         let mut request = String::new();
-        stream.read_to_string(&mut request)?;
+        stream
+            .take(MAX_INTERACTIVE_REQUEST_BYTES + 1)
+            .read_to_string(&mut request)?;
+        if request.len() as u64 > MAX_INTERACTIVE_REQUEST_BYTES {
+            stream.write_all(b"ERROR:INVALID:request too large\n")?;
+            continue;
+        }
         if request.trim().is_empty() { continue; }
         let mut parts = request.split_whitespace();
         let verb = parts.next().unwrap_or_default();
@@ -156,18 +164,24 @@ fn handle(mut stream: TcpStream, token: &str) -> Result<(), Box<dyn std::error::
     stream.set_read_timeout(timeout)?;
     stream.set_write_timeout(timeout)?;
 
-    let mut request = [0_u8; 4096];
+    let mut request = [0_u8; MAX_GUEST_REQUEST_BYTES];
     let size = stream.read(&mut request)?;
+    if size == MAX_GUEST_REQUEST_BYTES {
+        stream.write_all(
+            b"HTTP/1.1 413 Payload Too Large\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+        )?;
+        return Ok(());
+    }
     let request = String::from_utf8_lossy(&request[..size]);
     let first_line = request.lines().next().unwrap_or_default();
 
-    let supplied = request.lines().find_map(|line| {
+    let supplied: Vec<&str> = request.lines().filter_map(|line| {
         let (name, value) = line.split_once(':')?;
         name.eq_ignore_ascii_case("X-Virtual-Clients-Token")
             .then(|| value.trim())
-    });
+    }).collect();
 
-    if !supplied.is_some_and(|candidate| timing_safe_token_eq(candidate, token)) {
+    if supplied.len() != 1 || !timing_safe_token_eq(supplied[0], token) {
         stream.write_all(
             b"HTTP/1.1 401 Unauthorized\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
         )?;
