@@ -141,15 +141,22 @@ function parseArgs(argv: readonly string[]): Args {
       "Missing --input <Map Audit Output V2 or Approved Bug Report V2 JSON>.",
     );
   }
-  if (!outDir) {
+  const resolvedInput = resolve(input);
+  const normalizedInput = resolvedInput.replaceAll("\\", "/");
+  const inferredOutDir =
+    normalizedInput.endsWith("/report/bug-report.json")
+      ? resolve(resolvedInput, "..", "..", "output")
+      : "";
+
+  if (!outDir && !inferredOutDir) {
     throw new Error(
-      "Missing --out <output directory>.",
+      "Missing --out <output directory>; automatic output is available for project/level report/bug-report.json input.",
     );
   }
 
   return {
-    input: resolve(input),
-    outDir: resolve(outDir),
+    input: resolvedInput,
+    outDir: resolve(outDir || inferredOutDir),
     includeFixed,
     includeMinor,
   };
