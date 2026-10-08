@@ -135,7 +135,13 @@ Context   → engine/packages/orchestrator/src/workflow/context-compiler.ts
 
 ## ChatGPT-GitHub Work Continuity
 
-On a resume request, pin the current `Local` HEAD, identify the requested work from its canonical owner and relevant Git commits, then verify current source before continuing. A historical `Next` is not current authority. Reconcile newer commits, changed decisions, and proof limits; mark irrecoverable context UNKNOWN.
+**Short-prompt repository startup.** A message such as "amati repo ini dan ikuti aturan repo" plus a repository/branch URL is an INSPECT request, not permission to modify. Infer repository and branch from the URL; if no ref is given, establish the branch from repository authority rather than guessing. Read this file, `GITHUB_RULES.md`, and only the canonical owner/skill rules relevant to the requested work. Pin exact HEAD, inspect recent relevant commits with continuity metadata, then verify their assertions against current source and affected consumers.
+
+Recover work by topic and actual evidence, not merely the newest commit: unrelated later commits do not replace earlier unfinished work. Distinguish current facts, historical decisions, unresolved claims, and unrecorded chat context. If several plausible active topics remain, report the alternatives and ask one deciding question rather than choosing one arbitrarily.
+
+For a short INSPECT request, respond with repository/ref, applicable mode and rules, verified current status, credible unfinished work, proof limits, and one justified next step. Do not implement or commit. For an explicit "lanjutkan pekerjaan terakhir", resume autonomously only if the scope and authorization are unambiguous; otherwise clarify. A historical `Next` is never itself authority to edit. Use the existing development standard for recommendation maturity, verification economy and STOP.
+
+For any resume request, reconcile newer commits, changed decisions, and proof limits with exact current source. Mark irrecoverable context UNKNOWN; never invent recovered user intent.
 
 For material work, record the work identity, decision, evidence ceiling, and remaining action in the same logical commit as the change, following `GITHUB_RULES.md`. Keep durable design rules with their existing owner. `planning/` owns future intent, not a duplicate implementation-status log.
 
