@@ -498,6 +498,10 @@ describe("gameplay scenario closure", () => {
         count: 6,
         countBasis: null,
         layoutStatus: null,
+        spatialLayoutEntries: [],
+        spatialLayoutConfidence: null,
+        arenasWithoutSpatialLayoutCount: 6,
+        spatialArenaIdsWithoutReplicaProof: [],
         replicaProofEntries: [],
         entityPopulationProofEntries: [],
         actorPopulationProofEntries: [],
@@ -603,6 +607,10 @@ describe("gameplay scenario closure", () => {
       count: 3,
       countBasis: "reconciled",
       layoutStatus: "resolved",
+      spatialLayoutEntries: [],
+      spatialLayoutConfidence: null,
+      arenasWithoutSpatialLayoutCount: 3,
+      spatialArenaIdsWithoutReplicaProof: [],
       replicaProofEntries: [
         { arenaId: "arena:1", evidenceIds: ["native:a1"], proofStatus: "complete-proof" },
         { arenaId: "arena:2", evidenceIds: ["native:a2"], proofStatus: "incomplete-proof" },
@@ -667,6 +675,35 @@ describe("gameplay scenario closure", () => {
   });
 
 
+
+  it("keeps physical arena coordinates distinct from replica proof and session inference", () => {
+    const architecture = deriveGameplayArchitectureNavigation(baseGraph(), {
+      relevantSourceCount: 1,
+      indexedSourceCount: 1,
+      arenaDetected: true,
+      arenaCount: 3,
+      spatialLayout: {
+        canonical: { arenaId: "arena:1", anchor: { x: 0, y: 64, z: 0 } },
+        replicas: [{ arenaId: "arena:2", anchor: { x: 300, y: 64, z: 0 } }],
+        confidence: "medium",
+      },
+      replicaProof: [
+        { arenaId: "arena:2", evidenceIds: ["native:arena2"], status: "bounded-proof" },
+      ],
+    });
+    expect(architecture.knowledgeCoverage.arenaEvidence).toMatchObject({
+      count: 3,
+      spatialLayoutEntries: [
+        { arenaId: "arena:1", role: "canonical", anchor: { x: 0, y: 64, z: 0 } },
+        { arenaId: "arena:2", role: "replica", anchor: { x: 300, y: 64, z: 0 } },
+      ],
+      spatialLayoutConfidence: "medium",
+      arenasWithoutSpatialLayoutCount: 1,
+      spatialArenaIdsWithoutReplicaProof: ["arena:1"],
+      arenaSessionMapping: "NOT_YET_ESTABLISHED",
+    });
+    expect(architecture.knowledgeCoverage.wholeGameUnderstandingPercent).toBeNull();
+  });
 
   it("preserves per-arena entity and actor population evidence without inventing gameplay", () => {
     const architecture = deriveGameplayArchitectureNavigation(baseGraph(), {

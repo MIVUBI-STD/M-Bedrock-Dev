@@ -288,6 +288,15 @@ export interface GameplayArchitectureNavigation {
       readonly countBasis: "topology" | "script-config" | "reconciled" | null;
       readonly layoutStatus: string | null;
       /** Only arena identities available from existing replica proof receipts. */
+      /** Spatial layout is the source of arena identities and coordinates, not replica proof. */
+      readonly spatialLayoutEntries: readonly {
+        readonly arenaId: string;
+        readonly role: "canonical" | "replica";
+        readonly anchor: { readonly x: number; readonly y: number; readonly z: number };
+      }[];
+      readonly spatialLayoutConfidence: "low" | "medium" | "high" | null;
+      readonly arenasWithoutSpatialLayoutCount: number | null;
+      readonly spatialArenaIdsWithoutReplicaProof: readonly string[];
       readonly replicaProofEntries: readonly {
         readonly arenaId: string;
         readonly evidenceIds: readonly string[];
@@ -360,6 +369,17 @@ export function deriveGameplayArchitectureNavigation(
     readonly arenaCount?: number;
     readonly arenaCountBasis?: "topology" | "script-config" | "reconciled";
     readonly arenaLayoutStatus?: string;
+    readonly spatialLayout?: {
+      readonly canonical: {
+        readonly arenaId: string;
+        readonly anchor: { readonly x: number; readonly y: number; readonly z: number };
+      };
+      readonly replicas: readonly {
+        readonly arenaId: string;
+        readonly anchor: { readonly x: number; readonly y: number; readonly z: number };
+      }[];
+      readonly confidence: "low" | "medium" | "high";
+    };
     readonly replicaProof?: readonly {
       readonly arenaId: string;
       readonly evidenceIds: readonly string[];
@@ -494,11 +514,40 @@ export function deriveGameplayArchitectureNavigation(
       instance.arenaId, instance,
     ]),
   ).values()].sort((a, b) => a.arenaId.localeCompare(b.arenaId));
+  const spatialEntries = observed.spatialLayout === undefined
+    ? []
+    : [
+        {
+          arenaId: observed.spatialLayout.canonical.arenaId,
+          role: "canonical" as const,
+          anchor: observed.spatialLayout.canonical.anchor,
+        },
+        ...observed.spatialLayout.replicas.map((replica) => ({
+          arenaId: replica.arenaId,
+          role: "replica" as const,
+          anchor: replica.anchor,
+        })),
+      ].sort((a,b) => a.arenaId.localeCompare(b.arenaId));
+  const spatialIds = new Set(spatialEntries.map((item) => item.arenaId));
+  const spatialLayoutValid =
+    spatialIds.size === spatialEntries.length;
+  const arenasWithoutSpatialLayoutCount =
+    observed.arenaCount === undefined ||
+    !Number.isSafeInteger(observed.arenaCount) ||
+    observed.arenaCount < 0 ||
+    !spatialLayoutValid ||
+    spatialEntries.length > observed.arenaCount
+      ? null
+      : observed.arenaCount - spatialEntries.length;
   const entityProof = [...(observed.entityPopulationProof ?? [])]
     .sort((a,b) => a.arenaId.localeCompare(b.arenaId));
   const actorProof = [...(observed.actorPopulationProof ?? [])]
     .sort((a,b) => a.arenaId.localeCompare(b.arenaId));
   const replicaProofIds = new Set(arenaInstances.map((entry) => entry.arenaId));
+  const spatialArenaIdsWithoutReplicaProof = sorted(
+    spatialEntries.map((entry) => entry.arenaId)
+      .filter((id) => !replicaProofIds.has(id))
+  );
   const populationArenaIdsWithoutReplicaProof = sorted([
     ...entityProof.map((entry) => entry.arenaId),
     ...actorProof.map((entry) => entry.arenaId),
@@ -638,6 +687,10 @@ export function deriveGameplayArchitectureNavigation(
             : observed.arenaCount,
         countBasis: observed.arenaCountBasis ?? null,
         layoutStatus: observed.arenaLayoutStatus ?? null,
+        spatialLayoutEntries: spatialEntries,
+        spatialLayoutConfidence: observed.spatialLayout?.confidence ?? null,
+        arenasWithoutSpatialLayoutCount,
+        spatialArenaIdsWithoutReplicaProof,
         replicaProofEntries: arenaInstances.map((instance) => ({
           arenaId: instance.arenaId,
           evidenceIds: sorted(instance.evidenceIds),

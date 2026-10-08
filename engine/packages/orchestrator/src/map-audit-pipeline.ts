@@ -772,6 +772,9 @@ function assembleSelectedMapAuditRun(
           ? {}
           : { arenaCount: inspection.gameplayWorld.arenas.count }),
         replicaProof: inspection.gameplayWorld.arenas.replicaProof,
+        ...(inspection.arenaAnalysis.spatialLayout === undefined
+          ? {}
+          : { spatialLayout: inspection.arenaAnalysis.spatialLayout }),
         entityPopulationProof:
           inspection.arenaAnalysis.entityPopulationProof?.replicas,
         actorPopulationProof:
