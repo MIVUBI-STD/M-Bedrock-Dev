@@ -67,6 +67,12 @@ Apply these four decisions within DEFINE → INVESTIGATE → DESIGN → VERIFY. 
 
 When evidence is insufficient, state the **exact undecided claim**, what current evidence says, and the **minimum next evidence** that would distinguish alternatives. UNKNOWN is not automatically a bug, a development request, or permission for a new subsystem.
 
+## Recommendation maturity and verification economy
+
+Before recommending implementation, establish the actual user outcome, source evidence, responsible owner, affected consumers, simpler alternatives, risks, acceptance criteria and STOP boundary. Distinguish observed findings from hypotheses. If a decision-changing assumption remains unverified, investigate before presenting the solution as ready. Experiments may gather evidence but are not production recommendations.
+
+Scale verification to consequence and uncertainty, not edit count. Prefer existing checks and fixtures. Do not create a minor test or standalone script for every small edit. New enduring tests must protect a material behavior not adequately covered already; standalone verification scripts require a demonstrated recurring consumer. Keep decisive checks for high-risk state, security, persistence, compatibility and proof decisions. Batch meaningful verification around a complete root-cause correction, report the actual proof ceiling, and keep CI manual-only and last resort.
+
 ## Minimum complete change
 
 Default order:
