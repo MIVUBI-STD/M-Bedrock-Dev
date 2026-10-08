@@ -49,7 +49,15 @@ describe("inspectArtifact", () => {
     await createSyntheticWorldTree(tree);
     await packageDirectoryDeterministically(tree, archive);
 
-    const result = await inspectArtifact(archive);
+    const result = await inspectArtifact(
+      archive, {}, undefined, [], undefined, undefined,
+      await sha256File(archive),
+    );
+
+    await expect(inspectArtifact(
+      archive, {}, undefined, [], undefined, undefined,
+      "0".repeat(64),
+    )).rejects.toThrow(/SHA-256 differs/);
 
     expect(result.archiveEntries).toBeGreaterThan(0);
     expect(result.packs[0]?.type).toBe("behavior_pack");

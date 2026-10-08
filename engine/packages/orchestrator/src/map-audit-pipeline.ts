@@ -144,6 +144,11 @@ export interface SelectedMapAuditInput {
    */
   readonly artifactPath: string;
   /**
+   * Optional SHA-256 from the selected Drive/download handoff. This checks
+   * the actual bytes; GitHub project context never overrides the selection.
+   */
+  readonly expectedArtifactFingerprint?: string;
+  /**
    * Runtime/platform identity only. Map-specific behavior contracts, arena
    * layouts, state authority, and expected-behavior policy cannot enter the
    * production audit from caller-supplied target configuration.
@@ -542,6 +547,7 @@ async function inspectSelectedMapToDemandFixedPoint(
     input.telemetry ?? [],
     input.runtimeProbeTranscript,
     input.mapClassificationHint,
+    input.expectedArtifactFingerprint,
   );
   const firstReconciliation =
     reconcileSelectedMapAuditDemand(
@@ -572,6 +578,7 @@ async function inspectSelectedMapToDemandFixedPoint(
     input.telemetry ?? [],
     input.runtimeProbeTranscript,
     input.mapClassificationHint,
+    input.expectedArtifactFingerprint,
   );
   // Both passes must describe one immutable selected artifact.
   if (secondInspection.fingerprint !== firstInspection.fingerprint) {

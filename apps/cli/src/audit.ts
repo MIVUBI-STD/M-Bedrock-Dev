@@ -24,8 +24,28 @@ function runtimeTarget(
 }
 
 async function main(): Promise<void> {
+  const args = process.argv.slice(2);
+  const fingerprintFlags = args.flatMap((arg, index) =>
+    arg === "--expected-sha256" ? [index] : []
+  );
+  if (fingerprintFlags.length > 1) {
+    throw new Error("--expected-sha256 may only be supplied once");
+  }
+  const flagIndex = fingerprintFlags[0];
+  const expectedArtifactFingerprint =
+    flagIndex === undefined ? undefined : args[flagIndex + 1];
+  if (flagIndex !== undefined &&
+      (expectedArtifactFingerprint === undefined ||
+       expectedArtifactFingerprint.startsWith("--"))) {
+    throw new Error("--expected-sha256 requires a SHA-256 fingerprint");
+  }
+  const auditArgs = flagIndex === undefined
+    ? args
+    : args.filter((_, index) =>
+        index !== flagIndex && index !== flagIndex + 1
+      );
   const { positionals, target, telemetryPath, arenaRegionContractsPath } =
-    parseCliTargetOptions(process.argv.slice(2));
+    parseCliTargetOptions(auditArgs);
   const [input] = positionals;
   if (!input) {
     throw new Error("Usage: audit <selected.mcworld> [target options]");
@@ -44,6 +64,9 @@ async function main(): Promise<void> {
   const knowledge = await loadKnowledgeDirectory(resolve("engine/knowledge"));
   const audit = await runSelectedMapAudit({
     artifactPath: resolve(input),
+    ...(expectedArtifactFingerprint === undefined
+      ? {}
+      : { expectedArtifactFingerprint }),
     target: runtimeTarget(target),
     knowledgeCatalog: knowledge,
     telemetry: [],

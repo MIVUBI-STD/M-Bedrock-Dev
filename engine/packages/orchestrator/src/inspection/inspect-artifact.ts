@@ -64,8 +64,19 @@ export async function inspectArtifact(
   telemetry: readonly TelemetryEvent[] | TelemetryBatch = [],
   runtimeProbeTranscript?: RuntimeProbeTranscript,
   mapClassificationHint?: MapClassificationRoutingHint,
+  expectedArtifactFingerprint?: string,
 ): Promise<InspectArtifactResult> {
   const fingerprint = await sha256File(path);
+  if (expectedArtifactFingerprint !== undefined) {
+    const expected = expectedArtifactFingerprint
+      .replace(/^sha256:/i, "")
+      .toLowerCase();
+    if (!/^[a-f0-9]{64}$/.test(expected) || expected !== fingerprint) {
+      throw new Error(
+        "Selected .mcworld SHA-256 differs from the acquired artifact; refusing stale or substituted audit input.",
+      );
+    }
+  }
   const mapClassification =
     mapClassificationHint === undefined
       ? undefined
