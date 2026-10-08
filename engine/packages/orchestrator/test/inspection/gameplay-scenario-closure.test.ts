@@ -500,6 +500,8 @@ describe("gameplay scenario closure", () => {
         layoutStatus: null,
         spatialLayoutEntries: [],
         spatialLayoutConfidence: null,
+        arenaRegionCandidates: [],
+        spatialArenaIdsWithoutRegionCandidates: [],
         arenasWithoutSpatialLayoutCount: 6,
         spatialArenaIdsWithoutReplicaProof: [],
         arenaEvidenceComponentLinks: [],
@@ -679,6 +681,32 @@ describe("gameplay scenario closure", () => {
   });
 
 
+
+
+  it("exposes only region candidates with known offsets, not arena ownership", () => {
+    const result = deriveGameplayArchitectureNavigation(baseGraph(), {
+      relevantSourceCount: 1, indexedSourceCount: 1, arenaDetected: true,
+      arenaCount: 3,
+      spatialLayout: {
+        canonical: { arenaId: "arena:1", anchor: { x: 0, y: 64, z: 0 } },
+        replicas: [
+          { arenaId: "arena:2", anchor: { x: 100, y: 64, z: 0 } },
+          { arenaId: "arena:3", anchor: { x: 200, y: 64, z: 0 } },
+        ],
+        offsets: [{ x: 100, y: 0, z: 0 }],
+        confidence: "medium",
+      },
+      regionPlan: {
+        confidence: "low",
+        volumes: [{ min: { x: 1, y: 64, z: 2 }, max: { x: 5, y: 67, z: 6 }, evidenceCandidateIds: ["candidate:1"] }],
+      },
+    }).knowledgeCoverage.arenaEvidence;
+    expect(result.arenaRegionCandidates.map((item) => item.arenaId)).toEqual(["arena:1", "arena:2"]);
+    expect(result.arenaRegionCandidates[1]?.volumes[0]?.min).toEqual({ x: 101, y: 64, z: 2 });
+    expect(result.spatialArenaIdsWithoutRegionCandidates).toEqual(["arena:3"]);
+    expect(result.arenaEvidenceComponentLinks).toEqual([]);
+    expect(result.arenaSessionMapping).toBe("NOT_YET_ESTABLISHED");
+  });
 
   it("links arena proof to gameplay components only through exact shared evidence IDs", () => {
     const graph: GameplayScenarioGraph = {

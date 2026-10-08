@@ -5,6 +5,7 @@ import type {
   AnalysisKnowledgeDomain,
 } from "../../../analysis-planner/src/index.js";
 import type { SemanticIr } from "../../../semantic-ir/src/index.js";
+import type { ArenaRegionPlan } from "../../../../analyzers/topology/src/index.js";
 
 export type GameplayKnowledgeDomain = AnalysisKnowledgeDomain;
 
@@ -295,6 +296,13 @@ export interface GameplayArchitectureNavigation {
         readonly anchor: { readonly x: number; readonly y: number; readonly z: number };
       }[];
       readonly spatialLayoutConfidence: "low" | "medium" | "high" | null;
+      /** Inferred candidate regions; neither containment nor ownership proof. */
+      readonly arenaRegionCandidates: readonly {
+        readonly arenaId: string;
+        readonly volumes: readonly ArenaRegionPlan["volumes"][number][];
+        readonly confidence: "low" | "medium" | "high";
+      }[];
+      readonly spatialArenaIdsWithoutRegionCandidates: readonly string[];
       readonly arenasWithoutSpatialLayoutCount: number | null;
       readonly spatialArenaIdsWithoutReplicaProof: readonly string[];
       /**
@@ -389,7 +397,9 @@ export function deriveGameplayArchitectureNavigation(
         readonly anchor: { readonly x: number; readonly y: number; readonly z: number };
       }[];
       readonly confidence: "low" | "medium" | "high";
+      readonly offsets?: readonly { readonly x: number; readonly y: number; readonly z: number }[];
     };
+    readonly regionPlan?: Pick<ArenaRegionPlan, "volumes" | "confidence">;
     readonly replicaProof?: readonly {
       readonly arenaId: string;
       readonly evidenceIds: readonly string[];
@@ -538,6 +548,29 @@ export function deriveGameplayArchitectureNavigation(
           anchor: replica.anchor,
         })),
       ].sort((a,b) => a.arenaId.localeCompare(b.arenaId));
+  const layout = observed.spatialLayout;
+  const plan = observed.regionPlan;
+  const arenaRegionCandidates = layout === undefined || plan === undefined ? [] :
+    [
+      { arenaId: layout.canonical.arenaId, offset: { x: 0, y: 0, z: 0 } },
+      ...layout.replicas.flatMap((replica, index) => {
+        const offset = layout.offsets?.[index];
+        return offset === undefined ? [] : [{ arenaId: replica.arenaId, offset }];
+      }),
+    ].map(({ arenaId, offset }) => ({
+      arenaId,
+      confidence: plan.confidence,
+      volumes: plan.volumes.map((volume) => ({
+        min: { x: volume.min.x + offset.x, y: volume.min.y + offset.y, z: volume.min.z + offset.z },
+        max: { x: volume.max.x + offset.x, y: volume.max.y + offset.y, z: volume.max.z + offset.z },
+        evidenceCandidateIds: sorted(volume.evidenceCandidateIds),
+      })),
+    })).filter((entry) => entry.volumes.length > 0)
+      .sort((a, b) => a.arenaId.localeCompare(b.arenaId));
+  const regionCandidateArenaIds = new Set(arenaRegionCandidates.map((entry) => entry.arenaId));
+  const spatialArenaIdsWithoutRegionCandidates = sorted(
+    spatialEntries.map((entry) => entry.arenaId).filter((id) => !regionCandidateArenaIds.has(id))
+  );
   const spatialIds = new Set(spatialEntries.map((item) => item.arenaId));
   const spatialLayoutValid =
     spatialIds.size === spatialEntries.length;
@@ -719,6 +752,8 @@ export function deriveGameplayArchitectureNavigation(
         layoutStatus: observed.arenaLayoutStatus ?? null,
         spatialLayoutEntries: spatialEntries,
         spatialLayoutConfidence: observed.spatialLayout?.confidence ?? null,
+        arenaRegionCandidates,
+        spatialArenaIdsWithoutRegionCandidates,
         arenasWithoutSpatialLayoutCount,
         spatialArenaIdsWithoutReplicaProof,
         arenaEvidenceComponentLinks,
