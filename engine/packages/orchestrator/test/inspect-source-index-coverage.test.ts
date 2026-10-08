@@ -440,4 +440,23 @@ describe("inspection source index coverage", () => {
       await rm(root, { recursive: true, force: true });
     }
   });
+
+  it("does not treat resource-pack loot tables as behavior-pack gameplay", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-index-"));
+    try {
+      const relativePath = "resource_packs/visual/loot_tables/visual.json";
+      await mkdir(join(root, "resource_packs", "visual", "loot_tables"), {
+        recursive: true,
+      });
+      await writeFile(join(root, relativePath), JSON.stringify({ pools: [] }), "utf8");
+      const result = await indexInspectionSources(root, "artifact:test", [{
+        relativePath, size: 16, contentHash: "visual-only",
+      }]);
+      expect(result.coverage.relevantFiles).toBe(0);
+      expect(result.coverage.unsupportedRelevantFiles).toEqual([]);
+      expect(result.nodes).toHaveLength(0);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
 });

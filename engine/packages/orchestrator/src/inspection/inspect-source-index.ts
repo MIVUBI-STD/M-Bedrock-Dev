@@ -145,6 +145,10 @@ function ownedGameplayJsonKind(
   const behaviorPackScoped =
     segments.includes("behavior_packs") ||
     segments.includes("behavior_pack");
+  const resourcePackScoped =
+    segments.includes("resource_packs") ||
+    segments.includes("resource_pack");
+  if (resourcePackScoped && !behaviorPackScoped) return undefined;
 
   for (const segment of segments) {
     const kind =
@@ -202,6 +206,14 @@ function isGameplaySensitiveUnownedSource(
     return false;
   }
 
+  const resourcePackScoped =
+    segments.includes("resource_packs") ||
+    segments.includes("resource_pack");
+  const behaviorPackScoped =
+    segments.includes("behavior_packs") ||
+    segments.includes("behavior_pack");
+  if (resourcePackScoped && !behaviorPackScoped) return false;
+
   if (
     segments.some((segment) =>
       GAMEPLAY_STRONG_JSON_DIRECTORIES.has(segment)
@@ -209,10 +221,6 @@ function isGameplaySensitiveUnownedSource(
   ) {
     return true;
   }
-
-  const behaviorPackScoped =
-    segments.includes("behavior_packs") ||
-    segments.includes("behavior_pack");
 
   return behaviorPackScoped &&
     segments.some((segment) =>
