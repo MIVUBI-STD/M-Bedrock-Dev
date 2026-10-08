@@ -40,4 +40,4 @@ resolution
 diagnostics
 ```
 
-Do not duplicate the complete analyzer inventory here. Use the nearest analyzer package `README.md`/source entrypoint plus `docs/06-system/implementation-map.md` when exact ownership is needed.
+Do not duplicate the complete analyzer inventory here. Use the nearest analyzer package `README.md`/source entrypoint plus `docs/system/implementation-map.md` when exact ownership is needed.

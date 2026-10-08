@@ -13,7 +13,7 @@ Packages own stable reusable behavior. They must not depend on CLI presentation,
 - Package APIs expose typed domain contracts, not UI-shaped payloads.
 - Do not import from `apps/`.
 - Do not duplicate analyzer semantics inside packages that merely consume analyzer output.
-- Cross-package dependency must follow `docs/06-system/architecture.md` and `docs/06-system/implementation-map.md`.
+- Cross-package dependency must follow `docs/system/architecture.md` and `docs/system/implementation-map.md`.
 - Derived caches remain rebuildable and never become source authority.
 - Security/trust-boundary code fails closed.
 - `task-graph` may route existing owners but must not become a second semantic, diagnosis, repair, validation, cache-authority, or evidence owner.

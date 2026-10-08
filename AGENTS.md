@@ -222,9 +222,9 @@ minimum-sufficient execution → docs/system/zero-waste-execution.md
 
 current work intent           → planning/
 working/project continuity    → workspace/projects/
-current Bug Report V2         → workspace/reports/
-current Developer Notes       → workspace/developer-notes.json
-derived publication output    → workspace/publication/
+current Bug Report V2         → workspace/projects/*/report/ (or level report/)
+current Developer Notes       → workspace/projects/*/report/developer-notes.json
+derived publication output    → workspace/projects/*/output/ (or level output/)
 historical execution evidence → engine/reliability/history/
 reusable evaluation material  → engine/reliability/corpus/
 platform/runtime knowledge    → engine/knowledge/

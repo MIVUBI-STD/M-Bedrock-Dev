@@ -2,7 +2,7 @@
 
 Applies to `apps/bug-report-ui/`.
 
-The UI is a projection/client of canonical Bug Report V2, not a second report system. Canonical persisted state lives in `workspace/reports/` and its semantics live in `engine/packages/bug-report/`.
+The UI is a projection/client of canonical Bug Report V2, not a second report system. Canonical persisted state lives in `workspace/projects/<project-id>/report/` and its semantics live in `engine/packages/bug-report/`.
 
 ## Canonical references
 

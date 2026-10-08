@@ -99,8 +99,8 @@ engine/adapters/ownership.json
 | Historical execution evidence | `engine/reliability/history/` |
 | Regression fixtures | `engine/fixtures/regressions/` |
 | Current project continuity | `workspace/projects/` |
-| Current Bug Report V2 | `workspace/reports/` |
-| Current Developer Notes | `workspace/developer-notes.json` |
+| Current Bug Report V2 | `workspace/projects/<project-id>/report/` (or level-scoped report) |
+| Current Developer Notes | `workspace/projects/<project-id>/report/developer-notes.json` (or level-scoped report) |
 | Work intent | `planning/` |
 
 ## Critical selected-map audit entrypoints

@@ -20,7 +20,7 @@ runtime proof harnesses                        → runtime/
 reduced regression evidence                    → fixtures/
 ```
 
-Use `docs/06-system/implementation-map.md` when ownership is unclear. Do not broad-scan the whole engine when a canonical owner is already known.
+Use `docs/system/implementation-map.md` when ownership is unclear. Do not broad-scan the whole engine when a canonical owner is already known.
 
 ## Boundaries
 
@@ -28,7 +28,7 @@ Use `docs/06-system/implementation-map.md` when ownership is unclear. Do not bro
 - `analyzers/` derives evidence and diagnostics without mutating artifacts.
 - `packages/` owns reusable contracts, repair behavior, orchestration, and stable engine APIs.
 - `packages/orchestrator` is the only normal cross-analyzer composition boundary.
-- `design/` owns schema/compiler only; actual intended gameplay authority is project-local under `workspace/active/<project-id>/design/`.
+- `design/` owns schema/compiler only; actual intended gameplay authority is project-local under `workspace/projects/<project-id>/design/`.
 - `contracts/` owns engineering/validation constraints and must not be promoted into map design.
 - `rules/` and `knowledge/` provide versioned platform decisions/facts; they do not become runtime proof by themselves.
 - `runtime/` captures bounded runtime evidence; production source must not depend on test harness state.
