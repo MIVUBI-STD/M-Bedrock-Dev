@@ -33,17 +33,6 @@ function usedEvidenceIds(
   ]);
 }
 
-function usedComponentOrSubjectIds(
-  graph: GameplayScenarioGraph,
-): ReadonlySet<string> {
-  return new Set([
-    ...graph.components.map((item) => item.id),
-    ...graph.scenarios.flatMap((item) => item.sourceSubjectIds),
-    ...graph.causalLinks.flatMap((item) => item.subjectIds),
-    ...graph.causalLinks.flatMap((item) => item.componentIds),
-  ]);
-}
-
 /**
  * Challenges Discovery Closure from the opposite direction:
  * raw executable/state evidence must not disappear merely because no semantic
@@ -58,8 +47,6 @@ export function challengeGameplayDiscovery(input: {
     input.intent,
     input.graph,
   );
-  const semanticOwners =
-    usedComponentOrSubjectIds(input.graph);
   const output: GameplayDiscoveryChallengeSignal[] = [];
 
   for (const operation of input.semanticIr.state.operations) {
