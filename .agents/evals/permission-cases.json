@@ -169,6 +169,37 @@
         "mode": "write"
       },
       "expected": "ask"
+    },
+    {
+      "id": "approval-cannot-bypass-denied-path",
+      "request": {
+        "lane": "product-development",
+        "action": "new-dependency",
+        "path": "workspace/projects/demo/working/main.js",
+        "resource": "target",
+        "mode": "write"
+      },
+      "expected": "deny"
+    },
+    {
+      "id": "approval-cannot-bypass-denied-resource",
+      "request": {
+        "lane": "product-development",
+        "action": "new-dependency",
+        "resource": "target",
+        "mode": "write"
+      },
+      "expected": "deny"
+    },
+    {
+      "id": "approval-still-required-for-authorized-path",
+      "request": {
+        "lane": "product-development",
+        "action": "new-dependency",
+        "path": "package.json",
+        "mode": "write"
+      },
+      "expected": "ask"
     }
   ]
 }

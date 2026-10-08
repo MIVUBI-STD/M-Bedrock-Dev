@@ -58,10 +58,6 @@ export function evaluateLanePermission(request) {
     return { decision: "deny", reason: "Action is explicitly forbidden by lane profile." };
   }
 
-  if (profile.askBefore?.includes(request.action)) {
-    return { decision: "ask", reason: "Action requires explicit approval in lane profile." };
-  }
-
   if (request.path) {
     const pathResult = pathDecision(
       request.lane,
@@ -81,6 +77,10 @@ export function evaluateLanePermission(request) {
         return { decision: "deny", reason: "Resource write is disabled in lane profile." };
       }
     }
+  }
+
+  if (profile.askBefore?.includes(request.action)) {
+    return { decision: "ask", reason: "Action requires explicit approval in lane profile." };
   }
 
   if (request.resource === "network") {
