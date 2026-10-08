@@ -66,6 +66,12 @@ where
         if let Some(status) = observed_status {
             let stdout = join_output(stdout_reader)?;
             let stderr = join_output(stderr_reader)?;
+            if stdout.len() > OUTPUT_LIMIT || stderr.len() > OUTPUT_LIMIT {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    format!("{} output exceeded {} bytes per stream; refusing truncated provider evidence", program.display(), OUTPUT_LIMIT),
+                ));
+            }
             return require_success(program, status.success(), &stdout, &stderr);
         }
         if started.elapsed() >= timeout {
@@ -103,7 +109,8 @@ fn drain_output(mut pipe: impl Read) -> io::Result<Vec<u8>> {
     loop {
         let count = pipe.read(&mut chunk)?;
         if count == 0 { break; }
-        let remaining = OUTPUT_LIMIT.saturating_sub(output.len());
+        // Retain one sentinel byte so callers can distinguish truncated output.
+        let remaining = (OUTPUT_LIMIT + 1).saturating_sub(output.len());
         output.extend_from_slice(&chunk[..count.min(remaining)]);
     }
     Ok(output)
@@ -146,7 +153,7 @@ mod tests {
     fn output_drain_is_bounded_even_for_large_streams() {
         let input = vec![b'x'; super::OUTPUT_LIMIT * 4];
         let output = super::drain_output(std::io::Cursor::new(input)).unwrap();
-        assert_eq!(output.len(), super::OUTPUT_LIMIT);
+        assert_eq!(output.len(), super::OUTPUT_LIMIT + 1);
         assert!(output.iter().all(|byte| *byte == b'x'));
     }
 
@@ -162,10 +169,10 @@ mod tests {
             Path::new("sh"),
             &["-c", "yes some-output-to-fill-the-pipe | head -c 200000"],
         );
-        let result = command_output_with_timeout(program, args.iter().copied(), Duration::from_secs(15))
-            .expect("verbose command must complete without pipe deadlock");
-        assert!(!result.is_empty());
-        assert!(result.len() <= super::OUTPUT_LIMIT);
+        let error = command_output_with_timeout(program, args.iter().copied(), Duration::from_secs(15))
+            .expect_err("oversized command output must not be treated as complete");
+        assert_eq!(error.kind(), io::ErrorKind::InvalidData);
+        assert!(error.to_string().contains("refusing truncated provider evidence"));
     }
 
     #[test]
