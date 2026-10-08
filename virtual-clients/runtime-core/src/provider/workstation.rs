@@ -404,12 +404,9 @@ impl Provider for VmwareWorkstationProvider {
             self.require_vmrun()?,
             ["-T", "ws", "reset", vmx.to_string_lossy().as_ref(), "soft"],
         );
-        if let Err(error) = result {
-            if self.running(&vmx).unwrap_or(false) {
-                return Ok(ClientState::Running);
-            }
-            return Err(error);
-        }
+        // RUNNING was already true before reset, so it cannot prove that a
+        // failed reset command actually restarted the guest.
+        result?;
         wait_for_state(|| self.running(&vmx), true, Duration::from_secs(15))?;
         Ok(ClientState::Running)
     }
