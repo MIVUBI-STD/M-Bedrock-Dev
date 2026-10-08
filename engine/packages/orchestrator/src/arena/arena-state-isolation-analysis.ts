@@ -617,7 +617,9 @@ function contractSurfaceMatches(
 function applyAuthorityContracts(
   observations: readonly ArenaStateIsolationObservation[],
   contracts: readonly StateAuthorityContract[],
+  scripts: readonly ParsedScriptFile[],
 ): ArenaStateIsolationObservation[] {
+  const artifactIds = new Set(scripts.map((script) => script.source.artifactId));
   return observations.map((observation) => {
     const matches = contracts.filter((contract) => {
       if (
@@ -652,6 +654,21 @@ function applyAuthorityContracts(
         scope: "unknown",
         status: "partition-proof-required",
         reason: "Matching state-authority contract lacks source provenance; isolation is not proven.",
+        authorityContractIds: [...new Set(matches.map((item) => item.id))].sort(),
+      };
+    }
+
+    // A supplied SourceRef must at least belong to the analyzed artifact.
+    // This is an identity check, not proof that the contract semantics are true.
+    if (matches.some((item) =>
+      !item.sourceRefs?.length ||
+      item.sourceRefs.some((source) => !artifactIds.has(source.artifactId))
+    )) {
+      return {
+        ...observation,
+        scope: "unknown",
+        status: "partition-proof-required",
+        reason: "State-authority contract provenance does not match the analyzed artifact; isolation is not proven.",
         authorityContractIds: [...new Set(matches.map((item) => item.id))].sort(),
       };
     }
@@ -713,6 +730,7 @@ export function analyzeArenaStateIsolation(
       (item) => item.observations,
     ),
     contracts,
+    scripts,
   ).sort((a, b) =>
       a.scriptId.localeCompare(b.scriptId) ||
       a.region.localeCompare(b.region) ||

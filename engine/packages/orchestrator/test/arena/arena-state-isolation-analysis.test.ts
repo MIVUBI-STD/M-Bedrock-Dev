@@ -396,6 +396,32 @@ describe("arena state isolation analysis", () => {
   });
 
 
+  it("rejects authority contracts referencing a different artifact", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function join(arena, player) {",
+        "  arena.players.add(player);",
+        "  world.setDynamicProperty('arenaState', 1);",
+        "}",
+      ].join("\n"),
+      { artifactId: "selected-map", relativePath: "scripts/main.ts" },
+    );
+    const result = analyzeArenaStateIsolation([script], [{
+      id: "foreign-state",
+      authority: { kind: "dynamic-property", key: "arenaState" },
+      mirrors: [],
+      scope: "arena",
+      sourceRefs: [{ artifactId: "other-map", relativePath: "scripts/main.ts" }],
+    }]);
+    expect(result.observations.find((item) => item.surface === "dynamic-property"))
+      .toMatchObject({
+        status: "partition-proof-required",
+        scope: "unknown",
+        authorityContractIds: ["foreign-state"],
+      });
+  });
+
 });
 
 
