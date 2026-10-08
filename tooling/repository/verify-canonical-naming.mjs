@@ -51,7 +51,7 @@ const canonicalDocs=[
 const publicNamingFiles=[
   "docs/analysis/master-selected-map-audit-workflow.md",
   "docs/analysis/mandatory-audit-procedure.md",
-  "workspace/reports/README.md",
+  "workspace/README.md",
   "engine/packages/bug-report/PREVIEW.md",
   "engine/packages/bug-report/COPY.md"
 ];
