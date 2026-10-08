@@ -595,9 +595,7 @@ function contractSurfaceMatches(
   ) {
     return (
       observation.key === surface.key ||
-      observation.key.includes(
-        surface.key,
-      )
+      observation.key.endsWith(":" + surface.key)
     );
   }
 

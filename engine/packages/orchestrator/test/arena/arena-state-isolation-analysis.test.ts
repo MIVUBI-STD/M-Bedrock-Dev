@@ -314,6 +314,38 @@ describe("arena state isolation analysis", () => {
       .toMatchObject({ status: "partition-proof-required", scope: "world-global" });
   });
 
+  it("does not apply scoreboard authority contracts via substring collisions", () => {
+    const script = {
+      identifier: "main",
+      arenaAuthorityPaths: [{ arenaExpression: "arena", executionRegion: "function:join" }],
+      localFunctionCalls: [],
+      dynamicProperties: [],
+      propertyWrites: [],
+      commandLiterals: [],
+      stateMutations: [],
+      methodCalls: [{
+        executionRegion: "function:join",
+        receiverType: "ScoreboardObjective",
+        method: "setScore",
+        symbol: "objective.setScore",
+        argumentTexts: ["teamKills", "1"],
+      }],
+    } as any;
+    const contracts = [{
+      id: "short-scoreboard-key",
+      authority: { kind: "scoreboard", key: "Kills" },
+      mirrors: [],
+      scope: "arena",
+    }] as any;
+    const result = analyzeArenaStateIsolation([script], contracts);
+    expect(result.observations.find((item) => item.surface === "scoreboard"))
+      .toMatchObject({
+        status: "partition-proof-required",
+        scope: "world-global",
+      });
+  });
+
+
 });
 
 
