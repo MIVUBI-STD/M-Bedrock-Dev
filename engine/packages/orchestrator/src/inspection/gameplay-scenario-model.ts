@@ -370,6 +370,8 @@ export interface GameplayArchitectureNavigation {
         readonly orderingViolations: readonly string[];
       }[];
       readonly arenaSessionMapping: "NOT_YET_ESTABLISHED";
+      /** Known spatial arena identities without proven arena-to-session binding. */
+      readonly spatialArenaIdsWithoutSessionOwnershipProof: readonly string[];
     };
   };
 }
@@ -814,6 +816,7 @@ export function deriveGameplayArchitectureNavigation(
             orderingViolations: sorted(item.orderingViolations),
           })),
         arenaSessionMapping: "NOT_YET_ESTABLISHED",
+        spatialArenaIdsWithoutSessionOwnershipProof: sorted(spatialEntries.map((entry) => entry.arenaId)),
       },
     },
   };

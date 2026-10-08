@@ -520,6 +520,7 @@ describe("gameplay scenario closure", () => {
         chunkLeases: [],
         cleanupAssessments: [],
         arenaSessionMapping: "NOT_YET_ESTABLISHED",
+        spatialArenaIdsWithoutSessionOwnershipProof: [],
       },
     });
   });
@@ -746,6 +747,27 @@ describe("gameplay scenario closure", () => {
     expect(result.arenaRegionCandidates).toEqual([]);
     expect(result.arenasWithoutSpatialLayoutCount).toBe(2);
     expect(result.arenaSessionMapping).toBe("NOT_YET_ESTABLISHED");
+  });
+
+  it("keeps arena-to-session ownership unproven even with arena and lifecycle evidence", () => {
+    const result = deriveGameplayArchitectureNavigation(baseGraph(), {
+      relevantSourceCount: 1, indexedSourceCount: 1, arenaDetected: true,
+      arenaCount: 2,
+      spatialLayout: {
+        canonical: { arenaId: "arena:1", anchor: { x: 0, y: 64, z: 0 } },
+        replicas: [{ arenaId: "arena:2", anchor: { x: 100, y: 64, z: 0 } }],
+        confidence: "high",
+      },
+      replicaProof: [{ arenaId: "arena:1", evidenceIds: ["proof:a"], status: "complete-proof" }],
+      stateIsolationObservations: [
+        { scriptId: "script:game", region: "region:session", key: "players", status: "isolated" },
+      ],
+      cleanupAssessments: [
+        { scriptId: "script:game", tableName: "sessions", status: "complete", missingPhases: [], orderingViolations: [] },
+      ],
+    }).knowledgeCoverage.arenaEvidence;
+    expect(result.arenaSessionMapping).toBe("NOT_YET_ESTABLISHED");
+    expect(result.spatialArenaIdsWithoutSessionOwnershipProof).toEqual(["arena:1", "arena:2"]);
   });
 
   it("links arena proof to gameplay components only through exact shared evidence IDs", () => {
