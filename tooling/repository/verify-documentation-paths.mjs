@@ -16,6 +16,23 @@ const retired = [
   "06-system/",
 ];
 
+
+// Retired active-workspace owners. Check policy/navigation documents only:
+// historical evidence and source fixtures may legitimately mention old paths.
+const retiredWorkspaceOwners = [
+  "workspace/active/",
+  "workspace/reports/",
+  "workspace/developer-notes.json",
+  "workspace/publication/",
+];
+const isActivePolicyDocument = (path) =>
+  path === "AGENTS.md" ||
+  path === "CONTEXT.md" ||
+  path === "GITHUB_RULES.md" ||
+  path === "README.md" ||
+  path.endsWith("/AGENTS.md") ||
+  path.startsWith("docs/");
+
 const textExtensions = /\.(?:md|json|mjs|js|cjs|ts|tsx|ps1|cmd|yml|yaml|html)$/i;
 const tracked = execFileSync("git", ["ls-files"], { encoding: "utf8" })
   .split(/\r?\n/)
@@ -38,6 +55,14 @@ for (const path of tracked) {
   for (const token of retired) {
     if (text.includes(token)) {
       failures.push(path + " references retired documentation path: " + token);
+    }
+  }
+
+  if (isActivePolicyDocument(path)) {
+    for (const token of retiredWorkspaceOwners) {
+      if (text.includes(token)) {
+        failures.push(path + " references retired workspace owner: " + token);
+      }
     }
   }
 }
