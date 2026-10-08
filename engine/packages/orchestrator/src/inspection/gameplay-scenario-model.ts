@@ -857,6 +857,7 @@ export function deriveGameplayArchitectureNavigation(
     ).length,
   };
   const arenaMappingUnresolved =
+    !spatialLayoutValid ||
     navigation.knowledgeCoverage.arenaEvidence.duplicateReplicaProofArenaIds.length > 0 ||
     (navigation.knowledgeCoverage.arenaEvidence.detected &&
     navigation.knowledgeCoverage.arenaEvidence.architectureMapping ===

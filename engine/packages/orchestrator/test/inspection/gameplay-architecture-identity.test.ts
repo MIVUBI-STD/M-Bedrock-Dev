@@ -42,4 +42,22 @@ describe("arena identity evidence propagation", () => {
     expect(navigation.architectureReconciliation.arenaMappingUnresolved).toBe(true);
     expect(navigation.architectureReconciliation.status).toBe("GAPS_PRESENT");
   });
+  it("does not reconcile duplicate spatial arena identities", () => {
+    const navigation = deriveGameplayArchitectureNavigation(emptyGraph, {
+      relevantSourceCount: 1,
+      indexedSourceCount: 1,
+      arenaDetected: true,
+      arenaCount: 2,
+      spatialLayout: {
+        canonical: { arenaId: "arena-1", anchor: { x: 0, y: 0, z: 0 } },
+        replicas: [{ arenaId: "arena-1", anchor: { x: 100, y: 0, z: 0 } }],
+        confidence: "high",
+      },
+    });
+
+    expect(navigation.knowledgeCoverage.arenaEvidence.arenasWithoutSpatialLayoutCount).toBeNull();
+    expect(navigation.architectureReconciliation.arenaMappingUnresolved).toBe(true);
+    expect(navigation.architectureReconciliation.status).toBe("GAPS_PRESENT");
+  });
+
 });
