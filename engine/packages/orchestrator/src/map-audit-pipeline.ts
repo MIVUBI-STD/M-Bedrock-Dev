@@ -765,6 +765,11 @@ function assembleSelectedMapAuditRun(
           ? {}
           : { arenaCount: inspection.gameplayWorld.arenas.count }),
         replicaProof: inspection.gameplayWorld.arenas.replicaProof,
+        stateIsolationObservations:
+          inspection.gameplayWorld.arenas.isolation.observations,
+        chunkLeases: inspection.gameplayWorld.chunks.leases,
+        cleanupAssessments:
+          inspection.gameplayWorld.arenas.cleanup.lifecycle.assessments,
         ...(inspection.gameplayWorld.arenas.basis === undefined
           ? {}
           : { arenaCountBasis: inspection.gameplayWorld.arenas.basis }),

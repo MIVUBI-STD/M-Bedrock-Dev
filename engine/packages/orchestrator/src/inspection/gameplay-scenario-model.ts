@@ -232,6 +232,28 @@ export interface GameplayArchitectureNavigation {
       readonly safeConcurrentArenas: number | null;
       readonly perArenaPlayerCapacity: number | null;
       readonly architectureMapping: "NOT_YET_RECONCILED";
+      /** These observations are arena-related, but not bound to specific arena IDs. */
+      readonly stateIsolationObservations: readonly {
+        readonly scriptId: string;
+        readonly region: string;
+        readonly key: string;
+        readonly status: "isolated" | "partition-proof-required" | "shared-global" | "unknown";
+      }[];
+      readonly chunkLeases: readonly {
+        readonly scriptId: string;
+        readonly leaseKey: string | null;
+        readonly acquireRegions: readonly string[];
+        readonly releaseRegions: readonly string[];
+        readonly status: string;
+      }[];
+      readonly cleanupAssessments: readonly {
+        readonly scriptId: string;
+        readonly tableName: string;
+        readonly status: "complete" | "unresolved";
+        readonly missingPhases: readonly string[];
+        readonly orderingViolations: readonly string[];
+      }[];
+      readonly arenaSessionMapping: "NOT_YET_ESTABLISHED";
     };
   };
 }
@@ -255,6 +277,26 @@ export function deriveGameplayArchitectureNavigation(
     readonly requestedConcurrentArenas?: number;
     readonly safeConcurrentArenas?: number | null;
     readonly perArenaPlayerCapacity?: number;
+    readonly stateIsolationObservations?: readonly {
+      readonly scriptId: string;
+      readonly region: string;
+      readonly key: string;
+      readonly status: "isolated" | "partition-proof-required" | "shared-global" | "unknown";
+    }[];
+    readonly chunkLeases?: readonly {
+      readonly scriptId: string;
+      readonly leaseKey?: string;
+      readonly acquireRegions: readonly string[];
+      readonly releaseRegions: readonly string[];
+      readonly status: string;
+    }[];
+    readonly cleanupAssessments?: readonly {
+      readonly scriptId: string;
+      readonly tableName: string;
+      readonly status: "complete" | "unresolved";
+      readonly missingPhases: readonly string[];
+      readonly orderingViolations: readonly string[];
+    }[];
   } = {
     relevantSourceCount: 0,
     indexedSourceCount: 0,
@@ -408,6 +450,31 @@ export function deriveGameplayArchitectureNavigation(
         perArenaPlayerCapacity:
           observed.perArenaPlayerCapacity ?? null,
         architectureMapping: "NOT_YET_RECONCILED",
+        stateIsolationObservations: [...(observed.stateIsolationObservations ?? [])]
+          .sort((a,b) => a.scriptId.localeCompare(b.scriptId) ||
+            a.region.localeCompare(b.region) || a.key.localeCompare(b.key))
+          .map((item) => ({ ...item })),
+        chunkLeases: [...(observed.chunkLeases ?? [])]
+          .sort((a,b) => a.scriptId.localeCompare(b.scriptId) ||
+            (a.leaseKey ?? "").localeCompare(b.leaseKey ?? ""))
+          .map((lease) => ({
+            scriptId: lease.scriptId,
+            leaseKey: lease.leaseKey ?? null,
+            acquireRegions: sorted(lease.acquireRegions),
+            releaseRegions: sorted(lease.releaseRegions),
+            status: lease.status,
+          })),
+        cleanupAssessments: [...(observed.cleanupAssessments ?? [])]
+          .sort((a,b) => a.scriptId.localeCompare(b.scriptId) ||
+            a.tableName.localeCompare(b.tableName))
+          .map((item) => ({
+            scriptId: item.scriptId,
+            tableName: item.tableName,
+            status: item.status,
+            missingPhases: sorted(item.missingPhases),
+            orderingViolations: sorted(item.orderingViolations),
+          })),
+        arenaSessionMapping: "NOT_YET_ESTABLISHED",
       },
     },
   };

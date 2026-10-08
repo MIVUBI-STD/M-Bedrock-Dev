@@ -505,6 +505,10 @@ describe("gameplay scenario closure", () => {
         safeConcurrentArenas: null,
         perArenaPlayerCapacity: null,
         architectureMapping: "NOT_YET_RECONCILED",
+        stateIsolationObservations: [],
+        chunkLeases: [],
+        cleanupAssessments: [],
+        arenaSessionMapping: "NOT_YET_ESTABLISHED",
       },
     });
   });
@@ -532,6 +536,20 @@ describe("gameplay scenario closure", () => {
         }],
         declaredConcurrentArenaLimit: 2,
         perArenaPlayerCapacity: 5,
+        stateIsolationObservations: [{
+          scriptId: "script:arena", region: "region:ready", key: "ready",
+          status: "shared-global",
+        }],
+        chunkLeases: [{
+          scriptId: "script:arena", leaseKey: "arena:lease",
+          acquireRegions: ["region:setup"], releaseRegions: ["region:cleanup"],
+          status: "paired",
+        }],
+        cleanupAssessments: [{
+          scriptId: "script:arena", tableName: "sessionTable",
+          status: "unresolved", missingPhases: ["cleanup"],
+          orderingViolations: [],
+        }],
       },
     );
     expect(architecture.knowledgeCoverage.arenaEvidence).toEqual({
@@ -549,6 +567,21 @@ describe("gameplay scenario closure", () => {
       safeConcurrentArenas: 2,
       perArenaPlayerCapacity: 5,
       architectureMapping: "NOT_YET_RECONCILED",
+      stateIsolationObservations: [{
+        scriptId: "script:arena", region: "region:ready", key: "ready",
+        status: "shared-global",
+      }],
+      chunkLeases: [{
+        scriptId: "script:arena", leaseKey: "arena:lease",
+        acquireRegions: ["region:setup"], releaseRegions: ["region:cleanup"],
+        status: "paired",
+      }],
+      cleanupAssessments: [{
+        scriptId: "script:arena", tableName: "sessionTable",
+        status: "unresolved", missingPhases: ["cleanup"],
+        orderingViolations: [],
+      }],
+      arenaSessionMapping: "NOT_YET_ESTABLISHED",
     });
     expect(architecture.knowledgeCoverage.wholeGameUnderstandingPercent).toBeNull();
   });
