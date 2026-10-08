@@ -96,8 +96,8 @@ function impactPathFrom(
   const queue: string[][] = [[startId]];
   const visited = new Set<string>([startId]);
 
-  while (queue.length > 0) {
-    const path = queue.shift()!;
+  for (let queueIndex = 0; queueIndex < queue.length; queueIndex += 1) {
+    const path = queue[queueIndex]!;
     const currentId = path[path.length - 1]!;
     const current = byId.get(currentId);
     if (
