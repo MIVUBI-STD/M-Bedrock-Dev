@@ -131,6 +131,27 @@ Commit format:
 
 Use `feat`, `fix`, `docs`, `refactor`, `test`, `ci`, `build`, `release`, or bounded `chore`.
 
+### Commit-based work continuity
+
+For every material, independently valid work unit, use one logical commit with the existing conventional subject and concise continuity metadata:
+
+```text
+Work: <stable domain/topic>
+State: ACTIVE | BLOCKED | PAUSED | DONE
+Decision: <relevant rationale, if any>
+Proof: <actual evidence and verification ceiling>
+Unresolved: <specific open issue, if any>
+Next: <one actionable step, unless DONE>
+```
+
+`Work`, `State`, and `Proof` are required for material commits. Other fields are conditional. DONE closes only the bounded work unit, never automatically the whole feature. Source changes, documentation decisions, and relevant metadata belong in the same commit. Do not create empty heartbeat commits, broken checkpoints, or duplicate planning ledgers. Git already records the diff, SHA, and timestamp.
+
+For resume: identify the requested work; inspect relevant commits plus any newer commits touching its owner/source; compare decisions and claims with the current `Local` HEAD. Historical `Next` is a suggestion at that SHA, not a current command. Where prior commits lack metadata, recover only facts established by diff, current source, or explicit proof. Do not guess missing chat context.
+
+Before publishing a multi-file commit, pin the current HEAD, prepare one Git tree and commit, then fast-forward the expected `Local` ref without force. Verify the ref points to the new commit before claiming it was saved. On concurrent updates, refresh and reconcile rather than overwrite. If mutation outcome is uncertain, inspect the ref before retrying.
+
+Planning owns future intent, not manually synchronized implementation status. Existing workspace/project owners retain project execution data; stable semantic decisions stay in their canonical docs/source. Do not add a parallel memory database, transcript store, or next-to-do file. Uncommitted conversation content cannot be guaranteed recoverable.
+
 ## 7. Tool and transfer gate
 
 Prefer:

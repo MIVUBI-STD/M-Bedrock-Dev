@@ -120,6 +120,14 @@ Retrieval → engine/packages/analysis-planner/src/retrieval.ts
 Context   → engine/packages/orchestrator/src/workflow/context-compiler.ts
 ```
 
+## ChatGPT-GitHub Work Continuity
+
+On a resume request, pin the current `Local` HEAD, identify the requested work from its canonical owner and relevant Git commits, then verify current source before continuing. A historical `Next` is not current authority. Reconcile newer commits, changed decisions, and proof limits; mark irrecoverable context UNKNOWN.
+
+For material work, record the work identity, decision, evidence ceiling, and remaining action in the same logical commit as the change, following `GITHUB_RULES.md`. Keep durable design rules with their existing owner. `planning/` owns future intent, not a duplicate implementation-status log.
+
+Uncommitted chat discussion is not persisted automatically. Do not invent recovered information or create a parallel memory manager, session log, or next-to-do store.
+
 ## Selected-map audit invariant
 
 Production map audit has one selected artifact and one operator flow:
