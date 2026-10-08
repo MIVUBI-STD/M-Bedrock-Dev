@@ -315,6 +315,7 @@ export interface GameplayArchitectureNavigation {
         readonly matchedEvidenceIds: readonly string[];
       }[];
       readonly spatialArenaIdsWithoutComponentLinks: readonly string[];
+      readonly duplicateReplicaProofArenaIds: readonly string[];
       readonly replicaProofEntries: readonly {
         readonly arenaId: string;
         readonly evidenceIds: readonly string[];
@@ -531,11 +532,18 @@ export function deriveGameplayArchitectureNavigation(
       unlinkedIds: observedIds.filter((id) => !architectureEvidenceSet.has(id)),
     };
   };
-  const arenaInstances = [...new Map(
-    (observed.replicaProof ?? []).map((instance) => [
-      instance.arenaId, instance,
-    ]),
-  ).values()].sort((a, b) => a.arenaId.localeCompare(b.arenaId));
+  // Do not overwrite conflicting receipts sharing the same arena ID.
+  // Preserve every receipt and expose the identity conflict for reconciliation.
+  const arenaInstances = [...(observed.replicaProof ?? [])]
+    .sort((a, b) => a.arenaId.localeCompare(b.arenaId));
+  const arenaIdCounts = new Map<string, number>();
+  for (const instance of arenaInstances) {
+    arenaIdCounts.set(instance.arenaId, (arenaIdCounts.get(instance.arenaId) ?? 0) + 1);
+  }
+  const duplicateReplicaProofArenaIds = [...arenaIdCounts]
+    .filter(([, count]) => count > 1)
+    .map(([id]) => id)
+    .sort();
   const spatialEntries = observed.spatialLayout === undefined
     ? []
     : [
@@ -760,6 +768,7 @@ export function deriveGameplayArchitectureNavigation(
         spatialArenaIdsWithoutReplicaProof,
         arenaEvidenceComponentLinks,
         spatialArenaIdsWithoutComponentLinks,
+        duplicateReplicaProofArenaIds,
         replicaProofEntries: arenaInstances.map((instance) => ({
           arenaId: instance.arenaId,
           evidenceIds: sorted(instance.evidenceIds),
@@ -848,9 +857,10 @@ export function deriveGameplayArchitectureNavigation(
     ).length,
   };
   const arenaMappingUnresolved =
-    navigation.knowledgeCoverage.arenaEvidence.detected &&
+    navigation.knowledgeCoverage.arenaEvidence.duplicateReplicaProofArenaIds.length > 0 ||
+    (navigation.knowledgeCoverage.arenaEvidence.detected &&
     navigation.knowledgeCoverage.arenaEvidence.architectureMapping ===
-      "NOT_YET_RECONCILED";
+      "NOT_YET_RECONCILED");
   const hasObservedGaps = sourceIndexIncomplete ||
     graph.components.length === 0 ||
     arenaMappingUnresolved ||
