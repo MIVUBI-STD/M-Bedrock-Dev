@@ -56,6 +56,11 @@ describe("inspectArtifact", () => {
     expect(result.functions).toBe(1);
     expect(result.structures).toBe(1);
     expect(result.unresolvedReferences).toBe(1);
+    expect(result.gameplayDiscoveryClosure.unresolvedReferences).toBe(1);
+    expect(result.gameplayDiscoveryClosure.status).not.toBe("COMPLETE");
+    expect(result.gameplayDiscoveryClosure.semanticUnderstandingGapPaths)
+      .toEqual([...result.gameplayDiscoveryClosure.semanticUnderstandingGapPaths].sort());
+
   });
 
   it("produces byte-identical archives for identical trees", async () => {
