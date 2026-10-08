@@ -63,10 +63,9 @@ export function challengeGameplayDiscovery(input: {
   const output: GameplayDiscoveryChallengeSignal[] = [];
 
   for (const operation of input.semanticIr.state.operations) {
-    if (
-      evidence.has(operation.id) ||
-      semanticOwners.has(operation.surfaceId)
-    ) {
+    // Surface ownership alone does not account for every state mutation.
+    // Require the individual operation to be consumed as evidence.
+    if (evidence.has(operation.id)) {
       continue;
     }
     output.push({
@@ -81,10 +80,7 @@ export function challengeGameplayDiscovery(input: {
 
   const regionsWithOwnedState = new Set(
     input.semanticIr.state.operations
-      .filter((operation) =>
-        evidence.has(operation.id) ||
-        semanticOwners.has(operation.surfaceId)
-      )
+      .filter((operation) => evidence.has(operation.id))
       .map((operation) => operation.executionRegionId),
   );
   const regionsWithGraphEdges = new Set(
