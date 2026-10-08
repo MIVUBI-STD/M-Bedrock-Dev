@@ -120,6 +120,29 @@ export function assessGameplayScenarioClosure(
       .map((scenario) => scenario.id)
       .sort();
 
+  const componentIds = new Set(graph.components.map((item) => item.id));
+  const causalLinkIds = new Set(graph.causalLinks.map((item) => item.id));
+  const requirementIds = new Set(graph.knowledgeRequirements.map((item) => item.id));
+  const invalidScenarioBindings = graph.scenarios
+    .filter((scenario) =>
+      scenario.componentIds.some((id) => !componentIds.has(id)) ||
+      scenario.causalLinkIds.some((id) => !causalLinkIds.has(id)) ||
+      scenario.requiredKnowledgeIds.some((id) => !requirementIds.has(id)))
+    .map((scenario) => scenario.id).sort();
+  const invalidCausalLinks = graph.causalLinks
+    .filter((edge) =>
+      !scenarioIds.has(edge.scenarioId) ||
+      !componentIds.has(edge.fromComponentId) ||
+      !componentIds.has(edge.toComponentId) ||
+      edge.knowledgeRequirementIds.some((id) => !requirementIds.has(id)))
+    .map((edge) => edge.id).sort();
+  const invalidKnowledgeRequirements = graph.knowledgeRequirements
+    .filter((item) =>
+      !scenarioIds.has(item.scenarioId) ||
+      item.componentIds.some((id) => !componentIds.has(id)) ||
+      item.dependsOnRequirementIds.some((id) => !requirementIds.has(id)))
+    .map((item) => item.id).sort();
+
   const scenarioWithoutComponents = graph.scenarios
     .filter((scenario) => scenario.componentIds.length === 0)
     .map((scenario) => scenario.id)
@@ -136,6 +159,9 @@ export function assessGameplayScenarioClosure(
     .sort();
 
   const reasons: string[] = [];
+  if (invalidScenarioBindings.length) reasons.push("Missing scenario bindings: " + invalidScenarioBindings.join(", "));
+  if (invalidCausalLinks.length) reasons.push("Invalid causal links: " + invalidCausalLinks.join(", "));
+  if (invalidKnowledgeRequirements.length) reasons.push("Invalid knowledge dependencies: " + invalidKnowledgeRequirements.join(", "));
   if (graph.scenarios.length === 0) {
     reasons.push("No material gameplay scenarios were compiled.");
   }
@@ -207,6 +233,9 @@ export function assessGameplayScenarioClosure(
 
   const status =
     graph.scenarios.length === 0 ||
+    invalidScenarioBindings.length > 0 ||
+    invalidCausalLinks.length > 0 ||
+    invalidKnowledgeRequirements.length > 0 ||
     orphanComponentIds.length > 0 ||
     missingPurposeComponentIds.length > 0 ||
     detectionGapCausalLinkIds.length > 0 ||
