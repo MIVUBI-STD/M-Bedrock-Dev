@@ -761,6 +761,12 @@ function assembleSelectedMapAuditRun(
         indexedSourceCount:
           inspection.gameplayDiscoveryClosure.sourceIndexedFiles,
         arenaDetected: inspection.gameplayWorld.arenas.detected,
+        allIntentEvidenceIds:
+          inspection.gameplayIntent.model.evidence.map((item) => item.id),
+        selectedArtifactEvidenceIds:
+          inspection.gameplayIntent.model.evidence
+            .filter((item) => item.scope === "selected-artifact")
+            .map((item) => item.id),
         ...(inspection.gameplayWorld.arenas.count === undefined
           ? {}
           : { arenaCount: inspection.gameplayWorld.arenas.count }),

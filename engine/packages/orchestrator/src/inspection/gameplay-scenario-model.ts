@@ -197,6 +197,17 @@ export interface GameplayArchitectureNavigation {
   readonly unresolvedCausalLinkIds: readonly string[];
   readonly missingGraphReferenceIds: readonly string[];
   /**
+   * Tracks source-scoped Gameplay Intent evidence against existing
+   * architecture components/links. Unlinked is not a bug or proof of absence.
+   */
+  readonly evidenceCoverage: {
+    readonly selectedArtifactEvidenceCount: number;
+    readonly architectureLinkedEvidenceIds: readonly string[];
+    readonly architectureUnlinkedEvidenceIds: readonly string[];
+    readonly architectureEvidenceWithoutIntentRecordIds: readonly string[];
+    readonly selectedArtifactEvidenceLinkPercent: number | null;
+  };
+  /**
    * Source-grounded system evidence, not a catalog of assumed map features.
    * A count of zero never proves a feature is absent from the full map.
    */
@@ -280,6 +291,8 @@ export function deriveGameplayArchitectureNavigation(
     readonly relevantSourceCount: number;
     readonly indexedSourceCount: number;
     readonly arenaDetected: boolean;
+    readonly selectedArtifactEvidenceIds?: readonly string[];
+    readonly allIntentEvidenceIds?: readonly string[];
     readonly arenaCount?: number;
     readonly arenaCountBasis?: "topology" | "script-config" | "reconciled";
     readonly arenaLayoutStatus?: string;
@@ -379,6 +392,15 @@ export function deriveGameplayArchitectureNavigation(
   const placedCount = graph.components.filter((component) =>
     placed.has(component.id)
   ).length;
+  const sourceEvidence = sorted(observed.selectedArtifactEvidenceIds ?? []);
+  const intentEvidence = new Set(observed.allIntentEvidenceIds ?? []);
+  const architectureEvidence = sorted([
+    ...graph.components.flatMap((component) => component.evidenceIds),
+    ...graph.causalLinks.flatMap((link) => link.evidenceIds),
+  ]);
+  const linkedEvidence = sourceEvidence.filter((id) =>
+    architectureEvidence.includes(id)
+  );
   const arenaInstances = [...new Map(
     (observed.replicaProof ?? []).map((instance) => [
       instance.arenaId, instance,
@@ -438,6 +460,18 @@ export function deriveGameplayArchitectureNavigation(
       .filter((link) => link.status !== "PROVEN")
       .map((link) => link.id)),
     missingGraphReferenceIds: sorted([...missing]),
+    evidenceCoverage: {
+      selectedArtifactEvidenceCount: sourceEvidence.length,
+      architectureLinkedEvidenceIds: linkedEvidence,
+      architectureUnlinkedEvidenceIds: sourceEvidence.filter((id) =>
+        !architectureEvidence.includes(id)
+      ),
+      architectureEvidenceWithoutIntentRecordIds: architectureEvidence.filter(
+        (id) => !intentEvidence.has(id)
+      ),
+      selectedArtifactEvidenceLinkPercent:
+        percentage(linkedEvidence.length, sourceEvidence.length),
+    },
     systemInventory: [...(observed.systemObservations ?? [])]
       .sort((a, b) => a.system.localeCompare(b.system))
       .map((observation) => {

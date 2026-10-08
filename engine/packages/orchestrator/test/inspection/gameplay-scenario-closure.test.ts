@@ -629,6 +629,37 @@ describe("gameplay scenario closure", () => {
     expect(architecture.knowledgeCoverage.wholeGameUnderstandingPercent).toBeNull();
   });
 
+
+  it("accounts for selected-artifact intent evidence without hiding unlinked sources", () => {
+    const graph: GameplayScenarioGraph = {
+      ...baseGraph(),
+      components: [{
+        id: "component:entry",
+        label: "Entry",
+        kind: "mechanic",
+        technicalRole: "entry",
+        gameplayPurpose: "Join",
+        evidenceIds: ["evidence:join", "semantic-ir:operation"],
+        usedByScenarioIds: [],
+        orphan: false,
+      }],
+    };
+    const architecture = deriveGameplayArchitectureNavigation(graph, {
+      relevantSourceCount: 2,
+      indexedSourceCount: 2,
+      arenaDetected: false,
+      selectedArtifactEvidenceIds: ["evidence:join", "evidence:shop"],
+      allIntentEvidenceIds: ["evidence:join", "evidence:shop"],
+    });
+    expect(architecture.evidenceCoverage).toEqual({
+      selectedArtifactEvidenceCount: 2,
+      architectureLinkedEvidenceIds: ["evidence:join"],
+      architectureUnlinkedEvidenceIds: ["evidence:shop"],
+      architectureEvidenceWithoutIntentRecordIds: ["semantic-ir:operation"],
+      selectedArtifactEvidenceLinkPercent: 50,
+    });
+  });
+
   it("links a system to graph components only on exact evidence identity", () => {
     const graph: GameplayScenarioGraph = {
       ...baseGraph(),
