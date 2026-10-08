@@ -121,7 +121,7 @@ function arenaContexts(
   })];
 }
 
-function sourceOverlappingArenaIds(
+export function sourceOverlappingArenaIds(
   source: ArenaAuthoredSpatialSource,
   layout: ArenaSpatialLayoutSource,
   plan: ArenaRegionPlan,

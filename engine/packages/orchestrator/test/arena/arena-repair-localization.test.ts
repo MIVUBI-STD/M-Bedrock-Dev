@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { localizeArenaRepairSources } from "../../src/arena/arena-repair-localization.js";
+import { localizeArenaRepairSources, sourceOverlappingArenaIds } from "../../src/arena/arena-repair-localization.js";
 
 describe("arena repair localization", () => {
   it("localizes voxel mismatch to an overlapping authored mutation", () => {
@@ -129,4 +129,25 @@ describe("arena repair localization", () => {
     });
   });
 
+  it("does not invent a replica region when its offset is missing", () => {
+    const arenaIds = sourceOverlappingArenaIds(
+      {
+        id: "source", kind: "entity-spawn", sourceKind: "command",
+        source: { artifactId: "fixture", relativePath: "functions/spawn.mcfunction" },
+        position: { x: 5, y: 1, z: 5 },
+      },
+      {
+        basis: "topology",
+        canonical: { arenaId: "arena-1", anchor: { x: 0, y: 0, z: 0 } },
+        replicas: [{ arenaId: "arena-2", anchor: { x: 100, y: 0, z: 0 } }],
+        offsets: [], confidence: "low",
+      },
+      {
+        volumes: [{ min: { x: 0, y: 0, z: 0 }, max: { x: 20, y: 20, z: 20 }, evidenceCandidateIds: [] }],
+        boundingBox: { min: { x: 0, y: 0, z: 0 }, max: { x: 20, y: 20, z: 20 } },
+        totalBlocks: 9261, evidenceCandidates: 0, mergeGapBlocks: 0, confidence: "low",
+      },
+    );
+    expect(arenaIds).toEqual(["arena-1"]);
+  });
 });
