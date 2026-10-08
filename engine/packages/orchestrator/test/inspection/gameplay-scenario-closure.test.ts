@@ -250,4 +250,75 @@ describe("gameplay scenario closure", () => {
     expect(result.unprovenLeafScenarioIds).toEqual([]);
     expect(result.status).toBe("CLOSED");
   });
+
+  it("keeps closure open when a scenario references an absent component", () => {
+    const result = assessGameplayScenarioClosure({
+      ...baseGraph(),
+      scenarios: [{
+        id: "scenario:missing",
+        label: "missing-component",
+        gameplayStage: "SETUP",
+        purpose: "Bind setup components.",
+        sourceSubjectIds: [],
+        componentIds: ["component:absent"],
+        causalLinkIds: [],
+        playerCounts: [1],
+        requiredKnowledgeIds: [],
+        composedScenarioIds: [],
+      }],
+    });
+    expect(result.status).toBe("OPEN");
+    expect(result.reasons).toContain(
+      "Missing scenario bindings: scenario:missing",
+    );
+  });
+
+  it("rejects a causal link outside its owning scenario bindings", () => {
+    const result = assessGameplayScenarioClosure({
+      ...baseGraph(),
+      scenarios: [{
+        id: "scenario:arena",
+        label: "arena",
+        gameplayStage: "ACTIVE_GAMEPLAY",
+        purpose: "Resolve arena progression.",
+        sourceSubjectIds: [],
+        componentIds: ["component:arena"],
+        causalLinkIds: ["link:arena"],
+        playerCounts: [1],
+        requiredKnowledgeIds: [],
+        composedScenarioIds: [],
+      }],
+      components: ["component:arena", "component:other"].map((id) => ({
+        id,
+        label: id,
+        kind: "mechanic" as const,
+        technicalRole: "state",
+        gameplayPurpose: "Control progression.",
+        evidenceIds: [],
+        usedByScenarioIds: ["scenario:arena"],
+        orphan: false,
+      })),
+      causalLinks: [{
+        id: "link:arena",
+        scenarioId: "scenario:arena",
+        fromComponentId: "component:arena",
+        toComponentId: "component:other",
+        purpose: "Advance progression.",
+        evidenceIds: [],
+        subjectIds: [],
+        componentIds: ["component:arena", "component:other"],
+        knowledgeRequirementIds: [],
+        impactPathComponentIds: [],
+        impactPathEvidenceIds: [],
+        dimensionEvidence: {},
+        status: "PROVEN",
+        reason: "Fixture edge.",
+      }],
+    });
+    expect(result.status).toBe("OPEN");
+    expect(result.reasons.some((reason) =>
+      reason.includes("link:arena") &&
+      reason.includes("outside their owning scenario"),
+    )).toBe(true);
+  });
 });
