@@ -417,4 +417,27 @@ describe("inspection source index coverage", () => {
       });
     }
   });
+
+  it("keeps malformed owned gameplay JSON as a parse failure, not indexed evidence", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-index-"));
+    try {
+      await mkdir(join(root, "behavior_packs", "bp", "items"), {
+        recursive: true,
+      });
+      const relativePath = "behavior_packs/bp/items/broken.json";
+      await writeFile(join(root, relativePath), "{ broken", "utf8");
+      const result = await indexInspectionSources(root, "artifact:test", [{
+        relativePath, size: 8, contentHash: "broken-item",
+      }]);
+      expect(result.coverage.relevantFiles).toBe(1);
+      expect(result.coverage.indexedFiles).toBe(0);
+      expect(result.coverage.complete).toBe(false);
+      expect(result.coverage.parseFailures[0]).toMatchObject({
+        relativePath, kind: "item",
+      });
+      expect(result.coverage.semanticUnderstandingGaps).toEqual([]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
 });
