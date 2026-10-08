@@ -109,6 +109,7 @@ describe("gameplay world model", () => {
     expect(requestedOnly.arenas.count).toBeUndefined();
     expect(requestedOnly.arenas.requestedConcurrentArenas).toBe(6);
     expect(requestedOnly.gameplayClosure.unknownSurfaceIds).toContain("runtime:arena");
+    expect(requestedOnly.gameplayClosure.unknownSurfaceIds).toContain("runtime:arena-capacity");
 
     const withDiscoveredCount = deriveGameplayWorldModel({
       ...source,

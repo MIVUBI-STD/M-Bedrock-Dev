@@ -1168,14 +1168,8 @@ export function deriveGameplayWorldModel(
     const unresolvedCapacity =
       source.arena.capacity === undefined ||
       source.arena.capacity.evidence.arenaCountConflict ||
-      (
-        arenaCount !== undefined &&
-        arenaCount > 1 &&
-        (
-          source.arena.capacity.report === undefined ||
-          source.arena.capacity.report.safeConcurrentArenas === null
-        )
-      ) ||
+      source.arena.capacity.report === undefined ||
+      source.arena.capacity.report.safeConcurrentArenas === null ||
       (
         source.arena.capacity.evidence
           .scriptTickingAreaManagerReferenced &&
