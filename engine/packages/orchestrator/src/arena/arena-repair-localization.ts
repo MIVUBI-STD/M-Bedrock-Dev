@@ -120,7 +120,7 @@ function arenaContexts(
   }))];
 }
 
-function sourceArenaIds(
+function sourceOverlappingArenaIds(
   source: ArenaAuthoredSpatialSource,
   layout: ArenaSpatialLayoutSource,
   plan: ArenaRegionPlan,
@@ -211,10 +211,10 @@ export function localizeArenaRepairSources(
     actorPopulationProof?: ArenaActorPopulationProof;
   },
 ): ArenaRepairLocalization {
-  const assignments = new Map(
+  const overlappingArenaIdsBySource = new Map(
     input.sources.map((source) => [
       source.id,
-      sourceArenaIds(
+      sourceOverlappingArenaIds(
         source,
         input.layout,
         input.regionPlan,
@@ -264,10 +264,10 @@ export function localizeArenaRepairSources(
           source.kind === "structure-place"
         ) &&
         (
-          assignments.get(source.id)?.includes(
+          overlappingArenaIdsBySource.get(source.id)?.includes(
             replica.arenaId,
           ) === true ||
-          assignments.get(source.id)?.includes(
+          overlappingArenaIdsBySource.get(source.id)?.includes(
             input.layout.canonical.arenaId,
           ) === true
         )
@@ -276,7 +276,7 @@ export function localizeArenaRepairSources(
         candidate(
           source,
           "arena-overlap",
-          "Authored spatial source belongs to the canonical or diverged arena region.",
+          "Authored spatial source overlaps the canonical or diverged arena region; ownership is not established.",
         )
       );
 
@@ -317,10 +317,10 @@ export function localizeArenaRepairSources(
             source.kind === "structure-place"
           ) &&
           (
-            assignments.get(source.id)?.includes(
+            overlappingArenaIdsBySource.get(source.id)?.includes(
               replica.arenaId,
             ) === true ||
-            assignments.get(source.id)?.includes(
+            overlappingArenaIdsBySource.get(source.id)?.includes(
               input.layout.canonical.arenaId,
             ) === true
           )
@@ -329,7 +329,7 @@ export function localizeArenaRepairSources(
           candidate(
             source,
             "arena-overlap",
-            "Structure placement source is scoped to the canonical or diverged arena.",
+            "Structure placement source overlaps the canonical or diverged arena region; ownership is not established.",
           )
         ),
     );
@@ -344,7 +344,7 @@ export function localizeArenaRepairSources(
               "No authored structure placement source could be localized.",
             ]
           : [
-              "Structure placement sources were localized by arena ownership; exact mismatched instance still requires signature-to-source binding.",
+              "Structure placement sources were selected by arena-region overlap; exact instance attribution and ownership remain unproven.",
             ],
     });
   }
@@ -359,10 +359,10 @@ export function localizeArenaRepairSources(
         .filter((source) =>
           source.kind === "entity-spawn" &&
           (
-            assignments.get(source.id)?.includes(
+            overlappingArenaIdsBySource.get(source.id)?.includes(
               replica.arenaId,
             ) === true ||
-            assignments.get(source.id)?.includes(
+            overlappingArenaIdsBySource.get(source.id)?.includes(
               input.layout.canonical.arenaId,
             ) === true
           )
@@ -371,7 +371,7 @@ export function localizeArenaRepairSources(
           candidate(
             source,
             "arena-overlap",
-            "Authored entity spawn source is scoped to the canonical or diverged arena.",
+            "Authored entity spawn source overlaps the canonical or diverged arena region; ownership is not established.",
           )
         ),
     );
@@ -386,7 +386,7 @@ export function localizeArenaRepairSources(
               "No authored entity-spawn source could be localized.",
             ]
           : [
-              "Entity-spawn sources were localized by arena ownership; exact mismatch signature binding remains conservative.",
+              "Entity-spawn sources were selected by arena-region overlap; exact mismatch attribution and ownership remain unproven.",
             ],
     });
   }
@@ -410,10 +410,10 @@ export function localizeArenaRepairSources(
             identifiers.has(source.identifier)
           ) &&
           (
-            assignments.get(source.id)?.includes(
+            overlappingArenaIdsBySource.get(source.id)?.includes(
               replica.arenaId,
             ) === true ||
-            assignments.get(source.id)?.includes(
+            overlappingArenaIdsBySource.get(source.id)?.includes(
               input.layout.canonical.arenaId,
             ) === true
           )
@@ -425,7 +425,7 @@ export function localizeArenaRepairSources(
             identifiers.has(source.identifier)
               ? "arena-overlap"
               : "surface-only",
-            "Authored entity-spawn source matches the affected runtime actor identifier or arena surface.",
+            "Authored entity-spawn source matches the affected runtime actor identifier or overlaps an arena region; ownership is not established.",
           )
         ),
     );
