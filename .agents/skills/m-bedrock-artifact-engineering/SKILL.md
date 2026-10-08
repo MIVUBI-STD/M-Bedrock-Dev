@@ -4,7 +4,7 @@ description: >
   Handle artifact identity, archive safety, extraction, workspace boundaries, deterministic packaging, and opaque-content preservation. Use as a domain specialist within an active lane.
 ---
 
-# M-Bedrock Artifact Engineering
+# Lazy-Developer Artifact Engineering
 
 Use when the decision concerns artifact identity, archive safety, extraction, workspace boundaries, deterministic packaging, or opaque-content preservation.
 

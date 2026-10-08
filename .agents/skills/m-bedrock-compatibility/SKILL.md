@@ -4,7 +4,7 @@ description: >
   Resolve Minecraft Bedrock/Education version, manifest, Script API, experiment, and capability semantics as a domain specialist. Does not itself prove runtime behavior.
 ---
 
-# M-Bedrock Compatibility
+# Lazy-Developer Compatibility
 
 Use when behavior depends on Minecraft Bedrock version, Minecraft Education, manifest format, Script API version, experiments, or capability availability.
 

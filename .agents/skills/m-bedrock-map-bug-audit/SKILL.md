@@ -4,7 +4,7 @@ description: >
   Audit one Minecraft Bedrock/Education map version for gameplay bugs using game-design-first analysis and production report output.
 ---
 
-# M-Bedrock Map Bug Audit
+# Lazy-Developer Map Bug Audit
 
 **Lane:** OPERATIONAL / MAP USE
 

@@ -1,10 +1,10 @@
 ---
 name: m-bedrock-detection-development
 description: >
-  Improve reusable M-Bedrock-Dev bug-detection, diagnosis, platform semantics, or proof capability. Use for detection gaps and detector false positives/negatives; not production-map auditing.
+  Improve reusable Lazy-Developer bug-detection, diagnosis, platform semantics, or proof capability. Use for detection gaps and detector false positives/negatives; not production-map auditing.
 ---
 
-# M-Bedrock Detection Development
+# Lazy-Developer Detection Development
 
 **Lane:** DEVELOPMENT / BUG-DETECTION IMPROVEMENT
 

@@ -4,7 +4,7 @@ description: >
   Repair an approved gameplay bug or apply an explicit design change to a target working copy. No detector development.
 ---
 
-# M-Bedrock Target Repair
+# Lazy-Developer Target Repair
 
 **Lane:** OPERATIONAL / TARGET REPAIR
 
