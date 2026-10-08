@@ -321,4 +321,36 @@ describe("gameplay scenario closure", () => {
       reason.includes("outside their owning scenario"),
     )).toBe(true);
   });
+
+  it("keeps closure open when a knowledge prerequisite is missing", () => {
+    const result = assessGameplayScenarioClosure({
+      ...baseGraph(),
+      scenarios: [{
+        id: "scenario:knowledge",
+        label: "knowledge",
+        gameplayStage: "MODEL",
+        purpose: "Resolve required knowledge.",
+        sourceSubjectIds: [],
+        componentIds: [],
+        causalLinkIds: [],
+        playerCounts: [1],
+        requiredKnowledgeIds: ["knowledge:root"],
+        composedScenarioIds: [],
+      }],
+      knowledgeRequirements: [{
+        id: "knowledge:root",
+        scenarioId: "scenario:knowledge",
+        domain: "chunks",
+        reason: "Check simulation residency.",
+        capabilityIds: [],
+        dependsOnRequirementIds: ["knowledge:missing"],
+        subjectIds: [],
+        componentIds: [],
+      }],
+    });
+    expect(result.status).toBe("OPEN");
+    expect(result.reasons).toContain(
+      "Invalid knowledge dependencies: knowledge:root",
+    );
+  });
 });
