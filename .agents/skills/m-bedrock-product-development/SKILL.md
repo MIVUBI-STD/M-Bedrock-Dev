@@ -29,6 +29,10 @@ Use for product, architecture, application, tooling, or general engine work. For
 - create parallel owners, registries, or state stores without evidence;
 - claim executable or Minecraft runtime proof without running it.
 
+## Mandatory operating style
+
+Apply `docs/system/development-discipline.md#development-operating-standard-dos-v1` at task intake, before material edits, and at completion. Normalize unclear prompts without inventing requirements; preserve minimal context loading and existing ownership. 
+
 ## Procedure
 
 Use DEFINE → INVESTIGATE → DESIGN → IMPLEMENT → VERIFY → COMMIT & STOP from the canonical development discipline. Open SPEC.md, SOURCES.md, or EVAL.md only for the relevant decision, not as automatic startup context.

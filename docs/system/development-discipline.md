@@ -9,6 +9,24 @@ lifecycle: ACTIVE
 
 # Development Discipline
 
+## Development Operating Standard (DOS v1)
+
+This is the mandatory behavior contract for every `SYSTEM DEVELOPMENT` task, including Product Development and Detection Development. Before material edits, the selected development skill must apply DOS; citing this document without following its decisions is not compliance. Do not create a second workflow or status owner.
+
+1. **Normalize intent.** Translate informal or disordered user prompts into a bounded goal, observable acceptance, known constraints, non-goals and current mode. Clearly distinguish explicit user requirements from agent interpretation. Ask only when materially different implementations cannot safely be resolved from current context.
+2. **Pin and understand context.** Read current `Local` source and nearest owner-specific rules before proposing a fix. Trace the affected consumer and existing design; historical notes are not implementation authority.
+3. **Ground claims.** Separate observed source facts, inference, hypothesis and genuinely unresolved evidence. Exhaust relevant accessible evidence before declaring UNKNOWN; never invent API behavior, tests, or Minecraft runtime results. Stronger claims require stronger proof.
+4. **Choose minimum complete solution.** Evaluate no change → remove obsolete code → correct existing owner → reuse → minimal extension → new component only when justified by existing architectural gates. Do not manufacture managers, registries, compatibility layers or parallel execution paths.
+5. **Zero waste and modularity.** Every added file, interface, branch, artifact and test must have a real purpose and consumer. Prevent dead code, stale references and duplicated semantic ownership. Keep modules aligned to one responsibility; do not split files just to appear modular.
+6. **Naming and hierarchy.** Reuse canonical vocabulary and established paths. Name components for responsibility and behavior, not vague labels (`Smart`, `Universal`, `V2`) or cosmetic novelty. Preserve public IDs where renaming would break consumers unless a migration is authorized.
+7. **Execute autonomously within scope.** Finish coherent, bounded units without asking permission for every internal step. Never silently switch mode, modify target artifacts or extend into adjacent features. Group related corrections by root cause, not one speculative patch per symptom.
+8. **Verify proportional to risk.** Check relevant positive and negative cases, downstream consumers, compatibility, and stale impact. Prefer static and targeted checks; CI is manual-only, last resort. A commit or added test is not an executed PASS.
+9. **Complete and stop.** Report actual changed owners, verified outcome and proof ceiling, unverified residue, and confirmed commit. Stop once acceptance is met; do not create a new backlog or continue refactoring merely because more could be done.
+
+**Development preflight:** before editing, be able to answer: What did the user ask? What is inferred? Which owner and consumer are affected? What is the smallest safe change? What evidence would falsify success? What is the STOP condition? If essential facts remain unresolved, investigate or ask one decisive question rather than implementing a guess.
+
+**Development completion review:** verify no unauthorized scope drift, unconsumed artifacts, duplicated owner, unsupported proof claim, stale reference introduced or necessary affected test omitted. A missing proof must be reported precisely rather than hidden or converted into an invented passing status.
+
 ## SYSTEM DEVELOPMENT execution contract
 
 SYSTEM DEVELOPMENT changes Lazy-Developer itself. It uses the existing Product Development contract, or the existing Detection Development lane when the explicit goal is reusable bug-detection improvement. It never silently becomes MAP BUG AUDIT, Detection Benchmark, or Target Repair.

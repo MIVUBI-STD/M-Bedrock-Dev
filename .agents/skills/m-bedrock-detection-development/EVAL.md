@@ -18,3 +18,13 @@ Evaluate whether Detection Development:
 - SourceRef matches artifact/file but not a proving statement: the skill does not treat location as semantic proof.
 - The source fix changes one layer but its consumer still reports COMPLETE incorrectly: the skill requires end-to-end propagation and regression acceptance before completion.
 - Static verification without test execution is reported as source-verified only; CI remains optional, not a mandatory development gate.
+
+## Development Operating Standard scenarios
+
+- **Unstructured prompt:** infer a bounded engineering goal, distinguish user requirements from technical hypotheses, and ask only for a decision-changing ambiguity.
+- **Existing feature:** confirm current behavior before adding code; choose no change if already complete.
+- **Unused output:** reject new files/functions without a real consumer; check dead paths and stale references after edits.
+- **Duplicated architecture:** reuse a canonical owner rather than introducing a parallel manager or registry.
+- **Cross-owner change:** check affected consumer and narrowly scoped regression without full-repository refactoring.
+- **False claim:** never equate written tests, successful commit, or inferred semantics with executed proof.
+- **Scope creep:** an unrelated issue is reported separately rather than silently implemented; STOP once scoped acceptance is reached.

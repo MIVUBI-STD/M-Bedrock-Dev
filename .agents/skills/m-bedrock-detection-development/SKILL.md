@@ -31,6 +31,10 @@ Use only for detection-gap, detector false positive/negative, missing/stale plat
 - broaden into unrelated Product Development;
 - resume Map Bug Audit automatically.
 
+## Mandatory operating style
+
+Apply `docs/system/development-discipline.md#development-operating-standard-dos-v1` at task intake, before engine edits, and at completion. Discovery improvements must reject both unsupported confidence and unnecessary UNKNOWN; verify positive and negative examples without inventing new owners.
+
 ## Workflow
 
 Detection Gap / detector regression → first missing owner → generalized acceptance → minimum reusable change → reduced fixture → frozen expectation → Detection Benchmark.
