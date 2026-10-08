@@ -136,6 +136,22 @@ export function assessGameplayScenarioClosure(
       !componentIds.has(edge.toComponentId) ||
       edge.knowledgeRequirementIds.some((id) => !requirementIds.has(id)))
     .map((edge) => edge.id).sort();
+  const scenarioComponents = new Map(
+    graph.scenarios.map((scenario) => [scenario.id, new Set(scenario.componentIds)]),
+  );
+  const scenarioCausalLinks = new Map(
+    graph.scenarios.map((scenario) => [scenario.id, new Set(scenario.causalLinkIds)]),
+  );
+  const misboundCausalLinks = graph.causalLinks
+    .filter((edge) => {
+      const components = scenarioComponents.get(edge.scenarioId);
+      const links = scenarioCausalLinks.get(edge.scenarioId);
+      return components !== undefined && links !== undefined &&
+        (!components.has(edge.fromComponentId) ||
+         !components.has(edge.toComponentId) ||
+         !links.has(edge.id));
+    })
+    .map((edge) => edge.id).sort();
   const invalidKnowledgeRequirements = graph.knowledgeRequirements
     .filter((item) =>
       !scenarioIds.has(item.scenarioId) ||
@@ -159,6 +175,8 @@ export function assessGameplayScenarioClosure(
     .sort();
 
   const reasons: string[] = [];
+  if (misboundCausalLinks.length > 0) reasons.push("Causal links are not bound to their scenario components and link inventory: " + misboundCausalLinks.join(", "));
+
   if (invalidScenarioBindings.length) reasons.push("Missing scenario bindings: " + invalidScenarioBindings.join(", "));
   if (invalidCausalLinks.length) reasons.push("Invalid causal links: " + invalidCausalLinks.join(", "));
   if (invalidKnowledgeRequirements.length) reasons.push("Invalid knowledge dependencies: " + invalidKnowledgeRequirements.join(", "));
@@ -235,6 +253,7 @@ export function assessGameplayScenarioClosure(
     graph.scenarios.length === 0 ||
     invalidScenarioBindings.length > 0 ||
     invalidCausalLinks.length > 0 ||
+    misboundCausalLinks.length > 0 ||
     invalidKnowledgeRequirements.length > 0 ||
     orphanComponentIds.length > 0 ||
     missingPurposeComponentIds.length > 0 ||
