@@ -1,52 +1,6 @@
 name: Repository Policy
 
 on:
-  push:
-    branches:
-      - Local
-      - main
-    paths:
-      - "AGENTS.md"
-      - "CONTEXT.md"
-      - "GITHUB_RULES.md"
-      - "CONTRIBUTING.md"
-      - "SECURITY.md"
-      - "README.md"
-      - "VERSION"
-      - "toolchain.json"
-      - "package.json"
-      - "package-lock.json"
-      - ".node-version"
-      - ".editorconfig"
-      - ".gitattributes"
-      - ".agents/**"
-      - "docs/**"
-      - "tooling/**"
-      - "DEV.cmd"
-      - ".github/workflows/**"
-  pull_request:
-    branches:
-      - Local
-      - main
-    paths:
-      - "AGENTS.md"
-      - "CONTEXT.md"
-      - "GITHUB_RULES.md"
-      - "CONTRIBUTING.md"
-      - "SECURITY.md"
-      - "README.md"
-      - "VERSION"
-      - "toolchain.json"
-      - "package.json"
-      - "package-lock.json"
-      - ".node-version"
-      - ".editorconfig"
-      - ".gitattributes"
-      - ".agents/**"
-      - "docs/**"
-      - "tooling/**"
-      - "DEV.cmd"
-      - ".github/workflows/**"
   workflow_dispatch:
 
 permissions:

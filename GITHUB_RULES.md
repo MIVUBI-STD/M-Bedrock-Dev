@@ -166,6 +166,12 @@ local artifact residue → explicit minimum-residue handoff
 
 Never use temporary branches/workflows, base64 stand-ins, placeholder source, alternate repository structures, or force-pushes merely to bypass connector limitations.
 
+## CI policy: manual-only, last resort
+
+GitHub Actions workflows are optional tools, not the default verification or completion gate for `Local` development. Never require CI, wait for a run, or trigger a workflow merely to finish a source-verifiable change. Prefer exact-head source review, then a relevant targeted verifier/test when executable evidence is needed and available. Use manual GitHub Actions only when narrower proof is insufficient or an explicit release/integration check is requested.
+
+`Verify`, `Repository Policy`, and `Package Source Snapshot` must remain `workflow_dispatch` only: no automatic `push`, `pull_request`, or scheduled triggers. Existing verification scripts/tests remain available. Never report static inspection as executed tests or Minecraft runtime proof. Branch protection/required checks are separate GitHub settings and must not be assumed changed by workflow edits.
+
 ## 8. Verification
 
 Run the cheapest check that can falsify the changed claim.
