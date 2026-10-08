@@ -502,6 +502,8 @@ describe("gameplay scenario closure", () => {
         spatialLayoutConfidence: null,
         arenasWithoutSpatialLayoutCount: 6,
         spatialArenaIdsWithoutReplicaProof: [],
+        arenaEvidenceComponentLinks: [],
+        spatialArenaIdsWithoutComponentLinks: [],
         replicaProofEntries: [],
         entityPopulationProofEntries: [],
         actorPopulationProofEntries: [],
@@ -611,6 +613,8 @@ describe("gameplay scenario closure", () => {
       spatialLayoutConfidence: null,
       arenasWithoutSpatialLayoutCount: 3,
       spatialArenaIdsWithoutReplicaProof: [],
+      arenaEvidenceComponentLinks: [],
+      spatialArenaIdsWithoutComponentLinks: [],
       replicaProofEntries: [
         { arenaId: "arena:1", evidenceIds: ["native:a1"], proofStatus: "complete-proof" },
         { arenaId: "arena:2", evidenceIds: ["native:a2"], proofStatus: "incomplete-proof" },
@@ -675,6 +679,57 @@ describe("gameplay scenario closure", () => {
   });
 
 
+
+  it("links arena proof to gameplay components only through exact shared evidence IDs", () => {
+    const graph: GameplayScenarioGraph = {
+      ...baseGraph(),
+      components: [{
+        id: "component:arena-objective",
+        label: "Objective",
+        kind: "objective",
+        technicalRole: "flag",
+        gameplayPurpose: "Protect objective",
+        evidenceIds: ["evidence:arena-1", "evidence:other"],
+        usedByScenarioIds: [],
+        orphan: false,
+      }],
+    };
+    const layout = {
+      canonical: { arenaId: "arena:1", anchor: { x: 0, y: 64, z: 0 } },
+      replicas: [{ arenaId: "arena:2", anchor: { x: 200, y: 64, z: 0 } }],
+      confidence: "medium" as const,
+    };
+    const observed = {
+      relevantSourceCount: 1,
+      indexedSourceCount: 1,
+      arenaDetected: true,
+      arenaCount: 2,
+      spatialLayout: layout,
+      replicaProof: [
+        { arenaId: "arena:1", evidenceIds: ["evidence:arena-1"], status: "complete-proof" },
+        { arenaId: "arena:2", evidenceIds: ["evidence:arena-2"], status: "bounded-proof" },
+      ],
+    };
+    const architecture = deriveGameplayArchitectureNavigation(graph, observed);
+    expect(architecture.knowledgeCoverage.arenaEvidence).toMatchObject({
+      arenaEvidenceComponentLinks: [{
+        arenaId: "arena:1",
+        componentIds: ["component:arena-objective"],
+        matchedEvidenceIds: ["evidence:arena-1"],
+      }],
+      spatialArenaIdsWithoutComponentLinks: ["arena:2"],
+      arenaSessionMapping: "NOT_YET_ESTABLISHED",
+    });
+    const noProof = deriveGameplayArchitectureNavigation(graph, {
+      ...observed,
+      replicaProof: [
+        { arenaId: "arena:1", evidenceIds: ["other-source:arena-1"], status: "complete-proof" },
+      ],
+    });
+    expect(noProof.knowledgeCoverage.arenaEvidence.arenaEvidenceComponentLinks).toEqual([]);
+    expect(noProof.knowledgeCoverage.arenaEvidence.spatialArenaIdsWithoutComponentLinks)
+      .toEqual(["arena:1", "arena:2"]);
+  });
 
   it("keeps physical arena coordinates distinct from replica proof and session inference", () => {
     const architecture = deriveGameplayArchitectureNavigation(baseGraph(), {

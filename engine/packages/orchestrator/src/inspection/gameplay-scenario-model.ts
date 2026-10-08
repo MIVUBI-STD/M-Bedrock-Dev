@@ -297,6 +297,16 @@ export interface GameplayArchitectureNavigation {
       readonly spatialLayoutConfidence: "low" | "medium" | "high" | null;
       readonly arenasWithoutSpatialLayoutCount: number | null;
       readonly spatialArenaIdsWithoutReplicaProof: readonly string[];
+      /**
+       * Exact evidence identity bridge only. Replica proof does not by itself
+       * establish per-arena gameplay ownership or spatial containment.
+       */
+      readonly arenaEvidenceComponentLinks: readonly {
+        readonly arenaId: string;
+        readonly componentIds: readonly string[];
+        readonly matchedEvidenceIds: readonly string[];
+      }[];
+      readonly spatialArenaIdsWithoutComponentLinks: readonly string[];
       readonly replicaProofEntries: readonly {
         readonly arenaId: string;
         readonly evidenceIds: readonly string[];
@@ -552,6 +562,26 @@ export function deriveGameplayArchitectureNavigation(
     ...entityProof.map((entry) => entry.arenaId),
     ...actorProof.map((entry) => entry.arenaId),
   ].filter((id) => !replicaProofIds.has(id)));
+  const arenaEvidenceComponentLinks = arenaInstances.map((instance) => {
+    const proofEvidenceIds = new Set(instance.evidenceIds);
+    const matchingComponents = graph.components.filter((component) =>
+      component.evidenceIds.some((id) => proofEvidenceIds.has(id))
+    );
+    return {
+      arenaId: instance.arenaId,
+      componentIds: sorted(matchingComponents.map((component) => component.id)),
+      matchedEvidenceIds: sorted(matchingComponents.flatMap((component) =>
+        component.evidenceIds.filter((id) => proofEvidenceIds.has(id))
+      )),
+    };
+  }).filter((link) => link.componentIds.length > 0);
+  const arenaIdsWithComponentLinks = new Set(
+    arenaEvidenceComponentLinks.map((link) => link.arenaId)
+  );
+  const spatialArenaIdsWithoutComponentLinks = sorted(
+    spatialEntries.map((entry) => entry.arenaId)
+      .filter((arenaId) => !arenaIdsWithComponentLinks.has(arenaId))
+  );
   const arenasWithoutReplicaProofCount =
     observed.arenaCount === undefined ||
     !Number.isSafeInteger(observed.arenaCount) ||
@@ -691,6 +721,8 @@ export function deriveGameplayArchitectureNavigation(
         spatialLayoutConfidence: observed.spatialLayout?.confidence ?? null,
         arenasWithoutSpatialLayoutCount,
         spatialArenaIdsWithoutReplicaProof,
+        arenaEvidenceComponentLinks,
+        spatialArenaIdsWithoutComponentLinks,
         replicaProofEntries: arenaInstances.map((instance) => ({
           arenaId: instance.arenaId,
           evidenceIds: sorted(instance.evidenceIds),
