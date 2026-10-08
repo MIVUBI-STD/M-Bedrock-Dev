@@ -573,6 +573,12 @@ async function inspectSelectedMapToDemandFixedPoint(
     input.runtimeProbeTranscript,
     input.mapClassificationHint,
   );
+  // Both passes must describe one immutable selected artifact.
+  if (secondInspection.fingerprint !== firstInspection.fingerprint) {
+    throw new Error(
+      "Selected .mcworld changed between inspection passes; refusing mixed-version audit.",
+    );
+  }
   const secondReconciliation =
     reconcileSelectedMapAuditDemand(
       secondInspection,

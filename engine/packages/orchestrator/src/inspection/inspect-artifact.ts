@@ -1008,6 +1008,14 @@ export async function inspectArtifact(
           finalHiddenGameplayDefects,
       });
 
+    // The selected source must remain the same bytes throughout inspection.
+    // A Drive-synced replacement must start a new audit, not reuse this result.
+    if (await sha256File(path) !== fingerprint) {
+      throw new Error(
+        "Selected .mcworld changed during inspection; resolve the current artifact again.",
+      );
+    }
+
     return {
       artifactId,
       fingerprint,
