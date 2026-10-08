@@ -142,7 +142,7 @@ export function assessGameplayScenarioClosure(
   const scenarioCausalLinks = new Map(
     graph.scenarios.map((scenario) => [scenario.id, new Set(scenario.causalLinkIds)]),
   );
-  const misboundCausalLinks = graph.causalLinks
+  const causalLinksOutsideScenarioBindings = graph.causalLinks
     .filter((edge) => {
       const components = scenarioComponents.get(edge.scenarioId);
       const links = scenarioCausalLinks.get(edge.scenarioId);
@@ -175,7 +175,7 @@ export function assessGameplayScenarioClosure(
     .sort();
 
   const reasons: string[] = [];
-  if (misboundCausalLinks.length > 0) reasons.push("Causal links are not bound to their scenario components and link inventory: " + misboundCausalLinks.join(", "));
+  if (causalLinksOutsideScenarioBindings.length > 0) reasons.push("Causal links reference components or link IDs outside their owning scenario: " + causalLinksOutsideScenarioBindings.join(", "));
 
   if (invalidScenarioBindings.length) reasons.push("Missing scenario bindings: " + invalidScenarioBindings.join(", "));
   if (invalidCausalLinks.length) reasons.push("Invalid causal links: " + invalidCausalLinks.join(", "));
@@ -253,7 +253,7 @@ export function assessGameplayScenarioClosure(
     graph.scenarios.length === 0 ||
     invalidScenarioBindings.length > 0 ||
     invalidCausalLinks.length > 0 ||
-    misboundCausalLinks.length > 0 ||
+    causalLinksOutsideScenarioBindings.length > 0 ||
     invalidKnowledgeRequirements.length > 0 ||
     orphanComponentIds.length > 0 ||
     missingPurposeComponentIds.length > 0 ||
