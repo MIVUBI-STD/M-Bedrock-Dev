@@ -124,6 +124,7 @@ describe("arena state isolation analysis", () => {
       [script],
       [{
         id: "arena-state",
+        sourceRefs: [{ artifactId: "fixture", relativePath: "scripts/main.ts" }],
         authority: {
           kind: "dynamic-property",
           key: "arenaState",
@@ -368,6 +369,32 @@ describe("arena state isolation analysis", () => {
         authorityContractIds: ["contract-arena", "contract-player"],
       });
   });
+
+  it("does not promote provenance-free state contracts to isolated", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function join(arena, player) {",
+        "  arena.players.add(player);",
+        "  world.setDynamicProperty('arenaState', 1);",
+        "}",
+      ].join("\n"),
+      { artifactId: "fixture", relativePath: "scripts/main.ts" },
+    );
+    const result = analyzeArenaStateIsolation([script], [{
+      id: "unproven-arena-contract",
+      authority: { kind: "dynamic-property", key: "arenaState" },
+      mirrors: [],
+      scope: "arena",
+    }]);
+    expect(result.observations.find((item) => item.surface === "dynamic-property"))
+      .toMatchObject({
+        status: "partition-proof-required",
+        scope: "unknown",
+        authorityContractIds: ["unproven-arena-contract"],
+      });
+  });
+
 
 });
 

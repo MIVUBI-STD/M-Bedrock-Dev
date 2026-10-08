@@ -644,6 +644,18 @@ function applyAuthorityContracts(
       return observation;
     }
 
+    // Contract declarations without source references are claims, not proof.
+    // Keep the matched IDs, but never promote unproven metadata to isolation.
+    if (matches.some((item) => !item.sourceRefs?.length)) {
+      return {
+        ...observation,
+        scope: "unknown",
+        status: "partition-proof-required",
+        reason: "Matching state-authority contract lacks source provenance; isolation is not proven.",
+        authorityContractIds: [...new Set(matches.map((item) => item.id))].sort(),
+      };
+    }
+
     const scopes = [...new Set(matches.map((item) => item.scope))];
     // Different ownership scopes cannot prove one isolated state surface.
     // Preserve contract IDs so the conflict can be investigated upstream.
