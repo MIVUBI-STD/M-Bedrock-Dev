@@ -203,12 +203,12 @@ export interface GameplayArchitectureNavigation {
   readonly systemInventory: readonly {
     readonly system: "ENTITY" | "COMBAT" | "INVENTORY" | "ECONOMY" | "PROGRESSION";
     readonly observedCount: number;
-    /** Source references can be identifiers or kinds, not necessarily evidence IDs. */
-    readonly sourceReferences: readonly string[];
+    /** Analyzer observations can be source names or reward kinds, not evidence IDs. */
+    readonly observationReferences: readonly string[];
+    readonly evidenceIds: readonly string[];
     readonly inventoryStatus: "OBSERVED" | "NOT_OBSERVED";
-    /** Only exact evidence ID equality permits a link to existing components. */
     readonly evidenceLinkedComponentIds: readonly string[];
-    readonly unmatchedSourceReferences: readonly string[];
+    readonly unmatchedEvidenceIds: readonly string[];
     readonly architectureMapping: "EVIDENCE_LINKED" | "NOT_YET_RECONCILED";
   }[];
   /**
@@ -315,7 +315,9 @@ export function deriveGameplayArchitectureNavigation(
     readonly systemObservations?: readonly {
       readonly system: "ENTITY" | "COMBAT" | "INVENTORY" | "ECONOMY" | "PROGRESSION";
       readonly observedCount: number;
-      readonly sourceReferences: readonly string[];
+      readonly observationReferences: readonly string[];
+      /** Only canonical evidence IDs positively supplied by the evidence owner. */
+      readonly evidenceIds?: readonly string[];
     }[];
   } = {
     relevantSourceCount: 0,
@@ -439,26 +441,28 @@ export function deriveGameplayArchitectureNavigation(
     systemInventory: [...(observed.systemObservations ?? [])]
       .sort((a, b) => a.system.localeCompare(b.system))
       .map((observation) => {
-        const references = sorted(observation.sourceReferences);
+        const references = sorted(observation.observationReferences);
+        const evidenceIds = sorted(observation.evidenceIds ?? []);
         const matchingComponents = graph.components.filter((component) =>
-          component.evidenceIds.some((id) => references.includes(id))
+          component.evidenceIds.some((id) => evidenceIds.includes(id))
         );
         const matchedEvidenceIds = new Set(
           matchingComponents.flatMap((component) =>
-            component.evidenceIds.filter((id) => references.includes(id))
+            component.evidenceIds.filter((id) => evidenceIds.includes(id))
           ),
         );
         return {
           system: observation.system,
           observedCount: observation.observedCount,
-          sourceReferences: references,
+          observationReferences: references,
+          evidenceIds,
           inventoryStatus: observation.observedCount > 0
             ? "OBSERVED" as const
             : "NOT_OBSERVED" as const,
           evidenceLinkedComponentIds: sorted(
             matchingComponents.map((component) => component.id)
           ),
-          unmatchedSourceReferences: references.filter(
+          unmatchedEvidenceIds: evidenceIds.filter(
             (id) => !matchedEvidenceIds.has(id)
           ),
           // A match establishes a navigable evidence bridge, not complete

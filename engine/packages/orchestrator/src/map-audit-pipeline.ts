@@ -774,7 +774,7 @@ function assembleSelectedMapAuditRun(
           {
             system: "ENTITY",
             observedCount: inspection.gameplayWorld.entities.definitions,
-            sourceReferences:
+            observationReferences:
               inspection.gameplayWorld.entities.aiStack.assessments.map(
                 (item) => item.entityKey,
               ),
@@ -782,7 +782,7 @@ function assembleSelectedMapAuditRun(
           {
             system: "COMBAT",
             observedCount: inspection.gameplayWorld.combat.paths.length,
-            sourceReferences:
+            observationReferences:
               inspection.gameplayWorld.combat.paths.map(
                 (item) => item.scriptId + ":" + item.callbackRegion,
               ),
@@ -790,7 +790,7 @@ function assembleSelectedMapAuditRun(
           {
             system: "INVENTORY",
             observedCount: inspection.gameplayWorld.inventory.assessments.length,
-            sourceReferences:
+            observationReferences:
               inspection.gameplayWorld.inventory.assessments.map(
                 (item) => item.scriptId + ":" + item.executionRegion,
               ),
@@ -798,13 +798,13 @@ function assembleSelectedMapAuditRun(
           {
             system: "ECONOMY",
             observedCount: inspection.gameplayWorld.economy.sourceKinds.length,
-            sourceReferences: inspection.gameplayWorld.economy.sourceKinds,
+            observationReferences: inspection.gameplayWorld.economy.sourceKinds,
           },
           {
             system: "PROGRESSION",
             observedCount:
               inspection.gameplayWorld.progression.actorAccounting.counters,
-            sourceReferences:
+            observationReferences:
               inspection.gameplayWorld.progression.actorAccounting
                 .registryAuthorityAssessments.map(
                   (item) => item.scriptId + ":" + item.registryExpression,

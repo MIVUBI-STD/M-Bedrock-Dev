@@ -523,11 +523,11 @@ describe("gameplay scenario closure", () => {
         systemObservations: [{
           system: "ENTITY",
           observedCount: 2,
-          sourceReferences: ["minecraft:pillager", "minecraft:pillager"],
+          observationReferences: ["minecraft:pillager", "minecraft:pillager"],
         }, {
           system: "ECONOMY",
           observedCount: 0,
-          sourceReferences: [],
+          observationReferences: [],
         }],
       },
     );
@@ -535,19 +535,21 @@ describe("gameplay scenario closure", () => {
       {
         system: "ECONOMY",
         observedCount: 0,
-        sourceReferences: [],
+        observationReferences: [],
+        evidenceIds: [],
         inventoryStatus: "NOT_OBSERVED",
         evidenceLinkedComponentIds: [],
-        unmatchedSourceReferences: [],
+        unmatchedEvidenceIds: [],
         architectureMapping: "NOT_YET_RECONCILED",
       },
       {
         system: "ENTITY",
         observedCount: 2,
-        sourceReferences: ["minecraft:pillager"],
+        observationReferences: ["minecraft:pillager"],
+        evidenceIds: [],
         inventoryStatus: "OBSERVED",
         evidenceLinkedComponentIds: [],
-        unmatchedSourceReferences: ["minecraft:pillager"],
+        unmatchedEvidenceIds: [],
         architectureMapping: "NOT_YET_RECONCILED",
       },
     ]);
@@ -648,15 +650,30 @@ describe("gameplay scenario closure", () => {
       systemObservations: [{
         system: "ECONOMY",
         observedCount: 2,
-        sourceReferences: ["evidence:purchase", "script:shop"],
+        observationReferences: ["script:shop"],
+        evidenceIds: ["evidence:purchase", "evidence:unmatched"],
       }],
     });
     expect(architecture.systemInventory[0]).toMatchObject({
       inventoryStatus: "OBSERVED",
       evidenceLinkedComponentIds: ["component:shop"],
-      unmatchedSourceReferences: ["script:shop"],
+      unmatchedEvidenceIds: ["evidence:unmatched"],
       architectureMapping: "EVIDENCE_LINKED",
     });
     expect(architecture.knowledgeCoverage.wholeGameUnderstandingPercent).toBeNull();
+    const unverified = deriveGameplayArchitectureNavigation(graph, {
+      relevantSourceCount: 1,
+      indexedSourceCount: 1,
+      arenaDetected: false,
+      systemObservations: [{
+        system: "ECONOMY",
+        observedCount: 1,
+        observationReferences: ["evidence:purchase"],
+      }],
+    });
+    expect(unverified.systemInventory[0]).toMatchObject({
+      evidenceLinkedComponentIds: [],
+      architectureMapping: "NOT_YET_RECONCILED",
+    });
   });
 });
