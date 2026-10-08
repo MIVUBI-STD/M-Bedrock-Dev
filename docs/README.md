@@ -7,7 +7,7 @@ authority: CANONICAL
 lifecycle: ACTIVE
 ---
 
-# M-Bedrock-Dev Documentation
+# Lazy-Developer Documentation
 
 Single entry point for human and AI documentation discovery.
 
