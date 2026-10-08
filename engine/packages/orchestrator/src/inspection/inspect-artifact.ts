@@ -993,6 +993,8 @@ export async function inspectArtifact(
     const finalMandatoryAuditProcedure =
       deriveMandatoryAuditProcedureReceipt({
         artifactId,
+        artifactFingerprint: fingerprint,
+        archiveEntries: inventory.entries.length,
         discovery:
           finalGameplayDiscoveryClosure,
         world: finalGameplayWorld,

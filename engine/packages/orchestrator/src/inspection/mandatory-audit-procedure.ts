@@ -1,3 +1,4 @@
+import { artifactIdFromFingerprint } from "../../../artifact/src/index.js";
 import type { SemanticIr } from "../../../semantic-ir/src/index.js";
 import type { GameplayIntentModel } from "../../../gameplay-intent/src/index.js";
 import type { GameplayWorldModel } from "./gameplay-world-model.js";
@@ -33,6 +34,8 @@ import type {
 
 export function deriveMandatoryAuditProcedureReceipt(input: {
   readonly artifactId: string;
+  readonly artifactFingerprint?: string;
+  readonly archiveEntries?: number;
   readonly discovery: GameplayDiscoveryClosure;
   readonly world: GameplayWorldModel;
   readonly intent: GameplayIntentModel;
@@ -140,15 +143,26 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
   );
   const checkpoint: MandatoryAuditCheckpointReceipt[] = [];
 
+  const fingerprint = input.artifactFingerprint;
+  const targetVerified =
+    fingerprint !== undefined &&
+    /^[a-f0-9]{64}$/i.test(fingerprint) &&
+    artifactId === artifactIdFromFingerprint(fingerprint) &&
+    input.archiveEntries !== undefined &&
+    Number.isSafeInteger(input.archiveEntries) &&
+    input.archiveEntries > 0;
+
   checkpoint.push(receipt(
     "A1",
     "TARGET",
     "Selected Artifact Integrity",
-    artifactId.trim() ? "CLOSED" : "OPEN",
-    artifactId.trim()
-      ? "Selected artifact identity is present."
-      : "Selected artifact identity is missing.",
-    artifactId.trim() ? ["artifact:" + artifactId] : [],
+    targetVerified ? "CLOSED" : "OPEN",
+    targetVerified
+      ? "Selected artifact fingerprint, identity, and extracted archive inventory are verified."
+      : "Selected artifact integrity is not verified by a matching SHA-256 identity and nonempty archive inventory.",
+    targetVerified
+      ? ["artifact:" + artifactId, "sha256:" + fingerprint]
+      : [],
     ["SelectedArtifactReceipt"],
   ));
 

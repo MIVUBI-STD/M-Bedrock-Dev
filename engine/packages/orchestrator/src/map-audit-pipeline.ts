@@ -857,6 +857,8 @@ export function resolveSelectedMapAudit(
   const mandatoryAuditProcedure =
     deriveMandatoryAuditProcedureReceipt({
       artifactId: inspection.artifactId,
+      artifactFingerprint: inspection.fingerprint,
+      archiveEntries: inspection.archiveEntries,
       discovery:
         inspection.gameplayDiscoveryClosure,
       world: inspection.gameplayWorld,
