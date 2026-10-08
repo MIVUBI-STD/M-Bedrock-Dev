@@ -101,4 +101,39 @@ if (failures.length) {
   process.exit(1);
 }
 
+
+// Change-impact hints are non-blocking: a changed source does not by itself
+// prove that documentation is stale. Git history must be present to evaluate.
+const runGit = (...args) => {
+  try {
+    return execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+  } catch {
+    return undefined;
+  }
+};
+const parent = runGit("rev-parse", "--verify", "HEAD^");
+if (parent === undefined) {
+  console.log("Documentation change-impact review: NOT_EVALUATED (parent commit unavailable).");
+} else {
+  const changes = (runGit("diff", "--name-only", parent, "HEAD", "--", "engine", "apps", "tooling", ".agents", ".github") ?? "")
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .filter((path) => !path.endsWith(".md"));
+  const policyDocs = tracked.filter((path) => isActivePolicyDocument(path));
+  const review = [];
+  for (const path of policyDocs) {
+    const content = readFileSync(path, "utf8");
+    for (const changedPath of changes) {
+      if (content.includes(changedPath)) {
+        review.push(path + " references changed source: " + changedPath);
+      }
+    }
+  }
+  if (review.length > 0) {
+    console.log("Documentation change-impact review (not proof of stale content):");
+    for (const item of review.sort()) console.log("REVIEW " + item);
+  }
+  console.log("Documentation change-impact review: " + review.length + " potential reference(s).");
+}
+
 console.log("Documentation path migration verification passed.");
