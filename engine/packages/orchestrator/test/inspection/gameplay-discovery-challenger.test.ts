@@ -119,6 +119,45 @@ describe("gameplay discovery challenger", () => {
     );
   });
 
+  it("does not accept blocked knowledge receipts as semantic ownership", () => {
+    const ir = {
+      schemaVersion: 1,
+      execution: { regions: [], edges: [{
+        id: "edge:receipt", from: "region:a", to: "region:b",
+        kind: "synchronous-call", targetLabel: "b",
+        resolution: "resolved",
+        source: { artifactId: "test", relativePath: "scripts/test.js" },
+      }] },
+      state: { surfaces: [], operations: [], authorityBindings: [] },
+      temporal: { relations: [] },
+    } as unknown as SemanticIr;
+    const receipt = {
+      requirementId: "required:execution",
+      scenarioId: "scenario:game",
+      domain: "arena-lifecycle",
+      status: "MISSING_REQUIRED_KNOWLEDGE",
+      evidenceIds: ["edge:receipt"],
+      knowledgeIds: [],
+      capabilityIdsUsed: [],
+      subjectIds: [],
+      componentIds: [],
+      reason: "No evidence returned",
+    };
+    const blocked = challengeGameplayDiscovery({
+      semanticIr: ir, intent: emptyIntent,
+      graph: { ...emptyGraph, knowledgeReceipts: [receipt] } as GameplayScenarioGraph,
+    });
+    expect(blocked.map((item) => item.kind)).toContain("unowned-execution-edge");
+    const satisfied = challengeGameplayDiscovery({
+      semanticIr: ir, intent: emptyIntent,
+      graph: { ...emptyGraph, knowledgeReceipts: [{
+        ...receipt, status: "SATISFIED",
+      }] } as GameplayScenarioGraph,
+    });
+    expect(satisfied.some((item) => item.kind === "unowned-execution-edge"))
+      .toBe(false);
+  });
+
   it("challenges resolved execution edges without a gameplay owner but accepts an exact owner", () => {
     const ir = {
       schemaVersion: 1,

@@ -30,7 +30,9 @@ function usedEvidenceIds(
     ...intent.edges.flatMap((edge) => edge.evidenceIds),
     ...graph.components.flatMap((component) => component.evidenceIds),
     ...graph.causalLinks.flatMap((link) => link.evidenceIds),
-    ...graph.knowledgeReceipts.flatMap((receipt) => receipt.evidenceIds),
+    ...graph.knowledgeReceipts
+      .filter((receipt) => receipt.status === "SATISFIED")
+      .flatMap((receipt) => receipt.evidenceIds),
   ]);
 }
 
