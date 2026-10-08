@@ -60,12 +60,24 @@ export function assessGameplayDiscoveryClosure(
     input.sourceIndexedFiles +
     input.sourceParseFailures +
     unsupportedRelevantSources;
+  const countsValid = [
+    input.sourceRelevantFiles,
+    input.sourceIndexedFiles,
+    input.sourceParseFailures,
+    input.unresolvedReferences,
+  ].every((count) => Number.isSafeInteger(count) && count >= 0);
   const sourceInventoryBalanced =
+    countsValid &&
     input.sourceRelevantFiles ===
       sourceAccountedFiles &&
     input.sourceIndexedFiles <=
       input.sourceRelevantFiles;
 
+  if (!countsValid) {
+    reasons.push(
+      "Selected-artifact discovery counts must be non-negative safe integers.",
+    );
+  }
   if (surfaceIds.length === 0) {
     reasons.push(
       "No gameplay surface was discovered from the selected artifact.",
