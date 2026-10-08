@@ -16,6 +16,19 @@ Skills are routed on **two dimensions**:
 
 Do not use a domain skill to infer the work lane.
 
+## User-facing modes
+
+Two clear operator modes select the appropriate existing execution route:
+
+| Mode | Purpose | Internal route | Not allowed |
+|---|---|---|---|
+| `SYSTEM DEVELOPMENT` | Design/build/improve M-Bedrock-Dev | General Product Development contract with `product-development` permission profile, or `m-bedrock-detection-development` for reusable bug detection improvements | Treating a map-specific finding as proof that an engine change is correct |
+| `MAP BUG AUDIT` | Find/classify bugs in a selected map using current capabilities | `m-bedrock-map-bug-audit` | Editing engine, detectors, or platform knowledge while auditing |
+
+The operator mode is not an additional machine skill/lane or artifact authority. Detection Benchmark and Target Repair remain separate specialized routes when requested. Domain specialists never change the selected mode. An audit detection gap is a handoff, not automatic development permission; a development improvement never automatically resumes or reclassifies a map audit.
+
+**Default from user intent:** "develop/improve the system" selects SYSTEM DEVELOPMENT; "audit/find map bugs" selects MAP BUG AUDIT. For ambiguous requests with materially different outcomes, ask which outcome is intended. An unqualified "continue" retains the active mode. Switch modes only on explicit user request, and finish/record the current lane's handoff before switching.
+
 ## Work lanes
 
 ### 1. Operational Map Audit

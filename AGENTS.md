@@ -48,6 +48,15 @@ RESEARCH
 
 Use one active work lane until STOP or explicit handoff. Domain specialist calls do not switch lanes automatically.
 
+## Operator modes
+
+Choose exactly one user-facing mode from the requested outcome before selecting an existing work lane.
+
+- `SYSTEM DEVELOPMENT`: change M-Bedrock-Dev itself (architecture, engine, detectors, knowledge, tooling, UI, contracts). Route general changes through the Product Development contract and `product-development` permission profile; changes that specifically improve reusable bug detection use the existing `m-bedrock-detection-development` lane.
+- `MAP BUG AUDIT`: use existing capabilities to find/classify defects in one selected map. Route to `m-bedrock-map-bug-audit`. Do not mutate engine code or improve detection capability inside this mode.
+
+Detection Benchmark and Target Repair retain their dedicated existing lanes when explicitly requested. They are not implicit steps within either mode. When an audit finds a detection gap, record the bounded handoff and stop that claim; switch to SYSTEM DEVELOPMENT only upon explicit user direction. A user saying "continue" keeps the selected mode and current scope. Mode names are operator vocabulary, not new skills, registries, or persisted state owners.
+
 ## Work-lane routing
 
 ```text
