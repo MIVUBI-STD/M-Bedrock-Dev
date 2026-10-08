@@ -225,12 +225,14 @@ explicit selected .mcworld, otherwise the single current .mcworld in its Drive m
 → record source provenance and any identity disagreement
 ~~~
 
-Drive is the current-world selection authority when the user has not selected
-a specific artifact. GitHub project/currentWorld binding is a navigation and
-comparison reference, never permission to substitute an older world when Drive
-has changed. A mismatch is surfaced as stale binding evidence for the separate
-project/Drive management owner; it must not silently rewrite GitHub metadata,
-replace the Drive-selected artifact, or contaminate gameplay evidence.
+Google Drive owns the current map binary; GitHub retains project binding and
+context for locating that map. When the user has not selected an exact file,
+the current .mcworld in the Drive map root is TARGET selection authority.
+GitHub context is a locator and comparison snapshot, not a competing source
+of current gameplay. If Drive has changed, TARGET selects the Drive file and
+uses the bytes actually obtained; it does not fall back to the previously
+bound GitHub file. Any mismatch is reported as context drift, not repaired
+inside TARGET. Updating GitHub/Drive bindings belongs to project management.
 
 TARGET verifies the chosen artifact only. Pack identities, file inventories
 beyond the integrity preflight, runtime compatibility, and gameplay semantics
@@ -242,9 +244,10 @@ artifact path after source acquisition.
 ## Must resolve
 - exactly one selected .mcworld (explicit user selection wins; otherwise one current Drive-root world);
 - safe readable archive and matching content-derived fingerprint/artifact identity;
-- source provenance and any disagreement with the saved project binding;
-- no fallback to historical map files, Guides, Changelogs, reports, or
-  Development/Source as gameplay authority.
+- provenance of the selected Drive file (or explicitly uploaded file);
+- any mismatch with GitHub's saved project context, without rewriting either
+  source or blocking solely because saved context is older;
+- no fallback to another map artifact or historical version for gameplay authority.
 
 ## Exit
 

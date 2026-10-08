@@ -192,16 +192,16 @@ Rules:
 6. Client-requested changes in newer versions override older behavior by virtue of the selected current artifact being the audit target.
 7. If more than one root `.mcworld` could be current, do not guess. Resolve the exact target first.
 
-For TARGET selection, the live Drive map-root listing outranks saved GitHub
-`currentWorld` metadata. The saved binding identifies the expected file and
-helps navigation, but can be stale after a direct Drive update. If the root
-contains one current `.mcworld`, select that file and compute the fingerprint
-from its actual bytes; report any saved file ID, filename, version, or hash
-disagreement without substituting the old binding or automatically rewriting
-either system. A discrepancy in metadata alone is not proof that the Drive
-artifact is corrupt. Selection ambiguity or unsafe/unreadable bytes blocks
-TARGET. Project/Drive synchronization and binding repair remain separate
-management responsibilities outside the selected-map audit.
+For TARGET selection, Google Drive owns the current map binary while GitHub
+stores project binding/context to locate it. When no exact file was selected
+by the user, the live Drive map-root listing is authoritative over the saved
+GitHub `currentWorld` snapshot. Obtain bytes for that Drive file, validate
+the archive, compute its SHA-256, and use that exact content for the audit.
+If saved GitHub context disagrees, record the mismatch but do not silently
+fall back to the older file and do not treat metadata drift alone as corrupt
+map content. Selection ambiguity or unsafe/unreadable bytes blocks TARGET.
+Drive/GitHub binding updates, document handling, and synchronization belong
+to project management and are not TARGET operations.
 
 For audit purposes:
 
