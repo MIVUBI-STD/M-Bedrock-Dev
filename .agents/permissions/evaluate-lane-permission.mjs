@@ -13,6 +13,7 @@ const laneColumns = {
   "m-bedrock-detection-benchmark": "benchmark",
   "m-bedrock-target-repair": "targetRepair",
   "product-development": "productDevelopment",
+  "m-bedrock-product-development": "productDevelopment",
 };
 
 function globToRegex(pattern) {
@@ -49,7 +50,7 @@ function pathDecision(lane, path, mode) {
 }
 
 export function evaluateLanePermission(request) {
-  const profile = profiles[request.lane];
+  const profile = profiles[request.lane === "m-bedrock-product-development" ? "product-development" : request.lane];
   if (!profile) {
     return { decision: "deny", reason: "Unknown lane permission profile." };
   }

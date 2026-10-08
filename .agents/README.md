@@ -5,6 +5,7 @@ M-Bedrock-Dev separates **work lanes** from **domain specialists**.
 ## Work lanes
 
 ```text
+m-bedrock-product-development
 m-bedrock-map-bug-audit
 m-bedrock-detection-development
 m-bedrock-detection-benchmark

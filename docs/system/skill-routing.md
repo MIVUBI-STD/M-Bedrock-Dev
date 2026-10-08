@@ -22,7 +22,7 @@ Two clear operator modes select the appropriate existing execution route:
 
 | Mode | Purpose | Internal route | Not allowed |
 |---|---|---|---|
-| `SYSTEM DEVELOPMENT` | Design/build/improve M-Bedrock-Dev | General Product Development contract with `product-development` permission profile, or `m-bedrock-detection-development` for reusable bug detection improvements | Treating a map-specific finding as proof that an engine change is correct |
+| `SYSTEM DEVELOPMENT` | Design/build/improve M-Bedrock-Dev | `m-bedrock-product-development` with `product-development` permission profile, or `m-bedrock-detection-development` for reusable bug detection improvements | Treating a map-specific finding as proof that an engine change is correct |
 | `MAP BUG AUDIT` | Find/classify bugs in a selected map using current capabilities | `m-bedrock-map-bug-audit` | Editing engine, detectors, or platform knowledge while auditing |
 
 The operator mode is not an additional machine skill/lane or artifact authority. Detection Benchmark and Target Repair remain separate specialized routes when requested. Domain specialists never change the selected mode. An audit detection gap is a handoff, not automatic development permission; a development improvement never automatically resumes or reclassifies a map audit.
@@ -30,6 +30,12 @@ The operator mode is not an additional machine skill/lane or artifact authority.
 **Default from user intent:** "develop/improve the system" selects SYSTEM DEVELOPMENT; "audit/find map bugs" selects MAP BUG AUDIT. For ambiguous requests with materially different outcomes, ask which outcome is intended. An unqualified "continue" retains the active mode. Switch modes only on explicit user request, and finish/record the current lane's handoff before switching.
 
 ## Work lanes
+
+### Product Development
+
+`m-bedrock-product-development`
+
+Use for general M-Bedrock-Dev product, architecture, UI, engine, and tooling development. It uses `docs/system/development-discipline.md` and the existing `product-development` permission profile. No skill-specific output schema or script is required for a source change whose proof is owned by existing repository verifiers.
 
 ### 1. Operational Map Audit
 
@@ -207,6 +213,7 @@ Every work-lane skill must expose the same control structure:
 Canonical work-lane names:
 
 ```text
+Product Development
 Map Bug Audit
 Detection Development
 Detection Benchmark
@@ -215,7 +222,7 @@ Target Repair
 
 Product Development is not Detection Development. Generic repository/product feature work uses the normal development execution contract and canonical semantic owner.
 
-General Product Development uses the permission profile `product-development` in `.agents/permissions/lane-permissions.json`. This is an execution permission profile, **not** an extra specialist skill or work-lane registry entry. It permits bounded repository/source changes but never grants target-artifact mutation. The closest canonical owner and existing development contract still govern scope.
+General Product Development uses the permission profile `product-development` in `.agents/permissions/lane-permissions.json`. The permission profile is the existing authorization contract for the registered Product Development work lane. It permits bounded repository/source changes but never grants target-artifact mutation. The closest canonical owner and existing development contract still govern scope.
 
 ### Domain specialist contract
 

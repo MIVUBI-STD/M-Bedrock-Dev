@@ -149,9 +149,12 @@ if(!existsSync(registryPath)){
     if(!Array.isArray(lane.outputs) || lane.outputs.length===0) failures.push("Work lane lacks output contract index: "+name);
     if(typeof lane.mutatesEngine!=="boolean" || typeof lane.mutatesTarget!=="boolean") failures.push("Work lane lacks mutation boundary: "+name);
     if(!Number.isInteger(lane.revision) || lane.revision<1) failures.push("Work lane lacks positive revision: "+name);
-    if(typeof lane.outputSchema!=="string" || !existsSync(lane.outputSchema)) failures.push("Work lane outputSchema missing/not found: "+name);
-    if(typeof lane.deterministicEntrypoint!=="string" || !existsSync(lane.deterministicEntrypoint)) failures.push("Work lane deterministicEntrypoint missing/not found: "+name);
-    if(!Array.isArray(lane.evidenceTiers) || lane.evidenceTiers.length===0) failures.push("Work lane lacks evidence tiers: "+name);
+    // General Product Development reuses existing repository proof owners; it does not persist a lane-specific result.
+    if(name!=="m-bedrock-product-development"){
+      if(typeof lane.outputSchema!=="string" || !existsSync(lane.outputSchema)) failures.push("Work lane outputSchema missing/not found: "+name);
+      if(typeof lane.deterministicEntrypoint!=="string" || !existsSync(lane.deterministicEntrypoint)) failures.push("Work lane deterministicEntrypoint missing/not found: "+name);
+      if(!Array.isArray(lane.evidenceTiers) || lane.evidenceTiers.length===0) failures.push("Work lane lacks evidence tiers: "+name);
+    }
     for(const field of ["spec","sources","eval"]){
       if(typeof lane[field]!=="string" || !existsSync(lane[field])) failures.push("Work lane "+field+" missing/not found: "+name);
     }

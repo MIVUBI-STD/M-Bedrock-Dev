@@ -141,6 +141,27 @@
       "spec": ".agents/skills/m-bedrock-target-repair/SPEC.md",
       "sources": ".agents/skills/m-bedrock-target-repair/SOURCES.md",
       "eval": ".agents/skills/m-bedrock-target-repair/EVAL.md"
+    },
+    "m-bedrock-product-development": {
+      "label": "Product Development",
+      "taskClasses": [
+        "DEVELOP"
+      ],
+      "selection": "General M-Bedrock-Dev product, UI, engine or tooling development not specific to reusable bug detection.",
+      "mutatesEngine": true,
+      "mutatesTarget": false,
+      "outputs": [
+        "bounded-source-change",
+        "verification-boundary",
+        "confirmed-commit"
+      ],
+      "handoffs": [
+        "m-bedrock-detection-development"
+      ],
+      "revision": 1,
+      "spec": ".agents/skills/m-bedrock-product-development/SPEC.md",
+      "sources": ".agents/skills/m-bedrock-product-development/SOURCES.md",
+      "eval": ".agents/skills/m-bedrock-product-development/EVAL.md"
     }
   },
   "domainSpecialists": {
@@ -167,7 +188,7 @@
       "mutatesTarget": false
     }
   },
-  "registryRevision": 6,
+  "registryRevision": 7,
   "evalManifest": ".agents/evals/manifest.json",
   "permissionProfiles": ".agents/permissions/lane-permissions.json",
   "pathAccess": ".agents/permissions/path-access.json",
