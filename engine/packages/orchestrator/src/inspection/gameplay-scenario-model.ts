@@ -197,6 +197,17 @@ export interface GameplayArchitectureNavigation {
   readonly unresolvedCausalLinkIds: readonly string[];
   readonly missingGraphReferenceIds: readonly string[];
   /**
+   * Source-grounded system evidence, not a catalog of assumed map features.
+   * A count of zero never proves a feature is absent from the full map.
+   */
+  readonly systemInventory: readonly {
+    readonly system: "ENTITY" | "COMBAT" | "INVENTORY" | "ECONOMY" | "PROGRESSION";
+    readonly observedCount: number;
+    readonly sourceReferences: readonly string[];
+    readonly inventoryStatus: "OBSERVED" | "NOT_OBSERVED";
+    readonly architectureMapping: "NOT_YET_RECONCILED";
+  }[];
+  /**
    * Measured coverage of observed evidence, never a claim about all gameplay.
    * Full-map understanding has no defensible denominator while unidentified
    * source semantics, world content, or design intent can remain unknown.
@@ -296,6 +307,11 @@ export function deriveGameplayArchitectureNavigation(
       readonly status: "complete" | "unresolved";
       readonly missingPhases: readonly string[];
       readonly orderingViolations: readonly string[];
+    }[];
+    readonly systemObservations?: readonly {
+      readonly system: "ENTITY" | "COMBAT" | "INVENTORY" | "ECONOMY" | "PROGRESSION";
+      readonly observedCount: number;
+      readonly sourceReferences: readonly string[];
     }[];
   } = {
     relevantSourceCount: 0,
@@ -416,6 +432,17 @@ export function deriveGameplayArchitectureNavigation(
       .filter((link) => link.status !== "PROVEN")
       .map((link) => link.id)),
     missingGraphReferenceIds: sorted([...missing]),
+    systemInventory: [...(observed.systemObservations ?? [])]
+      .sort((a, b) => a.system.localeCompare(b.system))
+      .map((observation) => ({
+        system: observation.system,
+        observedCount: observation.observedCount,
+        sourceReferences: sorted(observation.sourceReferences),
+        inventoryStatus: observation.observedCount > 0
+          ? "OBSERVED" as const
+          : "NOT_OBSERVED" as const,
+        architectureMapping: "NOT_YET_RECONCILED" as const,
+      })),
     knowledgeCoverage: {
       observedSourceIndexPercent:
         percentage(observed.indexedSourceCount, observed.relevantSourceCount),

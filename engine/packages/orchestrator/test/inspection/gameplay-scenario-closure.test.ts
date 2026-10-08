@@ -513,6 +513,43 @@ describe("gameplay scenario closure", () => {
     });
   });
 
+  it("exposes observed gameplay systems without inferring absent mechanics", () => {
+    const architecture = deriveGameplayArchitectureNavigation(
+      baseGraph(),
+      {
+        relevantSourceCount: 5,
+        indexedSourceCount: 5,
+        arenaDetected: false,
+        systemObservations: [{
+          system: "ENTITY",
+          observedCount: 2,
+          sourceReferences: ["minecraft:pillager", "minecraft:pillager"],
+        }, {
+          system: "ECONOMY",
+          observedCount: 0,
+          sourceReferences: [],
+        }],
+      },
+    );
+    expect(architecture.systemInventory).toEqual([
+      {
+        system: "ECONOMY",
+        observedCount: 0,
+        sourceReferences: [],
+        inventoryStatus: "NOT_OBSERVED",
+        architectureMapping: "NOT_YET_RECONCILED",
+      },
+      {
+        system: "ENTITY",
+        observedCount: 2,
+        sourceReferences: ["minecraft:pillager"],
+        inventoryStatus: "OBSERVED",
+        architectureMapping: "NOT_YET_RECONCILED",
+      },
+    ]);
+    expect(architecture.knowledgeCoverage.wholeGameUnderstandingPercent).toBeNull();
+  });
+
   it("preserves physical arena inventory separately from scenario placement", () => {
     const architecture = deriveGameplayArchitectureNavigation(
       baseGraph(),

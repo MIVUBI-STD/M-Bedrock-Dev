@@ -770,6 +770,47 @@ function assembleSelectedMapAuditRun(
         chunkLeases: inspection.gameplayWorld.chunks.leases,
         cleanupAssessments:
           inspection.gameplayWorld.arenas.cleanup.lifecycle.assessments,
+        systemObservations: [
+          {
+            system: "ENTITY",
+            observedCount: inspection.gameplayWorld.entities.definitions,
+            sourceReferences:
+              inspection.gameplayWorld.entities.aiStack.assessments.map(
+                (item) => item.entityKey,
+              ),
+          },
+          {
+            system: "COMBAT",
+            observedCount: inspection.gameplayWorld.combat.paths.length,
+            sourceReferences:
+              inspection.gameplayWorld.combat.paths.map(
+                (item) => item.scriptId + ":" + item.callbackRegion,
+              ),
+          },
+          {
+            system: "INVENTORY",
+            observedCount: inspection.gameplayWorld.inventory.assessments.length,
+            sourceReferences:
+              inspection.gameplayWorld.inventory.assessments.map(
+                (item) => item.scriptId + ":" + item.executionRegion,
+              ),
+          },
+          {
+            system: "ECONOMY",
+            observedCount: inspection.gameplayWorld.economy.sourceKinds.length,
+            sourceReferences: inspection.gameplayWorld.economy.sourceKinds,
+          },
+          {
+            system: "PROGRESSION",
+            observedCount:
+              inspection.gameplayWorld.progression.actorAccounting.counters,
+            sourceReferences:
+              inspection.gameplayWorld.progression.actorAccounting
+                .registryAuthorityAssessments.map(
+                  (item) => item.scriptId + ":" + item.registryExpression,
+                ),
+          },
+        ],
         ...(inspection.gameplayWorld.arenas.basis === undefined
           ? {}
           : { arenaCountBasis: inspection.gameplayWorld.arenas.basis }),
