@@ -79,7 +79,7 @@ Domain specialist routing is defined by `docs/system/skill-routing.md`.
 
 ## Mandatory development style
 
-For every `SYSTEM DEVELOPMENT` task, apply `docs/system/development-discipline.md#development-operating-standard-dos-v1` before material changes and its completion review before STOP. Product and Detection Development skills must explicitly route to that owner. This requirement does not authorize extra scope, local execution, CI or a second manager.
+For every `SYSTEM DEVELOPMENT` task, apply `docs/system/development-discipline.md#development-operating-standard` before material changes and its completion review before STOP. Product and Detection Development skills must explicitly route to that owner. This requirement does not authorize extra scope, local execution, CI or a second manager.
 
 ## Development contract
 

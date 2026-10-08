@@ -9,7 +9,7 @@ lifecycle: ACTIVE
 
 # Development Discipline
 
-## Development Operating Standard (DOS v1)
+## Development Operating Standard
 
 This is the mandatory behavior contract for every `SYSTEM DEVELOPMENT` task, including Product Development and Detection Development. Before material edits, the selected development skill must apply DOS; citing this document without following its decisions is not compliance. Do not create a second workflow or status owner.
 
@@ -26,6 +26,16 @@ This is the mandatory behavior contract for every `SYSTEM DEVELOPMENT` task, inc
 **Development preflight:** before editing, be able to answer: What did the user ask? What is inferred? Which owner and consumer are affected? What is the smallest safe change? What evidence would falsify success? What is the STOP condition? If essential facts remain unresolved, investigate or ask one decisive question rather than implementing a guess.
 
 **Development completion review:** verify no unauthorized scope drift, unconsumed artifacts, duplicated owner, unsupported proof claim, stale reference introduced or necessary affected test omitted. A missing proof must be reported precisely rather than hidden or converted into an invented passing status.
+
+## Complete repair and version discipline
+
+- **Repair the root cause as one coherent outcome.** Inspect the affected owner and consumers before modifying source. Consolidate related failures into a bounded change; do not repeatedly add local guards, exception chains, fallback paths, or symptom-specific patches that leave the underlying model inconsistent.
+- **Prefer correction over accumulation.** When replacing behavior, remove obsolete code, duplicate implementations, unused helpers, and stale references only when their callers and compatibility needs have been checked. No speculative mass deletion.
+- **One owner, one current implementation.** Refactor within the existing canonical module. Add files only for a distinct, demonstrated responsibility with real consumers; avoid scattered fix files and ambiguous layers.
+- **No cosmetic version proliferation.** Never create `v2`, `v3`, `new`, `latest`, `final`, or similarly suffixed copies merely to revise a component. Update the canonical owner and use Git history to track iterations.
+- **Version only real contracts.** Preserve legitimate Minecraft versions, selected map versions, released product versions, schema versions, compatibility boundaries, and versioned public formats. A new versioned artifact requires an actual compatibility or release contract and migration/consumer plan; renaming identifiers is not a shortcut.
+- **Batch by responsibility, not file count.** A complete change may touch multiple necessary files in one logical commit. Do not merge unrelated root causes into a single unreviewable change or demand a separate commit for every small edit.
+- **Stop before adding a workaround.** If the next patch cannot be explained by the same proven root cause and a concrete acceptance criterion, reassess the model rather than stacking another workaround.
 
 ## SYSTEM DEVELOPMENT execution contract
 

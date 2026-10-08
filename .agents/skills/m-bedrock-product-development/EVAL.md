@@ -19,3 +19,10 @@ Evaluate the skill's decisions with representative tasks; these are scenarios, n
 - **Cross-owner change:** check affected consumer and narrowly scoped regression without full-repository refactoring.
 - **False claim:** never equate written tests, successful commit, or inferred semantics with executed proof.
 - **Scope creep:** an unrelated issue is reported separately rather than silently implemented; STOP once scoped acceptance is reached.
+
+## Complete repair and naming scenarios
+
+- Several related symptoms share one owner: consolidate the root-cause correction and remove superseded branches after consumer checks instead of stacking independent patches.
+- A proposed `SomethingV3` or `FinalManager` duplicates an existing module: revise the canonical owner, preserving existing consumers.
+- A Minecraft version or public schema format genuinely changes: retain explicit version identity and require a compatibility or migration rationale rather than blindly removing versioning.
+- A narrow patch makes one test pass but leaves downstream behavior inconsistent: do not report completion until the bounded change and consumer checks agree.

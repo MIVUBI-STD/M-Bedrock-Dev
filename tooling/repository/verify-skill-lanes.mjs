@@ -3,13 +3,13 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 const failures=[];
 const dosPath = "docs/system/development-discipline.md";
 const dosText = readFileSync(dosPath, "utf8");
-for (const phrase of ["## Development Operating Standard (DOS v1)", "**Development preflight:**", "**Development completion review:**"]) {
+for (const phrase of ["## Development Operating Standard", "**Development preflight:**", "**Development completion review:**"]) {
   if (!dosText.includes(phrase)) failures.push("Missing mandatory development standard clause: " + phrase);
 }
 for (const path of ["AGENTS.md", ".agents/skills/m-bedrock-product-development/SKILL.md", ".agents/skills/m-bedrock-detection-development/SKILL.md"]) {
   const source = readFileSync(path, "utf8");
-  if (!source.includes("development-operating-standard-dos-v1")) {
-    failures.push(path + ": must route to canonical DOS v1 before development work");
+  if (!source.includes("development-operating-standard")) {
+    failures.push(path + ": must route to canonical Development Operating Standard before development work");
   }
 }
 

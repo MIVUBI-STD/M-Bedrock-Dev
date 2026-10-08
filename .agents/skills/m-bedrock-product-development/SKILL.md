@@ -31,7 +31,7 @@ Use for product, architecture, application, tooling, or general engine work. For
 
 ## Mandatory operating style
 
-Apply `docs/system/development-discipline.md#development-operating-standard-dos-v1` at task intake, before material edits, and at completion. Normalize unclear prompts without inventing requirements; preserve minimal context loading and existing ownership. 
+Apply `docs/system/development-discipline.md#development-operating-standard` at task intake, before material edits, and at completion. Normalize unclear prompts without inventing requirements; preserve minimal context loading and existing ownership. 
 
 ## Procedure
 

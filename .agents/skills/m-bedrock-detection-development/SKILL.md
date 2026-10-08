@@ -33,7 +33,7 @@ Use only for detection-gap, detector false positive/negative, missing/stale plat
 
 ## Mandatory operating style
 
-Apply `docs/system/development-discipline.md#development-operating-standard-dos-v1` at task intake, before engine edits, and at completion. Discovery improvements must reject both unsupported confidence and unnecessary UNKNOWN; verify positive and negative examples without inventing new owners.
+Apply `docs/system/development-discipline.md#development-operating-standard` at task intake, before engine edits, and at completion. Discovery improvements must reject both unsupported confidence and unnecessary UNKNOWN; verify positive and negative examples without inventing new owners.
 
 ## Workflow
 
