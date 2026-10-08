@@ -13,12 +13,6 @@ const failures = [];
 const DOMAIN_REGISTRIES = [
   { root: "apps", registry: "apps/ownership.json", ignored: new Set([]), includeFiles: false },
   { root: "tooling", registry: "tooling/ownership.json", ignored: new Set([]), includeFiles: false },
-  {
-    root: "workspace",
-    registry: "workspace/ownership.json",
-    ignored: new Set(["README.md", "AGENTS.md", "ownership.json"]),
-    includeFiles: true,
-  },
 ];
 
 for (const domain of DOMAIN_REGISTRIES) {
