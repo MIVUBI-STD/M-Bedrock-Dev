@@ -708,6 +708,46 @@ describe("gameplay scenario closure", () => {
     expect(result.arenaSessionMapping).toBe("NOT_YET_ESTABLISHED");
   });
 
+
+  it("does not manufacture arena region candidates when no region plan exists", () => {
+    const result = deriveGameplayArchitectureNavigation(baseGraph(), {
+      relevantSourceCount: 1,
+      indexedSourceCount: 1,
+      arenaDetected: true,
+      arenaCount: 2,
+      spatialLayout: {
+        canonical: { arenaId: "arena:1", anchor: { x: 0, y: 64, z: 0 } },
+        replicas: [{ arenaId: "arena:2", anchor: { x: 100, y: 64, z: 0 } }],
+        offsets: [{ x: 100, y: 0, z: 0 }],
+        confidence: "high",
+      },
+    }).knowledgeCoverage.arenaEvidence;
+    expect(result.arenaRegionCandidates).toEqual([]);
+    expect(result.spatialArenaIdsWithoutRegionCandidates).toEqual(["arena:1", "arena:2"]);
+    expect(result.arenaSessionMapping).toBe("NOT_YET_ESTABLISHED");
+  });
+
+  it("does not manufacture spatial arena identities from a region plan alone", () => {
+    const result = deriveGameplayArchitectureNavigation(baseGraph(), {
+      relevantSourceCount: 1,
+      indexedSourceCount: 1,
+      arenaDetected: true,
+      arenaCount: 2,
+      regionPlan: {
+        confidence: "high",
+        volumes: [{
+          min: { x: 0, y: 64, z: 0 },
+          max: { x: 20, y: 80, z: 20 },
+          evidenceCandidateIds: ["topology:region-1"],
+        }],
+      },
+    }).knowledgeCoverage.arenaEvidence;
+    expect(result.spatialLayoutEntries).toEqual([]);
+    expect(result.arenaRegionCandidates).toEqual([]);
+    expect(result.arenasWithoutSpatialLayoutCount).toBe(2);
+    expect(result.arenaSessionMapping).toBe("NOT_YET_ESTABLISHED");
+  });
+
   it("links arena proof to gameplay components only through exact shared evidence IDs", () => {
     const graph: GameplayScenarioGraph = {
       ...baseGraph(),
