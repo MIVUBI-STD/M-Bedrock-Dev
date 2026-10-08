@@ -661,6 +661,71 @@ describe("gameplay scenario closure", () => {
   });
 
 
+
+  it("summarizes observed architecture gaps without pretending whole-game completion", () => {
+    const graph: GameplayScenarioGraph = {
+      ...baseGraph(),
+      components: [{
+        id: "component:known",
+        label: "Known",
+        kind: "mechanic",
+        technicalRole: "entry",
+        gameplayPurpose: "Join",
+        evidenceIds: ["evidence:known"],
+        usedByScenarioIds: [],
+        orphan: false,
+      }],
+    };
+    const navigation = deriveGameplayArchitectureNavigation(graph, {
+      relevantSourceCount: 4,
+      indexedSourceCount: 3,
+      arenaDetected: true,
+      arenaCount: 6,
+      selectedArtifactEvidenceIds: ["evidence:known", "evidence:unlinked"],
+      semanticIr: {
+        state: { operations: [{ id: "operation:unlinked" }] },
+        execution: { regions: [], edges: [] },
+        temporal: { relations: [] },
+      } as unknown as import("../../../semantic-ir/src/index.js").SemanticIr,
+      systemObservations: [{
+        system: "ENTITY", observedCount: 2,
+        observationReferences: ["minecraft:pillager"],
+      }],
+    });
+    expect(navigation.architectureReconciliation).toEqual({
+      scope: "OBSERVED_RECORDS_ONLY",
+      status: "GAPS_PRESENT",
+      sourceIndexIncomplete: true,
+      gameplayIntentEvidenceUnlinkedCount: 1,
+      semanticIrRecordsUnlinkedCount: 1,
+      scenarioComponentsUnplacedCount: 1,
+      causalLinksUnresolvedCount: 0,
+      graphReferencesMissingCount: 0,
+      arenaMappingUnresolved: true,
+      observedSystemsUnreconciledCount: 1,
+    });
+    expect(navigation.knowledgeCoverage.wholeGameUnderstandingPercent).toBeNull();
+
+    const scoped = deriveGameplayArchitectureNavigation({
+      ...baseGraph(),
+      scenarios: [{
+        id: "scenario:join", label: "Join", gameplayStage: "ENTRY_JOIN",
+        purpose: "Enter", sourceSubjectIds: [],
+        componentIds: ["component:known"], causalLinkIds: [],
+        playerCounts: [1], requiredKnowledgeIds: [], composedScenarioIds: [],
+      }],
+      components: graph.components,
+    }, {
+      relevantSourceCount: 1,
+      indexedSourceCount: 1,
+      arenaDetected: false,
+      selectedArtifactEvidenceIds: ["evidence:known"],
+    });
+    expect(scoped.architectureReconciliation.status)
+      .toBe("NO_GAPS_IN_MEASURED_SCOPE");
+    expect(scoped.knowledgeCoverage.wholeGameUnderstandingPercent).toBeNull();
+  });
+
   it("accounts for raw Semantic IR operations and execution without inventing architectural links", () => {
     const graph: GameplayScenarioGraph = {
       ...baseGraph(),

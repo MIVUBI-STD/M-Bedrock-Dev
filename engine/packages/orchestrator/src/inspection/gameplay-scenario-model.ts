@@ -198,6 +198,23 @@ export interface GameplayArchitectureNavigation {
   readonly unresolvedCausalLinkIds: readonly string[];
   readonly missingGraphReferenceIds: readonly string[];
   /**
+   * Non-authoritative summary of gaps in records already observed by the
+   * engine. The details remain in their original coverage inventories.
+   * NO_GAPS_IN_MEASURED_SCOPE never means that the whole map is understood.
+   */
+  readonly architectureReconciliation: {
+    readonly scope: "OBSERVED_RECORDS_ONLY";
+    readonly status: "GAPS_PRESENT" | "NO_GAPS_IN_MEASURED_SCOPE";
+    readonly sourceIndexIncomplete: boolean;
+    readonly gameplayIntentEvidenceUnlinkedCount: number;
+    readonly semanticIrRecordsUnlinkedCount: number;
+    readonly scenarioComponentsUnplacedCount: number;
+    readonly causalLinksUnresolvedCount: number;
+    readonly graphReferencesMissingCount: number;
+    readonly arenaMappingUnresolved: boolean;
+    readonly observedSystemsUnreconciledCount: number;
+  };
+  /**
    * Tracks source-scoped Gameplay Intent evidence against existing
    * architecture components/links. Unlinked is not a bug or proof of absence.
    */
@@ -453,7 +470,9 @@ export function deriveGameplayArchitectureNavigation(
       : observed.arenaCount - arenaInstances.length;
 
 
-  return {
+  // Assemble a single read-only projection. Its detailed inventories stay
+  // authoritative for navigation; the summary only locates open work.
+  const navigation: Omit<GameplayArchitectureNavigation, "architectureReconciliation"> = {
     schemaVersion: 1,
     policy: "derived-gameplay-architecture-navigation",
     stages: [...stageGroups].sort(([a], [b]) => a.localeCompare(b))
@@ -618,6 +637,54 @@ export function deriveGameplayArchitectureNavigation(
           })),
         arenaSessionMapping: "NOT_YET_ESTABLISHED",
       },
+    },
+  };
+
+  const ir = navigation.semanticIrCoverage;
+  const semanticIrRecordsUnlinkedCount = [
+    ir.stateOperations,
+    ir.executionRegions,
+    ir.executionEdges,
+    ir.temporalRelations,
+  ].reduce((total, group) => total + group.unlinkedIds.length, 0);
+  const sourceIndexIncomplete =
+    !Number.isSafeInteger(observed.relevantSourceCount) ||
+    !Number.isSafeInteger(observed.indexedSourceCount) ||
+    observed.relevantSourceCount <= 0 ||
+    observed.indexedSourceCount < 0 ||
+    observed.indexedSourceCount > observed.relevantSourceCount ||
+    observed.indexedSourceCount !== observed.relevantSourceCount;
+  const gapCounts = {
+    gameplayIntentEvidenceUnlinkedCount:
+      navigation.evidenceCoverage.architectureUnlinkedEvidenceIds.length,
+    semanticIrRecordsUnlinkedCount,
+    scenarioComponentsUnplacedCount: navigation.unplacedComponentIds.length,
+    causalLinksUnresolvedCount: navigation.unresolvedCausalLinkIds.length,
+    graphReferencesMissingCount: navigation.missingGraphReferenceIds.length,
+    observedSystemsUnreconciledCount: navigation.systemInventory.filter(
+      (system) => system.inventoryStatus === "OBSERVED" &&
+        system.architectureMapping === "NOT_YET_RECONCILED"
+    ).length,
+  };
+  const arenaMappingUnresolved =
+    navigation.knowledgeCoverage.arenaEvidence.detected &&
+    navigation.knowledgeCoverage.arenaEvidence.architectureMapping ===
+      "NOT_YET_RECONCILED";
+  const hasObservedGaps = sourceIndexIncomplete ||
+    graph.components.length === 0 ||
+    arenaMappingUnresolved ||
+    Object.values(gapCounts).some((count) => count > 0);
+
+  return {
+    ...navigation,
+    architectureReconciliation: {
+      scope: "OBSERVED_RECORDS_ONLY",
+      status: hasObservedGaps
+        ? "GAPS_PRESENT"
+        : "NO_GAPS_IN_MEASURED_SCOPE",
+      sourceIndexIncomplete,
+      ...gapCounts,
+      arenaMappingUnresolved,
     },
   };
 }
