@@ -16,6 +16,10 @@ export function assessGameplayScenarioClosure(
     .map((component) => component.id)
     .sort();
 
+  const scenarioLabels = new Map(
+    graph.scenarios.map((scenario) => [scenario.id, scenario.label]),
+  );
+
   const runtimeBlockedCausalLinks = graph.causalLinks
     .filter((edge) => edge.status === "RUNTIME_BLOCKED")
     .slice()
@@ -24,11 +28,8 @@ export function assessGameplayScenarioClosure(
     runtimeBlockedCausalLinks.map((edge) => edge.id);
   const runtimeProofRequests =
     runtimeBlockedCausalLinks.map((edge) => {
-      const scenario = graph.scenarios.find(
-        (item) => item.id === edge.scenarioId,
-      );
       const scenarioLabel =
-        scenario?.label ?? edge.scenarioId;
+        scenarioLabels.get(edge.scenarioId) ?? edge.scenarioId;
       return {
         causalLinkId: edge.id,
         scenarioId: edge.scenarioId,
@@ -51,11 +52,8 @@ export function assessGameplayScenarioClosure(
     detectionGapCausalLinks.map((edge) => edge.id);
   const detectionGapTestRequests =
     detectionGapCausalLinks.map((edge) => {
-      const scenario = graph.scenarios.find(
-        (item) => item.id === edge.scenarioId,
-      );
       const scenarioLabel =
-        scenario?.label ?? edge.scenarioId;
+        scenarioLabels.get(edge.scenarioId) ?? edge.scenarioId;
       return {
         causalLinkId: edge.id,
         scenarioId: edge.scenarioId,
