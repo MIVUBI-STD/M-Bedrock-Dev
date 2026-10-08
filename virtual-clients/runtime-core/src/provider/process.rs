@@ -4,6 +4,7 @@ use std::{
     path::Path,
     process::{Command, Stdio},
     thread,
+    io::Read,
     time::{Duration, Instant},
 };
 
@@ -32,11 +33,19 @@ where
         .stderr(Stdio::piped())
         .spawn()?;
 
+    // Drain both streams while the child is running. Waiting before reading can
+    // deadlock when the child fills an OS pipe buffer.
+    let stdout = child.stdout.take().ok_or_else(|| io::Error::new(io::ErrorKind::Other, "missing stdout pipe"))?;
+    let stderr = child.stderr.take().ok_or_else(|| io::Error::new(io::ErrorKind::Other, "missing stderr pipe"))?;
+    let stdout_reader = thread::spawn(move || drain_output(stdout));
+    let stderr_reader = thread::spawn(move || drain_output(stderr));
+
     let started = Instant::now();
     loop {
-        if child.try_wait()?.is_some() {
-            let output = child.wait_with_output()?;
-            return require_success(program, output.status.success(), &output.stdout, &output.stderr);
+        if let Some(status) = child.try_wait()? {
+            let stdout = join_output(stdout_reader)?;
+            let stderr = join_output(stderr_reader)?;
+            return require_success(program, status.success(), &stdout, &stderr);
         }
         if started.elapsed() >= timeout {
             let kill_result = child.kill();
@@ -62,6 +71,25 @@ where
         }
         thread::sleep(Duration::from_millis(100));
     }
+}
+
+// Keep diagnostic memory bounded while still draining arbitrarily verbose tools.
+const OUTPUT_LIMIT: usize = 64 * 1024;
+
+fn drain_output(mut pipe: impl Read) -> io::Result<Vec<u8>> {
+    let mut output = Vec::new();
+    let mut chunk = [0_u8; 8192];
+    loop {
+        let count = pipe.read(&mut chunk)?;
+        if count == 0 { break; }
+        let remaining = OUTPUT_LIMIT.saturating_sub(output.len());
+        output.extend_from_slice(&chunk[..count.min(remaining)]);
+    }
+    Ok(output)
+}
+
+fn join_output(reader: thread::JoinHandle<io::Result<Vec<u8>>>) -> io::Result<Vec<u8>> {
+    reader.join().map_err(|_| io::Error::new(io::ErrorKind::Other, "command output reader panicked"))?
 }
 
 fn require_success(program: &Path, success: bool, stdout: &[u8], stderr: &[u8]) -> io::Result<String> {
@@ -92,6 +120,24 @@ where
 mod tests {
     use super::command_output_with_timeout;
     use std::{io, path::Path, time::Duration};
+
+    #[test]
+    fn verbose_command_does_not_block_on_full_pipes() {
+        #[cfg(windows)]
+        let (program, args): (&Path, &[&str]) = (
+            Path::new("cmd.exe"),
+            &["/C", "for /L %i in (1,1,12000) do @echo some-output-to-fill-the-pipe"],
+        );
+        #[cfg(not(windows))]
+        let (program, args): (&Path, &[&str]) = (
+            Path::new("sh"),
+            &["-c", "yes some-output-to-fill-the-pipe | head -c 200000"],
+        );
+        let result = command_output_with_timeout(program, args.iter().copied(), Duration::from_secs(15))
+            .expect("verbose command must complete without pipe deadlock");
+        assert!(!result.is_empty());
+        assert!(result.len() <= super::OUTPUT_LIMIT);
+    }
 
     #[test]
     fn timed_out_command_is_reaped_before_reporting_timeout() {
