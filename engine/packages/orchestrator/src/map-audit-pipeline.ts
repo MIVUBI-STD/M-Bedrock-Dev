@@ -772,6 +772,10 @@ function assembleSelectedMapAuditRun(
           ? {}
           : { arenaCount: inspection.gameplayWorld.arenas.count }),
         replicaProof: inspection.gameplayWorld.arenas.replicaProof,
+        entityPopulationProof:
+          inspection.arenaAnalysis.entityPopulationProof?.replicas,
+        actorPopulationProof:
+          inspection.arenaAnalysis.actorPopulationProof?.replicas,
         stateIsolationObservations:
           inspection.gameplayWorld.arenas.isolation.observations,
         chunkLeases: inspection.gameplayWorld.chunks.leases,

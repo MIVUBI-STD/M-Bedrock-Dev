@@ -499,6 +499,9 @@ describe("gameplay scenario closure", () => {
         countBasis: null,
         layoutStatus: null,
         replicaProofEntries: [],
+        entityPopulationProofEntries: [],
+        actorPopulationProofEntries: [],
+        populationArenaIdsWithoutReplicaProof: [],
         arenasWithoutReplicaProofCount: 6,
         declaredConcurrentArenaLimit: null,
         requestedConcurrentArenas: null,
@@ -604,6 +607,9 @@ describe("gameplay scenario closure", () => {
         { arenaId: "arena:1", evidenceIds: ["native:a1"], proofStatus: "complete-proof" },
         { arenaId: "arena:2", evidenceIds: ["native:a2"], proofStatus: "incomplete-proof" },
       ],
+      entityPopulationProofEntries: [],
+      actorPopulationProofEntries: [],
+      populationArenaIdsWithoutReplicaProof: [],
       arenasWithoutReplicaProofCount: 1,
       declaredConcurrentArenaLimit: 2,
       requestedConcurrentArenas: 3,
@@ -661,6 +667,41 @@ describe("gameplay scenario closure", () => {
   });
 
 
+
+  it("preserves per-arena entity and actor population evidence without inventing gameplay", () => {
+    const architecture = deriveGameplayArchitectureNavigation(baseGraph(), {
+      relevantSourceCount: 1,
+      indexedSourceCount: 1,
+      arenaDetected: true,
+      arenaCount: 2,
+      replicaProof: [{
+        arenaId: "arena:1", status: "complete-proof", evidenceIds: ["world:arena-1"],
+      }],
+      entityPopulationProof: [{
+        arenaId: "arena:1", status: "diverged",
+        canonicalSpawns: 4, replicaSpawns: 2,
+        unresolvedSpawns: 1, mismatches: [{ kind: "missing", signature: "abc" }],
+      }],
+      actorPopulationProof: [{
+        arenaId: "arena:2", status: "incomplete",
+        canonicalActors: 3, replicaActors: 1, mismatchCount: 1,
+      }],
+    });
+    expect(architecture.knowledgeCoverage.arenaEvidence).toMatchObject({
+      entityPopulationProofEntries: [{
+        arenaId: "arena:1", status: "diverged",
+        canonicalSpawns: 4, replicaSpawns: 2,
+        unresolvedSpawns: 1, mismatchCount: 1,
+      }],
+      actorPopulationProofEntries: [{
+        arenaId: "arena:2", status: "incomplete",
+        canonicalActors: 3, replicaActors: 1, mismatchCount: 1,
+      }],
+      populationArenaIdsWithoutReplicaProof: ["arena:2"],
+      architectureMapping: "NOT_YET_RECONCILED",
+    });
+    expect(architecture.knowledgeCoverage.wholeGameUnderstandingPercent).toBeNull();
+  });
 
   it("summarizes observed architecture gaps without pretending whole-game completion", () => {
     const graph: GameplayScenarioGraph = {

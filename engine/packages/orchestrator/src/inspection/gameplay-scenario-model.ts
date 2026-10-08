@@ -293,6 +293,24 @@ export interface GameplayArchitectureNavigation {
         readonly evidenceIds: readonly string[];
         readonly proofStatus: string;
       }[];
+      /** Source-observed per-arena population proof; no inferred instances. */
+      readonly entityPopulationProofEntries: readonly {
+        readonly arenaId: string;
+        readonly status: string;
+        readonly canonicalSpawns: number;
+        readonly replicaSpawns: number;
+        readonly unresolvedSpawns: number;
+        readonly mismatchCount: number;
+      }[];
+      readonly actorPopulationProofEntries: readonly {
+        readonly arenaId: string;
+        readonly status: string;
+        readonly canonicalActors: number;
+        readonly replicaActors: number;
+        readonly mismatchCount: number;
+      }[];
+      /** Population proof arena IDs not present in the replica-proof inventory. */
+      readonly populationArenaIdsWithoutReplicaProof: readonly string[];
       /** Numeric coverage gap, not proof of absent arena instances. */
       readonly arenasWithoutReplicaProofCount: number | null;
       /** Configured limit, not a verified runtime capacity. */
@@ -346,6 +364,21 @@ export function deriveGameplayArchitectureNavigation(
       readonly arenaId: string;
       readonly evidenceIds: readonly string[];
       readonly status: string;
+    }[];
+    readonly entityPopulationProof?: readonly {
+      readonly arenaId: string;
+      readonly status: string;
+      readonly canonicalSpawns: number;
+      readonly replicaSpawns: number;
+      readonly unresolvedSpawns: number;
+      readonly mismatches: readonly unknown[];
+    }[];
+    readonly actorPopulationProof?: readonly {
+      readonly arenaId: string;
+      readonly status: string;
+      readonly canonicalActors: number;
+      readonly replicaActors: number;
+      readonly mismatchCount: number;
     }[];
     readonly declaredConcurrentArenaLimit?: number;
     readonly requestedConcurrentArenas?: number;
@@ -461,6 +494,15 @@ export function deriveGameplayArchitectureNavigation(
       instance.arenaId, instance,
     ]),
   ).values()].sort((a, b) => a.arenaId.localeCompare(b.arenaId));
+  const entityProof = [...(observed.entityPopulationProof ?? [])]
+    .sort((a,b) => a.arenaId.localeCompare(b.arenaId));
+  const actorProof = [...(observed.actorPopulationProof ?? [])]
+    .sort((a,b) => a.arenaId.localeCompare(b.arenaId));
+  const replicaProofIds = new Set(arenaInstances.map((entry) => entry.arenaId));
+  const populationArenaIdsWithoutReplicaProof = sorted([
+    ...entityProof.map((entry) => entry.arenaId),
+    ...actorProof.map((entry) => entry.arenaId),
+  ].filter((id) => !replicaProofIds.has(id)));
   const arenasWithoutReplicaProofCount =
     observed.arenaCount === undefined ||
     !Number.isSafeInteger(observed.arenaCount) ||
@@ -601,6 +643,22 @@ export function deriveGameplayArchitectureNavigation(
           evidenceIds: sorted(instance.evidenceIds),
           proofStatus: instance.status,
         })),
+        entityPopulationProofEntries: entityProof.map((entry) => ({
+          arenaId: entry.arenaId,
+          status: entry.status,
+          canonicalSpawns: entry.canonicalSpawns,
+          replicaSpawns: entry.replicaSpawns,
+          unresolvedSpawns: entry.unresolvedSpawns,
+          mismatchCount: entry.mismatches.length,
+        })),
+        actorPopulationProofEntries: actorProof.map((entry) => ({
+          arenaId: entry.arenaId,
+          status: entry.status,
+          canonicalActors: entry.canonicalActors,
+          replicaActors: entry.replicaActors,
+          mismatchCount: entry.mismatchCount,
+        })),
+        populationArenaIdsWithoutReplicaProof,
         arenasWithoutReplicaProofCount,
         declaredConcurrentArenaLimit:
           observed.declaredConcurrentArenaLimit ?? null,
