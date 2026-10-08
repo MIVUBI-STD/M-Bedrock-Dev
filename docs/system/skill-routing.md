@@ -22,7 +22,7 @@ Two clear operator modes select the appropriate existing execution route:
 
 | Mode | Purpose | Internal route | Not allowed |
 |---|---|---|---|
-| `SYSTEM DEVELOPMENT` | Design/build/improve M-Bedrock-Dev | `m-bedrock-product-development` with `product-development` permission profile, or `m-bedrock-detection-development` for reusable bug detection improvements | Treating a map-specific finding as proof that an engine change is correct |
+| `SYSTEM DEVELOPMENT` | Design/build/improve Lazy-Developer | `m-bedrock-product-development` with `product-development` permission profile, or `m-bedrock-detection-development` for reusable bug detection improvements | Treating a map-specific finding as proof that an engine change is correct |
 | `MAP BUG AUDIT` | Find/classify bugs in a selected map using current capabilities | `m-bedrock-map-bug-audit` | Editing engine, detectors, or platform knowledge while auditing |
 
 The operator mode is not an additional machine skill/lane or artifact authority. Detection Benchmark and Target Repair remain separate specialized routes when requested. Domain specialists never change the selected mode. An audit detection gap is a handoff, not automatic development permission; a development improvement never automatically resumes or reclassifies a map audit.
@@ -35,7 +35,7 @@ The operator mode is not an additional machine skill/lane or artifact authority.
 
 `m-bedrock-product-development`
 
-Use for general M-Bedrock-Dev product, architecture, UI, engine, and tooling development. It uses `docs/system/development-discipline.md` and the existing `product-development` permission profile. No skill-specific output schema or script is required for a source change whose proof is owned by existing repository verifiers.
+Use for general Lazy-Developer product, architecture, UI, engine, and tooling development. It uses `docs/system/development-discipline.md` and the existing `product-development` permission profile. No skill-specific output schema or script is required for a source change whose proof is owned by existing repository verifiers.
 
 ### 1. Operational Map Audit
 
@@ -59,7 +59,7 @@ Forbidden:
 
 `m-bedrock-detection-development`
 
-Use to improve M-Bedrock-Dev bug-finding capability.
+Use to improve Lazy-Developer bug-finding capability.
 
 Allowed:
 - parser/analyzer/knowledge/rule/model/diagnostic/proof improvements;

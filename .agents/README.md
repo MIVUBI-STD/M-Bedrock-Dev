@@ -1,6 +1,6 @@
 # Agent Skills
 
-M-Bedrock-Dev separates **work lanes** from **domain specialists**.
+Lazy-Developer separates **work lanes** from **domain specialists**.
 
 ## Work lanes
 
