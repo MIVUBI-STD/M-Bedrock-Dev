@@ -5,6 +5,7 @@ use std::{
     process::{Command, Stdio},
     thread,
     io::Read,
+    sync::mpsc,
     time::{Duration, Instant},
 };
 
@@ -37,8 +38,10 @@ where
     // deadlock when the child fills an OS pipe buffer.
     let stdout = child.stdout.take().ok_or_else(|| io::Error::new(io::ErrorKind::Other, "missing stdout pipe"))?;
     let stderr = child.stderr.take().ok_or_else(|| io::Error::new(io::ErrorKind::Other, "missing stderr pipe"))?;
-    let stdout_reader = thread::spawn(move || drain_output(stdout));
-    let stderr_reader = thread::spawn(move || drain_output(stderr));
+    let (stdout_sender, stdout_reader) = mpsc::sync_channel(1);
+    let (stderr_sender, stderr_reader) = mpsc::sync_channel(1);
+    thread::spawn(move || { let _ = stdout_sender.send(drain_output(stdout)); });
+    thread::spawn(move || { let _ = stderr_sender.send(drain_output(stderr)); });
 
     let started = Instant::now();
     loop {
@@ -64,8 +67,12 @@ where
             }
         };
         if let Some(status) = observed_status {
-            let stdout = join_output(stdout_reader)?;
-            let stderr = join_output(stderr_reader)?;
+            // A descendant may inherit a pipe even after vmrun exits. Do not
+            // block indefinitely waiting for EOF from an unrelated process.
+            let remaining = timeout.saturating_sub(started.elapsed());
+            let stdout = receive_output(&stdout_reader, remaining)?;
+            let remaining = timeout.saturating_sub(started.elapsed());
+            let stderr = receive_output(&stderr_reader, remaining)?;
             if stdout.len() > OUTPUT_LIMIT || stderr.len() > OUTPUT_LIMIT {
                 return Err(io::Error::new(
                     io::ErrorKind::InvalidData,
@@ -116,8 +123,18 @@ fn drain_output(mut pipe: impl Read) -> io::Result<Vec<u8>> {
     Ok(output)
 }
 
-fn join_output(reader: thread::JoinHandle<io::Result<Vec<u8>>>) -> io::Result<Vec<u8>> {
-    reader.join().map_err(|_| io::Error::new(io::ErrorKind::Other, "command output reader panicked"))?
+fn receive_output(reader: &mpsc::Receiver<io::Result<Vec<u8>>>, timeout: Duration) -> io::Result<Vec<u8>> {
+    match reader.recv_timeout(timeout) {
+        Ok(result) => result,
+        Err(mpsc::RecvTimeoutError::Timeout) => Err(io::Error::new(
+            io::ErrorKind::TimedOut,
+            "command exited but an output pipe remained open beyond the deadline",
+        )),
+        Err(mpsc::RecvTimeoutError::Disconnected) => Err(io::Error::new(
+            io::ErrorKind::Other,
+            "command output reader exited without a result",
+        )),
+    }
 }
 
 fn require_success(program: &Path, success: bool, stdout: &[u8], stderr: &[u8]) -> io::Result<String> {
@@ -148,6 +165,13 @@ where
 mod tests {
     use super::command_output_with_timeout;
     use std::{io, path::Path, time::Duration};
+
+    #[test]
+    fn output_reader_has_bounded_wait_without_eof() {
+        let (_sender, receiver) = std::sync::mpsc::sync_channel(1);
+        let error = super::receive_output(&receiver, Duration::from_millis(1)).unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::TimedOut);
+    }
 
     #[test]
     fn output_drain_is_bounded_even_for_large_streams() {
