@@ -619,7 +619,9 @@ function applyAuthorityContracts(
   contracts: readonly StateAuthorityContract[],
   scripts: readonly ParsedScriptFile[],
 ): ArenaStateIsolationObservation[] {
-  const artifactIds = new Set(scripts.map((script) => script.source.artifactId));
+  const sourceByScriptId = new Map(
+    scripts.map((script) => [script.identifier, script.source]),
+  );
   return observations.map((observation) => {
     const matches = contracts.filter((contract) => {
       if (
@@ -662,13 +664,18 @@ function applyAuthorityContracts(
     // This is an identity check, not proof that the contract semantics are true.
     if (matches.some((item) =>
       !item.sourceRefs?.length ||
-      item.sourceRefs.some((source) => !artifactIds.has(source.artifactId))
+      !item.sourceRefs.some((source) => {
+        const scriptSource = sourceByScriptId.get(observation.scriptId);
+        return scriptSource !== undefined &&
+          source.artifactId === scriptSource.artifactId &&
+          source.relativePath === scriptSource.relativePath;
+      })
     )) {
       return {
         ...observation,
         scope: "unknown",
         status: "partition-proof-required",
-        reason: "State-authority contract provenance does not match the analyzed artifact; isolation is not proven.",
+        reason: "State-authority contract lacks a matching source file for the observed script; isolation is not proven.",
         authorityContractIds: [...new Set(matches.map((item) => item.id))].sort(),
       };
     }

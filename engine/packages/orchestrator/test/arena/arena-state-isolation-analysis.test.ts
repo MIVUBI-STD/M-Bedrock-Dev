@@ -422,6 +422,32 @@ describe("arena state isolation analysis", () => {
       });
   });
 
+  it("rejects same-artifact contracts referencing a different script file", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function join(arena, player) {",
+        "  arena.members.add(player);",
+        "  world.setDynamicProperty('arenaState', 1);",
+        "}",
+      ].join("\n"),
+      { artifactId: "selected-map", relativePath: "scripts/main.ts" },
+    );
+    const result = analyzeArenaStateIsolation([script], [{
+      id: "unrelated-file",
+      authority: { kind: "dynamic-property", key: "arenaState" },
+      mirrors: [],
+      scope: "arena",
+      sourceRefs: [{ artifactId: "selected-map", relativePath: "scripts/other.ts" }],
+    }]);
+    expect(result.observations.find((item) => item.surface === "dynamic-property"))
+      .toMatchObject({
+        status: "partition-proof-required",
+        scope: "unknown",
+        authorityContractIds: ["unrelated-file"],
+      });
+  });
+
 });
 
 
