@@ -268,6 +268,41 @@ This is part of the same canonical audit flow, not a second workflow.
 
 ---
 
+## Architecture-first reconstruction (DISCOVERY → UNDERSTAND → MODEL)
+
+The selected current `.mcworld` remains the sole source of current gameplay implementation. Before treating an anomaly as an issue, reconstruct **one evidence-backed gameplay architecture**. This is a single logical graph, not an additional database, parallel workflow, or independently maintained diagram.
+
+```text
+TARGET: selected artifact
+  ↓
+DISCOVERY: raw source + world DB + execution/state/effect inventory
+  ↓
+UNDERSTAND: one whole-map GameplayScenarioGraph
+  ├─ stages and player journeys (entry, lobby, setup, gameplay, result, replay)
+  ├─ scenarios and mechanics supported by evidence
+  ├─ components (entities, shop, objectives, inventory, state, UI, regions)
+  ├─ causal links and shared dependencies
+  └─ unknown, unsupported, unplaced, and unresolved evidence
+  ↓
+MODEL: reconcile architecture coverage, system ownership and contracts
+  ↓
+STRESS → PROVE: investigate contradictions arising from that architecture
+  ↓
+REPORT: only findings admitted by existing proof/review rules
+```
+
+The engine's existing Semantic Graph, Semantic IR, Gameplay Intent, world model, and scenario graph remain the canonical evidence/model owners. `gameplayArchitecture` on `SelectedMapAuditRun` is **one read-only navigation of the existing scenario graph**, organized by stages, scenarios, components, causal links, and missing references. It is not proof that the whole map was reconstructed. No renderer/chart may independently add an unobserved lobby, shop, actor, objective, level, arena or transition.
+
+Architecture assembly must be **map-first, not tag-first**. The official Map Category is catalog/navigation context; it must not whitelist possible gameplay systems. Unknown mechanics remain visible through raw operations and relationships without requiring a new tag.
+
+A whole-map chart is complete **only as far as evidence supports it**. Preserve unknown/unplaced components, broken references, unsupported sources, and uncertainty instead of silently dropping them or inventing links. Reconcile both directions: every material extracted source/operation needs a trace or explicit gap; every asserted gameplay component/link needs supporting selected-artifact evidence or an explicitly unresolved design question. One component may participate in multiple stages, areas and systems without duplicate identities.
+
+Diagnostic candidates may be computed by analyzers while reconstruction proceeds, but must **not be promoted to proven bugs/design mismatches** because they appear in the chart or match historical knowledge. Ordered stage admission, counter-evidence and proof rules still decide whether STRESS/PROVE/REPORT can advance. Gameplay expected behavior may require an authoritative approved design or targeted user clarification; implementation alone does not establish design intent.
+
+This section defines one required output and its proof boundary, not an extra stage, status, second model authority, or new persistence store.
+
+---
+
 # 2. DISCOVERY — find every material gameplay surface
 
 ## Goal

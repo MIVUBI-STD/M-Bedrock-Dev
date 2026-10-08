@@ -167,6 +167,16 @@ export interface GameplayArchitectureNavigation {
     readonly componentIds: readonly string[];
     readonly causalLinkIds: readonly string[];
   }[];
+  /** Every scenario remains visible within the same map-wide navigation. */
+  readonly scenarios: readonly {
+    readonly id: string;
+    readonly label: string;
+    readonly gameplayStage: string;
+    readonly purpose: string;
+    readonly componentIds: readonly string[];
+    readonly causalLinkIds: readonly string[];
+    readonly sourceSubjectIds: readonly string[];
+  }[];
   readonly components: readonly {
     readonly id: string;
     readonly label: string;
@@ -179,12 +189,13 @@ export interface GameplayArchitectureNavigation {
     readonly id: string;
     readonly fromComponentId: string;
     readonly toComponentId: string;
+    readonly purpose: string;
     readonly status: GameplayCausalLinkStatus;
     readonly evidenceIds: readonly string[];
   }[];
   readonly unplacedComponentIds: readonly string[];
   readonly unresolvedCausalLinkIds: readonly string[];
-  readonly missingComponentReferenceIds: readonly string[];
+  readonly missingGraphReferenceIds: readonly string[];
 }
 
 /** Navigation only: preserve gaps rather than fabricating stage or system membership. */
@@ -244,6 +255,16 @@ export function deriveGameplayArchitectureNavigation(
         componentIds: sorted(group.componentIds),
         causalLinkIds: sorted(group.causalLinkIds),
       })),
+    scenarios: [...graph.scenarios].sort((a,b) => a.id.localeCompare(b.id))
+      .map((scenario) => ({
+        id: scenario.id,
+        label: scenario.label,
+        gameplayStage: scenario.gameplayStage,
+        purpose: scenario.purpose,
+        componentIds: sorted(scenario.componentIds),
+        causalLinkIds: sorted(scenario.causalLinkIds),
+        sourceSubjectIds: sorted(scenario.sourceSubjectIds),
+      })),
     components: [...graph.components].sort((a,b) => a.id.localeCompare(b.id))
       .map((component) => ({
         id: component.id,
@@ -258,6 +279,7 @@ export function deriveGameplayArchitectureNavigation(
         id: link.id,
         fromComponentId: link.fromComponentId,
         toComponentId: link.toComponentId,
+        purpose: link.purpose,
         status: link.status,
         evidenceIds: sorted(link.evidenceIds),
       })),
@@ -267,6 +289,6 @@ export function deriveGameplayArchitectureNavigation(
     unresolvedCausalLinkIds: sorted(graph.causalLinks
       .filter((link) => link.status !== "PROVEN")
       .map((link) => link.id)),
-    missingComponentReferenceIds: sorted([...missing]),
+    missingGraphReferenceIds: sorted([...missing]),
   };
 }

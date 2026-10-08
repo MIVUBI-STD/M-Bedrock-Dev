@@ -449,6 +449,15 @@ describe("gameplay scenario closure", () => {
         orphan: true,
       }],
     });
+    expect(model.scenarios).toEqual([{
+      id: "scenario:lobby",
+      label: "Lobby",
+      gameplayStage: "ENTRY_JOIN",
+      purpose: "Join.",
+      sourceSubjectIds: [],
+      componentIds: ["component:entry", "component:missing"],
+      causalLinkIds: ["link:missing"],
+    }]);
     expect(model.stages[0]).toEqual({
       name: "ENTRY_JOIN",
       scenarioIds: ["scenario:lobby"],
@@ -458,7 +467,7 @@ describe("gameplay scenario closure", () => {
     expect(model.components.find((item) => item.id === "component:entry")?.evidenceIds)
       .toEqual(["evidence:join"]);
     expect(model.unplacedComponentIds).toEqual(["component:unplaced"]);
-    expect(model.missingComponentReferenceIds).toEqual([
+    expect(model.missingGraphReferenceIds).toEqual([
       "component:missing", "link:missing",
     ]);
   });
