@@ -218,27 +218,6 @@ function scoreboardObservation(
     };
   }
 
-  if (
-    participant &&
-    /(?:player|participant|member|scoreboardidentity)/i.test(
-      participant,
-    )
-  ) {
-    return {
-      scriptId: script.identifier,
-      region,
-      surface: "scoreboard",
-      key:
-        call.symbol +
-        ":" +
-        participant,
-      scope: "player-local",
-      status: "isolated",
-      reason:
-        "Scoreboard participant expression is player/participant scoped.",
-    };
-  }
-
   return {
     scriptId: script.identifier,
     region,
@@ -465,19 +444,8 @@ function analyzeScript(
         keyExpression,
         authoritiesForRegion(region),
       );
-    const playerPartitioned =
-      receiver === "world-global" &&
-      keyExpression !== undefined &&
-      /(?:player|participant|member|scoreboardidentity)/i.test(
-        keyExpression,
-      );
-
     const scope: ArenaStateScope =
-      authorityPartitioned
-        ? "arena-local"
-        : playerPartitioned
-          ? "player-local"
-          : receiver;
+      authorityPartitioned ? "arena-local" : receiver;
 
     observations.push({
       scriptId: script.identifier,
@@ -493,8 +461,7 @@ function analyzeScript(
         ),
       scope,
       status:
-        authorityPartitioned ||
-        playerPartitioned
+        authorityPartitioned
           ? "isolated"
           : scope === "world-global"
             ? "partition-proof-required"
@@ -502,9 +469,7 @@ function analyzeScript(
       reason:
         authorityPartitioned
           ? "World dynamic-property key expression is explicitly partitioned by the authored arena authority expression."
-          : playerPartitioned
-            ? "World dynamic-property key expression is explicitly partitioned by player/participant identity."
-            : scope === "world-global"
+          : scope === "world-global"
               ? "World dynamic properties are shared by all arenas; the property key must prove arena/session partitioning."
               : "Dynamic-property receiver scope inferred from the static receiver expression.",
     });

@@ -284,6 +284,36 @@ describe("arena state isolation analysis", () => {
       .toBe("isolated");
   });
 
+  it("does not claim player isolation from lexical identifiers", () => {
+    const script = {
+      identifier: "main",
+      arenaAuthorityPaths: [{ arenaExpression: "arena", executionRegion: "function:join" }],
+      localFunctionCalls: [],
+      propertyWrites: [],
+      commandLiterals: [],
+      stateMutations: [],
+      dynamicProperties: [{
+        operation: "set",
+        executionRegion: "function:join",
+        receiverHint: "world",
+        propertyExpression: "'playerShared'",
+      }],
+      methodCalls: [{
+        executionRegion: "function:join",
+        receiverType: "ScoreboardObjective",
+        method: "setScore",
+        symbol: "objective.setScore",
+        argumentTexts: ["memberCounter", "1"],
+      }],
+    } as any;
+
+    const observations = analyzeArenaStateIsolation([script]).observations;
+    expect(observations.find((item) => item.surface === "dynamic-property"))
+      .toMatchObject({ status: "partition-proof-required", scope: "world-global" });
+    expect(observations.find((item) => item.surface === "scoreboard"))
+      .toMatchObject({ status: "partition-proof-required", scope: "world-global" });
+  });
+
 });
 
 
