@@ -496,8 +496,48 @@ describe("gameplay scenario closure", () => {
       arenaEvidence: {
         detected: true,
         count: 6,
+        instances: [],
+        missingInstanceCount: 6,
+        declaredConcurrentArenaLimit: null,
+        perArenaPlayerCapacity: null,
         architectureMapping: "NOT_YET_RECONCILED",
       },
     });
+  });
+
+  it("preserves physical arena inventory separately from scenario placement", () => {
+    const architecture = deriveGameplayArchitectureNavigation(
+      baseGraph(),
+      {
+        relevantSourceCount: 3,
+        indexedSourceCount: 3,
+        arenaDetected: true,
+        arenaCount: 3,
+        replicaProof: [{
+          arenaId: "arena:1",
+          evidenceIds: ["native:a1", "native:a1"],
+          status: "complete-proof",
+        }, {
+          arenaId: "arena:2",
+          evidenceIds: ["native:a2"],
+          status: "incomplete-proof",
+        }],
+        declaredConcurrentArenaLimit: 2,
+        perArenaPlayerCapacity: 5,
+      },
+    );
+    expect(architecture.knowledgeCoverage.arenaEvidence).toEqual({
+      detected: true,
+      count: 3,
+      instances: [
+        { arenaId: "arena:1", evidenceIds: ["native:a1"], proofStatus: "complete-proof" },
+        { arenaId: "arena:2", evidenceIds: ["native:a2"], proofStatus: "incomplete-proof" },
+      ],
+      missingInstanceCount: 1,
+      declaredConcurrentArenaLimit: 2,
+      perArenaPlayerCapacity: 5,
+      architectureMapping: "NOT_YET_RECONCILED",
+    });
+    expect(architecture.knowledgeCoverage.wholeGameUnderstandingPercent).toBeNull();
   });
 });

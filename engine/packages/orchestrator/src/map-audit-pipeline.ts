@@ -764,6 +764,15 @@ function assembleSelectedMapAuditRun(
         ...(inspection.gameplayWorld.arenas.count === undefined
           ? {}
           : { arenaCount: inspection.gameplayWorld.arenas.count }),
+        replicaProof: inspection.gameplayWorld.arenas.replicaProof,
+        ...(inspection.gameplayWorld.arenas.declaredConcurrentArenaLimit === undefined
+          ? {}
+          : { declaredConcurrentArenaLimit:
+              inspection.gameplayWorld.arenas.declaredConcurrentArenaLimit }),
+        ...(inspection.gameplayWorld.arenas.perArenaPlayerCapacity === undefined
+          ? {}
+          : { perArenaPlayerCapacity:
+              inspection.gameplayWorld.arenas.perArenaPlayerCapacity }),
       }),
     ...(userIntent === undefined
       ? {}

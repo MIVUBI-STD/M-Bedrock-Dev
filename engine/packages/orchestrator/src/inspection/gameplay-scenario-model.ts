@@ -213,6 +213,16 @@ export interface GameplayArchitectureNavigation {
     readonly arenaEvidence: {
       readonly detected: boolean;
       readonly count: number | null;
+      /** Exact arena identifiers are included only when native replica evidence exists. */
+      readonly instances: readonly {
+        readonly arenaId: string;
+        readonly evidenceIds: readonly string[];
+        readonly proofStatus: string;
+      }[];
+      /** Unknown if the arena count is not established. */
+      readonly missingInstanceCount: number | null;
+      readonly declaredConcurrentArenaLimit: number | null;
+      readonly perArenaPlayerCapacity: number | null;
       readonly architectureMapping: "NOT_YET_RECONCILED";
     };
   };
@@ -226,6 +236,13 @@ export function deriveGameplayArchitectureNavigation(
     readonly indexedSourceCount: number;
     readonly arenaDetected: boolean;
     readonly arenaCount?: number;
+    readonly replicaProof?: readonly {
+      readonly arenaId: string;
+      readonly evidenceIds: readonly string[];
+      readonly status: string;
+    }[];
+    readonly declaredConcurrentArenaLimit?: number;
+    readonly perArenaPlayerCapacity?: number;
   } = {
     relevantSourceCount: 0,
     indexedSourceCount: 0,
@@ -286,6 +303,18 @@ export function deriveGameplayArchitectureNavigation(
   const placedCount = graph.components.filter((component) =>
     placed.has(component.id)
   ).length;
+  const arenaInstances = [...new Map(
+    (observed.replicaProof ?? []).map((instance) => [
+      instance.arenaId, instance,
+    ]),
+  ).values()].sort((a, b) => a.arenaId.localeCompare(b.arenaId));
+  const missingInstanceCount =
+    observed.arenaCount === undefined ||
+    !Number.isSafeInteger(observed.arenaCount) ||
+    observed.arenaCount < 0
+      ? null
+      : Math.max(0, observed.arenaCount - arenaInstances.length);
+
 
   return {
     schemaVersion: 1,
@@ -349,6 +378,16 @@ export function deriveGameplayArchitectureNavigation(
           observed.arenaCount === undefined
             ? null
             : observed.arenaCount,
+        instances: arenaInstances.map((instance) => ({
+          arenaId: instance.arenaId,
+          evidenceIds: sorted(instance.evidenceIds),
+          proofStatus: instance.status,
+        })),
+        missingInstanceCount,
+        declaredConcurrentArenaLimit:
+          observed.declaredConcurrentArenaLimit ?? null,
+        perArenaPlayerCapacity:
+          observed.perArenaPlayerCapacity ?? null,
         architectureMapping: "NOT_YET_RECONCILED",
       },
     },
