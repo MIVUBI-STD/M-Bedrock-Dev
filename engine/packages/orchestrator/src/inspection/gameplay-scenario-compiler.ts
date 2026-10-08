@@ -2474,6 +2474,7 @@ export function compileGameplayScenarioGraph(
     for (const edge of input.intent.edges) {
       if (!allowed.has(edge.from) || !allowed.has(edge.to)) continue;
       if (!componentIds.has(edge.from) || !componentIds.has(edge.to)) continue;
+      const impactPath = impactPathFrom(edge.to, allowed, input.intent);
       causalLinks.push({
         id: "edge:" + scenario.id + ":" + edge.id,
         scenarioId: scenario.id,
@@ -2497,15 +2498,8 @@ export function compileGameplayScenarioGraph(
           ]),
         ].sort(),
         knowledgeRequirementIds: [],
-        impactPathComponentIds: impactPathFrom(
-          edge.to,
-          allowed,
-          input.intent,
-        ),
-        impactPathEvidenceIds: impactPathEvidenceIds(
-          impactPathFrom(edge.to, allowed, input.intent),
-          input.intent,
-        ),
+        impactPathComponentIds: impactPath,
+        impactPathEvidenceIds: impactPathEvidenceIds(impactPath, input.intent),
         dimensionEvidence: {},
         intentEdgeKind: edge.kind,
         status: edgeStatus(edge),
