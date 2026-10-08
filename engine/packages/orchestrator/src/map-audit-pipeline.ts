@@ -765,6 +765,20 @@ function assembleSelectedMapAuditRun(
           ? {}
           : { arenaCount: inspection.gameplayWorld.arenas.count }),
         replicaProof: inspection.gameplayWorld.arenas.replicaProof,
+        ...(inspection.gameplayWorld.arenas.basis === undefined
+          ? {}
+          : { arenaCountBasis: inspection.gameplayWorld.arenas.basis }),
+        ...(inspection.gameplayWorld.arenas.layoutStatus === undefined
+          ? {}
+          : { arenaLayoutStatus: inspection.gameplayWorld.arenas.layoutStatus }),
+        ...(inspection.gameplayWorld.arenas.requestedConcurrentArenas === undefined
+          ? {}
+          : { requestedConcurrentArenas:
+              inspection.gameplayWorld.arenas.requestedConcurrentArenas }),
+        ...(inspection.gameplayWorld.arenas.safeConcurrentArenas === undefined
+          ? {}
+          : { safeConcurrentArenas:
+              inspection.gameplayWorld.arenas.safeConcurrentArenas }),
         ...(inspection.gameplayWorld.arenas.declaredConcurrentArenaLimit === undefined
           ? {}
           : { declaredConcurrentArenaLimit:

@@ -212,16 +212,24 @@ export interface GameplayArchitectureNavigation {
     readonly observedPlacedComponentCount: number;
     readonly arenaEvidence: {
       readonly detected: boolean;
+      /** Number of physical arenas inferred from the selected world. */
       readonly count: number | null;
-      /** Exact arena identifiers are included only when native replica evidence exists. */
-      readonly instances: readonly {
+      readonly countBasis: "topology" | "script-config" | "reconciled" | null;
+      readonly layoutStatus: string | null;
+      /** Only arena identities available from existing replica proof receipts. */
+      readonly replicaProofEntries: readonly {
         readonly arenaId: string;
         readonly evidenceIds: readonly string[];
         readonly proofStatus: string;
       }[];
-      /** Unknown if the arena count is not established. */
-      readonly missingInstanceCount: number | null;
+      /** Numeric coverage gap, not proof of absent arena instances. */
+      readonly arenasWithoutReplicaProofCount: number | null;
+      /** Configured limit, not a verified runtime capacity. */
       readonly declaredConcurrentArenaLimit: number | null;
+      /** Requested coverage, not an approved game-design requirement. */
+      readonly requestedConcurrentArenas: number | null;
+      /** Analysis estimate; never treat as actual runtime outcome. */
+      readonly safeConcurrentArenas: number | null;
       readonly perArenaPlayerCapacity: number | null;
       readonly architectureMapping: "NOT_YET_RECONCILED";
     };
@@ -236,12 +244,16 @@ export function deriveGameplayArchitectureNavigation(
     readonly indexedSourceCount: number;
     readonly arenaDetected: boolean;
     readonly arenaCount?: number;
+    readonly arenaCountBasis?: "topology" | "script-config" | "reconciled";
+    readonly arenaLayoutStatus?: string;
     readonly replicaProof?: readonly {
       readonly arenaId: string;
       readonly evidenceIds: readonly string[];
       readonly status: string;
     }[];
     readonly declaredConcurrentArenaLimit?: number;
+    readonly requestedConcurrentArenas?: number;
+    readonly safeConcurrentArenas?: number | null;
     readonly perArenaPlayerCapacity?: number;
   } = {
     relevantSourceCount: 0,
@@ -308,12 +320,13 @@ export function deriveGameplayArchitectureNavigation(
       instance.arenaId, instance,
     ]),
   ).values()].sort((a, b) => a.arenaId.localeCompare(b.arenaId));
-  const missingInstanceCount =
+  const arenasWithoutReplicaProofCount =
     observed.arenaCount === undefined ||
     !Number.isSafeInteger(observed.arenaCount) ||
-    observed.arenaCount < 0
+    observed.arenaCount < 0 ||
+    arenaInstances.length > observed.arenaCount
       ? null
-      : Math.max(0, observed.arenaCount - arenaInstances.length);
+      : observed.arenaCount - arenaInstances.length;
 
 
   return {
@@ -378,14 +391,20 @@ export function deriveGameplayArchitectureNavigation(
           observed.arenaCount === undefined
             ? null
             : observed.arenaCount,
-        instances: arenaInstances.map((instance) => ({
+        countBasis: observed.arenaCountBasis ?? null,
+        layoutStatus: observed.arenaLayoutStatus ?? null,
+        replicaProofEntries: arenaInstances.map((instance) => ({
           arenaId: instance.arenaId,
           evidenceIds: sorted(instance.evidenceIds),
           proofStatus: instance.status,
         })),
-        missingInstanceCount,
+        arenasWithoutReplicaProofCount,
         declaredConcurrentArenaLimit:
           observed.declaredConcurrentArenaLimit ?? null,
+        requestedConcurrentArenas:
+          observed.requestedConcurrentArenas ?? null,
+        safeConcurrentArenas:
+          observed.safeConcurrentArenas ?? null,
         perArenaPlayerCapacity:
           observed.perArenaPlayerCapacity ?? null,
         architectureMapping: "NOT_YET_RECONCILED",

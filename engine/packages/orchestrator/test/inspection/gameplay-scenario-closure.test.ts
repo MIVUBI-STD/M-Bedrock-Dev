@@ -496,9 +496,13 @@ describe("gameplay scenario closure", () => {
       arenaEvidence: {
         detected: true,
         count: 6,
-        instances: [],
-        missingInstanceCount: 6,
+        countBasis: null,
+        layoutStatus: null,
+        replicaProofEntries: [],
+        arenasWithoutReplicaProofCount: 6,
         declaredConcurrentArenaLimit: null,
+        requestedConcurrentArenas: null,
+        safeConcurrentArenas: null,
         perArenaPlayerCapacity: null,
         architectureMapping: "NOT_YET_RECONCILED",
       },
@@ -513,6 +517,10 @@ describe("gameplay scenario closure", () => {
         indexedSourceCount: 3,
         arenaDetected: true,
         arenaCount: 3,
+        arenaCountBasis: "reconciled",
+        arenaLayoutStatus: "resolved",
+        requestedConcurrentArenas: 3,
+        safeConcurrentArenas: 2,
         replicaProof: [{
           arenaId: "arena:1",
           evidenceIds: ["native:a1", "native:a1"],
@@ -529,12 +537,16 @@ describe("gameplay scenario closure", () => {
     expect(architecture.knowledgeCoverage.arenaEvidence).toEqual({
       detected: true,
       count: 3,
-      instances: [
+      countBasis: "reconciled",
+      layoutStatus: "resolved",
+      replicaProofEntries: [
         { arenaId: "arena:1", evidenceIds: ["native:a1"], proofStatus: "complete-proof" },
         { arenaId: "arena:2", evidenceIds: ["native:a2"], proofStatus: "incomplete-proof" },
       ],
-      missingInstanceCount: 1,
+      arenasWithoutReplicaProofCount: 1,
       declaredConcurrentArenaLimit: 2,
+      requestedConcurrentArenas: 3,
+      safeConcurrentArenas: 2,
       perArenaPlayerCapacity: 5,
       architectureMapping: "NOT_YET_RECONCILED",
     });
