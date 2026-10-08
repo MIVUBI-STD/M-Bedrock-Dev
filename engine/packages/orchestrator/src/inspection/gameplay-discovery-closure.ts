@@ -13,6 +13,7 @@ export interface GameplayDiscoveryClosureInput {
   readonly unsupportedRelevantSourcePaths: readonly string[];
   readonly semanticUnderstandingGapPaths: readonly string[];
   readonly unresolvedReferences: number;
+  readonly discoveryChallengeIds?: readonly string[];
 }
 
 export interface GameplayDiscoveryClosure {
@@ -36,6 +37,7 @@ export interface GameplayDiscoveryClosure {
   readonly sourceInventoryBalanced: boolean;
   readonly sourceCoverageComplete: boolean;
   readonly unresolvedReferences: number;
+  readonly discoveryChallengeIds: readonly string[];
   readonly reasons: readonly string[];
 }
 
@@ -46,6 +48,9 @@ export function assessGameplayDiscoveryClosure(
     ...new Set(input.discoveredSurfaceIds),
   ].sort();
   const reasons: string[] = [];
+  const discoveryChallengeIds = [
+    ...new Set(input.discoveryChallengeIds ?? []),
+  ].sort();
   const unsupportedRelevantSourcePaths = [
     ...new Set(input.unsupportedRelevantSourcePaths),
   ].sort();
@@ -118,6 +123,13 @@ export function assessGameplayDiscoveryClosure(
     );
   }
 
+  if (discoveryChallengeIds.length > 0) {
+    reasons.push(
+      String(discoveryChallengeIds.length) +
+      " raw execution/state evidence challenge(s) remain unaccounted.",
+    );
+  }
+
   if (input.unresolvedReferences > 0) {
     reasons.push(
       String(input.unresolvedReferences) +
@@ -132,7 +144,8 @@ export function assessGameplayDiscoveryClosure(
       !input.sourceCoverageComplete ||
       input.sourceParseFailures > 0 ||
       unsupportedRelevantSources > 0 ||
-      semanticUnderstandingGaps > 0
+      semanticUnderstandingGaps > 0 ||
+      discoveryChallengeIds.length > 0
         ? "OPEN"
         : input.unresolvedReferences > 0
           ? "PARTIAL"
@@ -163,6 +176,7 @@ export function assessGameplayDiscoveryClosure(
       input.sourceCoverageComplete,
     unresolvedReferences:
       input.unresolvedReferences,
+    discoveryChallengeIds,
     reasons,
   };
 }

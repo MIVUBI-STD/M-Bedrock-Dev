@@ -459,4 +459,24 @@ describe("inspection source index coverage", () => {
       await rm(root, { recursive: true, force: true });
     }
   });
+
+  it("conserves unfamiliar behavior-pack JSON as an unsupported gameplay candidate", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-index-"));
+    try {
+      const relativePath = "behavior_packs/novel_bp/experimental_mechanic/device.json";
+      await mkdir(join(root, "behavior_packs/novel_bp/experimental_mechanic"), { recursive: true });
+      await writeFile(join(root, relativePath), JSON.stringify({ custom: { activation: "event" } }));
+      const result = await indexInspectionSources(root, "artifact:test", [
+        { relativePath, size: 34, contentHash: "novel" },
+      ]);
+      expect(result.coverage).toMatchObject({
+        relevantFiles: 1,
+        indexedFiles: 0,
+        complete: false,
+        unsupportedRelevantFiles: [relativePath],
+      });
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
 });

@@ -222,12 +222,23 @@ function isGameplaySensitiveUnownedSource(
     return true;
   }
 
-  return behaviorPackScoped &&
+  if (!behaviorPackScoped) return false;
+  if (
     segments.some((segment) =>
-      BEHAVIOR_PACK_GAMEPLAY_JSON_DIRECTORIES.has(
-        segment,
-      )
-    );
+      BEHAVIOR_PACK_GAMEPLAY_JSON_DIRECTORIES.has(segment)
+    )
+  ) return true;
+
+  // Unknown JSON families in a behavior pack must not disappear solely
+  // because their directory has never been registered as a mechanic.
+  // Keep manifests, script tooling, and localization out of gameplay evidence.
+  const packRootIndex = segments.findIndex((segment) =>
+    segment === "behavior_packs" || segment === "behavior_pack"
+  );
+  const withinPack = segments.slice(packRootIndex + 2);
+  return withinPack.length >= 2 &&
+    !["scripts", "texts", "config"].includes(withinPack[0]!) &&
+    withinPack[withinPack.length - 1] !== "manifest.json";
 }
 
 export async function indexInspectionSources(

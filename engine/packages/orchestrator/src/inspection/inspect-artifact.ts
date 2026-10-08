@@ -41,6 +41,7 @@ import { projectMapEngineeringAssessment } from "../map-engineering-assessment.j
 import { refreshHiddenGameplayDefectsForWorld } from "./hidden-gameplay-defect-analysis.js";
 import { deriveInspectionEngineeringAnalyses } from "./engineering-analysis-stage.js";
 import { assessGameplayDiscoveryClosure } from "./gameplay-discovery-closure.js";
+import { challengeGameplayDiscovery } from "./gameplay-discovery-challenger.js";
 import { deriveGameplayAnalysisPriorities } from "./gameplay-analysis-priority.js";
 import { collectArtifactReleaseObservations } from "../release-identity-evidence.js";
 import { analyzeReleaseIdentity } from "../release-identity-analysis.js";
@@ -946,6 +947,34 @@ export async function inspectArtifact(
         },
       });
 
+    const finalGameplaySemantic =
+      projectGameplaySemanticModel(
+        finalGameplayWorld,
+      );
+    const finalEngineeringAssessment =
+      projectMapEngineeringAssessment(
+        finalGameplayWorld,
+      );
+    const refreshedHiddenGameplayDefects =
+      refreshHiddenGameplayDefectsForWorld(
+        result.hiddenGameplayDefects,
+        finalGameplayWorld,
+        result.gameplayIntent.model,
+      );
+    const discoveryChallenges =
+      challengeGameplayDiscovery({
+        semanticIr: result.semanticIrModel,
+        intent: result.gameplayIntent.model,
+        graph: refreshedHiddenGameplayDefects.scenarioAudit.graph,
+      });
+    const finalHiddenGameplayDefects = {
+      ...refreshedHiddenGameplayDefects,
+      discoveryChallenges,
+      attention: {
+        ...refreshedHiddenGameplayDefects.attention,
+        discoveryChallengeSignals: discoveryChallenges.length,
+      },
+    };
     const finalGameplayDiscoveryClosure =
       assessGameplayDiscoveryClosure({
         discoveredSurfaceIds:
@@ -971,22 +1000,10 @@ export async function inspectArtifact(
             .semanticUnderstandingGapPaths,
         unresolvedReferences:
           result.unresolvedReferences,
+        discoveryChallengeIds:
+          finalHiddenGameplayDefects.discoveryChallenges.map((item) => item.id),
       });
 
-    const finalGameplaySemantic =
-      projectGameplaySemanticModel(
-        finalGameplayWorld,
-      );
-    const finalEngineeringAssessment =
-      projectMapEngineeringAssessment(
-        finalGameplayWorld,
-      );
-    const finalHiddenGameplayDefects =
-      refreshHiddenGameplayDefectsForWorld(
-        result.hiddenGameplayDefects,
-        finalGameplayWorld,
-        result.gameplayIntent.model,
-      );
     const finalEngineeringAnalyses =
       deriveInspectionEngineeringAnalyses({
         world: finalGameplayWorld,

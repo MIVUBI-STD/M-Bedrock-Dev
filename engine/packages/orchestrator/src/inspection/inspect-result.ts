@@ -573,6 +573,20 @@ export function buildInspectionResult(
           edge.type !==
           "IMPORTS_MINECRAFT_MODULE",
       ).length;
+  const gameplaySemantic = projectGameplaySemanticModel(gameplayWorld);
+  const engineeringAssessment = projectMapEngineeringAssessment(gameplayWorld);
+  const hiddenGameplayDefects =
+    analyzeHiddenGameplayDefects({
+      intent: input.gameplayIntent,
+      semanticIr: input.semanticIr,
+      world: gameplayWorld,
+      ...(input.mapClassification === undefined
+        ? {}
+        : {
+            classification:
+              input.mapClassification,
+          }),
+    });
   const gameplayDiscoveryClosure =
     assessGameplayDiscoveryClosure({
       discoveredSurfaceIds:
@@ -595,22 +609,10 @@ export function buildInspectionResult(
           .semanticUnderstandingGaps,
       unresolvedReferences:
         discoveryUnresolvedReferences,
+      discoveryChallengeIds:
+        hiddenGameplayDefects.discoveryChallenges.map((item) => item.id),
     });
 
-  const gameplaySemantic = projectGameplaySemanticModel(gameplayWorld);
-  const engineeringAssessment = projectMapEngineeringAssessment(gameplayWorld);
-  const hiddenGameplayDefects =
-    analyzeHiddenGameplayDefects({
-      intent: input.gameplayIntent,
-      semanticIr: input.semanticIr,
-      world: gameplayWorld,
-      ...(input.mapClassification === undefined
-        ? {}
-        : {
-            classification:
-              input.mapClassification,
-          }),
-    });
   const engineeringAnalyses =
     deriveInspectionEngineeringAnalyses({
       world: gameplayWorld,

@@ -131,4 +131,26 @@ describe("gameplay discovery closure", () => {
 
     expect(result.status).toBe("COMPLETE");
   });
+
+  it("does not claim COMPLETE while raw operations remain unowned", () => {
+    const input = {
+      discoveredSurfaceIds: ["runtime:state"],
+      sourceRelevantFiles: 1,
+      sourceIndexedFiles: 1,
+      sourceCoverageComplete: true,
+      sourceParseFailures: 0,
+      unsupportedRelevantSourcePaths: [],
+      semanticUnderstandingGapPaths: [],
+      unresolvedReferences: 0,
+    };
+    expect(assessGameplayDiscoveryClosure(input).status).toBe("COMPLETE");
+    const challenged = assessGameplayDiscoveryClosure({
+      ...input,
+      discoveryChallengeIds: ["discovery-challenge:state:unknown-mutation"],
+    });
+    expect(challenged.status).toBe("OPEN");
+    expect(challenged.discoveryChallengeIds).toEqual([
+      "discovery-challenge:state:unknown-mutation",
+    ]);
+  });
 });
