@@ -28,6 +28,17 @@ Do not make each step a separate persisted workflow stage or commit. If work exc
 
 A map-specific bug encountered during development can supply a regression example, not authority to modify that map or to promote it into a production Bug Report. Conversely, a detection gap discovered during MAP BUG AUDIT requires explicit handoff before any system development.
 
+## Development decision quality
+
+Apply these four decisions within DEFINE → INVESTIGATE → DESIGN → VERIFY. They are reasoning checks, not additional workflow stages or persisted statuses.
+
+1. **Problem classification:** identify whether the request is a verified implementation defect, a missing required capability, an intentional design change, a documentation/contract mismatch, or an unproven hypothesis. A user-reported symptom is evidence to investigate, not proof of root cause. Keep unproven claims explicit.
+2. **Root-cause discrimination:** locate the earliest canonical owner whose behavior or contract contradicts the expected result. Compare current source with the requirement and seek one discriminating observation or reduced fixture where ambiguity remains. Fixing downstream output cannot substitute for fixing an upstream incorrect owner.
+3. **Solution selection:** compare no change, deletion, correction within the existing owner, reuse of an existing capability, and minimal addition—in that order. Reject parallel registries, generic managers, speculative fallbacks, and changes that do not address the established cause. Record why a new abstraction is necessary if selected.
+4. **Completion discipline:** accept only the originally scoped observable outcome with matching proof; inspect affected downstream consumers and regressions. Distinguish implementation present, source verified, executable verified, and Minecraft runtime verified. Do not convert an unrelated failure, unresolved runtime claim, or future improvement opportunity into automatic scope expansion.
+
+When evidence is insufficient, state the **exact undecided claim**, what current evidence says, and the **minimum next evidence** that would distinguish alternatives. UNKNOWN is not automatically a bug, a development request, or permission for a new subsystem.
+
 ## Minimum complete change
 
 Default order:
