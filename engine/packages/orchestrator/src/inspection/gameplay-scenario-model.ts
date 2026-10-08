@@ -196,11 +196,41 @@ export interface GameplayArchitectureNavigation {
   readonly unplacedComponentIds: readonly string[];
   readonly unresolvedCausalLinkIds: readonly string[];
   readonly missingGraphReferenceIds: readonly string[];
+  /**
+   * Measured coverage of observed evidence, never a claim about all gameplay.
+   * Full-map understanding has no defensible denominator while unidentified
+   * source semantics, world content, or design intent can remain unknown.
+   */
+  readonly knowledgeCoverage: {
+    readonly observedSourceIndexPercent: number | null;
+    readonly observedComponentPlacementPercent: number | null;
+    readonly wholeGameUnderstandingPercent: null;
+    readonly wholeGameUnderstandingStatus: "NOT_MEASURABLE";
+    readonly observedRelevantSourceCount: number;
+    readonly observedIndexedSourceCount: number;
+    readonly observedComponentCount: number;
+    readonly observedPlacedComponentCount: number;
+    readonly arenaEvidence: {
+      readonly detected: boolean;
+      readonly count: number | null;
+      readonly architectureMapping: "NOT_YET_RECONCILED";
+    };
+  };
 }
 
 /** Navigation only: preserve gaps rather than fabricating stage or system membership. */
 export function deriveGameplayArchitectureNavigation(
   graph: GameplayScenarioGraph,
+  observed: {
+    readonly relevantSourceCount: number;
+    readonly indexedSourceCount: number;
+    readonly arenaDetected: boolean;
+    readonly arenaCount?: number;
+  } = {
+    relevantSourceCount: 0,
+    indexedSourceCount: 0,
+    arenaDetected: false,
+  },
 ): GameplayArchitectureNavigation {
   const sorted = (values: readonly string[]) =>
     [...new Set(values)].sort();
@@ -244,6 +274,18 @@ export function deriveGameplayArchitectureNavigation(
   const placed = new Set(
     graph.scenarios.flatMap((scenario) => scenario.componentIds),
   );
+
+  const percentage = (part: number, total: number): number | null =>
+    Number.isSafeInteger(part) &&
+    Number.isSafeInteger(total) &&
+    total > 0 &&
+    part >= 0 &&
+    part <= total
+      ? Math.round((part / total) * 10000) / 100
+      : null;
+  const placedCount = graph.components.filter((component) =>
+    placed.has(component.id)
+  ).length;
 
   return {
     schemaVersion: 1,
@@ -290,5 +332,25 @@ export function deriveGameplayArchitectureNavigation(
       .filter((link) => link.status !== "PROVEN")
       .map((link) => link.id)),
     missingGraphReferenceIds: sorted([...missing]),
+    knowledgeCoverage: {
+      observedSourceIndexPercent:
+        percentage(observed.indexedSourceCount, observed.relevantSourceCount),
+      observedComponentPlacementPercent:
+        percentage(placedCount, graph.components.length),
+      wholeGameUnderstandingPercent: null,
+      wholeGameUnderstandingStatus: "NOT_MEASURABLE",
+      observedRelevantSourceCount: observed.relevantSourceCount,
+      observedIndexedSourceCount: observed.indexedSourceCount,
+      observedComponentCount: graph.components.length,
+      observedPlacedComponentCount: placedCount,
+      arenaEvidence: {
+        detected: observed.arenaDetected,
+        count:
+          observed.arenaCount === undefined
+            ? null
+            : observed.arenaCount,
+        architectureMapping: "NOT_YET_RECONCILED",
+      },
+    },
   };
 }

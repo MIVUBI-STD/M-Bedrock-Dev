@@ -466,9 +466,38 @@ describe("gameplay scenario closure", () => {
     });
     expect(model.components.find((item) => item.id === "component:entry")?.evidenceIds)
       .toEqual(["evidence:join"]);
+    expect(model.knowledgeCoverage).toMatchObject({
+      observedSourceIndexPercent: null,
+      observedComponentPlacementPercent: 50,
+      wholeGameUnderstandingPercent: null,
+      wholeGameUnderstandingStatus: "NOT_MEASURABLE",
+    });
     expect(model.unplacedComponentIds).toEqual(["component:unplaced"]);
     expect(model.missingGraphReferenceIds).toEqual([
       "component:missing", "link:missing",
     ]);
+  });
+
+  it("keeps arena evidence and measured source coverage distinct from whole-game knowledge", () => {
+    const architecture = deriveGameplayArchitectureNavigation(
+      baseGraph(),
+      { relevantSourceCount: 20, indexedSourceCount: 15,
+        arenaDetected: true, arenaCount: 6 },
+    );
+    expect(architecture.knowledgeCoverage).toEqual({
+      observedSourceIndexPercent: 75,
+      observedComponentPlacementPercent: null,
+      wholeGameUnderstandingPercent: null,
+      wholeGameUnderstandingStatus: "NOT_MEASURABLE",
+      observedRelevantSourceCount: 20,
+      observedIndexedSourceCount: 15,
+      observedComponentCount: 0,
+      observedPlacedComponentCount: 0,
+      arenaEvidence: {
+        detected: true,
+        count: 6,
+        architectureMapping: "NOT_YET_RECONCILED",
+      },
+    });
   });
 });

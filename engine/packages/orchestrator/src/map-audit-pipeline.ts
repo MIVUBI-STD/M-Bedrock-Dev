@@ -755,7 +755,16 @@ function assembleSelectedMapAuditRun(
     identity,
     auditRevision,
     gameplayArchitecture:
-      deriveGameplayArchitectureNavigation(scenario.graph),
+      deriveGameplayArchitectureNavigation(scenario.graph, {
+        relevantSourceCount:
+          inspection.gameplayDiscoveryClosure.sourceRelevantFiles,
+        indexedSourceCount:
+          inspection.gameplayDiscoveryClosure.sourceIndexedFiles,
+        arenaDetected: inspection.gameplayWorld.arenas.detected,
+        ...(inspection.gameplayWorld.arenas.count === undefined
+          ? {}
+          : { arenaCount: inspection.gameplayWorld.arenas.count }),
+      }),
     ...(userIntent === undefined
       ? {}
       : { userIntent }),
