@@ -365,4 +365,51 @@ describe("gameplay scenario closure", () => {
       "Invalid knowledge dependencies: knowledge:root",
     );
   });
+
+  it("rejects a causal link with an absent knowledge requirement", () => {
+    const graph = baseGraph();
+    const result = assessGameplayScenarioClosure({
+      ...graph,
+      scenarios: [{
+        id: "scenario:link-knowledge",
+        label: "link knowledge",
+        gameplayStage: "ACTIVE_GAMEPLAY",
+        purpose: "Connect progression components.",
+        sourceSubjectIds: [],
+        componentIds: ["component:a", "component:b"],
+        causalLinkIds: ["link:knowledge"],
+        playerCounts: [1],
+        requiredKnowledgeIds: [],
+        composedScenarioIds: [],
+      }],
+      components: ["component:a", "component:b"].map((id) => ({
+        id,
+        label: id,
+        kind: "mechanic" as const,
+        technicalRole: "progression",
+        gameplayPurpose: "Advance gameplay.",
+        evidenceIds: [],
+        usedByScenarioIds: ["scenario:link-knowledge"],
+        orphan: false,
+      })),
+      causalLinks: [{
+        id: "link:knowledge",
+        scenarioId: "scenario:link-knowledge",
+        fromComponentId: "component:a",
+        toComponentId: "component:b",
+        purpose: "Advance gameplay.",
+        evidenceIds: [],
+        subjectIds: [],
+        componentIds: ["component:a", "component:b"],
+        knowledgeRequirementIds: ["knowledge:absent"],
+        impactPathComponentIds: [],
+        impactPathEvidenceIds: [],
+        dimensionEvidence: {},
+        status: "PROVEN",
+        reason: "Fixture link.",
+      }],
+    });
+    expect(result.status).toBe("OPEN");
+    expect(result.reasons).toContain("Invalid causal links: link:knowledge");
+  });
 });
