@@ -218,19 +218,33 @@ Know exactly what is being audited.
 ## Required work
 
 ~~~
-selected .mcworld
-→ version / identity
-→ pack identities
-→ file inventory
-→ artifact fingerprint
-→ runtime profile
+explicit selected .mcworld, otherwise the single current .mcworld in its Drive map root
+→ obtain exact bytes from the selected source
+→ validate archive safety and compute SHA-256
+→ bind artifact identity to that fingerprint
+→ record source provenance and any identity disagreement
 ~~~
 
+Drive is the current-world selection authority when the user has not selected
+a specific artifact. GitHub project/currentWorld binding is a navigation and
+comparison reference, never permission to substitute an older world when Drive
+has changed. A mismatch is surfaced as stale binding evidence for the separate
+project/Drive management owner; it must not silently rewrite GitHub metadata,
+replace the Drive-selected artifact, or contaminate gameplay evidence.
+
+TARGET verifies the chosen artifact only. Pack identities, file inventories
+beyond the integrity preflight, runtime compatibility, and gameplay semantics
+are consumed by subsequent inspection/analysis owners as needed; missing
+optional metadata does not itself establish that the selected artifact is
+invalid. The production audit entrypoint still receives one exact selected
+artifact path after source acquisition.
+
 ## Must resolve
-- exact map/version;
-- behavior/resource packs belonging to it;
-- platform/edition/version;
-- no stale/foreign source mixed into gameplay authority.
+- exactly one selected .mcworld (explicit user selection wins; otherwise one current Drive-root world);
+- safe readable archive and matching content-derived fingerprint/artifact identity;
+- source provenance and any disagreement with the saved project binding;
+- no fallback to historical map files, Guides, Changelogs, reports, or
+  Development/Source as gameplay authority.
 
 ## Exit
 
