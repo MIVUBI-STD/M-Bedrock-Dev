@@ -112,12 +112,13 @@ function arenaContexts(
   return [{
     arenaId: layout.canonical.arenaId,
     offset: { x: 0, y: 0, z: 0 },
-  }, ...layout.replicas.map((replica, index) => ({
-    arenaId: replica.arenaId,
-    offset:
-      layout.offsets[index] ??
-      { x: 0, y: 0, z: 0 },
-  }))];
+  }, ...layout.replicas.flatMap((replica, index) => {
+    const offset = layout.offsets[index];
+    return offset === undefined ? [] : [{
+      arenaId: replica.arenaId,
+      offset,
+    }];
+  })];
 }
 
 function sourceOverlappingArenaIds(
