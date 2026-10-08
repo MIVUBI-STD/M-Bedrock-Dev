@@ -537,6 +537,8 @@ describe("gameplay scenario closure", () => {
         observedCount: 0,
         sourceReferences: [],
         inventoryStatus: "NOT_OBSERVED",
+        evidenceLinkedComponentIds: [],
+        unmatchedSourceReferences: [],
         architectureMapping: "NOT_YET_RECONCILED",
       },
       {
@@ -544,6 +546,8 @@ describe("gameplay scenario closure", () => {
         observedCount: 2,
         sourceReferences: ["minecraft:pillager"],
         inventoryStatus: "OBSERVED",
+        evidenceLinkedComponentIds: [],
+        unmatchedSourceReferences: ["minecraft:pillager"],
         architectureMapping: "NOT_YET_RECONCILED",
       },
     ]);
@@ -619,6 +623,39 @@ describe("gameplay scenario closure", () => {
         orderingViolations: [],
       }],
       arenaSessionMapping: "NOT_YET_ESTABLISHED",
+    });
+    expect(architecture.knowledgeCoverage.wholeGameUnderstandingPercent).toBeNull();
+  });
+
+  it("links a system to graph components only on exact evidence identity", () => {
+    const graph: GameplayScenarioGraph = {
+      ...baseGraph(),
+      components: [{
+        id: "component:shop",
+        label: "Shop",
+        kind: "mechanic",
+        technicalRole: "economy",
+        gameplayPurpose: "Purchases",
+        evidenceIds: ["evidence:purchase"],
+        usedByScenarioIds: [],
+        orphan: false,
+      }],
+    };
+    const architecture = deriveGameplayArchitectureNavigation(graph, {
+      relevantSourceCount: 1,
+      indexedSourceCount: 1,
+      arenaDetected: false,
+      systemObservations: [{
+        system: "ECONOMY",
+        observedCount: 2,
+        sourceReferences: ["evidence:purchase", "script:shop"],
+      }],
+    });
+    expect(architecture.systemInventory[0]).toMatchObject({
+      inventoryStatus: "OBSERVED",
+      evidenceLinkedComponentIds: ["component:shop"],
+      unmatchedSourceReferences: ["script:shop"],
+      architectureMapping: "EVIDENCE_LINKED",
     });
     expect(architecture.knowledgeCoverage.wholeGameUnderstandingPercent).toBeNull();
   });

@@ -203,9 +203,13 @@ export interface GameplayArchitectureNavigation {
   readonly systemInventory: readonly {
     readonly system: "ENTITY" | "COMBAT" | "INVENTORY" | "ECONOMY" | "PROGRESSION";
     readonly observedCount: number;
+    /** Source references can be identifiers or kinds, not necessarily evidence IDs. */
     readonly sourceReferences: readonly string[];
     readonly inventoryStatus: "OBSERVED" | "NOT_OBSERVED";
-    readonly architectureMapping: "NOT_YET_RECONCILED";
+    /** Only exact evidence ID equality permits a link to existing components. */
+    readonly evidenceLinkedComponentIds: readonly string[];
+    readonly unmatchedSourceReferences: readonly string[];
+    readonly architectureMapping: "EVIDENCE_LINKED" | "NOT_YET_RECONCILED";
   }[];
   /**
    * Measured coverage of observed evidence, never a claim about all gameplay.
@@ -434,15 +438,36 @@ export function deriveGameplayArchitectureNavigation(
     missingGraphReferenceIds: sorted([...missing]),
     systemInventory: [...(observed.systemObservations ?? [])]
       .sort((a, b) => a.system.localeCompare(b.system))
-      .map((observation) => ({
-        system: observation.system,
-        observedCount: observation.observedCount,
-        sourceReferences: sorted(observation.sourceReferences),
-        inventoryStatus: observation.observedCount > 0
-          ? "OBSERVED" as const
-          : "NOT_OBSERVED" as const,
-        architectureMapping: "NOT_YET_RECONCILED" as const,
-      })),
+      .map((observation) => {
+        const references = sorted(observation.sourceReferences);
+        const matchingComponents = graph.components.filter((component) =>
+          component.evidenceIds.some((id) => references.includes(id))
+        );
+        const matchedEvidenceIds = new Set(
+          matchingComponents.flatMap((component) =>
+            component.evidenceIds.filter((id) => references.includes(id))
+          ),
+        );
+        return {
+          system: observation.system,
+          observedCount: observation.observedCount,
+          sourceReferences: references,
+          inventoryStatus: observation.observedCount > 0
+            ? "OBSERVED" as const
+            : "NOT_OBSERVED" as const,
+          evidenceLinkedComponentIds: sorted(
+            matchingComponents.map((component) => component.id)
+          ),
+          unmatchedSourceReferences: references.filter(
+            (id) => !matchedEvidenceIds.has(id)
+          ),
+          // A match establishes a navigable evidence bridge, not complete
+          // system semantics, session ownership, or gameplay correctness.
+          architectureMapping: matchedEvidenceIds.size > 0
+            ? "EVIDENCE_LINKED" as const
+            : "NOT_YET_RECONCILED" as const,
+        };
+      }),
     knowledgeCoverage: {
       observedSourceIndexPercent:
         percentage(observed.indexedSourceCount, observed.relevantSourceCount),
