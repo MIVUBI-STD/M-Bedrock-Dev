@@ -259,6 +259,31 @@ describe("arena state isolation analysis", () => {
       .toMatchObject({ status: "partition-proof-required", scope: "world-global" });
   });
 
+  it("does not infer module-state isolation from arena-like variable names", () => {
+    const script = {
+      identifier: "main",
+      arenaAuthorityPaths: [{ arenaExpression: "arena", executionRegion: "function:join" }],
+      localFunctionCalls: [],
+      dynamicProperties: [],
+      propertyWrites: [],
+      commandLiterals: [],
+      methodCalls: [],
+      stateMutations: [
+        { executionRegion: "function:join", target: "arenaCounter" },
+        { executionRegion: "function:join", target: "playerSessions" },
+        { executionRegion: "function:join", target: "arena.state" },
+      ],
+    } as any;
+    const observations = analyzeArenaStateIsolation([script]).observations
+      .filter((item) => item.surface === "module-state");
+    expect(observations.find((item) => item.key === "arenaCounter")?.status)
+      .toBe("partition-proof-required");
+    expect(observations.find((item) => item.key === "playerSessions")?.status)
+      .toBe("partition-proof-required");
+    expect(observations.find((item) => item.key === "arena.state")?.status)
+      .toBe("isolated");
+  });
+
 });
 
 

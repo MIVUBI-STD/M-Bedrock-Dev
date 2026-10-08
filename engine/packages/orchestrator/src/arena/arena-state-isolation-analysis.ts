@@ -578,14 +578,15 @@ function analyzeScript(
   for (const mutation of script.stateMutations ?? []) {
     if (!regions.has(mutation.executionRegion)) continue;
     const target = mutation.target;
-    const scope: ArenaStateScope =
-      /(?:arena|session|round)/i.test(target)
-        ? "arena-local"
-        : /(?:player|participant|member)/i.test(target)
-          ? "player-local"
-          : target.includes(".")
-            ? "unknown"
-            : "module-shared";
+    const authorityOwned = authoritiesForRegion(mutation.executionRegion)
+      .some((authority) => target.startsWith(authority + "."));
+    // Variable names containing "arena", "session", or "player" are not
+    // evidence of ownership. Only a region-local authority receiver qualifies.
+    const scope: ArenaStateScope = authorityOwned
+      ? "arena-local"
+      : target.includes(".")
+        ? "unknown"
+        : "module-shared";
 
     observations.push({
       scriptId: script.identifier,
@@ -593,11 +594,10 @@ function analyzeScript(
       surface: "module-state",
       key: target,
       scope,
-      status: statusForScope(scope),
-      reason:
-        scope === "module-shared"
-          ? "A module-level state target is mutated from arena execution and requires an arena-keyed ownership proof."
-          : "State scope inferred conservatively from the mutation target expression.",
+      status: authorityOwned ? "isolated" : "partition-proof-required",
+      reason: authorityOwned
+        ? "Mutation receiver matches an authored arena authority in the same execution region."
+        : "Mutation target naming alone does not establish arena/player partitioning; ownership proof is required.",
     });
   }
 
