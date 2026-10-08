@@ -14,6 +14,7 @@ export interface GameplayDiscoveryChallengeSignal {
     | "unowned-state-operation"
     | "unowned-execution-region"
     | "unresolved-execution-edge"
+    | "unowned-execution-edge"
     | "unowned-temporal-relation";
   readonly subjectId: string;
   readonly evidenceIds: readonly string[];
@@ -97,14 +98,20 @@ export function challengeGameplayDiscovery(input: {
   }
 
   for (const edge of input.semanticIr.execution.edges) {
-    if (edge.resolution !== "unresolved") continue;
+    if (edge.resolution === "resolved" && evidence.has(edge.id)) {
+      continue;
+    }
+    const unresolved = edge.resolution === "unresolved";
     output.push({
       id: "discovery-challenge:edge:" + edge.id,
-      kind: "unresolved-execution-edge",
+      kind: unresolved
+        ? "unresolved-execution-edge"
+        : "unowned-execution-edge",
       subjectId: edge.from,
       evidenceIds: [edge.id],
-      reason:
-        "Execution edge target is unresolved, so downstream gameplay effects may exist outside the current semantic graph.",
+      reason: unresolved
+        ? "Execution edge target is unresolved, so downstream gameplay effects may exist outside the current semantic graph."
+        : "Resolved execution edge is not consumed by gameplay intent/scenario evidence; target resolution alone does not establish its gameplay meaning.",
     });
   }
 

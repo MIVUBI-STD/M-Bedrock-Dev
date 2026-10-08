@@ -119,6 +119,34 @@ describe("gameplay discovery challenger", () => {
     );
   });
 
+  it("challenges resolved execution edges without a gameplay owner but accepts an exact owner", () => {
+    const ir = {
+      schemaVersion: 1,
+      execution: {
+        regions: [],
+        edges: [{ id: "edge:resolved", from: "region:a",
+          to: "region:b", kind: "synchronous-call", targetLabel: "b",
+          resolution: "resolved",
+          source: { artifactId: "test", relativePath: "scripts/test.js" } }],
+      },
+      state: { surfaces: [], operations: [], authorityBindings: [] },
+      temporal: { relations: [] },
+    } as unknown as SemanticIr;
+    const gap = challengeGameplayDiscovery({
+      semanticIr: ir, intent: emptyIntent, graph: emptyGraph,
+    });
+    expect(gap.map((item) => item.kind)).toContain("unowned-execution-edge");
+    const owned = challengeGameplayDiscovery({
+      semanticIr: ir,
+      intent: { ...emptyIntent,
+        edges: [{ id: "intent:edge", evidenceIds: ["edge:resolved"] }],
+      } as GameplayIntentModel,
+      graph: emptyGraph,
+    });
+    expect(owned.some((item) => item.id === "discovery-challenge:edge:edge:resolved"))
+      .toBe(false);
+  });
+
   it("keeps an execution region open when only one of its operations is consumed", () => {
     const ir = {
       schemaVersion: 1,
