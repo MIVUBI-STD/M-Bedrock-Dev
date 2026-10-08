@@ -186,17 +186,8 @@ impl Provider for VmwareWorkstationProvider {
         );
 
         if let Err(error) = clone_result {
-            if staging.is_file() {
-                if let Err(policy_error) = apply_virtual_hardware_policy(&staging) {
-                    let _ = remove_vm_container(&staging);
-                    return Err(io::Error::new(policy_error.kind(), format!("clone command was ambiguous and staged VM recovery failed: {policy_error}")));
-                }
-                if let Err(promote_error) = promote_staging_vm(&staging, &target) {
-                    let _ = remove_vm_container(&staging);
-                    return Err(io::Error::new(promote_error.kind(), format!("clone command was ambiguous and staged VM promotion failed: {promote_error}")));
-                }
-                return Ok(ClientState::Stopped);
-            }
+            // A staged VMX does not prove that VMware finished cloning its disks.
+            // Never promote an ambiguous or failed clone as a usable client.
             let _ = remove_vm_container(&staging);
             return Err(error);
         }
