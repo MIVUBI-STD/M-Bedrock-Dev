@@ -39,11 +39,25 @@ where
             return require_success(program, output.status.success(), &output.stdout, &output.stderr);
         }
         if started.elapsed() >= timeout {
-            let _ = child.kill();
-            let _ = child.wait();
+            let kill_result = child.kill();
+            let wait_result = child.wait();
+            // A failed wait leaves process termination unconfirmed. Do not present
+            // that situation as an ordinary, safely recovered command timeout.
+            if let Err(error) = wait_result {
+                return Err(io::Error::new(
+                    error.kind(),
+                    format!("{} timed out; child termination could not be confirmed: {error}", program.display()),
+                ));
+            }
+            if let Err(error) = kill_result {
+                return Err(io::Error::new(
+                    error.kind(),
+                    format!("{} timed out; child kill failed: {error}", program.display()),
+                ));
+            }
             return Err(io::Error::new(
                 io::ErrorKind::TimedOut,
-                format!("{} exceeded {}s timeout", program.display(), timeout.as_secs()),
+                format!("{} exceeded {}s timeout; child process reaped", program.display(), timeout.as_secs()),
             ));
         }
         thread::sleep(Duration::from_millis(100));
@@ -71,5 +85,27 @@ where
             return Err(io::Error::new(io::ErrorKind::TimedOut, "virtual machine did not reach the expected power state"));
         }
         thread::sleep(Duration::from_millis(250));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::command_output_with_timeout;
+    use std::{io, path::Path, time::Duration};
+
+    #[test]
+    fn timed_out_command_is_reaped_before_reporting_timeout() {
+        #[cfg(windows)]
+        let (program, args): (&Path, &[&str]) = (
+            Path::new("cmd.exe"),
+            &["/C", "ping -n 10 127.0.0.1 >NUL"],
+        );
+        #[cfg(not(windows))]
+        let (program, args): (&Path, &[&str]) = (Path::new("sh"), &["-c", "sleep 5"]);
+
+        let error = command_output_with_timeout(program, args.iter().copied(), Duration::from_millis(100))
+            .expect_err("long-running command must time out");
+        assert_eq!(error.kind(), io::ErrorKind::TimedOut);
+        assert!(error.to_string().contains("child process reaped"));
     }
 }
