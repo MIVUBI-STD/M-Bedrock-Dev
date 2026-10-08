@@ -30,6 +30,10 @@ import {
   type BuildBugReportFromAuditResult,
   type PrepareBugReportReviewFromClosedAuditResult,
 } from "./reporting/report-defect-collector.js";
+import {
+  deriveGameplayArchitectureNavigation,
+  type GameplayArchitectureNavigation,
+} from "./inspection/gameplay-scenario-model.js";
 import type {
   InspectionEngineeringAnalysis,
 } from "./inspection/engineering-analysis-stage.js";
@@ -188,6 +192,8 @@ export interface SelectedMapAuditRun {
   readonly inspection: InspectArtifactResult;
   readonly identity: SelectedMapAuditIdentity;
   readonly auditRevision: string;
+  /** Derived navigation only; inspection and scenario graph retain authority. */
+  readonly gameplayArchitecture: GameplayArchitectureNavigation;
   readonly userIntent?: AuditUserIntentEnvelope;
   readonly demandReconciliation: AuditDemandReconciliation;
   readonly executionTrace: AuditExecutionTrace;
@@ -748,6 +754,8 @@ function assembleSelectedMapAuditRun(
     inspection,
     identity,
     auditRevision,
+    gameplayArchitecture:
+      deriveGameplayArchitectureNavigation(scenario.graph),
     ...(userIntent === undefined
       ? {}
       : { userIntent }),

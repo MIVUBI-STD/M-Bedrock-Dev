@@ -2,8 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   assessGameplayScenarioClosure,
 } from "../../src/inspection/gameplay-scenario-closure.js";
-import type {
-  GameplayScenarioGraph,
+import {
+  deriveGameplayArchitectureNavigation,
+  type GameplayScenarioGraph,
 } from "../../src/inspection/gameplay-scenario-model.js";
 
 function baseGraph(): GameplayScenarioGraph {
@@ -411,5 +412,54 @@ describe("gameplay scenario closure", () => {
     });
     expect(result.status).toBe("OPEN");
     expect(result.reasons).toContain("Invalid causal links: link:knowledge");
+  });
+
+  it("projects stage navigation without inventing systems and preserves missing links", () => {
+    const model = deriveGameplayArchitectureNavigation({
+      ...baseGraph(),
+      scenarios: [{
+        id: "scenario:lobby",
+        label: "Lobby",
+        gameplayStage: "ENTRY_JOIN",
+        purpose: "Join.",
+        sourceSubjectIds: [],
+        componentIds: ["component:entry", "component:missing"],
+        causalLinkIds: ["link:missing"],
+        playerCounts: [1],
+        requiredKnowledgeIds: [],
+        composedScenarioIds: [],
+      }],
+      components: [{
+        id: "component:entry",
+        label: "Join",
+        kind: "mechanic",
+        technicalRole: "entry",
+        gameplayPurpose: "Join map",
+        evidenceIds: ["evidence:join"],
+        usedByScenarioIds: ["scenario:lobby"],
+        orphan: false,
+      }, {
+        id: "component:unplaced",
+        label: "Unplaced",
+        kind: "mechanic",
+        technicalRole: "unclassified",
+        gameplayPurpose: "",
+        evidenceIds: ["evidence:other"],
+        usedByScenarioIds: [],
+        orphan: true,
+      }],
+    });
+    expect(model.stages[0]).toEqual({
+      name: "ENTRY_JOIN",
+      scenarioIds: ["scenario:lobby"],
+      componentIds: ["component:entry", "component:missing"],
+      causalLinkIds: ["link:missing"],
+    });
+    expect(model.components.find((item) => item.id === "component:entry")?.evidenceIds)
+      .toEqual(["evidence:join"]);
+    expect(model.unplacedComponentIds).toEqual(["component:unplaced"]);
+    expect(model.missingComponentReferenceIds).toEqual([
+      "component:missing", "link:missing",
+    ]);
   });
 });

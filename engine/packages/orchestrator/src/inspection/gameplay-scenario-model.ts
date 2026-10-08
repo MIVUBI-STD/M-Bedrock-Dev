@@ -152,3 +152,121 @@ export interface GameplayScenarioClosure {
   readonly unprovenLeafScenarioIds: readonly string[];
   readonly reasons: readonly string[];
 }
+
+/**
+ * Read-only navigation over the existing scenario graph.
+ * No inferred rooms, systems, mechanics, or gameplay claims are created here.
+ * IDs point back to their canonical component/causal-link records.
+ */
+export interface GameplayArchitectureNavigation {
+  readonly schemaVersion: 1;
+  readonly policy: "derived-gameplay-architecture-navigation";
+  readonly stages: readonly {
+    readonly name: string;
+    readonly scenarioIds: readonly string[];
+    readonly componentIds: readonly string[];
+    readonly causalLinkIds: readonly string[];
+  }[];
+  readonly components: readonly {
+    readonly id: string;
+    readonly label: string;
+    readonly technicalRole: string;
+    readonly gameplayPurpose: string;
+    readonly scenarioIds: readonly string[];
+    readonly evidenceIds: readonly string[];
+  }[];
+  readonly causalLinks: readonly {
+    readonly id: string;
+    readonly fromComponentId: string;
+    readonly toComponentId: string;
+    readonly status: GameplayCausalLinkStatus;
+    readonly evidenceIds: readonly string[];
+  }[];
+  readonly unplacedComponentIds: readonly string[];
+  readonly unresolvedCausalLinkIds: readonly string[];
+  readonly missingComponentReferenceIds: readonly string[];
+}
+
+/** Navigation only: preserve gaps rather than fabricating stage or system membership. */
+export function deriveGameplayArchitectureNavigation(
+  graph: GameplayScenarioGraph,
+): GameplayArchitectureNavigation {
+  const sorted = (values: readonly string[]) =>
+    [...new Set(values)].sort();
+  const componentById = new Map(
+    graph.components.map((component) => [component.id, component]),
+  );
+  const linksById = new Map(
+    graph.causalLinks.map((link) => [link.id, link]),
+  );
+  const stageGroups = new Map<
+    string,
+    { scenarioIds: string[]; componentIds: string[]; causalLinkIds: string[] }
+  >();
+
+  for (const scenario of graph.scenarios) {
+    const group = stageGroups.get(scenario.gameplayStage) ?? {
+      scenarioIds: [], componentIds: [], causalLinkIds: [],
+    };
+    group.scenarioIds.push(scenario.id);
+    group.componentIds.push(...scenario.componentIds);
+    group.causalLinkIds.push(...scenario.causalLinkIds);
+    stageGroups.set(scenario.gameplayStage, group);
+  }
+
+  const missing = new Set<string>();
+  for (const scenario of graph.scenarios) {
+    for (const id of scenario.componentIds) {
+      if (!componentById.has(id)) missing.add(id);
+    }
+    for (const id of scenario.causalLinkIds) {
+      if (!linksById.has(id)) missing.add(id);
+    }
+  }
+  for (const link of graph.causalLinks) {
+    if (!componentById.has(link.fromComponentId))
+      missing.add(link.fromComponentId);
+    if (!componentById.has(link.toComponentId))
+      missing.add(link.toComponentId);
+  }
+
+  const placed = new Set(
+    graph.scenarios.flatMap((scenario) => scenario.componentIds),
+  );
+
+  return {
+    schemaVersion: 1,
+    policy: "derived-gameplay-architecture-navigation",
+    stages: [...stageGroups].sort(([a], [b]) => a.localeCompare(b))
+      .map(([name, group]) => ({
+        name,
+        scenarioIds: sorted(group.scenarioIds),
+        componentIds: sorted(group.componentIds),
+        causalLinkIds: sorted(group.causalLinkIds),
+      })),
+    components: [...graph.components].sort((a,b) => a.id.localeCompare(b.id))
+      .map((component) => ({
+        id: component.id,
+        label: component.label,
+        technicalRole: component.technicalRole,
+        gameplayPurpose: component.gameplayPurpose,
+        scenarioIds: sorted(component.usedByScenarioIds),
+        evidenceIds: sorted(component.evidenceIds),
+      })),
+    causalLinks: [...graph.causalLinks].sort((a,b) => a.id.localeCompare(b.id))
+      .map((link) => ({
+        id: link.id,
+        fromComponentId: link.fromComponentId,
+        toComponentId: link.toComponentId,
+        status: link.status,
+        evidenceIds: sorted(link.evidenceIds),
+      })),
+    unplacedComponentIds: sorted(graph.components
+      .filter((component) => !placed.has(component.id))
+      .map((component) => component.id)),
+    unresolvedCausalLinkIds: sorted(graph.causalLinks
+      .filter((link) => link.status !== "PROVEN")
+      .map((link) => link.id)),
+    missingComponentReferenceIds: sorted([...missing]),
+  };
+}
