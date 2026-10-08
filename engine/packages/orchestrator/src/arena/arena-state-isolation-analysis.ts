@@ -644,6 +644,19 @@ function applyAuthorityContracts(
       return observation;
     }
 
+    const scopes = [...new Set(matches.map((item) => item.scope))];
+    // Different ownership scopes cannot prove one isolated state surface.
+    // Preserve contract IDs so the conflict can be investigated upstream.
+    if (scopes.length > 1) {
+      return {
+        ...observation,
+        scope: "unknown",
+        status: "partition-proof-required",
+        reason: "Matching state-authority contracts disagree on ownership scope; isolation is not proven.",
+        authorityContractIds: [...new Set(matches.map((item) => item.id))].sort(),
+      };
+    }
+
     return {
       ...observation,
       scope:

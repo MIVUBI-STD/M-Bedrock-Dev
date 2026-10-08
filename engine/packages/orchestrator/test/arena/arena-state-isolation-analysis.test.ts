@@ -346,6 +346,29 @@ describe("arena state isolation analysis", () => {
   });
 
 
+  it("does not claim isolation when matching authority contracts disagree on scope", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function join(arena, player) {",
+        "  arena.players.add(player);",
+        "  world.setDynamicProperty('arenaState', 1);",
+        "}",
+      ].join("\n"),
+      { artifactId: "fixture", relativePath: "scripts/main.ts" },
+    );
+    const result = analyzeArenaStateIsolation([script], [
+      { id: "contract-arena", authority: { kind: "dynamic-property", key: "arenaState" }, mirrors: [], scope: "arena" },
+      { id: "contract-player", authority: { kind: "dynamic-property", key: "arenaState" }, mirrors: [], scope: "player" },
+    ]);
+    expect(result.observations.find((item) => item.surface === "dynamic-property"))
+      .toMatchObject({
+        scope: "unknown",
+        status: "partition-proof-required",
+        authorityContractIds: ["contract-arena", "contract-player"],
+      });
+  });
+
 });
 
 
