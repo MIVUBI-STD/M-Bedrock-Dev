@@ -167,6 +167,32 @@ mod tests {
     use std::{io, path::Path, time::Duration};
 
     #[test]
+    fn successful_command_returns_complete_output() {
+        #[cfg(windows)]
+        let (program, args): (&Path, &[&str]) = (Path::new("cmd.exe"), &["/C", "echo command-ok"]);
+        #[cfg(not(windows))]
+        let (program, args): (&Path, &[&str]) = (Path::new("sh"), &["-c", "printf command-ok"]);
+
+        let output = command_output_with_timeout(program, args.iter().copied(), Duration::from_secs(5))
+            .expect("short successful command must complete");
+        assert_eq!(output, "command-ok");
+    }
+
+    #[test]
+    fn failed_command_preserves_stderr_diagnostic() {
+        #[cfg(windows)]
+        let (program, args): (&Path, &[&str]) =
+            (Path::new("cmd.exe"), &["/C", "echo expected-failure 1>&2 & exit /B 7"]);
+        #[cfg(not(windows))]
+        let (program, args): (&Path, &[&str]) =
+            (Path::new("sh"), &["-c", "printf expected-failure >&2; exit 7"]);
+
+        let error = command_output_with_timeout(program, args.iter().copied(), Duration::from_secs(5))
+            .expect_err("failed command must not be treated as success");
+        assert!(error.to_string().contains("expected-failure"));
+    }
+
+    #[test]
     fn output_reader_has_bounded_wait_without_eof() {
         let (_sender, receiver) = std::sync::mpsc::sync_channel(1);
         let error = super::receive_output(&receiver, Duration::from_millis(1)).unwrap_err();
