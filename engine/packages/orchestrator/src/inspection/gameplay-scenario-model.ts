@@ -4,6 +4,7 @@ import type {
 import type {
   AnalysisKnowledgeDomain,
 } from "../../../analysis-planner/src/index.js";
+import type { SemanticIr } from "../../../semantic-ir/src/index.js";
 
 export type GameplayKnowledgeDomain = AnalysisKnowledgeDomain;
 
@@ -208,6 +209,33 @@ export interface GameplayArchitectureNavigation {
     readonly selectedArtifactEvidenceLinkPercent: number | null;
   };
   /**
+   * Exact-ID reconciliation of raw Semantic IR records against the existing
+   * gameplay architecture. Counts cover parsed IR only, not the whole map.
+   * No inferred links from owner names, locations, or surface similarities.
+   */
+  readonly semanticIrCoverage: {
+    readonly stateOperations: {
+      readonly observedCount: number;
+      readonly linkedIds: readonly string[];
+      readonly unlinkedIds: readonly string[];
+    };
+    readonly executionRegions: {
+      readonly observedCount: number;
+      readonly linkedIds: readonly string[];
+      readonly unlinkedIds: readonly string[];
+    };
+    readonly executionEdges: {
+      readonly observedCount: number;
+      readonly linkedIds: readonly string[];
+      readonly unlinkedIds: readonly string[];
+    };
+    readonly temporalRelations: {
+      readonly observedCount: number;
+      readonly linkedIds: readonly string[];
+      readonly unlinkedIds: readonly string[];
+    };
+  };
+  /**
    * Source-grounded system evidence, not a catalog of assumed map features.
    * A count of zero never proves a feature is absent from the full map.
    */
@@ -293,6 +321,7 @@ export function deriveGameplayArchitectureNavigation(
     readonly arenaDetected: boolean;
     readonly selectedArtifactEvidenceIds?: readonly string[];
     readonly allIntentEvidenceIds?: readonly string[];
+    readonly semanticIr?: SemanticIr;
     readonly arenaCount?: number;
     readonly arenaCountBasis?: "topology" | "script-config" | "reconciled";
     readonly arenaLayoutStatus?: string;
@@ -401,6 +430,15 @@ export function deriveGameplayArchitectureNavigation(
   const linkedEvidence = sourceEvidence.filter((id) =>
     architectureEvidence.includes(id)
   );
+  const architectureEvidenceSet = new Set(architectureEvidence);
+  const irAccounting = (ids: readonly string[]) => {
+    const observedIds = sorted(ids);
+    return {
+      observedCount: observedIds.length,
+      linkedIds: observedIds.filter((id) => architectureEvidenceSet.has(id)),
+      unlinkedIds: observedIds.filter((id) => !architectureEvidenceSet.has(id)),
+    };
+  };
   const arenaInstances = [...new Map(
     (observed.replicaProof ?? []).map((instance) => [
       instance.arenaId, instance,
@@ -471,6 +509,20 @@ export function deriveGameplayArchitectureNavigation(
       ),
       selectedArtifactEvidenceLinkPercent:
         percentage(linkedEvidence.length, sourceEvidence.length),
+    },
+    semanticIrCoverage: {
+      stateOperations: irAccounting(
+        observed.semanticIr?.state.operations.map((item) => item.id) ?? [],
+      ),
+      executionRegions: irAccounting(
+        observed.semanticIr?.execution.regions.map((item) => item.id) ?? [],
+      ),
+      executionEdges: irAccounting(
+        observed.semanticIr?.execution.edges.map((item) => item.id) ?? [],
+      ),
+      temporalRelations: irAccounting(
+        observed.semanticIr?.temporal.relations.map((item) => item.id) ?? [],
+      ),
     },
     systemInventory: [...(observed.systemObservations ?? [])]
       .sort((a, b) => a.system.localeCompare(b.system))

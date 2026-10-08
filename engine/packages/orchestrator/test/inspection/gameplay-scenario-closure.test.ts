@@ -660,6 +660,68 @@ describe("gameplay scenario closure", () => {
     });
   });
 
+
+  it("accounts for raw Semantic IR operations and execution without inventing architectural links", () => {
+    const graph: GameplayScenarioGraph = {
+      ...baseGraph(),
+      components: [{
+        id: "component:objective",
+        label: "Objective",
+        kind: "state",
+        technicalRole: "objective",
+        gameplayPurpose: "Track objective",
+        evidenceIds: ["op:objective", "edge:resolved"],
+        usedByScenarioIds: [],
+        orphan: false,
+      }],
+    };
+    const semanticIr = {
+      schemaVersion: 1,
+      state: {
+        operations: [
+          { id: "op:objective" },
+          { id: "op:unmapped" },
+        ],
+      },
+      execution: {
+        regions: [{ id: "region:main" }],
+        edges: [{ id: "edge:resolved" }, { id: "edge:unresolved" }],
+      },
+      temporal: {
+        relations: [{ id: "timer:late" }],
+      },
+    } as unknown as import("../../../semantic-ir/src/index.js").SemanticIr;
+    const navigation = deriveGameplayArchitectureNavigation(graph, {
+      relevantSourceCount: 1,
+      indexedSourceCount: 1,
+      arenaDetected: false,
+      semanticIr,
+    });
+    expect(navigation.semanticIrCoverage).toEqual({
+      stateOperations: {
+        observedCount: 2,
+        linkedIds: ["op:objective"],
+        unlinkedIds: ["op:unmapped"],
+      },
+      executionRegions: {
+        observedCount: 1,
+        linkedIds: [],
+        unlinkedIds: ["region:main"],
+      },
+      executionEdges: {
+        observedCount: 2,
+        linkedIds: ["edge:resolved"],
+        unlinkedIds: ["edge:unresolved"],
+      },
+      temporalRelations: {
+        observedCount: 1,
+        linkedIds: [],
+        unlinkedIds: ["timer:late"],
+      },
+    });
+    expect(navigation.knowledgeCoverage.wholeGameUnderstandingPercent).toBeNull();
+  });
+
   it("links a system to graph components only on exact evidence identity", () => {
     const graph: GameplayScenarioGraph = {
       ...baseGraph(),

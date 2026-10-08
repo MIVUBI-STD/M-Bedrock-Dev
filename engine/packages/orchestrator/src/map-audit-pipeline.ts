@@ -763,6 +763,7 @@ function assembleSelectedMapAuditRun(
         arenaDetected: inspection.gameplayWorld.arenas.detected,
         allIntentEvidenceIds:
           inspection.gameplayIntent.model.evidence.map((item) => item.id),
+        semanticIr: inspection.semanticIrModel,
         selectedArtifactEvidenceIds:
           inspection.gameplayIntent.model.evidence
             .filter((item) => item.scope === "selected-artifact")
