@@ -118,4 +118,33 @@ describe("gameplay discovery challenger", () => {
       "unresolved-execution-edge",
     );
   });
+
+  it("does not hide a second operation on an already owned state surface", () => {
+    const ir = {
+      schemaVersion: 1,
+      execution: { regions: [], edges: [] },
+      state: {
+        surfaces: [],
+        operations: [
+          { id: "op:grant", executionRegionId: "region:inventory",
+            surfaceId: "state:inventory", operation: "write",
+            source: { kind: "script", locator: "scripts/inventory.js" } },
+          { id: "op:clear", executionRegionId: "region:inventory",
+            surfaceId: "state:inventory", operation: "write",
+            source: { kind: "script", locator: "scripts/inventory.js" } },
+        ],
+        authorityBindings: [],
+      },
+      temporal: { relations: [] },
+    } as unknown as SemanticIr;
+    const intent = {
+      ...emptyIntent,
+      nodes: [{ id: "node:inventory", evidenceIds: ["op:grant"] }],
+    } as GameplayIntentModel;
+    const result = challengeGameplayDiscovery({
+      semanticIr: ir, intent, graph: emptyGraph,
+    });
+    expect(result.filter((item) => item.kind === "unowned-state-operation")
+      .map((item) => item.evidenceIds[0])).toEqual(["op:clear"]);
+  });
 });
