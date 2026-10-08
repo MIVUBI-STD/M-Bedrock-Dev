@@ -23,5 +23,13 @@ Improve reusable detector correctness, semantic coverage, or proof strength from
 - false-positive boundary is represented where material;
 - benchmark handoff is explicit.
 
+## Discovery-specific acceptance
+
+When improving gameplay Discovery, require a grounded positive case and a distinct negative or ambiguous case for the affected semantic claim. Follow the existing evidence path from selected-artifact source through the affected analyzer, semantic/intent/world model, scenario or challenger, and closure/admission consumer as applicable. A fix is not accepted merely because a parser emits more findings.
+
+A material `UNKNOWN` must retain its exact unresolved question and the relevant available evidence/search route attempted, or name the inaccessible source/capability that stopped investigation. Do not claim search exhaustion when it was not performed. Conversely, do not leave a claim UNKNOWN when bounded available evidence already proves it.
+
+Treat source indexing, gameplay semantics, relationships, and proof as distinct concerns. Never use Discovery `COMPLETE`, lexical resemblance, matching paths, or contract `sourceRefs` alone as proof of full gameplay understanding or runtime isolation. Preserve unsupported/conflicted evidence without fabricating authority.
+
 ## Quality objective
 Optimize detector quality, not raw finding count. Precision, recall, proof strength, evidence cost, and runtime/context cost are all valid quality dimensions.
