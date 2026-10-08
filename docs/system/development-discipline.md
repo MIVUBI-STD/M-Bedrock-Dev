@@ -9,6 +9,25 @@ lifecycle: ACTIVE
 
 # Development Discipline
 
+## SYSTEM DEVELOPMENT execution contract
+
+SYSTEM DEVELOPMENT changes M-Bedrock-Dev itself. It uses the existing Product Development contract, or the existing Detection Development lane when the explicit goal is reusable bug-detection improvement. It never silently becomes MAP BUG AUDIT, Detection Benchmark, or Target Repair.
+
+For a material change follow one bounded sequence:
+
+1. **DEFINE** — state the requested outcome, success metric, scope, non-goals, proof ceiling, and STOP condition.
+2. **INVESTIGATE** — pin the current `Local` source, identify the first wrong canonical owner, and distinguish observed failure from inference.
+3. **DESIGN** — reuse/remove an existing owner or behavior before introducing new abstraction; select the smallest change that achieves the outcome.
+4. **IMPLEMENT** — modify only affected owners and matching tests/contracts. Keep target map originals immutable.
+5. **VERIFY** — check the changed claim with the cheapest decisive evidence available, including affected regressions. Source review is not executable/runtime proof; unresolved claims remain explicit.
+6. **COMMIT & STOP** — publish one valid logical outcome with the repository's commit continuity metadata, confirm the new `Local` HEAD, then stop when the agreed outcome is met.
+
+Do not make each step a separate persisted workflow stage or commit. If work exceeds one bounded unit, commit independently valid outcomes with their remaining proof and next action. An unqualified "continue" retains the current mode and scope.
+
+**Completion means** the requested bounded outcome exists at the canonical owner, the strongest available applicable proof is identified without overclaiming, and the commit is confirmed on the intended ref. If the result depends on unavailable runtime evidence, finish the source-valid portion and state the exact unresolved runtime claim; do not automatically expand scope, claim full runtime success, or require user-local tooling for source decisions.
+
+A map-specific bug encountered during development can supply a regression example, not authority to modify that map or to promote it into a production Bug Report. Conversely, a detection gap discovered during MAP BUG AUDIT requires explicit handoff before any system development.
+
 ## Minimum complete change
 
 Default order:
