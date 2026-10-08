@@ -236,6 +236,29 @@ describe("arena state isolation analysis", () => {
     ).toBe(true);
   });
 
+  it("does not borrow arena authority from another execution region", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function join(arena, player) {",
+        "  arena.members.add(player);",
+        "  world.setDynamicProperty('arena:' + arena.id, 1);",
+        "}",
+        "function other(otherArena, arena, player) {",
+        "  otherArena.members.add(player);",
+        "  world.setDynamicProperty('arena:' + arena.id, 1);",
+        "}",
+      ].join("\n"),
+      { artifactId: "fixture", relativePath: "scripts/main.ts" },
+    );
+    const observations = analyzeArenaStateIsolation([script]).observations
+      .filter((item) => item.surface === "dynamic-property");
+    expect(observations.find((item) => item.region === "function:join"))
+      .toMatchObject({ status: "isolated", scope: "arena-local" });
+    expect(observations.find((item) => item.region === "function:other"))
+      .toMatchObject({ status: "partition-proof-required", scope: "world-global" });
+  });
+
 });
 
 

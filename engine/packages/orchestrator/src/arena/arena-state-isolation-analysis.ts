@@ -431,9 +431,11 @@ function analyzeScript(
   observations: ArenaStateIsolationObservation[];
 } {
   const regions = arenaRegions(script);
-  const authorities = [
+  // Authority expressions only prove ownership within their execution region.
+  const authoritiesForRegion = (region: string): readonly string[] => [
     ...new Set(
       (script.arenaAuthorityPaths ?? [])
+        .filter((item) => item.executionRegion === region)
         .map((item) => item.arenaExpression)
         .filter(Boolean),
     ),
@@ -461,7 +463,7 @@ function analyzeScript(
       receiver === "world-global" &&
       expressionUsesAuthority(
         keyExpression,
-        authorities,
+        authoritiesForRegion(region),
       );
     const playerPartitioned =
       receiver === "world-global" &&
@@ -515,7 +517,7 @@ function analyzeScript(
       script,
       call,
       region,
-      authorities,
+      authoritiesForRegion(region),
     );
     if (scoreboard) observations.push(scoreboard);
 
@@ -524,7 +526,7 @@ function analyzeScript(
         script,
         call,
         region,
-        authorities,
+        authoritiesForRegion(region),
       );
     if (playerEnumeration) {
       observations.push(playerEnumeration);
@@ -535,7 +537,7 @@ function analyzeScript(
         script,
         call,
         region,
-        authorities,
+        authoritiesForRegion(region),
       );
     if (tagMutation) {
       observations.push(tagMutation);
@@ -568,7 +570,7 @@ function analyzeScript(
       commandObservation(
         script,
         command,
-        authorities,
+        authoritiesForRegion(region),
       );
     if (observation) observations.push(observation);
   }
