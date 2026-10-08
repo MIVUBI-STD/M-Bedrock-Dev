@@ -53,7 +53,7 @@ jobs:
       - name: Upload portable workspace
         uses: actions/upload-artifact@v7
         with:
-          name: m-bedrock-dev-portable
+          name: lazy-developer-portable
           path: |
             .
             !.git

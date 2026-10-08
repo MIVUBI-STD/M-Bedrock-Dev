@@ -1,7 +1,7 @@
 ---
 name: m-bedrock-product-development
 description: >
-  Develop M-Bedrock-Dev product features, architecture, UI, or tooling using existing canonical owners; not map bug audit or detector-specific development.
+  Develop Lazy-Developer product features, architecture, UI, or tooling using existing canonical owners; not map bug audit or detector-specific development.
 ---
 
 # M-Bedrock Product Development
@@ -10,7 +10,7 @@ description: >
 
 ## Purpose
 
-Implement bounded changes to M-Bedrock-Dev itself. The canonical development process belongs to `docs/system/development-discipline.md`, not this skill.
+Implement bounded changes to Lazy-Developer itself. The canonical development process belongs to `docs/system/development-discipline.md`, not this skill.
 
 ## Entry criteria
 

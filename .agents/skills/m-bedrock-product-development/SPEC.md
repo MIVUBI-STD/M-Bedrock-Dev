@@ -2,7 +2,7 @@
 
 ## Scope
 
-Changes to M-Bedrock-Dev product features, architecture, application/UI, engine integration, and repository tooling that are not explicitly reusable detection improvements.
+Changes to Lazy-Developer product features, architecture, application/UI, engine integration, and repository tooling that are not explicitly reusable detection improvements.
 
 ## Acceptance
 

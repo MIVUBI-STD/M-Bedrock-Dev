@@ -1,6 +1,6 @@
-# M-Bedrock-Dev
+# Lazy-Developer
 
-M-Bedrock-Dev is a modular Minecraft Bedrock and Minecraft Education content-engineering system for inspection, gameplay understanding, bug diagnosis, authorized repair/modification, validation, deterministic packaging, and report generation.
+Lazy-Developer is a modular Minecraft Bedrock and Minecraft Education content-engineering system for inspection, gameplay understanding, bug diagnosis, authorized repair/modification, validation, deterministic packaging, and report generation.
 
 ## Branch authority
 

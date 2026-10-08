@@ -9,7 +9,7 @@ lifecycle: ACTIVE
 
 # Architecture
 
-M-Bedrock-Dev uses semantic ownership and one-way dependency direction.
+Lazy-Developer uses semantic ownership and one-way dependency direction.
 
 ## Semantic reasoning path
 

@@ -1,4 +1,4 @@
-# GitHub Rules — M-Bedrock-Dev
+# GitHub Rules — Lazy-Developer
 
 Canonical GitHub operating rules for repository work.
 

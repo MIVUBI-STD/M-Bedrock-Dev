@@ -31,7 +31,7 @@ Do not use `workspace` as a synonym for backlog/planning. Do not use `docs` as a
 ### Planning vocabulary
 
 ```text
-planning/development.md → improve M-Bedrock-Dev itself
+planning/development.md → improve Lazy-Developer itself
 planning/operations.md  → operate/maintain across projects
 planning/projects.md    → concise project-specific continuation intent
 ```

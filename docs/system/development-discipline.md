@@ -11,7 +11,7 @@ lifecycle: ACTIVE
 
 ## SYSTEM DEVELOPMENT execution contract
 
-SYSTEM DEVELOPMENT changes M-Bedrock-Dev itself. It uses the existing Product Development contract, or the existing Detection Development lane when the explicit goal is reusable bug-detection improvement. It never silently becomes MAP BUG AUDIT, Detection Benchmark, or Target Repair.
+SYSTEM DEVELOPMENT changes Lazy-Developer itself. It uses the existing Product Development contract, or the existing Detection Development lane when the explicit goal is reusable bug-detection improvement. It never silently becomes MAP BUG AUDIT, Detection Benchmark, or Target Repair.
 
 For a material change follow one bounded sequence:
 

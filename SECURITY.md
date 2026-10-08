@@ -1,6 +1,6 @@
 # Security Policy
 
-M-Bedrock-Dev processes untrusted archives, JSON, scripts, NBT/LevelDB data, filesystem paths, identifiers, commands, and user-supplied world content.
+Lazy-Developer processes untrusted archives, JSON, scripts, NBT/LevelDB data, filesystem paths, identifiers, commands, and user-supplied world content.
 
 ## Sensitive data
 

@@ -1,4 +1,4 @@
-# M-Bedrock-Dev Stable Context
+# Lazy-Developer Stable Context
 
 Last verified stable design facts: 2026-10-05
 
@@ -6,7 +6,7 @@ This file contains only stable repository/product facts. It does not own current
 
 ## Product
 
-M-Bedrock-Dev is a modular Minecraft Bedrock and Minecraft Education content-engineering workspace.
+Lazy-Developer is a modular Minecraft Bedrock and Minecraft Education content-engineering workspace.
 
 Primary lifecycle:
 

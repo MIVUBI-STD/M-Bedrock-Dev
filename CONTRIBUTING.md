@@ -1,4 +1,4 @@
-# Contributing to M-Bedrock-Dev
+# Contributing to Lazy-Developer
 
 ## Branch model
 
