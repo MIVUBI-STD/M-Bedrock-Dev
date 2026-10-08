@@ -42,7 +42,28 @@ where
 
     let started = Instant::now();
     loop {
-        if let Some(status) = child.try_wait()? {
+        let observed_status = match child.try_wait() {
+            Ok(status) => status,
+            Err(error) => {
+                // A failed status probe must not leave the child unmanaged.
+                let kill_result = child.kill();
+                let wait_result = child.wait();
+                if let Err(cleanup_error) = wait_result {
+                    return Err(io::Error::new(
+                        cleanup_error.kind(),
+                        format!("{} status check failed ({error}); child termination is unconfirmed: {cleanup_error}", program.display()),
+                    ));
+                }
+                if let Err(cleanup_error) = kill_result {
+                    return Err(io::Error::new(
+                        cleanup_error.kind(),
+                        format!("{} status check failed ({error}); child kill failed: {cleanup_error}", program.display()),
+                    ));
+                }
+                return Err(error);
+            }
+        };
+        if let Some(status) = observed_status {
             let stdout = join_output(stdout_reader)?;
             let stderr = join_output(stderr_reader)?;
             return require_success(program, status.success(), &stdout, &stderr);
@@ -120,6 +141,14 @@ where
 mod tests {
     use super::command_output_with_timeout;
     use std::{io, path::Path, time::Duration};
+
+    #[test]
+    fn output_drain_is_bounded_even_for_large_streams() {
+        let input = vec![b'x'; super::OUTPUT_LIMIT * 4];
+        let output = super::drain_output(std::io::Cursor::new(input)).unwrap();
+        assert_eq!(output.len(), super::OUTPUT_LIMIT);
+        assert!(output.iter().all(|byte| *byte == b'x'));
+    }
 
     #[test]
     fn verbose_command_does_not_block_on_full_pipes() {
