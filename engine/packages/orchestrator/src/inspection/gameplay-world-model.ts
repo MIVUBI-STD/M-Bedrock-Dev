@@ -1130,7 +1130,7 @@ export function deriveGameplayWorldModel(
       : source.arena.discovery !== undefined
         ? 1 + source.arena.discovery.replicas.length
         : source.arena.capacity?.evidence
-            .requestedConcurrentArenas;
+            .discoveredArenaCount;
 
   const runtimeSurfaces: GameplayClosureSurface[] = [];
 

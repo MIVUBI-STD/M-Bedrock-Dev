@@ -3,7 +3,7 @@ import { deriveGameplayWorldModel } from "../../src/inspection/gameplay-world-mo
 
 describe("gameplay world model", () => {
   it("summarizes gameplay and arena subsystems without copying raw evidence", () => {
-    const result = deriveGameplayWorldModel({
+    const source: Parameters<typeof deriveGameplayWorldModel>[0] = {
       artifactId: "map:test",
       intent: {
         schemaVersion: 1,
@@ -81,9 +81,47 @@ describe("gameplay world model", () => {
         asyncCommandTransaction: true,
         dynamicCommand: true,
       },
-    });
+    };
+    const result = deriveGameplayWorldModel(source);
 
     expect(result.arenas.count).toBe(3);
+
+    const capacityEvidence = {
+      requestedConcurrentArenas: 6,
+      arenaCountConflict: false,
+      commandTickingAreaAdds: 0,
+      completeCommandTickingAreaFamilies: 0,
+      unmatchedCommandTickingAreaAdds: 0,
+      commandTickingAreaResourceResolved: false,
+      scriptTickingAreaManagerReferenced: false,
+      scriptCapacitySignals: [],
+      scriptTickingAreaCapacityResolved: false,
+      conflictingPlayerCapacityValues: [],
+      reasons: [],
+    };
+    const requestedOnly = deriveGameplayWorldModel({
+      ...source,
+      arena: {
+        autoDetected: true,
+        capacity: { resources: [], evidence: capacityEvidence },
+      },
+    });
+    expect(requestedOnly.arenas.count).toBeUndefined();
+    expect(requestedOnly.arenas.requestedConcurrentArenas).toBe(6);
+    expect(requestedOnly.gameplayClosure.unknownSurfaceIds).toContain("runtime:arena");
+
+    const withDiscoveredCount = deriveGameplayWorldModel({
+      ...source,
+      arena: {
+        autoDetected: true,
+        capacity: {
+          resources: [],
+          evidence: { ...capacityEvidence, discoveredArenaCount: 4 },
+        },
+      },
+    });
+    expect(withDiscoveredCount.arenas.count).toBe(4);
+    expect(withDiscoveredCount.arenas.requestedConcurrentArenas).toBe(6);
     expect(result.subjects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
