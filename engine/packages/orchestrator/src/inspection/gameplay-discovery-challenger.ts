@@ -65,10 +65,12 @@ export function challengeGameplayDiscovery(input: {
     });
   }
 
-  const regionsWithOwnedState = new Set(
-    input.semanticIr.state.operations
-      .filter((operation) => evidence.has(operation.id))
-      .map((operation) => operation.executionRegionId),
+  // A consumed state mutation does not prove ownership of the whole
+  // executable region, which may contain other unmodeled behavior.
+  const ownedRegions = new Set(
+    input.semanticIr.execution.regions
+      .filter((region) => evidence.has(region.id))
+      .map((region) => region.id),
   );
   const regionsWithGraphEdges = new Set(
     input.semanticIr.execution.edges.flatMap((edge) => [
@@ -79,7 +81,7 @@ export function challengeGameplayDiscovery(input: {
 
   for (const region of input.semanticIr.execution.regions) {
     if (
-      regionsWithOwnedState.has(region.id) ||
+      ownedRegions.has(region.id) ||
       !regionsWithGraphEdges.has(region.id)
     ) {
       continue;
@@ -107,12 +109,8 @@ export function challengeGameplayDiscovery(input: {
   }
 
   for (const relation of input.semanticIr.temporal.relations) {
-    if (
-      relation.resolution === "resolved" &&
-      relation.guardEvidence === "explicit-generation-check"
-    ) {
-      continue;
-    }
+    // A generation guard proves a scheduling safety property, not that
+    // the temporal relation has a gameplay/scenario owner.
     const relatedEvidence = evidence.has(relation.id);
     if (relatedEvidence) continue;
     output.push({
