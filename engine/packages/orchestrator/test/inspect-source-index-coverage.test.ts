@@ -479,4 +479,27 @@ describe("inspection source index coverage", () => {
       await rm(root, { recursive: true, force: true });
     }
   });
+
+  it("accounts for vanilla tick registration without inventing a mechanic", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-index-"));
+    const relativePath = "behavior_packs/bp/functions/tick.json";
+    try {
+      await mkdir(join(root, "behavior_packs/bp/functions"), { recursive: true });
+      const file = { relativePath, size: 20, contentHash: "tick" };
+      await writeFile(join(root, relativePath), '{"values":[]}');
+      const empty = await indexInspectionSources(root, "artifact:test", [file]);
+      expect(empty.coverage).toMatchObject({
+        relevantFiles: 1, indexedFiles: 1, complete: true,
+        unsupportedRelevantFiles: [],
+      });
+      await writeFile(join(root, relativePath), '{"values":["start"]}');
+      const active = await indexInspectionSources(root, "artifact:test", [file]);
+      expect(active.coverage).toMatchObject({
+        relevantFiles: 1, indexedFiles: 0, complete: false,
+        unsupportedRelevantFiles: [relativePath],
+      });
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
 });

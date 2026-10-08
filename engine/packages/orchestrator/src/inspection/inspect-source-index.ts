@@ -51,6 +51,7 @@ import {
 export interface InspectionSourceParseFailure {
   relativePath: string;
   kind:
+    | "function"
     | "entity"
     | "structure"
     | "dialogue"
@@ -351,6 +352,39 @@ export async function indexInspectionSources(
 
     const normalizedPath =
       "/" + file.relativePath.replaceAll("\\", "/");
+
+    // tick.json is a vanilla execution entrypoint, not an unknown
+    // mechanic. An empty schedule contributes no execution roots.
+    // A populated schedule remains a discovery gap until its function
+    // references are represented by the canonical execution graph.
+    if (
+      /\/functions\/tick\.json$/i.test(normalizedPath)
+    ) {
+      relevantFiles += 1;
+      try {
+        const raw = JSON.parse(
+          await readFile(join(root, file.relativePath), "utf8"),
+        ) as unknown;
+        if (
+          raw !== null &&
+          typeof raw === "object" &&
+          !Array.isArray(raw) &&
+          Array.isArray((raw as { values?: unknown }).values) &&
+          (raw as { values: unknown[] }).values.length === 0
+        ) {
+          indexedFiles += 1;
+        } else {
+          unsupportedRelevantFiles.push(file.relativePath);
+        }
+      } catch (error) {
+        parseFailures.push({
+          relativePath: file.relativePath,
+          kind: "function",
+          reason: error instanceof Error ? error.message : String(error),
+        });
+      }
+      continue;
+    }
 
     const isTranslation =
       /\/texts\/[^/]+\.lang$/i.test(
