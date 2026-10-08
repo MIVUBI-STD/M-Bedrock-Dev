@@ -9,8 +9,7 @@ import {
   BUG_REPORT_WORKSPACE_DIRECTORY,
   bugReportV2Progress,
   parseBugReportV2Json,
-  reviewBugReportCopy,
-  reviewBugReportReadiness,
+  buildBugReportWorkspacePath,
   serializeBugReportV2,
   type BugReportSummary,
   type BugReportV2,
@@ -21,7 +20,6 @@ export interface GitHubBugReportStoreOptions {
   readonly repository: string;
   readonly branch: string;
   readonly token: string;
-  readonly directory?: string;
   readonly apiBaseUrl?: string;
   readonly fetchImpl?: typeof fetch;
 }
@@ -91,7 +89,6 @@ export class GitHubBugReportStore {
   readonly #repository: string;
   readonly #branch: string;
   readonly #token: string;
-  readonly #directory: string;
   readonly #apiBaseUrl: string;
   readonly #fetch: typeof fetch;
 
@@ -105,23 +102,25 @@ export class GitHubBugReportStore {
     this.#repository = options.repository;
     this.#branch = options.branch;
     this.#token = options.token;
-    this.#directory = (options.directory ?? BUG_REPORT_WORKSPACE_DIRECTORY).replace(/^\/+|\/+$/g, "");
     this.#apiBaseUrl = (options.apiBaseUrl ?? "https://api.github.com").replace(/\/$/, "");
     this.#fetch = options.fetchImpl ?? fetch;
   }
 
   #assertReportPath(path: string): void {
-    const prefix = this.#directory + "/";
-    if (
-      !path.startsWith(prefix) ||
-      path.includes("..") ||
-      !path.toLowerCase().endsWith(".json")
-    ) {
-      throw new Error(
-        "Bug report path must be a JSON file inside " +
-          this.#directory +
-          "/.",
-      );
+    const parts = path.split("/");
+    const base = BUG_REPORT_WORKSPACE_DIRECTORY.split("/");
+    const project = parts[2];
+    const validProject = typeof project === "string" &&
+      /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(project);
+    const single = parts.length === 5 &&
+      parts[3] === "report" && parts[4] === "bug-report.json";
+    const multi = parts.length === 7 &&
+      parts[3] === "levels" &&
+      /^level-[1-9][0-9]*$/.test(parts[4] ?? "") &&
+      parts[5] === "report" && parts[6] === "bug-report.json";
+    if (parts[0] !== base[0] || parts[1] !== base[1] ||
+        !validProject || (!single && !multi)) {
+      throw new Error("Bug report path must be a canonical project/level report/bug-report.json.");
     }
   }
 
@@ -181,41 +180,62 @@ export class GitHubBugReportStore {
 
   async listReports(): Promise<readonly GitHubBugReportSummary[]> {
     const response = await this.#request(
-      this.#contentsPath(this.#directory) +
-        "?ref=" +
-        encodeURIComponent(this.#branch),
+      this.#contentsPath(BUG_REPORT_WORKSPACE_DIRECTORY) +
+        "?ref=" + encodeURIComponent(this.#branch),
     );
     const entries = await response.json() as GitHubContentDirectoryEntry[];
-    const files = entries
-      .filter((entry) =>
-        entry.type === "file" &&
-        entry.name.toLowerCase().endsWith(".json")
-      )
-      .sort((left, right) => left.name.localeCompare(right.name));
+    const projects = entries.filter((entry) =>
+      entry.type === "dir" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(entry.name));
 
-    const summaries = await Promise.all(
-      files.map(async (entry) => {
-        const loaded = await this.loadReport(entry.path);
-        const progress = bugReportV2Progress(loaded.report);
-        return {
-          path: entry.path,
-          mapName: loaded.report.map.name,
-          mapVersion: loaded.report.map.mapVersion,
-          fixed: progress.fixed,
-          total: progress.total,
-          blockers: loaded.report.bugs.filter(
-            (bug) => !bug.fixed && bug.severity === "blocker",
-          ).length,
-        };
-      }),
-    );
+    const paths = (await Promise.all(projects.map(async (entry) => {
+      const file = await this.#currentFile(entry.path + "/project.json");
+      if (!file || file.encoding !== "base64" || typeof file.content !== "string") {
+        throw new Error("Missing project identity: " + entry.path);
+      }
+      const project = JSON.parse(decodeBase64Utf8(file.content)) as {
+        projectId?: unknown; levels?: unknown;
+      };
+      if (project.projectId !== entry.name) {
+        throw new Error("Project identity mismatch: " + entry.path);
+      }
+      if (project.levels === undefined) {
+        return [buildBugReportWorkspacePath(entry.name)];
+      }
+      if (!Array.isArray(project.levels) || project.levels.length === 0) {
+        throw new Error("Invalid project levels: " + entry.path);
+      }
+      const seen = new Set<number>();
+      return project.levels.map((level: unknown) => {
+        if (typeof level !== "object" || level === null || !("level" in level) ||
+            !Number.isSafeInteger(level.level) || (level.level as number) < 1 ||
+            seen.has(level.level as number)) {
+          throw new Error("Invalid or duplicate level: " + entry.path);
+        }
+        seen.add(level.level as number);
+        return buildBugReportWorkspacePath(entry.name, "level-" + String(level.level));
+      });
+    }))).flat();
 
+    const summaries = (await Promise.all(paths.map(async (path) => {
+      const file = await this.#currentFile(path);
+      if (!file) return undefined;
+      const loaded = await this.loadReport(path);
+      const progress = bugReportV2Progress(loaded.report);
+      return {
+        path,
+        mapName: loaded.report.map.name,
+        mapVersion: loaded.report.map.mapVersion,
+        fixed: progress.fixed,
+        total: progress.total,
+        blockers: loaded.report.bugs.filter((bug) =>
+          !bug.fixed && bug.severity === "blocker").length,
+      };
+    }))).filter((item): item is GitHubBugReportSummary => item !== undefined);
     return summaries.sort((left, right) =>
       Number(right.blockers > 0) - Number(left.blockers > 0) ||
       (right.total - right.fixed) - (left.total - left.fixed) ||
       left.mapName.localeCompare(right.mapName) ||
-      left.mapVersion.localeCompare(right.mapVersion)
-    );
+      left.mapVersion.localeCompare(right.mapVersion));
   }
 
   async loadReport(path: string): Promise<LoadedGitHubBugReport> {

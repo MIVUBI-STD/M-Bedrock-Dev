@@ -32,7 +32,7 @@ A Map Audit Report may still contain PROVEN DESIGN_MISMATCH and NEED_VALIDATION 
 - Compatibility mode shows tester-readiness and copy-quality issues without mutating the report.
 - Compatibility reports may be read and exported.
 - A GitHub report is read/export oriented during the audit phase.
-- Canonical GitHub persistence lives under `workspace/reports/`; UI code must build paths through the shared engine persistence helpers.
+- Canonical GitHub persistence lives under each project or level `report/bug-report.json`; UI code uses the shared persistence path contract.
 - The UI owns no independent bug database, status history, or bug identity.
 - Legacy or external files are read-only review/import inputs. Canonical creation happens only through the approval-gated engine workflow.
 - Canonical V2 fields remain unchanged for compatibility with later repair workflows.

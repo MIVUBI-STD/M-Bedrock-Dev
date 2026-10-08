@@ -1,33 +1,11 @@
-import type { BugReportV2Map } from "./v2.js";
+export const BUG_REPORT_WORKSPACE_DIRECTORY = "workspace/projects" as const;
 
-export const BUG_REPORT_WORKSPACE_DIRECTORY =
-  "workspace/reports" as const;
-
-function safeSegment(value: string): string {
-  const cleaned = value
-    .trim()
-    .replace(/[^a-zA-Z0-9._-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return cleaned || "map";
-}
-
-export function buildBugReportFileName(
-  map: BugReportV2Map,
-): string {
-  return (
-    safeSegment(map.name) +
-    "-v" +
-    safeSegment(map.mapVersion) +
-    "-BugReport.json"
-  );
-}
-
-export function buildBugReportWorkspacePath(
-  map: BugReportV2Map,
-): string {
-  return (
-    BUG_REPORT_WORKSPACE_DIRECTORY +
-    "/" +
-    buildBugReportFileName(map)
-  );
+export function buildBugReportWorkspacePath(projectId: string, levelId?: string): string {
+  const valid = (id: string): boolean => /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id);
+  if (!valid(projectId) || (levelId !== undefined && !/^level-[1-9][0-9]*$/.test(levelId))) {
+    throw new Error("Invalid canonical project or level identity.");
+  }
+  return BUG_REPORT_WORKSPACE_DIRECTORY + "/" + projectId +
+    (levelId === undefined ? "" : "/levels/" + levelId) +
+    "/report/bug-report.json";
 }

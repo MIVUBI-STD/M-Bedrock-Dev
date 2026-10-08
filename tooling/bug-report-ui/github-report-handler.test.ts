@@ -66,7 +66,7 @@ describe("bug report handler", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          path: "workspace/reports/golden.json",
+          path: "workspace/projects/attack-challenge/report/bug-report.json",
           report: report(),
         }),
       }),
@@ -88,7 +88,7 @@ describe("bug report handler", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          path: "workspace/reports/golden.json",
+          path: "workspace/projects/attack-challenge/report/bug-report.json",
           bugId: "BUG-G-001",
           repairBy: "developer",
           closure: {

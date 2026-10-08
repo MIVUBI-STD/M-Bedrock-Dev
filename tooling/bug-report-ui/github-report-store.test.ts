@@ -49,7 +49,7 @@ describe("GitHubBugReportStore", () => {
       .mockResolvedValueOnce(new Response(
         JSON.stringify({
           type: "file",
-          path: "workspace/reports/a.json",
+          path: "workspace/projects/attack-challenge/report/bug-report.json",
           sha: "abc",
           content: encoded,
           encoding: "base64",
@@ -59,7 +59,7 @@ describe("GitHubBugReportStore", () => {
 
     const store = new GitHubBugReportStore({
       owner: "MIVUBI-STD",
-      repository: "M-Bedrock-Dev",
+      repository: "M-Lazy-Developer",
       branch: "Local",
       token: "secret",
       fetchImpl: fetchMock as unknown as typeof fetch,
@@ -67,7 +67,7 @@ describe("GitHubBugReportStore", () => {
 
     await expect(
       store.saveReport(
-        "workspace/reports/a.json",
+        "workspace/projects/attack-challenge/report/bug-report.json",
         report(),
         "abc",
       ),
@@ -87,7 +87,7 @@ describe("GitHubBugReportStore", () => {
       .mockResolvedValueOnce(new Response(
         JSON.stringify({
           type: "file",
-          path: "workspace/reports/a.json",
+          path: "workspace/projects/attack-challenge/report/bug-report.json",
           sha: "newer",
           content: encoded,
           encoding: "base64",
@@ -97,7 +97,7 @@ describe("GitHubBugReportStore", () => {
 
     const store = new GitHubBugReportStore({
       owner: "MIVUBI-STD",
-      repository: "M-Bedrock-Dev",
+      repository: "M-Lazy-Developer",
       branch: "Local",
       token: "secret",
       fetchImpl: fetchMock as unknown as typeof fetch,
@@ -105,7 +105,7 @@ describe("GitHubBugReportStore", () => {
 
     await expect(
       store.saveReport(
-        "workspace/reports/a.json",
+        "workspace/projects/attack-challenge/report/bug-report.json",
         report(),
         "older",
       ),
@@ -118,7 +118,7 @@ describe("GitHubBugReportStore", () => {
   it("rejects paths outside the report directory", async () => {
     const store = new GitHubBugReportStore({
       owner: "MIVUBI-STD",
-      repository: "M-Bedrock-Dev",
+      repository: "M-Lazy-Developer",
       branch: "Local",
       token: "secret",
       fetchImpl: vi.fn() as unknown as typeof fetch,
@@ -130,7 +130,7 @@ describe("GitHubBugReportStore", () => {
         report(),
         "abc",
       ),
-    ).rejects.toThrow("inside workspace/reports/");
+    ).rejects.toThrow("canonical project/level report/bug-report.json");
   });
   it("rejects any canonical issue mutation through generic save", async () => {
     const current = report();
@@ -142,7 +142,7 @@ describe("GitHubBugReportStore", () => {
       .mockResolvedValueOnce(new Response(
         JSON.stringify({
           type: "file",
-          path: "workspace/reports/a.json",
+          path: "workspace/projects/attack-challenge/report/bug-report.json",
           sha: "abc",
           content: encoded,
           encoding: "base64",
@@ -152,7 +152,7 @@ describe("GitHubBugReportStore", () => {
 
     const store = new GitHubBugReportStore({
       owner: "MIVUBI-STD",
-      repository: "M-Bedrock-Dev",
+      repository: "M-Lazy-Developer",
       branch: "Local",
       token: "secret",
       fetchImpl: fetchMock as unknown as typeof fetch,
@@ -170,7 +170,7 @@ describe("GitHubBugReportStore", () => {
 
     await expect(
       store.saveReport(
-        "workspace/reports/a.json",
+        "workspace/projects/attack-challenge/report/bug-report.json",
         changed,
         "abc",
       ),
@@ -197,7 +197,7 @@ describe("GitHubBugReportStore", () => {
       .mockResolvedValueOnce(new Response(
         JSON.stringify({
           type: "file",
-          path: "workspace/reports/a.json",
+          path: "workspace/projects/attack-challenge/report/bug-report.json",
           sha: "abc",
           content: encoded,
           encoding: "base64",
@@ -207,7 +207,7 @@ describe("GitHubBugReportStore", () => {
 
     const store = new GitHubBugReportStore({
       owner: "MIVUBI-STD",
-      repository: "M-Bedrock-Dev",
+      repository: "M-Lazy-Developer",
       branch: "Local",
       token: "secret",
       fetchImpl: fetchMock as unknown as typeof fetch,
@@ -215,7 +215,7 @@ describe("GitHubBugReportStore", () => {
 
     await expect(
       store.saveReport(
-        "workspace/reports/a.json",
+        "workspace/projects/attack-challenge/report/bug-report.json",
         current,
         "abc",
       ),
