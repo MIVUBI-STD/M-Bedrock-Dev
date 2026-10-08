@@ -48,29 +48,31 @@ if (!/planning\//.test(workspaceAgents)) {
   failures.push("workspace/AGENTS.md must route planning intent to planning/.");
 }
 
-if (!existsSync("workspace/developer-notes.json")) {
-  failures.push("Missing canonical Developer Note ledger: workspace/developer-notes.json");
-}
-
-if (existsSync("workspace/reports")) {
-  const allowedReportFiles = new Set(["README.md", "AGENTS.md"]);
-  for (const entry of readdirSync("workspace/reports", { withFileTypes: true })) {
-    if (entry.isDirectory()) {
-      failures.push("workspace/reports must remain a flat canonical Bug Report V2 store: " + entry.name);
-      continue;
-    }
-    if (allowedReportFiles.has(entry.name)) continue;
-    if (!/-BugReport\.json$/.test(entry.name)) {
-      failures.push("Non-BugReport artifact must not live in workspace/reports: " + entry.name);
-    }
+// Project/level report ownership is canonical. Reports and developer notes
+// are optional until a project actually has admitted material.
+const legacyGlobalOwners = [
+  "workspace/reports",
+  "workspace/developer-notes.json",
+  "workspace/project-registry.json",
+  "workspace/publication",
+];
+for (const path of legacyGlobalOwners) {
+  if (existsSync(path)) {
+    failures.push("Retired global workspace owner remains: " + path);
   }
 }
-
-if (existsSync("workspace/reports/approved-publication-dataset.json")) {
-  failures.push("Derived publication dataset must not live in workspace/reports.");
+if (!existsSync("workspace/projects")) {
+  failures.push("Missing canonical project workspace: workspace/projects");
 }
-if (!existsSync("workspace/publication/publication-dataset.json")) {
-  failures.push("Missing derived publication source dataset: workspace/publication/publication-dataset.json");
+for (const path of tracked.filter((item) => item.startsWith("workspace/projects/"))) {
+  if (/(?:^|\\/)report\\/(?:bug-report|developer-notes)\\.json$/.test(path) ||
+      /(?:^|\\/)output\\/bug-tracker\\.(?:html|json)$/.test(path)) {
+    const isProjectScope = /^workspace\\/projects\\/[^/]+\\/(?:report|output)\\//.test(path);
+    const isLevelScope = /^workspace\\/projects\\/[^/]+\\/levels\\/[^/]+\\/(?:report|output)\\//.test(path);
+    if (!isProjectScope && !isLevelScope) {
+      failures.push("Current project report/output is outside canonical scope: " + path);
+    }
+  }
 }
 
 const planningReadme = existsSync("planning/README.md")

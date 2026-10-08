@@ -129,12 +129,12 @@ try {
                 $warnings.Add("Dependencies are not installed.")
             }
 
-            if ((Test-Path "workspace/active") -and (Test-Path "workspace/saved")) {
-                Write-DoctorStatus "Workspace" "PASS" "active + saved"
+            if ((Test-Path "workspace/README.md") -and (Test-Path "workspace/drive-root.json") -and (Test-Path "workspace/projects")) {
+                Write-DoctorStatus "Workspace" "PASS" "project-scoped"
             }
             else {
-                Write-DoctorStatus "Workspace" "FAIL" "workspace directories missing"
-                $failures.Add("Workspace directories are incomplete.")
+                Write-DoctorStatus "Workspace" "FAIL" "canonical project workspace missing"
+                $failures.Add("Workspace must contain README.md, drive-root.json, and projects/.")
             }
 
             if ($failures.Count -gt 0) {
@@ -204,7 +204,7 @@ try {
             npm run verify:local-ready
         }
         default {
-            Write-Host "M-Bedrock-Dev"
+            Write-Host "Lazy-Developer"
             Write-Host "  DEV.cmd setup"
             Write-Host "  DEV.cmd doctor"
             Write-Host "  DEV.cmd audit"
