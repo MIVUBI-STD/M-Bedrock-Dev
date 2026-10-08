@@ -2475,6 +2475,7 @@ export function compileGameplayScenarioGraph(
       if (!allowed.has(edge.from) || !allowed.has(edge.to)) continue;
       if (!componentIds.has(edge.from) || !componentIds.has(edge.to)) continue;
       const impactPath = impactPathFrom(edge.to, allowed, input.intent);
+      const causalStatus = edgeStatus(edge);
       causalLinks.push({
         id: "edge:" + scenario.id + ":" + edge.id,
         scenarioId: scenario.id,
@@ -2502,9 +2503,9 @@ export function compileGameplayScenarioGraph(
         impactPathEvidenceIds: impactPathEvidenceIds(impactPath, input.intent),
         dimensionEvidence: {},
         intentEdgeKind: edge.kind,
-        status: edgeStatus(edge),
+        status: causalStatus,
         reason:
-          edgeStatus(edge) === "PROVEN"
+          causalStatus === "PROVEN"
             ? "Selected-artifact evidence connects both gameplay components."
             : "This causal link is not grounded strongly enough to close the scenario.",
       });
