@@ -955,6 +955,9 @@ export async function inspectArtifact(
         unsupportedRelevantSourcePaths:
           result.gameplayDiscoveryClosure
             .unsupportedRelevantSourcePaths,
+        semanticUnderstandingGapPaths:
+          result.gameplayDiscoveryClosure
+            .semanticUnderstandingGapPaths,
         unresolvedReferences:
           result.unresolvedReferences,
       });
