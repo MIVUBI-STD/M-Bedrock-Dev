@@ -186,9 +186,8 @@ impl Provider for VmwareWorkstationProvider {
         );
 
         if let Err(error) = clone_result {
-            // A staged VMX does not prove that VMware finished cloning its disks.
-            // Never promote an ambiguous or failed clone as a usable client.
-            let _ = remove_vm_container(&staging);
+            // A failed clone may still have active VMware disk work. Preserve its
+            // staging artifacts for inspection instead of deleting them blindly.
             return Err(error);
         }
 

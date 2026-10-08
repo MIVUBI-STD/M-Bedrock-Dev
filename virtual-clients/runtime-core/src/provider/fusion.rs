@@ -180,7 +180,7 @@ impl Provider for VmwareFusionProvider {
         );
 
         if let Err(error) = clone_result {
-            let _ = remove_vm_container(&staging);
+            // Failed VMware operations may leave uncertain disk work behind.
             return Err(error);
         }
 

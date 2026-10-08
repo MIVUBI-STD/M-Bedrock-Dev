@@ -44,11 +44,37 @@ pub(crate) fn staging_residue_count() -> io::Result<usize> {
 }
 
 pub(crate) fn cleanup_staging() -> io::Result<()> {
-    let staging = staging_root()?;
+    cleanup_staging_at(&staging_root()?)
+}
+
+fn cleanup_staging_at(staging: &Path) -> io::Result<()> {
     if !staging.exists() { return Ok(()); }
-    for entry in fs::read_dir(&staging)? {
-        let path = entry?.path();
-        if path.is_dir() { fs::remove_dir_all(path)?; } else { fs::remove_file(path)?; }
+    // Clone failures may leave disks in an indeterminate state. Never
+    // recursively delete those artifacts just because a new operation started.
+    if fs::read_dir(&staging)?.next().transpose()?.is_some() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "staging contains unresolved VM artifacts; inspect and clear them manually before provisioning",
+        ));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::cleanup_staging_at;
+    use std::{fs, io, time::{SystemTime, UNIX_EPOCH}};
+
+    #[test]
+    fn unresolved_staging_is_preserved() {
+        let suffix = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
+        let root = std::env::temp_dir().join(format!("virtual-clients-staging-{}-{suffix}", std::process::id()));
+        let artifact = root.join("Virtual-01").join("Virtual-01.vmx");
+        fs::create_dir_all(artifact.parent().unwrap()).unwrap();
+        fs::write(&artifact, b"partial clone").unwrap();
+        let error = cleanup_staging_at(&root).expect_err("residue must block cleanup");
+        assert_eq!(error.kind(), io::ErrorKind::InvalidData);
+        assert_eq!(fs::read(&artifact).unwrap(), b"partial clone");
+        fs::remove_dir_all(root).unwrap();
+    }
 }
