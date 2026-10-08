@@ -202,6 +202,8 @@ Target Repair
 
 Product Development is not Detection Development. Generic repository/product feature work uses the normal development execution contract and canonical semantic owner.
 
+General Product Development uses the permission profile `product-development` in `.agents/permissions/lane-permissions.json`. This is an execution permission profile, **not** an extra specialist skill or work-lane registry entry. It permits bounded repository/source changes but never grants target-artifact mutation. The closest canonical owner and existing development contract still govern scope.
+
 ### Domain specialist contract
 
 Domain specialists may use a smaller procedure, but must declare:

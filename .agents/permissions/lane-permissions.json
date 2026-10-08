@@ -104,6 +104,32 @@
         "original-artifact-write",
         "package-install"
       ]
+    },
+    "product-development": {
+      "default": "read",
+      "engine": {
+        "read": true,
+        "write": true
+      },
+      "target": {
+        "read": true,
+        "write": false
+      },
+      "workspace": {
+        "read": true,
+        "write": false
+      },
+      "network": "evidence-only",
+      "processExecution": "development",
+      "askBefore": [
+        "new-dependency",
+        "external-network-source-not-already-authorized"
+      ],
+      "never": [
+        "target-write",
+        "original-artifact-write",
+        "rewrite-frozen-expectation-to-pass"
+      ]
     }
   }
 }

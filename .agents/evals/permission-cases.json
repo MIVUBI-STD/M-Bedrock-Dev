@@ -106,6 +106,69 @@
         "mode": "read"
       },
       "expected": "allow"
+    },
+    {
+      "id": "product-development-engine",
+      "request": {
+        "lane": "product-development",
+        "action": "modify",
+        "path": "engine/packages/project-model/src/index.ts",
+        "mode": "write",
+        "resource": "engine"
+      },
+      "expected": "allow"
+    },
+    {
+      "id": "product-development-root-policy",
+      "request": {
+        "lane": "product-development",
+        "action": "modify",
+        "path": "GITHUB_RULES.md",
+        "mode": "write"
+      },
+      "expected": "allow"
+    },
+    {
+      "id": "product-development-workspace-read",
+      "request": {
+        "lane": "product-development",
+        "action": "modify",
+        "path": "workspace/projects/demo/source/map.json",
+        "mode": "read",
+        "resource": "workspace"
+      },
+      "expected": "allow"
+    },
+    {
+      "id": "product-development-target-denied",
+      "request": {
+        "lane": "product-development",
+        "action": "target-write",
+        "path": "workspace/projects/demo/working/map.json",
+        "mode": "write",
+        "resource": "target"
+      },
+      "expected": "deny"
+    },
+    {
+      "id": "product-development-unknown-path-denied",
+      "request": {
+        "lane": "product-development",
+        "action": "modify",
+        "path": "secrets/private.txt",
+        "mode": "write"
+      },
+      "expected": "deny"
+    },
+    {
+      "id": "product-development-dependency-review",
+      "request": {
+        "lane": "product-development",
+        "action": "new-dependency",
+        "path": "package.json",
+        "mode": "write"
+      },
+      "expected": "ask"
     }
   ]
 }

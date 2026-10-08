@@ -12,6 +12,7 @@ const laneColumns = {
   "m-bedrock-detection-development": "detectionDevelopment",
   "m-bedrock-detection-benchmark": "benchmark",
   "m-bedrock-target-repair": "targetRepair",
+  "product-development": "productDevelopment",
 };
 
 function globToRegex(pattern) {

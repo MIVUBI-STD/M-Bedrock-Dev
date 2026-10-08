@@ -6,49 +6,148 @@
       "audit": "read",
       "detectionDevelopment": "read-write",
       "benchmark": "read",
-      "targetRepair": "read"
+      "targetRepair": "read",
+      "productDevelopment": "read-write"
     },
     {
       "path": "workspace/projects/**/source/**",
       "audit": "read",
       "detectionDevelopment": "read",
       "benchmark": "read",
-      "targetRepair": "read"
+      "targetRepair": "read",
+      "productDevelopment": "read"
     },
     {
       "path": "workspace/projects/**/working/**",
       "audit": "read",
       "detectionDevelopment": "read",
       "benchmark": "read",
-      "targetRepair": "read-write"
+      "targetRepair": "read-write",
+      "productDevelopment": "read"
     },
     {
       "path": "workspace/projects/**/design/**",
       "audit": "read",
       "detectionDevelopment": "read",
       "benchmark": "read",
-      "targetRepair": "read"
+      "targetRepair": "read",
+      "productDevelopment": "read"
     },
     {
       "path": "engine/fixtures/**",
       "audit": "read",
       "detectionDevelopment": "read-write",
       "benchmark": "read",
-      "targetRepair": "read"
+      "targetRepair": "read",
+      "productDevelopment": "read-write"
     },
     {
       "path": ".agents/evals/**",
       "audit": "read",
       "detectionDevelopment": "read-write",
       "benchmark": "read-write",
-      "targetRepair": "read"
+      "targetRepair": "read",
+      "productDevelopment": "read"
     },
     {
       "path": ".agents/skills/**",
       "audit": "read",
       "detectionDevelopment": "read-write",
       "benchmark": "read",
-      "targetRepair": "read"
+      "targetRepair": "read",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": "apps/**",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": "docs/**",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": "planning/**",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": "tooling/**",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": ".github/**",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": "AGENTS.md",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": "GITHUB_RULES.md",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": "CONTEXT.md",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": "SECURITY.md",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": "README.md",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": "package.json",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": "package-lock.json",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": "toolchain.json",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": "tsconfig.json",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": ".node-version",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": ".editorconfig",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": ".gitattributes",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": ".gitignore",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": "DEV.cmd",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": "VERSION",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": ".agents/permissions/**",
+      "productDevelopment": "read-write"
+    },
+    {
+      "path": ".agents/skill-registry.json",
+      "productDevelopment": "read-write"
     }
   ]
 }
