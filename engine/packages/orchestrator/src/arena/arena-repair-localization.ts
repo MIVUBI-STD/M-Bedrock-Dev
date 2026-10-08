@@ -183,6 +183,7 @@ function dedupe(
             rank[a.strength] ||
           a.sourceId.localeCompare(b.sourceId)
         )
+        .reverse()
         .map((item) => [
           item.sourceId,
           item,
