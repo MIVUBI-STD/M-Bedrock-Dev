@@ -7,7 +7,7 @@ import {
   correlateStateAuthority,
   stateAuthorityRuntimeEvidence,
   type StateMirrorCorrelation,
-} from "../state-authority-analysis.js";
+} from "../inspection/state-authority-analysis.js";
 
 export interface KnowledgeEvidenceOverlayInput {
   records?: readonly RuntimeEvidenceRecord[];

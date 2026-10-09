@@ -9,11 +9,11 @@ import type {
 } from "../../../project-model/src/index.js";
 import { parseRuntimeProbeRequestBundle } from "../../../project-model/src/index.js";
 import type { InspectDirectoryResult } from "../types.js";
-import { planDiagnosticProbes } from "../diagnostic-probe-planning.js";
+import { planDiagnosticProbes } from "../diagnosis/diagnostic-probe-planning.js";
 import {
   compileRuntimeProbeRequests,
   type RuntimeProbeCompilationIssue,
-} from "../runtime-probe-request-compiler.js";
+} from "../diagnosis/runtime-probe-request-compiler.js";
 
 export interface PreparedProbeIncident {
   incidentId: string;

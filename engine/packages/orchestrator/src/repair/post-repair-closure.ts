@@ -1,13 +1,13 @@
 import {
   decideRepairRelease,
   type RepairReleaseDecision,
-} from "../repair-release-gate.js";
+} from "../repair/repair-release-gate.js";
 import type {
   RepairLifecycleState,
-} from "../repair-lifecycle.js";
+} from "../repair/repair-lifecycle.js";
 import type {
   ZeroWasteExecutionReceipt,
-} from "../zero-waste-execution-receipt.js";
+} from "../workflow/zero-waste-execution-receipt.js";
 
 export interface DefectRegressionReceipt {
   transactionId: string;

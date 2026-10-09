@@ -13,8 +13,8 @@ import { parseRuntimeProbeTranscript } from "../../../project-model/src/index.js
 import {
   createRuntimeProbeInvestigationSession,
   type RuntimeProbeInvestigationSessionOptions,
-} from "../runtime-probe-session.js";
-import { planDiagnosticProbes } from "../diagnostic-probe-planning.js";
+} from "../diagnosis/runtime-probe-session.js";
+import { planDiagnosticProbes } from "../diagnosis/diagnostic-probe-planning.js";
 
 export interface RuntimeProbeReplayFailure {
   requestId: string;

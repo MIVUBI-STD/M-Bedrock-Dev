@@ -5,14 +5,14 @@ import {
   evaluateRepairAdmissionPipeline,
   type RepairAdmissionPipelineInput,
   type RepairAdmissionPipelineResult,
-} from "../repair-admission-pipeline.js";
+} from "../repair/repair-admission-pipeline.js";
 import {
   decideReclassifiedRepairEntry,
   type ReclassifiedRepairEntryDecision,
 } from "./runtime-reclassification-repair-gate.js";
 import type {
   RuntimeIntentDiagnosticReclassification,
-} from "../runtime-intent-diagnostic-reclassification.js";
+} from "../diagnosis/runtime-intent-diagnostic-reclassification.js";
 
 export interface RuntimeClassifiedRepairPipelineInput
   extends RepairAdmissionPipelineInput {

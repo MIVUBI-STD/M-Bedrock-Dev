@@ -9,7 +9,7 @@ import {
 import {
   createSourceMutationDetector,
   type SourceMutationFixture,
-} from "../source-mutation-detection.js";
+} from "../repair/source-mutation-detection.js";
 import {
   createScriptMutationDetector,
   type ScriptMutationFixture,

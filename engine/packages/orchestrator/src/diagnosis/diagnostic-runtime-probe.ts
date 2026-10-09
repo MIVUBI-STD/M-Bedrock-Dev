@@ -1,8 +1,8 @@
 import type { DiagnosticProbeDefinition } from "../../../project-model/src/index.js";
 import type { RuntimeProbeRequest, RuntimeProbeResponse } from "../../../project-model/src/index.js";
 import { parseRuntimeProbeExchange } from "../../../project-model/src/index.js";
-import type { DiagnosticInvestigationState } from "../diagnostic-investigation.js";
-import { applyDiagnosticProbeObservation } from "../diagnostic-investigation.js";
+import type { DiagnosticInvestigationState } from "../diagnosis/diagnostic-investigation.js";
+import { applyDiagnosticProbeObservation } from "../diagnosis/diagnostic-investigation.js";
 
 export interface AppliedRuntimeProbeResult {
   response: RuntimeProbeResponse;

@@ -1,6 +1,6 @@
 import type {
   RuntimeDiagnosticPredicateBindings,
-} from "../runtime-intent-diagnostic-reclassification.js";
+} from "../diagnosis/runtime-intent-diagnostic-reclassification.js";
 
 function interventionBackedTreatmentViolation(
   predicate: string,

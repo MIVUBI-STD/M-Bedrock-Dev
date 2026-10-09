@@ -5,7 +5,7 @@ import {
   type BlockVerificationSemantics,
 } from "../../../../analyzers/commands/src/index.js";
 import type { Coordinate3 } from "../../../../analyzers/commands/src/index.js";
-import type { derivePlacementProofs, PlacementBounds } from "../structure-proof-analysis.js";
+import type { derivePlacementProofs, PlacementBounds } from "../inspection/structure-proof-analysis.js";
 import type { SourceRef } from "../../../project-model/src/index.js";
 import type { RuntimeEvidenceRecord } from "../../../project-model/src/index.js";
 import {

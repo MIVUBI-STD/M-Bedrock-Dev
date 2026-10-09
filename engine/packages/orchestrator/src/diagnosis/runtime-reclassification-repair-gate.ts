@@ -4,7 +4,7 @@ import type {
 } from "../../../project-model/src/index.js";
 import type {
   RuntimeIntentDiagnosticReclassification,
-} from "../runtime-intent-diagnostic-reclassification.js";
+} from "../diagnosis/runtime-intent-diagnostic-reclassification.js";
 
 export type ReclassifiedRepairEntryDisposition =
   | "admit"
