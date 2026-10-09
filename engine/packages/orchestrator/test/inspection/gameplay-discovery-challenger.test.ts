@@ -168,7 +168,7 @@ describe("gameplay discovery challenger", () => {
     const ir = {
       schemaVersion: 1,
       execution: { regions: [{ id: "region:external", kind: "script-module",
-        ownerId: "script:main", label: "module" }], edges: [] },
+        ownerId: "script:main", label: "module", source: { artifactId: "a", relativePath: "scripts/main.js" } }], edges: [] },
       state: { surfaces: [], operations: [], authorityBindings: [] },
       temporal: { relations: [] },
     } as unknown as SemanticIr;
@@ -184,7 +184,7 @@ describe("gameplay discovery challenger", () => {
     expect(challengeGameplayDiscovery({ semanticIr: ir, intent: external, graph: emptyGraph })
       .some(item => item.subjectId === "region:external")).toBe(true);
     const selected = { ...external, evidence: [{
-      ...external.evidence[0], scope: "selected-artifact",
+      ...external.evidence[0], scope: "selected-artifact", locator: "scripts/main.js",
     }] } as GameplayIntentModel;
     expect(challengeGameplayDiscovery({ semanticIr: ir, intent: selected, graph: emptyGraph })
       .some(item => item.subjectId === "region:external")).toBe(false);
@@ -194,7 +194,7 @@ describe("gameplay discovery challenger", () => {
     const ir = {
       schemaVersion: 1,
       execution: { regions: [{ id: "region:hypothesis", kind: "script-module",
-        ownerId: "scripts/main", label: "module" }], edges: [] },
+        ownerId: "scripts/main", label: "module", source: { artifactId: "a", relativePath: "scripts/main.js" } }], edges: [] },
       state: { surfaces: [], operations: [], authorityBindings: [] },
       temporal: { relations: [] },
     } as unknown as SemanticIr;
@@ -215,7 +215,7 @@ describe("gameplay discovery challenger", () => {
     const ir = {
       schemaVersion: 1,
       execution: { regions: [{ id: "region:inferred", kind: "script-module",
-        ownerId: "scripts/main", label: "module" }], edges: [] },
+        ownerId: "scripts/main", label: "module", source: { artifactId: "a", relativePath: "scripts/main.js" } }], edges: [] },
       state: { surfaces: [], operations: [], authorityBindings: [] },
       temporal: { relations: [] },
     } as unknown as SemanticIr;
@@ -322,7 +322,7 @@ describe("gameplay discovery challenger", () => {
       schemaVersion: 1,
       execution: {
         regions: [{ id: "region:mixed", kind: "script-function",
-          ownerId: "script:test", label: "mixed" }],
+          ownerId: "script:test", label: "mixed", source: { artifactId: "test", relativePath: "scripts/test.js" } }],
         edges: [{ id: "edge:mixed", from: "region:mixed",
           kind: "synchronous-call", targetLabel: "other",
           resolution: "resolved", to: "region:other",
@@ -399,7 +399,7 @@ describe("gameplay discovery challenger", () => {
     const ir = {
       schemaVersion: 1,
       execution: { regions: [{ id: "exec:mcfunction-source:standalone",
-        kind: "mcfunction", ownerId: "arena/intro", label: "arena/intro" }], edges: [] },
+        kind: "mcfunction", ownerId: "arena/intro", label: "arena/intro", source: { artifactId: "a", relativePath: "functions/intro.mcfunction" } }], edges: [] },
       state: { surfaces: [], operations: [], authorityBindings: [] },
       temporal: { relations: [] },
     } as unknown as SemanticIr;
