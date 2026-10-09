@@ -112,4 +112,49 @@ describe("knowledge runtime diagnostics", () => {
     });
     expect(unknown[0]?.severity).toBe("info");
   });
+  it("retains requires-any alternative source provenance in diagnostic data", () => {
+    const alternatives: KnowledgeCatalog = {
+      ...catalog,
+      relations: [{
+        id: "navigation-requires-provider",
+        domain: "entity-ai",
+        subject: "navigation",
+        kind: "requires-any",
+        object: "provider-a | provider-b",
+        applicability: { editions: ["bedrock"] },
+        sourceIds: ["policy"],
+      }],
+    };
+    const findings = knowledgeRuntimeDiagnostics({
+      catalog: alternatives,
+      profile: { edition: "bedrock" },
+      snapshot: {
+        schemaVersion: 1,
+        records: [{
+          predicate: "navigation",
+          state: "present",
+          confidence: "observed",
+          sourceRefs: [{ artifactId: "world", relativePath: "navigation.json" }],
+        }, {
+          predicate: "provider-a",
+          state: "absent",
+          confidence: "observed",
+          sourceRefs: [{ artifactId: "world", relativePath: "provider-a.json" }],
+        }, {
+          predicate: "provider-b",
+          state: "unknown",
+          confidence: "unknown",
+          sourceRefs: [{ artifactId: "world", relativePath: "provider-b.json" }],
+        }],
+      },
+    });
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.code).toBe("KNOWLEDGE_EVIDENCE_GAP");
+    expect(findings[0]?.data?.evidenceSourceIds).toEqual([
+      "world:navigation.json",
+      "world:provider-a.json",
+      "world:provider-b.json",
+    ]);
+  });
+
 });
