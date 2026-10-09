@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { analyzeEmbeddedStructureCommands } from "../src/embedded-structure-commands.js";
+import { analyzeEmbeddedStructureCommands } from "../src/inspection/embedded-structure-commands.js";
 
 describe("embedded structure command analysis", () => {
   it("feeds command-block text back through the command analyzer", () => {

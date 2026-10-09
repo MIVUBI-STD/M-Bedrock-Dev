@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { WorldDbNativeSummary } from "../src/world-db-analysis.js";
+import type { WorldDbNativeSummary } from "../src/inspection/world-db-analysis.js";
 
 describe("world DB native summary contract", () => {
   it("keeps runtime-native evidence explicit and bounded", () => {

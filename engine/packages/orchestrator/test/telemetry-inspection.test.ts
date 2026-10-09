@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
 import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
-import { inspectDirectory } from "../src/inspect.js";
+import { inspectDirectory } from "../src/inspection/inspect.js";
 
 const catalog: KnowledgeCatalog = {
   schemaVersion: 1,

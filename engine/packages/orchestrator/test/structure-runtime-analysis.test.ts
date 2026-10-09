@@ -6,7 +6,7 @@ import type {
 import {
   analyzeStructureAndChunkRuntime,
   type ParsedStructureSummary,
-} from "../src/structure-runtime-analysis.js";
+} from "../src/inspection/structure-runtime-analysis.js";
 
 function semantics(
   paletteSize: number,

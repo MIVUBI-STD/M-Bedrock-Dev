@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
-import { analyzeStructureAndChunkRuntime } from "../src/structure-runtime-analysis.js";
+import { analyzeStructureAndChunkRuntime } from "../src/inspection/structure-runtime-analysis.js";
 
 describe("structure load correlation", () => {
   it("correlates load intent with actual structure content", () => {

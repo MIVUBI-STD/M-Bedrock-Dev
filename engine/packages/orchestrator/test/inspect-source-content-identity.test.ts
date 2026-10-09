@@ -20,7 +20,7 @@ import {
 } from "../../project-model/src/index.js";
 import {
   indexInspectionSources,
-} from "../src/inspect-source-index.js";
+} from "../src/inspection/inspect-source-index.js";
 
 describe("inspection source content identity", () => {
   it("binds semantic source nodes to file content hashes", async () => {

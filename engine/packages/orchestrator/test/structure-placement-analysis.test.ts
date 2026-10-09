@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { derivePlacedEmbeddedCommands } from "../src/structure-placement-analysis.js";
+import { derivePlacedEmbeddedCommands } from "../src/inspection/structure-placement-analysis.js";
 
 describe("placed embedded command analysis", () => {
   it("derives world-space command locations for absolute structure loads", () => {

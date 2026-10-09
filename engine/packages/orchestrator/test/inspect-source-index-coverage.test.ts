@@ -13,7 +13,7 @@ import {
 } from "vitest";
 import {
   indexInspectionSources,
-} from "../src/inspect-source-index.js";
+} from "../src/inspection/inspect-source-index.js";
 
 describe("inspection source index coverage", () => {
   it("marks recognized source coverage incomplete when a relevant entity cannot be parsed", async () => {
