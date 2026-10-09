@@ -1995,6 +1995,35 @@ export function parseScriptFile(
     }
     return false;
   };
+  // Resolve only lexical const function values actually in scope at the call.
+  // Parameters, mutable bindings and uncertain aliases remain unresolved.
+  const localConstCallback = (call: ts.CallExpression): ts.ArrowFunction | ts.FunctionExpression | undefined => {
+    const arg = call.arguments[0];
+    if (!arg || !ts.isIdentifier(arg)) return undefined;
+    let current: ts.Node | undefined = call.parent;
+    while (current && current !== file) {
+      if (ts.isFunctionLike(current) && current.parameters.some(parameter =>
+        bindsName(parameter.name, arg.text))) return undefined;
+      if (ts.isBlock(current)) {
+        const declarations = current.statements
+          .filter(ts.isVariableStatement)
+          .flatMap(statement => statement.declarationList.declarations.map(declaration => ({
+            declaration, isConst: !!(statement.declarationList.flags & ts.NodeFlags.Const),
+          })))
+          .filter(item => bindsName(item.declaration.name, arg.text));
+        if (declarations.length > 0) {
+          if (declarations.length !== 1) return undefined;
+          const { declaration, isConst } = declarations[0]!;
+          if (!isConst || declaration.getStart(file) >= call.getStart(file)) return undefined;
+          const value = declaration.initializer;
+          return value && (ts.isArrowFunction(value) || ts.isFunctionExpression(value))
+            ? value : undefined;
+        }
+      }
+      current = current.parent;
+    }
+    return undefined;
+  };
   const directCallbackName = (call: ts.CallExpression): string | undefined => {
     const first = call.arguments[0];
     if (!first || !ts.isIdentifier(first) || isShadowed(first)) return undefined;
@@ -2575,7 +2604,7 @@ export function parseScriptFile(
 
       const scheduler = deferredScheduler(node, namedMinecraftBindings);
       if (scheduler) {
-        const callback = callbackNode(node) ?? constCallback(node);
+        const callback = callbackNode(node) ?? localConstCallback(node) ?? constCallback(node);
         const namedScheduledCallback = namedCallback(node);
         const guardIdentifiers = callback
           ? generationGuardIdentifiers(callback)
@@ -2666,7 +2695,7 @@ export function parseScriptFile(
 
         if (event) {
           const eventSource = lineSource(file, node, source);
-          const eventCallback = callbackNode(node) ?? constCallback(node);
+          const eventCallback = callbackNode(node) ?? localConstCallback(node) ?? constCallback(node);
           const namedEventCallback = namedCallback(node);
           events.push({
             root: normalizedRoot,

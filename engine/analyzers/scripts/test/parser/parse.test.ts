@@ -9,6 +9,21 @@ const source = {
 };
 
 describe("script analyzer", () => {
+  it("links locally declared immutable callbacks without guessing Promise parameters", () => {
+    const parsed = parseScriptFile("scripts/main", [
+      'import { system } from "@minecraft/server";',
+      'function run() {',
+      '  const cleanup = () => {};',
+      '  system.run(cleanup);',
+      '  new Promise((resolve) => { system.runTimeout(resolve, 2); });',
+      '}',
+    ].join("\n"), source);
+    const run = parsed.deferredCallbacks.find(item => item.scheduler === "run");
+    const timeout = parsed.deferredCallbacks.find(item => item.scheduler === "runTimeout");
+    expect(run?.callbackRegion).toMatch(/^callback@/);
+    expect(timeout?.callbackRegion).toBeUndefined();
+  });
+
   it("does not resolve callback aliases with conflicting module bindings", () => {
     const parsed = parseScriptFile("scripts/main", [
       'import { world, system } from "@minecraft/server";',
