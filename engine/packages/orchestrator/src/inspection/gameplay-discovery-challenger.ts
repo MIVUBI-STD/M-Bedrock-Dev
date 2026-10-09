@@ -25,14 +25,17 @@ function usedEvidenceIds(
   intent: GameplayIntentModel,
   graph: GameplayScenarioGraph,
 ): ReadonlySet<string> {
+  // An authored label is insufficient without a registered selected-artifact
+  // evidence record. Unregistered IDs must not close Semantic IR challenges.
+  const groundedIds = new Set(intent.evidence
+    .filter(item => item.scope === "selected-artifact")
+    .map(item => item.id));
   return new Set([
-    ...intent.nodes.filter(node => node.status === "authored").flatMap(node => node.evidenceIds),
-    ...intent.edges.filter(edge => edge.status === "authored").flatMap(edge => edge.evidenceIds),
-    // Scenario causal proof does not establish exact execution ownership.
-    // Only authored intent may admit a matching Semantic IR evidence ID.
-    // Knowledge satisfaction does not establish execution ownership.
-    // Receipts remain in the scenario graph, not the IR ownership admission set.
-  ]);
+    ...intent.nodes.filter(node => node.status === "authored")
+      .flatMap(node => node.evidenceIds),
+    ...intent.edges.filter(edge => edge.status === "authored")
+      .flatMap(edge => edge.evidenceIds),
+  ].filter(id => groundedIds.has(id)));
 }
 
 /**

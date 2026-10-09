@@ -119,6 +119,32 @@ describe("gameplay discovery challenger", () => {
     );
   });
 
+  it("does not admit unregistered or external authored evidence", () => {
+    const ir = {
+      schemaVersion: 1,
+      execution: { regions: [{ id: "region:external", kind: "script-module",
+        ownerId: "script:main", label: "module" }], edges: [] },
+      state: { surfaces: [], operations: [], authorityBindings: [] },
+      temporal: { relations: [] },
+    } as unknown as SemanticIr;
+    const intent = { ...emptyIntent, nodes: [{
+      id: "intent:authored", status: "authored", evidenceIds: ["region:external"],
+    }] } as GameplayIntentModel;
+    expect(challengeGameplayDiscovery({ semanticIr: ir, intent, graph: emptyGraph })
+      .some(item => item.subjectId === "region:external")).toBe(true);
+    const external = { ...intent, evidence: [{
+      id: "region:external", scope: "external-reference", origin: "source-code",
+      locator: "external.js", summary: "external reference",
+    }] } as GameplayIntentModel;
+    expect(challengeGameplayDiscovery({ semanticIr: ir, intent: external, graph: emptyGraph })
+      .some(item => item.subjectId === "region:external")).toBe(true);
+    const selected = { ...external, evidence: [{
+      ...external.evidence[0], scope: "selected-artifact",
+    }] } as GameplayIntentModel;
+    expect(challengeGameplayDiscovery({ semanticIr: ir, intent: selected, graph: emptyGraph })
+      .some(item => item.subjectId === "region:external")).toBe(false);
+  });
+
   it("does not admit hypothetical intent as exact Semantic IR ownership", () => {
     const ir = {
       schemaVersion: 1,
