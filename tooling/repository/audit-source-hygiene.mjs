@@ -140,11 +140,13 @@ if (process.argv.includes("--aliases-json")) {
   const aliases = flatAliasFiles.map((file) => {
     const source = readFileSync(file, "utf8");
     const target = source.match(/export \* from ["'](\.\/[^"']+)["']/)?.[1];
+    const resolvedTarget = target ? resolveRelativeImport(file, target) : undefined;
     return {
       alias: relative(ROOT, file).replaceAll("\\", "/"),
-      canonicalTarget: target
-        ? relative(ROOT, resolve(dirname(file), target)).replaceAll("\\", "/").replace(/\.js$/, ".ts")
+      canonicalTarget: resolvedTarget
+        ? relative(ROOT, resolvedTarget).replaceAll("\\", "/")
         : null,
+      canonicalTargetResolved: Boolean(resolvedTarget),
       family: source.match(PURE_ALIAS_RE)?.[1] ?? null,
       internalConsumers: [...aliasConsumers.get(file)].sort(),
       externalConsumersVerified: false,
@@ -156,6 +158,7 @@ if (process.argv.includes("--aliases-json")) {
     totalAliases: aliases.length,
     aliasesWithInternalConsumers: aliases.filter((item) => item.internalConsumers.length > 0).length,
     aliasesWithoutResolvedInternalConsumers: aliases.filter((item) => item.internalConsumers.length === 0).length,
+    aliasesWithMissingCanonicalTargets: aliases.filter((item) => !item.canonicalTargetResolved).length,
     aliases,
   }, null, 2));
   process.exit(0);
