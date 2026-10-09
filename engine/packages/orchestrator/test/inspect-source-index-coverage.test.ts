@@ -48,6 +48,29 @@ describe("inspection source index coverage", () => {
     } finally { await rm(root, { recursive: true, force: true }); }
   });
 
+  it("keeps one ordered outcome per relevant source without conflating parser and semantic coverage", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-source-outcomes-"));
+    try {
+      const paths = [
+        "functions/ready.mcfunction",
+        "behavior_packs/a/loot_tables/reward.json",
+        "behavior_packs/a/features/unknown.json",
+      ];
+      for (const path of paths) await mkdir(join(root, path.slice(0, path.lastIndexOf("/"))), { recursive: true });
+      await writeFile(join(root, paths[0]!), "say ready");
+      await writeFile(join(root, paths[1]!), JSON.stringify({ pools: [] }));
+      await writeFile(join(root, paths[2]!), JSON.stringify({ custom: true }));
+      const index = await indexInspectionSources(root, "artifact:outcomes",
+        paths.map(relativePath => ({ relativePath, size: 20 })));
+      expect(index.coverage.fileOutcomes).toEqual([
+        { relativePath: paths[1], status: "semantic-gap" },
+        { relativePath: paths[2], status: "unsupported" },
+        { relativePath: paths[0], status: "indexed" },
+      ]);
+      expect(index.coverage.fileOutcomes).toHaveLength(index.coverage.relevantFiles);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+
   it("marks recognized source coverage incomplete when a relevant entity cannot be parsed", async () => {
     const root = await mkdtemp(
       join(tmpdir(), "m-bedrock-index-"),

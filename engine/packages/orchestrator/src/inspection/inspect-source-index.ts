@@ -78,6 +78,11 @@ export interface InspectionSourceCoverage {
    * semantically understood.
    */
   semanticUnderstandingGaps: readonly string[];
+  /** One source-accounting disposition for every relevant selected-artifact file. */
+  fileOutcomes: readonly {
+    relativePath: string;
+    status: "indexed" | "semantic-gap" | "parse-failure" | "unsupported";
+  }[];
   complete: boolean;
 }
 
@@ -268,6 +273,7 @@ export async function indexInspectionSources(
   const unsupportedRelevantFiles: string[] = [];
   const semanticUnderstandingGaps: string[] = [];
   let relevantFiles = 0;
+  const relevantPaths: string[] = [];
   let indexedFiles = 0;
   let parsedStructures = 0;
   const tickFunctionRegistrations: InspectionTickFunctionRegistration[] = [];
@@ -276,6 +282,7 @@ export async function indexInspectionSources(
     const fnId = functionIdentifier(file.relativePath);
     if (fnId) {
       relevantFiles += 1;
+      relevantPaths.push(file.relativePath);
       const node: SemanticNode = {
         id: semanticNodeId("function", "project", file.relativePath),
         identity: {
@@ -312,6 +319,7 @@ export async function indexInspectionSources(
     const scriptId = scriptIdentifier(file.relativePath);
     if (scriptId) {
       relevantFiles += 1;
+      relevantPaths.push(file.relativePath);
       const node: SemanticNode = {
         id: semanticNodeId(
           "script_file",
@@ -357,6 +365,7 @@ export async function indexInspectionSources(
     // gameplay meaning has been understood.
     if (/\/functions\/tick\.json$/i.test(normalizedPath)) {
       relevantFiles += 1;
+      relevantPaths.push(file.relativePath);
       try {
         const raw = JSON.parse(
           await readFile(join(root, file.relativePath), "utf8"),
@@ -397,6 +406,7 @@ export async function indexInspectionSources(
       );
     if (isTranslation) {
       relevantFiles += 1;
+      relevantPaths.push(file.relativePath);
       try {
         await readFile(
           join(root, file.relativePath),
@@ -422,6 +432,7 @@ export async function indexInspectionSources(
 
     if (isEntityJson) {
       relevantFiles += 1;
+      relevantPaths.push(file.relativePath);
       try {
         const raw = JSON.parse(
           await readFile(
@@ -503,6 +514,7 @@ export async function indexInspectionSources(
         if (dialogue) {
           if (isDialogueJson) {
             relevantFiles += 1;
+      relevantPaths.push(file.relativePath);
             indexedFiles += 1;
           }
           parsedDialogueDocuments.push(dialogue);
@@ -514,6 +526,7 @@ export async function indexInspectionSources(
 
         if (isDialogueJson) {
           relevantFiles += 1;
+      relevantPaths.push(file.relativePath);
           parseFailures.push({
             relativePath: file.relativePath,
             kind: "dialogue",
@@ -525,6 +538,7 @@ export async function indexInspectionSources(
       } catch (error) {
         if (isDialogueJson) {
           relevantFiles += 1;
+      relevantPaths.push(file.relativePath);
           parseFailures.push({
             relativePath: file.relativePath,
             kind: "dialogue",
@@ -543,6 +557,7 @@ export async function indexInspectionSources(
       ownedGameplayJsonKind(file.relativePath);
     if (ownedJsonKind !== undefined) {
       relevantFiles += 1;
+      relevantPaths.push(file.relativePath);
       try {
         const raw = JSON.parse(
           await readFile(
@@ -614,6 +629,7 @@ export async function indexInspectionSources(
         )
       ) {
         relevantFiles += 1;
+      relevantPaths.push(file.relativePath);
         unsupportedRelevantFiles.push(
           file.relativePath,
         );
@@ -622,6 +638,7 @@ export async function indexInspectionSources(
     }
 
     relevantFiles += 1;
+      relevantPaths.push(file.relativePath);
 
     const node: SemanticNode = {
       id: semanticNodeId(
@@ -749,6 +766,17 @@ export async function indexInspectionSources(
     }
   }
 
+  const failedPaths = new Set(parseFailures.map(item => item.relativePath));
+  const unsupportedPaths = new Set(unsupportedRelevantFiles);
+  const semanticGapPaths = new Set(semanticUnderstandingGaps);
+  const fileOutcomes = relevantPaths.map(relativePath => ({
+    relativePath,
+    status: failedPaths.has(relativePath) ? "parse-failure" as const
+      : unsupportedPaths.has(relativePath) ? "unsupported" as const
+      : semanticGapPaths.has(relativePath) ? "semantic-gap" as const
+      : "indexed" as const,
+  })).sort((a, b) => a.relativePath.localeCompare(b.relativePath));
+
   return {
     graph,
     nodes,
@@ -772,6 +800,7 @@ export async function indexInspectionSources(
         [...unsupportedRelevantFiles].sort(),
       semanticUnderstandingGaps:
         [...semanticUnderstandingGaps].sort(),
+      fileOutcomes,
       complete:
         parseFailures.length === 0 &&
         unsupportedRelevantFiles.length === 0 &&
