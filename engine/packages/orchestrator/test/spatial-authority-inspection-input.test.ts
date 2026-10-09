@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   analyzeSpatialAuthorityCoverage,
-} from "../src/spatial-authority-analysis.js";
+} from "../src/inspection/spatial-authority-analysis.js";
 
 describe("spatial authority inspection inputs", () => {
   it("resolves explicit requirements against authored regions and policy", () => {
