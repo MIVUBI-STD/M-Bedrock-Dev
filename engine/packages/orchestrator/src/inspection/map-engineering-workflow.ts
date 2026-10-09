@@ -1,6 +1,6 @@
 import type {
   InspectArtifactResult,
-} from "../inspect-artifact.js";
+} from "./inspect-artifact.js";
 
 export type MapWorkflowStageStatus =
   | "ready"

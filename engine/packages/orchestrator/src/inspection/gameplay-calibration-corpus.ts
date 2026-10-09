@@ -6,13 +6,13 @@ import type {
 } from "../types.js";
 import {
   inspectArtifact,
-} from "../inspect-artifact.js";
+} from "./inspect-artifact.js";
 import {
   compareGameplayUnderstandingFingerprints,
   deriveGameplayUnderstandingFingerprint,
   type GameplayUnderstandingFingerprint,
   type GameplayUnderstandingFingerprintDrift,
-} from "../gameplay-understanding-fingerprint.js";
+} from "./gameplay-understanding-fingerprint.js";
 
 export type GameplayCalibrationSourceStyle =
   | "explicit-source"

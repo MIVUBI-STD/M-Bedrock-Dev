@@ -7,7 +7,7 @@ import {
   type StructureMirror,
   type StructureRotation,
 } from "../../../../adapters/mcstructure/src/index.js";
-import type { analyzeStructureAndChunkRuntime, StructureLoadCorrelation } from "../structure-runtime-analysis.js";
+import type { analyzeStructureAndChunkRuntime, StructureLoadCorrelation } from "./structure-runtime-analysis.js";
 
 type StructureRuntimeAnalysis = ReturnType<typeof analyzeStructureAndChunkRuntime>;
 

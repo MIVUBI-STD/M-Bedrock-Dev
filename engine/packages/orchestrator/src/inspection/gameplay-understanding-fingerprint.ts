@@ -6,7 +6,7 @@ import type {
 } from "../../../gameplay-intent/src/index.js";
 import type {
   InspectArtifactResult,
-} from "../inspect-artifact.js";
+} from "./inspect-artifact.js";
 
 const NODE_KINDS: readonly GameplayIntentNodeKind[] = [
   "game",
