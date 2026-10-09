@@ -158,6 +158,26 @@ describe("gameplay discovery challenger", () => {
       .some(item => item.subjectId === "region:inferred")).toBe(false);
   });
 
+  it("does not admit component membership or unproven causal links as Semantic IR ownership", () => {
+    const ir = {
+      schemaVersion: 1,
+      execution: { regions: [{ id: "region:scenario", kind: "script-module",
+        ownerId: "script:main", label: "module" }], edges: [] },
+      state: { surfaces: [], operations: [], authorityBindings: [] },
+      temporal: { relations: [] },
+    } as unknown as SemanticIr;
+    const component = { id: "component:scenario", evidenceIds: ["region:scenario"] };
+    const link = { id: "link:scenario", status: "DETECTION_GAP",
+      evidenceIds: ["region:scenario"] };
+    const graph = { ...emptyGraph, components: [component],
+      causalLinks: [link] } as unknown as GameplayScenarioGraph;
+    expect(challengeGameplayDiscovery({ semanticIr: ir, intent: emptyIntent, graph })
+      .some(item => item.subjectId === "region:scenario")).toBe(true);
+    const proven = { ...graph, causalLinks: [{ ...link, status: "PROVEN" }] } as GameplayScenarioGraph;
+    expect(challengeGameplayDiscovery({ semanticIr: ir, intent: emptyIntent, graph: proven })
+      .some(item => item.subjectId === "region:scenario")).toBe(false);
+  });
+
   it("does not accept blocked knowledge receipts as semantic ownership", () => {
     const ir = {
       schemaVersion: 1,

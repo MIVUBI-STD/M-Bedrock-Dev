@@ -28,8 +28,10 @@ function usedEvidenceIds(
   return new Set([
     ...intent.nodes.filter(node => node.status === "authored").flatMap(node => node.evidenceIds),
     ...intent.edges.filter(edge => edge.status === "authored").flatMap(edge => edge.evidenceIds),
-    ...graph.components.flatMap((component) => component.evidenceIds),
-    ...graph.causalLinks.flatMap((link) => link.evidenceIds),
+    // Component presence is not causal proof of exact Semantic IR ownership.
+    ...graph.causalLinks
+      .filter((link) => link.status === "PROVEN")
+      .flatMap((link) => link.evidenceIds),
     ...graph.knowledgeReceipts
       .filter((receipt) => receipt.status === "SATISFIED")
       .flatMap((receipt) => receipt.evidenceIds),
