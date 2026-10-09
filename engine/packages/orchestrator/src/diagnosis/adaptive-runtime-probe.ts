@@ -13,11 +13,11 @@ import {
 } from "../../../project-model/src/index.js";
 import {
   planDiagnosticProbes,
-} from "../diagnostic-probe-planning.js";
+} from "./diagnostic-probe-planning.js";
 import {
   compileRuntimeProbeRequests,
   type RuntimeProbeCompilationIssue,
-} from "../runtime-probe-request-compiler.js";
+} from "./runtime-probe-request-compiler.js";
 
 export interface AdaptiveRuntimeProbeInspection {
   causalAnalysis: {

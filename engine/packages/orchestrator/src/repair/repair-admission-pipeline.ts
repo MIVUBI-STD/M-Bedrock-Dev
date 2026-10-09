@@ -21,22 +21,22 @@ import {
 } from "../../../bug-report/src/index.js";
 import {
   analyzeRepairCounterfactual,
-} from "../repair-counterfactual.js";
+} from "./repair-counterfactual.js";
 import {
   decideRepairBlastRadius,
-} from "../repair-blast-radius.js";
+} from "./repair-blast-radius.js";
 import {
   decideRepairAdmission,
 } from "./repair-admission.js";
 import {
   createRepairProofBundle,
   type RepairProofBundle,
-} from "../repair-proof-bundle.js";
+} from "./repair-proof-bundle.js";
 import type {
   RepairBlastRadiusDecision,
   RepairBlastRadiusPolicy,
   RepairCounterfactualImpact,
-} from "../repair-counterfactual-types.js";
+} from "./repair-counterfactual-types.js";
 import type {
   RepairAdmissionDecision,
 } from "./repair-admission.js";

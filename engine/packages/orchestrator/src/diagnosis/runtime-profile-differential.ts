@@ -12,7 +12,7 @@ import {
 } from "../../../runtime-lab/src/index.js";
 import {
   runtimeExperimentDiagnosticEvidence,
-} from "../runtime-experiment-diagnostic-evidence.js";
+} from "./runtime-experiment-diagnostic-evidence.js";
 
 export interface RuntimeProfileDifferentialCase {
   profile: CapturedMinecraftRuntimeProfile;

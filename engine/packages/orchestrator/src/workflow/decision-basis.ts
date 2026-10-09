@@ -34,7 +34,7 @@ import {
   repairStrategySourceRegistryRevision,
   type RepairStrategySourceRegistry,
 } from "../repair-strategy-source-registry.js";
-import { semanticGraphFingerprint } from "../semantic-graph-fingerprint.js";
+import { semanticGraphFingerprint } from "./semantic-graph-fingerprint.js";
 
 function canonical(value: unknown): unknown {
   if (Array.isArray(value)) {

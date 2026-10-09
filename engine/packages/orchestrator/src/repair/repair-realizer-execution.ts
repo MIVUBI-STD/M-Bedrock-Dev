@@ -1,25 +1,25 @@
 import type { SemanticGraph } from "../../../graph/src/index.js";
 import type {
   RepairStrategyProviderRegistry,
-} from "../repair-strategy-provider.js";
+} from "./repair-strategy-provider.js";
 import {
   realizeProviderRepairStrategy,
   type ProviderRepairRealization,
   type ProviderRepairRealizationInput,
   type RepairStrategyEnumeration,
-} from "../repair-strategy-enumeration.js";
+} from "./repair-strategy-enumeration.js";
 import {
   deriveChangedSemanticNodeIds,
-} from "../repair-changed-node-derivation.js";
+} from "./repair-changed-node-derivation.js";
 import {
   repairRealizerForSource,
   validateRepairRealizerRegistry,
   type RepairRealizerRegistry,
-} from "../repair-realizer-registry.js";
+} from "./repair-realizer-registry.js";
 import {
   validateRepairStrategySourceRegistry,
   type RepairStrategySourceRegistry,
-} from "../repair-strategy-source-registry.js";
+} from "./repair-strategy-source-registry.js";
 
 export type RepairRealizerCoverageStatus =
   | "realizer-available"
