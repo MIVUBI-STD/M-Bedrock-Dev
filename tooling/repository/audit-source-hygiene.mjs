@@ -53,7 +53,8 @@ function packageName(specifier) {
   return specifier.split("/")[0];
 }
 
-const productionFiles = SOURCE_ROOTS.flatMap((rootName) => {
+const aliasesJsonOnly = process.argv.includes("--aliases-json");
+const productionFiles = aliasesJsonOnly ? [] : SOURCE_ROOTS.flatMap((rootName) => {
   const root = resolve(ROOT, rootName);
   return existsSync(root) ? walk(root, true) : [];
 });
@@ -136,7 +137,7 @@ const noInRepoConsumer = flatAliasFiles.filter(
 );
 
 // Machine-readable projection of the same alias/consumer evidence; no second registry.
-if (process.argv.includes("--aliases-json")) {
+if (aliasesJsonOnly) {
   const aliases = flatAliasFiles.map((file) => {
     const source = readFileSync(file, "utf8");
     const target = source.match(/export \* from ["'](\.\/[^"']+)["']/)?.[1];
