@@ -1907,6 +1907,19 @@ export function parseScriptFile(
       .flatMap((statement) => statement.name ? [statement.name.text] : []),
   );
 
+  const topLevelCallbackSources = new Map(
+    file.statements
+      .filter(ts.isFunctionDeclaration)
+      .flatMap(statement => statement.name
+        ? [[statement.name.text, lineSource(file, statement, source)] as const]
+        : []),
+  );
+  const namedCallback = (call: ts.CallExpression): string | undefined => {
+    const first = call.arguments[0];
+    return first && ts.isIdentifier(first) && topLevelFunctionNames.has(first.text)
+      ? first.text : undefined;
+  };
+
   const imports: ScriptImport[] = [];
   const events: ScriptEventSubscription[] = [];
   const dynamicProperties: DynamicPropertyAccess[] = [];
@@ -2474,6 +2487,7 @@ export function parseScriptFile(
       const scheduler = deferredScheduler(node, namedMinecraftBindings);
       if (scheduler) {
         const callback = callbackNode(node);
+        const namedScheduledCallback = namedCallback(node);
         const guardIdentifiers = callback
           ? generationGuardIdentifiers(callback)
           : [];
@@ -2499,7 +2513,12 @@ export function parseScriptFile(
                 callbackRegion: callbackExecutionRegionId(callback, file),
                 callbackSource: lineSource(file, callback, source),
               }
-            : {}),
+            : namedScheduledCallback
+              ? {
+                  callbackRegion: "function:" + namedScheduledCallback,
+                  callbackSource: topLevelCallbackSources.get(namedScheduledCallback),
+                }
+              : {}),
           guardEvidence: guardIdentifiers.length > 0
             ? "explicit-generation-check"
             : "unresolved",
@@ -2559,6 +2578,7 @@ export function parseScriptFile(
         if (event) {
           const eventSource = lineSource(file, node, source);
           const eventCallback = callbackNode(node);
+          const namedEventCallback = namedCallback(node);
           events.push({
             root: normalizedRoot,
             phase: normalizedPhase,
@@ -2569,7 +2589,12 @@ export function parseScriptFile(
                   callbackRegion: callbackExecutionRegionId(eventCallback, file),
                   callbackSource: lineSource(file, eventCallback, source),
                 }
-              : {}),
+              : namedEventCallback
+                ? {
+                    callbackRegion: "function:" + namedEventCallback,
+                    callbackSource: topLevelCallbackSources.get(namedEventCallback),
+                  }
+                : {}),
             source: eventSource,
           });
           capabilities.push({

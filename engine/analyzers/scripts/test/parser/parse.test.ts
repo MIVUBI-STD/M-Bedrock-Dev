@@ -9,6 +9,23 @@ const source = {
 };
 
 describe("script analyzer", () => {
+  it("resolves explicit top-level named event and timer callbacks without guessing dynamic references", () => {
+    const parsed = parseScriptFile("scripts/main", [
+      'import { world, system } from "@minecraft/server";',
+      'function onSpawn() { world.setDynamicProperty("joined", true); }',
+      'function onTick() { world.setDynamicProperty("tick", 1); }',
+      'world.afterEvents.playerSpawn.subscribe(onSpawn);',
+      'system.runInterval(onTick, 20);',
+      'system.runTimeout(dynamicCallback, 20);',
+    ].join("\n"), source);
+    expect(parsed.events.find(item => item.event === "playerSpawn")?.callbackRegion)
+      .toBe("function:onSpawn");
+    expect(parsed.deferredCallbacks.find(item => item.scheduler === "runInterval")?.callbackRegion)
+      .toBe("function:onTick");
+    expect(parsed.deferredCallbacks.find(item => item.scheduler === "runTimeout")?.callbackRegion)
+      .toBeUndefined();
+  });
+
   it("extracts Minecraft imports, event subscriptions and dynamic properties", () => {
     const parsed = parseScriptFile(
       "scripts/main",
