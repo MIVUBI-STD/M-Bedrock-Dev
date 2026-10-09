@@ -8,7 +8,7 @@ import type {
 } from "../../../../analyzers/scripts/src/index.js";
 import type { SourceRef } from "../../../project-model/src/index.js";
 import type { SemanticIr } from "../../../semantic-ir/src/index.js";
-import { scriptRegionId } from "../diagnosis/semantic-ir-stage.js";
+import { eventRegionId, scriptRegionId } from "../diagnosis/semantic-ir-stage.js";
 import {
   validateGameplayIntentModel,
   type GameplayIntentEdge,
@@ -203,6 +203,65 @@ export function buildGameplayIntentModel(
           locator: matched.source.relativePath,
           scope: "selected-artifact",
           summary: "Exact Semantic IR call edge from parsed source location; gameplay dependency remains inferred.",
+        });
+      }
+    }
+    if (input.semanticIr) {
+      for (const origin of relation.callbackOrigins ?? []) {
+        const source = origin.kind === "event"
+          ? origin.event.source : origin.callback.source;
+        if (origin.scriptSource.artifactId !== source.artifactId ||
+            origin.scriptSource.relativePath !== source.relativePath) {
+          continue;
+        }
+        const from = origin.kind === "event"
+          ? eventRegionId(origin.event.root, origin.event.phase,
+              origin.event.event, source)
+          : scriptRegionId(origin.scriptSource,
+              origin.callback.callerRegion ?? "module");
+        const toRegion = origin.kind === "event"
+          ? origin.event.callbackRegion : origin.callback.callbackRegion;
+        if (!toRegion) continue;
+        const target = scriptRegionId(origin.scriptSource, toRegion);
+        const expectedKind = origin.kind === "event"
+          ? "event-dispatch"
+          : origin.callback.scheduler === "runInterval"
+            ? "periodic" : "deferred";
+        const expectedLabel = origin.kind === "event"
+          ? origin.scriptIdentifier + ":" + toRegion : toRegion;
+        const matches = input.semanticIr.execution.edges.filter(edge =>
+          edge.kind === expectedKind &&
+          edge.resolution === "resolved" &&
+          edge.from === from && edge.to === target &&
+          edge.targetLabel === expectedLabel &&
+          (origin.kind !== "scheduler" ||
+            edge.scheduler === origin.callback.scheduler) &&
+          sameExactCallSource(edge.source, source));
+        if (matches.length !== 1) continue;
+        const matched = matches[0]!;
+        exactIrEvidenceIds.add(matched.id);
+        evidence.set(matched.id, {
+          id: matched.id,
+          origin: "source-code",
+          locator: matched.source.relativePath,
+          scope: "selected-artifact",
+          summary: "Exact Semantic IR event/scheduler execution edge; gameplay purpose remains inferred.",
+        });
+        const temporalMatches = input.semanticIr.temporal.relations.filter(item =>
+          item.id === "time:" + matched.id &&
+          item.from === matched.from &&
+          item.to === matched.to &&
+          item.resolution === "resolved" &&
+          sameExactCallSource(item.source, source));
+        if (temporalMatches.length !== 1) continue;
+        const temporal = temporalMatches[0]!;
+        exactIrEvidenceIds.add(temporal.id);
+        evidence.set(temporal.id, {
+          id: temporal.id,
+          origin: "source-code",
+          locator: temporal.source.relativePath,
+          scope: "selected-artifact",
+          summary: "Exact Semantic IR temporal relation; runtime scheduling remains unverified.",
         });
       }
     }

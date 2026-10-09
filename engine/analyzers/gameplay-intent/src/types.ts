@@ -28,6 +28,13 @@ export interface GameplayIntentRelationSignal {
     scriptSource: ParsedScriptFile["source"];
     call: ParsedScriptFile["localFunctionCalls"][number];
   }[];
+  /** Parsed event or scheduler origin; exact IR ID is resolved by the model stage. */
+  callbackOrigins?: readonly (
+    | { kind: "event"; scriptSource: ParsedScriptFile["source"];
+        scriptIdentifier: string; event: ParsedScriptFile["events"][number] }
+    | { kind: "scheduler"; scriptSource: ParsedScriptFile["source"];
+        callback: ParsedScriptFile["deferredCallbacks"][number] }
+  )[];
   fromSubjectKey: string;
   toSubjectKey: string;
   edgeKind: GameplayIntentEdgeKind;

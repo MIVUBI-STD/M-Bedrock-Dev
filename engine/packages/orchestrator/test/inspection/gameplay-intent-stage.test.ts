@@ -678,6 +678,71 @@ describe("gameplay intent stage", () => {
 });
 
 describe("exact Semantic IR provenance in Gameplay Intent", () => {
+
+  it("carries exact named event and scheduler provenance without promoting inferred gameplay", () => {
+    const scriptSource = { artifactId: "map-a",
+      relativePath: "behavior_packs/a/scripts/events.js" };
+    const location = (line: number) => ({ ...scriptSource,
+      range: { lineStart: line, columnStart: 1,
+        lineEnd: line, columnEnd: 32 } });
+    const script = { ...parsed(), identifier: "events",
+      source: scriptSource, localFunctionCalls: [],
+      events: [{ root: "world", phase: "afterEvents", event: "playerJoin",
+        callbackRegion: "function:cleanupSession",
+        source: location(12), callbackSource: location(20) },
+        { root: "world", phase: "afterEvents", event: "playerJoin",
+          source: location(13) }],
+      deferredCallbacks: [
+        { scheduler: "runInterval", source: location(30),
+          callerRegion: "function:waveTick",
+          callbackRegion: "function:spawnEnemy",
+          guardEvidence: "unresolved", guardIdentifiers: [] },
+        { scheduler: "runInterval", source: location(31),
+          callerRegion: "function:waveTick",
+          callbackRegion: "function:spawnEnemy",
+          guardEvidence: "unresolved", guardIdentifiers: [] },
+        { scheduler: "runTimeout", source: location(32),
+          callerRegion: "function:waveTick",
+          guardEvidence: "unresolved", guardIdentifiers: [] },
+      ],
+    } as ParsedScriptFile;
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed: script }],
+    });
+    const model = buildGameplayIntentModel({
+      id: "intent:events", parsedScripts: [{ parsed: script }],
+      semanticIr: ir,
+    });
+    const coveredEdges = ir.execution.edges.filter(edge =>
+      edge.resolution === "resolved" &&
+      (edge.kind === "event-dispatch" || edge.kind === "periodic"));
+    expect(coveredEdges).toHaveLength(3);
+    expect(model.edges.filter(edge =>
+      coveredEdges.some(irEdge => edge.evidenceIds.includes(irEdge.id))
+    ).every(edge => edge.status === "inferred")).toBe(true);
+    for (const edge of coveredEdges) {
+      const owner = model.edges.find(item => item.evidenceIds.includes(edge.id));
+      expect(owner).toBeDefined();
+      expect(owner?.evidenceIds).toContain("time:" + edge.id);
+      expect(model.evidence.find(item => item.id === edge.id)?.scope)
+        .toBe("selected-artifact");
+    }
+    const unresolved = ir.execution.edges.filter(edge => edge.resolution === "unresolved");
+    expect(unresolved).toHaveLength(2);
+    expect(unresolved.every(edge =>
+      !model.edges.some(intentEdge => intentEdge.evidenceIds.includes(edge.id))
+    )).toBe(true);
+
+    const mismatched = buildGameplayIntentModel({
+      id: "intent:wrong-artifact", parsedScripts: [{ parsed: script }],
+      semanticIr: { ...ir, execution: { ...ir.execution,
+        edges: ir.execution.edges.map(edge => ({ ...edge,
+          source: { ...edge.source, artifactId: "another-map" } })) } },
+    });
+    expect(mismatched.edges.some(edge => edge.evidenceIds.some(id =>
+      id.startsWith("exec-edge:")))).toBe(false);
+  });
+
   it("links only the same call site/regions and keeps game-purpose inference unproven", () => {
     const scriptSource = { artifactId: "map-a",
       relativePath: "behavior_packs/a/scripts/wave.js" };

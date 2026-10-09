@@ -658,14 +658,19 @@ export function extractGameplayIntentSignals(
     const existing = relations.get(relation.id);
     if (!existing) {
       relations.set(relation.id, relation);
-    } else if (relation.localCallOrigins?.length) {
-      // A single semantic relationship may originate at several call sites.
-      // Never discard later source locations while deduplicating its label.
+    } else if (relation.localCallOrigins?.length ||
+        relation.callbackOrigins?.length) {
+      // Preserve every call site when a single inferred relationship has
+      // multiple technical origins, including repeated scheduler/event sites.
       relations.set(relation.id, {
         ...existing,
         localCallOrigins: [
           ...(existing.localCallOrigins ?? []),
-          ...relation.localCallOrigins,
+          ...(relation.localCallOrigins ?? []),
+        ],
+        callbackOrigins: [
+          ...(existing.callbackOrigins ?? []),
+          ...(relation.callbackOrigins ?? []),
         ],
       });
     }
@@ -1389,6 +1394,54 @@ export function extractGameplayIntentSignals(
     for (const event of script.events) {
       const signal = lexicalSignal(path, event.event);
       if (signal) pushSignal(signals, signal);
+      // Only a resolved named callback may form an inferred gameplay
+      // association. Anonymous/unknown regions remain visible in Semantic IR.
+      const callbackName = event.callbackRegion?.startsWith("function:")
+        ? event.callbackRegion.slice("function:".length) : undefined;
+      const callbackSignal = callbackName
+        ? lexicalSignal(path, callbackName) : undefined;
+      if (callbackSignal) pushSignal(signals, callbackSignal);
+      if (signal && callbackSignal && event.callbackRegion) {
+        pushRelation({
+          id: "relation:participates-in:" + signal.subjectKey + ":" +
+            callbackSignal.subjectKey + ":" + slug(path),
+          fromSubjectKey: signal.subjectKey,
+          toSubjectKey: callbackSignal.subjectKey,
+          edgeKind: "participates-in",
+          status: "inferred",
+          evidenceOrigin: "source-code",
+          locator: path,
+          callbackOrigins: [{ kind: "event", scriptSource: script.source,
+            scriptIdentifier: script.identifier, event }],
+          summary: "A named handler is subscribed to this event. Its gameplay purpose remains inferred.",
+        });
+      }
+    }
+
+    for (const callback of script.deferredCallbacks) {
+      const callerName = callback.callerRegion?.startsWith("function:")
+        ? callback.callerRegion.slice("function:".length) : undefined;
+      const targetName = callback.callbackRegion?.startsWith("function:")
+        ? callback.callbackRegion.slice("function:".length) : undefined;
+      const caller = callerName ? lexicalSignal(path, callerName) : undefined;
+      const target = targetName ? lexicalSignal(path, targetName) : undefined;
+      if (caller) pushSignal(signals, caller);
+      if (target) pushSignal(signals, target);
+      if (caller && target) {
+        pushRelation({
+          id: "relation:participates-in:" + caller.subjectKey + ":" +
+            target.subjectKey + ":" + slug(path),
+          fromSubjectKey: caller.subjectKey,
+          toSubjectKey: target.subjectKey,
+          edgeKind: "participates-in",
+          status: "inferred",
+          evidenceOrigin: "source-code",
+          locator: path,
+          callbackOrigins: [{ kind: "scheduler", scriptSource: script.source,
+            callback }],
+          summary: "A named callback is scheduled from this region. Timing and gameplay purpose remain distinct.",
+        });
+      }
     }
 
     for (const property of script.dynamicProperties) {

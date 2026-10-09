@@ -61,7 +61,7 @@ function functionSourceRegionId(source: SourceRef): string {
   return "exec:mcfunction-source:" + token(source.relativePath);
 }
 
-function eventRegionId(
+export function eventRegionId(
   root: string,
   phase: string,
   event: string,
