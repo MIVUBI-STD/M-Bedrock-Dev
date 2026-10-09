@@ -6,11 +6,11 @@ Applies to machine-readable Bedrock / Education knowledge under `engine/knowledg
 
 Select the smallest domain group from `ownership.json` before reading catalogs:
 
-- `platform` — product/edition/API/permission/compatibility;
-- `world-runtime` — chunks, persistence, world mutation/state, ordering and observability;
-- `player-experience` — player lifecycle, inventory, interaction/input and feedback;
-- `entity-systems` — entity runtime, combat/effects/economy/NPC/mount behavior;
-- `arena-gameplay` — arena/round/spatial/state/environment behavior.
+- `platform` — edition, compatibility, permission, Script API and platform capabilities;
+- `world-engine` — chunks, structure, command context, persistence, automation, event ordering and world state;
+- `player-runtime` — player lifecycle, inventory, input, interaction, teleport and feedback;
+- `entity-runtime` — entity lifecycle, combat, effects, economy, NPC, mounts and physics;
+- `gameplay-runtime` — arena cleanup, rounds, cinematic control, hazards, spatial containment and shared state.
 
 ## Rules
 
