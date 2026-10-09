@@ -121,13 +121,19 @@ docs/system/
 
 ## Active
 
-- Run knowledge-consumption audit and close actionable reusable knowledge that lacks a dedicated analyzer/proof binding.
-- Continue reducing manually maintained implementation ownership only where machine-readable ownership can replace it safely.
+- **Knowledge hierarchy / consumption closure (current priority):** operate on the existing five groups in `engine/knowledge/ownership.json` (`platform`, `world-engine`, `player-runtime`, `entity-runtime`, `gameplay-runtime`). Do not add a new registry, parallel memory store, or knowledge workflow. For each of the 41 listed catalogs, inspect its facts, relations, source IDs, edition/version applicability, and stable IDs against the current catalog owner; distinguish exact-ID duplicates, semantic-overlap candidates, and legitimate cross-domain references. The repository verifier now checks physical catalog ownership, but **full semantic duplication review is not complete**. Sampled source shapes include Script API, Inventory, Entity, Chunk, and Round Integrity catalogs; sampling is not exhaustive proof.
+- **Existing binding and proof consumers:** reconcile actionable fact/relation IDs with `engine/reliability/catalogs/knowledge-detector-bindings.json` and intentional classified gaps in `knowledge-consumption-debt.json`; inspect current analyzer/proof consumers before changing bindings. Use `tooling/repository/audit-knowledge-consumption.mjs` and existing verification only as relevant; do not fabricate coverage or mark unverified bindings as implemented.
+- **Knowledge-maintainability acceptance:** each catalog has one ownership entry, each fact has explicit provenance/applicability, semantic overlap is either resolved at the existing owner or preserved as justified distinct claims, and each actionable consumer is bound or explicitly classified as a gap. Report the actual static/executable proof ceiling; stop this lane when the bounded issues are closed.
 
 ## Backlog
 
-- Promote strict knowledge-consumption verification into the main repository gate when current debt reaches zero.
+- **Reasoning ownership after Knowledge closure:** trace current `semantic-ir`, `gameplay-intent`, `behavior-model`, `diagnostic-reasoning`, `reliability-search`, and Orchestrator consumers. Establish unique semantic owners from current implementation and affected public APIs before moving logic. No new reasoning manager.
+- **Orchestrator consolidation after ownership proof:** account for the 266 short root re-export aliases under `engine/packages/orchestrator/src/` against importing consumers and family barrels. Migrate only proven safe alias groups; never mass-delete or count a small file as dead code by size alone. Audit whether Orchestrator composes instead of duplicating domain semantics.
+- **End-to-end flow verification:** prove that SYSTEM DEVELOPMENT changes the canonical owner and MAP BUG AUDIT consumes it through the single `runSelectedMapAudit()` entry; preserve one authoritative Map Audit output, approval-gated Bug Report V2, and derived HTML/JSON without parallel state.
+- Promote strict knowledge-consumption verification into the main repository gate only after current unclassified actionable debt reaches zero.
 - Review runtime/model abstractions for unique state/invariant ownership and remove representational layers that do not enforce a distinct responsibility.
+
+**Cross-session continuity:** The relevant work identity is `system-development/knowledge-hierarchy` (SYSTEM DEVELOPMENT). Reconstruct the next bounded unit from this section, exact `Local` HEAD, current owner/source, and commit `Work/State/Proof/Unresolved/Next` fields. Earlier completed repository, routing, and verifier commits do not prove full Knowledge semantics or executable behavior. A future `Next` never authorizes unrelated edits.
 
 ## Rule
 
