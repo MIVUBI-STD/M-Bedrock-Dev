@@ -4,7 +4,11 @@ import type {
 import type {
   AnalysisKnowledgeDomain,
 } from "../../../analysis-planner/src/index.js";
-import type { SemanticIr } from "../../../semantic-ir/src/index.js";
+import {
+  semanticIrExecutionTraces,
+  type ObservedExecutionTrace,
+  type SemanticIr,
+} from "../../../semantic-ir/src/index.js";
 import type { ArenaRegionPlan } from "../../../../analyzers/topology/src/index.js";
 
 export type GameplayKnowledgeDomain = AnalysisKnowledgeDomain;
@@ -232,6 +236,12 @@ export interface GameplayArchitectureNavigation {
    * No inferred links from owner names, locations, or surface similarities.
    */
   readonly semanticIrCoverage: {
+    /** Read-only technical chains; do not interpret as complete gameplay flow. */
+    readonly executionTraces: readonly (ObservedExecutionTrace & {
+      readonly evidenceMatchedComponentIds: readonly string[];
+    })[];
+    /** Includes isolated callbacks/functions; absence from a trace is not absence from the game. */
+    readonly regionsOutsideTraces: readonly string[];
     readonly stateOperations: {
       readonly observedCount: number;
       readonly linkedIds: readonly string[];
@@ -524,6 +534,9 @@ export function deriveGameplayArchitectureNavigation(
     architectureEvidence.includes(id)
   );
   const architectureEvidenceSet = new Set(architectureEvidence);
+  const observedExecution = observed.semanticIr
+    ? semanticIrExecutionTraces(observed.semanticIr)
+    : { traces: [], regionsOutsideTraces: [] };
   const irAccounting = (ids: readonly string[]) => {
     const observedIds = sorted(ids);
     return {
@@ -694,6 +707,21 @@ export function deriveGameplayArchitectureNavigation(
         percentage(linkedEvidence.length, sourceEvidence.length),
     },
     semanticIrCoverage: {
+      executionTraces: observedExecution.traces.map(trace => {
+        const evidence = new Set([
+          ...trace.regionIds,
+          ...trace.executionEdgeIds,
+          ...trace.temporalRelationIds,
+          ...trace.stateOperationIds,
+        ]);
+        return {
+          ...trace,
+          evidenceMatchedComponentIds: sorted(graph.components
+            .filter(component => component.evidenceIds.some(id => evidence.has(id)))
+            .map(component => component.id)),
+        };
+      }),
+      regionsOutsideTraces: observedExecution.regionsOutsideTraces,
       stateOperations: irAccounting(
         observed.semanticIr?.state.operations.map((item) => item.id) ?? [],
       ),
