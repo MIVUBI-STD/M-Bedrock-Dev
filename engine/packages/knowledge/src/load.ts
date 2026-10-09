@@ -1,4 +1,5 @@
 import { readFile, readdir } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { mergeKnowledgeCatalogs } from "./merge.js";
 import type { KnowledgeCatalog } from "./types.js";
@@ -47,6 +48,36 @@ export async function loadKnowledgeDirectory(
   directory: string,
 ): Promise<KnowledgeCatalog> {
   const files = await knowledgeFiles(directory);
+  const ownershipPath = join(directory, "ownership.json");
+  if (existsSync(ownershipPath)) {
+    const ownership = JSON.parse(await readFile(ownershipPath, "utf8")) as {
+      schemaVersion?: number;
+      groups?: Record<string, { files?: string[] }>;
+    };
+    if (ownership.schemaVersion !== 1 || !ownership.groups) {
+      throw new Error("Invalid knowledge ownership registry: " + ownershipPath);
+    }
+    const declared = Object.entries(ownership.groups).flatMap(
+      ([group, config]) => (config.files ?? []).map((name) => {
+        if (
+          typeof name !== "string" ||
+          !name.startsWith(group + "/") ||
+          name.split("/").some((part) => part === ".." || part === ".") ||
+          !name.endsWith(".json")
+        ) {
+          throw new Error("Invalid knowledge ownership entry: " + String(name));
+        }
+        return join(directory, name);
+      }),
+    ).sort();
+    if (
+      new Set(declared).size !== declared.length ||
+      declared.length !== files.length ||
+      declared.some((file, index) => file !== files[index])
+    ) {
+      throw new Error("Knowledge directory does not match ownership.json: " + directory);
+    }
+  }
 
   if (files.length === 0) {
     throw new Error(`No knowledge catalogs found in ${directory}`);
