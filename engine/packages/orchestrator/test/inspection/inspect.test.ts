@@ -89,6 +89,26 @@ describe("inspectDirectory", () => {
     } finally { await rm(root, { recursive: true, force: true }); }
   });
 
+  it("recognizes valid dialogue as source in an unlisted pack", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-dialogue-pack-"));
+    try {
+      const pack = join(root, "behavior_packs", "dialogue");
+      await mkdir(join(pack, "dialogue"), { recursive: true });
+      await writeFile(join(pack, "manifest.json"), JSON.stringify({
+        format_version: 2,
+        header: { name: "dialogue", uuid: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", version: [1,0,0] },
+        modules: [{ type: "data", uuid: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", version: [1,0,0] }],
+      }));
+      await writeFile(join(root, "world_behavior_packs.json"), "[]");
+      await writeFile(join(pack, "dialogue", "npc.json"), JSON.stringify({
+        format_version: "1.17",
+        minecraft_npc_dialogue: { scenes: [{ scene_tag: "entry", npc_name: "Guide", text: "Start" }] },
+      }));
+      const result = await inspectDirectory(root);
+      expect(result.gameplayDiscoveryClosure.unlistedPackRoots).toEqual(["behavior_packs/dialogue"]);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+
   it("distinguishes declared world pack membership from manifest presence", async () => {
     const root = await mkdtemp(join(tmpdir(), "m-bedrock-pack-list-"));
     try {
