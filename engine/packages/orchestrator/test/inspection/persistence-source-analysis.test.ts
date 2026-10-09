@@ -391,6 +391,143 @@ describe("persistence source analysis", () => {
     ]);
   });
 
+  it("blocks an object-carried receiver alias passed to an opaque helper", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena) {",
+      "  arena.generation++;",
+      "  const holder = { target: arena };",
+      "  mutate(holder);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena));",
+    ].join("\n"), {
+      artifactId: "map:object-escape", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.coLocatedGenerationInvalidationSources).toHaveLength(1);
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("blocks array and nested object aliases passed through other locals", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena) {",
+      "  arena.generation++;",
+      "  const packed = [{ value: arena }];",
+      "  const ref = packed;",
+      "  mutate(ref);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena));",
+    ].join("\n"), {
+      artifactId: "map:array-escape", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("blocks a receiver-capturing callback passed to an external function", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena) {",
+      "  arena.generation++;",
+      "  const captured = () => arena;",
+      "  register(captured);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena));",
+    ].join("\n"), {
+      artifactId: "map:callback-escape", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("blocks object methods and getters that capture the receiver", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena) {",
+      "  arena.generation++;",
+      "  const holder = { get target() { return arena; } };",
+      "  register(holder);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena));",
+    ].join("\n"), {
+      artifactId: "map:getter-escape", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("blocks conditionally selected receiver aliases passed to another function", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, other, choose) {",
+      "  arena.generation++;",
+      "  const candidate = choose ? arena : other;",
+      "  mutate(candidate);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other, true));",
+    ].join("\n"), {
+      artifactId: "map:conditional-escape", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("blocks a receiver stored on a foreign object without any intervening call", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, registry) {",
+      "  arena.generation++;",
+      "  registry.current = arena;",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, registry));",
+    ].join("\n"), {
+      artifactId: "map:property-escape", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("blocks a constructor that may retain the receiver", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena) {",
+      "  arena.generation++;",
+      "  new Container(arena);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena));",
+    ].join("\n"), {
+      artifactId: "map:constructor-escape", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("retains source order for unrelated object keys and boolean comparisons", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, other) {",
+      "  arena.generation++;",
+      "  const holder = { arena: other };",
+      "  const getter = { get arena() { return other; } };",
+      "  const comparison = arena === other;",
+      "  mutate(holder);",
+      "  mutate(getter);",
+      "  notify(comparison);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other));",
+    ].join("\n"), {
+      artifactId: "map:unrelated-container", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toEqual([
+      expect.objectContaining({
+        arenaExpression: "arena", order: "before-reset",
+        evidenceStatus: "SOURCE_SEQUENCE_ONLY",
+      }),
+    ]);
+  });
+
   it("blocks receiver method calls and callback captures before reset", () => {
     const script = parseScriptFile("arena", [
       "function cleanup(arena) {",

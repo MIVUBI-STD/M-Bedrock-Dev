@@ -9,8 +9,10 @@ export interface ScriptSequentialPathEvidence {
   readonly blockSource: SourceRef;
   readonly precedingControlExitSources: readonly SourceRef[];
   readonly precedingReceiverRebindingSources: readonly SourceRef[];
-  /** Unknown call effects touching the receiver (or an exact local alias). */
+  /** Unknown call effects touching the receiver (or a potential alias). */
   readonly precedingReceiverCallSources: readonly SourceRef[];
+  /** Receiver (or alias) stored on another object; its effects are unknown. */
+  readonly precedingReceiverEscapeSources: readonly SourceRef[];
 }
 
 function at(file: ts.SourceFile, node: ts.Node, source: SourceRef): SourceRef {
@@ -100,9 +102,10 @@ function receiverCall(
   node: ts.Node,
   names: ReadonlySet<string>,
 ): boolean {
-  return ts.isCallExpression(node) &&
+  // Constructors can retain arguments just like ordinary calls.
+  return (ts.isCallExpression(node) || ts.isNewExpression(node)) &&
     (referencesReceiver(node.expression, names) ||
-      node.arguments.some(arg => referencesReceiver(arg, names)));
+      (node.arguments ?? []).some(arg => referencesReceiver(arg, names)));
 }
 
 /**
@@ -136,6 +139,7 @@ export function directStatementSequence(
   const root = receiver.split(".")[0]!;
   const names = new Set<string>([root]);
   const callSources: SourceRef[] = [];
+  const escapeSources: SourceRef[] = [];
 
   const aliasValue = (expression: ts.Expression): boolean => {
     if (ts.isParenthesizedExpression(expression) ||
@@ -150,6 +154,40 @@ export function directStatementSequence(
     if (ts.isPropertyAccessExpression(expression)) {
       return aliasValue(expression.expression);
     }
+    if (ts.isObjectLiteralExpression(expression)) {
+      return expression.properties.some(property =>
+        ts.isPropertyAssignment(property)
+          ? aliasValue(property.initializer)
+          : ts.isShorthandPropertyAssignment(property)
+            ? names.has(property.name.text)
+            : ts.isSpreadAssignment(property)
+              ? aliasValue(property.expression)
+              : ts.isMethodDeclaration(property) ||
+                  ts.isGetAccessorDeclaration(property) ||
+                  ts.isSetAccessorDeclaration(property)
+                ? property.body !== undefined &&
+                    referencesReceiver(property.body, names)
+                : false);
+    }
+    if (ts.isArrayLiteralExpression(expression)) {
+      return expression.elements.some(element =>
+        ts.isSpreadElement(element)
+          ? aliasValue(element.expression) : aliasValue(element));
+    }
+    if (ts.isArrowFunction(expression) || ts.isFunctionExpression(expression)) {
+      // A callable can capture an existing alias, which escapes if passed
+      // to an unknown function. The closure's execution remains unknown.
+      return referencesReceiver(expression.body, names);
+    }
+    if (ts.isConditionalExpression(expression)) {
+      return aliasValue(expression.whenTrue) || aliasValue(expression.whenFalse);
+    }
+    if (ts.isBinaryExpression(expression) &&
+        [ts.SyntaxKind.QuestionQuestionToken, ts.SyntaxKind.BarBarToken,
+         ts.SyntaxKind.AmpersandAmpersandToken].includes(
+          expression.operatorToken.kind)) {
+      return aliasValue(expression.left) || aliasValue(expression.right);
+    }
     return expression.kind === ts.SyntaxKind.ThisKeyword && names.has("this");
   };
 
@@ -160,6 +198,7 @@ export function directStatementSequence(
     // Keep possible aliases even after reassignment: without SSA/runtime
     // evidence, removing them would incorrectly prove call purity.
     let foundCall = false;
+    let foundEscape = false;
     const visit = (node: ts.Node): void => {
       if (ts.isFunctionLike(node)) return;
       if (ts.isVariableDeclaration(node) &&
@@ -172,11 +211,21 @@ export function directStatementSequence(
           ts.isIdentifier(node.left) && aliasValue(node.right)) {
         names.add(node.left.text);
       }
+      if (ts.isBinaryExpression(node) &&
+          node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+          (ts.isPropertyAccessExpression(node.left) ||
+            ts.isElementAccessExpression(node.left)) &&
+          aliasValue(node.right)) {
+        // The receiver escapes into an externally reachable storage
+        // surface; source alone cannot prove who will later mutate it.
+        foundEscape = true;
+      }
       if (receiverCall(node, names)) foundCall = true;
       ts.forEachChild(node, visit);
     };
     visit(previous);
     if (foundCall) callSources.push(at(file, previous, source));
+    if (foundEscape) escapeSources.push(at(file, previous, source));
   }
   return {
     blockSource: at(file, block, source),
@@ -187,5 +236,6 @@ export function directStatementSequence(
       .filter(prev => hasDescendant(prev, item => rebindsReceiver(item, receiver)))
       .map(prev => at(file, prev, source)),
     precedingReceiverCallSources: callSources,
+    precedingReceiverEscapeSources: escapeSources,
   };
 }
