@@ -75,22 +75,8 @@ export function challengeGameplayDiscovery(input: {
       .filter((region) => evidence.has(region.id))
       .map((region) => region.id),
   );
-  const regionsWithMaterialEvidence = new Set([
-    ...input.semanticIr.execution.edges.flatMap(edge => [
-      edge.from, ...(edge.to === undefined ? [] : [edge.to]),
-    ]),
-    ...input.semanticIr.state.operations.map(operation => operation.executionRegionId),
-    ...input.semanticIr.temporal.relations.flatMap(relation => [
-      relation.from, ...(relation.to === undefined ? [] : [relation.to]),
-    ]),
-  ]);
-
   for (const region of input.semanticIr.execution.regions) {
-    if (
-      ownedRegions.has(region.id) ||
-      (!["script-module", "mcfunction"].includes(region.kind) &&
-        !regionsWithMaterialEvidence.has(region.id))
-    ) {
+    if (ownedRegions.has(region.id)) {
       continue;
     }
     output.push({
@@ -99,7 +85,7 @@ export function challengeGameplayDiscovery(input: {
       subjectId: region.id,
       evidenceIds: [region.id],
       reason:
-        "Executable region participates in the selected-artifact execution graph but has no grounded gameplay/state owner.",
+        "Authored execution region is present in Semantic IR but lacks an exact gameplay/scenario evidence owner; source presence alone does not prove activation or meaning.",
     });
   }
 

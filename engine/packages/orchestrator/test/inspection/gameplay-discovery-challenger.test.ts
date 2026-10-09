@@ -280,6 +280,21 @@ describe("gameplay discovery challenger", () => {
     expect(owned.some(item => item.subjectId === "exec:mcfunction-source:standalone")).toBe(false);
   });
 
+  it("retains isolated callback and function regions without semantic ownership", () => {
+    const ir = {
+      schemaVersion: 1,
+      execution: { regions: [
+        { id: "region:callback", kind: "script-callback", ownerId: "script:demo", label: "callback" },
+        { id: "region:function", kind: "script-function", ownerId: "script:demo", label: "function:unused" },
+      ], edges: [] },
+      state: { surfaces: [], operations: [], authorityBindings: [] },
+      temporal: { relations: [] },
+    } as unknown as SemanticIr;
+    const findings = challengeGameplayDiscovery({ semanticIr: ir, intent: emptyIntent, graph: emptyGraph });
+    expect(findings.filter(item => item.kind === "unowned-execution-region")
+      .map(item => item.subjectId).sort()).toEqual(["region:callback", "region:function"]);
+  });
+
   it("requires temporal ownership even when a generation guard is explicit", () => {
     const ir = {
       schemaVersion: 1,
