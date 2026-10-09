@@ -226,6 +226,25 @@ describe("gameplay discovery challenger", () => {
       item.subjectId === "region:mixed")).toBe(false);
   });
 
+  it("accounts for state-only execution regions without inventing ownership", () => {
+    const ir = {
+      schemaVersion: 1,
+      execution: { regions: [{ id: "region:state-only", kind: "script-function",
+        ownerId: "script:demo", label: "update" }], edges: [] },
+      state: { surfaces: [], operations: [{ id: "op:state-only",
+        executionRegionId: "region:state-only", surfaceId: "state:round",
+        operation: "write", source: { artifactId: "a", relativePath: "scripts/demo.js" },
+      }], authorityBindings: [] },
+      temporal: { relations: [] },
+    } as unknown as SemanticIr;
+    const intent = { ...emptyIntent, nodes: [{
+      id: "intent:state", evidenceIds: ["op:state-only"],
+    }] } as GameplayIntentModel;
+    const findings = challengeGameplayDiscovery({ semanticIr: ir, intent, graph: emptyGraph });
+    expect(findings.map(item => item.kind)).toContain("unowned-execution-region");
+    expect(findings.map(item => item.kind)).not.toContain("unowned-state-operation");
+  });
+
   it("requires temporal ownership even when a generation guard is explicit", () => {
     const ir = {
       schemaVersion: 1,

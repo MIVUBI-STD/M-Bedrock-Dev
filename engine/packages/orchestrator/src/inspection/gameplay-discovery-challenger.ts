@@ -75,17 +75,20 @@ export function challengeGameplayDiscovery(input: {
       .filter((region) => evidence.has(region.id))
       .map((region) => region.id),
   );
-  const regionsWithGraphEdges = new Set(
-    input.semanticIr.execution.edges.flatMap((edge) => [
-      edge.from,
-      ...(edge.to === undefined ? [] : [edge.to]),
+  const regionsWithMaterialEvidence = new Set([
+    ...input.semanticIr.execution.edges.flatMap(edge => [
+      edge.from, ...(edge.to === undefined ? [] : [edge.to]),
     ]),
-  );
+    ...input.semanticIr.state.operations.map(operation => operation.executionRegionId),
+    ...input.semanticIr.temporal.relations.flatMap(relation => [
+      relation.from, ...(relation.to === undefined ? [] : [relation.to]),
+    ]),
+  ]);
 
   for (const region of input.semanticIr.execution.regions) {
     if (
       ownedRegions.has(region.id) ||
-      !regionsWithGraphEdges.has(region.id)
+      !regionsWithMaterialEvidence.has(region.id)
     ) {
       continue;
     }
