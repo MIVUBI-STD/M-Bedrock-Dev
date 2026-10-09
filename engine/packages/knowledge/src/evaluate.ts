@@ -101,7 +101,11 @@ export function assessKnowledgeRelations(
     if (relation.kind === "requires-any") {
       if (subject.state !== "present") continue;
       const choices = alternatives(relation.to);
-      const states = choices.map((choice) => evidenceFor(evidence, choice).state);
+      const alternativesEvidence = choices.map((choice) => evidenceFor(evidence, choice));
+      const states = alternativesEvidence.map((item) => item.state);
+      for (const item of alternativesEvidence) {
+        for (const sourceId of item.sourceIds ?? []) evidenceIds.add(sourceId);
+      }
       const status = states.includes("present")
         ? "satisfied"
         : states.every((state) => state === "absent") ? "violation" : "unknown";

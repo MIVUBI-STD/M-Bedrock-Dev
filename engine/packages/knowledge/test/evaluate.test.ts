@@ -70,4 +70,36 @@ describe("knowledge relation evaluator", () => {
     expect(plan.some((item) => item.priority === "high")).toBe(true);
     expect(plan.some((item) => item.strategy === "repeatability")).toBe(true);
   });
+  it("preserves alternative evidence provenance for requires-any relation", () => {
+    const alternativeCatalog: KnowledgeCatalog = {
+      ...catalog,
+      relations: [{
+        id: "route-requires-one-provider",
+        domain: "entity-ai",
+        subject: "route",
+        kind: "requires-any",
+        object: "provider-a | provider-b",
+        applicability: { editions: ["bedrock"] },
+        sourceIds: ["policy"],
+      }],
+    };
+    const [assessment] = assessKnowledgeRelations(
+      alternativeCatalog,
+      { edition: "bedrock" },
+      {
+        route: { state: "present", sourceIds: ["runtime:route"] },
+        "provider-a": { state: "absent", sourceIds: ["runtime:a"] },
+        "provider-b": { state: "unknown", sourceIds: ["runtime:b"] },
+      },
+    );
+    expect(assessment?.status).toBe("unknown");
+    expect(assessment?.evidenceSourceIds).toEqual([
+      "runtime:route",
+      "runtime:a",
+      "runtime:b",
+    ]);
+    expect(validationPlanFromAssessments([assessment!])[0]?.evidenceSourceIds)
+      .toEqual(assessment?.evidenceSourceIds);
+  });
+
 });
