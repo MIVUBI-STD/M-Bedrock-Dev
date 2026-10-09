@@ -7,10 +7,10 @@ import type {
 } from "../../../project-model/src/index.js";
 import type {
   analyzeFunctionTopology,
-} from "../topology-analysis.js";
+} from "../inspection/topology-analysis.js";
 import type {
   ScriptSpatialAnalysis,
-} from "../script-spatial-analysis.js";
+} from "../inspection/script-spatial-analysis.js";
 import type {
   ParsedScriptFile,
 } from "../../../../analyzers/scripts/src/index.js";

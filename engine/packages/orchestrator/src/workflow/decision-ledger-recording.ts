@@ -7,36 +7,36 @@ import type {
 } from "../../../project-model/src/index.js";
 import type {
   RepairAdmissionDecision,
-} from "../repair-admission.js";
+} from "../repair/repair-admission.js";
 import type {
   RepairRuntimeVerificationResult,
-} from "../repair-runtime-verification.js";
+} from "../repair/repair-runtime-verification.js";
 import type {
   RepairPreservationVerificationResult,
-} from "../repair-preservation-verification.js";
+} from "../repair/repair-preservation-verification.js";
 import type {
   StagedPackageVerificationResult,
-} from "../repair-package-verification.js";
+} from "../repair/repair-package-verification.js";
 import type {
   RepairLifecycleState,
-} from "../repair-lifecycle.js";
+} from "../repair/repair-lifecycle.js";
 import type {
   RepairProofBundle,
-} from "../repair-proof-bundle.js";
+} from "../repair/repair-proof-bundle.js";
 import {
   decideRepairReleaseWithLineage,
   type RepairReleaseLineageResult,
-} from "../repair-release-lineage.js";
+} from "../repair/repair-release-lineage.js";
 import {
   repairStrategyPostTransformProofRevision,
   type RepairStrategySelection,
-} from "../repair-strategy-selection.js";
+} from "../repair/repair-strategy-selection.js";
 import type {
   ProviderBackedRepairStrategySelection,
-} from "../provider-backed-repair-selection.js";
+} from "../repair/provider-backed-repair-selection.js";
 import type {
   RepairRealizationCoverageReport,
-} from "../repair-realization-coverage.js";
+} from "../repair/repair-realization-coverage.js";
 import {
   appendDecisionLedgerEntry,
 } from "./decision-ledger.js";
@@ -497,7 +497,7 @@ export function recordRepairStrategySelection(
 
 export function recordRealizedRepairStrategySelection(
   ledger: DecisionLedgerSnapshot,
-  selection: import("../realized-repair-strategy-selection.js").RealizedRepairStrategySelection,
+  selection: import("../repair/realized-repair-strategy-selection.js").RealizedRepairStrategySelection,
   transactionId: string | undefined,
   context: DecisionRecordContext,
 ): DecisionLedgerSnapshot {
