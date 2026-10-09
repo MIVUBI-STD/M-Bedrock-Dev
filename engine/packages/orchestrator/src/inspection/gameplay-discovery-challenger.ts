@@ -88,7 +88,8 @@ export function challengeGameplayDiscovery(input: {
   for (const region of input.semanticIr.execution.regions) {
     if (
       ownedRegions.has(region.id) ||
-      (region.kind !== "script-module" && !regionsWithMaterialEvidence.has(region.id))
+      (!["script-module", "mcfunction"].includes(region.kind) &&
+        !regionsWithMaterialEvidence.has(region.id))
     ) {
       continue;
     }

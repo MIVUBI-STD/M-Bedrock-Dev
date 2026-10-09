@@ -263,6 +263,23 @@ describe("gameplay discovery challenger", () => {
     expect(owned.some(item => item.subjectId === "module:alone")).toBe(false);
   });
 
+  it("keeps standalone mcfunction sources accountable", () => {
+    const ir = {
+      schemaVersion: 1,
+      execution: { regions: [{ id: "exec:mcfunction-source:standalone",
+        kind: "mcfunction", ownerId: "arena/intro", label: "arena/intro" }], edges: [] },
+      state: { surfaces: [], operations: [], authorityBindings: [] },
+      temporal: { relations: [] },
+    } as unknown as SemanticIr;
+    const missing = challengeGameplayDiscovery({ semanticIr: ir, intent: emptyIntent, graph: emptyGraph });
+    expect(missing.map(item => item.subjectId)).toContain("exec:mcfunction-source:standalone");
+    const owned = challengeGameplayDiscovery({ semanticIr: ir,
+      intent: { ...emptyIntent, nodes: [{
+        id: "intent:function", evidenceIds: ["exec:mcfunction-source:standalone"],
+      }] } as GameplayIntentModel, graph: emptyGraph });
+    expect(owned.some(item => item.subjectId === "exec:mcfunction-source:standalone")).toBe(false);
+  });
+
   it("requires temporal ownership even when a generation guard is explicit", () => {
     const ir = {
       schemaVersion: 1,
