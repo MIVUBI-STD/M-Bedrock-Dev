@@ -255,6 +255,29 @@ describe("gameplay discovery challenger", () => {
       item.kind === "unowned-temporal-relation")).toBe(false);
   });
 
+  it("does not treat referenced unresolved temporal targets as closed", () => {
+    const temporal = {
+      id: "temporal:missing",
+      from: "region:tick",
+      targetLabel: "missing",
+      resolution: "unresolved",
+      kind: "periodic",
+      source: { artifactId: "a", relativePath: "behavior_packs/a/functions/tick.json" },
+    };
+    const ir = {
+      schemaVersion: 1,
+      execution: { regions: [], edges: [] },
+      state: { surfaces: [], operations: [], authorityBindings: [] },
+      temporal: { relations: [temporal] },
+    } as unknown as SemanticIr;
+    const intent = {
+      ...emptyIntent,
+      nodes: [{ id: "intent:tick", evidenceIds: ["temporal:missing"] }],
+    } as GameplayIntentModel;
+    const findings = challengeGameplayDiscovery({ semanticIr: ir, intent, graph: emptyGraph });
+    expect(findings.map(item => item.id)).toContain("discovery-challenge:temporal:temporal:missing");
+  });
+
   it("does not hide a second operation on an already owned state surface", () => {
     const ir = {
       schemaVersion: 1,

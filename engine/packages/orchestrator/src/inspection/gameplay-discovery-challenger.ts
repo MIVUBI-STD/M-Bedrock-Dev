@@ -121,14 +121,17 @@ export function challengeGameplayDiscovery(input: {
     // A generation guard proves a scheduling safety property, not that
     // the temporal relation has a gameplay/scenario owner.
     const relatedEvidence = evidence.has(relation.id);
-    if (relatedEvidence) continue;
+    // Evidence ownership cannot turn an unresolved scheduler target into
+    // a resolved execution path.
+    if (relatedEvidence && relation.resolution === "resolved") continue;
     output.push({
       id: "discovery-challenge:temporal:" + relation.id,
       kind: "unowned-temporal-relation",
       subjectId: relation.from,
       evidenceIds: [relation.id],
-      reason:
-        "Deferred/periodic relation is not semantically owned by a gameplay scenario, so stale work or hidden lifecycle effects may be missed.",
+      reason: relation.resolution === "unresolved"
+        ? "Deferred/periodic target remains unresolved even when the relation is referenced by gameplay evidence."
+        : "Deferred/periodic relation is not semantically owned by a gameplay scenario, so stale work or hidden lifecycle effects may be missed.",
     });
   }
 
