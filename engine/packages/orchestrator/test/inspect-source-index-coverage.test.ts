@@ -17,6 +17,22 @@ import {
 import { enrichInspectionSemanticGraph } from "../src/inspection/inspect-graph-enrichment.js";
 
 describe("inspection source index coverage", () => {
+  it("accounts for inventoried but unreadable function and script without false nodes", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-missing-sources-"));
+    try {
+      const result = await indexInspectionSources(root, "artifact:missing", [
+        { relativePath: "functions/missing.mcfunction", size: 12 },
+        { relativePath: "scripts/missing.js", size: 12 },
+      ]);
+      expect(result.coverage).toMatchObject({ relevantFiles: 2, indexedFiles: 0, complete: false });
+      expect(result.coverage.parseFailures.map(x => x.kind).sort()).toEqual(["function", "script"]);
+      expect(result.parsedFunctions).toHaveLength(0);
+      expect(result.parsedScripts).toHaveLength(0);
+      expect(result.graph.findByKind("function")).toHaveLength(0);
+      expect(result.graph.findByKind("script_file")).toHaveLength(0);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+
   it("marks recognized source coverage incomplete when a relevant entity cannot be parsed", async () => {
     const root = await mkdtemp(
       join(tmpdir(), "m-bedrock-index-"),

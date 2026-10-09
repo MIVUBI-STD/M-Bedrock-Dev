@@ -52,6 +52,7 @@ export interface InspectionSourceParseFailure {
   relativePath: string;
   kind:
     | "function"
+    | "script"
     | "entity"
     | "structure"
     | "dialogue"
@@ -294,20 +295,17 @@ export async function indexInspectionSources(
           relativePath: file.relativePath,
         },
       };
-      graph.addNode(node);
-      nodes.push(node);
-      parsedFunctions.push({
-        node,
-        parsed: parseMcFunction(
-          fnId,
-          await readFile(
-            join(root, file.relativePath),
-            "utf8",
-          ),
-          node.source,
-        ),
-      });
-      indexedFiles += 1;
+      try {
+        const content = await readFile(join(root, file.relativePath), "utf8");
+        const parsed = parseMcFunction(fnId, content, node.source);
+        graph.addNode(node);
+        nodes.push(node);
+        parsedFunctions.push({ node, parsed });
+        indexedFiles += 1;
+      } catch (error) {
+        parseFailures.push({ relativePath: file.relativePath, kind: "function",
+          reason: error instanceof Error ? error.message : String(error) });
+      }
       continue;
     }
 
@@ -337,23 +335,17 @@ export async function indexInspectionSources(
           relativePath: file.relativePath,
         },
       };
-      graph.addNode(node);
-      nodes.push(node);
-      const scriptText =
-        await readFile(
-          join(root, file.relativePath),
-          "utf8",
-        );
-      parsedScripts.push({
-        node,
-        text: scriptText,
-        parsed: parseScriptFile(
-          scriptId,
-          scriptText,
-          node.source,
-        ),
-      });
-      indexedFiles += 1;
+      try {
+        const text = await readFile(join(root, file.relativePath), "utf8");
+        const parsed = parseScriptFile(scriptId, text, node.source);
+        graph.addNode(node);
+        nodes.push(node);
+        parsedScripts.push({ node, text, parsed });
+        indexedFiles += 1;
+      } catch (error) {
+        parseFailures.push({ relativePath: file.relativePath, kind: "script",
+          reason: error instanceof Error ? error.message : String(error) });
+      }
       continue;
     }
 
