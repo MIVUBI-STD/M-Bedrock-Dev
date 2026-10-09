@@ -141,6 +141,29 @@ describe("gameplay discovery challenger", () => {
       .some(item => item.kind === "unowned-state-operation")).toBe(false);
   });
 
+  it("requires exact source provenance for owned execution regions", () => {
+    const ir = {
+      schemaVersion: 1,
+      execution: { regions: [{ id: "region:one", kind: "script-module",
+        ownerId: "scripts/one", label: "module",
+        source: { artifactId: "a", relativePath: "scripts/one.js" } }], edges: [] },
+      state: { surfaces: [], operations: [], authorityBindings: [] },
+      temporal: { relations: [] },
+    } as unknown as SemanticIr;
+    const intent = { ...emptyIntent, nodes: [{
+      id: "intent:one", status: "authored", evidenceIds: ["region:one"],
+    }], evidence: [{ id: "region:one", scope: "selected-artifact",
+      origin: "source-code", locator: "scripts/other.js", summary: "different source" }],
+    } as GameplayIntentModel;
+    expect(challengeGameplayDiscovery({ semanticIr: ir, intent, graph: emptyGraph })
+      .some(item => item.subjectId === "region:one")).toBe(true);
+    const matched = { ...intent, evidence: [{
+      ...intent.evidence[0], locator: "scripts/one.js",
+    }] } as GameplayIntentModel;
+    expect(challengeGameplayDiscovery({ semanticIr: ir, intent: matched, graph: emptyGraph })
+      .some(item => item.subjectId === "region:one")).toBe(false);
+  });
+
   it("does not admit unregistered or external authored evidence", () => {
     const ir = {
       schemaVersion: 1,

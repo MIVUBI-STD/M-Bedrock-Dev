@@ -79,7 +79,8 @@ export function challengeGameplayDiscovery(input: {
   // executable region, which may contain other unmodeled behavior.
   const ownedRegions = new Set(
     input.semanticIr.execution.regions
-      .filter((region) => evidence.has(region.id))
+      .filter((region) => region.source !== undefined &&
+        matchesSource(region.id, region.source.relativePath))
       .map((region) => region.id),
   );
   for (const region of input.semanticIr.execution.regions) {
