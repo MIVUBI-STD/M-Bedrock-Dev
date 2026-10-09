@@ -95,6 +95,20 @@ describe("inspection semantic IR", () => {
     expect(ir.temporal.relations.filter((relation) => relation.kind === "periodic")).toHaveLength(2);
   });
 
+  it("keeps duplicate cross-pack functions separate and does not resolve an ambiguous call", () => {
+    const source = (pack: string) => ({ artifactId: "a", relativePath: "behavior_packs/" + pack + "/functions/start.mcfunction" });
+    const a = parseMcFunction("start", "function start", source("a"));
+    const b = parseMcFunction("start", "say ready", source("b"));
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [{ parsed: a }, { parsed: b }], parsedScripts: [],
+      tickFunctionRegistrations: [{ source: { artifactId: "a", relativePath: "behavior_packs/a/functions/tick.json" }, functions: ["start"] }],
+    });
+    const functions = ir.execution.regions.filter(region => region.kind === "mcfunction");
+    expect(functions).toHaveLength(2);
+    expect(new Set(functions.map(region => region.id)).size).toBe(2);
+    expect(ir.execution.edges.filter(edge => edge.targetLabel === "start").every(edge => edge.resolution === "unresolved")).toBe(true);
+  });
+
   it("preserves explicit generation guards on deferred work", () => {
     const script = parseScriptFile(
       "guarded",

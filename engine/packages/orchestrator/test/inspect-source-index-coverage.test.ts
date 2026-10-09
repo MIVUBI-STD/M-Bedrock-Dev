@@ -507,6 +507,39 @@ describe("inspection source index coverage", () => {
       await rm(root, { recursive: true, force: true });
     }
   });
+  it("preserves distinct source nodes when behavior packs share one function identifier", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-same-function-"));
+    try {
+      const paths = [
+        "behavior_packs/a/functions/start.mcfunction",
+        "behavior_packs/b/functions/start.mcfunction",
+        "behavior_packs/a/functions/tick.json",
+      ];
+      for (const path of paths) {
+        await mkdir(join(root, path.substring(0, path.lastIndexOf("/"))), { recursive: true });
+        await writeFile(join(root, path), path.endsWith(".json") ? '{"values":["start"]}' : "say ready\\n");
+      }
+      const index = await indexInspectionSources(root, "artifact:duplicate", paths.map(relativePath => ({
+        relativePath, size: 32, contentHash: relativePath,
+      })));
+      expect(index.parsedFunctions).toHaveLength(2);
+      expect(new Set(index.parsedFunctions.map(item => item.node.id)).size).toBe(2);
+      enrichInspectionSemanticGraph({
+        graph: index.graph, nodes: index.nodes, artifactId: "artifact:duplicate",
+        parsedFunctions: index.parsedFunctions,
+        parsedDialogueDocuments: index.parsedDialogueDocuments,
+        parsedStructureModels: index.parsedStructureModels,
+        tickFunctionRegistrations: index.tickFunctionRegistrations,
+      });
+      const scheduler = index.graph.findByKind("world").find(node => node.identifier.startsWith("function-schedule:tick:"))!;
+      const edge = index.graph.outgoingEdges(scheduler.id, "CALLS")[0]!;
+      expect(edge.status).toBe("ambiguous");
+      expect(edge.candidates).toHaveLength(2);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("keeps two tick registrations distinct and preserves unresolved function roots", async () => {
     const root = await mkdtemp(join(tmpdir(), "m-bedrock-tick-"));
     try {

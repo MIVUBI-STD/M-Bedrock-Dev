@@ -57,8 +57,8 @@ function scriptRegionId(scriptId: string, region: string): string {
   return "exec:script:" + token(scriptId) + ":" + token(region);
 }
 
-function functionRegionId(functionId: string): string {
-  return "exec:mcfunction:" + token(functionId);
+function functionSourceRegionId(source: SourceRef): string {
+  return "exec:mcfunction-source:" + token(source.relativePath);
 }
 
 function eventRegionId(
@@ -183,21 +183,26 @@ export function buildInspectionSemanticIr(
     edges.set(id, { ...edge, id });
   };
 
+  // Source identity and command identifier are separate: multiple packs may
+  // contain the same function name, which is not proof of one runtime target.
+  const functionTargets = new Map<string, string[]>();
   for (const { parsed } of input.parsedFunctions) {
+    const id = functionSourceRegionId(parsed.source);
     ensureRegion({
-      id: functionRegionId(parsed.identifier),
+      id,
       kind: "mcfunction",
       ownerId: parsed.identifier,
       label: parsed.identifier,
       source: parsed.source,
     });
+    functionTargets.set(parsed.identifier, [
+      ...(functionTargets.get(parsed.identifier) ?? []), id,
+    ]);
   }
-
-  const functionRegions = new Set(
-    input.parsedFunctions.map(({ parsed }) =>
-      functionRegionId(parsed.identifier)
-    ),
-  );
+  const resolveFunction = (identifier: string): string | undefined => {
+    const candidates = functionTargets.get(identifier) ?? [];
+    return candidates.length === 1 ? candidates[0] : undefined;
+  };
 
   // Register vanilla tick roots as periodic execution evidence, not
   // proof that the referenced gameplay completed or even ran.
@@ -211,32 +216,32 @@ export function buildInspectionSemanticIr(
       source: registration.source,
     });
     for (const targetLabel of registration.functions) {
-      const targetId = functionRegionId(targetLabel);
-      const resolved = functionRegions.has(targetId);
+      const targetId = resolveFunction(targetLabel);
+      const resolved = targetId !== undefined;
       addEdge({
         from,
         kind: "periodic",
         targetLabel,
         resolution: resolved ? "resolved" : "unresolved",
-        ...(resolved ? { to: targetId } : {}),
+        ...(targetId !== undefined ? { to: targetId } : {}),
         source: registration.source,
       });
     }
   }
 
   for (const { parsed } of input.parsedFunctions) {
-    const from = functionRegionId(parsed.identifier);
+    const from = functionSourceRegionId(parsed.source);
 
     for (const ref of parsed.references) {
       if (ref.kind !== "function") continue;
-      const targetId = functionRegionId(ref.target);
-      const resolved = functionRegions.has(targetId);
+      const targetId = resolveFunction(ref.target);
+      const resolved = targetId !== undefined;
       addEdge({
         from,
         kind: "synchronous-call",
         targetLabel: ref.target,
         resolution: resolved ? "resolved" : "unresolved",
-        ...(resolved ? { to: targetId } : {}),
+        ...(targetId !== undefined ? { to: targetId } : {}),
         source: ref.source,
       });
     }
@@ -427,14 +432,14 @@ export function buildInspectionSemanticIr(
 
       for (const effect of effects) {
         if (effect.kind !== "function-call") continue;
-        const target = functionRegionId(effect.target);
-        const resolved = functionRegions.has(target);
+        const target = resolveFunction(effect.target);
+        const resolved = target !== undefined;
         addEdge({
           from: region,
           kind: "synchronous-call",
           targetLabel: effect.target,
           resolution: resolved ? "resolved" : "unresolved",
-          ...(resolved ? { to: target } : {}),
+          ...(target !== undefined ? { to: target } : {}),
           source: effect.source,
         });
       }

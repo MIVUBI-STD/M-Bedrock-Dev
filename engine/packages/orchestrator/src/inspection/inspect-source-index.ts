@@ -276,7 +276,7 @@ export async function indexInspectionSources(
     if (fnId) {
       relevantFiles += 1;
       const node: SemanticNode = {
-        id: semanticNodeId("function", "project", fnId),
+        id: semanticNodeId("function", "project", file.relativePath),
         identity: {
           kind: "function",
           scope: "project",
