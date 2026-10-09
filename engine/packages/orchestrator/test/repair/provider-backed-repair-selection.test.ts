@@ -13,13 +13,13 @@ import {
 } from "../../src/repair/provider-backed-repair-selection.js";
 import {
   createDecisionLedger,
-} from "../../src/decision-ledger.js";
+} from "../../src/workflow/decision-ledger.js";
 import {
   recordProviderBackedRepairStrategySelection,
-} from "../../src/decision-ledger-recording.js";
+} from "../../src/workflow/decision-ledger-recording.js";
 import type {
   RepairStrategyProviderRegistry,
-} from "../../src/repair-strategy-provider.js";
+} from "../../src/repair/repair-strategy-provider.js";
 
 function source(relativePath: string) {
   return { artifactId: "art-1", relativePath };

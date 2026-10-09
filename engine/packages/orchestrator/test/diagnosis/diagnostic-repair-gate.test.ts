@@ -10,7 +10,7 @@ import {
   decideDiagnosticRepair,
   diagnosticEvidenceCeiling,
 } from "../../src/diagnosis/diagnostic-repair-gate.js";
-import type { DiagnosticInvestigationState } from "../../src/diagnostic-investigation.js";
+import type { DiagnosticInvestigationState } from "../../src/diagnosis/diagnostic-investigation.js";
 
 function incident(
   level: CausalIncident["rootCauseCandidates"][number]["evidenceLevel"],

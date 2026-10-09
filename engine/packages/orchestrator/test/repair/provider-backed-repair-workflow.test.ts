@@ -10,13 +10,13 @@ import type {
 } from "../../../project-model/src/index.js";
 import {
   createDecisionLedger,
-} from "../../src/decision-ledger.js";
+} from "../../src/workflow/decision-ledger.js";
 import {
   selectAndRecordProviderBackedRepairStrategy,
 } from "../../src/repair/provider-backed-repair-workflow.js";
 import type {
   RepairStrategyProviderRegistry,
-} from "../../src/repair-strategy-provider.js";
+} from "../../src/repair/repair-strategy-provider.js";
 
 function source(relativePath: string) {
   return { artifactId: "art-1", relativePath };
