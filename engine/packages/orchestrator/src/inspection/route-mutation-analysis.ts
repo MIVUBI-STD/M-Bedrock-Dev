@@ -5,8 +5,8 @@ import type {
 import { blockVolumesOverlap } from "../../../project-model/src/index.js";
 import type { RuntimeEvidenceRecord } from "../../../project-model/src/index.js";
 import type { SourceRef } from "../../../project-model/src/index.js";
-import type { analyzeFunctionTopology } from "../topology-analysis.js";
-import type { derivePlacementProofs } from "../structure-proof-analysis.js";
+import type { analyzeFunctionTopology } from "../inspection/topology-analysis.js";
+import type { derivePlacementProofs } from "../inspection/structure-proof-analysis.js";
 
 type TopologyAnalysis = ReturnType<typeof analyzeFunctionTopology>;
 type StructureProofs = ReturnType<typeof derivePlacementProofs>;

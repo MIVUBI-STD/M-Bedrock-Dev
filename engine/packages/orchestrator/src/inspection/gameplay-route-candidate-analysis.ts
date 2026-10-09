@@ -3,13 +3,13 @@ import type {
 } from "../../../project-model/src/index.js";
 import type {
   GameplayRouteStallRuntimeAssessment,
-} from "../gameplay-intent-runtime-stage.js";
+} from "../inspection/gameplay-intent-runtime-stage.js";
 import type {
   EntityAiStackStateAssessment,
-} from "../entity-ai-stack-analysis.js";
+} from "../inspection/entity-ai-stack-analysis.js";
 import type {
   RouteNavigationEnvironmentAnalysis,
-} from "../route-navigation-environment-analysis.js";
+} from "../inspection/route-navigation-environment-analysis.js";
 
 export type GameplayRouteCauseCandidateId =
   | "route-context"

@@ -10,11 +10,11 @@ import {
   telemetryRuntimeRouteObservations,
   telemetryRuntimeRouteReachabilityObservations,
   telemetryRuntimeStateObservations,
-} from "../telemetry-evidence.js";
-import { runtimeProbeResponseEvidence } from "../runtime-probe-evidence.js";
-import { assessRuntimeEvidenceSetIntegrity } from "../runtime-evidence-integrity.js";
-import { planEvidenceRecovery } from "../evidence-recovery.js";
-import { analyzeCombatRuntimeTelemetry } from "../combat-runtime-telemetry-analysis.js";
+} from "../diagnosis/telemetry-evidence.js";
+import { runtimeProbeResponseEvidence } from "../diagnosis/runtime-probe-evidence.js";
+import { assessRuntimeEvidenceSetIntegrity } from "../diagnosis/runtime-evidence-integrity.js";
+import { planEvidenceRecovery } from "../diagnosis/evidence-recovery.js";
+import { analyzeCombatRuntimeTelemetry } from "../inspection/combat-runtime-telemetry-analysis.js";
 
 export interface InspectionRuntimeEvidenceInput {
   telemetryEvents: readonly TelemetryEvent[];
