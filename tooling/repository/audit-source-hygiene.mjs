@@ -93,6 +93,42 @@ const orphanCandidates = [...inbound.entries()]
   .map(([file]) => relative(ROOT, file).replaceAll("\\", "/"))
   .sort();
 
+// Legacy Orchestrator export aliases are not independent implementations.
+// Include in-repository tests when identifying direct consumers; this remains
+// informational because third-party deep imports cannot be enumerated here.
+const orchestratorSource = resolve(ROOT, "engine/packages/orchestrator/src");
+const flatAliasFiles = existsSync(orchestratorSource)
+  ? readdirSync(orchestratorSource, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".ts"))
+    .map((entry) => resolve(orchestratorSource, entry.name))
+    .filter((file) =>
+      /^\s*(?:\/\*[\s\S]*?\*\/\s*)?export \* from ["']\.\/(?:arena|core|inspection|diagnosis|repair|reliability|reporting|workflow|release)\//.test(
+        readFileSync(file, "utf8"),
+      ),
+    )
+  : [];
+const aliasSet = new Set(flatAliasFiles);
+const aliasConsumers = new Map(flatAliasFiles.map((file) => [file, new Set()]));
+const inspectRoots = ["apps", "engine/packages", "engine/analyzers", "engine/adapters", "tooling"];
+for (const root of inspectRoots) {
+  const full = resolve(ROOT, root);
+  if (!existsSync(full)) continue;
+  for (const file of walk(full, false)) {
+    if (aliasSet.has(file)) continue;
+    for (const match of readFileSync(file, "utf8").matchAll(IMPORT_RE)) {
+      const specifier = match[1] ?? match[2];
+      if (!specifier?.startsWith(".")) continue;
+      const target = resolveRelativeImport(file, specifier);
+      if (target && aliasSet.has(target)) {
+        aliasConsumers.get(target).add(relative(ROOT, file).replaceAll("\\", "/"));
+      }
+    }
+  }
+}
+const noInRepoConsumer = flatAliasFiles.filter(
+  (file) => aliasConsumers.get(file).size === 0,
+);
+
 const pkg = JSON.parse(readFileSync(resolve(ROOT, "package.json"), "utf8"));
 const declaredRuntime = Object.keys(pkg.dependencies ?? {}).sort();
 const declaredDev = Object.keys(pkg.devDependencies ?? {}).sort();
@@ -109,6 +145,17 @@ if (orphanCandidates.length === 0) {
   if (orphanCandidates.length > 40) console.log(`  ... and ${orphanCandidates.length - 40} more`);
 }
 
+console.log("");
+console.log("Legacy Orchestrator alias consumers (source and tests; report-only):");
+console.log("  flat re-export aliases:", flatAliasFiles.length);
+console.log("  aliases with in-repository consumers:", flatAliasFiles.length - noInRepoConsumer.length);
+console.log("  aliases without resolved in-repository consumers:", noInRepoConsumer.length);
+console.log("  zero-consumer candidates are NOT safe-delete proof: external deep imports may exist.");
+for (const alias of flatAliasFiles.sort()) {
+  const consumers = [...aliasConsumers.get(alias)].sort();
+  if (consumers.length === 0) continue;
+  console.log("  " + relative(ROOT, alias).replaceAll("\\", "/") + " <- " + consumers.join(", "));
+}
 console.log("");
 console.log("External package imports from production source:");
 if (externalUsage.size === 0) {
