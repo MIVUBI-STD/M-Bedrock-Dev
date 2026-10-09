@@ -2004,6 +2004,13 @@ export function parseScriptFile(
     while (current && current !== file) {
       if (ts.isFunctionLike(current) && current.parameters.some(parameter =>
         bindsName(parameter.name, arg.text))) return undefined;
+      if (ts.isCatchClause(current) && current.variableDeclaration &&
+          bindsName(current.variableDeclaration.name, arg.text)) return undefined;
+      if ((ts.isForStatement(current) || ts.isForInStatement(current) ||
+          ts.isForOfStatement(current)) && current.initializer &&
+          ts.isVariableDeclarationList(current.initializer) &&
+          current.initializer.declarations.some(declaration =>
+            bindsName(declaration.name, arg.text))) return undefined;
       if (ts.isBlock(current)) {
         const declarations = current.statements
           .filter(ts.isVariableStatement)

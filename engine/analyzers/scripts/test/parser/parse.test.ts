@@ -9,6 +9,24 @@ const source = {
 };
 
 describe("script analyzer", () => {
+  it("does not confuse catch or for bindings with an outer local callback", () => {
+    const parsed = parseScriptFile("scripts/main", [
+      'import { system } from "@minecraft/server";',
+      'function setup() {',
+      '  const handler = () => {};',
+      '  system.run(handler);',
+      '  try { throw new Error("x"); } catch (handler) { system.runTimeout(handler, 2); }',
+      '  for (const handler of callbacks) { system.runInterval(handler, 2); }',
+      '}',
+    ].join("\n"), source);
+    expect(parsed.deferredCallbacks.find(item => item.scheduler === "run")?.callbackRegion)
+      .toMatch(/^callback@/);
+    expect(parsed.deferredCallbacks.find(item => item.scheduler === "runTimeout")?.callbackRegion)
+      .toBeUndefined();
+    expect(parsed.deferredCallbacks.find(item => item.scheduler === "runInterval")?.callbackRegion)
+      .toBeUndefined();
+  });
+
   it("links locally declared immutable callbacks without guessing Promise parameters", () => {
     const parsed = parseScriptFile("scripts/main", [
       'import { system } from "@minecraft/server";',
