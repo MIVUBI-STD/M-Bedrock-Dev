@@ -173,6 +173,7 @@ export function buildInspectionSemanticIr(
 
   const addEdge = (
     edge: Omit<ExecutionEdge, "id">,
+    occurrence?: number,
   ): void => {
     const id = [
       "exec-edge",
@@ -180,6 +181,7 @@ export function buildInspectionSemanticIr(
       edge.kind,
       token(edge.targetLabel),
       sourceToken(edge.source),
+      ...(occurrence === undefined ? [] : [String(occurrence)]),
     ].join(":");
     edges.set(id, { ...edge, id });
   };
@@ -216,7 +218,7 @@ export function buildInspectionSemanticIr(
       label: "functions/tick.json",
       source: registration.source,
     });
-    for (const targetLabel of registration.functions) {
+    for (const [index, targetLabel] of registration.functions.entries()) {
       const targetId = resolveFunction(targetLabel);
       const resolved = targetId !== undefined;
       addEdge({
@@ -226,7 +228,7 @@ export function buildInspectionSemanticIr(
         resolution: resolved ? "resolved" : "unresolved",
         ...(targetId !== undefined ? { to: targetId } : {}),
         source: registration.source,
-      });
+      }, index);
     }
   }
 

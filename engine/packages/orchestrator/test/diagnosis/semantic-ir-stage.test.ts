@@ -95,6 +95,23 @@ describe("inspection semantic IR", () => {
     expect(ir.temporal.relations.filter((relation) => relation.kind === "periodic")).toHaveLength(2);
   });
 
+  it("preserves repeated tick registrations as distinct periodic edges", () => {
+    const fn = parseMcFunction("start", "say ready", {
+      artifactId: "a", relativePath: "behavior_packs/a/functions/start.mcfunction",
+    });
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [{ parsed: fn }], parsedScripts: [],
+      tickFunctionRegistrations: [{
+        source: { artifactId: "a", relativePath: "behavior_packs/a/functions/tick.json" },
+        functions: ["start", "start"],
+      }],
+    });
+    const periodic = ir.execution.edges.filter(edge => edge.kind === "periodic");
+    expect(periodic).toHaveLength(2);
+    expect(new Set(periodic.map(edge => edge.id)).size).toBe(2);
+    expect(ir.temporal.relations.filter(item => item.kind === "periodic")).toHaveLength(2);
+  });
+
   it("keeps duplicate cross-pack functions separate and does not resolve an ambiguous call", () => {
     const source = (pack: string) => ({ artifactId: "a", relativePath: "behavior_packs/" + pack + "/functions/start.mcfunction" });
     const a = parseMcFunction("start", "function start", source("a"));
