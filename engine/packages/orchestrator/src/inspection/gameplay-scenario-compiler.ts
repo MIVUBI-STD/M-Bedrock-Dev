@@ -75,10 +75,13 @@ function technicalRoleForNode(
 
 function edgeStatus(
   edge: GameplayIntentEdge,
+  sourceEvidenceIds: ReadonlySet<string>,
 ): GameplayCausalLink["status"] {
-  if (edge.status === "hypothesis") return "DETECTION_GAP";
-  if (edge.evidenceIds.length === 0) return "DETECTION_GAP";
-  return "PROVEN";
+  // Inferred dependencies or dangling evidence IDs are never causal proof.
+  return edge.status === "authored" &&
+    edge.evidenceIds.some(id => sourceEvidenceIds.has(id))
+      ? "PROVEN"
+      : "DETECTION_GAP";
 }
 
 function impactPathFrom(
@@ -2090,6 +2093,9 @@ export function compileGameplayScenarioGraph(
     readonly preset: GameplayAuditScenarioPreset;
   },
 ): GameplayScenarioGraph {
+  const sourceEvidenceIds = new Set(input.intent.evidence
+    .filter(record => record.scope === "selected-artifact")
+    .map(record => record.id));
   const playerCounts = presetPlayerCounts(input.preset);
   const scenarioNodes = input.intent.nodes.filter(
     (node) => SCENARIO_NODE_KINDS.has(node.kind),
@@ -2475,7 +2481,7 @@ export function compileGameplayScenarioGraph(
       if (!allowed.has(edge.from) || !allowed.has(edge.to)) continue;
       if (!componentIds.has(edge.from) || !componentIds.has(edge.to)) continue;
       const impactPath = impactPathFrom(edge.to, allowed, input.intent);
-      const causalStatus = edgeStatus(edge);
+      const causalStatus = edgeStatus(edge, sourceEvidenceIds);
       causalLinks.push({
         id: "edge:" + scenario.id + ":" + edge.id,
         scenarioId: scenario.id,

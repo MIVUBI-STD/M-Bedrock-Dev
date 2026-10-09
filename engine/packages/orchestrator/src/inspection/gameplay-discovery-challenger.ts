@@ -38,10 +38,13 @@ function usedEvidenceIds(
   ]);
   // Scenario composition must consume the same exact evidence identity.
   // A stranded intent fact is not proof of a modeled gameplay path.
-  const scenarioEvidenceIds = new Set([
-    ...graph.components.flatMap(component => component.evidenceIds),
-    ...graph.causalLinks.flatMap(link => link.evidenceIds),
-  ]);
+  // Neither component placement nor unproven links establish a gameplay path.
+  const scenarioLinkIds = new Map(graph.scenarios.map(scenario =>
+    [scenario.id, new Set(scenario.causalLinkIds)]));
+  const scenarioEvidenceIds = new Set(graph.causalLinks
+    .filter(link => link.status === "PROVEN" &&
+      scenarioLinkIds.get(link.scenarioId)?.has(link.id) === true)
+    .flatMap(link => link.evidenceIds));
   return new Set([...authoredEvidenceIds].filter(id =>
     groundedIds.has(id) && scenarioEvidenceIds.has(id)));
 }

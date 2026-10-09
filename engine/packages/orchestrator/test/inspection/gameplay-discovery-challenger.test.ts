@@ -119,7 +119,7 @@ describe("gameplay discovery challenger", () => {
     );
   });
 
-  it("rejects authored state-operation evidence from the wrong source file", () => {
+  it("requires a proven scenario even for source-correct state evidence", () => {
     const ir = {
       schemaVersion: 1,
       execution: { regions: [], edges: [] },
@@ -138,10 +138,10 @@ describe("gameplay discovery challenger", () => {
     expect(wrong.map(item => item.kind)).toContain("unowned-state-operation");
     const corrected = { ...intent, evidence: [{ ...intent.evidence[0], locator: "scripts/one.js" }] } as GameplayIntentModel;
     expect(challengeGameplayDiscovery({ semanticIr: ir, intent: corrected, graph: emptyGraph })
-      .some(item => item.kind === "unowned-state-operation")).toBe(false);
+      .some(item => item.kind === "unowned-state-operation")).toBe(true);
   });
 
-  it("requires exact source provenance for owned execution regions", () => {
+  it("requires scenario ownership beyond matching source provenance", () => {
     const ir = {
       schemaVersion: 1,
       execution: { regions: [{ id: "region:one", kind: "script-module",
@@ -161,7 +161,7 @@ describe("gameplay discovery challenger", () => {
       ...intent.evidence[0], locator: "scripts/one.js",
     }] } as GameplayIntentModel;
     expect(challengeGameplayDiscovery({ semanticIr: ir, intent: matched, graph: emptyGraph })
-      .some(item => item.subjectId === "region:one")).toBe(false);
+      .some(item => item.subjectId === "region:one")).toBe(true);
   });
 
   it("does not admit unregistered or external authored evidence", () => {
@@ -187,7 +187,7 @@ describe("gameplay discovery challenger", () => {
       ...external.evidence[0], scope: "selected-artifact", locator: "scripts/main.js",
     }] } as GameplayIntentModel;
     expect(challengeGameplayDiscovery({ semanticIr: ir, intent: selected, graph: emptyGraph })
-      .some(item => item.subjectId === "region:external")).toBe(false);
+      .some(item => item.subjectId === "region:external")).toBe(true);
   });
 
   it("does not admit hypothetical intent as exact Semantic IR ownership", () => {
@@ -208,7 +208,7 @@ describe("gameplay discovery challenger", () => {
       ...proposed.nodes[0], status: "authored",
     }] } as GameplayIntentModel;
     const admitted = challengeGameplayDiscovery({ semanticIr: ir, intent: authored, graph: emptyGraph });
-    expect(admitted.some(item => item.subjectId === "region:hypothesis")).toBe(false);
+    expect(admitted.some(item => item.subjectId === "region:hypothesis")).toBe(true);
   });
 
   it("does not admit inferred intent as a proven Semantic IR owner", () => {
@@ -226,7 +226,7 @@ describe("gameplay discovery challenger", () => {
       .some(item => item.subjectId === "region:inferred")).toBe(true);
     const authored = { ...intent, evidence: [{ id: "region:inferred", scope: "selected-artifact", origin: "source-code", locator: "scripts/main.js", summary: "exact region" }], nodes: [{ ...intent.nodes[0], status: "authored" }] } as GameplayIntentModel;
     expect(challengeGameplayDiscovery({ semanticIr: ir, intent: authored, graph: emptyGraph })
-      .some(item => item.subjectId === "region:inferred")).toBe(false);
+      .some(item => item.subjectId === "region:inferred")).toBe(true);
   });
 
   it("does not admit component membership or unproven causal links as Semantic IR ownership", () => {
@@ -288,7 +288,7 @@ describe("gameplay discovery challenger", () => {
       .toBe(true);
   });
 
-  it("challenges resolved execution edges without a gameplay owner but accepts an exact owner", () => {
+  it("does not close a resolved edge using Intent evidence alone", () => {
     const ir = {
       schemaVersion: 1,
       execution: {
@@ -314,7 +314,7 @@ describe("gameplay discovery challenger", () => {
       graph: emptyGraph,
     });
     expect(owned.some((item) => item.id === "discovery-challenge:edge:edge:resolved"))
-      .toBe(false);
+      .toBe(true);
   });
 
   it("keeps an execution region open when only one of its operations is consumed", () => {
@@ -355,7 +355,7 @@ describe("gameplay discovery challenger", () => {
     });
     expect(explicitlyOwned.some((item) =>
       item.kind === "unowned-execution-region" &&
-      item.subjectId === "region:mixed")).toBe(false);
+      item.subjectId === "region:mixed")).toBe(true);
   });
 
   it("accounts for state-only execution regions without inventing ownership", () => {
@@ -374,7 +374,7 @@ describe("gameplay discovery challenger", () => {
     }] } as GameplayIntentModel;
     const findings = challengeGameplayDiscovery({ semanticIr: ir, intent, graph: emptyGraph });
     expect(findings.map(item => item.kind)).toContain("unowned-execution-region");
-    expect(findings.map(item => item.kind)).not.toContain("unowned-state-operation");
+    expect(findings.map(item => item.kind)).toContain("unowned-state-operation");
   });
 
   it("keeps unowned standalone script modules visible to Discovery", () => {
@@ -392,7 +392,7 @@ describe("gameplay discovery challenger", () => {
       intent: { ...emptyIntent, evidence: [{ id: "module:alone", scope: "selected-artifact", origin: "source-code", locator: "scripts/main.js", summary: "module" }], nodes: [{ id: "intent:module", status: "authored", evidenceIds: ["module:alone"] }] } as GameplayIntentModel,
       graph: emptyGraph,
     });
-    expect(owned.some(item => item.subjectId === "module:alone")).toBe(false);
+    expect(owned.some(item => item.subjectId === "module:alone")).toBe(true);
   });
 
   it("keeps standalone mcfunction sources accountable", () => {
@@ -409,7 +409,7 @@ describe("gameplay discovery challenger", () => {
       intent: { ...emptyIntent, evidence: [{ id: "exec:mcfunction-source:standalone", scope: "selected-artifact", origin: "source-code", locator: "functions/intro.mcfunction", summary: "function" }], nodes: [{
         id: "intent:function", status: "authored", evidenceIds: ["exec:mcfunction-source:standalone"],
       }] } as GameplayIntentModel, graph: emptyGraph });
-    expect(owned.some(item => item.subjectId === "exec:mcfunction-source:standalone")).toBe(false);
+    expect(owned.some(item => item.subjectId === "exec:mcfunction-source:standalone")).toBe(true);
   });
 
   it("retains isolated callback and function regions without semantic ownership", () => {
@@ -427,7 +427,7 @@ describe("gameplay discovery challenger", () => {
       .map(item => item.subjectId).sort()).toEqual(["region:callback", "region:function"]);
   });
 
-  it("requires temporal ownership even when a generation guard is explicit", () => {
+  it("does not close temporal behavior using a generation guard alone", () => {
     const ir = {
       schemaVersion: 1,
       execution: { regions: [], edges: [] },
@@ -453,7 +453,41 @@ describe("gameplay discovery challenger", () => {
       graph: emptyGraph,
     });
     expect(owned.some((item) =>
-      item.kind === "unowned-temporal-relation")).toBe(false);
+      item.kind === "unowned-temporal-relation")).toBe(true);
+  });
+
+  it("accepts exact authored evidence only through a proven link in its scenario", () => {
+    const id = "exec-edge:wave";
+    const path = "scripts/wave.js";
+    const ir = { schemaVersion: 1,
+      execution: { regions: [], edges: [{ id, from: "exec:a", to: "exec:b",
+        kind: "synchronous-call", targetLabel: "spawn", resolution: "resolved",
+        source: { artifactId: "demo", relativePath: path } }] },
+      state: { surfaces: [], operations: [], authorityBindings: [] },
+      temporal: { relations: [] },
+    } as unknown as SemanticIr;
+    const intent = { ...emptyIntent,
+      evidence: [{ id, origin: "source-code", locator: path,
+        scope: "selected-artifact", summary: "exact" }],
+      nodes: [{ id: "mechanic:wave", status: "authored", evidenceIds: [id] }],
+    } as GameplayIntentModel;
+    const link = { id: "link:wave", scenarioId: "scenario:wave",
+      status: "PROVEN", evidenceIds: [id] };
+    const graph = { ...emptyGraph,
+      scenarios: [{ id: "scenario:wave", causalLinkIds: [link.id] }],
+      causalLinks: [link],
+    } as unknown as GameplayScenarioGraph;
+    const open = (i: GameplayIntentModel, g: GameplayScenarioGraph) =>
+      challengeGameplayDiscovery({ semanticIr: ir, intent: i, graph: g })
+        .some(item => item.kind === "unowned-execution-edge");
+    expect(open(intent, graph)).toBe(false);
+    expect(open(intent, { ...graph, causalLinks: [{ ...link,
+      status: "DETECTION_GAP" }] } as GameplayScenarioGraph)).toBe(true);
+    expect(open(intent, { ...graph, scenarios: [] } as GameplayScenarioGraph)).toBe(true);
+    expect(open({ ...intent, nodes: [{ ...intent.nodes[0],
+      status: "inferred" }] } as GameplayIntentModel, graph)).toBe(true);
+    expect(open({ ...intent, evidence: [{ ...intent.evidence[0],
+      locator: "scripts/other.js" }] } as GameplayIntentModel, graph)).toBe(true);
   });
 
   it("does not treat referenced unresolved temporal targets as closed", () => {
