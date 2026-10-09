@@ -177,7 +177,7 @@ export function assessGameplayDiscoveryClosure(
 
   if (status === "COMPLETE") {
     reasons.push(
-      "Relevant selected-artifact source inventory is balanced, all relevant sources are indexed, gameplay-sensitive indexed sources have semantic owners, and at least one gameplay surface is discovered.",
+      "Observed Discovery inputs are accounted for: source inventory, recorded semantic gaps, references, challenges, and discovered gameplay surfaces satisfy the static closure checks. This does not prove runtime behavior or absence of undiscovered mechanics.",
     );
   }
 

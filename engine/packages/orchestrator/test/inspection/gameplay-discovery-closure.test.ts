@@ -173,6 +173,36 @@ describe("gameplay discovery closure", () => {
     expect(result.status).toBe("COMPLETE");
   });
 
+  it("applies the combined Discovery acceptance contract without overstating runtime proof", () => {
+    const complete = {
+      discoveredSurfaceIds: ["phase:lobby", "state:round"],
+      sourceRelevantFiles: 2, sourceIndexedFiles: 2,
+      sourceCoverageComplete: true, sourceParseFailures: 0,
+      unsupportedRelevantSourcePaths: [], semanticUnderstandingGapPaths: [],
+      unresolvedReferences: 0,
+    };
+    const accepted = assessGameplayDiscoveryClosure(complete);
+    expect(accepted.status).toBe("COMPLETE");
+    expect(accepted.reasons.join(" ")).toContain("does not prove runtime behavior");
+    const partiallyResolved = assessGameplayDiscoveryClosure({
+      ...complete, unresolvedReferences: 1,
+    });
+    expect(partiallyResolved.status).toBe("PARTIAL");
+    expect(partiallyResolved.reasons.join(" ")).toContain("remain unresolved");
+    const blocked = assessGameplayDiscoveryClosure({
+      ...complete, unresolvedReferences: 1,
+      semanticUnderstandingGapPaths: ["behavior_packs/a/loot_tables/reward.json"],
+      gameplayIntentUnknownIds: ["unknown:outcome"],
+      discoveryChallengeIds: ["discovery-challenge:region:one"],
+      nativeWorldScanIncomplete: true,
+    });
+    expect(blocked.status).toBe("OPEN");
+    expect(blocked.semanticUnderstandingGaps).toBe(1);
+    expect(blocked.gameplayIntentUnknownIds).toHaveLength(1);
+    expect(blocked.discoveryChallengeIds).toHaveLength(1);
+    expect(blocked.nativeWorldScanIncomplete).toBe(true);
+  });
+
   it("does not claim COMPLETE while raw operations remain unowned", () => {
     const input = {
       discoveredSurfaceIds: ["runtime:state"],
