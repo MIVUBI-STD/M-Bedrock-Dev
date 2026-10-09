@@ -53,11 +53,16 @@ export function challengeGameplayDiscovery(input: {
     input.graph,
   );
   const output: GameplayDiscoveryChallengeSignal[] = [];
+  const evidenceLocations = new Map(input.intent.evidence
+    .filter(item => item.scope === "selected-artifact")
+    .map(item => [item.id, item.locator.replaceAll("\\", "/")]));
+  const matchesSource = (id: string, path: string): boolean =>
+    evidence.has(id) && evidenceLocations.get(id) === path.replaceAll("\\", "/");
 
   for (const operation of input.semanticIr.state.operations) {
     // Surface ownership alone does not account for every state mutation.
     // Require the individual operation to be consumed as evidence.
-    if (evidence.has(operation.id)) {
+    if (matchesSource(operation.id, operation.source.relativePath)) {
       continue;
     }
     output.push({
@@ -92,7 +97,7 @@ export function challengeGameplayDiscovery(input: {
   }
 
   for (const edge of input.semanticIr.execution.edges) {
-    if (edge.resolution === "resolved" && evidence.has(edge.id)) {
+    if (edge.resolution === "resolved" && matchesSource(edge.id, edge.source.relativePath)) {
       continue;
     }
     const unresolved = edge.resolution === "unresolved";
@@ -112,7 +117,7 @@ export function challengeGameplayDiscovery(input: {
   for (const relation of input.semanticIr.temporal.relations) {
     // A generation guard proves a scheduling safety property, not that
     // the temporal relation has a gameplay/scenario owner.
-    const relatedEvidence = evidence.has(relation.id);
+    const relatedEvidence = matchesSource(relation.id, relation.source.relativePath);
     // Evidence ownership cannot turn an unresolved scheduler target into
     // a resolved execution path.
     if (relatedEvidence && relation.resolution === "resolved") continue;

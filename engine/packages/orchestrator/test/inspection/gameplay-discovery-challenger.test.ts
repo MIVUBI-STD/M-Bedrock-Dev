@@ -119,6 +119,28 @@ describe("gameplay discovery challenger", () => {
     );
   });
 
+  it("rejects authored state-operation evidence from the wrong source file", () => {
+    const ir = {
+      schemaVersion: 1,
+      execution: { regions: [], edges: [] },
+      state: { surfaces: [], operations: [{
+        id: "state-op:one", executionRegionId: "region:one", surfaceId: "state:score",
+        operation: "write", source: { artifactId: "a", relativePath: "scripts/one.js" },
+      }], authorityBindings: [] },
+      temporal: { relations: [] },
+    } as unknown as SemanticIr;
+    const intent = { ...emptyIntent,
+      nodes: [{ id: "intent:one", status: "authored", evidenceIds: ["state-op:one"] }],
+      evidence: [{ id: "state-op:one", scope: "selected-artifact",
+        origin: "source-code", locator: "scripts/two.js", summary: "mismatched source" }],
+    } as GameplayIntentModel;
+    const wrong = challengeGameplayDiscovery({ semanticIr: ir, intent, graph: emptyGraph });
+    expect(wrong.map(item => item.kind)).toContain("unowned-state-operation");
+    const corrected = { ...intent, evidence: [{ ...intent.evidence[0], locator: "scripts/one.js" }] } as GameplayIntentModel;
+    expect(challengeGameplayDiscovery({ semanticIr: ir, intent: corrected, graph: emptyGraph })
+      .some(item => item.kind === "unowned-state-operation")).toBe(false);
+  });
+
   it("does not admit unregistered or external authored evidence", () => {
     const ir = {
       schemaVersion: 1,
