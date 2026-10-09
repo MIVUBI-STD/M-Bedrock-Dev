@@ -8,7 +8,7 @@ import type {
 } from "../../../project-model/src/index.js";
 import type {
   RepairInvariantDerivation,
-} from "../repair-invariant-derivation.js";
+} from "../repair/repair-invariant-derivation.js";
 
 function invariantText(
   entry: InvariantRegistryEntry,

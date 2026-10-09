@@ -8,7 +8,7 @@ import type {
 } from "../../../repair/src/index.js";
 import {
   deriveChangedSemanticNodeIds,
-} from "../repair-changed-node-derivation.js";
+} from "../repair/repair-changed-node-derivation.js";
 
 const PROPAGATED_RUNTIME_TARGET_EDGE_TYPES =
   new Set<EdgeType>([

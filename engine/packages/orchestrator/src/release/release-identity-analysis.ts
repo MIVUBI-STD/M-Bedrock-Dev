@@ -4,7 +4,7 @@ import {
 } from "../../../../analyzers/diagnostics/src/index.js";
 import type { DiagnosticFinding } from "../../../diagnostics/src/index.js";
 import type { InspectedPack, InspectTargetProfile } from "../types.js";
-import type { ScriptSafeConfigAnalysis } from "../script-safe-config-analysis.js";
+import type { ScriptSafeConfigAnalysis } from "../inspection/script-safe-config-analysis.js";
 
 export interface ReleaseIdentityAnalysis {
   status: "unavailable" | "consistent" | "conflict";

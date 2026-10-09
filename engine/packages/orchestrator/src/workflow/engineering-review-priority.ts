@@ -1,8 +1,8 @@
 import type { IntentDiagnosticDisposition } from "../../../diagnostic-reasoning/src/index.js";
 import type { DiagnosticFinding } from "../../../diagnostics/src/index.js";
-import type { EvidenceRecoveryPlan } from "../evidence-recovery.js";
+import type { EvidenceRecoveryPlan } from "../diagnosis/evidence-recovery.js";
 import type { EngineeringReviewInvalidationProjection } from "./engineering-review-invalidation.js";
-import type { InspectionRepairCandidate } from "../repair-planning.js";
+import type { InspectionRepairCandidate } from "../repair/repair-planning.js";
 
 export type EngineeringReviewPriorityLane =
   | "blocking-proof"
