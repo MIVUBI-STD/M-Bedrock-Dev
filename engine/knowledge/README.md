@@ -26,6 +26,8 @@ Production consumption is routed through `engine/packages/knowledge/` and the ex
 
 Do not duplicate a fact into a second domain for convenience. When cross-domain behavior is involved, preserve the owning fact and relate it through canonical Graph/consumer mechanisms. Do not create subfolders for every mechanic until existing ownership cannot represent a demonstrated responsibility.
 
+When two catalogs describe related mechanics, compare the **claim** and applicability before moving or deleting anything: a shared platform prerequisite and a domain-specific implication may be legitimately distinct. Preserve stable fact IDs and existing analyzer/proof bindings until their consumers are reconciled. Record unresolved overlaps in the canonical development plan rather than creating a second cross-domain catalog.
+
 ## Physical hierarchy
 
 ```text
