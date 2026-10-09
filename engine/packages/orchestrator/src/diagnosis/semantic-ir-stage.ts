@@ -53,7 +53,7 @@ function sourceToken(source: SourceRef): string {
   ].join(":");
 }
 
-function scriptRegionId(source: SourceRef, region: string): string {
+export function scriptRegionId(source: SourceRef, region: string): string {
   return "exec:script:" + token(source.relativePath) + ":" + token(region);
 }
 

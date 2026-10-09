@@ -655,8 +655,19 @@ export function extractGameplayIntentSignals(
   const pushRelation = (
     relation: GameplayIntentRelationSignal,
   ): void => {
-    if (!relations.has(relation.id)) {
+    const existing = relations.get(relation.id);
+    if (!existing) {
       relations.set(relation.id, relation);
+    } else if (relation.localCallOrigins?.length) {
+      // A single semantic relationship may originate at several call sites.
+      // Never discard later source locations while deduplicating its label.
+      relations.set(relation.id, {
+        ...existing,
+        localCallOrigins: [
+          ...(existing.localCallOrigins ?? []),
+          ...relation.localCallOrigins,
+        ],
+      });
     }
   };
 
@@ -905,6 +916,7 @@ export function extractGameplayIntentSignals(
           status: "inferred",
           evidenceOrigin: "source-code",
           locator: path,
+          localCallOrigins: [{ scriptSource: script.source, call }],
           summary:
             "A semantically classified source region directly calls another classified gameplay region.",
         });

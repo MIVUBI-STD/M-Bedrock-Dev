@@ -6,6 +6,9 @@ import {
 import type {
   ParsedScriptFile,
 } from "../../../../analyzers/scripts/src/index.js";
+import type { SourceRef } from "../../../project-model/src/index.js";
+import type { SemanticIr } from "../../../semantic-ir/src/index.js";
+import { scriptRegionId } from "../diagnosis/semantic-ir-stage.js";
 import {
   validateGameplayIntentModel,
   type GameplayIntentEdge,
@@ -26,6 +29,8 @@ export interface GameplayIntentStageInput {
     parsed: ParsedScriptFile;
   }[];
   supplementalSignals?: readonly GameplayIntentSignal[];
+  /** Built from these same parsed sources; absent in lightweight consumers. */
+  semanticIr?: SemanticIr;
 }
 
 const STATUS_RANK: Readonly<Record<GameplayIntentStatus, number>> = {
@@ -38,6 +43,19 @@ function evidenceId(
   signal: GameplayIntentSignal | GameplayIntentRelationSignal,
 ): string {
   return "intent-evidence:" + signal.id;
+}
+
+function sameExactCallSource(left: SourceRef, right: SourceRef): boolean {
+  // A file-only match is never unique provenance for a call site.
+  return left.artifactId === right.artifactId &&
+    left.relativePath === right.relativePath &&
+    left.jsonPointer === right.jsonPointer &&
+    left.range?.lineStart !== undefined &&
+    left.range?.columnStart !== undefined &&
+    left.range?.lineStart === right.range?.lineStart &&
+    left.range?.lineEnd === right.range?.lineEnd &&
+    left.range?.columnStart === right.range?.columnStart &&
+    left.range?.columnEnd === right.range?.columnEnd;
 }
 
 export function buildGameplayIntentModel(
@@ -160,6 +178,36 @@ export function buildGameplayIntentModel(
         : { scope: relationScope }),
     });
 
+    // Carry exact IR identity across the existing intent edge, but do not
+    // upgrade the inferred gameplay purpose of a syntactic function call.
+    const exactIrEvidenceIds = new Set<string>();
+    if (relation.edgeKind === "requires" && input.semanticIr) {
+      for (const origin of relation.localCallOrigins ?? []) {
+        if (origin.scriptSource.artifactId !== origin.call.source.artifactId ||
+            origin.scriptSource.relativePath !== origin.call.source.relativePath) {
+          continue;
+        }
+        const matches = input.semanticIr.execution.edges.filter(edge =>
+          edge.kind === "synchronous-call" &&
+          edge.resolution === "resolved" &&
+          edge.from === scriptRegionId(origin.scriptSource, origin.call.callerRegion) &&
+          edge.to === scriptRegionId(origin.scriptSource, origin.call.targetRegion) &&
+          edge.targetLabel === origin.call.targetName &&
+          sameExactCallSource(edge.source, origin.call.source));
+        if (matches.length !== 1) continue;
+        const matched = matches[0]!;
+        exactIrEvidenceIds.add(matched.id);
+        evidence.set(matched.id, {
+          id: matched.id,
+          origin: "source-code",
+          locator: matched.source.relativePath,
+          scope: "selected-artifact",
+          summary: "Exact Semantic IR call edge from parsed source location; gameplay dependency remains inferred.",
+        });
+      }
+    }
+    const relationEvidenceIds = [id, ...exactIrEvidenceIds].sort();
+
     const semanticKey = [
       relation.edgeKind,
       relation.fromSubjectKey,
@@ -178,7 +226,7 @@ export function buildGameplayIntentModel(
         to: relation.toSubjectKey,
         kind: relation.edgeKind,
         status: relation.status,
-        evidenceIds: [id],
+        evidenceIds: relationEvidenceIds,
       });
       continue;
     }
@@ -191,7 +239,7 @@ export function buildGameplayIntentModel(
           ? relation.status
           : existing.status,
       evidenceIds: [
-        ...new Set([...existing.evidenceIds, id]),
+        ...new Set([...existing.evidenceIds, ...relationEvidenceIds]),
       ].sort(),
     });
   }

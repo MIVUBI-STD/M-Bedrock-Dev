@@ -1,3 +1,4 @@
+import type { ParsedScriptFile } from "../../scripts/src/index.js";
 import type {
   GameplayIntentEdgeKind,
   GameplayIntentEvidenceOrigin,
@@ -22,6 +23,11 @@ export interface GameplayIntentSignal {
 
 export interface GameplayIntentRelationSignal {
   id: string;
+  /** Exact parsed local call sites, not merely a lexical relationship hint. */
+  localCallOrigins?: readonly {
+    scriptSource: ParsedScriptFile["source"];
+    call: ParsedScriptFile["localFunctionCalls"][number];
+  }[];
   fromSubjectKey: string;
   toSubjectKey: string;
   edgeKind: GameplayIntentEdgeKind;

@@ -170,6 +170,7 @@ export async function inspectDirectory(
     contractScripts: contractSources,
     supplementalSignals:
       gameplaySurfaceSignals,
+    semanticIr,
   });
 
   const objectiveAuthority =

@@ -5,6 +5,7 @@ import type {
 import {
   buildGameplayIntentModel,
 } from "../../src/inspection/gameplay-intent-stage.js";
+import { buildInspectionSemanticIr } from "../../src/diagnosis/semantic-ir-stage.js";
 
 const source = {
   artifactId: "art_test",
@@ -673,5 +674,60 @@ describe("gameplay intent stage", () => {
     expect(model.unknowns[0]?.id).toBe(
       "unknown:no-intent-signals",
     );
+  });
+});
+
+describe("exact Semantic IR provenance in Gameplay Intent", () => {
+  it("links only the same call site/regions and keeps game-purpose inference unproven", () => {
+    const scriptSource = { artifactId: "map-a",
+      relativePath: "behavior_packs/a/scripts/wave.js" };
+    const callSite = { ...scriptSource, range: {
+      lineStart: 8, columnStart: 5, lineEnd: 8, columnEnd: 28,
+    }};
+    const script = { ...parsed(), identifier: "wave",
+      source: scriptSource,
+      localFunctionCalls: [
+        { callerRegion: "function:waveTick", targetRegion: "function:spawnEnemy",
+          targetName: "spawnEnemy", source: callSite },
+        { callerRegion: "function:waveTick", targetRegion: "function:spawnEnemy",
+          targetName: "spawnEnemy", source: { ...callSite,
+            range: { ...callSite.range, lineStart: 9, lineEnd: 9 } } },
+      ],
+    } as ParsedScriptFile;
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed: script }],
+    });
+    const model = buildGameplayIntentModel({
+      id: "intent:wave", parsedScripts: [{ parsed: script }], semanticIr: ir,
+    });
+    const callEdges = ir.execution.edges.filter(edge =>
+      edge.kind === "synchronous-call");
+    expect(callEdges).toHaveLength(2);
+    const inferred = model.edges.find(edge => edge.from === "mechanic:wave-tick");
+    expect(inferred).toBeDefined();
+    expect(inferred?.status).toBe("inferred");
+    for (const edge of callEdges) {
+      expect(inferred?.evidenceIds).toContain(edge.id);
+      expect(model.evidence.some(item => item.id === edge.id &&
+        item.scope === "selected-artifact" &&
+        item.locator === scriptSource.relativePath)).toBe(true);
+    }
+    const differentMap = { ...ir,
+      execution: { ...ir.execution, edges: ir.execution.edges.map(edge => ({
+        ...edge, source: { ...edge.source, artifactId: "map-b" },
+      })) },
+    };
+    const mismatched = buildGameplayIntentModel({
+      id: "intent:mismatch", parsedScripts: [{ parsed: script }],
+      semanticIr: differentMap,
+    });
+    expect(mismatched.edges.some(edge =>
+      edge.evidenceIds.some(id => id.startsWith("exec-edge:")))).toBe(false);
+
+    const withoutIr = buildGameplayIntentModel({
+      id: "intent:without-ir", parsedScripts: [{ parsed: script }],
+    });
+    expect(withoutIr.edges.some(edge =>
+      edge.evidenceIds.some(id => id.startsWith("exec-edge:")))).toBe(false);
   });
 });
