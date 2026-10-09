@@ -14,6 +14,7 @@ import {
 import {
   indexInspectionSources,
 } from "../src/inspection/inspect-source-index.js";
+import { enrichInspectionSemanticGraph } from "../src/inspection/inspect-graph-enrichment.js";
 
 describe("inspection source index coverage", () => {
   it("marks recognized source coverage incomplete when a relevant entity cannot be parsed", async () => {
@@ -506,4 +507,48 @@ describe("inspection source index coverage", () => {
       await rm(root, { recursive: true, force: true });
     }
   });
+  it("keeps two tick registrations distinct and preserves unresolved function roots", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-tick-"));
+    try {
+      const paths = [
+        "behavior_packs/a/functions/tick.json",
+        "behavior_packs/b/functions/tick.json",
+        "behavior_packs/a/functions/start.mcfunction",
+      ];
+      for (const path of paths) {
+        await mkdir(join(root, path.substring(0, path.lastIndexOf("/"))), { recursive: true });
+      }
+      await writeFile(join(root, paths[0]!), JSON.stringify({ values: ["start"] }));
+      await writeFile(join(root, paths[1]!), JSON.stringify({ values: ["missing"] }));
+      await writeFile(join(root, paths[2]!), "say ready\\n");
+      const index = await indexInspectionSources(root, "artifact:two-packs",
+        paths.map((relativePath) => ({
+          relativePath, size: 32, contentHash: relativePath,
+        })),
+      );
+      expect(index.coverage.complete).toBe(true);
+      expect(index.tickFunctionRegistrations).toHaveLength(2);
+      enrichInspectionSemanticGraph({
+        graph: index.graph,
+        nodes: index.nodes,
+        artifactId: "artifact:two-packs",
+        parsedFunctions: index.parsedFunctions,
+        parsedDialogueDocuments: index.parsedDialogueDocuments,
+        parsedStructureModels: index.parsedStructureModels,
+        tickFunctionRegistrations: index.tickFunctionRegistrations,
+      });
+      const schedules = index.graph.findByKind("world")
+        .filter((node) => node.identifier.startsWith("function-schedule:tick:"));
+      expect(schedules).toHaveLength(2);
+      const edges = schedules.flatMap((node) => index.graph.outgoingEdges(node.id, "CALLS"));
+      expect(edges).toHaveLength(2);
+      expect(edges.map((edge) => [edge.targetIdentifier, edge.status]).sort()).toEqual([
+        ["missing", "unresolved"],
+        ["start", "resolved"],
+      ]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
 });
