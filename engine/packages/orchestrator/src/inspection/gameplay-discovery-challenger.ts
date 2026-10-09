@@ -30,12 +30,20 @@ function usedEvidenceIds(
   const groundedIds = new Set(intent.evidence
     .filter(item => item.scope === "selected-artifact")
     .map(item => item.id));
-  return new Set([
+  const authoredEvidenceIds = new Set([
     ...intent.nodes.filter(node => node.status === "authored")
       .flatMap(node => node.evidenceIds),
     ...intent.edges.filter(edge => edge.status === "authored")
       .flatMap(edge => edge.evidenceIds),
-  ].filter(id => groundedIds.has(id)));
+  ]);
+  // Scenario composition must consume the same exact evidence identity.
+  // A stranded intent fact is not proof of a modeled gameplay path.
+  const scenarioEvidenceIds = new Set([
+    ...graph.components.flatMap(component => component.evidenceIds),
+    ...graph.causalLinks.flatMap(link => link.evidenceIds),
+  ]);
+  return new Set([...authoredEvidenceIds].filter(id =>
+    groundedIds.has(id) && scenarioEvidenceIds.has(id)));
 }
 
 /**
