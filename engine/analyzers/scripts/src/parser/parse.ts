@@ -1933,6 +1933,15 @@ export function parseScriptFile(
     while (current && current !== file) {
       if (ts.isFunctionLike(current) && current.parameters.some(parameter =>
         ts.isIdentifier(parameter.name) && parameter.name.text === identifier.text)) return true;
+      if (ts.isCatchClause(current) && current.variableDeclaration &&
+          ts.isIdentifier(current.variableDeclaration.name) &&
+          current.variableDeclaration.name.text === identifier.text) return true;
+      if ((ts.isForStatement(current) || ts.isForInStatement(current) ||
+          ts.isForOfStatement(current)) && current.initializer &&
+          ts.isVariableDeclarationList(current.initializer) &&
+          current.initializer.declarations.some(declaration =>
+            ts.isIdentifier(declaration.name) &&
+            declaration.name.text === identifier.text)) return true;
       if (ts.isBlock(current) || ts.isSourceFile(current)) {
         const statements = current.statements;
         if (statements?.some(statement =>

@@ -23,6 +23,23 @@ describe("script analyzer", () => {
       .toBeUndefined();
   });
 
+  it("keeps catch and loop-local callback shadows unresolved", () => {
+    const parsed = parseScriptFile("scripts/main", [
+      'import { world, system } from "@minecraft/server";',
+      'function handler() {}',
+      'try { throw new Error("x"); } catch (handler) {',
+      '  world.afterEvents.playerSpawn.subscribe(handler);',
+      '}',
+      'for (const handler of handlers) {',
+      '  system.runInterval(handler, 20);',
+      '}',
+    ].join("\n"), source);
+    expect(parsed.events.find(item => item.event === "playerSpawn")?.callbackRegion)
+      .toBeUndefined();
+    expect(parsed.deferredCallbacks.find(item => item.scheduler === "runInterval")?.callbackRegion)
+      .toBeUndefined();
+  });
+
   it("links top-level const function callbacks without resolving mutable references", () => {
     const parsed = parseScriptFile("scripts/main", [
       'import { world, system } from "@minecraft/server";',
