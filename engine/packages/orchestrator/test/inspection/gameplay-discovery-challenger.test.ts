@@ -245,6 +245,24 @@ describe("gameplay discovery challenger", () => {
     expect(findings.map(item => item.kind)).not.toContain("unowned-state-operation");
   });
 
+  it("keeps unowned standalone script modules visible to Discovery", () => {
+    const ir = {
+      schemaVersion: 1,
+      execution: { regions: [{ id: "module:alone", kind: "script-module",
+        ownerId: "scripts/main", label: "module" }], edges: [] },
+      state: { surfaces: [], operations: [], authorityBindings: [] },
+      temporal: { relations: [] },
+    } as unknown as SemanticIr;
+    const missing = challengeGameplayDiscovery({ semanticIr: ir, intent: emptyIntent, graph: emptyGraph });
+    expect(missing.map(item => item.subjectId)).toContain("module:alone");
+    const owned = challengeGameplayDiscovery({
+      semanticIr: ir,
+      intent: { ...emptyIntent, nodes: [{ id: "intent:module", evidenceIds: ["module:alone"] }] } as GameplayIntentModel,
+      graph: emptyGraph,
+    });
+    expect(owned.some(item => item.subjectId === "module:alone")).toBe(false);
+  });
+
   it("requires temporal ownership even when a generation guard is explicit", () => {
     const ir = {
       schemaVersion: 1,
