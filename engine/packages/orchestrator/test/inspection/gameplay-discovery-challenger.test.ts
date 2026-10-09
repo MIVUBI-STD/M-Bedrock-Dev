@@ -175,7 +175,7 @@ describe("gameplay discovery challenger", () => {
       .some(item => item.subjectId === "region:scenario")).toBe(true);
     const proven = { ...graph, causalLinks: [{ ...link, status: "PROVEN" }] } as GameplayScenarioGraph;
     expect(challengeGameplayDiscovery({ semanticIr: ir, intent: emptyIntent, graph: proven })
-      .some(item => item.subjectId === "region:scenario")).toBe(false);
+      .some(item => item.subjectId === "region:scenario")).toBe(true);
   });
 
   it("does not accept blocked knowledge receipts as semantic ownership", () => {

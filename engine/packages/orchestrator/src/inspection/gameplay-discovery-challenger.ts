@@ -28,10 +28,8 @@ function usedEvidenceIds(
   return new Set([
     ...intent.nodes.filter(node => node.status === "authored").flatMap(node => node.evidenceIds),
     ...intent.edges.filter(edge => edge.status === "authored").flatMap(edge => edge.evidenceIds),
-    // Component presence is not causal proof of exact Semantic IR ownership.
-    ...graph.causalLinks
-      .filter((link) => link.status === "PROVEN")
-      .flatMap((link) => link.evidenceIds),
+    // Scenario causal proof does not establish exact execution ownership.
+    // Only authored intent may admit a matching Semantic IR evidence ID.
     // Knowledge satisfaction does not establish execution ownership.
     // Receipts remain in the scenario graph, not the IR ownership admission set.
   ]);
