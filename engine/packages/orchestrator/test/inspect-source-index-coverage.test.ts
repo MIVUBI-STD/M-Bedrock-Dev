@@ -63,8 +63,8 @@ describe("inspection source index coverage", () => {
       const index = await indexInspectionSources(root, "artifact:outcomes",
         paths.map(relativePath => ({ relativePath, size: 20 })));
       expect(index.coverage.fileOutcomes).toEqual([
-        { relativePath: paths[1], status: "semantic-gap" },
         { relativePath: paths[2], status: "unsupported" },
+        { relativePath: paths[1], status: "semantic-gap" },
         { relativePath: paths[0], status: "indexed" },
       ]);
       expect(index.coverage.fileOutcomes).toHaveLength(index.coverage.relevantFiles);
