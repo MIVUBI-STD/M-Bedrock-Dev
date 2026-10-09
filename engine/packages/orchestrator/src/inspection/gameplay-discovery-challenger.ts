@@ -26,8 +26,8 @@ function usedEvidenceIds(
   graph: GameplayScenarioGraph,
 ): ReadonlySet<string> {
   return new Set([
-    ...intent.nodes.flatMap((node) => node.evidenceIds),
-    ...intent.edges.flatMap((edge) => edge.evidenceIds),
+    ...intent.nodes.filter(node => node.status !== "hypothesis").flatMap(node => node.evidenceIds),
+    ...intent.edges.filter(edge => edge.status !== "hypothesis").flatMap(edge => edge.evidenceIds),
     ...graph.components.flatMap((component) => component.evidenceIds),
     ...graph.causalLinks.flatMap((link) => link.evidenceIds),
     ...graph.knowledgeReceipts

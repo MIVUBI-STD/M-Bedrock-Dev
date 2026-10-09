@@ -119,6 +119,27 @@ describe("gameplay discovery challenger", () => {
     );
   });
 
+  it("does not admit hypothetical intent as exact Semantic IR ownership", () => {
+    const ir = {
+      schemaVersion: 1,
+      execution: { regions: [{ id: "region:hypothesis", kind: "script-module",
+        ownerId: "scripts/main", label: "module" }], edges: [] },
+      state: { surfaces: [], operations: [], authorityBindings: [] },
+      temporal: { relations: [] },
+    } as unknown as SemanticIr;
+    const proposed = { ...emptyIntent, nodes: [{
+      id: "intent:proposed", status: "hypothesis",
+      evidenceIds: ["region:hypothesis"],
+    }] } as GameplayIntentModel;
+    const findings = challengeGameplayDiscovery({ semanticIr: ir, intent: proposed, graph: emptyGraph });
+    expect(findings.map(item => item.subjectId)).toContain("region:hypothesis");
+    const authored = { ...proposed, nodes: [{
+      ...proposed.nodes[0], status: "authored",
+    }] } as GameplayIntentModel;
+    const admitted = challengeGameplayDiscovery({ semanticIr: ir, intent: authored, graph: emptyGraph });
+    expect(admitted.some(item => item.subjectId === "region:hypothesis")).toBe(false);
+  });
+
   it("does not accept blocked knowledge receipts as semantic ownership", () => {
     const ir = {
       schemaVersion: 1,
