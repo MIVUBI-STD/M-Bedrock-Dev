@@ -866,24 +866,13 @@
       "analyzerPaths": [
         "engine/packages/orchestrator/src/repair/mutation-transaction-analysis.ts",
         "engine/packages/orchestrator/src/arena/arena-reset-closure-analysis.ts",
-        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts",
+        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts"
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/repair/mutation-transaction-analysis.test.ts",
-        "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts"
-      ]
-    },
-    {
-      "knowledgeId": "cleanup-policy.baseline-restore-verified",
-      "consumer": "arena-reset-closure-analysis",
-      "analyzerPaths": [
-        "engine/packages/orchestrator/src/arena/arena-cleanup-surface-analysis.ts",
-        "engine/packages/orchestrator/src/arena/arena-reset-closure-analysis.ts",
-        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
-      ],
-      "proofPaths": [
-        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts",
-        "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts"
+        "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-cleanup-surface-analysis.test.ts"
       ]
     },
     {
@@ -2966,7 +2955,8 @@
       "knowledgeId": "multiplayer-policy.post-defer-validation",
       "consumer": "arena-lifecycle-analysis",
       "analyzerPaths": [
-        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts"
+        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts",
+        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
       ],
       "proofPaths": [
         "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
@@ -3552,17 +3542,6 @@
       ]
     },
     {
-      "knowledgeId": "multiplayer-policy.post-defer-validation",
-      "consumer": "arena-lifecycle-analysis",
-      "analyzerPaths": [
-        "engine/packages/orchestrator/src/arena/arena-lifecycle-analysis.ts",
-        "engine/packages/orchestrator/src/inspection/gameplay-scenario-compiler.ts"
-      ],
-      "proofPaths": [
-        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
-      ]
-    },
-    {
       "knowledgeId": "player-policy.reconnect-reconciliation",
       "consumer": "persistence-source-analysis",
       "analyzerPaths": [
@@ -3742,20 +3721,12 @@
       "analyzerPaths": [
         "engine/packages/orchestrator/src/inspection/progression-actor-accounting-analysis.ts",
         "engine/packages/orchestrator/src/arena/arena-reset-closure-analysis.ts",
-        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts"
-      ],
-      "proofPaths": [
-        "engine/packages/orchestrator/test/inspection/progression-actor-accounting-analysis.test.ts",
-        "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts"
-      ]
-    },
-    {
-      "knowledgeId": "population-policy.relation-spawn-verify-gates-registration",
-      "consumer": "entity-population-analysis",
-      "analyzerPaths": [
+        "engine/packages/orchestrator/src/inspection/inspect-runtime-analysis-stage.ts",
         "engine/packages/orchestrator/src/inspection/entity-population-analysis.ts"
       ],
       "proofPaths": [
+        "engine/packages/orchestrator/test/inspection/progression-actor-accounting-analysis.test.ts",
+        "engine/packages/orchestrator/test/arena/arena-reset-closure-analysis.test.ts",
         "engine/packages/orchestrator/test/inspection/entity-population-analysis.test.ts"
       ]
     },
