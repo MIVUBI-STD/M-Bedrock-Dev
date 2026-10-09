@@ -25,62 +25,31 @@ export interface PersistentStateLifetimeEvidence {
 export function inferPersistentStateLifetimes(
   lifecycles: readonly PersistentDataLifecycleEvidence[],
   scopes: readonly PersistentStateScopeEvidence[],
-  cleanup: readonly ScriptCleanupResourceEvidence[],
+  _cleanup: readonly ScriptCleanupResourceEvidence[],
 ): PersistentStateLifetimeEvidence[] {
-  const cleanupRegions = cleanup
-    .filter((item) => item.action === "release")
-    .map((item) => item.executionRegion.toLowerCase());
-
+  // Resource release regions name game/round cleanup, but do not prove an
+  // exact dynamic-property reset or its lifetime. Preserve this input for
+  // existing callers without treating unrelated resource cleanup as proof.
   return scopes.map((scope) => {
     const lifecycle = lifecycles.find(
       (item) => item.propertyKey === scope.propertyId,
     );
-    const hasRoundCleanup = cleanupRegions.some((region) =>
-      /round|resetlevel|cleanupround/.test(region)
-    );
-    const hasMatchCleanup = cleanupRegions.some((region) =>
-      /match|game|arena|finish|cleanup/.test(region)
-    );
-
     if (scope.scope === "player") {
       return {
         propertyId: scope.propertyId,
-        lifetime: "player-session" as const,
-        confidence: "bounded" as const,
+        // Dynamic properties remain persisted across reconnect; a player
+        // receiver does not establish connection-session lifetime or cleanup.
+        lifetime: "unknown" as const,
+        confidence: "unknown" as const,
         reasons: [
-          "Property is player-scoped; no stronger shorter-lifetime proof was established.",
+          "Player receiver establishes ownership scope, not connection-session lifetime. Explicit reset or reconciliation evidence is required.",
         ],
       };
     }
 
-    if (
-      lifecycle?.growth === "append-with-clear" &&
-      hasRoundCleanup
-    ) {
-      return {
-        propertyId: scope.propertyId,
-        lifetime: "round" as const,
-        confidence: "bounded" as const,
-        reasons: [
-          "Append/writeback state has visible cleanup in a round-oriented execution region.",
-        ],
-      };
-    }
-
-    if (
-      lifecycle?.growth === "append-with-clear" &&
-      hasMatchCleanup
-    ) {
-      return {
-        propertyId: scope.propertyId,
-        lifetime: "match" as const,
-        confidence: "bounded" as const,
-        reasons: [
-          "Append/writeback state has visible cleanup in a match/game/arena-oriented execution region.",
-        ],
-      };
-    }
-
+    // append-with-clear proves a clear was observed somewhere in source,
+    // not that every round/match exit clears this persisted property.
+    // No exact lifecycle-generation / property reset binding is established.
     if (
       scope.scope === "world" &&
       lifecycle?.growth === "append-without-clear"

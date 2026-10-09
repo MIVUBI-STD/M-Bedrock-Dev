@@ -13,6 +13,9 @@ export interface SourceStateOutcomeCandidate {
   readonly propertyName: string;
   readonly value: string;
   readonly precedingWriteOperationIds: readonly string[];
+  /** Later writes to the same authored surface that may supersede a candidate.
+   * Includes unknown-location writes in the same region/document, not assumed absent. */
+  readonly intermediateMutationOperationIds: readonly string[];
   readonly status: "SOURCE_ORDER_CANDIDATE" | "UNRESOLVED";
   readonly reason: string;
   readonly provenance: BehaviorClaimProvenance;
@@ -29,15 +32,21 @@ function precedingSourceWrite(
   outcome: SourceRef,
 ): boolean {
   if (!sameDocument(write, outcome)) return false;
-  const end = write.range;
-  const start = outcome.range;
-  if (end?.lineEnd === undefined || end.columnEnd === undefined ||
-      start?.lineStart === undefined || start.columnStart === undefined) {
-    return false;
-  }
-  return end.lineEnd < start.lineStart ||
+  if (!hasOrderedPosition(write) || !hasOrderedPosition(outcome)) return false;
+  const end = write.range!;
+  const start = outcome.range!;
+  return end.lineEnd! < start.lineStart! ||
     (end.lineEnd === start.lineStart &&
-      end.columnEnd <= start.columnStart);
+      end.columnEnd! <= start.columnStart!);
+}
+
+/** Missing position is not evidence that a mutation cannot intervene. */
+function hasOrderedPosition(source: SourceRef): boolean {
+  const range = source.range;
+  return range?.lineStart !== undefined &&
+    range.lineEnd !== undefined &&
+    range.columnStart !== undefined &&
+    range.columnEnd !== undefined;
 }
 
 function guardsEqual(
@@ -70,6 +79,36 @@ function guardsEqual(
   return valid(a) && valid(b) && signature(a) === signature(b);
 }
 
+/** Exactly opposing branches of one identified source guard cannot both run
+ * in the same evaluation. Textually similar guards at different sites are
+ * NOT considered mutually exclusive (values may have changed). */
+function mutuallyExclusiveGuards(
+  a: {
+    lexicalGuards?: readonly AuthoredBranchGuard[];
+    precedenceGuards?: readonly AuthoredBranchGuard[];
+  },
+  b: {
+    lexicalGuards?: readonly AuthoredBranchGuard[];
+    precedenceGuards?: readonly AuthoredBranchGuard[];
+  },
+): boolean {
+  const left = [...(a.lexicalGuards ?? []), ...(a.precedenceGuards ?? [])];
+  const right = [...(b.lexicalGuards ?? []), ...(b.precedenceGuards ?? [])];
+  return left.some(one => right.some(two => {
+    const x = one.source.range;
+    const y = two.source.range;
+    return one.branch !== two.branch &&
+      one.expression === two.expression &&
+      sameDocument(one.source, two.source) &&
+      x?.lineStart !== undefined && x.columnStart !== undefined &&
+      x.lineEnd !== undefined && x.columnEnd !== undefined &&
+      x.lineStart === y?.lineStart &&
+      x.columnStart === y?.columnStart &&
+      x.lineEnd === y?.lineEnd &&
+      x.columnEnd === y?.columnEnd;
+  }));
+}
+
 /**
  * Collect source-ordered writes preceding each authored return in the SAME
  * execution region and on the SAME observed lexical/precedence guard arms.
@@ -90,7 +129,33 @@ export function reconcileSourceStateOutcomes(
         guardsEqual(write.lexicalGuards, outcome.lexicalGuards) &&
         guardsEqual(write.precedenceGuards, outcome.precedenceGuards));
       const ids = [...new Set(candidates.map(item => item.id))].sort();
-      const status = ids.length > 0
+      // An intermediate mutation of the same surface can invalidate a naive
+      // state-at-return inference. Do not assume different branches are
+      // exclusive across time, and do not discard imprecisely located writes.
+      const candidateIds = new Set(ids);
+      const interruptions = writes.filter(other =>
+        !candidateIds.has(other.id) &&
+        other.executionRegionId === outcome.executionRegionId &&
+        sameDocument(other.source, outcome.source) &&
+        candidates.some(candidate =>
+          candidate.surfaceId === other.surfaceId &&
+          !mutuallyExclusiveGuards(candidate, other) &&
+          (
+            !hasOrderedPosition(other.source) ||
+            (precedingSourceWrite(candidate.source, other.source) &&
+              precedingSourceWrite(other.source, outcome.source))
+          ))
+      ).map(item => item.id);
+      // Multiple writes to the same surface within matching authored
+      // branches also prohibit claiming one stable value at return.
+      const repeated = candidates.filter(candidate =>
+        candidates.some(other => other.id !== candidate.id &&
+          other.surfaceId === candidate.surfaceId));
+      const intermediateMutationOperationIds = [
+        ...new Set([...interruptions, ...repeated.map(item => item.id)]),
+      ].sort();
+      const status = ids.length > 0 &&
+        intermediateMutationOperationIds.length === 0
         ? "SOURCE_ORDER_CANDIDATE" as const
         : "UNRESOLVED" as const;
       return {
@@ -99,14 +164,17 @@ export function reconcileSourceStateOutcomes(
         propertyName: outcome.propertyName,
         value: outcome.value,
         precedingWriteOperationIds: ids,
+        intermediateMutationOperationIds,
         status,
-        reason: ids.length > 0
-          ? "Authored writes precede this return in one execution region with matching source branch evidence. Runtime path and causal state-to-outcome linkage remain unknown."
-          : "No source-ordered write with exact same-region, same-document and branch evidence was identified; the outcome's state dependency is unknown.",
+        reason: intermediateMutationOperationIds.length > 0
+          ? "Intermediate or repeated writes to the same authored state surface may change its value before this return. Source order alone cannot establish the effective state, instance identity or lifetime."
+          : ids.length > 0
+          ? "Authored writes precede this return under matching source branch evidence. The value's actual lifetime, state owner, runtime path and causal connection to the outcome are unknown."
+          : "No source-ordered write with exact same-region, same-document and branch evidence was identified; the outcome's state dependency and lifetime are unknown.",
         provenance: {
           kind: "source-inference" as const,
           evidenceCeiling: "inferred" as const,
-          evidenceIds: [outcome.id, ...ids],
+          evidenceIds: [outcome.id, ...new Set([...ids, ...intermediateMutationOperationIds])].sort(),
           note: "Static source association only; never an executable BehaviorTransition or gameplay completion claim.",
         },
       };

@@ -86,6 +86,72 @@ describe("source-observed state/outcome reconciliation", () => {
       ?.precedingWriteOperationIds).toEqual([]);
   });
 
+  it("flags repeated writes to the same surface instead of selecting a stable final value", () => {
+    const fixture = ir();
+    const result = reconcileSourceStateOutcomes({
+      ...fixture,
+      state: { ...fixture.state, operations: [
+        ...fixture.state.operations,
+        {
+          id: "write:second-active", executionRegionId: region,
+          surfaceId: "state:phase", operation: "write",
+          writtenValue: { kind: "literal", value: "overwritten" },
+          source: src(7), lexicalGuards: [guard("true")],
+        },
+      ] },
+    });
+    const active = result.find(item => item.outcomeId === "outcome:start");
+    expect(active?.precedingWriteOperationIds).toEqual([
+      "write:active", "write:second-active",
+    ]);
+    expect(active?.status).toBe("UNRESOLVED");
+    expect(active?.intermediateMutationOperationIds).toEqual([
+      "write:active", "write:second-active",
+    ]);
+    const abort = result.find(item => item.outcomeId === "outcome:abort");
+    expect(abort?.status).toBe("SOURCE_ORDER_CANDIDATE");
+    expect(abort?.intermediateMutationOperationIds).toEqual([]);
+  });
+
+  it("flags potentially intervening writes from another guard or unknown position", () => {
+    const fixture = ir();
+    const newerWrite = {
+      id: "write:conditional-intermediate", executionRegionId: region,
+      surfaceId: "state:phase", operation: "write" as const,
+      writtenValue: { kind: "literal" as const, value: "possibly-elsewhere" },
+      source: src(6), lexicalGuards: [guard("true", 6)],
+    };
+    const missingPosition = {
+      id: "write:unlocated", executionRegionId: region,
+      surfaceId: "state:phase", operation: "write" as const,
+      writtenValue: { kind: "literal" as const, value: "opaque" },
+      source: { artifactId: "map:a", relativePath: "scripts/round.js" },
+    };
+    const unrelatedSurface = {
+      id: "write:other-surface", executionRegionId: region,
+      surfaceId: "state:unrelated", operation: "write" as const,
+      writtenValue: { kind: "literal" as const, value: "unrelated" },
+      source: src(6),
+    };
+    const results = reconcileSourceStateOutcomes({
+      ...fixture,
+      state: { ...fixture.state,
+        operations: [...fixture.state.operations,
+          newerWrite, missingPosition, unrelatedSurface],
+      },
+    });
+    const result = results.find(item => item.outcomeId === "outcome:start");
+    expect(result?.status).toBe("UNRESOLVED");
+    expect(result?.precedingWriteOperationIds).toEqual(["write:active"]);
+    expect(result?.intermediateMutationOperationIds).toEqual([
+      "write:conditional-intermediate", "write:unlocated",
+    ]);
+    expect(result?.provenance.evidenceIds).toEqual([
+      "outcome:start", "write:active",
+      "write:conditional-intermediate", "write:unlocated",
+    ]);
+  });
+
   it("rejects missing positional identity, foreign regions, and unmatched precedence", () => {
     const fixture = ir();
     const output = reconcileSourceStateOutcomes({
