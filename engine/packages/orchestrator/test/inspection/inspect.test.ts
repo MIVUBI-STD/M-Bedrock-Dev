@@ -3,6 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { inspectDirectory } from "../../src/inspection/inspect.js";
+import { discoverInspectionPacks } from "../../src/inspection/inspect-packs.js";
+import { buildFilesystemInventory } from "../../../project-model/src/index.js";
 
 describe("inspectDirectory", () => {
   it("discovers pack, functions, structures and unresolved references", async () => {
