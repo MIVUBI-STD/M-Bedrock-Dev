@@ -1914,6 +1914,24 @@ export function parseScriptFile(
         ? [[statement.name.text, lineSource(file, statement, source)] as const]
         : []),
   );
+  // Top-level const function values have a stable declaration source.
+  // Mutable bindings and untracked alias chains remain unresolved.
+  const topLevelConstCallbacks = new Map<string, ts.ArrowFunction | ts.FunctionExpression>();
+  for (const statement of file.statements) {
+    if (!ts.isVariableStatement(statement) ||
+        !(statement.declarationList.flags & ts.NodeFlags.Const)) continue;
+    for (const declaration of statement.declarationList.declarations) {
+      if (!ts.isIdentifier(declaration.name) || !declaration.initializer) continue;
+      if (ts.isArrowFunction(declaration.initializer) ||
+          ts.isFunctionExpression(declaration.initializer)) {
+        topLevelConstCallbacks.set(declaration.name.text, declaration.initializer);
+      }
+    }
+  }
+  const constCallback = (call: ts.CallExpression): ts.ArrowFunction | ts.FunctionExpression | undefined => {
+    const first = call.arguments[0];
+    return first && ts.isIdentifier(first) ? topLevelConstCallbacks.get(first.text) : undefined;
+  };
   const namedCallback = (call: ts.CallExpression): string | undefined => {
     const first = call.arguments[0];
     return first && ts.isIdentifier(first) && topLevelFunctionNames.has(first.text)
@@ -2486,7 +2504,7 @@ export function parseScriptFile(
 
       const scheduler = deferredScheduler(node, namedMinecraftBindings);
       if (scheduler) {
-        const callback = callbackNode(node);
+        const callback = callbackNode(node) ?? constCallback(node);
         const namedScheduledCallback = namedCallback(node);
         const guardIdentifiers = callback
           ? generationGuardIdentifiers(callback)
@@ -2577,7 +2595,7 @@ export function parseScriptFile(
 
         if (event) {
           const eventSource = lineSource(file, node, source);
-          const eventCallback = callbackNode(node);
+          const eventCallback = callbackNode(node) ?? constCallback(node);
           const namedEventCallback = namedCallback(node);
           events.push({
             root: normalizedRoot,

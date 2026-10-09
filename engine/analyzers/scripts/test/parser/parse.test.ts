@@ -9,6 +9,24 @@ const source = {
 };
 
 describe("script analyzer", () => {
+  it("links top-level const function callbacks without resolving mutable references", () => {
+    const parsed = parseScriptFile("scripts/main", [
+      'import { world, system } from "@minecraft/server";',
+      'const handleSpawn = () => { world.setDynamicProperty("joined", 1); };',
+      'const heartbeat = function () { world.setDynamicProperty("tick", 1); };',
+      'let mutableCallback = heartbeat;',
+      'world.afterEvents.playerSpawn.subscribe(handleSpawn);',
+      'system.runInterval(heartbeat, 20);',
+      'system.runTimeout(mutableCallback, 20);',
+    ].join("\n"), source);
+    expect(parsed.events.find(item => item.event === "playerSpawn")?.callbackRegion)
+      .toMatch(/^callback@/);
+    expect(parsed.deferredCallbacks.find(item => item.scheduler === "runInterval")?.callbackRegion)
+      .toMatch(/^callback@/);
+    expect(parsed.deferredCallbacks.find(item => item.scheduler === "runTimeout")?.callbackRegion)
+      .toBeUndefined();
+  });
+
   it("resolves explicit top-level named event and timer callbacks without guessing dynamic references", () => {
     const parsed = parseScriptFile("scripts/main", [
       'import { world, system } from "@minecraft/server";',
