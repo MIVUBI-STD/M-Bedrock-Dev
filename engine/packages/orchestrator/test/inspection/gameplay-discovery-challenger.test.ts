@@ -34,6 +34,47 @@ const emptyGraph: GameplayScenarioGraph = {
 };
 
 describe("gameplay discovery challenger", () => {
+  it("does not close return/release evidence using intent records without a proven scenario", () => {
+    const source = { artifactId: "a", relativePath: "scripts/finish.js" };
+    const ir = {
+      schemaVersion: 1,
+      execution: {
+        regions: [{ id: "region:finish", kind: "script-function",
+          ownerId: "finish", label: "finish", source }],
+        edges: [],
+        outcomes: [{ id: "outcome:done", executionRegionId: "region:finish",
+          propertyName: "result", value: "done", source }],
+      },
+      state: {
+        surfaces: [], operations: [], authorityBindings: [],
+        resourceActions: [{ id: "action:release", executionRegionId: "region:finish",
+          surface: "tag", action: "release", key: "player:playing",
+          precision: "exact", source }],
+      },
+      temporal: { relations: [] },
+    } as SemanticIr;
+    const missing = challengeGameplayDiscovery({
+      semanticIr: ir, intent: emptyIntent, graph: emptyGraph,
+    });
+    expect(missing.map(item => item.kind)).toEqual(expect.arrayContaining([
+      "unowned-return-outcome", "unowned-resource-action",
+    ]));
+    const intent = {
+      ...emptyIntent,
+      nodes: [{ id: "node:done", status: "authored",
+        evidenceIds: ["outcome:done", "action:release"] }],
+      evidence: ["outcome:done", "action:release"].map(id => ({
+        id, scope: "selected-artifact", origin: "source-code",
+        locator: "scripts/finish.js", summary: "Authored evidence",
+      })),
+    } as unknown as GameplayIntentModel;
+    const withoutScenario = challengeGameplayDiscovery({
+      semanticIr: ir, intent, graph: emptyGraph,
+    });
+    expect(withoutScenario.some(item => item.kind === "unowned-return-outcome")).toBe(true);
+    expect(withoutScenario.some(item => item.kind === "unowned-resource-action")).toBe(true);
+  });
+
   it("surfaces raw state operations that have no semantic/scenario owner", () => {
     const ir = {
       schemaVersion: 1,

@@ -50,6 +50,28 @@ export interface ExecutionEdge {
   guardIdentifiers?: readonly string[];
 }
 
+/** An authored object-return property, not a gameplay win or loss. */
+export interface AuthoredReturnOutcome {
+  id: string;
+  executionRegionId: string;
+  propertyName: string;
+  value: string;
+  source: SourceRef;
+  lexicalGuards?: readonly AuthoredBranchGuard[];
+}
+
+/** An observed resource action, not a verified cleanup/reset. */
+export interface AuthoredResourceAction {
+  id: string;
+  executionRegionId: string;
+  surface: "tag" | "effect" | "scoreboard" |
+    "deferred-callback" | "input-permission" | "mount-relationship";
+  action: "acquire" | "release";
+  key: string;
+  precision: "exact" | "surface-level";
+  source: SourceRef;
+}
+
 export interface StateSurface {
   id: string;
   ref: StateSurfaceRef;
@@ -105,10 +127,12 @@ export interface SemanticIr {
   execution: {
     regions: readonly ExecutionRegion[];
     edges: readonly ExecutionEdge[];
+    outcomes?: readonly AuthoredReturnOutcome[];
   };
   state: {
     surfaces: readonly StateSurface[];
     operations: readonly StateOperation[];
+    resourceActions?: readonly AuthoredResourceAction[];
     authorityBindings: readonly StateAuthorityBinding[];
   };
   temporal: {

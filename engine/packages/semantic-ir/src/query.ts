@@ -13,6 +13,11 @@ export interface ObservedExecutionTrace {
   readonly stateOperationIds: readonly string[];
   /** Exact state writes on this potential path, not runtime mutation proof. */
   readonly stateWriteOperationIds: readonly string[];
+  /** Authored object returns, not game terminal proof. */
+  readonly returnOutcomeIds: readonly string[];
+  /** Potential resource effects, not verified cleanup. */
+  readonly resourceActionIds: readonly string[];
+  readonly resourceReleaseActionIds: readonly string[];
   /** Only lexical guard evidence, not complete path predicates. */
   readonly guardedExecutionEdges: readonly { edgeId: string; guards: readonly AuthoredBranchGuard[] }[];
   readonly guardedStateWrites: readonly { operationId: string; guards: readonly AuthoredBranchGuard[] }[];
@@ -43,6 +48,18 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
     list.push(operation);
     operations.set(operation.executionRegionId, list);
   }
+  const observedOutcomes = new Map<string, NonNullable<typeof ir.execution.outcomes>[number][]>();
+  for (const outcome of ir.execution.outcomes ?? []) {
+    const items = observedOutcomes.get(outcome.executionRegionId) ?? [];
+    items.push(outcome);
+    observedOutcomes.set(outcome.executionRegionId, items);
+  }
+  const observedActions = new Map<string, NonNullable<typeof ir.state.resourceActions>[number][]>();
+  for (const action of ir.state.resourceActions ?? []) {
+    const items = observedActions.get(action.executionRegionId) ?? [];
+    items.push(action);
+    observedActions.set(action.executionRegionId, items);
+  }
   const temporal = new Map(ir.temporal.relations.map(item => [item.id, item]));
   const edgeById = new Map(ir.execution.edges.map(edge => [edge.id, edge]));
   const operationById = new Map(ir.state.operations.map(op => [op.id, op]));
@@ -64,12 +81,22 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
     const times = new Set<string>();
     const state = new Set<string>();
     const writes = new Set<string>();
+    const returnOutcomes = new Set<string>();
+    const resourceActions = new Set<string>();
+    const resourceReleases = new Set<string>();
     for (let index = 0; index < queued.length; index += 1) {
       const regionId = queued[index]!;
       coveredRegions.add(regionId);
       for (const op of operations.get(regionId) ?? []) {
         state.add(op.id);
         if (op.operation === "write") writes.add(op.id);
+      }
+      for (const outcome of observedOutcomes.get(regionId) ?? []) {
+        returnOutcomes.add(outcome.id);
+      }
+      for (const action of observedActions.get(regionId) ?? []) {
+        resourceActions.add(action.id);
+        if (action.action === "release") resourceReleases.add(action.id);
       }
       for (const edge of outgoing.get(regionId) ?? []) {
         edges.add(edge.id);
@@ -99,6 +126,9 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
       temporalRelationIds: sorted(times),
       stateOperationIds: sorted(state),
       stateWriteOperationIds: sorted(writes),
+      returnOutcomeIds: sorted(returnOutcomes),
+      resourceActionIds: sorted(resourceActions),
+      resourceReleaseActionIds: sorted(resourceReleases),
       guardedExecutionEdges: sorted(edges).flatMap(id => {
         const guards = edgeById.get(id)?.lexicalGuards;
         return guards?.length ? [{ edgeId: id, guards }] : [];
@@ -135,6 +165,10 @@ export function semanticIrSummary(ir: SemanticIr) {
     ).length,
     stateSurfaces: ir.state.surfaces.length,
     stateOperations: ir.state.operations.length,
+    authoredReturnOutcomes: ir.execution.outcomes?.length ?? 0,
+    authoredResourceActions: ir.state.resourceActions?.length ?? 0,
+    authoredResourceReleases: (ir.state.resourceActions ?? []).filter(
+      action => action.action === "release").length,
     stateReads: byOperation("read"),
     stateWrites: byOperation("write"),
     stateDeletes: byOperation("delete") + byOperation("clear"),

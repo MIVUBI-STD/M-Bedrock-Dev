@@ -169,6 +169,48 @@ describe("inspection semantic IR", () => {
       !trace.guardedExecutionEdges.some(item => item.edgeId === call!.id))).toBe(true);
   });
 
+  it("retains alternative source returns and resource releases without inferring a successful reset", () => {
+    const source = {
+      artifactId: "map:game",
+      relativePath: "behavior_packs/test/scripts/game.js",
+    };
+    const parsed = parseScriptFile("game", [
+      'import { world } from "@minecraft/server";',
+      'function finish(ready, player) {',
+      '  if (ready) {',
+      '    player.removeTag("playing");',
+      '    return { status: "done" };',
+      '  } else {',
+      '    return { status: "blocked" };',
+      '  }',
+      '}',
+      'world.afterEvents.playerSpawn.subscribe((event) => finish(true, event.player));',
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const outcomes = ir.execution.outcomes ?? [];
+    expect(outcomes.map(outcome => outcome.value).sort()).toEqual(["blocked","done"]);
+    const done = outcomes.find(outcome => outcome.value === "done");
+    const blocked = outcomes.find(outcome => outcome.value === "blocked");
+    expect(done?.lexicalGuards?.map(g => [g.expression,g.branch]))
+      .toEqual([["ready","true"]]);
+    expect(blocked?.lexicalGuards?.map(g => [g.expression,g.branch]))
+      .toEqual([["ready","false"]]);
+    const release = (ir.state.resourceActions ?? []).find(action =>
+      action.surface === "tag" && action.action === "release");
+    expect(release?.precision).toBe("exact");
+    expect(release?.source.relativePath).toBe(source.relativePath);
+    expect(release?.executionRegionId).toBe(done?.executionRegionId);
+    const traces = semanticIrExecutionTraces(ir).traces;
+    expect(traces.some(trace => done && blocked && release &&
+      trace.returnOutcomeIds.includes(done.id) &&
+      trace.returnOutcomeIds.includes(blocked.id) &&
+      trace.resourceReleaseActionIds.includes(release.id))).toBe(true);
+    expect(semanticIrSummary(ir).authoredReturnOutcomes).toBe(2);
+    expect(semanticIrSummary(ir).authoredResourceReleases).toBeGreaterThanOrEqual(1);
+  });
+
   it("carries authored tick roots into periodic Semantic IR without claiming missing targets", () => {
     const fn = parseMcFunction("start", "say ready", {
       artifactId: "a",

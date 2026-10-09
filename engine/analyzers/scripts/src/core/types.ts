@@ -245,6 +245,8 @@ export interface ScriptTransitionDeclaration {
 }
 
 export interface ScriptReturnOutcome {
+  /** Lexical ancestry only; not an exhaustive execution path. */
+  lexicalGuards?: readonly ScriptLexicalGuard[];
   executionRegion: string;
   propertyName: string;
   value: string;

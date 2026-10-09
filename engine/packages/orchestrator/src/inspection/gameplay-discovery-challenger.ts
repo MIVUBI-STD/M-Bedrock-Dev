@@ -12,6 +12,8 @@ export interface GameplayDiscoveryChallengeSignal {
   readonly id: string;
   readonly kind:
     | "unowned-state-operation"
+    | "unowned-return-outcome"
+    | "unowned-resource-action"
     | "unowned-execution-region"
     | "unresolved-execution-edge"
     | "unowned-execution-edge"
@@ -83,6 +85,30 @@ export function challengeGameplayDiscovery(input: {
       evidenceIds: [operation.id],
       reason:
         "Semantic IR contains a material state operation that is not consumed by gameplay intent/scenario evidence. Its gameplay meaning may be missing from discovery.",
+    });
+  }
+
+  for (const outcome of input.semanticIr.execution.outcomes ?? []) {
+    if (matchesSource(outcome.id, outcome.source.relativePath)) continue;
+    output.push({
+      id: "discovery-challenge:outcome:" + outcome.id,
+      kind: "unowned-return-outcome",
+      subjectId: outcome.executionRegionId,
+      evidenceIds: [outcome.id],
+      reason:
+        "An authored function return value is not reconciled with a gameplay scenario; its property/value cannot establish a win/loss or player-visible outcome.",
+    });
+  }
+
+  for (const action of input.semanticIr.state.resourceActions ?? []) {
+    if (matchesSource(action.id, action.source.relativePath)) continue;
+    output.push({
+      id: "discovery-challenge:resource:" + action.id,
+      kind: "unowned-resource-action",
+      subjectId: action.executionRegionId,
+      evidenceIds: [action.id],
+      reason:
+        "An authored acquire/release action is not reconciled with a gameplay scenario; it does not by itself prove cleanup or successful reset.",
     });
   }
 

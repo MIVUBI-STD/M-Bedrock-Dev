@@ -25,6 +25,12 @@ export function validateSemanticIr(ir: SemanticIr): string[] {
   for (const duplicate of duplicateIds(ir.execution.edges)) {
     errors.push("Duplicate execution edge id: " + duplicate);
   }
+  for (const duplicate of duplicateIds(ir.execution.outcomes ?? [])) {
+    errors.push("Duplicate return outcome id: " + duplicate);
+  }
+  for (const duplicate of duplicateIds(ir.state.resourceActions ?? [])) {
+    errors.push("Duplicate resource action id: " + duplicate);
+  }
   for (const duplicate of duplicateIds(ir.state.surfaces)) {
     errors.push("Duplicate state surface id: " + duplicate);
   }
@@ -45,6 +51,17 @@ export function validateSemanticIr(ir: SemanticIr): string[] {
       }
     } else if (edge.to !== undefined) {
       errors.push("Unresolved execution edge must not have a resolved target: " + edge.id);
+    }
+  }
+
+  for (const outcome of ir.execution.outcomes ?? []) {
+    if (!regions.has(outcome.executionRegionId)) {
+      errors.push("Return outcome execution region does not exist: " + outcome.id);
+    }
+  }
+  for (const action of ir.state.resourceActions ?? []) {
+    if (!regions.has(action.executionRegionId)) {
+      errors.push("Resource action execution region does not exist: " + action.id);
     }
   }
 

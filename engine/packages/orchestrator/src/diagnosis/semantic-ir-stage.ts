@@ -16,6 +16,8 @@ import {
   validateSemanticIr,
   type ExecutionEdge,
   type AuthoredBranchGuard,
+  type AuthoredReturnOutcome,
+  type AuthoredResourceAction,
   type ExecutionRegion,
   type ExecutionRegionKind,
   type SemanticIr,
@@ -118,6 +120,8 @@ export function buildInspectionSemanticIr(
   const edges = new Map<string, ExecutionEdge>();
   const surfaces = new Map<string, StateSurface>();
   const operations = new Map<string, StateOperation>();
+  const outcomes = new Map<string, AuthoredReturnOutcome>();
+  const resourceActions = new Map<string, AuthoredResourceAction>();
 
   const ensureRegion = (region: ExecutionRegion): void => {
     const existing = regions.get(region.id);
@@ -442,6 +446,48 @@ export function buildInspectionSemanticIr(
       );
     }
 
+    // Return-property evidence is not a game terminal or runtime observation.
+    for (const outcome of parsed.returnOutcomes ?? []) {
+      const region = ensureScriptRegion(
+        parsed, outcome.executionRegion, outcome.source,
+      );
+      const id = [
+        "return-outcome", token(region), token(outcome.propertyName),
+        sourceToken(outcome.source),
+      ].join(":");
+      outcomes.set(id, {
+        id,
+        executionRegionId: region,
+        propertyName: outcome.propertyName,
+        value: outcome.value,
+        source: outcome.source,
+        ...(irGuards(outcome.lexicalGuards) === undefined ? {} : {
+          lexicalGuards: irGuards(outcome.lexicalGuards),
+        }),
+      });
+    }
+
+    // Preserve the existing cleanup analyzer's precision and action identity.
+    // A release call does not prove a successful reset.
+    for (const resource of parsed.cleanupResourceEvidence ?? []) {
+      const region = ensureScriptRegion(
+        parsed, resource.executionRegion, resource.source,
+      );
+      const id = [
+        "resource-action", token(region), resource.surface,
+        resource.action, sourceToken(resource.source),
+      ].join(":");
+      resourceActions.set(id, {
+        id,
+        executionRegionId: region,
+        surface: resource.surface,
+        action: resource.action,
+        key: resource.key,
+        precision: resource.precision,
+        source: resource.source,
+      });
+    }
+
     for (const mutation of parsed.stateMutations ?? []) {
       const region = ensureScriptRegion(
         parsed, mutation.executionRegion, mutation.source,
@@ -542,12 +588,16 @@ export function buildInspectionSemanticIr(
         (a, b) => a.id.localeCompare(b.id),
       ),
       edges: executionEdges,
+      outcomes: [...outcomes.values()].sort((a, b) => a.id.localeCompare(b.id)),
     },
     state: {
       surfaces: [...surfaces.values()].sort(
         (a, b) => a.id.localeCompare(b.id),
       ),
       operations: [...operations.values()].sort(
+        (a, b) => a.id.localeCompare(b.id),
+      ),
+      resourceActions: [...resourceActions.values()].sort(
         (a, b) => a.id.localeCompare(b.id),
       ),
       authorityBindings,

@@ -242,6 +242,16 @@ export interface GameplayArchitectureNavigation {
     })[];
     /** Includes isolated callbacks/functions; absence from a trace is not absence from the game. */
     readonly regionsOutsideTraces: readonly string[];
+    readonly returnOutcomes: {
+      readonly observedCount: number;
+      readonly linkedIds: readonly string[];
+      readonly unlinkedIds: readonly string[];
+    };
+    readonly resourceActions: {
+      readonly observedCount: number;
+      readonly linkedIds: readonly string[];
+      readonly unlinkedIds: readonly string[];
+    };
     readonly stateOperations: {
       readonly observedCount: number;
       readonly linkedIds: readonly string[];
@@ -713,6 +723,8 @@ export function deriveGameplayArchitectureNavigation(
           ...trace.executionEdgeIds,
           ...trace.temporalRelationIds,
           ...trace.stateOperationIds,
+          ...trace.returnOutcomeIds,
+          ...trace.resourceActionIds,
         ]);
         return {
           ...trace,
@@ -722,6 +734,8 @@ export function deriveGameplayArchitectureNavigation(
         };
       }),
       regionsOutsideTraces: observedExecution.regionsOutsideTraces,
+      returnOutcomes: irAccounting((observed.semanticIr?.execution.outcomes ?? []).map(item => item.id)),
+      resourceActions: irAccounting((observed.semanticIr?.state.resourceActions ?? []).map(item => item.id)),
       stateOperations: irAccounting(
         observed.semanticIr?.state.operations.map((item) => item.id) ?? [],
       ),
@@ -861,6 +875,8 @@ export function deriveGameplayArchitectureNavigation(
   const ir = navigation.semanticIrCoverage;
   const semanticIrRecordsUnlinkedCount = [
     ir.stateOperations,
+    ir.returnOutcomes,
+    ir.resourceActions,
     ir.executionRegions,
     ir.executionEdges,
     ir.temporalRelations,

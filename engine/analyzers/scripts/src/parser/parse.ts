@@ -2342,6 +2342,7 @@ export function parseScriptFile(
       for (const outcome of outcomePropertiesFromReturn(node)) {
         returnOutcomes.push({
           executionRegion: localExecutionRegionId(node, file),
+          lexicalGuards: lexicalBranchGuards(node, file, source),
           propertyName: outcome.propertyName,
           value: outcome.value,
           source: lineSource(file, outcome.sourceNode, source),
