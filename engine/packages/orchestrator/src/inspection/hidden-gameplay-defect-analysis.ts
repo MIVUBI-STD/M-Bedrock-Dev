@@ -226,7 +226,16 @@ function mechanicAssessments(
     typeof model.edges
   >();
 
-  for (const edge of model.edges) {
+  // A hypothesized or unregistered relation is not a completed mechanic
+  // delivery stage. Preserve uncertainty rather than awarding a false PASS.
+  const groundedEvidenceIds = new Set(model.evidence
+    .filter(item => item.scope === "selected-artifact")
+    .map(item => item.id));
+  const supportedEdges = model.edges.filter(edge =>
+    edge.status === "authored" &&
+    edge.evidenceIds.some(id => groundedEvidenceIds.has(id)));
+
+  for (const edge of supportedEdges) {
     outgoing.set(
       edge.from,
       [...(outgoing.get(edge.from) ?? []), edge],
@@ -244,9 +253,9 @@ function mechanicAssessments(
       const inc = incoming.get(node.id) ?? [];
       const evidenceIds = [
         ...new Set([
-          ...node.evidenceIds,
-          ...out.flatMap((edge) => edge.evidenceIds),
-          ...inc.flatMap((edge) => edge.evidenceIds),
+          ...node.evidenceIds.filter(id => groundedEvidenceIds.has(id)),
+          ...out.flatMap((edge) => edge.evidenceIds.filter(id => groundedEvidenceIds.has(id))),
+          ...inc.flatMap((edge) => edge.evidenceIds.filter(id => groundedEvidenceIds.has(id))),
         ]),
       ];
 
@@ -302,7 +311,8 @@ function mechanicAssessments(
       return assessMechanicCompleteness({
         mechanicId: node.id,
         stages: {
-          declared: node.status === "authored",
+          declared: node.status === "authored" &&
+            node.evidenceIds.some(id => groundedEvidenceIds.has(id)),
           reachable,
           triggered,
           consumed,
