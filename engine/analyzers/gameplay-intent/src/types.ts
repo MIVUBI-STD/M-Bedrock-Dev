@@ -19,6 +19,16 @@ export interface GameplayIntentSignal {
   summary: string;
   policyPredicate?: GameplayIntentPolicyPredicate;
   spatialProfile?: GameplayIntentSpatialProfile;
+  /** Exact parsed return sites associated with an already classified intent candidate. */
+  returnOutcomeOrigins?: readonly {
+    scriptSource: ParsedScriptFile["source"];
+    outcome: NonNullable<ParsedScriptFile["returnOutcomes"]>[number];
+  }[];
+  /** Exact resource actions within an already classified function, not reset proof. */
+  resourceActionOrigins?: readonly {
+    scriptSource: ParsedScriptFile["source"];
+    action: NonNullable<ParsedScriptFile["cleanupResourceEvidence"]>[number];
+  }[];
 }
 
 export interface GameplayIntentRelationSignal {

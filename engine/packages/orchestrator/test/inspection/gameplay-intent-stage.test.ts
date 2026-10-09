@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type {
-  ParsedScriptFile,
-} from "../../../../analyzers/scripts/src/index.js";
+import { parseScriptFile, type ParsedScriptFile } from "../../../../analyzers/scripts/src/index.js";
 import {
   buildGameplayIntentModel,
 } from "../../src/inspection/gameplay-intent-stage.js";
@@ -678,6 +676,79 @@ describe("gameplay intent stage", () => {
 });
 
 describe("exact Semantic IR provenance in Gameplay Intent", () => {
+  it("reconciles repeated return sites and resource releases without inventing gameplay proof", () => {
+    const source = { artifactId: "map-a",
+      relativePath: "behavior_packs/demo/scripts/cleanup.js" };
+    const parsed = parseScriptFile("cleanup", [
+      'function cleanupArena(mode, player) {',
+      '  if (mode === 1) return { action: "release" };',
+      '  if (mode === 2) return { action: "release" };',
+      '  player.removeTag("playing");',
+      '  return { action: "wait" };',
+      '}',
+      'cleanupArena(1, player);',
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedScripts: [{ parsed }], parsedFunctions: [],
+    });
+    const model = buildGameplayIntentModel({
+      id: "intent:cleanup", artifactId: source.artifactId,
+      parsedScripts: [{ parsed }], semanticIr: ir,
+    });
+    const returns = (ir.execution.outcomes ?? []).filter(
+      item => item.propertyName === "action" && item.value === "release");
+    expect(returns).toHaveLength(2);
+    const outcome = model.nodes.find(node =>
+      node.kind === "outcome" && node.label.toLowerCase().includes("release"));
+    expect(outcome).toBeDefined();
+    expect(returns.every(item => outcome?.evidenceIds.includes(item.id))).toBe(true);
+    expect(outcome?.status).toBe("authored");
+
+    const release = (ir.state.resourceActions ?? []).find(item =>
+      item.surface === "tag" && item.action === "release");
+    expect(release).toBeDefined();
+    const cleanup = model.nodes.find(node =>
+      node.kind === "lifecycle" && node.label === "Cleanup Arena");
+    expect(cleanup?.status).toBe("inferred");
+    expect(cleanup?.evidenceIds).toContain(release!.id);
+    for (const item of [...returns, release!]) {
+      expect(model.evidence.find(e => e.id === item.id)).toEqual(
+        expect.objectContaining({
+          origin: "source-code", scope: "selected-artifact",
+          locator: source.relativePath,
+        }));
+    }
+    expect(model.edges.filter(edge => edge.evidenceIds.some(id =>
+      [...returns.map(item => item.id), release!.id].includes(id))))
+      .toHaveLength(0);
+
+    const mismatched = buildGameplayIntentModel({
+      id: "intent:wrong-ir", parsedScripts: [{ parsed }],
+      semanticIr: {
+        ...ir,
+        execution: { ...ir.execution,
+          outcomes: (ir.execution.outcomes ?? []).map(item => ({
+            ...item, source: { ...item.source, artifactId: "another-map" },
+          })),
+        },
+        state: { ...ir.state,
+          resourceActions: (ir.state.resourceActions ?? []).map(item => ({
+            ...item, source: { ...item.source, range: {
+              ...item.source.range, columnStart: 100,
+            } },
+          })),
+        },
+      },
+    });
+    expect(mismatched.nodes.some(node => node.evidenceIds.some(id =>
+      [...returns.map(item => item.id), release!.id].includes(id)))).toBe(false);
+    const withoutIr = buildGameplayIntentModel({
+      id: "intent:no-ir", parsedScripts: [{ parsed }],
+    });
+    expect(withoutIr.nodes.some(node => node.evidenceIds.some(id =>
+      [...returns.map(item => item.id), release!.id].includes(id)))).toBe(false);
+  });
+
 
   it("carries exact named event and scheduler provenance without promoting inferred gameplay", () => {
     const scriptSource = { artifactId: "map-a",

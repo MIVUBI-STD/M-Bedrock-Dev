@@ -97,6 +97,63 @@ export function buildGameplayIntentModel(
   const intentUnknowns: GameplayIntentModel["unknowns"][number][] = [];
 
 
+  // Register technical evidence on the existing inferred/authored subject
+  // only with an exact parsed producer -> IR identity. This does not upgrade
+  // intent status or prove runtime completion.
+  const signalIrEvidenceIds = (signal: GameplayIntentSignal): string[] => {
+    if (!input.semanticIr) return [];
+    const linked = new Set<string>();
+    for (const origin of signal.returnOutcomeOrigins ?? []) {
+      if (origin.scriptSource.artifactId !== origin.outcome.source.artifactId ||
+          origin.scriptSource.relativePath !== origin.outcome.source.relativePath) {
+        continue;
+      }
+      const matches = (input.semanticIr.execution.outcomes ?? []).filter(item =>
+        item.executionRegionId === scriptRegionId(
+          origin.scriptSource, origin.outcome.executionRegion,
+        ) &&
+        item.propertyName === origin.outcome.propertyName &&
+        item.value === origin.outcome.value &&
+        sameExactCallSource(item.source, origin.outcome.source));
+      if (matches.length !== 1) continue;
+      const match = matches[0]!;
+      linked.add(match.id);
+      evidence.set(match.id, {
+        id: match.id,
+        origin: "source-code",
+        locator: match.source.relativePath,
+        scope: "selected-artifact",
+        summary: "Exact authored return-site identity; game terminal meaning and activation are not established.",
+      });
+    }
+    for (const origin of signal.resourceActionOrigins ?? []) {
+      if (origin.scriptSource.artifactId !== origin.action.source.artifactId ||
+          origin.scriptSource.relativePath !== origin.action.source.relativePath) {
+        continue;
+      }
+      const matches = (input.semanticIr.state.resourceActions ?? []).filter(item =>
+        item.executionRegionId === scriptRegionId(
+          origin.scriptSource, origin.action.executionRegion,
+        ) &&
+        item.surface === origin.action.surface &&
+        item.action === origin.action.action &&
+        item.key === origin.action.key &&
+        item.precision === origin.action.precision &&
+        sameExactCallSource(item.source, origin.action.source));
+      if (matches.length !== 1) continue;
+      const match = matches[0]!;
+      linked.add(match.id);
+      evidence.set(match.id, {
+        id: match.id,
+        origin: "source-code",
+        locator: match.source.relativePath,
+        scope: "selected-artifact",
+        summary: "Exact authored resource action inside a classified function; release does not prove gameplay cleanup.",
+      });
+    }
+    return [...linked].sort();
+  };
+
   for (const signal of extracted.signals) {
     const id = evidenceId(signal);
     const signalScope =
@@ -113,6 +170,8 @@ export function buildGameplayIntentModel(
         : { scope: signalScope }),
     });
 
+    const exactTechnicalEvidenceIds = signalIrEvidenceIds(signal);
+    const signalEvidenceIds = [id, ...exactTechnicalEvidenceIds];
     const existing = nodes.get(signal.subjectKey);
     if (!existing) {
       nodes.set(signal.subjectKey, {
@@ -120,7 +179,7 @@ export function buildGameplayIntentModel(
         kind: signal.nodeKind,
         label: signal.label,
         status: signal.status,
-        evidenceIds: [id],
+        evidenceIds: signalEvidenceIds,
         ...(signal.policyPredicate === undefined
           ? {}
           : { policyPredicate: signal.policyPredicate }),
@@ -132,7 +191,7 @@ export function buildGameplayIntentModel(
     }
 
     const mergedEvidence = [
-      ...new Set([...existing.evidenceIds, id]),
+      ...new Set([...existing.evidenceIds, ...signalEvidenceIds]),
     ].sort();
 
     nodes.set(signal.subjectKey, {

@@ -384,9 +384,23 @@ function pushSignal(
   }
 
   const rank = { hypothesis: 0, inferred: 1, authored: 2 } as const;
-  if (rank[signal.status] > rank[existing.status]) {
-    output.set(signal.subjectKey, signal);
-  }
+  const preferred = rank[signal.status] > rank[existing.status]
+    ? signal : existing;
+  // A semantic subject can have several exact sites in one or many files.
+  // Do not discard them when a stronger/duplicate signal wins the label.
+  const returns = [
+    ...(existing.returnOutcomeOrigins ?? []),
+    ...(signal.returnOutcomeOrigins ?? []),
+  ];
+  const actions = [
+    ...(existing.resourceActionOrigins ?? []),
+    ...(signal.resourceActionOrigins ?? []),
+  ];
+  output.set(signal.subjectKey, {
+    ...preferred,
+    ...(returns.length > 0 ? { returnOutcomeOrigins: returns } : {}),
+    ...(actions.length > 0 ? { resourceActionOrigins: actions } : {}),
+  });
 }
 
 function declaredMemberSignal(
@@ -1288,6 +1302,21 @@ export function extractGameplayIntentSignals(
       });
     }
 
+    // Tie source-observed lifecycle resource actions only to already classified
+    // named function candidates. Do not fabricate cleanup semantics or a
+    // gameplay relationship from a removeTag/clearRun call alone.
+    for (const action of script.cleanupResourceEvidence ?? []) {
+      if (!action.executionRegion.startsWith("function:")) continue;
+      const signal = lexicalSignal(
+        path, action.executionRegion.slice("function:".length),
+      );
+      if (!signal) continue;
+      pushSignal(signals, {
+        ...signal,
+        resourceActionOrigins: [{ scriptSource: script.source, action }],
+      });
+    }
+
     for (const outcome of script.returnOutcomes ?? []) {
       const sourceName =
         outcome.executionRegion === "module"
@@ -1322,6 +1351,7 @@ export function extractGameplayIntentSignals(
           locator: path,
           summary:
             "Source explicitly returns this discriminated status value from a classified gameplay function.",
+          returnOutcomeOrigins: [{ scriptSource: script.source, outcome }],
         });
         if (sourceSignal) {
           pushRelation({
@@ -1369,6 +1399,7 @@ export function extractGameplayIntentSignals(
         locator: path,
         summary:
           "Source explicitly returns this discriminated gameplay outcome.",
+        returnOutcomeOrigins: [{ scriptSource: script.source, outcome }],
       };
       pushSignal(signals, outcomeSignal);
 
