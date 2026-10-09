@@ -41,18 +41,43 @@ The audit path does not change engine source. A detected engine gap requires a s
 
 **For ChatGPT:** supply the `Local` repository URL and describe the intended outcome. Repository inspection alone is read-only. Normal repository development uses GitHub directly without `DEV.cmd`, a local checkout, or automatic CI.
 
-## Root files: keep by responsibility
+## Root file ownership and navigation
 
-| Root files | Why they stay at root |
-|---|---|
-| `AGENTS.md`, `GITHUB_RULES.md` | Agent routing and GitHub operating authority |
-| `README.md`, `CONTEXT.md`, `CONTRIBUTING.md`, `SECURITY.md` | Human navigation, stable facts, contribution and security rules |
-| `package.json`, `package-lock.json`, `tsconfig.json` | Node package and TypeScript project contracts |
-| `toolchain.json`, `.node-version`, `VERSION` | Developer toolchain pinning and product version |
-| `.editorconfig`, `.gitattributes`, `.gitignore` | Repository/editor behavior |
-| `DEV.cmd` | **Optional Windows-local wrapper only**, delegated to `tooling/windows-toolchain/dev.ps1`; not a ChatGPT entrypoint |
+The root is a small entry and tooling-contract boundary, **not** another location for engine behavior, working state, or duplicated documentation. Keep files here only when their existing repository-wide consumers require the location.
 
-Do not split these into competing Development/Audit roots: the mode decision is already owned by `AGENTS.md` and the skills registry. Retire a root file only after its consumers and repository contracts are reconciled.
+| Path | Exactly one responsibility | Where to go for detail |
+|---|---|---|
+| `README.md` | Human starting point and routes into established owners | Domain README, not duplicate implementation guides |
+| `AGENTS.md` | Agent mode selection, task routing and repository invariants | Selected skill and domain owner |
+| `GITHUB_RULES.md` | GitHub change, verification, commit and handoff policy | Exact GitHub/source owner |
+| `CONTEXT.md` | Stable product facts only | No work status or planning |
+| `CONTRIBUTING.md` | Contribution conventions | `docs/system/development-discipline.md` for engineering decisions |
+| `SECURITY.md` | Repository-wide trust and sensitive-input boundaries | Concrete engine security owner |
+| `package.json` | Node package metadata and script entrypoints | `tooling/` for executable tooling |
+| `package-lock.json` | Locked npm dependency graph | `package.json` |
+| `tsconfig.json` | TypeScript project configuration | Owning source modules |
+| `toolchain.json` | Canonical pinned developer/runtime tool versions | `tooling/windows-toolchain/` |
+| `.node-version` | Node version selector for supporting tooling | `toolchain.json` |
+| `VERSION` | Product version string | `package.json` is package metadata; versions must remain coherent |
+| `DEV.cmd` | Optional Windows-local launcher only | `tooling/windows-toolchain/dev.ps1` |
+| `.editorconfig` | Editor whitespace/format behavior | No engine semantics |
+| `.gitattributes` | Git path/attribute behavior | No engine semantics |
+| `.gitignore` | Untracked-file exclusion rules | No artifact source authority |
+
+The root folders have distinct responsibilities: `apps/` owns interfaces; `engine/` executable Minecraft semantics; `docs/` durable descriptions; `planning/` future intent; `workspace/` active project artifacts; `tooling/` developer operations; `experiments/` bounded research; `.agents/` agent procedures; and `.github/` GitHub service configuration.
+
+### Find work by flow, edit only its owner
+
+| Intended task | First route | Authoritative destination |
+|---|---|---|
+| Improve the system | `AGENTS.md` → development skill | `docs/system/implementation-map.md` → owning source |
+| Audit a selected map | `AGENTS.md` → map audit skill | `runSelectedMapAudit()`; TARGET → DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE → REPORT |
+| Repair an approved defect | Target Repair skill | Authorized repair owner and preservation contract |
+| Change a report or presentation | Report contract and projection owner | One current report authority; HTML/JSON are derived |
+| Learn a Minecraft behavior | Knowledge router and `engine/knowledge/ownership.json` | One canonical catalog claim or executable domain owner |
+| Resume an unfinished task | Relevant work commits and `planning/` | Current source plus explicitly verified unresolved work |
+
+**One source → one meaning → one authoritative output** means a workflow stage is a navigation address, not a new implementation folder. Existing API barrels do not own semantics; compatibility re-exports must not be used for new internal imports. Keep a required root file in place rather than moving it merely to make the tree look smaller.
 
 ## Repository map
 
