@@ -317,6 +317,34 @@ export function buildBugReportFromApprovedBugSet(
     };
   }
 
+  const currentProposedKeys = new Set(
+    projectProposedBugSet(input.approved.map, input.defects)
+      .items.map((item) => item.semanticKey),
+  );
+  const reviewDecisionKeys = new Set(
+    input.approved.decisions.map((item) => item.semanticKey),
+  );
+  const missingDecisions = [...currentProposedKeys]
+    .filter((key) => !reviewDecisionKeys.has(key));
+  const staleDecisions = [...reviewDecisionKeys]
+    .filter((key) => !currentProposedKeys.has(key));
+  if (missingDecisions.length > 0 || staleDecisions.length > 0) {
+    return {
+      ok: false,
+      issues: [{
+        code: "invalid-confirmed-defect" as const,
+        message:
+          "Approved review decisions no longer match the current proposed defect set." +
+          (missingDecisions.length > 0
+            ? " Missing decisions: " + missingDecisions.sort().join(", ") + "."
+            : "") +
+          (staleDecisions.length > 0
+            ? " Stale decisions: " + staleDecisions.sort().join(", ") + "."
+            : ""),
+      }],
+    };
+  }
+
   const approvedKeys = new Set(
     input.approved.approvedSemanticKeys,
   );

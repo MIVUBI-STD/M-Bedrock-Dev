@@ -275,4 +275,26 @@ describe("proposed bug chat approval", () => {
       item.message.includes("Rejected approved-set decision requires a reason")
     )).toBe(true);
   });
+
+  it("rejects a stale review when the confirmed candidate set changes", () => {
+    const a = defect("a");
+    const b = defect("b");
+    const proposed = projectProposedBugSet(map, [a]);
+    const reviewed = applyProposedBugReview(proposed, [
+      { semanticKey: a.semanticKey, decision: "approve" },
+    ]);
+    expect(reviewed.ok).toBe(true);
+    if (!reviewed.ok) return;
+
+    const report = buildBugReportFromApprovedBugSet({
+      approved: reviewed.approved,
+      repairBy: "developer",
+      defects: [a, b],
+    });
+    expect(report.ok).toBe(false);
+    if (report.ok) return;
+    expect(report.issues.some((item) =>
+      item.message.includes("Missing decisions:")
+    )).toBe(true);
+  });
 });
