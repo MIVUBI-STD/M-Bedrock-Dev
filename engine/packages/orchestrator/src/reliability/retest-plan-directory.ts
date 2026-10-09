@@ -1,4 +1,4 @@
-import { inspectDirectory } from "../inspect.js";
+import { inspectDirectory } from "../inspection/inspect.js";
 import { planRetestWithKnowledge } from "../../../reliability/src/index.js";
 import type {
   BlindspotCoverage,

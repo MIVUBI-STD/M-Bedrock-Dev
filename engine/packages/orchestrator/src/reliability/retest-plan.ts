@@ -1,4 +1,4 @@
-import { inspectArtifact } from "../inspect-artifact.js";
+import { inspectArtifact } from "../inspection/inspect-artifact.js";
 import { planRetestWithKnowledge } from "../../../reliability/src/index.js";
 import type {
   BlindspotCoverage,
