@@ -7,8 +7,12 @@ export interface ObservedExecutionTrace {
   readonly regionIds: readonly string[];
   readonly executionEdgeIds: readonly string[];
   readonly unresolvedExecutionEdgeIds: readonly string[];
+  /** Potentially conditional or deferred local calls, not guaranteed traversal. */
+  readonly conditionalExecutionEdgeIds: readonly string[];
   readonly temporalRelationIds: readonly string[];
   readonly stateOperationIds: readonly string[];
+  /** Exact state writes on this potential path, not runtime mutation proof. */
+  readonly stateWriteOperationIds: readonly string[];
 }
 
 /**
@@ -51,15 +55,23 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
     const queued = [entry.id];
     const edges = new Set<string>();
     const unresolved = new Set<string>();
+    const conditional = new Set<string>();
     const times = new Set<string>();
     const state = new Set<string>();
+    const writes = new Set<string>();
     for (let index = 0; index < queued.length; index += 1) {
       const regionId = queued[index]!;
       coveredRegions.add(regionId);
-      for (const op of operations.get(regionId) ?? []) state.add(op.id);
+      for (const op of operations.get(regionId) ?? []) {
+        state.add(op.id);
+        if (op.operation === "write") writes.add(op.id);
+      }
       for (const edge of outgoing.get(regionId) ?? []) {
         edges.add(edge.id);
         if (edge.resolution !== "resolved") unresolved.add(edge.id);
+        if (edge.controlFlow === "conditional" || edge.controlFlow === "deferred") {
+          conditional.add(edge.id);
+        }
         const relation = temporal.get("time:" + edge.id);
         if (relation && relation.from === edge.from &&
           relation.to === edge.to && relation.targetLabel === edge.targetLabel) {
@@ -78,8 +90,10 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
       regionIds: sorted(visited),
       executionEdgeIds: sorted(edges),
       unresolvedExecutionEdgeIds: sorted(unresolved),
+      conditionalExecutionEdgeIds: sorted(conditional),
       temporalRelationIds: sorted(times),
       stateOperationIds: sorted(state),
+      stateWriteOperationIds: sorted(writes),
     };
   });
   return {

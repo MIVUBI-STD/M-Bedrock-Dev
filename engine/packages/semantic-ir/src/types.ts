@@ -36,6 +36,8 @@ export interface ExecutionEdge {
   to?: string;
   source: SourceRef;
   scheduler?: "run" | "runTimeout" | "runInterval" | "runJob";
+  /** Parsed local-call branching, not proof that a condition was satisfied. */
+  controlFlow?: "unconditional" | "conditional" | "deferred";
   guardEvidence?: "explicit-generation-check" | "unresolved";
   guardIdentifiers?: readonly string[];
 }
@@ -60,6 +62,9 @@ export interface StateOperation {
   operation: StateOperationKind;
   source: SourceRef;
   targetHint?: string;
+  /** Authored assigned token; an object member is not its resolved runtime value. */
+  writtenValue?: { kind: "literal"; value: string } |
+    { kind: "member"; symbol: string };
 }
 
 export interface StateAuthorityBinding {

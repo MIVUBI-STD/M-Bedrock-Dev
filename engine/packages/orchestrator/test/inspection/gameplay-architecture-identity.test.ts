@@ -102,6 +102,8 @@ describe("arena identity evidence propagation", () => {
     expect(trace[0]?.executionEdgeIds)
       .toEqual(["edge:join", "edge:repeat", "edge:unknown"]);
     expect(trace[0]?.unresolvedExecutionEdgeIds).toEqual(["edge:unknown"]);
+    expect(trace[0]?.conditionalExecutionEdgeIds).toEqual([]);
+    expect(trace[0]?.stateWriteOperationIds).toEqual(["state-op:join"]);
     expect(trace[0]?.temporalRelationIds)
       .toEqual(["time:edge:join", "time:edge:repeat"]);
     expect(trace[0]?.stateOperationIds).toEqual(["state-op:join"]);

@@ -152,6 +152,7 @@ export function buildInspectionSemanticIr(
     operation: StateOperationKind,
     source: SourceRef,
     targetHint?: string,
+    writtenValue?: StateOperation["writtenValue"],
   ): void => {
     const surfaceId = ensureSurface(ref);
     const id = [
@@ -168,6 +169,7 @@ export function buildInspectionSemanticIr(
       operation,
       source,
       ...(targetHint === undefined ? {} : { targetHint }),
+      ...(writtenValue === undefined ? {} : { writtenValue }),
     });
   };
 
@@ -334,6 +336,7 @@ export function buildInspectionSemanticIr(
         targetLabel: call.targetName,
         resolution: "resolved",
         source: call.source,
+        ...(call.controlFlow === undefined ? {} : { controlFlow: call.controlFlow }),
       });
     }
 
@@ -419,6 +422,24 @@ export function buildInspectionSemanticIr(
         operation,
         access.source,
         access.receiverHint,
+      );
+    }
+
+    for (const mutation of parsed.stateMutations ?? []) {
+      const region = ensureScriptRegion(
+        parsed, mutation.executionRegion, mutation.source,
+      );
+      // Source-local authored expression; not runtime instance identity.
+      addStateOperation(
+        region,
+        { kind: "script-memory",
+          key: parsed.source.relativePath + "::" + mutation.target },
+        "write",
+        mutation.source,
+        undefined,
+        mutation.value.kind === "literal"
+          ? { kind: "literal", value: mutation.value.literal }
+          : { kind: "member", symbol: mutation.value.symbol },
       );
     }
 

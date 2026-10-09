@@ -3,6 +3,7 @@ import { parseMcFunction } from "../../../../analyzers/functions/src/index.js";
 import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
 import {
   semanticIrSummary,
+  semanticIrExecutionTraces,
 } from "../../../semantic-ir/src/index.js";
 import {
   buildInspectionSemanticIr,
@@ -64,6 +65,39 @@ describe("inspection semantic IR", () => {
       (item) => item.kind === "deferred",
     );
     expect(deferred?.guardEvidence).toBe("unresolved");
+  });
+
+  it("preserves parsed conditional calls and authored state writes in the technical execution trace", () => {
+    const source = { artifactId: "map:sample", relativePath: "scripts/round.js" };
+    const parsed = parseScriptFile("round", [
+      'let phase = "idle";',
+      'function spawnWave() {}',
+      'function startWave(ready) {',
+      '  if (ready) spawnWave();',
+      '  phase = "active";',
+      '}',
+      'startWave(true);',
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const call = ir.execution.edges.find(edge => edge.targetLabel === "spawnWave");
+    expect(call?.kind).toBe("synchronous-call");
+    expect(call?.controlFlow).toBe("conditional");
+    const written = ir.state.operations.filter(item =>
+      item.operation === "write" &&
+      ir.state.surfaces.some(surface =>
+        surface.id === item.surfaceId &&
+        surface.ref.kind === "script-memory" &&
+        surface.ref.key === "scripts/round.js::phase")
+    );
+    expect(written.some(item =>
+      item.writtenValue?.kind === "literal" &&
+      item.writtenValue.value === "active")).toBe(true);
+    const trace = semanticIrExecutionTraces(ir);
+    expect(trace.traces.some(item =>
+      item.conditionalExecutionEdgeIds.includes(call!.id) &&
+      written.every(write => item.stateWriteOperationIds.includes(write.id)))).toBe(true);
   });
 
   it("carries authored tick roots into periodic Semantic IR without claiming missing targets", () => {
