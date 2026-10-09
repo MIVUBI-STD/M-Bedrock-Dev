@@ -409,6 +409,8 @@ export interface ScriptArenaAuthorityEvidence {
   revalidationExpression?: string;
   executionRegion: string;
   source: SourceRef;
+  /** Present only for an authored direct statement within one lexical block. */
+  sequentialBlockSource?: SourceRef;
 }
 
 export interface ScriptArenaAuthorityPath {

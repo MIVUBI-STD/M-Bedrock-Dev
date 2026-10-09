@@ -63,6 +63,15 @@ export interface PersistenceResetLifecycleAssociation {
   readonly eventSource: SourceRef;
   readonly resetSource: SourceRef;
   readonly coLocatedGenerationInvalidationSources: readonly SourceRef[];
+  /** Same authored receiver expression and direct sequential block; the
+   * underlying runtime owner, generation change and reset remain unproven. */
+  readonly sequentialGenerationEvidence: readonly {
+    readonly generationExpression: string;
+    readonly arenaExpression: string;
+    readonly source: SourceRef;
+    readonly order: "before-reset" | "after-reset";
+    readonly evidenceStatus: "SOURCE_SEQUENCE_ONLY";
+  }[];
   readonly evidenceStatus: "STATIC_SOURCE_REACHABILITY_ONLY";
 }
 
@@ -131,6 +140,46 @@ function exactSourcePosition(source: SourceRef): boolean {
     source.range.lineEnd !== undefined &&
     source.range.columnStart !== undefined &&
     source.range.columnEnd !== undefined;
+}
+
+/** Precise lexical block identity, not a runtime execution-path proof. */
+function sameSequentialBlock(
+  a: SourceRef | undefined,
+  b: SourceRef | undefined,
+): boolean {
+  if (!a || !b || !exactSourcePosition(a) || !exactSourcePosition(b)) {
+    return false;
+  }
+  const x = a.range!;
+  const y = b.range!;
+  return a.artifactId === b.artifactId &&
+    a.relativePath === b.relativePath &&
+    a.jsonPointer === b.jsonPointer &&
+    x.lineStart === y.lineStart &&
+    x.columnStart === y.columnStart &&
+    x.lineEnd === y.lineEnd &&
+    x.columnEnd === y.columnEnd;
+}
+
+/** Source-position ordering of disjoint direct expressions only. */
+function sourceOrder(
+  generation: SourceRef,
+  reset: SourceRef,
+): "before-reset" | "after-reset" | undefined {
+  if (!exactSourcePosition(generation) || !exactSourcePosition(reset)) {
+    return undefined;
+  }
+  const g = generation.range!;
+  const r = reset.range!;
+  if (g.lineEnd! < r.lineStart! ||
+      (g.lineEnd === r.lineStart && g.columnEnd! <= r.columnStart!)) {
+    return "before-reset";
+  }
+  if (r.lineEnd! < g.lineStart! ||
+      (r.lineEnd === g.lineStart && r.columnEnd! <= g.columnStart!)) {
+    return "after-reset";
+  }
+  return undefined;
 }
 
 function resetLifecycleEvent(
@@ -245,6 +294,33 @@ export function analyzePersistenceSource(
                 (a.range?.lineStart ?? 0) - (b.range?.lineStart ?? 0) ||
                 (a.range?.columnStart ?? 0) - (b.range?.columnStart ?? 0));
 
+          // Even equal source-level receiver syntax is not instance
+          // identity. Record ordering only for direct sibling statements
+          // in the SAME source block, never across if/loop nesting.
+          const sequentialGenerationEvidence =
+            (script.arenaAuthorityEvidence ?? [])
+              .flatMap(item => {
+                if (item.kind !== "generation-invalidate" ||
+                    item.executionRegion !== site.executionRegion ||
+                    item.arenaExpression !== site.receiverHint ||
+                    !sameSequentialBlock(
+                      item.sequentialBlockSource, site.sequentialBlockSource) ||
+                    item.source.artifactId !== site.source.artifactId ||
+                    item.source.relativePath !== site.source.relativePath ||
+                    !item.generationExpression) return [];
+                const order = sourceOrder(item.source, site.source);
+                return order ? [{
+                  generationExpression: item.generationExpression,
+                  arenaExpression: item.arenaExpression,
+                  source: item.source,
+                  order,
+                  evidenceStatus: "SOURCE_SEQUENCE_ONLY" as const,
+                }] : [];
+              })
+              .sort((a, b) =>
+                (a.source.range?.lineStart ?? 0) - (b.source.range?.lineStart ?? 0) ||
+                (a.source.range?.columnStart ?? 0) - (b.source.range?.columnStart ?? 0));
+
           resetLifecycleAssociations.push({
             scriptId: script.identifier,
             propertyId: site.propertyKey,
@@ -258,6 +334,7 @@ export function analyzePersistenceSource(
             eventSource: event.source,
             resetSource: site.source,
             coLocatedGenerationInvalidationSources,
+            sequentialGenerationEvidence,
             evidenceStatus: "STATIC_SOURCE_REACHABILITY_ONLY",
           });
         }

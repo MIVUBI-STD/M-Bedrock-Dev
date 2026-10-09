@@ -11,6 +11,8 @@ export interface PersistentPropertyResetSite {
   executionRegion: string;
   kind: "undefined-removal" | "empty-value-write";
   source: SourceRef;
+  /** Only standalone calls directly enclosed by a lexical statement block. */
+  sequentialBlockSource?: SourceRef;
 }
 
 export interface PersistentDataLifecycleEvidence {
@@ -169,6 +171,13 @@ export function derivePersistentDataLifecycleEvidence(
             ? "undefined-removal"
             : "empty-value-write",
           source: nodeSource(file, node, source),
+          ...(ts.isExpressionStatement(node.parent) &&
+              node.parent.expression === node &&
+              (ts.isBlock(node.parent.parent) ||
+                ts.isSourceFile(node.parent.parent))
+            ? { sequentialBlockSource:
+                nodeSource(file, node.parent.parent, source) }
+            : {}),
         });
       } else {
         current.writes += 1;

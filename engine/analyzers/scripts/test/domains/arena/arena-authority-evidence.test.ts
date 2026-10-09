@@ -9,6 +9,22 @@ const source = {
 };
 
 describe("arena authority evidence", () => {
+  it("retains a direct generation mutation's lexical block identity only", () => {
+    const parsed = parseScriptFile("arena", [
+      "function reset(arena, flag) {",
+      "  arena.generation++;",
+      "  if (flag) { arena.generation++; }",
+      "  if (flag) arena.generation++;",
+      "}",
+    ].join("\n"), source);
+    const generation = parsed.arenaAuthorityEvidence?.filter(
+      item => item.kind === "generation-invalidate") ?? [];
+    expect(generation).toHaveLength(3);
+    expect(generation[0]?.sequentialBlockSource?.range?.lineStart).toBe(1);
+    expect(generation[1]?.sequentialBlockSource?.range?.lineStart).toBe(3);
+    expect(generation[2]?.sequentialBlockSource).toBeUndefined();
+  });
+
   it("proves a capacity authority path only when capacity and membership commit share the same arena object and execution region", () => {
     const parsed = parseScriptFile(
       "arena",

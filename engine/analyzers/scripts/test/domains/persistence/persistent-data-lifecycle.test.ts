@@ -4,6 +4,25 @@ import {
 } from "../../../src/domains/persistence/persistent-data-lifecycle.js";
 
 describe("persistent data lifecycle evidence", () => {
+  it("retains a direct reset statement's lexical block and excludes nested calls", () => {
+    const output = derivePersistentDataLifecycleEvidence([
+      "function reset(arena, flag) {",
+      '  arena.setDynamicProperty("phase", undefined);',
+      '  if (flag) { arena.setDynamicProperty("phase", undefined); }',
+      '  if (flag) arena.setDynamicProperty("phase", undefined);',
+      '  consume(arena.setDynamicProperty("phase", undefined));',
+      "}",
+    ].join("\n"), {
+      artifactId: "artifact:test", relativePath: "scripts/main.ts",
+    });
+    const sites = output.find(x => x.propertyKey === "phase")?.resetSites ?? [];
+    expect(sites).toHaveLength(4);
+    expect(sites[0]?.sequentialBlockSource?.range?.lineStart).toBe(1);
+    expect(sites[1]?.sequentialBlockSource?.range?.lineStart).toBe(3);
+    expect(sites[2]?.sequentialBlockSource).toBeUndefined();
+    expect(sites[3]?.sequentialBlockSource).toBeUndefined();
+  });
+
   it("retains property-specific reset-like source sites and separates removal from empty writes", () => {
     const source = { artifactId: "a", relativePath: "scripts/round.ts" };
     const result = derivePersistentDataLifecycleEvidence([

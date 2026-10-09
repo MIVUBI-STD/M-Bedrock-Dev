@@ -162,6 +162,83 @@ describe("persistence source analysis", () => {
       .toEqual([]);
   });
 
+  it("records before/after source ordering only for matching receiver and direct block", () => {
+    const parsed = parseScriptFile("round", [
+      "function clearRound(arena) {",
+      "  arena.generation++;",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "  arena.generation++;",
+      "}",
+      "function onLeave() { clearRound(arena); }",
+      "world.afterEvents.playerLeave.subscribe(onLeave);",
+    ].join("\n"), {
+      artifactId: "map:one", relativePath: "scripts/round.ts",
+    });
+    const result = analyzePersistenceSource([parsed]);
+    expect(result.resetLifecycleAssociations).toHaveLength(1);
+    const candidate = result.resetLifecycleAssociations[0]!;
+    expect(candidate.sequentialGenerationEvidence).toEqual([
+      expect.objectContaining({
+        arenaExpression: "arena", generationExpression: "arena.generation",
+        order: "before-reset", evidenceStatus: "SOURCE_SEQUENCE_ONLY",
+        source: expect.objectContaining({
+          range: expect.objectContaining({ lineStart: 2 }),
+        }),
+      }),
+      expect.objectContaining({
+        arenaExpression: "arena", generationExpression: "arena.generation",
+        order: "after-reset", evidenceStatus: "SOURCE_SEQUENCE_ONLY",
+        source: expect.objectContaining({
+          range: expect.objectContaining({ lineStart: 4 }),
+        }),
+      }),
+    ]);
+    expect(candidate.coLocatedGenerationInvalidationSources).toHaveLength(2);
+    expect(candidate.evidenceStatus).toBe("STATIC_SOURCE_REACHABILITY_ONLY");
+    expect(result.properties.find(x => x.propertyId === "roundState")?.lifetime)
+      .toBe("unknown");
+  });
+
+  it("refuses generation ordering across conditional blocks or unrelated receivers", () => {
+    const parsed = parseScriptFile("round", [
+      "function reset(arena, other, flag) {",
+      "  if (flag) { arena.generation++; }",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "  other.generation++;",
+      "  if (flag) arena.generation++;",
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => reset(arena, other, true));",
+    ].join("\n"), {
+      artifactId: "map:one", relativePath: "scripts/round.ts",
+    });
+    const [candidate] = analyzePersistenceSource([parsed]).resetLifecycleAssociations;
+    expect(candidate?.coLocatedGenerationInvalidationSources).toHaveLength(3);
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("does not upgrade manual generation evidence without an exact block", () => {
+    const parsed = parseScriptFile("round", [
+      "function reset(arena) {",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => reset(arena));",
+    ].join("\n"), {
+      artifactId: "map:one", relativePath: "scripts/round.ts",
+    });
+    parsed.arenaAuthorityEvidence = [{
+      kind: "generation-invalidate",
+      arenaExpression: "arena",
+      generationExpression: "arena.generation",
+      executionRegion: "function:reset",
+      source: { artifactId: "map:one", relativePath: "scripts/round.ts",
+        range: { lineStart: 1, lineEnd: 1,
+          columnStart: 1, columnEnd: 10 } },
+    }];
+    const [candidate] = analyzePersistenceSource([parsed]).resetLifecycleAssociations;
+    expect(candidate?.coLocatedGenerationInvalidationSources).toHaveLength(1);
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
   it("keeps persisted session state read on reconnect as an explicit reconciliation gap", () => {
     const script = parseScriptFile(
       "main",

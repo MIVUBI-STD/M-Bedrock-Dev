@@ -316,6 +316,12 @@ function generationInvalidationEvidence(
     executionRegion:
       localExecutionRegionId(node, file),
     source: lineSource(file, node, source),
+    // This assignment is a direct statement in the parent block. An
+    // enclosing if/loop body has its OWN block identity and cannot be
+    // silently considered sequential with statements outside that block.
+    ...((ts.isBlock(node.parent) || ts.isSourceFile(node.parent)) ? {
+      sequentialBlockSource: lineSource(file, node.parent, source),
+    } : {}),
   };
 }
 
