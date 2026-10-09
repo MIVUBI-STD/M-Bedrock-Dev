@@ -63,6 +63,25 @@ function formatVersion(
     : undefined;
 }
 
+/** World pack lists are declarations; malformed/missing lists cannot prove absence. */
+async function readWorldPackList(root: string, path: string): Promise<readonly { pack_id: string; version: readonly number[] }[] | undefined> {
+  try {
+    const parsed: unknown = JSON.parse(await readFile(join(root, path), "utf8"));
+    if (!Array.isArray(parsed)) return undefined;
+    const entries: { pack_id: string; version: number[] }[] = [];
+    for (const item of parsed) {
+      if (item === null || typeof item !== "object" || Array.isArray(item)) return undefined;
+      const entry = item as Record<string, unknown>;
+      if (typeof entry.pack_id !== "string" || !Array.isArray(entry.version) ||
+        !entry.version.every(v => Number.isSafeInteger(v) && v >= 0)) return undefined;
+      entries.push({ pack_id: entry.pack_id.toLowerCase(), version: entry.version as number[] });
+    }
+    return entries;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function discoverInspectionPacks(
   root: string,
   artifactId: string,
@@ -73,6 +92,8 @@ export async function discoverInspectionPacks(
     root: string;
     manifest: ManifestModel;
   }> = [];
+  const worldBehaviorPacks = await readWorldPackList(root, "world_behavior_packs.json");
+  const worldResourcePacks = await readWorldPackList(root, "world_resource_packs.json");
 
   for (const pack of discoverPackCandidates(files)) {
     const raw = JSON.parse(
@@ -106,6 +127,18 @@ export async function discoverInspectionPacks(
     if (packVersion) {
       normalizedPack.packVersion = packVersion;
     }
+
+    const list = normalizedPack.type === "resource_pack"
+      ? worldResourcePacks
+      : normalizedPack.type === "behavior_pack" || normalizedPack.type === "script_pack"
+        ? worldBehaviorPacks
+        : undefined;
+    normalizedPack.worldAttachment = !normalizedPack.uuid || !packVersion || !list
+      ? "unknown"
+      : list.some(entry => entry.pack_id === normalizedPack.uuid!.toLowerCase() &&
+          entry.version.join(".") === packVersion)
+        ? "listed"
+        : "not-listed";
 
     const minEngineVersion = formatVersion(
       compatibility.minEngineVersion,

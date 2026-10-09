@@ -130,6 +130,8 @@ export interface InspectedPack {
     version: string;
     track: string;
   }>;
+  /** World pack-list declaration, not proof of actual runtime activation. */
+  worldAttachment?: "listed" | "not-listed" | "unknown";
 }
 
 export interface InspectDirectoryResult {

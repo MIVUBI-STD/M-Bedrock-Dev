@@ -44,4 +44,29 @@ describe("inspectDirectory", () => {
     expect(result.semanticIr.unresolvedExecutionTargets).toBeGreaterThan(0);
     expect(result.decisionBasis.semanticIrRevision).toMatch(/^[a-f0-9]{64}$/);
   });
+  it("distinguishes declared world pack membership from manifest presence", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-pack-list-"));
+    try {
+      for (const name of ["a", "b"]) {
+        await mkdir(join(root, "behavior_packs", name), { recursive: true });
+        await writeFile(join(root, "behavior_packs", name, "manifest.json"), JSON.stringify({
+          format_version: 2,
+          header: { name, uuid: name === "a" ? "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" : "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", version: [1, 0, 0] },
+          modules: [{ type: "data", uuid: "cccccccc-cccc-cccc-cccc-cccccccccccc", version: [1,0,0] }],
+        }));
+      }
+      await writeFile(join(root, "world_behavior_packs.json"), JSON.stringify([
+        { pack_id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", version: [1,0,0] },
+      ]));
+      const entries = await buildFilesystemInventory(root);
+      const result = await discoverInspectionPacks(root, "artifact", entries);
+      expect(result.packs.map(pack => [pack.root, pack.worldAttachment])).toEqual([
+        ["behavior_packs/a", "listed"], ["behavior_packs/b", "not-listed"],
+      ]);
+      await writeFile(join(root, "world_behavior_packs.json"), "{invalid");
+      const unknown = await discoverInspectionPacks(root, "artifact", entries);
+      expect(unknown.packs.every(pack => pack.worldAttachment === "unknown")).toBe(true);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+
 });
