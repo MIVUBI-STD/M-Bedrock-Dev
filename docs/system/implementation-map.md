@@ -154,6 +154,27 @@ Human workflow owners:
 - [Mandatory Gameplay Audit Procedure](../analysis/mandatory-audit-procedure.md)
 - [Bug-Finding Coverage](../analysis/bug-finding-coverage.md)
 
+### Audit coordination files and distinct responsibilities
+
+The following root `map-audit-*.ts` files are **current implementation owners**, not flat compatibility re-export aliases. Navigate by the production workflow and inspect the exact file responsible for the concern rather than using filename similarity as evidence for deletion.
+
+| Current implementation | Distinct responsibility |
+|---|---|
+| `map-audit-pipeline.ts` | Single production audit coordination, continuation, review and approved-report handoff |
+| `map-audit-admission.ts` | Stage order, checkpoint-to-stage mapping and admission decisions |
+| `map-audit-authority.ts` | Audit authority token issuance and authority issue assessment |
+| `map-audit-issue-projection.ts` | Projection of evidence-backed ready issues and their classification |
+| `map-audit-validation-projection.ts` | Projection of issues requiring validation and combined issue views |
+| `map-audit-validation-plan.ts` | Grouping of unresolved finding validation tests |
+| `map-audit-honesty.ts` | Audit truthfulness and evidence-ceiling assessment |
+| `map-audit-quality-gates.ts` | Information-integrity and zero-finding quality gate projection |
+| `map-audit-obligations.ts` | Derivation of unfinished audit/model/proof obligations |
+| `map-audit-model-task.ts` | Bounded model-facing task and evidence context packets |
+| `map-audit-revision.ts` | Revision identity derived from audit inputs |
+| `map-audit-output-v2.ts` | One operator-facing Map Audit output projection |
+
+These responsibilities may compose each other but must not become independent production entrypoints or separate sources of gameplay truth. Their ownership is backed by current exports/source; this table is navigation guidance, not a new machine registry. Rename, merge or move only if overlapping *behavior* (not similar words or file size) is proven and all consumers can be migrated.
+
 ## Knowledge access owners
 
 ```text
