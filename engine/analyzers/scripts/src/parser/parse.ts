@@ -1928,25 +1928,28 @@ export function parseScriptFile(
       }
     }
   }
+  const bindsName = (binding: ts.BindingName, name: string): boolean =>
+    ts.isIdentifier(binding)
+      ? binding.text === name
+      : binding.elements.some(element =>
+          ts.isBindingElement(element) && bindsName(element.name, name));
   const isShadowed = (identifier: ts.Identifier): boolean => {
     let current: ts.Node | undefined = identifier.parent;
     while (current && current !== file) {
       if (ts.isFunctionLike(current) && current.parameters.some(parameter =>
-        ts.isIdentifier(parameter.name) && parameter.name.text === identifier.text)) return true;
+        bindsName(parameter.name, identifier.text))) return true;
       if (ts.isCatchClause(current) && current.variableDeclaration &&
-          ts.isIdentifier(current.variableDeclaration.name) &&
-          current.variableDeclaration.name.text === identifier.text) return true;
+          bindsName(current.variableDeclaration.name, identifier.text)) return true;
       if ((ts.isForStatement(current) || ts.isForInStatement(current) ||
           ts.isForOfStatement(current)) && current.initializer &&
           ts.isVariableDeclarationList(current.initializer) &&
           current.initializer.declarations.some(declaration =>
-            ts.isIdentifier(declaration.name) &&
-            declaration.name.text === identifier.text)) return true;
+            bindsName(declaration.name, identifier.text))) return true;
       if (ts.isBlock(current) || ts.isSourceFile(current)) {
         const statements = current.statements;
         if (statements?.some(statement =>
           (ts.isVariableStatement(statement) && statement.declarationList.declarations.some(
-            declaration => ts.isIdentifier(declaration.name) && declaration.name.text === identifier.text)) ||
+            declaration => bindsName(declaration.name, identifier.text))) ||
           (ts.isFunctionDeclaration(statement) && statement.name?.text === identifier.text)
         )) {
           if (current !== file) return true;

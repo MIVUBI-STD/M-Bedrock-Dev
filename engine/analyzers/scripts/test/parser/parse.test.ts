@@ -40,6 +40,19 @@ describe("script analyzer", () => {
       .toBeUndefined();
   });
 
+  it("does not resolve callbacks shadowed by destructured bindings", () => {
+    const parsed = parseScriptFile("scripts/main", [
+      'import { world, system } from "@minecraft/server";',
+      'function handler() {}',
+      'function configure({ handler }) { world.afterEvents.playerSpawn.subscribe(handler); }',
+      'function scoped() { const [handler] = callbacks; system.runInterval(handler, 20); }',
+    ].join("\n"), source);
+    expect(parsed.events.find(item => item.event === "playerSpawn")?.callbackRegion)
+      .toBeUndefined();
+    expect(parsed.deferredCallbacks.find(item => item.scheduler === "runInterval")?.callbackRegion)
+      .toBeUndefined();
+  });
+
   it("links top-level const function callbacks without resolving mutable references", () => {
     const parsed = parseScriptFile("scripts/main", [
       'import { world, system } from "@minecraft/server";',
