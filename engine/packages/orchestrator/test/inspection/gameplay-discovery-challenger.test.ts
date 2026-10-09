@@ -159,7 +159,7 @@ describe("gameplay discovery challenger", () => {
     }] } as GameplayIntentModel;
     const findings = challengeGameplayDiscovery({ semanticIr: ir, intent: proposed, graph: emptyGraph });
     expect(findings.map(item => item.subjectId)).toContain("region:hypothesis");
-    const authored = { ...proposed, nodes: [{
+    const authored = { ...proposed, evidence: [{ id: "region:hypothesis", scope: "selected-artifact", origin: "source-code", locator: "scripts/main.js", summary: "exact region" }], nodes: [{
       ...proposed.nodes[0], status: "authored",
     }] } as GameplayIntentModel;
     const admitted = challengeGameplayDiscovery({ semanticIr: ir, intent: authored, graph: emptyGraph });
@@ -179,7 +179,7 @@ describe("gameplay discovery challenger", () => {
     }] } as GameplayIntentModel;
     expect(challengeGameplayDiscovery({ semanticIr: ir, intent, graph: emptyGraph })
       .some(item => item.subjectId === "region:inferred")).toBe(true);
-    const authored = { ...intent, nodes: [{ ...intent.nodes[0], status: "authored" }] } as GameplayIntentModel;
+    const authored = { ...intent, evidence: [{ id: "region:inferred", scope: "selected-artifact", origin: "source-code", locator: "scripts/main.js", summary: "exact region" }], nodes: [{ ...intent.nodes[0], status: "authored" }] } as GameplayIntentModel;
     expect(challengeGameplayDiscovery({ semanticIr: ir, intent: authored, graph: emptyGraph })
       .some(item => item.subjectId === "region:inferred")).toBe(false);
   });
@@ -263,7 +263,8 @@ describe("gameplay discovery challenger", () => {
     const owned = challengeGameplayDiscovery({
       semanticIr: ir,
       intent: { ...emptyIntent,
-        edges: [{ id: "intent:edge", evidenceIds: ["edge:resolved"] }],
+        evidence: [{ id: "edge:resolved", scope: "selected-artifact", origin: "source-code", locator: "scripts/test.js", summary: "exact edge" }],
+        edges: [{ id: "intent:edge", status: "authored", evidenceIds: ["edge:resolved"] }],
       } as GameplayIntentModel,
       graph: emptyGraph,
     });
@@ -301,7 +302,8 @@ describe("gameplay discovery challenger", () => {
     const explicitlyOwned = challengeGameplayDiscovery({
       semanticIr: ir,
       intent: { ...emptyIntent,
-        nodes: [{ id: "node:region",
+        evidence: [{ id: "region:mixed", scope: "selected-artifact", origin: "source-code", locator: "scripts/test.js", summary: "exact region" }],
+        nodes: [{ id: "node:region", status: "authored",
           evidenceIds: ["op:known", "region:mixed"] }],
       } as GameplayIntentModel,
       graph: emptyGraph,
@@ -342,7 +344,7 @@ describe("gameplay discovery challenger", () => {
     expect(missing.map(item => item.subjectId)).toContain("module:alone");
     const owned = challengeGameplayDiscovery({
       semanticIr: ir,
-      intent: { ...emptyIntent, nodes: [{ id: "intent:module", evidenceIds: ["module:alone"] }] } as GameplayIntentModel,
+      intent: { ...emptyIntent, evidence: [{ id: "module:alone", scope: "selected-artifact", origin: "source-code", locator: "scripts/main.js", summary: "module" }], nodes: [{ id: "intent:module", status: "authored", evidenceIds: ["module:alone"] }] } as GameplayIntentModel,
       graph: emptyGraph,
     });
     expect(owned.some(item => item.subjectId === "module:alone")).toBe(false);
@@ -359,8 +361,8 @@ describe("gameplay discovery challenger", () => {
     const missing = challengeGameplayDiscovery({ semanticIr: ir, intent: emptyIntent, graph: emptyGraph });
     expect(missing.map(item => item.subjectId)).toContain("exec:mcfunction-source:standalone");
     const owned = challengeGameplayDiscovery({ semanticIr: ir,
-      intent: { ...emptyIntent, nodes: [{
-        id: "intent:function", evidenceIds: ["exec:mcfunction-source:standalone"],
+      intent: { ...emptyIntent, evidence: [{ id: "exec:mcfunction-source:standalone", scope: "selected-artifact", origin: "source-code", locator: "functions/intro.mcfunction", summary: "function" }], nodes: [{
+        id: "intent:function", status: "authored", evidenceIds: ["exec:mcfunction-source:standalone"],
       }] } as GameplayIntentModel, graph: emptyGraph });
     expect(owned.some(item => item.subjectId === "exec:mcfunction-source:standalone")).toBe(false);
   });
@@ -400,8 +402,8 @@ describe("gameplay discovery challenger", () => {
     );
     const owned = challengeGameplayDiscovery({
       semanticIr: ir,
-      intent: { ...emptyIntent, nodes: [{
-        id: "node:tick", evidenceIds: ["temporal:guarded"],
+      intent: { ...emptyIntent, evidence: [{ id: "temporal:guarded", scope: "selected-artifact", origin: "source-code", locator: "scripts/test.js", summary: "scheduler" }], nodes: [{
+        id: "node:tick", status: "authored", evidenceIds: ["temporal:guarded"],
       }] } as GameplayIntentModel,
       graph: emptyGraph,
     });
