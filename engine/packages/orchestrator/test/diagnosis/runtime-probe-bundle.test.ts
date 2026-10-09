@@ -5,7 +5,7 @@ import type {
   DiagnosticProbePlan,
 } from "../../../project-model/src/index.js";
 import type { RuntimeProbeBinding } from "../../../project-model/src/index.js";
-import type { DiagnosticProbeAnalysis } from "../../src/diagnostic-probe-analysis.js";
+import type { DiagnosticProbeAnalysis } from "../../src/diagnosis/diagnostic-probe-analysis.js";
 import { prepareRuntimeProbeBundle } from "../../src/diagnosis/runtime-probe-bundle.js";
 
 const incident: CausalIncident = {

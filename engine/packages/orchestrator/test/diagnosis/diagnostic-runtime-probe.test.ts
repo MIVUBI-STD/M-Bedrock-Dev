@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { CausalIncident } from "../../../project-model/src/index.js";
 import type { DiagnosticProbeDefinition } from "../../../project-model/src/index.js";
-import { createDiagnosticInvestigation } from "../../src/diagnostic-investigation.js";
+import { createDiagnosticInvestigation } from "../../src/diagnosis/diagnostic-investigation.js";
 import { applyRuntimeProbeResponse } from "../../src/diagnosis/diagnostic-runtime-probe.js";
 
 const incident: CausalIncident = {
