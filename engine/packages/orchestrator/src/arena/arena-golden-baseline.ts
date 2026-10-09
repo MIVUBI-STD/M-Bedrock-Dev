@@ -1,6 +1,6 @@
 import type {
   InspectArtifactResult,
-} from "../inspect-artifact.js";
+} from "../inspection/inspect-artifact.js";
 import {
   observeArenaGolden,
   type ArenaGoldenCase,

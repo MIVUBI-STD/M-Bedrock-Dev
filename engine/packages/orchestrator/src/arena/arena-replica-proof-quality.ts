@@ -1,4 +1,4 @@
-import type { ArenaNativeSpatialAudit } from "../arena-native-extraction.js";
+import type { ArenaNativeSpatialAudit } from "../arena/arena-native-extraction.js";
 import type { ArenaProofCoverageReport } from "./arena-proof-coverage.js";
 import type { ArenaVoxelProof } from "./arena-voxel-proof.js";
 import type { ArenaBlockEntityProof } from "./arena-block-entity-proof.js";

@@ -13,11 +13,11 @@ import type {
 import {
   validateDecisionLedgerSnapshot,
 } from "../../../project-model/src/index.js";
-import type { RepairLifecycleState } from "../repair-lifecycle.js";
-import type { RepairProofBundle } from "../repair-proof-bundle.js";
+import type { RepairLifecycleState } from "../repair/repair-lifecycle.js";
+import type { RepairProofBundle } from "../repair/repair-proof-bundle.js";
 import {
   invalidateStaleDecisionLedger,
-} from "../decision-ledger.js";
+} from "../workflow/decision-ledger.js";
 import {
   decideRepairRelease,
   type RepairReleaseDecision,
