@@ -32,4 +32,16 @@ describe("map audit reasoning admission",()=>{
    "A NEED_VALIDATION audit finding cannot attach PROVEN BUG reasoning.",
   );
  });
+
+ it("rejects proven confidence while the audit finding still needs validation",()=>{
+  const result=admitMapAuditFindingReasoning([finding],[{
+   causalLinkId:"link:1",
+   projection:{reportClassification:"LIKELY BUG",diagnosticDisposition:"confirmed-defect",proofConfidence:"high",reasons:[]},
+   assessment:{hypothesisId:"h",disposition:"supported",supportingEvidenceIds:["e:1"],eliminatingEvidenceIds:[],missingRequiredPredicates:[],reasons:[],domains:["static"],corroborationCount:1,confidence:"proven"},
+  }]);
+  expect(result.admitted).toEqual({});
+  expect(result.rejected[0]?.reasons).toContain(
+   "A NEED_VALIDATION audit finding cannot attach proven reasoning confidence.",
+  );
+ });
 });

@@ -62,6 +62,14 @@ export function admitMapAuditFindingReasoning(
         );
       }
       if (
+        finding.status === "NEED_VALIDATION" &&
+        candidate.assessment.confidence === "proven"
+      ) {
+        reasons.push(
+          "A NEED_VALIDATION audit finding cannot attach proven reasoning confidence.",
+        );
+      }
+      if (
         finding.status === "PROVEN" &&
         candidate.projection.reportClassification === "UNKNOWN"
       ) {
