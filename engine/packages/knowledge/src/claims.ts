@@ -1,6 +1,6 @@
 import type {
   KnowledgeRuntimeConstraint,
-} from "./applicability-v2.js";
+} from "./applicability.js";
 
 export type KnowledgeSourceKind =
   | "official-contract"

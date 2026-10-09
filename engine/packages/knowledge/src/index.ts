@@ -13,7 +13,7 @@ export * from "./evaluate.js";
 export * from "./validation-plan.js";
 export * from "./invariant-compiler.js";
 
-export * from "./applicability-v2.js";
-export * from "./claims-v2.js";
+export * from "./applicability.js";
+export * from "./claims.js";
 
 export * from "./freshness.js";
