@@ -214,7 +214,7 @@ describe("gameplay discovery challenger", () => {
       }] } as GameplayScenarioGraph,
     });
     expect(satisfied.some((item) => item.kind === "unowned-execution-edge"))
-      .toBe(false);
+      .toBe(true);
   });
 
   it("challenges resolved execution edges without a gameplay owner but accepts an exact owner", () => {

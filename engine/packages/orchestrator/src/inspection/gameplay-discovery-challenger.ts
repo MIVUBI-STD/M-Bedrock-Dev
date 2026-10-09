@@ -32,9 +32,8 @@ function usedEvidenceIds(
     ...graph.causalLinks
       .filter((link) => link.status === "PROVEN")
       .flatMap((link) => link.evidenceIds),
-    ...graph.knowledgeReceipts
-      .filter((receipt) => receipt.status === "SATISFIED")
-      .flatMap((receipt) => receipt.evidenceIds),
+    // Knowledge satisfaction does not establish execution ownership.
+    // Receipts remain in the scenario graph, not the IR ownership admission set.
   ]);
 }
 
