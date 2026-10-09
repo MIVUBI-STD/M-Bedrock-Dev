@@ -703,7 +703,10 @@ describe("exact Semantic IR provenance in Gameplay Intent", () => {
     const callEdges = ir.execution.edges.filter(edge =>
       edge.kind === "synchronous-call");
     expect(callEdges).toHaveLength(2);
-    const inferred = model.edges.find(edge => edge.from === "mechanic:wave-tick");
+    // waveTick is lexically classified as a resource because "tick" is a
+    // resource term; provenance must not depend on guessed mechanic labels.
+    const inferred = model.edges.find(edge =>
+      callEdges.every(call => edge.evidenceIds.includes(call.id)));
     expect(inferred).toBeDefined();
     expect(inferred?.status).toBe("inferred");
     for (const edge of callEdges) {
@@ -722,6 +725,19 @@ describe("exact Semantic IR provenance in Gameplay Intent", () => {
       semanticIr: differentMap,
     });
     expect(mismatched.edges.some(edge =>
+      edge.evidenceIds.some(id => id.startsWith("exec-edge:")))).toBe(false);
+
+    const wrongLocation = { ...ir,
+      execution: { ...ir.execution, edges: ir.execution.edges.map(edge => ({
+        ...edge, source: { ...edge.source,
+          range: { ...edge.source.range, columnStart: 99 } },
+      })) },
+    };
+    const unaligned = buildGameplayIntentModel({
+      id: "intent:wrong-call-position",
+      parsedScripts: [{ parsed: script }], semanticIr: wrongLocation,
+    });
+    expect(unaligned.edges.some(edge =>
       edge.evidenceIds.some(id => id.startsWith("exec-edge:")))).toBe(false);
 
     const withoutIr = buildGameplayIntentModel({
