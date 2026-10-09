@@ -1928,6 +1928,20 @@ export function parseScriptFile(
       }
     }
   }
+  const topLevelConstAliases = new Map<string, string>();
+  for (const statement of file.statements) {
+    if (!ts.isVariableStatement(statement) ||
+        !(statement.declarationList.flags & ts.NodeFlags.Const)) continue;
+    for (const declaration of statement.declarationList.declarations) {
+      if (ts.isIdentifier(declaration.name) && declaration.initializer &&
+          ts.isIdentifier(declaration.initializer)) {
+        const target = declaration.initializer.text;
+        if (topLevelFunctionNames.has(target) || topLevelConstCallbacks.has(target)) {
+          topLevelConstAliases.set(declaration.name.text, target);
+        }
+      }
+    }
+  }
   const bindsName = (binding: ts.BindingName, name: string): boolean =>
     ts.isIdentifier(binding)
       ? binding.text === name
@@ -1959,14 +1973,18 @@ export function parseScriptFile(
     }
     return false;
   };
-  const constCallback = (call: ts.CallExpression): ts.ArrowFunction | ts.FunctionExpression | undefined => {
+  const directCallbackName = (call: ts.CallExpression): string | undefined => {
     const first = call.arguments[0];
-    return first && ts.isIdentifier(first) && !isShadowed(first) ? topLevelConstCallbacks.get(first.text) : undefined;
+    if (!first || !ts.isIdentifier(first) || isShadowed(first)) return undefined;
+    return topLevelConstAliases.get(first.text) ?? first.text;
+  };
+  const constCallback = (call: ts.CallExpression): ts.ArrowFunction | ts.FunctionExpression | undefined => {
+    const name = directCallbackName(call);
+    return name ? topLevelConstCallbacks.get(name) : undefined;
   };
   const namedCallback = (call: ts.CallExpression): string | undefined => {
-    const first = call.arguments[0];
-    return first && ts.isIdentifier(first) && !isShadowed(first) && topLevelFunctionNames.has(first.text)
-      ? first.text : undefined;
+    const name = directCallbackName(call);
+    return name && topLevelFunctionNames.has(name) ? name : undefined;
   };
 
   const imports: ScriptImport[] = [];

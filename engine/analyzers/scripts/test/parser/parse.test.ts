@@ -9,6 +9,27 @@ const source = {
 };
 
 describe("script analyzer", () => {
+  it("resolves a direct immutable callback alias but not mutable or shadowed aliases", () => {
+    const parsed = parseScriptFile("scripts/main", [
+      'import { world, system } from "@minecraft/server";',
+      'function onSpawn() {}',
+      'const handleSpawn = onSpawn;',
+      'const onPulse = () => {};',
+      'const tickHandler = onPulse;',
+      'let mutableHandler = onSpawn;',
+      'world.afterEvents.playerSpawn.subscribe(handleSpawn);',
+      'system.runInterval(tickHandler, 20);',
+      'system.runTimeout(mutableHandler, 20);',
+      'function configure(handleSpawn) { system.runTimeout(handleSpawn, 20); }',
+    ].join("\n"), source);
+    expect(parsed.events.find(event => event.event === "playerSpawn")?.callbackRegion)
+      .toBe("function:onSpawn");
+    expect(parsed.deferredCallbacks.find(item => item.scheduler === "runInterval")?.callbackRegion)
+      .toMatch(/^callback@/);
+    expect(parsed.deferredCallbacks.filter(item => item.scheduler === "runTimeout")
+      .every(item => item.callbackRegion === undefined)).toBe(true);
+  });
+
   it("does not resolve shadowed top-level callbacks from nested lexical scopes", () => {
     const parsed = parseScriptFile("scripts/main", [
       'import { world, system } from "@minecraft/server";',
