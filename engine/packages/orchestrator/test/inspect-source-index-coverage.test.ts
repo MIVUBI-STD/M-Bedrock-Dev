@@ -17,6 +17,21 @@ import {
 import { enrichInspectionSemanticGraph } from "../src/inspection/inspect-graph-enrichment.js";
 
 describe("inspection source index coverage", () => {
+  it("does not present a failed structure parse as an indexed graph node", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-invalid-structure-"));
+    try {
+      await mkdir(join(root, "structures"), { recursive: true });
+      await writeFile(join(root, "structures/invalid.mcstructure"), "not an NBT structure");
+      const result = await indexInspectionSources(root, "artifact:invalid", [{
+        relativePath: "structures/invalid.mcstructure", size: 20,
+      }]);
+      expect(result.coverage).toMatchObject({ relevantFiles: 1, indexedFiles: 0, complete: false });
+      expect(result.coverage.parseFailures.map(item => item.kind)).toContain("structure");
+      expect(result.graph.findByKind("structure")).toHaveLength(0);
+      expect(result.parsedStructureModels).toHaveLength(0);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+
   it("accounts for inventoried but unreadable function and script without false nodes", async () => {
     const root = await mkdtemp(join(tmpdir(), "m-bedrock-missing-sources-"));
     try {

@@ -646,9 +646,6 @@ export async function indexInspectionSources(
         relativePath: file.relativePath,
       },
     };
-    graph.addNode(node);
-    nodes.push(node);
-
     try {
       const structure = await parseMcStructure(
         new Uint8Array(
@@ -656,8 +653,6 @@ export async function indexInspectionSources(
         ),
         file.relativePath,
       );
-      parsedStructures += 1;
-      indexedFiles += 1;
 
       const runtimeContent =
         extractStructureRuntimeContent(structure);
@@ -732,6 +727,10 @@ export async function indexInspectionSources(
           node.source,
         ),
       );
+      graph.addNode(node);
+      nodes.push(node);
+      parsedStructures += 1;
+      indexedFiles += 1;
     } catch (error) {
       parseFailures.push({
         relativePath: file.relativePath,
