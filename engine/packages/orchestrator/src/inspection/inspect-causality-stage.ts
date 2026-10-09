@@ -16,11 +16,11 @@ import type {
 } from "../../../project-model/src/index.js";
 import type {
   analyzeKnowledgeRuntime,
-} from "../knowledge-runtime-analysis.js";
-import { buildDecisionBasis } from "../decision-basis.js";
-import { synthesizeCausalChains } from "../causal-analysis.js";
-import { synthesizeCausalIncidents } from "../causal-incident-analysis.js";
-import { analyzeDiagnosticProbes } from "../diagnostic-probe-analysis.js";
+} from "../inspection/knowledge-runtime-analysis.js";
+import { buildDecisionBasis } from "../workflow/decision-basis.js";
+import { synthesizeCausalChains } from "../diagnosis/causal-analysis.js";
+import { synthesizeCausalIncidents } from "../diagnosis/causal-incident-analysis.js";
+import { analyzeDiagnosticProbes } from "../diagnosis/diagnostic-probe-analysis.js";
 
 export interface InspectionCausalityInput {
   sourceFingerprint?: string;

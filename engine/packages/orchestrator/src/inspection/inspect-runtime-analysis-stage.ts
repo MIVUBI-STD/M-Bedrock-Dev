@@ -16,22 +16,22 @@ import { derivePlacedEmbeddedCommands } from "./structure-placement-analysis.js"
 import { derivePlacementProofs } from "./structure-proof-analysis.js";
 import { correlateRouteMutations } from "./route-mutation-analysis.js";
 import { deriveGameplayRouteCorridors } from "./gameplay-route-corridor.js";
-import { analyzeMutationTransactionOrdering } from "../mutation-transaction-analysis.js";
-import { analyzeScriptMutationTransactions } from "../script-mutation-transaction-analysis.js";
+import { analyzeMutationTransactionOrdering } from "../repair/mutation-transaction-analysis.js";
+import { analyzeScriptMutationTransactions } from "../repair/script-mutation-transaction-analysis.js";
 import { analyzeScriptCommandMutationTransactions } from "./script-command-transaction-analysis.js";
-import { extractArenaConcurrencyCapacity } from "../arena-capacity-extraction.js";
+import { extractArenaConcurrencyCapacity } from "../arena/arena-capacity-extraction.js";
 import { arenaCapacityDiagnostics } from "../../../../analyzers/diagnostics/src/index.js";
 import { analyzeScriptSafeConfig } from "./script-safe-config-analysis.js";
 import {
   deriveCrossFileCallEdges,
 } from "../../../../analyzers/scripts/src/index.js";
-import { reconcileArenaLayouts } from "../arena-layout-reconciliation.js";
-import { analyzeArenaLifecycleConvergence } from "../arena-lifecycle-analysis.js";
-import { analyzeArenaCleanupSurfaces } from "../arena-cleanup-surface-analysis.js";
-import { analyzeArenaStateIsolation } from "../arena-state-isolation-analysis.js";
+import { reconcileArenaLayouts } from "../arena/arena-layout-reconciliation.js";
+import { analyzeArenaLifecycleConvergence } from "../arena/arena-lifecycle-analysis.js";
+import { analyzeArenaCleanupSurfaces } from "../arena/arena-cleanup-surface-analysis.js";
+import { analyzeArenaStateIsolation } from "../arena/arena-state-isolation-analysis.js";
 import { analyzeScriptSpatialMutations } from "./script-spatial-analysis.js";
 import { analyzeSpatialAuthorityCoverage } from "./spatial-authority-analysis.js";
-import { analyzeArenaGlobalState } from "../arena-global-state-analysis.js";
+import { analyzeArenaGlobalState } from "../arena/arena-global-state-analysis.js";
 import { analyzeInventoryLifecycle } from "./inventory-lifecycle-analysis.js";
 import { analyzeInventoryContract } from "./inventory-contract-analysis.js";
 import { analyzeInventoryRestoreOwnership } from "./inventory-restore-ownership-analysis.js";
