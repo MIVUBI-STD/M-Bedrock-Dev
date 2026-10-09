@@ -97,15 +97,12 @@ const orphanCandidates = [...inbound.entries()]
 // Include in-repository tests when identifying direct consumers; this remains
 // informational because third-party deep imports cannot be enumerated here.
 const orchestratorSource = resolve(ROOT, "engine/packages/orchestrator/src");
+const PURE_ALIAS_RE = /^\s*(?:\/\*[\s\S]*?\*\/\s*)?export \* from ["']\.\/(arena|core|inspection|diagnosis|repair|reliability|reporting|workflow|release)\/[^"']+["'];?\s*$/;
 const flatAliasFiles = existsSync(orchestratorSource)
   ? readdirSync(orchestratorSource, { withFileTypes: true })
     .filter((entry) => entry.isFile() && entry.name.endsWith(".ts"))
     .map((entry) => resolve(orchestratorSource, entry.name))
-    .filter((file) =>
-      /^\s*(?:\/\*[\s\S]*?\*\/\s*)?export \* from ["']\.\/(?:arena|core|inspection|diagnosis|repair|reliability|reporting|workflow|release)\//.test(
-        readFileSync(file, "utf8"),
-      ),
-    )
+    .filter((file) => PURE_ALIAS_RE.test(readFileSync(file, "utf8")))
   : [];
 const aliasSet = new Set(flatAliasFiles);
 const aliasConsumers = new Map(flatAliasFiles.map((file) => [file, new Set()]));
@@ -163,7 +160,7 @@ console.log("  zero-consumer candidates are NOT safe-delete proof: external deep
 const aliasFamilies = new Map();
 for (const alias of flatAliasFiles) {
   const content = readFileSync(alias, "utf8");
-  const family = content.match(/export \* from ["']\.\/(arena|core|inspection|diagnosis|repair|reliability|reporting|workflow|release)\//)?.[1];
+  const family = content.match(PURE_ALIAS_RE)?.[1];
   if (!family) continue;
   const current = aliasFamilies.get(family) ?? { aliases: 0, referenced: 0, unreferenced: [] };
   current.aliases += 1;
