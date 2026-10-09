@@ -35,86 +35,63 @@ export function inferPersistentStateScopes(
 
   return [...byProperty.entries()]
     .map(([propertyId, items]) => {
-      const receivers = items
-        .map((item) =>
-          item.receiverHint?.trim().toLowerCase()
-        )
-        .filter(
-          (value): value is string =>
-            Boolean(value),
-        );
+      const receiverKinds = items.map((item) => {
+        const receiver = item.receiverHint?.trim().toLowerCase();
+        if (!receiver) return undefined;
+        if (/(?:^|\\.)player$/.test(receiver) ||
+            receiver.includes("player.")) return "player" as const;
+        if (/(?:^|\\.)entity$/.test(receiver) ||
+            receiver.includes("entity.")) return "entity" as const;
+        if (receiver === "world" || receiver.endsWith(".world")) {
+          return "world" as const;
+        }
+        return undefined;
+      });
+      const known = [...new Set(receiverKinds.filter(
+        (scope): scope is "player" | "entity" | "world" =>
+          scope !== undefined,
+      ))];
 
-      if (
-        receivers.some((value) =>
-          /(?:^|\.)player$/.test(value) ||
-          value.includes("player.")
-        )
-      ) {
+      // One property literal reused across player and world receivers is
+      // NOT one shared state owner. Neither name nor first match wins.
+      if (known.length > 1 ||
+          (known.length > 0 && receiverKinds.some(kind => kind === undefined))) {
         return {
           propertyId,
-          scope: "player" as const,
-          confidence: "exact-receiver" as const,
+          scope: "unknown" as const,
+          confidence: "unknown" as const,
           reasons: [
-            "Dynamic property is accessed through a player receiver.",
+            "The same property key is observed on conflicting or unresolved receivers; source evidence does not establish a unique state owner.",
           ],
         };
       }
 
-      if (
-        receivers.some((value) =>
-          /(?:^|\.)entity$/.test(value) ||
-          value.includes("entity.")
-        )
-      ) {
+      if (known.length === 1) {
         return {
           propertyId,
-          scope: "entity" as const,
+          scope: known[0]!,
           confidence: "exact-receiver" as const,
           reasons: [
-            "Dynamic property is accessed through an entity receiver.",
+            "All observed accesses use the same recognized receiver scope.",
           ],
         };
       }
 
-      if (
-        /arena/i.test(propertyId)
-      ) {
+      // Only use names when there is no exact receiver evidence.
+      if (/arena/i.test(propertyId)) {
         return {
           propertyId,
           scope: "arena" as const,
           confidence: "name-pattern" as const,
-          reasons: [
-            "Property identifier contains an arena-scoped naming signal.",
-          ],
+          reasons: ["Property identifier contains an arena-scoped naming signal."],
         };
       }
-
-      if (
-        /(?:session|match|round)/i.test(propertyId)
-      ) {
+      if (/(?:session|match|round)/i.test(propertyId)) {
         return {
           propertyId,
           scope: "session" as const,
           confidence: "name-pattern" as const,
-          reasons: [
-            "Property identifier contains a session/match/round naming signal.",
-          ],
-        };
-      }
-
-      if (
-        receivers.some((value) =>
-          value === "world" ||
-          value.endsWith(".world")
-        )
-      ) {
-        return {
-          propertyId,
-          scope: "world" as const,
-          confidence: "exact-receiver" as const,
-          reasons: [
-            "Dynamic property is accessed through the world receiver.",
-          ],
+          reasons: ["Property identifier contains a session/match/round naming signal."],
         };
       }
 

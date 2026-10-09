@@ -30,6 +30,8 @@ export interface PersistenceSourceProperty {
   lifetimeConfidence:
     | "bounded"
     | "unknown";
+  /** Exact authored property reset-like sites; no runtime reset/lifetime proof. */
+  resetSites?: NonNullable<ParsedScriptFile["persistentDataLifecycleEvidence"]>[number]["resetSites"];
 }
 
 export interface PersistenceReconnectRestoreRisk {
@@ -156,6 +158,9 @@ export function analyzePersistenceSource(
           scope?.confidence ?? "unknown",
         lifetimeConfidence:
           lifetime?.confidence ?? "unknown",
+        ...(lifecycle.resetSites?.length ? {
+          resetSites: lifecycle.resetSites,
+        } : {}),
       });
     }
 
@@ -205,12 +210,18 @@ export function analyzePersistenceSource(
           scopeByProperty.get(
             access.propertyId,
           );
-        if (
-          scope !== "session" &&
-          scope !== "arena"
-        ) {
-          continue;
-        }
+        // The receiver describes physical storage ownership. A world
+        // dynamic property named matchSession may still hold transient
+        // gameplay information that is restored during reconnect, but
+        // that conclusion is only a naming-based risk, not scope proof.
+        const candidateScope = scope === "arena" || scope === "session"
+          ? scope
+          : scope === "world" && /arena/i.test(access.propertyId)
+            ? "arena" as const
+            : scope === "world" && /(?:session|match|round)/i.test(access.propertyId)
+              ? "session" as const
+              : undefined;
+        if (!candidateScope) continue;
 
         reconnectTransientRestoreRisks.push({
           scriptId:
@@ -220,11 +231,11 @@ export function analyzePersistenceSource(
           lifecycleEvent,
           callbackRegion:
             event.callbackRegion,
-          scope,
+          scope: candidateScope,
           reason:
-            "Reconnect/initial-spawn path reads persisted " +
-            scope +
-            "-scoped state without source proof that stale transient ownership is reconciled against the current session/arena generation.",
+            "Reconnect/initial-spawn path reads persistent state with a " +
+            candidateScope +
+            " gameplay-lifetime signal without source proof that stale ownership is reconciled against the current session/arena generation. A storage receiver does not establish transient lifetime.",
         });
       }
     }

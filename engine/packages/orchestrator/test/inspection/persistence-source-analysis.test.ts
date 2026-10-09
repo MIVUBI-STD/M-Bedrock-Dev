@@ -41,6 +41,30 @@ describe("persistence source analysis", () => {
     });
   });
 
+  it("projects exact reset sites without promoting source cleanup into a bounded lifetime", () => {
+    const parsed = parseScriptFile("main", [
+      'function reset(player) {',
+      '  world.setDynamicProperty("matchSession", undefined);',
+      '  player.setDynamicProperty("matchSession", "[]");',
+      '  world.clearDynamicProperties();',
+      '}',
+    ].join("\n"), {
+      artifactId: "a", relativePath: "scripts/main.ts",
+    });
+    const analysis = analyzePersistenceSource([parsed]);
+    const property = analysis.properties.find(x => x.propertyId === "matchSession");
+    expect(property?.scope).toBe("unknown");
+    expect(property?.lifetime).toBe("unknown");
+    expect(property?.resetSites).toHaveLength(2);
+    expect(property?.resetSites?.map(x => x.receiverHint))
+      .toEqual(["world", "player"]);
+    expect(property?.resetSites?.map(x => x.kind))
+      .toEqual(["undefined-removal", "empty-value-write"]);
+    expect(property?.resetSites?.every(x =>
+      x.executionRegion === "function:reset" &&
+      x.source.relativePath === "scripts/main.ts")).toBe(true);
+  });
+
   it("keeps persisted session state read on reconnect as an explicit reconciliation gap", () => {
     const script = parseScriptFile(
       "main",

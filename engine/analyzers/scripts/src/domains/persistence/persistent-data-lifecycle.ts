@@ -3,6 +3,16 @@ import type {
   SourceRef,
 } from "../../../../../packages/project-model/src/index.js";
 
+/** Exact authored reset-like write to one literal dynamic-property key.
+ * Neither a successful reset nor a round/match lifetime guarantee. */
+export interface PersistentPropertyResetSite {
+  propertyKey: string;
+  receiverHint: string;
+  executionRegion: string;
+  kind: "undefined-removal" | "empty-value-write";
+  source: SourceRef;
+}
+
 export interface PersistentDataLifecycleEvidence {
   propertyKey: string;
   variable: string;
@@ -11,6 +21,8 @@ export interface PersistentDataLifecycleEvidence {
   writes: number;
   clears: number;
   growth: "append-without-clear" | "append-with-clear" | "no-append" | "unknown";
+  /** Source sites only, not proof of execution or resource lifetime. */
+  resetSites?: readonly PersistentPropertyResetSite[];
   source: SourceRef;
 }
 
@@ -72,7 +84,7 @@ function isClearValue(
   if (!expression) return true;
   if (
     expression.kind === ts.SyntaxKind.NullKeyword ||
-    expression.kind === ts.SyntaxKind.UndefinedKeyword
+    (ts.isIdentifier(expression) && expression.text === "undefined")
   ) return true;
   if (ts.isStringLiteralLike(expression)) {
     const text = expression.text.trim();
@@ -97,13 +109,15 @@ export function derivePersistentDataLifecycleEvidence(
   const firstSource = new Map<string, SourceRef>();
   const stats = new Map<
     string,
-    { variable: string; reads: number; appends: number; writes: number; clears: number }
+    { variable: string; reads: number; appends: number; writes: number;
+      clears: number; resetSites: PersistentPropertyResetSite[] }
   >();
 
   const ensure = (key: string, variable: string, node: ts.Node) => {
     const current = stats.get(key);
     if (current) return current;
-    const created = { variable, reads: 0, appends: 0, writes: 0, clears: 0 };
+    const created = { variable, reads: 0, appends: 0, writes: 0,
+      clears: 0, resetSites: [] as PersistentPropertyResetSite[] };
     stats.set(key, created);
     firstSource.set(key, nodeSource(file, node, source));
     return created;
@@ -142,8 +156,23 @@ export function derivePersistentDataLifecycleEvidence(
           value?.getText(file).includes(variable),
       )?.[0] ?? "$unknown";
       const current = ensure(writtenKey, matchedVariable, node);
-      if (isClearValue(value)) current.clears += 1;
-      else current.writes += 1;
+      if (isClearValue(value)) {
+        current.clears += 1;
+        // A broad clearDynamicProperties() has no literal key and must NOT
+        // be silently attributed to an individual property.
+        current.resetSites.push({
+          propertyKey: writtenKey,
+          receiverHint: node.expression.expression.getText(file),
+          executionRegion: persistenceExecutionRegion(node, file),
+          kind: value === undefined ||
+              (ts.isIdentifier(value) && value.text === "undefined")
+            ? "undefined-removal"
+            : "empty-value-write",
+          source: nodeSource(file, node, source),
+        });
+      } else {
+        current.writes += 1;
+      }
     }
 
     ts.forEachChild(node, visit);
@@ -168,6 +197,11 @@ export function derivePersistentDataLifecycleEvidence(
               ? "append-with-clear"
               : "append-without-clear",
       source: firstSource.get(propertyKey)!,
+      ...(item.resetSites.length > 0 ? {
+        resetSites: item.resetSites.sort((a, b) =>
+          (a.source.range?.lineStart ?? 0) - (b.source.range?.lineStart ?? 0) ||
+          (a.source.range?.columnStart ?? 0) - (b.source.range?.columnStart ?? 0)),
+      } : {}),
     }))
     .sort((a, b) => a.propertyKey.localeCompare(b.propertyKey));
 }
