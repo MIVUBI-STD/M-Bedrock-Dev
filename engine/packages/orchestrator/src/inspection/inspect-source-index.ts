@@ -80,6 +80,11 @@ export interface InspectionSourceCoverage {
   complete: boolean;
 }
 
+export interface InspectionTickFunctionRegistration {
+  source: { artifactId: string; relativePath: string };
+  functions: readonly string[];
+}
+
 export interface InspectionSourceIndex {
   graph: SemanticGraph;
   nodes: SemanticNode[];
@@ -120,6 +125,7 @@ export interface InspectionSourceIndex {
     queuedTickPositions: number;
   }>;
   parsedStructures: number;
+  tickFunctionRegistrations: InspectionTickFunctionRegistration[];
   diagnostics: DiagnosticFinding[];
   coverage: InspectionSourceCoverage;
 }
@@ -263,6 +269,7 @@ export async function indexInspectionSources(
   let relevantFiles = 0;
   let indexedFiles = 0;
   let parsedStructures = 0;
+  const tickFunctionRegistrations: InspectionTickFunctionRegistration[] = [];
 
   for (const file of files) {
     const fnId = functionIdentifier(file.relativePath);
@@ -353,28 +360,34 @@ export async function indexInspectionSources(
     const normalizedPath =
       "/" + file.relativePath.replaceAll("\\", "/");
 
-    // tick.json is a vanilla execution entrypoint, not an unknown
-    // mechanic. An empty schedule contributes no execution roots.
-    // A populated schedule remains a discovery gap until its function
-    // references are represented by the canonical execution graph.
-    if (
-      /\/functions\/tick\.json$/i.test(normalizedPath)
-    ) {
+    // Vanilla tick registration is an authored function execution root.
+    // Index exact non-empty schedules rather than claiming their
+    // gameplay meaning has been understood.
+    if (/\/functions\/tick\.json$/i.test(normalizedPath)) {
       relevantFiles += 1;
       try {
         const raw = JSON.parse(
           await readFile(join(root, file.relativePath), "utf8"),
         ) as unknown;
-        if (
-          raw !== null &&
-          typeof raw === "object" &&
-          !Array.isArray(raw) &&
-          Array.isArray((raw as { values?: unknown }).values) &&
-          (raw as { values: unknown[] }).values.length === 0
-        ) {
-          indexedFiles += 1;
+        const values =
+          raw !== null && typeof raw === "object" && !Array.isArray(raw)
+            ? (raw as { values?: unknown }).values
+            : undefined;
+        if (!Array.isArray(values) ||
+            !values.every((value) =>
+              typeof value === "string" && value.trim().length > 0
+            )) {
+          parseFailures.push({
+            relativePath: file.relativePath,
+            kind: "function",
+            reason: "tick.json requires a values array of non-empty function identifiers.",
+          });
         } else {
-          unsupportedRelevantFiles.push(file.relativePath);
+          tickFunctionRegistrations.push({
+            source: { artifactId, relativePath: file.relativePath },
+            functions: [...new Set(values as string[])],
+          });
+          indexedFiles += 1;
         }
       } catch (error) {
         parseFailures.push({
@@ -754,6 +767,7 @@ export async function indexInspectionSources(
     parsedDialogueDocuments,
     parsedStructureModels,
     parsedStructures,
+    tickFunctionRegistrations,
     diagnostics,
     coverage: {
       relevantFiles,

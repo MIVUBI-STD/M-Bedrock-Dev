@@ -107,6 +107,7 @@ export async function inspectDirectory(
     parsedEntities,
     parsedDialogueDocuments,
     parsedStructureModels,
+    tickFunctionRegistrations,
     diagnostics: sourceDiagnostics,
   } = sourceIndex;
   diagnostics.push(...sourceDiagnostics);
@@ -222,6 +223,7 @@ export async function inspectDirectory(
     parsedFunctions,
     parsedDialogueDocuments,
     parsedStructureModels,
+    tickFunctionRegistrations,
   });
 
   populateInspectionScriptImportGraph(

@@ -14,6 +14,7 @@ import {
   populateEmbeddedStructureCommandGraph,
 } from "./embedded-structure-graph.js";
 import type { InspectionSourceIndex } from "./inspect-source-index.js";
+import { resolveByIdentifier } from "../../../../analyzers/references/src/index.js";
 
 export interface InspectionGraphEnrichmentInput {
   graph: SemanticGraph;
@@ -27,6 +28,8 @@ export interface InspectionGraphEnrichmentInput {
     InspectionSourceIndex["parsedDialogueDocuments"];
   parsedStructureModels:
     InspectionSourceIndex["parsedStructureModels"];
+  tickFunctionRegistrations:
+    InspectionSourceIndex["tickFunctionRegistrations"];
 }
 
 export interface InspectionGraphEnrichmentResult {
@@ -132,6 +135,35 @@ export function enrichInspectionSemanticGraph(
     };
     input.graph.addNode(node);
     input.nodes.push(node);
+  }
+
+  for (const registration of input.tickFunctionRegistrations) {
+    const scheduler: SemanticNode = {
+      id: semanticNodeId("world", "project", "function-schedule:tick"),
+      identity: {
+        kind: "world",
+        scope: "project",
+        identifier: "function-schedule:tick",
+      },
+      kind: "world",
+      identifier: "function-schedule:tick",
+      source: registration.source,
+    };
+    input.graph.addNode(scheduler);
+    input.nodes.push(scheduler);
+    const functions = input.nodes.filter((node) => node.kind === "function");
+    for (const name of registration.functions) {
+      const resolution = resolveByIdentifier(functions, name);
+      input.graph.addEdge({
+        from: scheduler.id,
+        type: "CALLS",
+        targetIdentifier: name,
+        status: resolution.status,
+        ...(resolution.to ? { to: resolution.to } : {}),
+        ...(resolution.candidates ? { candidates: resolution.candidates } : {}),
+        evidence: { source: registration.source },
+      });
+    }
   }
 
   for (const item of input.parsedFunctions) {

@@ -495,9 +495,13 @@ describe("inspection source index coverage", () => {
       await writeFile(join(root, relativePath), '{"values":["start"]}');
       const active = await indexInspectionSources(root, "artifact:test", [file]);
       expect(active.coverage).toMatchObject({
-        relevantFiles: 1, indexedFiles: 0, complete: false,
-        unsupportedRelevantFiles: [relativePath],
+        relevantFiles: 1, indexedFiles: 1, complete: true,
+        unsupportedRelevantFiles: [],
       });
+      expect(active.tickFunctionRegistrations).toEqual([{
+        source: { artifactId: "artifact:test", relativePath },
+        functions: ["start"],
+      }]);
     } finally {
       await rm(root, { recursive: true, force: true });
     }
