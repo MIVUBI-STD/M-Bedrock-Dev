@@ -7,11 +7,11 @@ import type {
 } from "../../../runtime-lab/src/index.js";
 import type {
   PostRepairClosureResult,
-} from "../../src/index.js";
+} from "../../src/repair/index.js";
 import {
   addClosedRepairToRegressionCorpus,
   regressionCaseFromClosedRepair,
-} from "../../src/index.js";
+} from "../../src/repair/index.js";
 
 const scenario: CounterexampleScenario = {
   schemaVersion: 1,

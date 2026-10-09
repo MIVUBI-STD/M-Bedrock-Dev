@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   runCommandMutationCampaign,
-} from "../../src/mutation-campaign.js";
+} from "../../src/repair/mutation-campaign.js";
 
 describe("source mutation detection through real analyzers", () => {
   it("kills selector broadening using state-scope analysis", async () => {

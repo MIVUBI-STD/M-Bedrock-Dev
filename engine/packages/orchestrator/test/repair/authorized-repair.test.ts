@@ -6,7 +6,7 @@ import {
 import {
   authorizeRepairMutation,
 } from "../../src/repair/authorized-repair.js";
-import type { RepairProofBundle } from "../../src/repair-proof-bundle.js";
+import type { RepairProofBundle } from "../../src/repair/repair-proof-bundle.js";
 import {
   CONTRACT_REGISTRY_REVISION,
 } from "../../../project-model/src/index.js";
