@@ -377,7 +377,7 @@ export async function indexInspectionSources(
         } else {
           tickFunctionRegistrations.push({
             source: { artifactId, relativePath: file.relativePath },
-            functions: [...new Set(values as string[])],
+            functions: [...values as string[]],
           });
           indexedFiles += 1;
         }

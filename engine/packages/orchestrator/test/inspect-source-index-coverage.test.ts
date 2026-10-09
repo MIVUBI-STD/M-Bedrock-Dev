@@ -556,6 +556,25 @@ describe("inspection source index coverage", () => {
     }
   });
 
+  it("preserves authored tick registration order and repeated entries", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-tick-order-"));
+    try {
+      const relativePath = "behavior_packs/a/functions/tick.json";
+      await mkdir(join(root, "behavior_packs/a/functions"), { recursive: true });
+      await writeFile(join(root, relativePath),
+        JSON.stringify({ values: ["init", "update", "init"] }));
+      const result = await indexInspectionSources(root, "artifact:order", [{
+        relativePath, size: 64, contentHash: "tick-order",
+      }]);
+      expect(result.tickFunctionRegistrations[0]?.functions).toEqual([
+        "init", "update", "init",
+      ]);
+      expect(result.coverage.complete).toBe(true);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("keeps two tick registrations distinct and preserves unresolved function roots", async () => {
     const root = await mkdtemp(join(tmpdir(), "m-bedrock-tick-"));
     try {
