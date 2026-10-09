@@ -135,6 +135,32 @@ const noInRepoConsumer = flatAliasFiles.filter(
   (file) => aliasConsumers.get(file).size === 0,
 );
 
+// Machine-readable projection of the same alias/consumer evidence; no second registry.
+if (process.argv.includes("--aliases-json")) {
+  const aliases = flatAliasFiles.map((file) => {
+    const source = readFileSync(file, "utf8");
+    const target = source.match(/export \* from ["'](\.\/[^"']+)["']/)?.[1];
+    return {
+      alias: relative(ROOT, file).replaceAll("\\", "/"),
+      canonicalTarget: target
+        ? relative(ROOT, resolve(dirname(file), target)).replaceAll("\\", "/").replace(/\.js$/, ".ts")
+        : null,
+      family: source.match(PURE_ALIAS_RE)?.[1] ?? null,
+      internalConsumers: [...aliasConsumers.get(file)].sort(),
+      externalConsumersVerified: false,
+    };
+  }).sort((a, b) => a.alias.localeCompare(b.alias));
+  console.log(JSON.stringify({
+    scope: "static-in-repository-source-and-test-imports",
+    completeExternalCompatibilityProof: false,
+    totalAliases: aliases.length,
+    aliasesWithInternalConsumers: aliases.filter((item) => item.internalConsumers.length > 0).length,
+    aliasesWithoutResolvedInternalConsumers: aliases.filter((item) => item.internalConsumers.length === 0).length,
+    aliases,
+  }, null, 2));
+  process.exit(0);
+}
+
 const pkg = JSON.parse(readFileSync(resolve(ROOT, "package.json"), "utf8"));
 const declaredRuntime = Object.keys(pkg.dependencies ?? {}).sort();
 const declaredDev = Object.keys(pkg.devDependencies ?? {}).sort();
