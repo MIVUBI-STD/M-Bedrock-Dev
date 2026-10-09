@@ -5,7 +5,7 @@ import type {
 import type {
   EntityAiStackAnalysis,
   EntityAiStackStateAssessment,
-} from "../entity-ai-stack-analysis.js";
+} from "../inspection/entity-ai-stack-analysis.js";
 
 export type RouteNavigationCompatibilityStatus =
   | "compatible"
