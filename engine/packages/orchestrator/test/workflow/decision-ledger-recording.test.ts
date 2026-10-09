@@ -14,10 +14,10 @@ import {
 } from "../../src/workflow/decision-ledger-recording.js";
 import type {
   RepairLifecycleState,
-} from "../../src/repair-lifecycle.js";
+} from "../../src/repair/repair-lifecycle.js";
 import type {
   RepairProofBundle,
-} from "../../src/repair-proof-bundle.js";
+} from "../../src/repair/repair-proof-bundle.js";
 import {
   CONTRACT_REGISTRY_REVISION,
 } from "../../../project-model/src/index.js";

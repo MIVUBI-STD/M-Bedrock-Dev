@@ -4,10 +4,10 @@ import {
 } from "../../src/workflow/decision-basis.js";
 import {
   BUILTIN_REPAIR_REALIZERS,
-} from "../../src/repair-realizer-registry.js";
+} from "../../src/repair/repair-realizer-registry.js";
 import {
   BUILTIN_REPAIR_STRATEGY_SOURCES,
-} from "../../src/repair-strategy-source-registry.js";
+} from "../../src/repair/repair-strategy-source-registry.js";
 
 describe("decision basis", () => {
   it("fingerprints probe bindings independently of input ordering", () => {
