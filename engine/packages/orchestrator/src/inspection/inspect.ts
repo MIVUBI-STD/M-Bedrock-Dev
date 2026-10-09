@@ -1,15 +1,15 @@
-export { structureIdentifier } from "../inspect-identifiers.js";
-import { discoverInspectionPacks } from "../inspect-packs.js";
-import { indexInspectionSources } from "../inspect-source-index.js";
-import { analyzeInspectionScriptCompatibility } from "../inspect-script-compatibility.js";
-import { populateInspectionScriptImportGraph } from "../inspect-script-import-graph.js";
-import { enrichInspectionSemanticGraph } from "../inspect-graph-enrichment.js";
-import { analyzeInspectionEntityKnowledge } from "../inspect-entity-knowledge-stage.js";
-import { analyzeInspectionRuntimeState } from "../inspect-runtime-analysis-stage.js";
-import { analyzeInspectionEducation } from "../inspect-education-stage.js";
-import { analyzeInspectionCausality } from "../inspect-causality-stage.js";
-import { buildInspectionResult } from "../inspect-result.js";
-import { prepareInspectionRuntimeEvidence } from "../inspect-runtime-evidence.js";
+export { structureIdentifier } from "./inspect-identifiers.js";
+import { discoverInspectionPacks } from "./inspect-packs.js";
+import { indexInspectionSources } from "./inspect-source-index.js";
+import { analyzeInspectionScriptCompatibility } from "./inspect-script-compatibility.js";
+import { populateInspectionScriptImportGraph } from "./inspect-script-import-graph.js";
+import { enrichInspectionSemanticGraph } from "./inspect-graph-enrichment.js";
+import { analyzeInspectionEntityKnowledge } from "./inspect-entity-knowledge-stage.js";
+import { analyzeInspectionRuntimeState } from "./inspect-runtime-analysis-stage.js";
+import { analyzeInspectionEducation } from "./inspect-education-stage.js";
+import { analyzeInspectionCausality } from "./inspect-causality-stage.js";
+import { buildInspectionResult } from "./inspect-result.js";
+import { prepareInspectionRuntimeEvidence } from "./inspect-runtime-evidence.js";
 import { classifyContentPath } from "../../../../analyzers/discovery/src/index.js";
 import { referenceDiagnostics } from "../../../../analyzers/diagnostics/src/index.js";
 import { duplicateManifestUuidDiagnostics } from "../../../../analyzers/diagnostics/src/index.js";
@@ -21,37 +21,37 @@ import type {
   InspectTargetProfile,
 } from "../types.js";
 import { analyzeKnowledgeRuntime } from "./knowledge-runtime-analysis.js";
-import { structureRuntimeEvidence } from "../structure-runtime-evidence.js";
-import { scriptStructureRuntimeEvidence } from "../script-structure-correlation.js";
+import { structureRuntimeEvidence } from "./structure-runtime-evidence.js";
+import { scriptStructureRuntimeEvidence } from "./script-structure-correlation.js";
 import { areaLoadedBlockWriteEvidence } from "../area-loaded-proof.js";
 import { mutationTransactionRuntimeEvidence } from "../mutation-transaction-analysis.js";
 import { scriptMutationTransactionRuntimeEvidence } from "../script-mutation-transaction-analysis.js";
-import { scriptCommandMutationRuntimeEvidence } from "../script-command-transaction-analysis.js";
-import { routeMutationRuntimeEvidence } from "../route-mutation-analysis.js";
+import { scriptCommandMutationRuntimeEvidence } from "./script-command-transaction-analysis.js";
+import { routeMutationRuntimeEvidence } from "./route-mutation-analysis.js";
 import { topologyRuntimeEvidence } from "../topology-runtime-evidence.js";
 import type { RuntimeProbeResponse } from "../../../project-model/src/index.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../../project-model/src/index.js";
-import { externalEventRootsForEntity } from "../entity-event-evidence.js";
+import { externalEventRootsForEntity } from "./entity-event-evidence.js";
 import { buildInspectionSemanticIr } from "../semantic-ir-stage.js";
 import { semanticIrDiagnostics } from "../semantic-ir-diagnostics.js";
-import { buildGameplayIntentModel } from "../gameplay-intent-stage.js";
+import { buildGameplayIntentModel } from "./gameplay-intent-stage.js";
 import { deriveGameplayIntentSurfaceSignals } from "./gameplay-intent-surface-signals.js";
 import { deriveGameplayResourceTextSignals } from "./gameplay-intent-resource-text.js";
 import { indexSelectedArtifactContractSources } from "./inspect-contract-source.js";
-import { analyzeGameplayIntentRuntime } from "../gameplay-intent-runtime-stage.js";
-import { analyzeEntityAiStacks } from "../entity-ai-stack-analysis.js";
-import { combatContractDiagnostics } from "../combat-contract-diagnostics.js";
-import { chunkLifecycleDiagnostics } from "../chunk-lifecycle-diagnostics.js";
-import { economyContractDiagnostics } from "../economy-contract-diagnostics.js";
-import { spatialAuthorityDiagnostics } from "../spatial-authority-diagnostics.js";
+import { analyzeGameplayIntentRuntime } from "./gameplay-intent-runtime-stage.js";
+import { analyzeEntityAiStacks } from "./entity-ai-stack-analysis.js";
+import { combatContractDiagnostics } from "./combat-contract-diagnostics.js";
+import { chunkLifecycleDiagnostics } from "./chunk-lifecycle-diagnostics.js";
+import { economyContractDiagnostics } from "./economy-contract-diagnostics.js";
+import { spatialAuthorityDiagnostics } from "./spatial-authority-diagnostics.js";
 import {
   assessObjectiveAuthorityDeclarations,
   objectiveAuthorityDiagnostics,
 } from "./state-authority-analysis.js";
-import { inventoryLifecycleDiagnostics } from "../inventory-lifecycle-diagnostics.js";
-import { entityAiNavigationDiagnostics } from "../entity-ai-navigation-diagnostics.js";
+import { inventoryLifecycleDiagnostics } from "./inventory-lifecycle-diagnostics.js";
+import { entityAiNavigationDiagnostics } from "./entity-ai-navigation-diagnostics.js";
 import { arenaLifecycleDiagnostics } from "../arena-lifecycle-diagnostics.js";
-import { analyzeRouteNavigationEnvironments } from "../route-navigation-environment-analysis.js";
+import { analyzeRouteNavigationEnvironments } from "./route-navigation-environment-analysis.js";
 import { analyzeReleaseIdentity } from "../release-identity-analysis.js";
 import type {
   GameDesignMapClassification,

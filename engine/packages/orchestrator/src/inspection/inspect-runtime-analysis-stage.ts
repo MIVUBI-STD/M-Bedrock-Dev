@@ -8,20 +8,20 @@ import { structureRuntimeDiagnostics } from "../../../../analyzers/diagnostics/s
 import type { DiagnosticFinding } from "../../../diagnostics/src/index.js";
 import type { GameplayIntentModel } from "../../../gameplay-intent/src/index.js";
 import type { InspectTargetProfile } from "../types.js";
-import type { InspectionSourceIndex } from "../inspect-source-index.js";
-import { analyzeFunctionTopology } from "../topology-analysis.js";
-import { analyzeStructureAndChunkRuntime } from "../structure-runtime-analysis.js";
-import { correlateScriptStructureLoads } from "../script-structure-correlation.js";
-import { derivePlacedEmbeddedCommands } from "../structure-placement-analysis.js";
-import { derivePlacementProofs } from "../structure-proof-analysis.js";
-import { correlateRouteMutations } from "../route-mutation-analysis.js";
-import { deriveGameplayRouteCorridors } from "../gameplay-route-corridor.js";
+import type { InspectionSourceIndex } from "./inspect-source-index.js";
+import { analyzeFunctionTopology } from "./topology-analysis.js";
+import { analyzeStructureAndChunkRuntime } from "./structure-runtime-analysis.js";
+import { correlateScriptStructureLoads } from "./script-structure-correlation.js";
+import { derivePlacedEmbeddedCommands } from "./structure-placement-analysis.js";
+import { derivePlacementProofs } from "./structure-proof-analysis.js";
+import { correlateRouteMutations } from "./route-mutation-analysis.js";
+import { deriveGameplayRouteCorridors } from "./gameplay-route-corridor.js";
 import { analyzeMutationTransactionOrdering } from "../mutation-transaction-analysis.js";
 import { analyzeScriptMutationTransactions } from "../script-mutation-transaction-analysis.js";
-import { analyzeScriptCommandMutationTransactions } from "../script-command-transaction-analysis.js";
+import { analyzeScriptCommandMutationTransactions } from "./script-command-transaction-analysis.js";
 import { extractArenaConcurrencyCapacity } from "../arena-capacity-extraction.js";
 import { arenaCapacityDiagnostics } from "../../../../analyzers/diagnostics/src/index.js";
-import { analyzeScriptSafeConfig } from "../script-safe-config-analysis.js";
+import { analyzeScriptSafeConfig } from "./script-safe-config-analysis.js";
 import {
   deriveCrossFileCallEdges,
 } from "../../../../analyzers/scripts/src/index.js";
@@ -29,18 +29,18 @@ import { reconcileArenaLayouts } from "../arena-layout-reconciliation.js";
 import { analyzeArenaLifecycleConvergence } from "../arena-lifecycle-analysis.js";
 import { analyzeArenaCleanupSurfaces } from "../arena-cleanup-surface-analysis.js";
 import { analyzeArenaStateIsolation } from "../arena-state-isolation-analysis.js";
-import { analyzeScriptSpatialMutations } from "../script-spatial-analysis.js";
-import { analyzeSpatialAuthorityCoverage } from "../spatial-authority-analysis.js";
+import { analyzeScriptSpatialMutations } from "./script-spatial-analysis.js";
+import { analyzeSpatialAuthorityCoverage } from "./spatial-authority-analysis.js";
 import { analyzeArenaGlobalState } from "../arena-global-state-analysis.js";
-import { analyzeInventoryLifecycle } from "../inventory-lifecycle-analysis.js";
-import { analyzeInventoryContract } from "../inventory-contract-analysis.js";
-import { analyzeInventoryRestoreOwnership } from "../inventory-restore-ownership-analysis.js";
-import { analyzeCombatLifecycle } from "../combat-lifecycle-analysis.js";
-import { analyzeCombatBehaviorContract } from "../combat-contract-analysis.js";
-import { analyzeChunkLifecycle } from "../chunk-lifecycle-analysis.js";
-import { analyzePersistenceSource } from "../persistence-source-analysis.js";
-import { analyzeRewardSources } from "../reward-source-analysis.js";
-import { analyzeEconomyBehaviorContract } from "../economy-contract-analysis.js";
+import { analyzeInventoryLifecycle } from "./inventory-lifecycle-analysis.js";
+import { analyzeInventoryContract } from "./inventory-contract-analysis.js";
+import { analyzeInventoryRestoreOwnership } from "./inventory-restore-ownership-analysis.js";
+import { analyzeCombatLifecycle } from "./combat-lifecycle-analysis.js";
+import { analyzeCombatBehaviorContract } from "./combat-contract-analysis.js";
+import { analyzeChunkLifecycle } from "./chunk-lifecycle-analysis.js";
+import { analyzePersistenceSource } from "./persistence-source-analysis.js";
+import { analyzeRewardSources } from "./reward-source-analysis.js";
+import { analyzeEconomyBehaviorContract } from "./economy-contract-analysis.js";
 import { createDiagnostic } from "../../../diagnostics/src/index.js";
 import {
   derivePreflightKnowledgeDemand,
@@ -93,9 +93,9 @@ export interface InspectionRuntimeAnalysisInput {
   parsedFunctions: InspectionSourceIndex["parsedFunctions"];
   parsedScripts: InspectionSourceIndex["parsedScripts"];
   parsedEntities: InspectionSourceIndex["parsedEntities"];
-  entityAiStack: import("../entity-ai-stack-analysis.js").EntityAiStackAnalysis;
-  routeNavigationEnvironment: import("../route-navigation-environment-analysis.js").RouteNavigationEnvironmentAnalysis;
-  combatRuntimeTelemetry: import("../combat-runtime-telemetry-analysis.js").CombatRuntimeTelemetryAnalysis;
+  entityAiStack: import("./entity-ai-stack-analysis.js").EntityAiStackAnalysis;
+  routeNavigationEnvironment: import("./route-navigation-environment-analysis.js").RouteNavigationEnvironmentAnalysis;
+  combatRuntimeTelemetry: import("./combat-runtime-telemetry-analysis.js").CombatRuntimeTelemetryAnalysis;
   parsedStructureModels:
     InspectionSourceIndex["parsedStructureModels"];
 }
