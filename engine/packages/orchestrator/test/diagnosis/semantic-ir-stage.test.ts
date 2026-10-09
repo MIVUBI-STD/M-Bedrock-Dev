@@ -109,6 +109,25 @@ describe("inspection semantic IR", () => {
     expect(ir.execution.edges.filter(edge => edge.targetLabel === "start").every(edge => edge.resolution === "unresolved")).toBe(true);
   });
 
+  it("separates same-name script execution regions and subscriptions across packs", () => {
+    const scriptText = [
+      'import { world } from "@minecraft/server";',
+      'world.afterEvents.playerSpawn.subscribe(() => { world.setDynamicProperty("join", 1); });',
+    ].join("\n");
+    const first = parseScriptFile("scripts/main", scriptText, {
+      artifactId: "a", relativePath: "behavior_packs/a/scripts/main.js",
+    });
+    const second = parseScriptFile("scripts/main", scriptText, {
+      artifactId: "a", relativePath: "behavior_packs/b/scripts/main.js",
+    });
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed: first }, { parsed: second }],
+    });
+    expect(ir.execution.regions.filter(region => region.kind === "script-module")).toHaveLength(2);
+    expect(ir.execution.regions.filter(region => region.kind === "event-source")).toHaveLength(2);
+    expect(ir.execution.edges.filter(edge => edge.kind === "event-dispatch")).toHaveLength(2);
+  });
+
   it("preserves explicit generation guards on deferred work", () => {
     const script = parseScriptFile(
       "guarded",

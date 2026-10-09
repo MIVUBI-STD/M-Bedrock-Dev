@@ -53,8 +53,8 @@ function sourceToken(source: SourceRef): string {
   ].join(":");
 }
 
-function scriptRegionId(scriptId: string, region: string): string {
-  return "exec:script:" + token(scriptId) + ":" + token(region);
+function scriptRegionId(source: SourceRef, region: string): string {
+  return "exec:script:" + token(source.relativePath) + ":" + token(region);
 }
 
 function functionSourceRegionId(source: SourceRef): string {
@@ -65,8 +65,9 @@ function eventRegionId(
   root: string,
   phase: string,
   event: string,
+  source: SourceRef,
 ): string {
-  return "exec:event:" + token(root + "." + phase + "." + event);
+  return "exec:event:" + token(source.relativePath) + ":" + token(root + "." + phase + "." + event);
 }
 
 function stateId(ref: StateSurfaceRef): string {
@@ -128,7 +129,7 @@ export function buildInspectionSemanticIr(
     region: string,
     source: SourceRef = script.source,
   ): string => {
-    const id = scriptRegionId(script.identifier, region);
+    const id = scriptRegionId(script.source, region);
     ensureRegion({
       id,
       kind: regionKind(region),
@@ -339,6 +340,7 @@ export function buildInspectionSemanticIr(
         event.root,
         event.phase,
         event.event,
+        event.source,
       );
       ensureRegion({
         id: eventId,
