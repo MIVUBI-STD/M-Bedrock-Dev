@@ -316,7 +316,7 @@ export async function indexInspectionSources(
         id: semanticNodeId(
           "script_file",
           "project",
-          scriptId,
+          file.relativePath,
         ),
         identity: {
           kind: "script_file",

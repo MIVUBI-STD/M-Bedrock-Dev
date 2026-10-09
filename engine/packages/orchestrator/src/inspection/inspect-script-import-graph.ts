@@ -13,16 +13,16 @@ export function populateInspectionScriptImportGraph(
   const resolutions = resolveScriptImports(
     parsedScripts.map((item) => item.parsed),
   );
-  const nodesByIdentifier = new Map(
-    parsedScripts.map((item) => [
-      item.parsed.identifier,
+  const nodesBySource = new Map(
+    parsedScripts.map(item => [
+      item.parsed.source.relativePath.replaceAll("\\", "/"),
       item.node,
     ]),
   );
 
   for (const resolution of resolutions) {
-    const from = nodesByIdentifier.get(
-      resolution.fromIdentifier,
+    const from = nodesBySource.get(
+      resolution.fromSourcePath.replaceAll("\\", "/"),
     );
     if (!from) continue;
 
@@ -39,9 +39,9 @@ export function populateInspectionScriptImportGraph(
       continue;
     }
 
-    const targetNode = resolution.targetIdentifier
-      ? nodesByIdentifier.get(
-          resolution.targetIdentifier,
+    const targetNode = resolution.targetSourcePath
+      ? nodesBySource.get(
+          resolution.targetSourcePath.replaceAll("\\", "/"),
         )
       : undefined;
 

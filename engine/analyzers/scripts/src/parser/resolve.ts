@@ -23,7 +23,9 @@ function relativeCandidates(fromPath: string, module: string): string[] {
 
 export interface ScriptImportResolution {
   fromIdentifier: string;
+  fromSourcePath: string;
   module: string;
+  targetSourcePath?: string;
   status: "resolved" | "unresolved" | "external";
   targetIdentifier?: string;
 }
@@ -43,6 +45,7 @@ export function resolveScriptImports(
       if (imported.kind !== "relative") {
         results.push({
           fromIdentifier: file.identifier,
+          fromSourcePath: file.source.relativePath,
           module: imported.module,
           status: "external",
         });
@@ -56,13 +59,16 @@ export function resolveScriptImports(
       if (target) {
         results.push({
           fromIdentifier: file.identifier,
+          fromSourcePath: file.source.relativePath,
           module: imported.module,
           status: "resolved",
           targetIdentifier: target.identifier,
+          targetSourcePath: target.source.relativePath,
         });
       } else {
         results.push({
           fromIdentifier: file.identifier,
+          fromSourcePath: file.source.relativePath,
           module: imported.module,
           status: "unresolved",
         });

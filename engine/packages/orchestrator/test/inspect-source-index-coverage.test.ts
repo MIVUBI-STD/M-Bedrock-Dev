@@ -523,6 +523,27 @@ describe("inspection source index coverage", () => {
       await rm(root, { recursive: true, force: true });
     }
   });
+  it("keeps identical script module names distinct by pack source", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-script-packs-"));
+    try {
+      const paths = [
+        "behavior_packs/a/scripts/main.js",
+        "behavior_packs/b/scripts/main.js",
+        "behavior_packs/a/scripts/util.js",
+      ];
+      for (const path of paths) {
+        await mkdir(join(root, path.substring(0, path.lastIndexOf("/"))), { recursive: true });
+        await writeFile(join(root, path), path.endsWith("main.js")
+          ? 'import "./util.js";' : 'export const value = 1;');
+      }
+      const index = await indexInspectionSources(root, "artifact:script-packs",
+        paths.map(relativePath => ({ relativePath, size: 32, contentHash: relativePath })));
+      expect(index.parsedScripts).toHaveLength(3);
+      expect(new Set(index.parsedScripts.map(item => item.node.id)).size).toBe(3);
+      expect(index.coverage.complete).toBe(true);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+
   it("preserves distinct source nodes when behavior packs share one function identifier", async () => {
     const root = await mkdtemp(join(tmpdir(), "m-bedrock-same-function-"));
     try {
