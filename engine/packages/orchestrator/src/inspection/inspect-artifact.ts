@@ -984,6 +984,7 @@ export async function inspectArtifact(
         nativeWorldScanIncomplete:
           nativeWorldDb.status === "failed" ||
           nativeWorldDb.truncated ||
+          !nativeWorldDb.actorContentComplete ||
           nativeWorldDb.chunkSignalsTruncated ||
           nativeWorldDb.chunkContentObservationsTruncated === true,
         sourceRelevantFiles:
