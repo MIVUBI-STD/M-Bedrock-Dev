@@ -27,6 +27,13 @@ export type ExecutionEdgeKind =
 
 export type IrResolution = "resolved" | "unresolved";
 
+/** An authored branch prerequisite, not an evaluated outcome. */
+export interface AuthoredBranchGuard {
+  readonly expression: string;
+  readonly branch: "true" | "false";
+  readonly source: SourceRef;
+}
+
 export interface ExecutionEdge {
   id: string;
   from: string;
@@ -38,6 +45,7 @@ export interface ExecutionEdge {
   scheduler?: "run" | "runTimeout" | "runInterval" | "runJob";
   /** Parsed local-call branching, not proof that a condition was satisfied. */
   controlFlow?: "unconditional" | "conditional" | "deferred";
+  lexicalGuards?: readonly AuthoredBranchGuard[];
   guardEvidence?: "explicit-generation-check" | "unresolved";
   guardIdentifiers?: readonly string[];
 }
@@ -65,6 +73,7 @@ export interface StateOperation {
   /** Authored assigned token; an object member is not its resolved runtime value. */
   writtenValue?: { kind: "literal"; value: string } |
     { kind: "member"; symbol: string };
+  lexicalGuards?: readonly AuthoredBranchGuard[];
 }
 
 export interface StateAuthorityBinding {

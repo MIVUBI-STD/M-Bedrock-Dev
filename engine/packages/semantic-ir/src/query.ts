@@ -1,4 +1,4 @@
-import type { SemanticIr, StateOperationKind } from "./types.js";
+import type { AuthoredBranchGuard, SemanticIr, StateOperationKind } from "./types.js";
 
 export interface ObservedExecutionTrace {
   /** Authored entry candidate, NOT proof that gameplay actually executed. */
@@ -13,6 +13,9 @@ export interface ObservedExecutionTrace {
   readonly stateOperationIds: readonly string[];
   /** Exact state writes on this potential path, not runtime mutation proof. */
   readonly stateWriteOperationIds: readonly string[];
+  /** Only lexical guard evidence, not complete path predicates. */
+  readonly guardedExecutionEdges: readonly { edgeId: string; guards: readonly AuthoredBranchGuard[] }[];
+  readonly guardedStateWrites: readonly { operationId: string; guards: readonly AuthoredBranchGuard[] }[];
 }
 
 /**
@@ -41,6 +44,8 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
     operations.set(operation.executionRegionId, list);
   }
   const temporal = new Map(ir.temporal.relations.map(item => [item.id, item]));
+  const edgeById = new Map(ir.execution.edges.map(edge => [edge.id, edge]));
+  const operationById = new Map(ir.state.operations.map(op => [op.id, op]));
   const incoming = new Set(ir.execution.edges
     .filter(edge => edge.resolution === "resolved" && edge.to !== undefined)
     .map(edge => edge.to!));
@@ -94,6 +99,14 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
       temporalRelationIds: sorted(times),
       stateOperationIds: sorted(state),
       stateWriteOperationIds: sorted(writes),
+      guardedExecutionEdges: sorted(edges).flatMap(id => {
+        const guards = edgeById.get(id)?.lexicalGuards;
+        return guards?.length ? [{ edgeId: id, guards }] : [];
+      }),
+      guardedStateWrites: sorted(writes).flatMap(id => {
+        const guards = operationById.get(id)?.lexicalGuards;
+        return guards?.length ? [{ operationId: id, guards }] : [];
+      }),
     };
   });
   return {

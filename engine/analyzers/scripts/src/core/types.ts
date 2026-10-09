@@ -134,11 +134,20 @@ export interface ScriptBlockMatchGuard {
   executionRegion: string;
 }
 
+/** Source-authored lexical condition; runtime satisfaction is unknown. */
+export interface ScriptLexicalGuard {
+  conditionText: string;
+  branch: "true" | "false";
+  predicate: ScriptGuardPredicate;
+  source: SourceRef;
+}
+
 export interface ScriptLocalFunctionCall {
   callerRegion: string;
   targetRegion: string;
   targetName: string;
   controlFlow?: "unconditional" | "conditional" | "deferred";
+  lexicalGuards?: readonly ScriptLexicalGuard[];
   source: SourceRef;
 }
 
@@ -204,6 +213,7 @@ export interface ScriptEnumValueComparison {
 }
 
 export interface ScriptStateMutation {
+  lexicalGuards?: readonly ScriptLexicalGuard[];
   target: string;
   targetName: string;
   value:

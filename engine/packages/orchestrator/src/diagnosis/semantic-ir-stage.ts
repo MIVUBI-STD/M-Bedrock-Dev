@@ -15,6 +15,7 @@ import {
 import {
   validateSemanticIr,
   type ExecutionEdge,
+  type AuthoredBranchGuard,
   type ExecutionRegion,
   type ExecutionRegionKind,
   type SemanticIr,
@@ -146,6 +147,17 @@ export function buildInspectionSemanticIr(
     return id;
   };
 
+  const irGuards = (guards?: readonly {
+    conditionText: string;
+    branch: "true" | "false";
+    source: SourceRef;
+  }[]): readonly AuthoredBranchGuard[] | undefined =>
+    guards?.length ? guards.map(guard => ({
+      expression: guard.conditionText,
+      branch: guard.branch,
+      source: guard.source,
+    })) : undefined;
+
   const addStateOperation = (
     executionRegionId: string,
     ref: StateSurfaceRef,
@@ -153,6 +165,7 @@ export function buildInspectionSemanticIr(
     source: SourceRef,
     targetHint?: string,
     writtenValue?: StateOperation["writtenValue"],
+    lexicalGuards?: readonly AuthoredBranchGuard[],
   ): void => {
     const surfaceId = ensureSurface(ref);
     const id = [
@@ -170,6 +183,7 @@ export function buildInspectionSemanticIr(
       source,
       ...(targetHint === undefined ? {} : { targetHint }),
       ...(writtenValue === undefined ? {} : { writtenValue }),
+      ...(lexicalGuards === undefined ? {} : { lexicalGuards }),
     });
   };
 
@@ -337,6 +351,9 @@ export function buildInspectionSemanticIr(
         resolution: "resolved",
         source: call.source,
         ...(call.controlFlow === undefined ? {} : { controlFlow: call.controlFlow }),
+        ...(irGuards(call.lexicalGuards) === undefined ? {} : {
+          lexicalGuards: irGuards(call.lexicalGuards),
+        }),
       });
     }
 
@@ -440,6 +457,7 @@ export function buildInspectionSemanticIr(
         mutation.value.kind === "literal"
           ? { kind: "literal", value: mutation.value.literal }
           : { kind: "member", symbol: mutation.value.symbol },
+        irGuards(mutation.lexicalGuards),
       );
     }
 

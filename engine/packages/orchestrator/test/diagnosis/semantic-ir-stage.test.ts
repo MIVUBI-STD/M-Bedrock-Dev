@@ -100,6 +100,75 @@ describe("inspection semantic IR", () => {
       written.every(write => item.stateWriteOperationIds.includes(write.id)))).toBe(true);
   });
 
+
+  it("propagates true/false and nested authored guards through Semantic IR and navigation traces", () => {
+    const source = { artifactId: "map:guards", relativePath: "scripts/waves.js" };
+    const parsed = parseScriptFile("waves", [
+      'let phase = "idle";',
+      'function spawnWave() {}',
+      'function skipWave() {}',
+      'function start(ready, wave) {',
+      '  if (ready) {',
+      '    if (wave > 0) { phase = "active"; spawnWave(); }',
+      '  } else { phase = "skipped"; skipWave(); }',
+      '  ready && spawnWave();',
+      '}',
+      'start(true, 1);',
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const spawnEdges = ir.execution.edges.filter(edge => edge.targetLabel === "spawnWave");
+    expect(spawnEdges).toHaveLength(2);
+    const nested = spawnEdges.find(edge => edge.lexicalGuards?.length === 2);
+    expect(nested?.lexicalGuards?.map(g => [g.expression, g.branch])).toEqual([
+      ["ready", "true"], ["wave > 0", "true"],
+    ]);
+    expect(nested?.lexicalGuards?.every(g =>
+      g.source.artifactId === source.artifactId &&
+      g.source.relativePath === source.relativePath &&
+      g.source.range?.lineStart !== undefined)).toBe(true);
+    const shortCircuit = spawnEdges.find(edge => edge.lexicalGuards?.length === 1);
+    expect(shortCircuit?.controlFlow).toBe("conditional");
+    expect(shortCircuit?.lexicalGuards?.[0]?.expression).toBe("ready");
+    const skip = ir.execution.edges.find(edge => edge.targetLabel === "skipWave");
+    expect(skip?.lexicalGuards?.map(g => g.branch)).toEqual(["false"]);
+    const writes = ir.state.operations.filter(op => op.writtenValue);
+    expect(writes.find(op => op.writtenValue?.kind === "literal" &&
+      op.writtenValue.value === "active")?.lexicalGuards?.map(g =>
+      [g.expression, g.branch])).toEqual([
+        ["ready", "true"], ["wave > 0", "true"],
+      ]);
+    expect(writes.find(op => op.writtenValue?.kind === "literal" &&
+      op.writtenValue.value === "skipped")?.lexicalGuards?.map(g =>
+      [g.expression, g.branch])).toEqual([["ready", "false"]]);
+    const traces = semanticIrExecutionTraces(ir).traces;
+    expect(traces.some(trace =>
+      trace.guardedExecutionEdges.some(entry => entry.edgeId === nested?.id) &&
+      trace.guardedStateWrites.some(entry => entry.guards.length === 2))).toBe(true);
+  });
+
+  it("does not infer lexical guard predicates from preceding return statements", () => {
+    const source = { artifactId: "map:guards", relativePath: "scripts/exit.js" };
+    const parsed = parseScriptFile("exit", [
+      'function spawnWave() {}',
+      'function start(ready) {',
+      '  if (!ready) return;',
+      '  spawnWave();',
+      '}',
+      'start(true);',
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const call = ir.execution.edges.find(edge => edge.targetLabel === "spawnWave");
+    expect(call?.controlFlow).toBe("conditional");
+    expect(call?.lexicalGuards).toBeUndefined();
+    expect(semanticIrExecutionTraces(ir).traces.some(trace =>
+      trace.conditionalExecutionEdgeIds.includes(call!.id) &&
+      !trace.guardedExecutionEdges.some(item => item.edgeId === call!.id))).toBe(true);
+  });
+
   it("carries authored tick roots into periodic Semantic IR without claiming missing targets", () => {
     const fn = parseMcFunction("start", "say ready", {
       artifactId: "a",

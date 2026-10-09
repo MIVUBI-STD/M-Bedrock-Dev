@@ -13,6 +13,7 @@ import type {
   ScriptEntityEventTrigger,
   ScriptDeferredCallback,
   ScriptLocalFunctionCall,
+  ScriptLexicalGuard,
   ScriptBlockMatchGuard,
   ScriptCommandLiteral,
   ScriptImport,
@@ -423,6 +424,59 @@ function hasPriorPossibleFunctionExit(
   }
 
   return false;
+}
+
+/** Only enclosing lexical branches, not inferred guards from previous exits. */
+function lexicalBranchGuards(
+  node: ts.Node,
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptLexicalGuard[] {
+  const guards: ScriptLexicalGuard[] = [];
+  let child: ts.Node = node;
+  let parent = node.parent;
+  while (parent) {
+    // A nested callback does not inherit an outer caller's execution guard.
+    if (ts.isFunctionLike(parent)) break;
+    let expression: ts.Expression | undefined;
+    let branch: "true" | "false" | undefined;
+    if (ts.isIfStatement(parent)) {
+      if (child === parent.thenStatement) {
+        expression = parent.expression;
+        branch = "true";
+      } else if (child === parent.elseStatement) {
+        expression = parent.expression;
+        branch = "false";
+      }
+    } else if (ts.isConditionalExpression(parent)) {
+      if (child === parent.whenTrue) {
+        expression = parent.condition;
+        branch = "true";
+      } else if (child === parent.whenFalse) {
+        expression = parent.condition;
+        branch = "false";
+      }
+    } else if (ts.isBinaryExpression(parent) && child === parent.right) {
+      if (parent.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken) {
+        expression = parent.left;
+        branch = "true";
+      } else if (parent.operatorToken.kind === ts.SyntaxKind.BarBarToken) {
+        expression = parent.left;
+        branch = "false";
+      }
+    }
+    if (expression && branch) {
+      guards.unshift({
+        conditionText: expression.getText(file),
+        branch,
+        predicate: guardPredicate(expression, file),
+        source: lineSource(file, expression, source),
+      });
+    }
+    child = parent;
+    parent = parent.parent;
+  }
+  return guards;
 }
 
 function localCallControlFlow(
@@ -2493,6 +2547,7 @@ export function parseScriptFile(
             ...target,
             value,
             executionRegion: localExecutionRegionId(node, file),
+            lexicalGuards: lexicalBranchGuards(node, file, source),
             source: lineSource(file, node, source),
           });
         }
@@ -2566,11 +2621,13 @@ export function parseScriptFile(
       ts.isIdentifier(node.expression) &&
       topLevelFunctionNames.has(node.expression.text)
     ) {
+      const lexicalGuards = lexicalBranchGuards(node, file, source);
       localFunctionCalls.push({
         callerRegion: localExecutionRegionId(node, file),
         targetRegion: "function:" + node.expression.text,
         targetName: node.expression.text,
-        controlFlow: localCallControlFlow(node),
+        controlFlow: lexicalGuards.length ? "conditional" : localCallControlFlow(node),
+        lexicalGuards,
         source: lineSource(file, node, source),
       });
     }
@@ -2581,11 +2638,13 @@ export function parseScriptFile(
 
       const localMethodTarget = directThisMethodTarget(node);
       if (localMethodTarget) {
+        const lexicalGuards = lexicalBranchGuards(node, file, source);
         localFunctionCalls.push({
           callerRegion: localExecutionRegionId(node, file),
           targetRegion: "function:" + localMethodTarget,
           targetName: localMethodTarget,
-          controlFlow: localCallControlFlow(node),
+          controlFlow: lexicalGuards.length ? "conditional" : localCallControlFlow(node),
+          lexicalGuards,
           source: lineSource(file, node, source),
         });
       }
