@@ -593,14 +593,8 @@ export function buildInspectionResult(
           .surfaceIds,
       unlistedPackRoots: input.packs
         .filter(pack => pack.worldAttachment === "not-listed" &&
-          [
-            ...input.sourceIndex.nodes.map(node => node.source.relativePath),
-            ...input.sourceIndex.tickFunctionRegistrations.map(item => item.source.relativePath),
-            ...input.sourceIndex.parsedDialogueDocuments.filter(item => item !== undefined).map(item => item.source.relativePath),
-            ...input.sourceIndex.coverage.parseFailures.map(item => item.relativePath),
-            ...input.sourceIndex.coverage.unsupportedRelevantFiles,
-            ...input.sourceIndex.coverage.semanticUnderstandingGaps,
-          ].some(path => path.startsWith(pack.root + "/")))
+          input.sourceIndex.coverage.fileOutcomes.some(outcome =>
+            outcome.relativePath.startsWith(pack.root + "/")))
         .map(pack => pack.root),
       sourceRelevantFiles:
         input.sourceIndex.coverage.relevantFiles,

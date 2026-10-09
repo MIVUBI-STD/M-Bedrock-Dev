@@ -86,6 +86,8 @@ describe("inspectDirectory", () => {
       await writeFile(join(root, "behavior_packs/b/functions/start.mcfunction"), "say ready");
       const withSource = await inspectDirectory(root);
       expect(withSource.gameplayDiscoveryClosure.unlistedPackRoots).toEqual(["behavior_packs/b"]);
+      expect(withSource.gameplayDiscoveryClosure.sourceRelevantFiles)
+        .toBeGreaterThan(withoutSource.gameplayDiscoveryClosure.sourceRelevantFiles);
     } finally { await rm(root, { recursive: true, force: true }); }
   });
 
