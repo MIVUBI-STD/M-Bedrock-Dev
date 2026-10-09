@@ -2,7 +2,7 @@ import {
   planLinearTopologyRepair,
   type TopologyRepairProposal,
 } from "../../../repair/src/index.js";
-import type { analyzeFunctionTopology } from "../topology-analysis.js";
+import type { analyzeFunctionTopology } from "../inspection/topology-analysis.js";
 
 export interface InspectionRepairCandidate {
   kind: "linear-topology-outlier";

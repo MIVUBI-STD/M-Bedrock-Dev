@@ -5,8 +5,8 @@ import {
   parseScriptFile,
 } from "../../../../analyzers/scripts/src/index.js";
 import ts from "typescript";
-import { analyzeFunctionTopology } from "../topology-analysis.js";
-import { inspectDirectory } from "../inspect.js";
+import { analyzeFunctionTopology } from "../inspection/topology-analysis.js";
+import { inspectDirectory } from "../inspection/inspect.js";
 import { summarizeValidation } from "../../../validation/src/index.js";
 import type {
   TransactionValidationResult,
@@ -21,13 +21,13 @@ import {
 } from "../../../project-model/src/index.js";
 import {
   indexInspectionSources,
-} from "../inspect-source-index.js";
+} from "../inspection/inspect-source-index.js";
 import {
   enrichInspectionSemanticGraph,
-} from "../inspect-graph-enrichment.js";
+} from "../inspection/inspect-graph-enrichment.js";
 import {
   populateInspectionScriptImportGraph,
-} from "../inspect-script-import-graph.js";
+} from "../inspection/inspect-script-import-graph.js";
 import type { PatchTransaction } from "../../../repair/src/index.js";
 import type { MutationWorkspace } from "../../../repair/src/index.js";
 import type { InspectTargetProfile } from "../types.js";

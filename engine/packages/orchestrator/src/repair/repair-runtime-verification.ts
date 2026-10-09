@@ -21,7 +21,7 @@ import type {
 } from "./repair-proof-bundle.js";
 import {
   assessRuntimeTemporalRequirements,
-} from "../runtime-temporal-analysis.js";
+} from "../diagnosis/runtime-temporal-analysis.js";
 
 export interface RepairRuntimeStateRequirement {
   id: string;

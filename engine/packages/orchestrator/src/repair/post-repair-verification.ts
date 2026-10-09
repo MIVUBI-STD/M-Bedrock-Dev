@@ -3,7 +3,7 @@ import type {
 } from "../../../diagnostics/src/index.js";
 import type {
   InspectArtifactResult,
-} from "../inspect-artifact.js";
+} from "../inspection/inspect-artifact.js";
 import { assessArenaProofReuse, type ArenaProofReuseReport } from "../arena-proof-reuse.js";
 import { derivePostRepairValidationObligations, type PostRepairValidationObligations } from "./post-repair-validation-obligations.js";
 

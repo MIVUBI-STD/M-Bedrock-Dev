@@ -18,12 +18,12 @@ import type { TransactionValidationResult } from "../../../validation/src/index.
 import {
   proveStaticGraphPreservation,
   type StaticGraphPreservationProof,
-} from "../static-graph-preservation-proof.js";
+} from "../diagnosis/static-graph-preservation-proof.js";
 import type { InspectTargetProfile } from "../types.js";
 import type { RepairProofBundle } from "./repair-proof-bundle.js";
 import { validateRepairProofBundle } from "./repair-proof-bundle.js";
 import { validatePatchTransaction } from "./repair-validation.js";
-import { semanticGraphFingerprint } from "../semantic-graph-fingerprint.js";
+import { semanticGraphFingerprint } from "../workflow/semantic-graph-fingerprint.js";
 import {
   validateApprovedBugSet,
 } from "../../../bug-report/src/index.js";
