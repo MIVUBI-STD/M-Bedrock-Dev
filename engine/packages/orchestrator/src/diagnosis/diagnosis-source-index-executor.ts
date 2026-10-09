@@ -8,7 +8,7 @@ import type {
 import {
   indexInspectionSources,
   type InspectionSourceIndex,
-} from "../inspect-source-index.js";
+} from "../inspection/inspect-source-index.js";
 
 export const SOURCE_INDEX_EXECUTOR_REVISION =
   "source-index-executor:2";

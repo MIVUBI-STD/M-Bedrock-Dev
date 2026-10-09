@@ -8,13 +8,13 @@ import type {
 } from "../../../diagnosis-pipeline/src/index.js";
 import {
   buildGameplayIntentModel,
-} from "../gameplay-intent-stage.js";
+} from "../inspection/gameplay-intent-stage.js";
 import {
   indexSelectedArtifactContractSources,
 } from "../inspection/inspect-contract-source.js";
 import type {
   InspectionSourceIndex,
-} from "../inspect-source-index.js";
+} from "../inspection/inspect-source-index.js";
 
 export const INTENT_GROUNDING_EXECUTOR_REVISION =
   "intent-grounding-executor:3";

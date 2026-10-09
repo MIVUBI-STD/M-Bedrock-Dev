@@ -12,7 +12,7 @@ import {
 } from "../semantic-ir-stage.js";
 import type {
   InspectionSourceIndex,
-} from "../inspect-source-index.js";
+} from "../inspection/inspect-source-index.js";
 
 export const SEMANTIC_IR_EXECUTOR_REVISION =
   "semantic-ir-executor:2";

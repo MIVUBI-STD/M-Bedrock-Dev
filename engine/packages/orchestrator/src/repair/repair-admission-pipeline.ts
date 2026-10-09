@@ -40,7 +40,7 @@ import type {
 import type {
   RepairAdmissionDecision,
 } from "./repair-admission.js";
-import { semanticGraphFingerprint } from "../semantic-graph-fingerprint.js";
+import { semanticGraphFingerprint } from "../workflow/semantic-graph-fingerprint.js";
 
 export type RepairWorkflowAuthority =
   | {

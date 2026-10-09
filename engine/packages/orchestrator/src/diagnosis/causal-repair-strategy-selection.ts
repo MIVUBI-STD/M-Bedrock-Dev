@@ -12,13 +12,13 @@ import type {
 import {
   deriveRepairInvariants,
   type RepairInvariantDerivation,
-} from "../repair-invariant-derivation.js";
+} from "../repair/repair-invariant-derivation.js";
 import {
   selectRepairStrategy,
   type RepairStrategyCandidate,
   type RepairStrategySelection,
   type RepairStrategySelectionPolicy,
-} from "../repair-strategy-selection.js";
+} from "../repair/repair-strategy-selection.js";
 
 export type CausalRepairStrategySelection =
   | {
