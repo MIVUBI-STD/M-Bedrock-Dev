@@ -46,6 +46,24 @@ describe("inspectDirectory", () => {
     expect(result.semanticIr.unresolvedExecutionTargets).toBeGreaterThan(0);
     expect(result.decisionBasis.semanticIrRevision).toMatch(/^[a-f0-9]{64}$/);
   });
+  it("keeps duplicate function targets unresolved for Discovery Closure", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-ambiguous-"));
+    try {
+      for (const pack of ["a", "b"]) {
+        const dir = join(root, "behavior_packs", pack, "functions");
+        await mkdir(dir, { recursive: true });
+        await writeFile(join(dir, "start.mcfunction"), "say ready\\n");
+      }
+      await writeFile(join(root, "behavior_packs", "a", "functions", "tick.json"),
+        JSON.stringify({ values: ["start"] }));
+      const result = await inspectDirectory(root);
+      expect(result.gameplayDiscoveryClosure.unresolvedReferences).toBeGreaterThan(0);
+      expect(result.gameplayDiscoveryClosure.status).not.toBe("COMPLETE");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("distinguishes declared world pack membership from manifest presence", async () => {
     const root = await mkdtemp(join(tmpdir(), "m-bedrock-pack-list-"));
     try {

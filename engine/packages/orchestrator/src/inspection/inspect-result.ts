@@ -566,13 +566,12 @@ export function buildInspectionResult(
     unsupportedSurfaceSignals,
   });
 
+  // Ambiguous targets are not resolved execution evidence: include them
+  // in Discovery's unresolved reference accounting without choosing a pack.
   const discoveryUnresolvedReferences =
     graph.unresolvedEdges()
-      .filter(
-        (edge) =>
-          edge.type !==
-          "IMPORTS_MINECRAFT_MODULE",
-      ).length;
+      .filter((edge) => edge.type !== "IMPORTS_MINECRAFT_MODULE").length +
+    graph.ambiguousEdges().length;
   const gameplaySemantic = projectGameplaySemanticModel(gameplayWorld);
   const engineeringAssessment = projectMapEngineeringAssessment(gameplayWorld);
   const hiddenGameplayDefects =
