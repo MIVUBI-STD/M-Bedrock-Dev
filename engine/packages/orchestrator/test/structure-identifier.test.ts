@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { structureIdentifier } from "../src/inspect.js";
+import { structureIdentifier } from "../src/inspection/inspect.js";
 
 describe("structureIdentifier", () => {
   it("maps structures/<namespace>/<name>.mcstructure to namespace:name", () => {

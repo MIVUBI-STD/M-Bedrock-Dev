@@ -2,7 +2,7 @@ import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { inspectDirectory } from "../src/inspect.js";
+import { inspectDirectory } from "../src/inspection/inspect.js";
 
 describe("cross-domain inspect integration", () => {
   it("correlates manifest and script facts and reports undeclared Minecraft modules", async () => {

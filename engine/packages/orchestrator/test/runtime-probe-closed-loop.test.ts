@@ -8,8 +8,8 @@ import {
   createRuntimeProbeExecutor,
   executeRuntimeProbeBundle,
 } from "../../telemetry/src/index.js";
-import { inspectDirectory } from "../src/inspect.js";
-import { prepareRuntimeProbeBundle } from "../src/runtime-probe-bundle.js";
+import { inspectDirectory } from "../src/inspection/inspect.js";
+import { prepareRuntimeProbeBundle } from "../src/diagnosis/runtime-probe-bundle.js";
 
 const catalog: KnowledgeCatalog = {
   schemaVersion: 1,
