@@ -316,6 +316,81 @@ describe("persistence source analysis", () => {
     expect(candidate?.sequentialGenerationEvidence).toEqual([]);
   });
 
+  it("blocks generation/reset correlation through a mutable receiver alias", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena) {",
+      "  arena.generation++;",
+      "  let ref = arena;",
+      "  mutate(ref);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena));",
+    ].join("\n"), {
+      artifactId: "map:mutable-alias", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.coLocatedGenerationInvalidationSources).toHaveLength(1);
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("blocks generation/reset correlation through an assigned transitive alias", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena) {",
+      "  arena.generation++;",
+      "  let ref;",
+      "  ref = arena;",
+      "  const nestedRef = ref;",
+      "  mutate(nestedRef);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena));",
+    ].join("\n"), {
+      artifactId: "map:transitive-alias", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("blocks a conditional branch that creates and calls a receiver alias", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, shouldMutate) {",
+      "  arena.generation++;",
+      "  if (shouldMutate) {",
+      "    const ref = arena;",
+      "    mutate(ref);",
+      "  }",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, true));",
+    ].join("\n"), {
+      artifactId: "map:conditional-alias", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("does not treat an unrelated mutable alias or helper call as arena mutation", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, otherArena) {",
+      "  arena.generation++;",
+      "  let ref = otherArena;",
+      "  mutate(ref);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, otherArena));",
+    ].join("\n"), {
+      artifactId: "map:unrelated-alias", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toEqual([
+      expect.objectContaining({
+        arenaExpression: "arena",
+        order: "before-reset",
+        evidenceStatus: "SOURCE_SEQUENCE_ONLY",
+      }),
+    ]);
+  });
+
   it("blocks receiver method calls and callback captures before reset", () => {
     const script = parseScriptFile("arena", [
       "function cleanup(arena) {",

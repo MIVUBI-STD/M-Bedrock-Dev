@@ -136,25 +136,47 @@ export function directStatementSequence(
   const root = receiver.split(".")[0]!;
   const names = new Set<string>([root]);
   const callSources: SourceRef[] = [];
+
+  const aliasValue = (expression: ts.Expression): boolean => {
+    if (ts.isParenthesizedExpression(expression) ||
+        ts.isAsExpression(expression) ||
+        ts.isTypeAssertionExpression(expression) ||
+        ts.isNonNullExpression(expression)) {
+      return aliasValue(expression.expression);
+    }
+    if (ts.isIdentifier(expression)) return names.has(expression.text);
+    // This is a possible alias to receiver-owned state, not proof of
+    // matching runtime instance identity.
+    if (ts.isPropertyAccessExpression(expression)) {
+      return aliasValue(expression.expression);
+    }
+    return expression.kind === ts.SyntaxKind.ThisKeyword && names.has("this");
+  };
+
   for (const previous of preceding) {
-    // This is deliberately a bounded same-block const alias. Unknown
-    // interprocedural aliases stay unresolved, not inferred as equal owners.
-    if (ts.isVariableStatement(previous) &&
-        (previous.declarationList.flags & ts.NodeFlags.Const) !== 0) {
-      for (const declaration of previous.declarationList.declarations) {
-        if (!ts.isIdentifier(declaration.name) || !declaration.initializer) {
-          continue;
-        }
-        const value = declaration.initializer.getText(file);
-        if ([...names].some(name =>
-          value === name || value.startsWith(name + "."))) {
-          names.add(declaration.name.text);
-        }
+    // Traverse one preceding statement in source order. A mutable local may
+    // gain a receiver alias via "let ref = arena" or "ref = arena", and a
+    // second alias may be assigned from ref before a later helper call.
+    // Keep possible aliases even after reassignment: without SSA/runtime
+    // evidence, removing them would incorrectly prove call purity.
+    let foundCall = false;
+    const visit = (node: ts.Node): void => {
+      if (ts.isFunctionLike(node)) return;
+      if (ts.isVariableDeclaration(node) &&
+          ts.isIdentifier(node.name) &&
+          node.initializer && aliasValue(node.initializer)) {
+        names.add(node.name.text);
       }
-    }
-    if (hasDescendant(previous, item => receiverCall(item, names))) {
-      callSources.push(at(file, previous, source));
-    }
+      if (ts.isBinaryExpression(node) &&
+          node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+          ts.isIdentifier(node.left) && aliasValue(node.right)) {
+        names.add(node.left.text);
+      }
+      if (receiverCall(node, names)) foundCall = true;
+      ts.forEachChild(node, visit);
+    };
+    visit(previous);
+    if (foundCall) callSources.push(at(file, previous, source));
   }
   return {
     blockSource: at(file, block, source),
