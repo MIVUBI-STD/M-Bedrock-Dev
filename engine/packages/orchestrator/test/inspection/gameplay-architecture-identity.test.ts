@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
+import { buildInspectionSemanticIr } from "../../src/diagnosis/semantic-ir-stage.js";
 import {
   deriveGameplayArchitectureNavigation,
   type GameplayScenarioGraph,
@@ -110,6 +112,81 @@ describe("arena identity evidence propagation", () => {
     expect(trace[0]?.evidenceMatchedComponentIds).toEqual(["component:join"]);
     expect(navigation.semanticIrCoverage.regionsOutsideTraces)
       .toEqual(["function:unused"]);
+    expect(navigation.knowledgeCoverage.wholeGameUnderstandingStatus)
+      .toBe("NOT_MEASURABLE");
+  });
+
+  it("keeps authored true/false branches distinct and maps only exact scenario evidence", () => {
+    const source = {
+      artifactId: "map:one",
+      relativePath: "behavior_packs/demo/scripts/round.js",
+    };
+    const parsed = parseScriptFile("round", [
+      'import { world } from "@minecraft/server";',
+      'let phase = "idle";',
+      'function startRound(ready) {',
+      '  if (ready) { phase = "active"; return { action: "start" }; }',
+      '  else { phase = "blocked"; return { action: "abort" }; }',
+      '}',
+      'world.afterEvents.playerSpawn.subscribe(() => startRound(true));',
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const authored = ir.execution.outcomes ?? [];
+    const start = authored.find(outcome => outcome.value === "start");
+    const abort = authored.find(outcome => outcome.value === "abort");
+    expect(start).toBeDefined();
+    expect(abort).toBeDefined();
+    const graph: GameplayScenarioGraph = {
+      ...emptyGraph,
+      components: [{
+        id: "component:start", label: "Start candidate",
+        kind: "outcome", technicalRole: "authored return",
+        gameplayPurpose: "unverified", evidenceIds: [start!.id],
+        usedByScenarioIds: ["scenario:round"], orphan: false,
+      }, {
+        // A similar-looking but different ID must never acquire ownership.
+        id: "component:other", label: "Abort-like candidate",
+        kind: "outcome", technicalRole: "unrelated",
+        gameplayPurpose: "unverified", evidenceIds: [abort!.id + ":other"],
+        usedByScenarioIds: [], orphan: true,
+      }],
+      scenarios: [{
+        id: "scenario:round", label: "Round candidate",
+        gameplayStage: "ACTIVE", purpose: "unverified",
+        sourceSubjectIds: [], componentIds: ["component:start"],
+        causalLinkIds: [], playerCounts: [],
+        requiredKnowledgeIds: [], composedScenarioIds: [],
+      }],
+    };
+    const navigation = deriveGameplayArchitectureNavigation(graph, {
+      relevantSourceCount: 1, indexedSourceCount: 1,
+      arenaDetected: false, semanticIr: ir,
+    });
+    const trace = navigation.semanticIrCoverage.executionTraces.find(item =>
+      item.entryKind === "event-source" &&
+      item.branchPoints.some(point => point.expression === "ready"));
+    expect(trace).toBeDefined();
+    const point = trace!.branchPoints.find(item => item.expression === "ready")!;
+    expect(point.source.artifactId).toBe(source.artifactId);
+    expect(point.source.range?.lineStart).toBe(4);
+    expect(point.branches.map(arm => arm.branch)).toEqual(["true", "false"]);
+    const yes = point.branches.find(arm => arm.branch === "true")!;
+    const no = point.branches.find(arm => arm.branch === "false")!;
+    expect(yes.returnOutcomeIds).toContain(start!.id);
+    expect(no.returnOutcomeIds).toContain(abort!.id);
+    expect(yes.returnOutcomeIds).not.toContain(abort!.id);
+    expect(no.returnOutcomeIds).not.toContain(start!.id);
+    expect(yes.stateWriteOperationIds.length).toBeGreaterThan(0);
+    expect(no.stateWriteOperationIds.length).toBeGreaterThan(0);
+    expect(yes.evidenceMatchedComponentIds).toEqual(["component:start"]);
+    expect(yes.scenarioPlacementIds).toEqual(["scenario:round"]);
+    expect(no.evidenceMatchedComponentIds).toEqual([]);
+    expect(no.scenarioPlacementIds).toEqual([]);
+    expect(no.evidenceWithoutComponentIds).toContain(abort!.id);
+    // A trace visits both arms as possibilities; it never says both occurred.
+    expect(trace!.returnOutcomeIds).toEqual([abort!.id, start!.id].sort());
     expect(navigation.knowledgeCoverage.wholeGameUnderstandingStatus)
       .toBe("NOT_MEASURABLE");
   });

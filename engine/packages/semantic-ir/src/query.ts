@@ -1,5 +1,20 @@
 import type { AuthoredBranchGuard, SemanticIr, StateOperationKind } from "./types.js";
 
+/**
+ * A single lexically authored condition at one exact source range.
+ * Arms are source-observed alternatives, NOT exhaustive executable paths.
+ */
+export interface ObservedBranchPoint {
+  readonly expression: string;
+  readonly source: AuthoredBranchGuard["source"];
+  readonly branches: readonly {
+    readonly branch: "true" | "false";
+    readonly executionEdgeIds: readonly string[];
+    readonly stateWriteOperationIds: readonly string[];
+    readonly returnOutcomeIds: readonly string[];
+  }[];
+}
+
 export interface ObservedExecutionTrace {
   /** Authored entry candidate, NOT proof that gameplay actually executed. */
   readonly entryRegionId: string;
@@ -21,6 +36,9 @@ export interface ObservedExecutionTrace {
   /** Only lexical guard evidence, not complete path predicates. */
   readonly guardedExecutionEdges: readonly { edgeId: string; guards: readonly AuthoredBranchGuard[] }[];
   readonly guardedStateWrites: readonly { operationId: string; guards: readonly AuthoredBranchGuard[] }[];
+  readonly guardedReturnOutcomes: readonly { outcomeId: string; guards: readonly AuthoredBranchGuard[] }[];
+  /** Correlation by the exact authored guard site, never by matching words. */
+  readonly branchPoints: readonly ObservedBranchPoint[];
 }
 
 /**
@@ -63,6 +81,7 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
   const temporal = new Map(ir.temporal.relations.map(item => [item.id, item]));
   const edgeById = new Map(ir.execution.edges.map(edge => [edge.id, edge]));
   const operationById = new Map(ir.state.operations.map(op => [op.id, op]));
+  const outcomeById = new Map((ir.execution.outcomes ?? []).map(op => [op.id, op]));
   const incoming = new Set(ir.execution.edges
     .filter(edge => edge.resolution === "resolved" && edge.to !== undefined)
     .map(edge => edge.to!));
@@ -116,6 +135,83 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
         }
       }
     }
+    // Build lexical branch associations from the exact same guard site.
+    // Different function regions or different source ranges cannot coalesce
+    // merely because their guard expression text happens to match.
+    type BranchArm = {
+      executionEdgeIds: Set<string>;
+      stateWriteOperationIds: Set<string>;
+      returnOutcomeIds: Set<string>;
+    };
+    const arm = (): BranchArm => ({
+      executionEdgeIds: new Set(),
+      stateWriteOperationIds: new Set(),
+      returnOutcomeIds: new Set(),
+    });
+    const points = new Map<string, {
+      expression: string;
+      source: AuthoredBranchGuard["source"];
+      true: BranchArm;
+      false: BranchArm;
+    }>();
+    const include = (
+      guards: readonly AuthoredBranchGuard[] | undefined,
+      id: string,
+      kind: keyof BranchArm,
+    ): void => {
+      for (const guard of guards ?? []) {
+        const range = guard.source.range;
+        // No line/column means no unique branch-point identity. Keep the
+        // individual guard evidence, but refuse to merge unrelated branches.
+        if (range?.lineStart === undefined ||
+            range.columnStart === undefined ||
+            range.lineEnd === undefined ||
+            range.columnEnd === undefined) continue;
+        const key = JSON.stringify([
+          guard.source.artifactId, guard.source.relativePath,
+          guard.source.jsonPointer ?? null,
+          range.lineStart, range.columnStart,
+          range.lineEnd, range.columnEnd, guard.expression,
+        ]);
+        let point = points.get(key);
+        if (!point) {
+          point = {
+            expression: guard.expression, source: guard.source,
+            true: arm(), false: arm(),
+          };
+          points.set(key, point);
+        }
+        point[guard.branch][kind].add(id);
+      }
+    };
+    for (const id of sorted(edges)) {
+      include(edgeById.get(id)?.lexicalGuards, id, "executionEdgeIds");
+    }
+    for (const id of sorted(writes)) {
+      include(operationById.get(id)?.lexicalGuards, id, "stateWriteOperationIds");
+    }
+    for (const id of sorted(returnOutcomes)) {
+      include(outcomeById.get(id)?.lexicalGuards, id, "returnOutcomeIds");
+    }
+    const branchPoints: ObservedBranchPoint[] = [...points]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([, point]) => ({
+        expression: point.expression,
+        source: point.source,
+        branches: (["true", "false"] as const)
+          .filter(branch => {
+            const value = point[branch];
+            return value.executionEdgeIds.size > 0 ||
+              value.stateWriteOperationIds.size > 0 ||
+              value.returnOutcomeIds.size > 0;
+          })
+          .map(branch => ({
+            branch,
+            executionEdgeIds: sorted(point[branch].executionEdgeIds),
+            stateWriteOperationIds: sorted(point[branch].stateWriteOperationIds),
+            returnOutcomeIds: sorted(point[branch].returnOutcomeIds),
+          })),
+      }));
     return {
       entryRegionId: entry.id,
       entryKind: entry.kind,
@@ -137,6 +233,11 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
         const guards = operationById.get(id)?.lexicalGuards;
         return guards?.length ? [{ operationId: id, guards }] : [];
       }),
+      guardedReturnOutcomes: sorted(returnOutcomes).flatMap(id => {
+        const guards = outcomeById.get(id)?.lexicalGuards;
+        return guards?.length ? [{ outcomeId: id, guards }] : [];
+      }),
+      branchPoints,
     };
   });
   return {

@@ -7,6 +7,7 @@ import type {
 import {
   semanticIrExecutionTraces,
   type ObservedExecutionTrace,
+  type ObservedBranchPoint,
   type SemanticIr,
 } from "../../../semantic-ir/src/index.js";
 import type { ArenaRegionPlan } from "../../../../analyzers/topology/src/index.js";
@@ -237,8 +238,17 @@ export interface GameplayArchitectureNavigation {
    */
   readonly semanticIrCoverage: {
     /** Read-only technical chains; do not interpret as complete gameplay flow. */
-    readonly executionTraces: readonly (ObservedExecutionTrace & {
+    readonly executionTraces: readonly (Omit<ObservedExecutionTrace, "branchPoints"> & {
       readonly evidenceMatchedComponentIds: readonly string[];
+      readonly branchPoints: readonly (Omit<ObservedBranchPoint, "branches"> & {
+        /** Exact evidence association only; not a proven gameplay branch. */
+        readonly branches: readonly (ObservedBranchPoint["branches"][number] & {
+          readonly evidenceMatchedComponentIds: readonly string[];
+          /** Existing scenario membership, not player-journey proof. */
+          readonly scenarioPlacementIds: readonly string[];
+          readonly evidenceWithoutComponentIds: readonly string[];
+        })[];
+      })[];
     })[];
     /** Includes isolated callbacks/functions; absence from a trace is not absence from the game. */
     readonly regionsOutsideTraces: readonly string[];
@@ -731,6 +741,35 @@ export function deriveGameplayArchitectureNavigation(
           evidenceMatchedComponentIds: sorted(graph.components
             .filter(component => component.evidenceIds.some(id => evidence.has(id)))
             .map(component => component.id)),
+          // Explicit arm-by-arm correlation: a component attached to the
+          // true arm is NOT automatically evidence for the false arm.
+          branchPoints: trace.branchPoints.map(point => ({
+            ...point,
+            branches: point.branches.map(branch => {
+              const branchIds = sorted([
+                ...branch.executionEdgeIds,
+                ...branch.stateWriteOperationIds,
+                ...branch.returnOutcomeIds,
+              ]);
+              const branchIdSet = new Set(branchIds);
+              const matchedComponents = graph.components.filter(component =>
+                component.evidenceIds.some(id => branchIdSet.has(id)));
+              const linkedIds = new Set(matchedComponents.flatMap(component =>
+                component.evidenceIds.filter(id => branchIdSet.has(id))));
+              const matchedComponentIds = new Set(
+                matchedComponents.map(component => component.id));
+              return {
+                ...branch,
+                evidenceMatchedComponentIds: sorted([...matchedComponentIds]),
+                scenarioPlacementIds: sorted(graph.scenarios
+                  .filter(scenario => scenario.componentIds.some(id =>
+                    matchedComponentIds.has(id)))
+                  .map(scenario => scenario.id)),
+                evidenceWithoutComponentIds: branchIds.filter(id =>
+                  !linkedIds.has(id)),
+              };
+            }),
+          })),
         };
       }),
       regionsOutsideTraces: observedExecution.regionsOutsideTraces,
