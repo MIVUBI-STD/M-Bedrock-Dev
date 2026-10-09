@@ -65,6 +65,30 @@ describe("inspectDirectory", () => {
     }
   });
 
+  it("does not treat an icon-only unlisted pack as gameplay source", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-icon-only-"));
+    try {
+      for (const name of ["a", "b"]) {
+        await mkdir(join(root, "behavior_packs", name, "functions"), { recursive: true });
+        await writeFile(join(root, "behavior_packs", name, "manifest.json"), JSON.stringify({
+          format_version: 2,
+          header: { name, uuid: name === "a" ? "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" : "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", version: [1,0,0] },
+          modules: [{ type: "data", uuid: "cccccccc-cccc-cccc-cccc-cccccccccccc", version: [1,0,0] }],
+        }));
+      }
+      await writeFile(join(root, "world_behavior_packs.json"), JSON.stringify([
+        { pack_id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", version: [1,0,0] },
+      ]));
+      await writeFile(join(root, "behavior_packs/b/pack_icon.png"), "icon");
+      await writeFile(join(root, "behavior_packs/a/functions/start.mcfunction"), "say ready");
+      const withoutSource = await inspectDirectory(root);
+      expect(withoutSource.gameplayDiscoveryClosure.unlistedPackRoots).toEqual([]);
+      await writeFile(join(root, "behavior_packs/b/functions/start.mcfunction"), "say ready");
+      const withSource = await inspectDirectory(root);
+      expect(withSource.gameplayDiscoveryClosure.unlistedPackRoots).toEqual(["behavior_packs/b"]);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+
   it("distinguishes declared world pack membership from manifest presence", async () => {
     const root = await mkdtemp(join(tmpdir(), "m-bedrock-pack-list-"));
     try {

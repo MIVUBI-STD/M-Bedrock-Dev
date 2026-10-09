@@ -593,8 +593,12 @@ export function buildInspectionResult(
           .surfaceIds,
       unlistedPackRoots: input.packs
         .filter(pack => pack.worldAttachment === "not-listed" &&
-          input.files.some(file => file.relativePath.startsWith(pack.root + "/") &&
-            !file.relativePath.endsWith("/manifest.json")))
+          [
+            ...input.sourceIndex.nodes.map(node => node.source.relativePath),
+            ...input.sourceIndex.tickFunctionRegistrations.map(item => item.source.relativePath),
+            ...input.sourceIndex.coverage.parseFailures.map(item => item.relativePath),
+            ...input.sourceIndex.coverage.unsupportedRelevantFiles,
+          ].some(path => path.startsWith(pack.root + "/")))
         .map(pack => pack.root),
       sourceRelevantFiles:
         input.sourceIndex.coverage.relevantFiles,
