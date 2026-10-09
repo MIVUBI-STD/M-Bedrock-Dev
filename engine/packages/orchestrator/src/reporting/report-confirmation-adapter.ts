@@ -8,7 +8,7 @@ import {
 } from "../../../gameplay-intent/src/index.js";
 import type {
   GameplayIntentRuntimeAssessment,
-} from "../gameplay-intent-runtime-stage.js";
+} from "../inspection/gameplay-intent-runtime-stage.js";
 
 function selectedArtifactInvariantEvidence(
   intent: GameplayIntentModel,

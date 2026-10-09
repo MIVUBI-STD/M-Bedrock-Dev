@@ -19,21 +19,21 @@ import type { KnowledgeCatalog } from "../../../knowledge/src/index.js";
 import type {
   InspectDirectoryResult,
   InspectTargetProfile,
-} from "../types.js";
+} from "../core/types.js";
 import { analyzeKnowledgeRuntime } from "./knowledge-runtime-analysis.js";
 import { structureRuntimeEvidence } from "./structure-runtime-evidence.js";
 import { scriptStructureRuntimeEvidence } from "./script-structure-correlation.js";
-import { areaLoadedBlockWriteEvidence } from "../area-loaded-proof.js";
-import { mutationTransactionRuntimeEvidence } from "../mutation-transaction-analysis.js";
-import { scriptMutationTransactionRuntimeEvidence } from "../script-mutation-transaction-analysis.js";
+import { areaLoadedBlockWriteEvidence } from "../diagnosis/area-loaded-proof.js";
+import { mutationTransactionRuntimeEvidence } from "../repair/mutation-transaction-analysis.js";
+import { scriptMutationTransactionRuntimeEvidence } from "../repair/script-mutation-transaction-analysis.js";
 import { scriptCommandMutationRuntimeEvidence } from "./script-command-transaction-analysis.js";
 import { routeMutationRuntimeEvidence } from "./route-mutation-analysis.js";
-import { topologyRuntimeEvidence } from "../topology-runtime-evidence.js";
+import { topologyRuntimeEvidence } from "../diagnosis/topology-runtime-evidence.js";
 import type { RuntimeProbeResponse } from "../../../project-model/src/index.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../../project-model/src/index.js";
 import { externalEventRootsForEntity } from "./entity-event-evidence.js";
-import { buildInspectionSemanticIr } from "../semantic-ir-stage.js";
-import { semanticIrDiagnostics } from "../semantic-ir-diagnostics.js";
+import { buildInspectionSemanticIr } from "../diagnosis/semantic-ir-stage.js";
+import { semanticIrDiagnostics } from "../diagnosis/semantic-ir-diagnostics.js";
 import { buildGameplayIntentModel } from "./gameplay-intent-stage.js";
 import { deriveGameplayIntentSurfaceSignals } from "./gameplay-intent-surface-signals.js";
 import { deriveGameplayResourceTextSignals } from "./gameplay-intent-resource-text.js";
@@ -50,9 +50,9 @@ import {
 } from "./state-authority-analysis.js";
 import { inventoryLifecycleDiagnostics } from "./inventory-lifecycle-diagnostics.js";
 import { entityAiNavigationDiagnostics } from "./entity-ai-navigation-diagnostics.js";
-import { arenaLifecycleDiagnostics } from "../arena-lifecycle-diagnostics.js";
+import { arenaLifecycleDiagnostics } from "../arena/arena-lifecycle-diagnostics.js";
 import { analyzeRouteNavigationEnvironments } from "./route-navigation-environment-analysis.js";
-import { analyzeReleaseIdentity } from "../release-identity-analysis.js";
+import { analyzeReleaseIdentity } from "../release/release-identity-analysis.js";
 import type {
   GameDesignMapClassification,
 } from "../../../game-design-spec/src/index.js";

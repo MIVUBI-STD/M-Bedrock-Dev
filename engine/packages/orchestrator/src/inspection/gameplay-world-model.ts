@@ -9,80 +9,80 @@ import {
 } from "../../../gameplay-intent/src/index.js";
 import type {
   ArenaCapacityExtractionResult,
-} from "../arena-capacity-extraction.js";
+} from "../arena/arena-capacity-extraction.js";
 import type {
   ArenaCleanupSurfaceAnalysis,
-} from "../arena-cleanup-surface-analysis.js";
+} from "../arena/arena-cleanup-surface-analysis.js";
 import type {
   ArenaLayoutReconciliation,
-} from "../arena-layout-reconciliation.js";
+} from "../arena/arena-layout-reconciliation.js";
 import type {
   ArenaLifecycleAnalysis,
-} from "../arena-lifecycle-analysis.js";
+} from "../arena/arena-lifecycle-analysis.js";
 import type {
   ArenaProofConclusionReport,
-} from "../arena-proof-conclusion.js";
+} from "../arena/arena-proof-conclusion.js";
 import type {
   ArenaStateIsolationAnalysis,
-} from "../arena-state-isolation-analysis.js";
+} from "../arena/arena-state-isolation-analysis.js";
 import type {
   ArenaGlobalStateAnalysis,
-} from "../arena-global-state-analysis.js";
+} from "../arena/arena-global-state-analysis.js";
 import type {
   ArenaStressPlan,
-} from "../arena-stress-plan.js";
+} from "../arena/arena-stress-plan.js";
 import type {
   ArenaProofExecutionPlan,
-} from "../arena-proof-execution-plan.js";
+} from "../arena/arena-proof-execution-plan.js";
 import type {
   ArenaRepeatedRunValidationPlan,
-} from "../arena-repeated-run-validation.js";
+} from "../arena/arena-repeated-run-validation.js";
 import type {
   ArenaReplicaProofQuality,
-} from "../arena-replica-proof-quality.js";
+} from "../arena/arena-replica-proof-quality.js";
 import type {
   ScriptSpatialAnalysis,
-} from "../script-spatial-analysis.js";
+} from "../inspection/script-spatial-analysis.js";
 import type {
   EntityAiStackAnalysis,
-} from "../entity-ai-stack-analysis.js";
+} from "../inspection/entity-ai-stack-analysis.js";
 import type {
   RouteNavigationEnvironmentAnalysis,
-} from "../route-navigation-environment-analysis.js";
+} from "../inspection/route-navigation-environment-analysis.js";
 import type {
   CombatLifecycleAnalysis,
-} from "../combat-lifecycle-analysis.js";
+} from "../inspection/combat-lifecycle-analysis.js";
 import type {
   CombatRuntimeTelemetryAnalysis,
-} from "../combat-runtime-telemetry-analysis.js";
+} from "../inspection/combat-runtime-telemetry-analysis.js";
 import type {
   CombatContractAnalysis,
-} from "../combat-contract-analysis.js";
+} from "../inspection/combat-contract-analysis.js";
 import type {
   ChunkLifecycleAnalysis,
-} from "../chunk-lifecycle-analysis.js";
+} from "../inspection/chunk-lifecycle-analysis.js";
 import type {
   RewardSourceAnalysis,
   RewardSourceKind,
-} from "../reward-source-analysis.js";
+} from "../inspection/reward-source-analysis.js";
 import type {
   EconomyContractAnalysis,
-} from "../economy-contract-analysis.js";
+} from "../inspection/economy-contract-analysis.js";
 import type {
   InventoryLifecycleAnalysis,
-} from "../inventory-lifecycle-analysis.js";
+} from "../inspection/inventory-lifecycle-analysis.js";
 import type {
   InventoryContractAnalysis,
-} from "../inventory-contract-analysis.js";
+} from "../inspection/inventory-contract-analysis.js";
 import type {
   InventoryRestoreOwnershipAnalysis,
-} from "../inventory-restore-ownership-analysis.js";
+} from "../inspection/inventory-restore-ownership-analysis.js";
 import type {
   SpatialAuthorityCoverageReport,
-} from "../spatial-authority-analysis.js";
+} from "../inspection/spatial-authority-analysis.js";
 import type {
   PersistenceSourceAnalysis,
-} from "../persistence-source-analysis.js";
+} from "../inspection/persistence-source-analysis.js";
 import type {
   WorldRuleAuthorityAnalysis,
 } from "./world-rule-authority-analysis.js";
@@ -1015,7 +1015,7 @@ export interface GameplayWorldModelSource {
       ArenaRepeatedRunValidationPlan;
     proofExecution?: ArenaProofExecutionPlan;
     proofConclusion?: ArenaProofConclusionReport;
-    barrierEnclosureProof?: import("../arena-voxel-proof.js").ArenaBarrierEnclosureProof;
+    barrierEnclosureProof?: import("../arena/arena-voxel-proof.js").ArenaBarrierEnclosureProof;
     replicaProofQuality?:
       readonly ArenaReplicaProofQuality[];
     entitySpawnEvidence?: readonly unknown[];

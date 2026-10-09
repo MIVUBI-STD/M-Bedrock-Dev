@@ -8,7 +8,7 @@ import {
 } from "../../../diagnostic-reasoning/src/index.js";
 import type {
   ArenaCapacityExtractionResult,
-} from "../arena-capacity-extraction.js";
+} from "../arena/arena-capacity-extraction.js";
 import type {
   GameplayWorldModel,
 } from "./gameplay-world-model.js";
