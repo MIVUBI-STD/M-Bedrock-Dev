@@ -20,4 +20,16 @@ describe("map audit reasoning admission",()=>{
   expect(result.admitted).toEqual({});
   expect(result.rejected[0]?.reasons).toContain("Reasoning evidence does not intersect the owning audit finding.");
  });
+
+ it("rejects PROVEN BUG reasoning for a NEED_VALIDATION finding",()=>{
+  const result=admitMapAuditFindingReasoning([finding],[{
+   causalLinkId:"link:1",
+   projection:{reportClassification:"PROVEN BUG",diagnosticDisposition:"confirmed-defect",proofConfidence:"proven",reasons:[]},
+   assessment:{hypothesisId:"h",disposition:"supported",supportingEvidenceIds:["e:1"],eliminatingEvidenceIds:[],missingRequiredPredicates:[],reasons:[],domains:["static"],corroborationCount:1,confidence:"high"},
+  }]);
+  expect(result.admitted).toEqual({});
+  expect(result.rejected[0]?.reasons).toContain(
+   "A NEED_VALIDATION audit finding cannot attach PROVEN BUG reasoning.",
+  );
+ });
 });

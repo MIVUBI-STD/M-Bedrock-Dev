@@ -54,6 +54,14 @@ export function admitMapAuditFindingReasoning(
         reasons.push("Reasoning evidence does not intersect the owning audit finding.");
       }
       if (
+        finding.status === "NEED_VALIDATION" &&
+        candidate.projection.reportClassification === "PROVEN BUG"
+      ) {
+        reasons.push(
+          "A NEED_VALIDATION audit finding cannot attach PROVEN BUG reasoning.",
+        );
+      }
+      if (
         finding.status === "PROVEN" &&
         candidate.projection.reportClassification === "UNKNOWN"
       ) {
