@@ -1232,12 +1232,6 @@ export function buildInspectionResult(
         : {}),
     },
     diagnostics: [...input.diagnostics],
-    unresolvedReferences:
-      graph.unresolvedEdges()
-        .filter(
-          (edge) =>
-            edge.type !==
-            "IMPORTS_MINECRAFT_MODULE",
-        ).length,
+    unresolvedReferences: discoveryUnresolvedReferences,
   };
 }

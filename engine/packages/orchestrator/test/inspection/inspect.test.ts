@@ -58,6 +58,7 @@ describe("inspectDirectory", () => {
         JSON.stringify({ values: ["start"] }));
       const result = await inspectDirectory(root);
       expect(result.gameplayDiscoveryClosure.unresolvedReferences).toBeGreaterThan(0);
+      expect(result.unresolvedReferences).toBe(result.gameplayDiscoveryClosure.unresolvedReferences);
       expect(result.gameplayDiscoveryClosure.status).not.toBe("COMPLETE");
     } finally {
       await rm(root, { recursive: true, force: true });
