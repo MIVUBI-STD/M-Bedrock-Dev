@@ -58,7 +58,11 @@ export async function loadKnowledgeDirectory(
       throw new Error("Invalid knowledge ownership registry: " + ownershipPath);
     }
     const declared = Object.entries(ownership.groups).flatMap(
-      ([group, config]) => (config.files ?? []).map((name) => {
+      ([group, config]) => {
+        if (!config || !Array.isArray(config.files)) {
+          throw new Error("Knowledge ownership group requires files[]: " + group);
+        }
+        return config.files.map((name) => {
         if (
           typeof name !== "string" ||
           !name.startsWith(group + "/") ||
@@ -68,7 +72,8 @@ export async function loadKnowledgeDirectory(
           throw new Error("Invalid knowledge ownership entry: " + String(name));
         }
         return join(directory, name);
-      }),
+        });
+      },
     ).sort();
     if (
       new Set(declared).size !== declared.length ||
