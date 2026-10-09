@@ -250,6 +250,79 @@ describe("arena identity evidence propagation", () => {
     expect(navigation.knowledgeCoverage.wholeGameUnderstandingPercent).toBeNull();
   });
 
+  it("projects candidate state and outcome ownership only through exact evidence IDs", () => {
+    const source = { artifactId: "map:behavior",
+      relativePath: "behavior_packs/demo/scripts/round.js" };
+    const parsed = parseScriptFile("round", [
+      'import { world } from "@minecraft/server";',
+      'let phase = "idle";',
+      'function decide(ready) {',
+      '  if (ready) { phase = "active"; return { action: "start" }; }',
+      '  else { phase = "blocked"; return { action: "abort" }; }',
+      '}',
+      'world.afterEvents.playerSpawn.subscribe(() => decide(true));',
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const start = ir.execution.outcomes?.find(item => item.value === "start");
+    const abort = ir.execution.outcomes?.find(item => item.value === "abort");
+    const active = ir.state.operations.find(item =>
+      item.writtenValue?.kind === "literal" &&
+      item.writtenValue.value === "active");
+    const blocked = ir.state.operations.find(item =>
+      item.writtenValue?.kind === "literal" &&
+      item.writtenValue.value === "blocked");
+    expect(start && abort && active && blocked).toBeTruthy();
+    const graph: GameplayScenarioGraph = {
+      ...emptyGraph,
+      components: [{
+        id: "component:start", label: "Start source record",
+        kind: "outcome", technicalRole: "authored return",
+        gameplayPurpose: "unverified", evidenceIds: [start!.id],
+        usedByScenarioIds: ["scenario:round"], orphan: false,
+      }, {
+        id: "component:phase", label: "State source record",
+        kind: "state", technicalRole: "authored state write",
+        gameplayPurpose: "unverified", evidenceIds: [active!.id],
+        usedByScenarioIds: ["scenario:round"], orphan: false,
+      }, {
+        id: "component:fake", label: "Lookalike unlinked record",
+        kind: "state", technicalRole: "other",
+        gameplayPurpose: "unverified", evidenceIds: [blocked!.id + ":other"],
+        usedByScenarioIds: [], orphan: true,
+      }],
+      scenarios: [{
+        id: "scenario:round", label: "Round candidate",
+        gameplayStage: "ACTIVE", purpose: "unverified",
+        sourceSubjectIds: [], componentIds: ["component:start", "component:phase"],
+        causalLinkIds: [], playerCounts: [],
+        requiredKnowledgeIds: [], composedScenarioIds: [],
+      }],
+    };
+    const nav = deriveGameplayArchitectureNavigation(graph, {
+      relevantSourceCount: 1, indexedSourceCount: 1,
+      arenaDetected: false, semanticIr: ir,
+    });
+    const startCandidate = nav.semanticIrCoverage.stateOutcomeCandidates
+      .find(item => item.outcomeId === start!.id);
+    const abortCandidate = nav.semanticIrCoverage.stateOutcomeCandidates
+      .find(item => item.outcomeId === abort!.id);
+    expect(startCandidate?.precedingWriteOperationIds).toEqual([active!.id]);
+    expect(startCandidate?.status).toBe("SOURCE_ORDER_CANDIDATE");
+    expect(startCandidate?.outcomeComponentIds).toEqual(["component:start"]);
+    expect(startCandidate?.precedingWriteComponentIds).toEqual(["component:phase"]);
+    expect(startCandidate?.sharedScenarioPlacementIds).toEqual(["scenario:round"]);
+    expect(abortCandidate?.precedingWriteOperationIds).toEqual([blocked!.id]);
+    expect(abortCandidate?.outcomeComponentIds).toEqual([]);
+    expect(abortCandidate?.precedingWriteComponentIds).toEqual([]);
+    expect(abortCandidate?.sharedScenarioPlacementIds).toEqual([]);
+    expect(nav.knowledgeCoverage.wholeGameUnderstandingStatus)
+      .toBe("NOT_MEASURABLE");
+    // No additional causal evidence can be manufactured by this projection.
+    expect(nav.causalLinks).toEqual([]);
+  });
+
   it("does not reconcile duplicate spatial arena identities", () => {
     const navigation = deriveGameplayArchitectureNavigation(emptyGraph, {
       relevantSourceCount: 1,

@@ -11,6 +11,10 @@ import {
   type SemanticIr,
 } from "../../../semantic-ir/src/index.js";
 import type { ArenaRegionPlan } from "../../../../analyzers/topology/src/index.js";
+import {
+  reconcileSourceStateOutcomes,
+  type SourceStateOutcomeCandidate,
+} from "../../../behavior-model/src/index.js";
 
 export type GameplayKnowledgeDomain = AnalysisKnowledgeDomain;
 
@@ -237,6 +241,13 @@ export interface GameplayArchitectureNavigation {
    * No inferred links from owner names, locations, or surface similarities.
    */
   readonly semanticIrCoverage: {
+    /** Source evidence only. A matching write and return do not prove a state transition. */
+    readonly stateOutcomeCandidates: readonly (SourceStateOutcomeCandidate & {
+      readonly outcomeComponentIds: readonly string[];
+      readonly precedingWriteComponentIds: readonly string[];
+      /** Same existing scenario membership, not proof of execution or causality. */
+      readonly sharedScenarioPlacementIds: readonly string[];
+    })[];
     /** Read-only technical chains; do not interpret as complete gameplay flow. */
     readonly executionTraces: readonly (Omit<ObservedExecutionTrace, "branchPoints"> & {
       readonly evidenceMatchedComponentIds: readonly string[];
@@ -557,6 +568,9 @@ export function deriveGameplayArchitectureNavigation(
   const observedExecution = observed.semanticIr
     ? semanticIrExecutionTraces(observed.semanticIr)
     : { traces: [], regionsOutsideTraces: [] };
+  const stateOutcomeEvidence = observed.semanticIr
+    ? reconcileSourceStateOutcomes(observed.semanticIr)
+    : [];
   const irAccounting = (ids: readonly string[]) => {
     const observedIds = sorted(ids);
     return {
@@ -727,6 +741,30 @@ export function deriveGameplayArchitectureNavigation(
         percentage(linkedEvidence.length, sourceEvidence.length),
     },
     semanticIrCoverage: {
+      stateOutcomeCandidates: stateOutcomeEvidence.map(candidate => {
+        const outcomeComponentIds = sorted(graph.components
+          .filter(component => component.evidenceIds.includes(candidate.outcomeId))
+          .map(component => component.id));
+        const writes = new Set(candidate.precedingWriteOperationIds);
+        const precedingWriteComponentIds = sorted(graph.components
+          .filter(component => component.evidenceIds.some(id => writes.has(id)))
+          .map(component => component.id));
+        const outcomeComponents = new Set(outcomeComponentIds);
+        const writeComponents = new Set(precedingWriteComponentIds);
+        return {
+          ...candidate,
+          outcomeComponentIds,
+          precedingWriteComponentIds,
+          sharedScenarioPlacementIds: outcomeComponents.size > 0 &&
+            writeComponents.size > 0
+            ? sorted(graph.scenarios
+                .filter(scenario =>
+                  scenario.componentIds.some(id => outcomeComponents.has(id)) &&
+                  scenario.componentIds.some(id => writeComponents.has(id)))
+                .map(scenario => scenario.id))
+            : [],
+        };
+      }),
       executionTraces: observedExecution.traces.map(trace => {
         const evidence = new Set([
           ...trace.regionIds,
