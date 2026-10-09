@@ -138,15 +138,16 @@ export function enrichInspectionSemanticGraph(
   }
 
   for (const registration of input.tickFunctionRegistrations) {
+    const scheduleId = "function-schedule:tick:" + registration.source.relativePath;
     const scheduler: SemanticNode = {
-      id: semanticNodeId("world", "project", "function-schedule:tick"),
+      id: semanticNodeId("world", "project", scheduleId),
       identity: {
         kind: "world",
         scope: "project",
-        identifier: "function-schedule:tick",
+        identifier: scheduleId,
       },
       kind: "world",
-      identifier: "function-schedule:tick",
+      identifier: scheduleId,
       source: registration.source,
     };
     input.graph.addNode(scheduler);
