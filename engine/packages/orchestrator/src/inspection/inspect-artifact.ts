@@ -1008,6 +1008,7 @@ export async function inspectArtifact(
           result.unresolvedReferences,
         discoveryChallengeIds:
           finalHiddenGameplayDefects.discoveryChallenges.map((item) => item.id),
+        gameplayIntentUnknownIds: result.gameplayIntent.model.unknowns.map(item => item.id),
       });
 
     const finalEngineeringAnalyses =

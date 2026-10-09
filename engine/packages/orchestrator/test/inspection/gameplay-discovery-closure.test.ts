@@ -143,6 +143,18 @@ describe("gameplay discovery closure", () => {
     ).toBe(1);
   });
 
+  it("does not claim Discovery COMPLETE while gameplay intent has explicit unknowns", () => {
+    const result = assessGameplayDiscoveryClosure({
+      discoveredSurfaceIds: ["runtime:state"],
+      sourceRelevantFiles: 1, sourceIndexedFiles: 1,
+      sourceCoverageComplete: true, sourceParseFailures: 0,
+      unsupportedRelevantSourcePaths: [], semanticUnderstandingGapPaths: [],
+      unresolvedReferences: 0, gameplayIntentUnknownIds: ["unknown:outcome-guard"],
+    });
+    expect(result.status).toBe("OPEN");
+    expect(result.gameplayIntentUnknownIds).toEqual(["unknown:outcome-guard"]);
+  });
+
   it("closes discovery when relevant sources are indexed and references resolve", () => {
     const result =
       assessGameplayDiscoveryClosure({

@@ -615,6 +615,7 @@ export function buildInspectionResult(
         discoveryUnresolvedReferences,
       discoveryChallengeIds:
         hiddenGameplayDefects.discoveryChallenges.map((item) => item.id),
+      gameplayIntentUnknownIds: input.gameplayIntent.unknowns.map(item => item.id),
     });
 
   const engineeringAnalyses =

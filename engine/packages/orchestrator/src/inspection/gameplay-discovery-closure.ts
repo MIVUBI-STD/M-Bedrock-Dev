@@ -14,6 +14,7 @@ export interface GameplayDiscoveryClosureInput {
   readonly semanticUnderstandingGapPaths: readonly string[];
   readonly unresolvedReferences: number;
   readonly discoveryChallengeIds?: readonly string[];
+  readonly gameplayIntentUnknownIds?: readonly string[];
   /** Native world evidence is not complete if the scan failed or hit a bound. */
   readonly nativeWorldScanIncomplete?: boolean;
   readonly unlistedPackRoots?: readonly string[];
@@ -41,6 +42,7 @@ export interface GameplayDiscoveryClosure {
   readonly sourceCoverageComplete: boolean;
   readonly unresolvedReferences: number;
   readonly discoveryChallengeIds: readonly string[];
+  readonly gameplayIntentUnknownIds: readonly string[];
   readonly nativeWorldScanIncomplete: boolean;
   readonly unlistedPackRoots: readonly string[];
   readonly reasons: readonly string[];
@@ -54,6 +56,7 @@ export function assessGameplayDiscoveryClosure(
   ].sort();
   const reasons: string[] = [];
   const unlistedPackRoots = [...new Set(input.unlistedPackRoots ?? [])].sort();
+  const gameplayIntentUnknownIds = [...new Set(input.gameplayIntentUnknownIds ?? [])].sort();
   const discoveryChallengeIds = [
     ...new Set(input.discoveryChallengeIds ?? []),
   ].sort();
@@ -136,6 +139,10 @@ export function assessGameplayDiscoveryClosure(
     );
   }
 
+  if (gameplayIntentUnknownIds.length > 0) {
+    reasons.push(String(gameplayIntentUnknownIds.length) + " gameplay intent unknown(s) remain explicitly unresolved.");
+  }
+
   if (unlistedPackRoots.length > 0) {
     reasons.push(String(unlistedPackRoots.length) + " source-bearing pack(s) are not listed in the world configuration; source evidence is retained without inferring active execution.");
   }
@@ -160,6 +167,7 @@ export function assessGameplayDiscoveryClosure(
       unsupportedRelevantSources > 0 ||
       semanticUnderstandingGaps > 0 ||
       discoveryChallengeIds.length > 0 ||
+      gameplayIntentUnknownIds.length > 0 ||
       input.nativeWorldScanIncomplete === true ||
       unlistedPackRoots.length > 0
         ? "OPEN"
@@ -193,6 +201,7 @@ export function assessGameplayDiscoveryClosure(
     unresolvedReferences:
       input.unresolvedReferences,
     discoveryChallengeIds,
+    gameplayIntentUnknownIds,
     nativeWorldScanIncomplete: input.nativeWorldScanIncomplete === true,
     unlistedPackRoots,
     reasons,
