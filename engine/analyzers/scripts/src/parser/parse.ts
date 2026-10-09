@@ -1901,6 +1901,27 @@ export function parseScriptFile(
     deriveBlockCustomComponentRegistrations(text, source);
   const persistentReconciliation =
     derivePersistentReconciliationEvidence(text, source);
+  // A module-level name is safe to resolve only if its binding is unique.
+  const moduleBindings = new Map<string, number>();
+  const addBinding = (name: string): void =>
+    moduleBindings.set(name, (moduleBindings.get(name) ?? 0) + 1);
+  for (const statement of file.statements) {
+    if (ts.isFunctionDeclaration(statement) && statement.name) {
+      addBinding(statement.name.text);
+    } else if (ts.isVariableStatement(statement)) {
+      for (const declaration of statement.declarationList.declarations) {
+        if (ts.isIdentifier(declaration.name)) addBinding(declaration.name.text);
+      }
+    } else if (ts.isImportDeclaration(statement) && statement.importClause) {
+      const clause = statement.importClause;
+      if (clause.name) addBinding(clause.name.text);
+      if (clause.namedBindings) {
+        if (ts.isNamespaceImport(clause.namedBindings)) addBinding(clause.namedBindings.name.text);
+        else for (const specifier of clause.namedBindings.elements) addBinding(specifier.name.text);
+      }
+    }
+  }
+  const uniqueModuleBinding = (name: string): boolean => moduleBindings.get(name) === 1;
   const topLevelFunctionNames = new Set(
     file.statements
       .filter(ts.isFunctionDeclaration)
@@ -1936,7 +1957,8 @@ export function parseScriptFile(
       if (ts.isIdentifier(declaration.name) && declaration.initializer &&
           ts.isIdentifier(declaration.initializer)) {
         const target = declaration.initializer.text;
-        if (topLevelFunctionNames.has(target) || topLevelConstCallbacks.has(target)) {
+        if (uniqueModuleBinding(declaration.name.text) && uniqueModuleBinding(target) &&
+            (topLevelFunctionNames.has(target) || topLevelConstCallbacks.has(target))) {
           topLevelConstAliases.set(declaration.name.text, target);
         }
       }
@@ -1980,11 +2002,11 @@ export function parseScriptFile(
   };
   const constCallback = (call: ts.CallExpression): ts.ArrowFunction | ts.FunctionExpression | undefined => {
     const name = directCallbackName(call);
-    return name ? topLevelConstCallbacks.get(name) : undefined;
+    return name && uniqueModuleBinding(name) ? topLevelConstCallbacks.get(name) : undefined;
   };
   const namedCallback = (call: ts.CallExpression): string | undefined => {
     const name = directCallbackName(call);
-    return name && topLevelFunctionNames.has(name) ? name : undefined;
+    return name && uniqueModuleBinding(name) && topLevelFunctionNames.has(name) ? name : undefined;
   };
 
   const imports: ScriptImport[] = [];

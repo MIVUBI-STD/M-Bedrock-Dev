@@ -9,6 +9,18 @@ const source = {
 };
 
 describe("script analyzer", () => {
+  it("does not resolve callback aliases with conflicting module bindings", () => {
+    const parsed = parseScriptFile("scripts/main", [
+      'import { world, system } from "@minecraft/server";',
+      'function onTick() {}',
+      'var onTick = other;',
+      'const aliased = onTick;',
+      'system.runInterval(aliased, 20);',
+    ].join("\n"), source);
+    expect(parsed.deferredCallbacks.find(item => item.scheduler === "runInterval")?.callbackRegion)
+      .toBeUndefined();
+  });
+
   it("resolves a direct immutable callback alias but not mutable or shadowed aliases", () => {
     const parsed = parseScriptFile("scripts/main", [
       'import { world, system } from "@minecraft/server";',
