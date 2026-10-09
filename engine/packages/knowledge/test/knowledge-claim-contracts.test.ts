@@ -26,7 +26,7 @@ const partialProfile: MinecraftRuntimeProfile = {
   },
 };
 
-describe("knowledge v2 epistemic contracts", () => {
+describe("knowledge claim applicability and provenance contracts", () => {
   it("returns unknown when required module absence is not proven", () => {
     expect(evaluateKnowledgeApplicabilityV2({
       editions: ["education"],
