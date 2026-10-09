@@ -107,12 +107,14 @@ const flatAliasFiles = existsSync(orchestratorSource)
   : [];
 const aliasSet = new Set(flatAliasFiles);
 const aliasConsumers = new Map(flatAliasFiles.map((file) => [file, new Set()]));
-const inspectRoots = ["apps", "engine/packages", "engine/analyzers", "engine/adapters", "engine/runtime", "engine/rules", "tooling", ".agents"];
+const inspectRoots = ["apps", "engine", "tooling", ".agents", "experiments"];
+let scannedConsumerSourceFiles = 0;
 for (const root of inspectRoots) {
   const full = resolve(ROOT, root);
   if (!existsSync(full)) continue;
   for (const file of walk(full, false)) {
     if (aliasSet.has(file)) continue;
+    scannedConsumerSourceFiles += 1;
     const sourceText = readFileSync(file, "utf8");
     for (const match of sourceText.matchAll(IMPORT_RE)) {
       const specifier = match[1] ?? match[2];
@@ -155,6 +157,8 @@ if (aliasesJsonOnly) {
   }).sort((a, b) => a.alias.localeCompare(b.alias));
   console.log(JSON.stringify({
     scope: "static-in-repository-source-and-test-imports",
+    scannedConsumerSourceFiles,
+    scannedConsumerRoots: inspectRoots,
     completeExternalCompatibilityProof: false,
     totalAliases: aliases.length,
     aliasesWithInternalConsumers: aliases.filter((item) => item.internalConsumers.length > 0).length,
