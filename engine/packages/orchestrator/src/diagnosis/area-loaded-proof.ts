@@ -4,7 +4,7 @@ import type { ParsedFunction } from "../../../../analyzers/functions/src/index.j
 import { flattenCommandEffects } from "../../../../analyzers/commands/src/index.js";
 import type { CommandEffect } from "../../../../analyzers/commands/src/index.js";
 import type { Coordinate3 } from "../../../../analyzers/commands/src/index.js";
-import type { analyzeStructureAndChunkRuntime } from "../structure-runtime-analysis.js";
+import type { analyzeStructureAndChunkRuntime } from "../inspection/structure-runtime-analysis.js";
 
 type StructureRuntimeAnalysis = ReturnType<typeof analyzeStructureAndChunkRuntime>;
 
