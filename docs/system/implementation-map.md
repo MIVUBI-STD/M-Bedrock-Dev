@@ -105,6 +105,32 @@ engine/adapters/ownership.json
 | Current Developer Notes | `workspace/projects/<project-id>/report/developer-notes.json` (or level-scoped report) |
 | Work intent | `planning/` |
 
+## Flow-to-owner navigation
+
+A workflow stage is a navigation label, not a second implementation owner. Start with the production flow, then follow the canonical implementation owner and its output contract. Never create a duplicate module or alias to make a stage name match a path.
+
+| Selected-map audit concern | Workflow coordination | Semantic implementation responsibility |
+|---|---|---|
+| TARGET | `engine/packages/orchestrator/src/map-audit-pipeline.ts` and `map-audit-user-intent.ts` | Selected artifact identity and project-model; current selected artifact is the authority |
+| DISCOVERY | `engine/packages/orchestrator/src/inspection/inspect.ts` under the production pipeline | `engine/analyzers/discovery/` plus format-specific adapters and analyzers |
+| UNDERSTAND | Production pipeline composes inspection and gameplay evidence | `engine/packages/gameplay-intent/` and relevant authored-source analyzers |
+| MODEL | Production pipeline consumes evidence-backed models | `engine/packages/behavior-model/`, `semantic-ir/`, and `graph/` within their distinct contracts |
+| STRESS | Production pipeline coordinates cross-domain checks | Existing analyzer, diagnosis, and reliability owners according to the specific invariant |
+| PROVE | `map-audit-admission.ts`, the audit proof/honesty projections | Canonical evidence and diagnostic owners; no static-to-runtime promotion |
+| REPORT | `map-audit-output-v2.ts` and `reporting/report-defect-collector.ts` | `engine/packages/bug-report/` for separately approved bugs |
+
+The table routes investigation; it does not claim that each stage is completely implemented, equate stage output with persisted truth, or override the precise contracts in the Master Selected-Map Audit Workflow and the current source.
+
+For SYSTEM DEVELOPMENT, start from `AGENTS.md` and the owning development skill, locate the first incorrect implementation owner here, fix it in place, and verify the affected consumers. Development is not another Map Audit stage.
+
+### One source, one meaning, one authoritative output
+
+- **One source:** each semantic fact or behavior has one canonical implementation/data owner. An export barrel is an API surface, not a new owner.
+- **One meaning:** file and folder names must describe their actual responsibility. If an implementation combines unrelated responsibilities, separate only where an existing owner and consumers prove the boundary.
+- **One output authority:** each production workflow has one authoritative result contract. Derived HTML/JSON, report previews, search indexes and compatibility exports are views, not competing output truth.
+- **No new aliases:** canonical internal imports go directly to their owning family. Legacy re-export paths are compatibility debt, not acceptable destinations for new imports.
+- **Safe retirement:** do not delete compatibility paths until internal, tooling, test, and external/deep-import contracts are accounted for. No mass renaming solely to mirror a user-facing stage.
+
 ## Critical selected-map audit entrypoints
 
 These exact source entrypoints are intentionally listed because they define production workflow authority.

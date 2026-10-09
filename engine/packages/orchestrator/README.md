@@ -24,6 +24,16 @@ src/
 
 These family barrels are the canonical navigation hierarchy for orchestrator.
 
+## File responsibility and navigation
+
+The user-facing selected-map flow is `TARGET → DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE → REPORT`. These are **workflow stages**, not additional source directories or alternate semantic owners. Navigate stages through the existing canonical `docs/system/implementation-map.md` and the audit workflow; implementation remains owned by the responsible family/package/analyzer.
+
+- The root production `map-audit-*.ts` files own specific audit coordination, admission, or projections, not generic Minecraft analysis.
+- Family `src/<family>/<responsibility>.ts` files own their declared orchestration concern. A family index is a navigation/export surface, not a second implementation.
+- Flat root re-exports are legacy compatibility paths, never the preferred implementation or a new source of truth.
+- When a name does not match its implementation, prove the actual owner and affected imports before renaming or moving it.
+- One authoritative result contract per production flow; derived report formats must not create parallel state or approval authority.
+
 ## Compatibility alias rule
 
 Legacy flat `src/*.ts` re-export stubs are compatibility-only. They are not canonical owners.
