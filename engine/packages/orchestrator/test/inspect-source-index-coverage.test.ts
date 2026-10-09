@@ -611,6 +611,34 @@ describe("inspection source index coverage", () => {
     }
   });
 
+  it("keeps repeated tick entries separately identifiable in Semantic Graph", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-tick-duplicates-"));
+    try {
+      const paths = [
+        "behavior_packs/a/functions/tick.json",
+        "behavior_packs/a/functions/start.mcfunction",
+      ];
+      await mkdir(join(root, "behavior_packs/a/functions"), { recursive: true });
+      await writeFile(join(root, paths[0]!), JSON.stringify({ values: ["start", "start"] }));
+      await writeFile(join(root, paths[1]!), "say ready\n");
+      const index = await indexInspectionSources(root, "artifact:tick-repeat",
+        paths.map(relativePath => ({ relativePath, size: 32, contentHash: relativePath })));
+      enrichInspectionSemanticGraph({
+        graph: index.graph, nodes: index.nodes, artifactId: "artifact:tick-repeat",
+        parsedFunctions: index.parsedFunctions, parsedDialogueDocuments: index.parsedDialogueDocuments,
+        parsedStructureModels: index.parsedStructureModels,
+        tickFunctionRegistrations: index.tickFunctionRegistrations,
+      });
+      const scheduler = index.graph.findByKind("world")
+        .find(node => node.identifier.startsWith("function-schedule:tick:"))!;
+      const edges = index.graph.outgoingEdges(scheduler.id, "CALLS");
+      expect(edges).toHaveLength(2);
+      expect(edges.map(edge => edge.evidence.source.jsonPointer).sort()).toEqual([
+        "/values/0", "/values/1",
+      ]);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+
   it("keeps two tick registrations distinct and preserves unresolved function roots", async () => {
     const root = await mkdtemp(join(tmpdir(), "m-bedrock-tick-"));
     try {

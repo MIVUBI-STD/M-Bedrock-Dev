@@ -153,7 +153,7 @@ export function enrichInspectionSemanticGraph(
     input.graph.addNode(scheduler);
     input.nodes.push(scheduler);
     const functions = input.nodes.filter((node) => node.kind === "function");
-    for (const name of registration.functions) {
+    for (const [index, name] of registration.functions.entries()) {
       const resolution = resolveByIdentifier(functions, name);
       input.graph.addEdge({
         from: scheduler.id,
@@ -162,7 +162,7 @@ export function enrichInspectionSemanticGraph(
         status: resolution.status,
         ...(resolution.to ? { to: resolution.to } : {}),
         ...(resolution.candidates ? { candidates: resolution.candidates } : {}),
-        evidence: { source: registration.source },
+        evidence: { source: { ...registration.source, jsonPointer: "/values/" + index } },
       });
     }
   }
