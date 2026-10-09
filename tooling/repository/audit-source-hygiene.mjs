@@ -160,6 +160,25 @@ console.log("  flat re-export aliases:", flatAliasFiles.length);
 console.log("  aliases with in-repository consumers:", flatAliasFiles.length - noInRepoConsumer.length);
 console.log("  aliases without resolved in-repository consumers:", noInRepoConsumer.length);
 console.log("  zero-consumer candidates are NOT safe-delete proof: external deep imports may exist.");
+const aliasFamilies = new Map();
+for (const alias of flatAliasFiles) {
+  const content = readFileSync(alias, "utf8");
+  const family = content.match(/export \\* from ["']\\.\\/(arena|core|inspection|diagnosis|repair|reliability|reporting|workflow|release)\\//)?.[1];
+  if (!family) continue;
+  const current = aliasFamilies.get(family) ?? { aliases: 0, referenced: 0, unreferenced: [] };
+  current.aliases += 1;
+  if ((aliasConsumers.get(alias)?.size ?? 0) > 0) current.referenced += 1;
+  else current.unreferenced.push(relative(ROOT, alias).replaceAll("\\\\", "/"));
+  aliasFamilies.set(family, current);
+}
+console.log("  Breakdown by canonical family (report-only):");
+for (const [family, entry] of [...aliasFamilies].sort(([a], [b]) => a.localeCompare(b))) {
+  console.log(`    ${family}: ${entry.aliases} aliases, ${entry.referenced} referenced, ${entry.unreferenced.length} with no resolved in-repository consumer`);
+}
+console.log("  Alias candidates without resolved in-repository consumers (not deletion authorization):");
+for (const alias of noInRepoConsumer.sort()) {
+  console.log("    " + relative(ROOT, alias).replaceAll("\\\\", "/"));
+}
 for (const alias of flatAliasFiles.sort()) {
   const consumers = [...aliasConsumers.get(alias)].sort();
   if (consumers.length === 0) continue;
