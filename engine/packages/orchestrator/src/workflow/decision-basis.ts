@@ -29,11 +29,11 @@ import type { InspectTargetProfile } from "../types.js";
 import {
   repairRealizerRegistryRevision,
   type RepairRealizerRegistry,
-} from "../repair-realizer-registry.js";
+} from "../repair/repair-realizer-registry.js";
 import {
   repairStrategySourceRegistryRevision,
   type RepairStrategySourceRegistry,
-} from "../repair-strategy-source-registry.js";
+} from "../repair/repair-strategy-source-registry.js";
 import { semanticGraphFingerprint } from "./semantic-graph-fingerprint.js";
 
 function canonical(value: unknown): unknown {

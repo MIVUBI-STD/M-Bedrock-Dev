@@ -26,7 +26,7 @@ import type {
 } from "../../../gameplay-intent/src/index.js";
 import type {
   GameplayIntentRuntimeAssessment,
-} from "../gameplay-intent-runtime-stage.js";
+} from "../inspection/gameplay-intent-runtime-stage.js";
 import type {
   InspectionEngineeringAnalysis,
 } from "../inspection/engineering-analysis-stage.js";
@@ -54,7 +54,7 @@ import type {
 } from "../../../runtime-lab/src/index.js";
 import type {
   RuntimeExperimentDiagnosticBridge,
-} from "../runtime-experiment-diagnostic-evidence.js";
+} from "../diagnosis/runtime-experiment-diagnostic-evidence.js";
 import type {
   DiagnosticFinding,
 } from "../../../diagnostics/src/index.js";
@@ -69,7 +69,7 @@ import {
 } from "../../../project-model/src/index.js";
 import type {
   RepairInvariantDerivation,
-} from "../repair-invariant-derivation.js";
+} from "../repair/repair-invariant-derivation.js";
 import {
   applyReportRepairContext,
 } from "./report-repair-context.js";

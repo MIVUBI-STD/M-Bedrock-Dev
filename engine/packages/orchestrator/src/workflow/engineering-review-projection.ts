@@ -1,10 +1,10 @@
 import type { IntentDiagnosticDisposition } from "../../../diagnostic-reasoning/src/index.js";
 import { diagnosticDefinitions, type DiagnosticDefinition, type DiagnosticFinding } from "../../../diagnostics/src/index.js";
 import type { CausalIncident, DecisionLedgerSnapshot } from "../../../project-model/src/index.js";
-import type { InspectArtifactResult } from "../inspect-artifact.js";
-import type { EvidenceRecoveryPlan } from "../evidence-recovery.js";
-import type { InspectionRepairCandidate } from "../repair-planning.js";
-import type { GameplayIntentRuntimeAssessment } from "../gameplay-intent-runtime-stage.js";
+import type { InspectArtifactResult } from "../inspection/inspect-artifact.js";
+import type { EvidenceRecoveryPlan } from "../diagnosis/evidence-recovery.js";
+import type { InspectionRepairCandidate } from "../repair/repair-planning.js";
+import type { GameplayIntentRuntimeAssessment } from "../inspection/gameplay-intent-runtime-stage.js";
 import type { ValidationTraceReport } from "../../../validation/src/index.js";
 import { buildEngineeringReviewInvalidationProjection, type EngineeringReviewInvalidationProjection } from "./engineering-review-invalidation.js";
 import { buildEngineeringReviewPriority, type EngineeringReviewPriorityProjection } from "./engineering-review-priority.js";

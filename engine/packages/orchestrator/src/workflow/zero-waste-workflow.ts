@@ -3,7 +3,7 @@ import type {
 } from "../../../gameplay-intent/src/index.js";
 import type {
   GameplayWorldModel,
-} from "../gameplay-world-model.js";
+} from "../inspection/gameplay-world-model.js";
 import type {
   SemanticGraph,
 } from "../../../graph/src/index.js";

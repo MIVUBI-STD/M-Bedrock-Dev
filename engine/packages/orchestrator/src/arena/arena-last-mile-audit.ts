@@ -3,21 +3,21 @@ import {
   proposeTickingAreaConsolidation,
   type TickingAreaConsolidationInput,
   type TickingAreaConsolidationPlan,
-} from "../ticking-area-consolidation.js";
+} from "../release/ticking-area-consolidation.js";
 import {
   assessWorldReleaseState,
   type WorldReleaseStateAssessment,
   type WorldReleaseStateInput,
-} from "../world-release-state.js";
+} from "../release/world-release-state.js";
 import {
   analyzePendingWorldOperations,
   type NativeWorldRecordObservation,
   type PendingWorldOperationAnalysis,
-} from "../pending-world-operation-analysis.js";
+} from "../release/pending-world-operation-analysis.js";
 import {
   assessStructureTransitionResidue,
   type StructureTransitionResidueAssessment,
-} from "../structure-transition-residue.js";
+} from "../inspection/structure-transition-residue.js";
 import {
   analyzeMultiplayerStaticRisks,
   type MultiplayerStaticRiskAnalysis,

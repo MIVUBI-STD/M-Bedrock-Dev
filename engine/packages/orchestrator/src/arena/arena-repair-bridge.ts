@@ -1,6 +1,6 @@
 import type {
   InspectionRepairCandidate,
-} from "../repair-planning.js";
+} from "../repair/repair-planning.js";
 import type {
   ArenaRepairLocalization,
 } from "./arena-repair-localization.js";

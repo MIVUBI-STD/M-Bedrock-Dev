@@ -1,7 +1,7 @@
 import type {
   GameplayIntentModel,
 } from "../../../gameplay-intent/src/index.js";
-import type { GameplayWorldModel } from "../gameplay-world-model.js";
+import type { GameplayWorldModel } from "../inspection/gameplay-world-model.js";
 import type {
   SemanticGraph,
   SemanticNode,
@@ -11,13 +11,13 @@ import type {
 } from "../../../project-model/src/index.js";
 import type {
   SemanticAffectedPlan,
-} from "../semantic-affected-plan.js";
+} from "../workflow/semantic-affected-plan.js";
 import type {
   RepositoryTaskPlan,
-} from "../repository-task-plan.js";
+} from "../workflow/repository-task-plan.js";
 import type {
   CompiledDataFlowContextSlice,
-} from "../script-dataflow-context.js";
+} from "../inspection/script-dataflow-context.js";
 import type {
   RetrievalResult,
   SectionRetrievalResult,

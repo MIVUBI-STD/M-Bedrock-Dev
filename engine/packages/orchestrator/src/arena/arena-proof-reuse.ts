@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import type {
   InspectArtifactResult,
-} from "../inspect-artifact.js";
+} from "../inspection/inspect-artifact.js";
 
 export type ArenaProofReuseLayer =
   | "native-spatial"

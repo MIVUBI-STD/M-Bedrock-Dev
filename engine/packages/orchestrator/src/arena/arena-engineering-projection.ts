@@ -1,10 +1,10 @@
 import type {
   DiagnosticFinding,
 } from "../../../diagnostics/src/index.js";
-import { deriveArenaRuntimeAdapterRequirements } from "../arena-runtime-adapter-requirements.js";
+import { deriveArenaRuntimeAdapterRequirements } from "../arena/arena-runtime-adapter-requirements.js";
 import type {
   InspectArtifactResult,
-} from "../inspect-artifact.js";
+} from "../inspection/inspect-artifact.js";
 
 export interface ArenaEngineeringReplicaProjection {
   arenaId: string;

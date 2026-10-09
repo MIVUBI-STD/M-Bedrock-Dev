@@ -3,7 +3,7 @@ import type {
 } from "../../../../analyzers/topology/src/index.js";
 import type {
   ScriptArenaLayout,
-} from "../script-safe-config-analysis.js";
+} from "../inspection/script-safe-config-analysis.js";
 
 export type ArenaLayoutReconciliationStatus =
   | "unavailable"
