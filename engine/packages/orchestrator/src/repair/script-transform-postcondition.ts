@@ -11,7 +11,7 @@ import {
 } from "../../../project-model/src/index.js";
 import type {
   RepairTransformHintProposal,
-} from "../script-transform-hint-realizer.js";
+} from "./script-transform-hint-realizer.js";
 import {
   patchTransactionSemanticFingerprint,
 } from "../../../repair/src/index.js";

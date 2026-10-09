@@ -8,13 +8,13 @@ import type {
 } from "../../../project-model/src/index.js";
 import type {
   RepairRealizerRegistry,
-} from "../repair-realizer-registry.js";
+} from "./repair-realizer-registry.js";
 import type {
   RepairStrategyEnumeration,
-} from "../repair-strategy-enumeration.js";
+} from "./repair-strategy-enumeration.js";
 import type {
   RepairStrategySourceRegistry,
-} from "../repair-strategy-source-registry.js";
+} from "./repair-strategy-source-registry.js";
 import {
   realizeArenaCapacityGuardHint,
   realizeArenaStartOwnershipGuardHint,
@@ -22,7 +22,7 @@ import {
   realizeSchedulerGenerationGuardHint,
   realizeSessionGenerationGuardHint,
   type RepairTransformHintRealization,
-} from "../script-transform-hint-realizer.js";
+} from "./script-transform-hint-realizer.js";
 
 function sameSource(
   left: SourceRef,

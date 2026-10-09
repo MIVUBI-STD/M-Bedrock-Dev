@@ -18,20 +18,20 @@ import type {
 } from "../../../validation/src/index.js";
 import {
   deriveChangedSemanticNodeIds,
-} from "../repair-changed-node-derivation.js";
+} from "./repair-changed-node-derivation.js";
 import {
   repairRealizerForSource,
   type RepairRealizerRegistry,
-} from "../repair-realizer-registry.js";
+} from "./repair-realizer-registry.js";
 import type {
   RepairStrategyEnumeration,
-} from "../repair-strategy-enumeration.js";
+} from "./repair-strategy-enumeration.js";
 import type {
   RepairStrategyCandidate,
-} from "../repair-strategy-selection.js";
+} from "./repair-strategy-selection.js";
 import type {
   RepairStrategySourceRegistry,
-} from "../repair-strategy-source-registry.js";
+} from "./repair-strategy-source-registry.js";
 
 export interface RepairTransformHintProposal {
   sourceKind: "built-in-planner";

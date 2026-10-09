@@ -18,7 +18,7 @@ import {
   lowerCausalProofState,
   validateCausalInterventionProvenance,
 } from "../../../project-model/src/index.js";
-import type { DiagnosticInvestigationState } from "../diagnostic-investigation.js";
+import type { DiagnosticInvestigationState } from "./diagnostic-investigation.js";
 
 const evidenceRank: Readonly<Record<RootCauseEvidenceLevel, number>> = {
   "unproven-candidate": 0,

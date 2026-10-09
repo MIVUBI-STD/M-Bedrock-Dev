@@ -12,7 +12,7 @@ import type {
 import type {
   RuntimeExperimentDiagnosticBridge,
   RuntimeDiagnosticPredicateEvidence,
-} from "../runtime-experiment-diagnostic-evidence.js";
+} from "./runtime-experiment-diagnostic-evidence.js";
 
 export interface RuntimeDiagnosticArmPredicateBinding {
   predicate: string;
