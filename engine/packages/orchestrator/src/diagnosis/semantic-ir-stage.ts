@@ -67,7 +67,7 @@ function eventRegionId(
   event: string,
   source: SourceRef,
 ): string {
-  return "exec:event:" + token(source.relativePath) + ":" + token(root + "." + phase + "." + event);
+  return "exec:event:" + sourceToken(source) + ":" + token(root + "." + phase + "." + event);
 }
 
 function stateId(ref: StateSurfaceRef): string {
