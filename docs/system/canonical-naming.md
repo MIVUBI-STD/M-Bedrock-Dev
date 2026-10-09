@@ -11,6 +11,33 @@ lifecycle: ACTIVE
 
 This document defines repository-wide canonical terminology.
 
+## Version suffix policy for canonical source files
+
+The repository maintains **one current implementation and one canonical name per responsibility**. Git history records source revisions; source files and folders must not be copied into `-v1`, `-v2`, `-v3`, `-new`, or `-final` variants merely to iterate or preserve prior work.
+
+### When a version suffix is valid
+
+| Case | Naming decision | Reason |
+|---|---|---|
+| Internal implementation of the same responsibility | Use one unversioned responsibility name | Future changes update the canonical source in place |
+| Duplicate wrapper or historical alias | Retire only after consumer and compatibility proof | Do not create new aliases while simplifying names |
+| Public serialized schema/protocol | Preserve explicit version until a migration is approved | Existing data must remain readable and unambiguous |
+| Minecraft/Script API version, game/map version, archived run | Preserve the exact version identity | Version identifies externally distinct behavior or evidence |
+| Golden fixture for an explicitly versioned contract | Preserve version only when the fixture asserts that contract | Fixtures must reference the actual schema they verify |
+| Released external API with two genuinely concurrent contracts | Keep qualified names only while both contracts are supported | Compatibility boundaries must be explicit, not cosmetic |
+
+**Current contracts are not renamed by declaration alone.** For example, Bug Report V1 migration and Bug Report V2 persistence are genuine format boundaries, while suffixes on Knowledge source modules require a separate export/import/semantic consumer review before deciding whether they represent a contract or leftover implementation naming. The public Map Audit Output V2 name also stays until its output-schema contract and consumers are reconciled.
+
+### Responsibility and migration rule
+
+1. Identify the behavior, exactly one canonical owner, and current entry/output contract from source.
+2. Classify a versioned path as `FORMAT_CONTRACT`, `ARTIFACT_IDENTITY`, `HISTORICAL_EVIDENCE`, or `IMPLEMENTATION_NAMING_DEBT` using actual consumers; ambiguous paths remain unresolved.
+3. For confirmed naming debt, rename the **existing** implementation rather than copy it, and update all import/export sites, tests, tooling, docs, retrieval/ownership edges, and package entrypoints in one logical change.
+4. Do not preserve a second internal import name solely for convenience. A compatibility shim is allowed only while a verified external contract requires it, with a concrete retirement condition.
+5. Verify the affected dependency closure before deleting old paths; never mislabel a renamed implementation as a new version or promote source checks into runtime proof.
+
+The naming goal is **one source → one meaning → one authoritative output**, not one version string across unrelated Minecraft artifacts or persisted formats.
+
 ## Repository domain vocabulary
 
 Use these names consistently:
