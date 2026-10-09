@@ -1,6 +1,7 @@
 import type {
   ParsedScriptFile,
 } from "../../../../analyzers/scripts/src/index.js";
+import type { SourceRef } from "../../../project-model/src/index.js";
 
 export interface PersistenceSourceProperty {
   scriptId: string;
@@ -47,6 +48,24 @@ export interface PersistenceReconnectRestoreRisk {
   reason: string;
 }
 
+/** Exact property reset site reachable from one authored lifecycle event.
+ * This is a static local-call path, never proof that the event ran or cleanup
+ * completed. Generation evidence is co-located only, not authority binding. */
+export interface PersistenceResetLifecycleAssociation {
+  readonly scriptId: string;
+  readonly propertyId: string;
+  readonly receiverHint: string;
+  readonly resetKind: "undefined-removal" | "empty-value-write";
+  readonly lifecycleEvent: "playerLeave" | "playerJoin" | "playerSpawn" | "worldLoad";
+  readonly callbackRegion: string;
+  readonly resetRegion: string;
+  readonly pathKind: "same-region" | "local-call-reachable";
+  readonly eventSource: SourceRef;
+  readonly resetSource: SourceRef;
+  readonly coLocatedGenerationInvalidationSources: readonly SourceRef[];
+  readonly evidenceStatus: "STATIC_SOURCE_REACHABILITY_ONLY";
+}
+
 export interface PersistenceResultAuditRecordAssessment {
   readonly scriptId: string;
   readonly propertyKey: string;
@@ -67,6 +86,8 @@ export interface PersistenceSourceAnalysis {
   partialResultAuditRecords: number;
   reconnectTransientRestoreRisks:
     readonly PersistenceReconnectRestoreRisk[];
+  /** Read-only lifetime entry/exit candidates from exact reset sites. */
+  resetLifecycleAssociations: readonly PersistenceResetLifecycleAssociation[];
   appendWithoutClear: number;
   worldScopedAppendWithoutClear: number;
   unknownScope: number;
@@ -105,6 +126,30 @@ function reachable(
   return seen;
 }
 
+function exactSourcePosition(source: SourceRef): boolean {
+  return source.range?.lineStart !== undefined &&
+    source.range.lineEnd !== undefined &&
+    source.range.columnStart !== undefined &&
+    source.range.columnEnd !== undefined;
+}
+
+function resetLifecycleEvent(
+  event: ParsedScriptFile["events"][number],
+): PersistenceResetLifecycleAssociation["lifecycleEvent"] | undefined {
+  // Keep only known world lifecycle events. Unknown roots and arbitrary event
+  // names are not sufficient to bind a property reset to a lifecycle.
+  if (event.root !== "world" || event.phase !== "afterEvents") return undefined;
+  switch (event.event) {
+    case "playerLeave":
+    case "playerJoin":
+    case "playerSpawn":
+    case "worldLoad":
+      return event.event;
+    default:
+      return undefined;
+  }
+}
+
 function reconnectLifecycleEvent(
   event: string,
 ): "playerJoin" | "playerSpawn" | undefined {
@@ -126,6 +171,7 @@ export function analyzePersistenceSource(
   const properties: PersistenceSourceProperty[] = [];
   const reconnectTransientRestoreRisks:
     PersistenceReconnectRestoreRisk[] = [];
+  const resetLifecycleAssociations: PersistenceResetLifecycleAssociation[] = [];
 
   for (const script of scripts) {
     const scopes = new Map(
@@ -165,6 +211,59 @@ export function analyzePersistenceSource(
     }
 
     const graph = graphFor(script);
+
+    // Exact source-local association, not a terminal/reset contract: the
+    // existence of a subscribed event and resolved local calls does not prove
+    // event delivery, successful reset, or a generation match.
+    for (const event of script.events) {
+      const lifecycleEvent = resetLifecycleEvent(event);
+      if (lifecycleEvent === undefined || event.callbackRegion === undefined ||
+          event.source.artifactId !== script.source.artifactId ||
+          event.source.relativePath !== script.source.relativePath ||
+          !exactSourcePosition(event.source)) {
+        continue;
+      }
+      const regions = reachable(graph, event.callbackRegion);
+      for (const lifecycle of script.persistentDataLifecycleEvidence ?? []) {
+        for (const site of lifecycle.resetSites ?? []) {
+          if (site.propertyKey !== lifecycle.propertyKey ||
+              site.source.artifactId !== event.source.artifactId ||
+              site.source.relativePath !== event.source.relativePath ||
+              !exactSourcePosition(site.source) ||
+              !regions.has(site.executionRegion)) continue;
+
+          // Same function is not proof that an invalidation concerns the same
+          // arena, player, or property. Preserve the separate source locations.
+          const coLocatedGenerationInvalidationSources =
+            (script.arenaAuthorityEvidence ?? [])
+              .filter(item => item.kind === "generation-invalidate" &&
+                item.executionRegion === site.executionRegion &&
+                item.source.artifactId === site.source.artifactId &&
+                item.source.relativePath === site.source.relativePath)
+              .map(item => item.source)
+              .sort((a, b) =>
+                (a.range?.lineStart ?? 0) - (b.range?.lineStart ?? 0) ||
+                (a.range?.columnStart ?? 0) - (b.range?.columnStart ?? 0));
+
+          resetLifecycleAssociations.push({
+            scriptId: script.identifier,
+            propertyId: site.propertyKey,
+            receiverHint: site.receiverHint,
+            resetKind: site.kind,
+            lifecycleEvent,
+            callbackRegion: event.callbackRegion,
+            resetRegion: site.executionRegion,
+            pathKind: event.callbackRegion === site.executionRegion
+              ? "same-region" : "local-call-reachable",
+            eventSource: event.source,
+            resetSource: site.source,
+            coLocatedGenerationInvalidationSources,
+            evidenceStatus: "STATIC_SOURCE_REACHABILITY_ONLY",
+          });
+        }
+      }
+    }
+
     const scopeByProperty = new Map(
       (script.persistentStateScopes ?? [])
         .map((item) => [
@@ -246,6 +345,14 @@ export function analyzePersistenceSource(
     a.propertyId.localeCompare(b.propertyId)
   );
 
+  resetLifecycleAssociations.sort((a, b) =>
+    a.scriptId.localeCompare(b.scriptId) ||
+    a.propertyId.localeCompare(b.propertyId) ||
+    a.lifecycleEvent.localeCompare(b.lifecycleEvent) ||
+    (a.resetSource.range?.lineStart ?? 0) - (b.resetSource.range?.lineStart ?? 0) ||
+    (a.resetSource.range?.columnStart ?? 0) - (b.resetSource.range?.columnStart ?? 0)
+  );
+
   reconnectTransientRestoreRisks.sort((a, b) =>
     a.scriptId.localeCompare(b.scriptId) ||
     a.propertyId.localeCompare(b.propertyId) ||
@@ -289,6 +396,7 @@ export function analyzePersistenceSource(
           item.status === "partial",
       ).length,
     reconnectTransientRestoreRisks,
+    resetLifecycleAssociations,
     appendWithoutClear:
       properties.filter(
         (item) =>

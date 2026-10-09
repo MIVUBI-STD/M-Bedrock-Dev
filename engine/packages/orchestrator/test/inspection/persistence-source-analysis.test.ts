@@ -65,6 +65,103 @@ describe("persistence source analysis", () => {
       x.source.relativePath === "scripts/main.ts")).toBe(true);
   });
 
+  it("binds a property-specific reset to an exact playerLeave local-call path but not runtime completion", () => {
+    const source = { artifactId: "map:one", relativePath: "scripts/lifecycle.ts" };
+    const parsed = parseScriptFile("lifecycle", [
+      'function clearRound() {',
+      '  world.setDynamicProperty("roundState", undefined);',
+      '}',
+      'function onLeave(event) { clearRound(); }',
+      'world.afterEvents.playerLeave.subscribe(onLeave);',
+    ].join("\n"), source);
+    const resetSite = parsed.persistentDataLifecycleEvidence
+      ?.find(item => item.propertyKey === "roundState")?.resetSites?.[0];
+    expect(resetSite).toBeDefined();
+    // Explicit same-region generation evidence is not evidence that this
+    // invalidation refers to the same player/property.
+    parsed.arenaAuthorityEvidence = [{
+      kind: "generation-invalidate", arenaExpression: "arena",
+      generationExpression: "arena.generation",
+      executionRegion: "function:clearRound",
+      source: { ...source, range: {
+        lineStart: 2, lineEnd: 2, columnStart: 1, columnEnd: 10,
+      } },
+    }];
+    const result = analyzePersistenceSource([parsed]);
+    expect(result.resetLifecycleAssociations).toHaveLength(1);
+    const association = result.resetLifecycleAssociations[0]!;
+    expect(association).toMatchObject({
+      scriptId: "lifecycle", propertyId: "roundState",
+      receiverHint: "world", resetKind: "undefined-removal",
+      lifecycleEvent: "playerLeave", callbackRegion: "function:onLeave",
+      resetRegion: "function:clearRound",
+      pathKind: "local-call-reachable",
+      evidenceStatus: "STATIC_SOURCE_REACHABILITY_ONLY",
+    });
+    expect(association.eventSource.relativePath).toBe(source.relativePath);
+    expect(association.resetSource).toEqual(resetSite?.source);
+    expect(association.coLocatedGenerationInvalidationSources)
+      .toEqual([parsed.arenaAuthorityEvidence[0]!.source]);
+    expect(result.properties.find(item => item.propertyId === "roundState")
+      ?.lifetime).toBe("unknown");
+  });
+
+  it("keeps direct lifecycle callbacks separate from unconnected and non-lifecycle reset sites", () => {
+    const source = { artifactId: "map:one", relativePath: "scripts/events.ts" };
+    const parsed = parseScriptFile("events", [
+      'world.afterEvents.playerSpawn.subscribe((event) => {',
+      '  event.player.setDynamicProperty("sessionState", undefined);',
+      '});',
+      'function unusedReset() { world.setDynamicProperty("orphan", undefined); }',
+      'world.afterEvents.playerBreakBlock.subscribe(() => {',
+      '  world.setDynamicProperty("breaking", undefined);',
+      '});',
+    ].join("\n"), source);
+    const result = analyzePersistenceSource([parsed]);
+    expect(result.resetLifecycleAssociations).toHaveLength(1);
+    expect(result.resetLifecycleAssociations[0]).toMatchObject({
+      propertyId: "sessionState", lifecycleEvent: "playerSpawn",
+      pathKind: "same-region", receiverHint: "event.player",
+      coLocatedGenerationInvalidationSources: [],
+    });
+    const keys = result.properties.filter(item => item.resetSites?.length)
+      .map(item => item.propertyId);
+    expect(keys).toEqual(["breaking", "orphan", "sessionState"]);
+    expect(result.resetLifecycleAssociations.every(item =>
+      item.propertyId !== "orphan" && item.propertyId !== "breaking"))
+      .toBe(true);
+  });
+
+  it("rejects reset associations when a reset source belongs to a different artifact", () => {
+    const source = { artifactId: "map:one", relativePath: "scripts/events.ts" };
+    const parsed = parseScriptFile("events", [
+      'world.afterEvents.playerLeave.subscribe(() => {',
+      '  world.setDynamicProperty("phase", undefined);',
+      '});',
+    ].join("\n"), source);
+    const lifecycle = parsed.persistentDataLifecycleEvidence?.[0];
+    expect(lifecycle?.resetSites).toHaveLength(1);
+    parsed.persistentDataLifecycleEvidence = [{
+      ...lifecycle!,
+      resetSites: lifecycle!.resetSites!.map(site => ({
+        ...site, source: { ...site.source, artifactId: "map:other" },
+      })),
+    }];
+    expect(analyzePersistenceSource([parsed]).resetLifecycleAssociations)
+      .toEqual([]);
+
+    parsed.persistentDataLifecycleEvidence = [{
+      ...lifecycle!,
+      resetSites: lifecycle!.resetSites!.map(site => ({
+        ...site, source: { artifactId: source.artifactId,
+          relativePath: source.relativePath },
+      })),
+    }];
+    // A file-only reference is not an exact reset site and must fail closed.
+    expect(analyzePersistenceSource([parsed]).resetLifecycleAssociations)
+      .toEqual([]);
+  });
+
   it("keeps persisted session state read on reconnect as an explicit reconciliation gap", () => {
     const script = parseScriptFile(
       "main",
