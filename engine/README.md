@@ -2,31 +2,27 @@
 
 Canonical deterministic Minecraft Bedrock / Education analysis and repair engine.
 
-## Architecture hierarchy
+## Physical directory responsibilities
 
-```text
-engine/
-├─ core
-│  └─ packages/        reusable contracts, reasoning, repair, orchestration
-├─ analysis
-│  ├─ adapters/        physical/native format translation
-│  └─ analyzers/       read-only semantic derivation
-├─ design-system
-│  └─ design/          Game Design schema, vocabulary, templates, compiler
-├─ platform-semantics
-│  ├─ knowledge/       descriptive Minecraft platform facts
-│  ├─ rules/           executable version/capability rules
-│  └─ schemas/         persisted/internal structural schemas
-├─ engineering-contracts
-│  └─ contracts/       implementation + validation contracts
-├─ quality
-│  ├─ fixtures/        minimized reproducible evidence
-│  └─ reliability/     regressions, coverage, update/history intelligence
-└─ runtime-proof
-   └─ runtime/         bounded runtime harnesses and controlled labs
-```
+These are actual directories under `engine/`. Each owns one distinct kind of source or evidence; **none** is a new workflow stage.
 
-The hierarchy is logical rather than artificial filesystem nesting. Physical paths stay short and stable; `ownership.json` makes the grouping explicit and repository verification prevents uncategorized domains.
+| Directory | Owns | Does not own |
+|---|---|---|
+| `adapters/` | Native/archive format translation | Gameplay diagnosis |
+| `analyzers/` | Read-only evidence and authored-source semantics | Authorized mutation |
+| `packages/` | Reusable typed behavior, reasoning, repair and cross-owner composition | Duplicate parsers or data catalogs |
+| `design/` | Game Design vocabulary/schema system | Current selected-map Game Design |
+| `knowledge/` | Minecraft platform fact catalogs | Executable runtime proof |
+| `rules/` | Versioned executable platform capability rules | Descriptive knowledge duplicates |
+| `schemas/` | Serialized format/schema contracts | Runtime logic |
+| `contracts/` | Global engineering and verification constraints | Map-specific authored intent |
+| `fixtures/` | Reduced reproducible inputs | Current gameplay truth |
+| `reliability/` | Corpus, regression/history and reliability catalogs | Current-map authority |
+| `runtime/` | Runtime harnesses and experimental proof infrastructure | Unverified static inference |
+
+`engine/ownership.json` is the machine-readable source for the seven **logical groups** (`core`, `analysis`, `policy-data`, `quality`, `runtime-proof`, `engineering-governance`, `design-system`). They are labels for the physical directories above, not folders to create. `engine/packages/ownership.json` separately groups packages by responsibility; do not physically duplicate packages under those group names.
+
+For the user-facing audit flow `TARGET → DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE → REPORT`, resolve the stage through [Implementation Map](../docs/system/implementation-map.md) and the existing selected-map workflow. Stages are navigation routes; analyzers and packages retain their single canonical implementation owners.
 
 ## Engine routing
 

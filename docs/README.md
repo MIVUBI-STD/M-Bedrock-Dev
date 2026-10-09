@@ -17,17 +17,17 @@ Single entry point for human and AI documentation discovery.
 
 ## Load rule
 
-Resolve the task domain first, then load only the smallest canonical set.
+Choose the requested responsibility, follow **one** domain router, and load the canonical document for that concern. These are real links, not placeholders or additional workflow owners.
 
-```text
-PRODUCT / FLOW            → [product/](./product/README.md)
-ARTIFACTS / PACKAGING     → [artifacts/](./artifacts/README.md)
-ANALYSIS / GRAPH          → [analysis/](./analysis/README.md)
-REPAIR / MUTATION         → [repair/](./repair/README.md)
-VALIDATION / EVIDENCE     → [validation/](./validation/README.md)
-SYSTEM / OWNERSHIP        → [system/](./system/README.md)
-EXAMPLES / REFERENCE      → [examples/](./examples/README.md)
-```
+| Concern | Domain router |
+|---|---|
+| Product behavior and user-facing flow | [Product](./product/README.md) |
+| Artifacts and packaging | [Artifacts](./artifacts/README.md) |
+| Audit procedure and analysis semantics | [Analysis](./analysis/README.md) |
+| Repair and authorized mutation | [Repair](./repair/README.md) |
+| Validation and proof | [Validation](./validation/README.md) |
+| Architecture, naming and ownership | [System](./system/README.md) |
+| Examples and non-authoritative references | [Examples](./examples/README.md) |
 
 Core system documents answer different questions:
 
@@ -43,15 +43,21 @@ How do we build/test/deliver?  → system/development-operations.md
 
 ## Documentation domains
 
+The physical directories match the domain routers above:
+
 ```text
 docs/
+├── README.md
 ├── product/
 ├── artifacts/
 ├── analysis/
 ├── repair/
 ├── validation/
 ├── system/
+└── examples/
 ```
+
+`docs/analysis/` groups its domain-specific documents through [Analysis](./analysis/README.md); do not invent extra audit pipelines or rename files merely to mirror a workflow stage. Stable document IDs, not physical paths, identify documents.
 
 ## Stable document identity
 
