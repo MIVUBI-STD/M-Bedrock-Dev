@@ -109,16 +109,25 @@ const flatAliasFiles = existsSync(orchestratorSource)
   : [];
 const aliasSet = new Set(flatAliasFiles);
 const aliasConsumers = new Map(flatAliasFiles.map((file) => [file, new Set()]));
-const inspectRoots = ["apps", "engine/packages", "engine/analyzers", "engine/adapters", "tooling"];
+const inspectRoots = ["apps", "engine/packages", "engine/analyzers", "engine/adapters", "engine/runtime", "engine/rules", "tooling", ".agents"];
 for (const root of inspectRoots) {
   const full = resolve(ROOT, root);
   if (!existsSync(full)) continue;
   for (const file of walk(full, false)) {
     if (aliasSet.has(file)) continue;
-    for (const match of readFileSync(file, "utf8").matchAll(IMPORT_RE)) {
+    const sourceText = readFileSync(file, "utf8");
+    for (const match of sourceText.matchAll(IMPORT_RE)) {
       const specifier = match[1] ?? match[2];
       if (!specifier?.startsWith(".")) continue;
       const target = resolveRelativeImport(file, specifier);
+      if (target && aliasSet.has(target)) {
+        aliasConsumers.get(target).add(relative(ROOT, file).replaceAll("\\", "/"));
+      }
+    }
+    // Include literal CommonJS requires in consumer analysis.
+    for (const match of sourceText.matchAll(/\brequire\s*\(\s*["']([^"']+)["']\s*\)/g)) {
+      if (!match[1].startsWith(".")) continue;
+      const target = resolveRelativeImport(file, match[1]);
       if (target && aliasSet.has(target)) {
         aliasConsumers.get(target).add(relative(ROOT, file).replaceAll("\\", "/"));
       }
