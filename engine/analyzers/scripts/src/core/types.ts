@@ -148,6 +148,8 @@ export interface ScriptLocalFunctionCall {
   targetName: string;
   controlFlow?: "unconditional" | "conditional" | "deferred";
   lexicalGuards?: readonly ScriptLexicalGuard[];
+  /** Necessary branch decisions from preceding single-statement exits. */
+  precedenceGuards?: readonly ScriptLexicalGuard[];
   source: SourceRef;
 }
 
@@ -214,6 +216,7 @@ export interface ScriptEnumValueComparison {
 
 export interface ScriptStateMutation {
   lexicalGuards?: readonly ScriptLexicalGuard[];
+  precedenceGuards?: readonly ScriptLexicalGuard[];
   target: string;
   targetName: string;
   value:
@@ -247,6 +250,7 @@ export interface ScriptTransitionDeclaration {
 export interface ScriptReturnOutcome {
   /** Lexical ancestry only; not an exhaustive execution path. */
   lexicalGuards?: readonly ScriptLexicalGuard[];
+  precedenceGuards?: readonly ScriptLexicalGuard[];
   executionRegion: string;
   propertyName: string;
   value: string;

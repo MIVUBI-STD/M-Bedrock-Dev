@@ -164,9 +164,63 @@ describe("inspection semantic IR", () => {
     const call = ir.execution.edges.find(edge => edge.targetLabel === "spawnWave");
     expect(call?.controlFlow).toBe("conditional");
     expect(call?.lexicalGuards).toBeUndefined();
+    expect(call?.precedenceGuards?.map(g => [g.expression, g.branch]))
+      .toEqual([["!ready", "false"]]);
     expect(semanticIrExecutionTraces(ir).traces.some(trace =>
       trace.conditionalExecutionEdgeIds.includes(call!.id) &&
-      !trace.guardedExecutionEdges.some(item => item.edgeId === call!.id))).toBe(true);
+      !trace.guardedExecutionEdges.some(item => item.edgeId === call!.id) &&
+      trace.precedenceGuardedExecutionEdges.some(item =>
+        item.edgeId === call!.id))).toBe(true);
+  });
+
+  it("reconciles preceding exits and lexical returns under exact source branch points", () => {
+    const source = { artifactId: "world:precedence", relativePath: "scripts/wave.ts" };
+    const parsed = parseScriptFile("wave", [
+      'let phase = "idle";',
+      'function spawnWave() {}',
+      'function run(skip) {',
+      '  if (skip) return { action: "skipped" };',
+      '  phase = "active";',
+      '  spawnWave();',
+      '  return { action: "started" };',
+      '}',
+      'run(false);',
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const call = ir.execution.edges.find(edge => edge.targetLabel === "spawnWave");
+    const active = ir.state.operations.find(op =>
+      op.writtenValue?.kind === "literal" && op.writtenValue.value === "active");
+    const skipped = ir.execution.outcomes?.find(x => x.value === "skipped");
+    const started = ir.execution.outcomes?.find(x => x.value === "started");
+    expect(call?.precedenceGuards?.map(g => [g.expression, g.branch]))
+      .toEqual([["skip", "false"]]);
+    expect(active?.precedenceGuards?.map(g => [g.expression, g.branch]))
+      .toEqual([["skip", "false"]]);
+    expect(started?.precedenceGuards?.map(g => [g.expression, g.branch]))
+      .toEqual([["skip", "false"]]);
+    expect(skipped?.lexicalGuards?.map(g => [g.expression, g.branch]))
+      .toEqual([["skip", "true"]]);
+    const trace = semanticIrExecutionTraces(ir).traces.find(x =>
+      x.branchPoints.some(p => p.expression === "skip"));
+    expect(trace).toBeDefined();
+    const point = trace!.branchPoints.find(p => p.expression === "skip")!;
+    const trueArm = point.branches.find(x => x.branch === "true")!;
+    const falseArm = point.branches.find(x => x.branch === "false")!;
+    expect(trueArm.returnOutcomeIds).toContain(skipped!.id);
+    expect(trueArm.returnOutcomeIds).not.toContain(started!.id);
+    expect(trueArm.precedenceEvidenceIds).toEqual([]);
+    expect(falseArm.executionEdgeIds).toContain(call!.id);
+    expect(falseArm.stateWriteOperationIds).toContain(active!.id);
+    expect(falseArm.returnOutcomeIds).toContain(started!.id);
+    expect(falseArm.precedenceEvidenceIds).toEqual([
+      active!.id, call!.id, started!.id,
+    ].sort());
+    expect(trace!.precedenceGuardedReturnOutcomes.some(x =>
+      x.outcomeId === started!.id)).toBe(true);
+    // Both results remain static alternatives, not simultaneous outcomes.
+    expect(trace!.returnOutcomeIds).toEqual([skipped!.id, started!.id].sort());
   });
 
   it("retains alternative source returns and resource releases without inferring a successful reset", () => {

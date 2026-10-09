@@ -479,6 +479,55 @@ function lexicalBranchGuards(
   return guards;
 }
 
+/**
+ * A prior if-branch with one direct return/throw forces the opposite
+ * branch for any later statement in that same block. Only necessary
+ * source-time decisions are retained. Nested/multi-statement exits, switch,
+ * loop control, and both-branch exits remain outside this proof.
+ */
+function precedingEarlyExitGuards(
+  node: ts.Node,
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptLexicalGuard[] {
+  const definitelyExits = (statement: ts.Statement | undefined): boolean => {
+    if (!statement) return false;
+    if (ts.isReturnStatement(statement) || ts.isThrowStatement(statement)) {
+      return true;
+    }
+    return ts.isBlock(statement) && statement.statements.length === 1 &&
+      definitelyExits(statement.statements[0]);
+  };
+  const scopes: ScriptLexicalGuard[][] = [];
+  let current: ts.Node = node;
+  let parent = node.parent;
+  while (parent) {
+    if ((ts.isBlock(parent) || ts.isSourceFile(parent)) &&
+        ts.isStatement(current)) {
+      const index = parent.statements.indexOf(current);
+      const guards: ScriptLexicalGuard[] = [];
+      for (const previous of parent.statements.slice(0, Math.max(index, 0))) {
+        if (!ts.isIfStatement(previous)) continue;
+        const trueExits = definitelyExits(previous.thenStatement);
+        const falseExits = definitelyExits(previous.elseStatement);
+        if (trueExits === falseExits) continue;
+        guards.push({
+          conditionText: previous.expression.getText(file),
+          branch: trueExits ? "false" : "true",
+          predicate: guardPredicate(previous.expression, file),
+          source: lineSource(file, previous.expression, source),
+        });
+      }
+      if (guards.length) scopes.unshift(guards);
+    }
+    if (ts.isFunctionLike(parent)) break;
+    current = parent;
+    parent = parent.parent;
+  }
+  // Enclosing blocks precede inner blocks; each block remains source ordered.
+  return scopes.flat();
+}
+
 function localCallControlFlow(
   node: ts.Node,
 ): "unconditional" | "conditional" | "deferred" {
@@ -2343,6 +2392,7 @@ export function parseScriptFile(
         returnOutcomes.push({
           executionRegion: localExecutionRegionId(node, file),
           lexicalGuards: lexicalBranchGuards(node, file, source),
+          precedenceGuards: precedingEarlyExitGuards(node, file, source),
           propertyName: outcome.propertyName,
           value: outcome.value,
           source: lineSource(file, outcome.sourceNode, source),
@@ -2549,6 +2599,7 @@ export function parseScriptFile(
             value,
             executionRegion: localExecutionRegionId(node, file),
             lexicalGuards: lexicalBranchGuards(node, file, source),
+            precedenceGuards: precedingEarlyExitGuards(node, file, source),
             source: lineSource(file, node, source),
           });
         }
@@ -2623,12 +2674,15 @@ export function parseScriptFile(
       topLevelFunctionNames.has(node.expression.text)
     ) {
       const lexicalGuards = lexicalBranchGuards(node, file, source);
+      const precedenceGuards = precedingEarlyExitGuards(node, file, source);
       localFunctionCalls.push({
         callerRegion: localExecutionRegionId(node, file),
         targetRegion: "function:" + node.expression.text,
         targetName: node.expression.text,
-        controlFlow: lexicalGuards.length ? "conditional" : localCallControlFlow(node),
+        controlFlow: lexicalGuards.length || precedenceGuards.length
+          ? "conditional" : localCallControlFlow(node),
         lexicalGuards,
+        precedenceGuards,
         source: lineSource(file, node, source),
       });
     }
@@ -2640,12 +2694,15 @@ export function parseScriptFile(
       const localMethodTarget = directThisMethodTarget(node);
       if (localMethodTarget) {
         const lexicalGuards = lexicalBranchGuards(node, file, source);
+        const precedenceGuards = precedingEarlyExitGuards(node, file, source);
         localFunctionCalls.push({
           callerRegion: localExecutionRegionId(node, file),
           targetRegion: "function:" + localMethodTarget,
           targetName: localMethodTarget,
-          controlFlow: lexicalGuards.length ? "conditional" : localCallControlFlow(node),
+          controlFlow: lexicalGuards.length || precedenceGuards.length
+            ? "conditional" : localCallControlFlow(node),
           lexicalGuards,
+          precedenceGuards,
           source: lineSource(file, node, source),
         });
       }

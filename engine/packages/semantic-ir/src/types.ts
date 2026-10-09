@@ -46,6 +46,8 @@ export interface ExecutionEdge {
   /** Parsed local-call branching, not proof that a condition was satisfied. */
   controlFlow?: "unconditional" | "conditional" | "deferred";
   lexicalGuards?: readonly AuthoredBranchGuard[];
+  /** Necessary source-time decisions from preceding early exits. */
+  precedenceGuards?: readonly AuthoredBranchGuard[];
   guardEvidence?: "explicit-generation-check" | "unresolved";
   guardIdentifiers?: readonly string[];
 }
@@ -58,6 +60,7 @@ export interface AuthoredReturnOutcome {
   value: string;
   source: SourceRef;
   lexicalGuards?: readonly AuthoredBranchGuard[];
+  precedenceGuards?: readonly AuthoredBranchGuard[];
 }
 
 /** An observed resource action, not a verified cleanup/reset. */
@@ -96,6 +99,7 @@ export interface StateOperation {
   writtenValue?: { kind: "literal"; value: string } |
     { kind: "member"; symbol: string };
   lexicalGuards?: readonly AuthoredBranchGuard[];
+  precedenceGuards?: readonly AuthoredBranchGuard[];
 }
 
 export interface StateAuthorityBinding {

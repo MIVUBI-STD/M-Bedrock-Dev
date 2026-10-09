@@ -38,6 +38,62 @@ describe("local function call control flow", () => {
     );
   });
 
+  it("carries source-ordered necessary guards from direct early exits", () => {
+    const source = { artifactId: "artifact:flow", relativePath: "scripts/wave.ts" };
+    const parsed = parseScriptFile("wave", [
+      'let phase = "idle";',
+      'function spawnWave() {}',
+      'function run(skip, cancelled) {',
+      '  if (skip) return;',
+      '  if (cancelled) { throw new Error("cancelled"); }',
+      '  phase = "active";',
+      '  spawnWave();',
+      '  return { action: "running" };',
+      '}',
+      'run(false, false);',
+    ].join("\n"), source);
+    const expected = [["skip", "false"], ["cancelled", "false"]];
+    const call = parsed.localFunctionCalls.find(x => x.targetName === "spawnWave");
+    expect(call?.controlFlow).toBe("conditional");
+    expect(call?.lexicalGuards).toEqual([]);
+    expect(call?.precedenceGuards?.map(g => [g.conditionText, g.branch]))
+      .toEqual(expected);
+    expect(call?.precedenceGuards?.map(g => g.source.range?.lineStart))
+      .toEqual([4,5]);
+    expect(parsed.stateMutations?.find(x => x.value.kind === "literal" &&
+      x.value.literal === "active")?.precedenceGuards
+      ?.map(g => [g.conditionText, g.branch])).toEqual(expected);
+    expect(parsed.returnOutcomes?.find(x => x.value === "running")
+      ?.precedenceGuards?.map(g => [g.conditionText, g.branch]))
+      .toEqual(expected);
+  });
+
+  it("respects else-only exits and refuses nested uncertain exits", () => {
+    const source = { artifactId: "artifact:flow", relativePath: "scripts/branch.ts" };
+    const parsed = parseScriptFile("branch", [
+      'function spawnWave() {}',
+      'function play(ready) {',
+      '  if (ready) {} else { return; }',
+      '  spawnWave();',
+      '}',
+      'function unclear(skip, nested) {',
+      '  if (skip) { if (nested) return; }',
+      '  spawnWave();',
+      '}',
+      'function both(ready) {',
+      '  if (ready) return; else throw new Error("stop");',
+      '  spawnWave();',
+      '}',
+    ].join("\n"), source);
+    const plays = parsed.localFunctionCalls.filter(x => x.targetName === "spawnWave");
+    expect(plays).toHaveLength(3);
+    expect(plays[0]?.precedenceGuards?.map(g => [g.conditionText, g.branch]))
+      .toEqual([["ready", "true"]]);
+    expect(plays[1]?.precedenceGuards ?? []).toEqual([]);
+    expect(plays[1]?.controlFlow).toBe("conditional");
+    expect(plays[2]?.precedenceGuards ?? []).toEqual([]);
+  });
+
   it("treats calls after a possible early return as conditional", () => {
     const parsed = parseScriptFile(
       "scripts/main.ts",

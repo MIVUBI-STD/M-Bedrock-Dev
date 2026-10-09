@@ -12,6 +12,8 @@ export interface ObservedBranchPoint {
     readonly executionEdgeIds: readonly string[];
     readonly stateWriteOperationIds: readonly string[];
     readonly returnOutcomeIds: readonly string[];
+    /** Evidence dependent on the opposite arm of a prior direct exit. */
+    readonly precedenceEvidenceIds: readonly string[];
   }[];
 }
 
@@ -37,6 +39,10 @@ export interface ObservedExecutionTrace {
   readonly guardedExecutionEdges: readonly { edgeId: string; guards: readonly AuthoredBranchGuard[] }[];
   readonly guardedStateWrites: readonly { operationId: string; guards: readonly AuthoredBranchGuard[] }[];
   readonly guardedReturnOutcomes: readonly { outcomeId: string; guards: readonly AuthoredBranchGuard[] }[];
+  /** Preceding source-time return/throw constraints; not evaluated current state. */
+  readonly precedenceGuardedExecutionEdges: readonly { edgeId: string; guards: readonly AuthoredBranchGuard[] }[];
+  readonly precedenceGuardedStateWrites: readonly { operationId: string; guards: readonly AuthoredBranchGuard[] }[];
+  readonly precedenceGuardedReturnOutcomes: readonly { outcomeId: string; guards: readonly AuthoredBranchGuard[] }[];
   /** Correlation by the exact authored guard site, never by matching words. */
   readonly branchPoints: readonly ObservedBranchPoint[];
 }
@@ -142,11 +148,13 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
       executionEdgeIds: Set<string>;
       stateWriteOperationIds: Set<string>;
       returnOutcomeIds: Set<string>;
+      precedenceEvidenceIds: Set<string>;
     };
     const arm = (): BranchArm => ({
       executionEdgeIds: new Set(),
       stateWriteOperationIds: new Set(),
       returnOutcomeIds: new Set(),
+      precedenceEvidenceIds: new Set(),
     });
     const points = new Map<string, {
       expression: string;
@@ -157,7 +165,8 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
     const include = (
       guards: readonly AuthoredBranchGuard[] | undefined,
       id: string,
-      kind: keyof BranchArm,
+      kind: "executionEdgeIds" | "stateWriteOperationIds" | "returnOutcomeIds",
+      precedingExit = false,
     ): void => {
       for (const guard of guards ?? []) {
         const range = guard.source.range;
@@ -182,16 +191,20 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
           points.set(key, point);
         }
         point[guard.branch][kind].add(id);
+        if (precedingExit) point[guard.branch].precedenceEvidenceIds.add(id);
       }
     };
     for (const id of sorted(edges)) {
       include(edgeById.get(id)?.lexicalGuards, id, "executionEdgeIds");
+      include(edgeById.get(id)?.precedenceGuards, id, "executionEdgeIds", true);
     }
     for (const id of sorted(writes)) {
       include(operationById.get(id)?.lexicalGuards, id, "stateWriteOperationIds");
+      include(operationById.get(id)?.precedenceGuards, id, "stateWriteOperationIds", true);
     }
     for (const id of sorted(returnOutcomes)) {
       include(outcomeById.get(id)?.lexicalGuards, id, "returnOutcomeIds");
+      include(outcomeById.get(id)?.precedenceGuards, id, "returnOutcomeIds", true);
     }
     const branchPoints: ObservedBranchPoint[] = [...points]
       .sort(([a], [b]) => a.localeCompare(b))
@@ -210,6 +223,7 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
             executionEdgeIds: sorted(point[branch].executionEdgeIds),
             stateWriteOperationIds: sorted(point[branch].stateWriteOperationIds),
             returnOutcomeIds: sorted(point[branch].returnOutcomeIds),
+            precedenceEvidenceIds: sorted(point[branch].precedenceEvidenceIds),
           })),
       }));
     return {
@@ -235,6 +249,18 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
       }),
       guardedReturnOutcomes: sorted(returnOutcomes).flatMap(id => {
         const guards = outcomeById.get(id)?.lexicalGuards;
+        return guards?.length ? [{ outcomeId: id, guards }] : [];
+      }),
+      precedenceGuardedExecutionEdges: sorted(edges).flatMap(id => {
+        const guards = edgeById.get(id)?.precedenceGuards;
+        return guards?.length ? [{ edgeId: id, guards }] : [];
+      }),
+      precedenceGuardedStateWrites: sorted(writes).flatMap(id => {
+        const guards = operationById.get(id)?.precedenceGuards;
+        return guards?.length ? [{ operationId: id, guards }] : [];
+      }),
+      precedenceGuardedReturnOutcomes: sorted(returnOutcomes).flatMap(id => {
+        const guards = outcomeById.get(id)?.precedenceGuards;
         return guards?.length ? [{ outcomeId: id, guards }] : [];
       }),
       branchPoints,

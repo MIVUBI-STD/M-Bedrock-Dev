@@ -170,6 +170,7 @@ export function buildInspectionSemanticIr(
     targetHint?: string,
     writtenValue?: StateOperation["writtenValue"],
     lexicalGuards?: readonly AuthoredBranchGuard[],
+    precedenceGuards?: readonly AuthoredBranchGuard[],
   ): void => {
     const surfaceId = ensureSurface(ref);
     const id = [
@@ -188,6 +189,7 @@ export function buildInspectionSemanticIr(
       ...(targetHint === undefined ? {} : { targetHint }),
       ...(writtenValue === undefined ? {} : { writtenValue }),
       ...(lexicalGuards === undefined ? {} : { lexicalGuards }),
+      ...(precedenceGuards === undefined ? {} : { precedenceGuards }),
     });
   };
 
@@ -358,6 +360,9 @@ export function buildInspectionSemanticIr(
         ...(irGuards(call.lexicalGuards) === undefined ? {} : {
           lexicalGuards: irGuards(call.lexicalGuards),
         }),
+        ...(irGuards(call.precedenceGuards) === undefined ? {} : {
+          precedenceGuards: irGuards(call.precedenceGuards),
+        }),
       });
     }
 
@@ -464,6 +469,9 @@ export function buildInspectionSemanticIr(
         ...(irGuards(outcome.lexicalGuards) === undefined ? {} : {
           lexicalGuards: irGuards(outcome.lexicalGuards),
         }),
+        ...(irGuards(outcome.precedenceGuards) === undefined ? {} : {
+          precedenceGuards: irGuards(outcome.precedenceGuards),
+        }),
       });
     }
 
@@ -504,6 +512,7 @@ export function buildInspectionSemanticIr(
           ? { kind: "literal", value: mutation.value.literal }
           : { kind: "member", symbol: mutation.value.symbol },
         irGuards(mutation.lexicalGuards),
+        irGuards(mutation.precedenceGuards),
       );
     }
 

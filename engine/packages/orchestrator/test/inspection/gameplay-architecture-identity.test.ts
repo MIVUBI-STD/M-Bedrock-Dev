@@ -191,6 +191,65 @@ describe("arena identity evidence propagation", () => {
       .toBe("NOT_MEASURABLE");
   });
 
+  it("places only exact precedence-arm evidence into existing scenarios", () => {
+    const source = {
+      artifactId: "map:precedence",
+      relativePath: "behavior_packs/demo/scripts/round.js",
+    };
+    const parsed = parseScriptFile("round", [
+      'import { world } from "@minecraft/server";',
+      'function startRound(skip) {',
+      '  if (skip) return { action: "abort" };',
+      '  return { action: "start" };',
+      '}',
+      'world.afterEvents.playerSpawn.subscribe(() => startRound(false));',
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const start = ir.execution.outcomes?.find(item => item.value === "start");
+    const abort = ir.execution.outcomes?.find(item => item.value === "abort");
+    expect(start).toBeDefined();
+    expect(abort).toBeDefined();
+    const graph: GameplayScenarioGraph = {
+      ...emptyGraph,
+      components: [{
+        id: "component:start", label: "Candidate start",
+        kind: "outcome", technicalRole: "authored return",
+        gameplayPurpose: "unverified",
+        evidenceIds: [start!.id], usedByScenarioIds: ["scenario:start"],
+        orphan: false,
+      }],
+      scenarios: [{
+        id: "scenario:start", label: "Start candidate",
+        gameplayStage: "ACTIVE", purpose: "unverified",
+        sourceSubjectIds: [], componentIds: ["component:start"],
+        causalLinkIds: [], playerCounts: [],
+        requiredKnowledgeIds: [], composedScenarioIds: [],
+      }],
+    };
+    const navigation = deriveGameplayArchitectureNavigation(graph, {
+      relevantSourceCount: 1, indexedSourceCount: 1,
+      arenaDetected: false, semanticIr: ir,
+    });
+    const trace = navigation.semanticIrCoverage.executionTraces.find(item =>
+      item.entryKind === "event-source" &&
+      item.branchPoints.some(point => point.expression === "skip"));
+    expect(trace).toBeDefined();
+    const point = trace!.branchPoints.find(item => item.expression === "skip")!;
+    const yes = point.branches.find(arm => arm.branch === "true")!;
+    const no = point.branches.find(arm => arm.branch === "false")!;
+    expect(yes.returnOutcomeIds).toContain(abort!.id);
+    expect(yes.precedenceEvidenceIds).toEqual([]);
+    expect(yes.evidenceMatchedComponentIds).toEqual([]);
+    expect(no.returnOutcomeIds).toContain(start!.id);
+    expect(no.precedenceEvidenceIds).toEqual([start!.id]);
+    expect(no.evidenceMatchedComponentIds).toEqual(["component:start"]);
+    expect(no.scenarioPlacementIds).toEqual(["scenario:start"]);
+    expect(no.evidenceWithoutComponentIds).toEqual([]);
+    expect(navigation.knowledgeCoverage.wholeGameUnderstandingPercent).toBeNull();
+  });
+
   it("does not reconcile duplicate spatial arena identities", () => {
     const navigation = deriveGameplayArchitectureNavigation(emptyGraph, {
       relevantSourceCount: 1,
