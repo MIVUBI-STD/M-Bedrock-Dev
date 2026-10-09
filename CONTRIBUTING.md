@@ -9,20 +9,14 @@ main  → stable/release
 
 Normal work targets `Local`. Promotion to `main` is deliberate.
 
-## Developer command surface
+## Execution routes
 
-Use the repository-root developer entrypoint:
+ChatGPT works on the exact `Local` GitHub source first. It does **not** require a local checkout, Node/npm, `DEV.cmd`, or CI for source-verifiable work.
 
-```text
-DEV.cmd setup
-DEV.cmd doctor
-DEV.cmd check
-DEV.cmd test
-DEV.cmd inspect <artifact>
-DEV.cmd finalize-local
-```
+- **SYSTEM DEVELOPMENT:** improve the repository in its canonical owner and deliver one bounded logical commit; follow `AGENTS.md` and `docs/system/development-discipline.md`.
+- **MAP BUG AUDIT:** inspect one selected map with the production audit pipeline; do not modify the engine within that mode.
 
-`DEV.cmd` delegates to `tooling/windows-toolchain/dev.ps1`. Do not add parallel root scripts or a second task runner for the same workflow.
+`DEV.cmd` remains an **optional Windows-local developer convenience** only, delegated to `tooling/windows-toolchain/dev.ps1`. It supports setup, doctor, check, test, inspect and finalize-local for intentional local work. Do not create a second root task runner or treat local commands as remote GitHub completion gates.
 
 ## Before changing code
 

@@ -28,6 +28,32 @@ A local checkout is **not required** for normal ChatGPT/GitHub repository work.
 
 Documentation starts at [docs/README.md](docs/README.md).
 
+## Choose one operator flow
+
+These are two entry routes into the **same engine**, not separate copies of the codebase.
+
+| User request | Mode | Route | Result |
+|---|---|---|---|
+| Improve architecture, detectors, knowledge, UI or repository | **SYSTEM DEVELOPMENT** | `AGENTS.md` → `docs/system/skill-routing.md` → owning development skill → exact canonical source | One bounded, verified source change and logical commit |
+| Find or classify defects in one supplied map | **MAP BUG AUDIT** | `AGENTS.md` → `.agents/skills/m-bedrock-map-bug-audit/SKILL.md` → `runSelectedMapAudit()` | One Map Audit Report with complete supported findings and explicit proof gaps |
+
+The audit path does not change engine source. A detected engine gap requires a separate, explicitly authorized development request. Repair and benchmark have dedicated work lanes; they are **not** hidden steps of either mode.
+
+**For ChatGPT:** supply the `Local` repository URL and describe the intended outcome. Repository inspection alone is read-only. Normal repository development uses GitHub directly without `DEV.cmd`, a local checkout, or automatic CI.
+
+## Root files: keep by responsibility
+
+| Root files | Why they stay at root |
+|---|---|
+| `AGENTS.md`, `GITHUB_RULES.md` | Agent routing and GitHub operating authority |
+| `README.md`, `CONTEXT.md`, `CONTRIBUTING.md`, `SECURITY.md` | Human navigation, stable facts, contribution and security rules |
+| `package.json`, `package-lock.json`, `tsconfig.json` | Node package and TypeScript project contracts |
+| `toolchain.json`, `.node-version`, `VERSION` | Developer toolchain pinning and product version |
+| `.editorconfig`, `.gitattributes`, `.gitignore` | Repository/editor behavior |
+| `DEV.cmd` | **Optional Windows-local wrapper only**, delegated to `tooling/windows-toolchain/dev.ps1`; not a ChatGPT entrypoint |
+
+Do not split these into competing Development/Audit roots: the mode decision is already owned by `AGENTS.md` and the skills registry. Retire a root file only after its consumers and repository contracts are reconciled.
+
 ## Repository map
 
 ```text
