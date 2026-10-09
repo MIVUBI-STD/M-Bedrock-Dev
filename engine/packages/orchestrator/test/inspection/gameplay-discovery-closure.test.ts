@@ -4,6 +4,18 @@ import {
 } from "../../src/inspection/gameplay-discovery-closure.js";
 
 describe("gameplay discovery closure", () => {
+  it("retains unlisted source-bearing packs as Discovery uncertainty", () => {
+    const result = assessGameplayDiscoveryClosure({
+      discoveredSurfaceIds: ["runtime:state"], sourceRelevantFiles: 1,
+      sourceIndexedFiles: 1, sourceCoverageComplete: true,
+      sourceParseFailures: 0, unsupportedRelevantSourcePaths: [],
+      semanticUnderstandingGapPaths: [], unresolvedReferences: 0,
+      unlistedPackRoots: ["behavior_packs/b", "behavior_packs/b"],
+    });
+    expect(result.status).toBe("OPEN");
+    expect(result.unlistedPackRoots).toEqual(["behavior_packs/b"]);
+  });
+
   it("keeps native world truncation visible even if indexed sources are complete", () => {
     const result = assessGameplayDiscoveryClosure({
       discoveredSurfaceIds: ["runtime:state"],

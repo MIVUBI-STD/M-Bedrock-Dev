@@ -980,6 +980,7 @@ export async function inspectArtifact(
         discoveredSurfaceIds:
           finalGameplayWorld.surfaceDiscovery
             .surfaceIds,
+        unlistedPackRoots: result.gameplayDiscoveryClosure.unlistedPackRoots,
         nativeWorldScanIncomplete:
           nativeWorldDb.status === "failed" ||
           nativeWorldDb.truncated ||

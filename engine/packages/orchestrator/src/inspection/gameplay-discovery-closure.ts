@@ -16,6 +16,7 @@ export interface GameplayDiscoveryClosureInput {
   readonly discoveryChallengeIds?: readonly string[];
   /** Native world evidence is not complete if the scan failed or hit a bound. */
   readonly nativeWorldScanIncomplete?: boolean;
+  readonly unlistedPackRoots?: readonly string[];
 }
 
 export interface GameplayDiscoveryClosure {
@@ -41,6 +42,7 @@ export interface GameplayDiscoveryClosure {
   readonly unresolvedReferences: number;
   readonly discoveryChallengeIds: readonly string[];
   readonly nativeWorldScanIncomplete: boolean;
+  readonly unlistedPackRoots: readonly string[];
   readonly reasons: readonly string[];
 }
 
@@ -51,6 +53,7 @@ export function assessGameplayDiscoveryClosure(
     ...new Set(input.discoveredSurfaceIds),
   ].sort();
   const reasons: string[] = [];
+  const unlistedPackRoots = [...new Set(input.unlistedPackRoots ?? [])].sort();
   const discoveryChallengeIds = [
     ...new Set(input.discoveryChallengeIds ?? []),
   ].sort();
@@ -133,6 +136,10 @@ export function assessGameplayDiscoveryClosure(
     );
   }
 
+  if (unlistedPackRoots.length > 0) {
+    reasons.push(String(unlistedPackRoots.length) + " source-bearing pack(s) are not listed in the world configuration; source evidence is retained without inferring active execution.");
+  }
+
   if (input.nativeWorldScanIncomplete === true) {
     reasons.push("Selected-artifact native world scan is incomplete; missing chunks, actors or command blocks cannot be treated as absent.");
   }
@@ -153,7 +160,8 @@ export function assessGameplayDiscoveryClosure(
       unsupportedRelevantSources > 0 ||
       semanticUnderstandingGaps > 0 ||
       discoveryChallengeIds.length > 0 ||
-      input.nativeWorldScanIncomplete === true
+      input.nativeWorldScanIncomplete === true ||
+      unlistedPackRoots.length > 0
         ? "OPEN"
         : input.unresolvedReferences > 0
           ? "PARTIAL"
@@ -186,6 +194,7 @@ export function assessGameplayDiscoveryClosure(
       input.unresolvedReferences,
     discoveryChallengeIds,
     nativeWorldScanIncomplete: input.nativeWorldScanIncomplete === true,
+    unlistedPackRoots,
     reasons,
   };
 }

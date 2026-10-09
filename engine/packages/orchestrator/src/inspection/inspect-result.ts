@@ -592,6 +592,11 @@ export function buildInspectionResult(
       discoveredSurfaceIds:
         gameplayWorld.surfaceDiscovery
           .surfaceIds,
+      unlistedPackRoots: input.packs
+        .filter(pack => pack.worldAttachment === "not-listed" &&
+          input.files.some(file => file.relativePath.startsWith(pack.root + "/") &&
+            !file.relativePath.endsWith("/manifest.json")))
+        .map(pack => pack.root),
       sourceRelevantFiles:
         input.sourceIndex.coverage.relevantFiles,
       sourceIndexedFiles:
