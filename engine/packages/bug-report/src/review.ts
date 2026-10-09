@@ -237,6 +237,10 @@ export function validateApprovedBugSet(
     }
     decisions.set(item.semanticKey, item.decision);
 
+    if (item.decision === "reject" && (!item.reason || item.reason.trim().length === 0)) {
+      issues.push("Rejected approved-set decision requires a reason: " + item.semanticKey + ".");
+    }
+
     if (item.decision === "needs-discussion") {
       issues.push(
         "Approved Bug Set cannot contain unresolved discussion: " +

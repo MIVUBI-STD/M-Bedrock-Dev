@@ -245,4 +245,34 @@ describe("proposed bug chat approval", () => {
 
     expect(report.ok).toBe(false);
   });
+
+  it("rejects an approved set that loses a rejection reason", () => {
+    const a = defect("a");
+    const b = defect("b");
+    const proposed = projectProposedBugSet(map, [a, b]);
+    const reviewed = applyProposedBugReview(proposed, [
+      { semanticKey: a.semanticKey, decision: "approve" },
+      { semanticKey: b.semanticKey, decision: "reject", reason: "Intended behavior." },
+    ]);
+    expect(reviewed.ok).toBe(true);
+    if (!reviewed.ok) return;
+
+    const forged = buildBugReportFromApprovedBugSet({
+      approved: {
+        ...reviewed.approved,
+        decisions: reviewed.approved.decisions.map((item) =>
+          item.semanticKey === b.semanticKey
+            ? { semanticKey: item.semanticKey, decision: "reject" as const }
+            : item
+        ),
+      },
+      repairBy: "developer",
+      defects: [a, b],
+    });
+    expect(forged.ok).toBe(false);
+    if (forged.ok) return;
+    expect(forged.issues.some((item) =>
+      item.message.includes("Rejected approved-set decision requires a reason")
+    )).toBe(true);
+  });
 });
