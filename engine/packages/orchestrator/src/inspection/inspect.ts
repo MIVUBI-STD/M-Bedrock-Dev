@@ -128,6 +128,7 @@ export async function inspectDirectory(
   const semanticIr = buildInspectionSemanticIr({
     parsedFunctions,
     parsedScripts,
+    tickFunctionRegistrations,
     stateAuthorityContracts:
       target.stateAuthorityContracts ?? [],
   });

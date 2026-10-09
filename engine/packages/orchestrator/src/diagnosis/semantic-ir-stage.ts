@@ -31,6 +31,10 @@ export interface InspectionSemanticIrInput {
   parsedScripts: readonly {
     parsed: ParsedScriptFile;
   }[];
+  tickFunctionRegistrations?: readonly {
+    source: SourceRef;
+    functions: readonly string[];
+  }[];
   stateAuthorityContracts?: readonly StateAuthorityContract[];
 }
 
@@ -194,6 +198,31 @@ export function buildInspectionSemanticIr(
       functionRegionId(parsed.identifier)
     ),
   );
+
+  // Register vanilla tick roots as periodic execution evidence, not
+  // proof that the referenced gameplay completed or even ran.
+  for (const registration of input.tickFunctionRegistrations ?? []) {
+    const from = "exec:tick:" + token(registration.source.relativePath);
+    ensureRegion({
+      id: from,
+      kind: "event-source",
+      ownerId: registration.source.relativePath,
+      label: "functions/tick.json",
+      source: registration.source,
+    });
+    for (const targetLabel of registration.functions) {
+      const targetId = functionRegionId(targetLabel);
+      const resolved = functionRegions.has(targetId);
+      addEdge({
+        from,
+        kind: "periodic",
+        targetLabel,
+        resolution: resolved ? "resolved" : "unresolved",
+        ...(resolved ? { to: targetId } : {}),
+        source: registration.source,
+      });
+    }
+  }
 
   for (const { parsed } of input.parsedFunctions) {
     const from = functionRegionId(parsed.identifier);

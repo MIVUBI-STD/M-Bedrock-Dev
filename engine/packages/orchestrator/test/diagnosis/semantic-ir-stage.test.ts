@@ -66,6 +66,35 @@ describe("inspection semantic IR", () => {
     expect(deferred?.guardEvidence).toBe("unresolved");
   });
 
+  it("carries authored tick roots into periodic Semantic IR without claiming missing targets", () => {
+    const fn = parseMcFunction("start", "say ready", {
+      artifactId: "a",
+      relativePath: "behavior_packs/a/functions/start.mcfunction",
+    });
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [{ parsed: fn }],
+      parsedScripts: [],
+      tickFunctionRegistrations: [
+        {
+          source: { artifactId: "a", relativePath: "behavior_packs/a/functions/tick.json" },
+          functions: ["start"],
+        },
+        {
+          source: { artifactId: "a", relativePath: "behavior_packs/b/functions/tick.json" },
+          functions: ["missing"],
+        },
+      ],
+    });
+    const roots = ir.execution.regions.filter((region) => region.id.startsWith("exec:tick:"));
+    expect(roots).toHaveLength(2);
+    const periodic = ir.execution.edges.filter((edge) => edge.kind === "periodic");
+    expect(periodic).toHaveLength(2);
+    expect(periodic.map((edge) => [edge.targetLabel, edge.resolution]).sort()).toEqual([
+      ["missing", "unresolved"], ["start", "resolved"],
+    ]);
+    expect(ir.temporal.relations.filter((relation) => relation.kind === "periodic")).toHaveLength(2);
+  });
+
   it("preserves explicit generation guards on deferred work", () => {
     const script = parseScriptFile(
       "guarded",
