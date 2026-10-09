@@ -21,7 +21,7 @@ import {
 import {
   planPatchSemanticAffectedSet,
   type SemanticAffectedPlan,
-} from "../semantic-affected-plan.js";
+} from "./semantic-affected-plan.js";
 import type {
   RuntimeEvidenceRecord,
   RuntimeScope,
@@ -30,12 +30,12 @@ import type {
 import {
   assessSemanticProofReuse,
   type SemanticProofReuseResult,
-} from "../semantic-proof-cache.js";
+} from "./semantic-proof-cache.js";
 import {
   planSelectiveValidation,
   type SelectiveValidationPlan,
   type ValidationScenarioImpactBinding,
-} from "../selective-validation-plan.js";
+} from "./selective-validation-plan.js";
 
 export interface ZeroWasteWorkflowProofInput {
   claim: SemanticProofClaim;

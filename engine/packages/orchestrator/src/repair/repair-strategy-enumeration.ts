@@ -9,24 +9,24 @@ import type {
 } from "../../../repair/src/index.js";
 import type {
   RepairOpportunityEnvelope,
-} from "../repair-opportunity-envelope.js";
+} from "./repair-opportunity-envelope.js";
 import type {
   RepairStrategyClass,
-} from "../repair-strategy-selection.js";
+} from "./repair-strategy-selection.js";
 import type {
   RepairRealizerSourceKind,
-} from "../repair-realizer-registry.js";
+} from "./repair-realizer-registry.js";
 import {
   validateRepairStrategySourceRegistry,
   type RepairStrategySourceRegistry,
-} from "../repair-strategy-source-registry.js";
+} from "./repair-strategy-source-registry.js";
 import {
   repairStrategyProvider,
   validateRepairStrategyProviderRegistry,
   type RepairStrategyProviderDefinition,
   type RepairStrategyProviderProposal,
   type RepairStrategyProviderRegistry,
-} from "../repair-strategy-provider.js";
+} from "./repair-strategy-provider.js";
 
 export interface EnumeratedRepairStrategySource {
   sourceKind: RepairRealizerSourceKind;

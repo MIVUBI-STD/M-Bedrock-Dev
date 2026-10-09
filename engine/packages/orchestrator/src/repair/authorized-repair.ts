@@ -20,8 +20,8 @@ import {
   type StaticGraphPreservationProof,
 } from "../static-graph-preservation-proof.js";
 import type { InspectTargetProfile } from "../types.js";
-import type { RepairProofBundle } from "../repair-proof-bundle.js";
-import { validateRepairProofBundle } from "../repair-proof-bundle.js";
+import type { RepairProofBundle } from "./repair-proof-bundle.js";
+import { validateRepairProofBundle } from "./repair-proof-bundle.js";
 import { validatePatchTransaction } from "./repair-validation.js";
 import { semanticGraphFingerprint } from "../semantic-graph-fingerprint.js";
 import {
