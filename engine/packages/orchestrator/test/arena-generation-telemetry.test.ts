@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
-import { analyzeKnowledgeRuntime } from "../src/knowledge-runtime-analysis.js";
-import { telemetryRuntimeEvidence } from "../src/telemetry-evidence.js";
+import { analyzeKnowledgeRuntime } from "../src/inspection/knowledge-runtime-analysis.js";
+import { telemetryRuntimeEvidence } from "../src/diagnosis/telemetry-evidence.js";
 
 const catalog: KnowledgeCatalog = {
   schemaVersion: 1,
