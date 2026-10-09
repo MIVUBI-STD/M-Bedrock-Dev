@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseMcFunction } from "../../../../analyzers/functions/src/index.js";
-import { analyzeFunctionTopology } from "../../src/topology-analysis.js";
+import { analyzeFunctionTopology } from "../../src/inspection/topology-analysis.js";
 import { planInspectionRepairs } from "../../src/repair/repair-planning.js";
 
 const source = {

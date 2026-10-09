@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   stageRepairPackage,
 } from "../../src/repair/repair-package-staging.js";
-import type { RepairLifecycleState } from "../../src/repair-lifecycle.js";
+import type { RepairLifecycleState } from "../../src/repair/repair-lifecycle.js";
 
 function lifecycle(
   stage: RepairLifecycleState["stage"] = "static-validated",

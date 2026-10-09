@@ -8,7 +8,7 @@ import {
   repairReleaseEligible,
   type RepairLifecycleState,
 } from "../../src/repair/repair-lifecycle.js";
-import type { RepairProofBundle } from "../../src/repair-proof-bundle.js";
+import type { RepairProofBundle } from "../../src/repair/repair-proof-bundle.js";
 
 const proof: RepairProofBundle = {
   transactionId: "tx-1",

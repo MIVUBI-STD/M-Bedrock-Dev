@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { applyPatchTransaction } from "../../../repair/src/index.js";
 import { planLinearTopologyRepair } from "../../../repair/src/index.js";
 import { parseMcFunction } from "../../../../analyzers/functions/src/index.js";
-import { analyzeFunctionTopology } from "../../src/topology-analysis.js";
+import { analyzeFunctionTopology } from "../../src/inspection/topology-analysis.js";
 import { validatePatchTransaction } from "../../src/repair/repair-validation.js";
 
 describe("repair validation executor", () => {

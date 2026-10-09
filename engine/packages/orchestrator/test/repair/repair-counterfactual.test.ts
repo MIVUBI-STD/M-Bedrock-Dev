@@ -5,7 +5,7 @@ import { analyzeRepairCounterfactual } from "../../src/repair/repair-counterfact
 import {
   DEFAULT_REPAIR_BLAST_RADIUS_POLICY,
   decideRepairBlastRadius,
-} from "../../src/repair-blast-radius.js";
+} from "../../src/repair/repair-blast-radius.js";
 
 function graphFixture(): SemanticGraph {
   const graph = new SemanticGraph();

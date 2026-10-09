@@ -8,7 +8,7 @@ import {
   markRepairPreservationVerified,
   markRepairRuntimeVerified,
   type RepairLifecycleState,
-} from "../../src/repair-lifecycle.js";
+} from "../../src/repair/repair-lifecycle.js";
 
 function state(): RepairLifecycleState {
   return {

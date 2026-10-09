@@ -6,10 +6,10 @@ import {
 } from "../../src/repair/repair-strategy-selection.js";
 import {
   createDecisionLedger,
-} from "../../src/decision-ledger.js";
+} from "../../src/workflow/decision-ledger.js";
 import {
   recordRepairStrategySelection,
-} from "../../src/decision-ledger-recording.js";
+} from "../../src/workflow/decision-ledger-recording.js";
 
 function source(relativePath: string) {
   return { artifactId: "art-1", relativePath };
