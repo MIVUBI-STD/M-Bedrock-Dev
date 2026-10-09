@@ -16,7 +16,7 @@ import type {
 } from "../../../project-model/src/index.js";
 import type {
   analyzeKnowledgeRuntime,
-} from "../inspection/knowledge-runtime-analysis.js";
+} from "./knowledge-runtime-analysis.js";
 import { buildDecisionBasis } from "../workflow/decision-basis.js";
 import { synthesizeCausalChains } from "../diagnosis/causal-analysis.js";
 import { synthesizeCausalIncidents } from "../diagnosis/causal-incident-analysis.js";

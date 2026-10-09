@@ -8,11 +8,11 @@ import {
   dialogueStateIdentifiers,
   populateDialogueCommandGraph,
   type DialogueGraphDocument,
-} from "../inspection/dialogue-graph.js";
+} from "./dialogue-graph.js";
 import {
   embeddedCommandStateIdentifiers,
   populateEmbeddedStructureCommandGraph,
-} from "../inspection/embedded-structure-graph.js";
+} from "./embedded-structure-graph.js";
 import type { InspectionSourceIndex } from "./inspect-source-index.js";
 
 export interface InspectionGraphEnrichmentInput {

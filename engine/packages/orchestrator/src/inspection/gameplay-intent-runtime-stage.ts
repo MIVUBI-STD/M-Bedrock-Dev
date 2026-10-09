@@ -14,17 +14,17 @@ import {
 import {
   planGameplayRouteRuntimeEvidence,
   type GameplayRouteRuntimeEvidencePlan,
-} from "../inspection/gameplay-route-runtime-plan.js";
+} from "./gameplay-route-runtime-plan.js";
 import {
   analyzeGameplayRouteCauseCandidates,
   type GameplayRouteCauseAnalysis,
-} from "../inspection/gameplay-route-candidate-analysis.js";
+} from "./gameplay-route-candidate-analysis.js";
 import type {
   EntityAiStackAnalysis,
-} from "../inspection/entity-ai-stack-analysis.js";
+} from "./entity-ai-stack-analysis.js";
 import type {
   RouteNavigationEnvironmentAnalysis,
-} from "../inspection/route-navigation-environment-analysis.js";
+} from "./route-navigation-environment-analysis.js";
 import {
   resolveRuntimeStateSnapshot,
   type RuntimeNavigationStallObservation,

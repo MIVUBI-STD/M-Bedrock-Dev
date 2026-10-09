@@ -42,47 +42,47 @@ import type {
 } from "../arena/arena-replica-proof-quality.js";
 import type {
   ScriptSpatialAnalysis,
-} from "../inspection/script-spatial-analysis.js";
+} from "./script-spatial-analysis.js";
 import type {
   EntityAiStackAnalysis,
-} from "../inspection/entity-ai-stack-analysis.js";
+} from "./entity-ai-stack-analysis.js";
 import type {
   RouteNavigationEnvironmentAnalysis,
-} from "../inspection/route-navigation-environment-analysis.js";
+} from "./route-navigation-environment-analysis.js";
 import type {
   CombatLifecycleAnalysis,
-} from "../inspection/combat-lifecycle-analysis.js";
+} from "./combat-lifecycle-analysis.js";
 import type {
   CombatRuntimeTelemetryAnalysis,
-} from "../inspection/combat-runtime-telemetry-analysis.js";
+} from "./combat-runtime-telemetry-analysis.js";
 import type {
   CombatContractAnalysis,
-} from "../inspection/combat-contract-analysis.js";
+} from "./combat-contract-analysis.js";
 import type {
   ChunkLifecycleAnalysis,
-} from "../inspection/chunk-lifecycle-analysis.js";
+} from "./chunk-lifecycle-analysis.js";
 import type {
   RewardSourceAnalysis,
   RewardSourceKind,
-} from "../inspection/reward-source-analysis.js";
+} from "./reward-source-analysis.js";
 import type {
   EconomyContractAnalysis,
-} from "../inspection/economy-contract-analysis.js";
+} from "./economy-contract-analysis.js";
 import type {
   InventoryLifecycleAnalysis,
-} from "../inspection/inventory-lifecycle-analysis.js";
+} from "./inventory-lifecycle-analysis.js";
 import type {
   InventoryContractAnalysis,
-} from "../inspection/inventory-contract-analysis.js";
+} from "./inventory-contract-analysis.js";
 import type {
   InventoryRestoreOwnershipAnalysis,
-} from "../inspection/inventory-restore-ownership-analysis.js";
+} from "./inventory-restore-ownership-analysis.js";
 import type {
   SpatialAuthorityCoverageReport,
-} from "../inspection/spatial-authority-analysis.js";
+} from "./spatial-authority-analysis.js";
 import type {
   PersistenceSourceAnalysis,
-} from "../inspection/persistence-source-analysis.js";
+} from "./persistence-source-analysis.js";
 import type {
   WorldRuleAuthorityAnalysis,
 } from "./world-rule-authority-analysis.js";

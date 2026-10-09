@@ -2,7 +2,7 @@ import type { ParsedScriptFile } from "../../../../analyzers/scripts/src/index.j
 import { parseStructureLoadSemantics } from "../../../../analyzers/commands/src/index.js";
 import type { RuntimeEvidenceRecord } from "../../../project-model/src/index.js";
 import type { SourceRef } from "../../../project-model/src/index.js";
-import type { ParsedStructureSummary } from "../inspection/structure-runtime-analysis.js";
+import type { ParsedStructureSummary } from "./structure-runtime-analysis.js";
 
 function operationId(source: SourceRef): string {
   return [

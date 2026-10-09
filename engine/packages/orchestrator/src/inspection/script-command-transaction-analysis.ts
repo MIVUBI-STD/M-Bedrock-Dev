@@ -11,7 +11,7 @@ import { parseBlockVerificationSemantics } from "../../../../analyzers/commands/
 import { parseStructureLoadSemantics } from "../../../../analyzers/commands/src/index.js";
 import type { RuntimeEvidenceRecord } from "../../../project-model/src/index.js";
 import type { SourceRef } from "../../../project-model/src/index.js";
-import type { ParsedStructureSummary } from "../inspection/structure-runtime-analysis.js";
+import type { ParsedStructureSummary } from "./structure-runtime-analysis.js";
 import {
   mutationDependentActionLabel,
   type MutationDependentActionContract,
@@ -19,7 +19,7 @@ import {
 import {
   deriveStructurePlacementBounds,
   type PlacementBounds,
-} from "../inspection/structure-proof-analysis.js";
+} from "./structure-proof-analysis.js";
 
 export type ScriptCommandMutationOrderingStatus =
   | "verified-before-dependent"

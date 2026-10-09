@@ -3,7 +3,7 @@ import { educationRequirementDiagnostic } from "../../../../analyzers/diagnostic
 import { deriveEducationProfile } from "../../../compatibility/src/index.js";
 import type { DiagnosticFinding } from "../../../diagnostics/src/index.js";
 import type { InspectTargetProfile } from "../types.js";
-import type { InspectionSourceIndex } from "../inspection/inspect-source-index.js";
+import type { InspectionSourceIndex } from "./inspect-source-index.js";
 
 export interface InspectionEducationInput {
   target: InspectTargetProfile;

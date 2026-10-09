@@ -14,7 +14,7 @@ import {
 import { runtimeProbeResponseEvidence } from "../diagnosis/runtime-probe-evidence.js";
 import { assessRuntimeEvidenceSetIntegrity } from "../diagnosis/runtime-evidence-integrity.js";
 import { planEvidenceRecovery } from "../diagnosis/evidence-recovery.js";
-import { analyzeCombatRuntimeTelemetry } from "../inspection/combat-runtime-telemetry-analysis.js";
+import { analyzeCombatRuntimeTelemetry } from "./combat-runtime-telemetry-analysis.js";
 
 export interface InspectionRuntimeEvidenceInput {
   telemetryEvents: readonly TelemetryEvent[];

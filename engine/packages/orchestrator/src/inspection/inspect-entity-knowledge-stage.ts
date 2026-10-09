@@ -8,12 +8,12 @@ import type { DiagnosticFinding } from "../../../diagnostics/src/index.js";
 import type { KnowledgeCatalog } from "../../../knowledge/src/index.js";
 import type { SemanticNode } from "../../../graph/src/index.js";
 import type { InspectTargetProfile } from "../types.js";
-import { analyzeEntityWithKnowledge } from "../inspection/entity-knowledge-analysis.js";
+import { analyzeEntityWithKnowledge } from "./entity-knowledge-analysis.js";
 import {
   deriveEntityEventExternalEvidence,
   externalEventRootsForEntity,
-} from "../inspection/entity-event-evidence.js";
-import { resolveInspectionKnowledgeProfile } from "../inspection/knowledge-runtime-analysis.js";
+} from "./entity-event-evidence.js";
+import { resolveInspectionKnowledgeProfile } from "./knowledge-runtime-analysis.js";
 
 export interface InspectionEntityKnowledgeInput {
   target: InspectTargetProfile;

@@ -7,9 +7,9 @@ import { sha256File, artifactIdFromFingerprint } from "../../../artifact/src/ind
 import { inspectDirectory } from "./inspect.js";
 import type { InspectDirectoryResult, InspectTargetProfile } from "../core/types.js";
 import type { KnowledgeCatalog } from "../../../knowledge/src/index.js";
-import { analyzeWorldDbNative } from "../inspection/world-db-analysis.js";
-import { worldDbRuntimeEvidence } from "../inspection/world-db-runtime-evidence.js";
-import { correlateEmbeddedCommandsWithNativeChunks } from "../inspection/embedded-native-correlation.js";
+import { analyzeWorldDbNative } from "./world-db-analysis.js";
+import { worldDbRuntimeEvidence } from "./world-db-runtime-evidence.js";
+import { correlateEmbeddedCommandsWithNativeChunks } from "./embedded-native-correlation.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../../project-model/src/index.js";
 import { isTelemetryBatch, resolveTelemetryEventsForArtifact } from "../diagnosis/telemetry-load.js";
 import type { RuntimeProbeTranscript } from "../../../project-model/src/index.js";
@@ -35,9 +35,9 @@ import { deriveArenaRepeatedRunValidationPlan } from "../arena/arena-repeated-ru
 import { localizeArenaRepairSources } from "../arena/arena-repair-localization.js";
 import { bridgeArenaRepairLocalization } from "../arena/arena-repair-bridge.js";
 import { arenaProofLayerEnabled, planArenaProofExecution } from "../arena/arena-proof-execution-plan.js";
-import { deriveGameplayWorldModel } from "../inspection/gameplay-world-model.js";
-import { projectGameplaySemanticModel } from "../inspection/gameplay-semantic-model.js";
-import { projectMapEngineeringAssessment } from "../inspection/map-engineering-assessment.js";
+import { deriveGameplayWorldModel } from "./gameplay-world-model.js";
+import { projectGameplaySemanticModel } from "./gameplay-semantic-model.js";
+import { projectMapEngineeringAssessment } from "./map-engineering-assessment.js";
 import { refreshHiddenGameplayDefectsForWorld } from "./hidden-gameplay-defect-analysis.js";
 import { deriveInspectionEngineeringAnalyses } from "./engineering-analysis-stage.js";
 import { assessGameplayDiscoveryClosure } from "./gameplay-discovery-closure.js";

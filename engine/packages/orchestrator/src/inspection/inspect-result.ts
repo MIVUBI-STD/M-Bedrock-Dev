@@ -7,7 +7,7 @@ import type { GameplayIntentModel } from "../../../gameplay-intent/src/index.js"
 import type {
   GameDesignMapClassification,
 } from "../../../game-design-spec/src/index.js";
-import type { GameplayIntentRuntimeAnalysis } from "../inspection/gameplay-intent-runtime-stage.js";
+import type { GameplayIntentRuntimeAnalysis } from "./gameplay-intent-runtime-stage.js";
 import type {
   InspectDirectoryResult,
   InspectedPack,
@@ -15,20 +15,20 @@ import type {
 } from "../types.js";
 import { planInspectionRepairs } from "../repair/repair-planning.js";
 import { deriveReliabilityFingerprint } from "../reliability/reliability-fingerprint.js";
-import { deriveScriptApiUsage } from "../inspection/script-api-usage.js";
-import { indexInspectionSources } from "../inspection/inspect-source-index.js";
-import { prepareInspectionRuntimeEvidence } from "../inspection/inspect-runtime-evidence.js";
-import { analyzeInspectionEntityKnowledge } from "../inspection/inspect-entity-knowledge-stage.js";
-import { analyzeKnowledgeRuntime } from "../inspection/knowledge-runtime-analysis.js";
-import { analyzeInspectionRuntimeState } from "../inspection/inspect-runtime-analysis-stage.js";
+import { deriveScriptApiUsage } from "./script-api-usage.js";
+import { indexInspectionSources } from "./inspect-source-index.js";
+import { prepareInspectionRuntimeEvidence } from "./inspect-runtime-evidence.js";
+import { analyzeInspectionEntityKnowledge } from "./inspect-entity-knowledge-stage.js";
+import { analyzeKnowledgeRuntime } from "./knowledge-runtime-analysis.js";
+import { analyzeInspectionRuntimeState } from "./inspect-runtime-analysis-stage.js";
 import { analyzeInspectionEducation } from "./inspect-education-stage.js";
 import { analyzeInspectionCausality } from "./inspect-causality-stage.js";
-import { deriveGameplayWorldModel } from "../inspection/gameplay-world-model.js";
+import { deriveGameplayWorldModel } from "./gameplay-world-model.js";
 import {
   assessObjectiveAuthorityDeclarations,
 } from "./state-authority-analysis.js";
-import { projectGameplaySemanticModel } from "../inspection/gameplay-semantic-model.js";
-import { projectMapEngineeringAssessment } from "../inspection/map-engineering-assessment.js";
+import { projectGameplaySemanticModel } from "./gameplay-semantic-model.js";
+import { projectMapEngineeringAssessment } from "./map-engineering-assessment.js";
 import { analyzeHiddenGameplayDefects } from "./hidden-gameplay-defect-analysis.js";
 import { buildGameplayBoundaryRegistry } from "./gameplay-boundary-registry.js";
 import { deriveInspectionEngineeringAnalyses } from "./engineering-analysis-stage.js";

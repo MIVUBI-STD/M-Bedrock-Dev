@@ -37,7 +37,7 @@ import type {
   FileInventoryEntry,
 } from "../../../project-model/src/index.js";
 import { semanticNodeId } from "../../../project-model/src/index.js";
-import { analyzeEmbeddedStructureCommands } from "../inspection/embedded-structure-commands.js";
+import { analyzeEmbeddedStructureCommands } from "./embedded-structure-commands.js";
 import {
   functionIdentifier,
   scriptIdentifier,
