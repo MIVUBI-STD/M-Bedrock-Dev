@@ -109,6 +109,25 @@ describe("inspectDirectory", () => {
     } finally { await rm(root, { recursive: true, force: true }); }
   });
 
+  it("retains semantic understanding gaps from unlisted gameplay packs", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-gap-pack-"));
+    try {
+      const pack = join(root, "behavior_packs", "gap");
+      await mkdir(join(pack, "loot_tables"), { recursive: true });
+      await writeFile(join(pack, "manifest.json"), JSON.stringify({
+        format_version: 2,
+        header: { name: "gap", uuid: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", version: [1,0,0] },
+        modules: [{ type: "data", uuid: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", version: [1,0,0] }],
+      }));
+      await writeFile(join(root, "world_behavior_packs.json"), "[]");
+      await writeFile(join(pack, "loot_tables", "reward.json"), JSON.stringify({ pools: [] }));
+      const result = await inspectDirectory(root);
+      expect(result.gameplayDiscoveryClosure.unlistedPackRoots).toEqual(["behavior_packs/gap"]);
+      expect(result.gameplayDiscoveryClosure.semanticUnderstandingGapPaths)
+        .toContain("behavior_packs/gap/loot_tables/reward.json");
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+
   it("distinguishes declared world pack membership from manifest presence", async () => {
     const root = await mkdtemp(join(tmpdir(), "m-bedrock-pack-list-"));
     try {

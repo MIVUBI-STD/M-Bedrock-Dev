@@ -599,6 +599,7 @@ export function buildInspectionResult(
             ...input.sourceIndex.parsedDialogueDocuments.filter(item => item !== undefined).map(item => item.source.relativePath),
             ...input.sourceIndex.coverage.parseFailures.map(item => item.relativePath),
             ...input.sourceIndex.coverage.unsupportedRelevantFiles,
+            ...input.sourceIndex.coverage.semanticUnderstandingGaps,
           ].some(path => path.startsWith(pack.root + "/")))
         .map(pack => pack.root),
       sourceRelevantFiles:
