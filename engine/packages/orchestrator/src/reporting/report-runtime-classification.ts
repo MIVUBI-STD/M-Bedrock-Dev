@@ -3,7 +3,7 @@ import type {
 } from "../../../runtime-lab/src/index.js";
 import type {
   RuntimeExperimentDiagnosticBridge,
-} from "../runtime-experiment-diagnostic-evidence.js";
+} from "../diagnosis/runtime-experiment-diagnostic-evidence.js";
 import type {
   ReportImpactSignal,
   ReportPrimaryFailureSignal,

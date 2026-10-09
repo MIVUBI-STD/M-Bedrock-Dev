@@ -1,6 +1,6 @@
 import type {
   ArenaNativeSpatialAudit,
-} from "../arena-native-extraction.js";
+} from "../arena/arena-native-extraction.js";
 import type {
   ArenaEntityPopulationProof,
 } from "./arena-entity-population-proof.js";

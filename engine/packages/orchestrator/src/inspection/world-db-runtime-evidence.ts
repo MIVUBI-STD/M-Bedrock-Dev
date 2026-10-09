@@ -1,5 +1,5 @@
 import type { RuntimeEvidenceRecord } from "../../../project-model/src/index.js";
-import type { WorldDbNativeSummary } from "../world-db-analysis.js";
+import type { WorldDbNativeSummary } from "../inspection/world-db-analysis.js";
 
 export function worldDbRuntimeEvidence(
   summary: WorldDbNativeSummary,

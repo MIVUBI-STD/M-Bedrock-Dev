@@ -1,6 +1,6 @@
 import type { SourceRef } from "../../../project-model/src/index.js";
 import type { RuntimeEvidenceRecord } from "../../../project-model/src/index.js";
-import type { analyzeStructureAndChunkRuntime } from "../structure-runtime-analysis.js";
+import type { analyzeStructureAndChunkRuntime } from "../inspection/structure-runtime-analysis.js";
 import type { derivePlacementProofs } from "./structure-proof-analysis.js";
 
 type StructureRuntimeAnalysis = ReturnType<typeof analyzeStructureAndChunkRuntime>;
