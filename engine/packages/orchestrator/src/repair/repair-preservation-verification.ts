@@ -10,7 +10,7 @@ import {
 } from "../../../preservation/src/index.js";
 import {
   verifyRepairRuntimeEvidence,
-} from "../repair-runtime-verification.js";
+} from "./repair-runtime-verification.js";
 
 export interface RepairPreservationVerificationInput {
   contract: RepairPreservationContract;

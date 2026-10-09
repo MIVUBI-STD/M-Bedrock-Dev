@@ -13,11 +13,11 @@ import {
   createDiagnosticInvestigation,
   investigationIncident,
   type DiagnosticInvestigationState,
-} from "../diagnostic-investigation.js";
+} from "./diagnostic-investigation.js";
 import {
   applyRuntimeProbeResponse,
   type AppliedRuntimeProbeResult,
-} from "../diagnostic-runtime-probe.js";
+} from "./diagnostic-runtime-probe.js";
 
 export interface RuntimeProbeInvestigationSessionOptions {
   incident: CausalIncident;

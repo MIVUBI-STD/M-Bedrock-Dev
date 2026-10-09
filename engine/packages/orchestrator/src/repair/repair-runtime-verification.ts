@@ -15,10 +15,10 @@ import type {
 } from "../../../project-model/src/index.js";
 import type {
   RepairVerificationReceipt,
-} from "../repair-lifecycle.js";
+} from "./repair-lifecycle.js";
 import type {
   RepairProofBundle,
-} from "../repair-proof-bundle.js";
+} from "./repair-proof-bundle.js";
 import {
   assessRuntimeTemporalRequirements,
 } from "../runtime-temporal-analysis.js";

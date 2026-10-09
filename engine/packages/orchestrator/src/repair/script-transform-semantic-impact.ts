@@ -8,7 +8,7 @@ import type {
 } from "../../../project-model/src/index.js";
 import type {
   RepairTransformHintProposal,
-} from "../script-transform-hint-realizer.js";
+} from "./script-transform-hint-realizer.js";
 import {
   proveAndBindScriptTransformPostcondition,
 } from "./script-transform-postcondition.js";
