@@ -15,7 +15,7 @@ import {
   deriveRepairOpportunityEnvelope,
   enumerateRepairStrategySources,
   realizeLinearTopologyRepairStrategy,
-} from "../../src/repair/index.js";
+} from "../../src/index.js";
 
 const source = {
   artifactId: "art-1",
