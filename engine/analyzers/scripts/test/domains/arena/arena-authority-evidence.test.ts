@@ -25,6 +25,33 @@ describe("arena authority evidence", () => {
     expect(generation[2]?.sequentialBlockSource).toBeUndefined();
   });
 
+  it("retains receiver rebindings and prior early exits as distinct statement paths", () => {
+    const parsed = parseScriptFile("arena", [
+      "function reset(arena, otherArena, skip) {",
+      "  arena.generation++;",
+      "  arena = otherArena;",
+      "  arena.generation++;",
+      "  if (skip) return;",
+      "  arena.generation++;",
+      "}",
+    ].join("\n"), source);
+    const items = parsed.arenaAuthorityEvidence?.filter(
+      item => item.kind === "generation-invalidate") ?? [];
+    expect(items).toHaveLength(3);
+    expect(items[0]?.sequentialPathEvidence?.precedingReceiverRebindingSources)
+      .toEqual([]);
+    expect(items[1]?.sequentialPathEvidence?.precedingReceiverRebindingSources
+      .map(item => item.range?.lineStart)).toEqual([3]);
+    expect(items[2]?.sequentialPathEvidence?.precedingReceiverRebindingSources
+      .map(item => item.range?.lineStart)).toEqual([3]);
+    expect(items[0]?.sequentialPathEvidence?.precedingControlExitSources)
+      .toEqual([]);
+    expect(items[1]?.sequentialPathEvidence?.precedingControlExitSources)
+      .toEqual([]);
+    expect(items[2]?.sequentialPathEvidence?.precedingControlExitSources
+      .map(item => item.range?.lineStart)).toEqual([5]);
+  });
+
   it("proves a capacity authority path only when capacity and membership commit share the same arena object and execution region", () => {
     const parsed = parseScriptFile(
       "arena",

@@ -199,6 +199,91 @@ describe("persistence source analysis", () => {
       .toBe("unknown");
   });
 
+  it("blocks source ordering when the receiver is rebound between generation and reset", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, otherArena) {",
+      "  arena.generation++;",
+      "  arena = otherArena;",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, otherArena));",
+    ].join("\n"), {
+      artifactId: "map:identity", relativePath: "scripts/lifecycle.ts",
+    });
+    const candidate = analyzePersistenceSource([script]).resetLifecycleAssociations[0];
+    expect(candidate?.coLocatedGenerationInvalidationSources).toHaveLength(1);
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+    expect(candidate?.evidenceStatus).toBe("STATIC_SOURCE_REACHABILITY_ONLY");
+  });
+
+  it("blocks ordering after a nullish receiver reassignment", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, otherArena) {",
+      "  arena.generation++;",
+      "  arena ??= otherArena;",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, otherArena));",
+    ].join("\n"), {
+      artifactId: "map:identity", relativePath: "scripts/lifecycle.ts",
+    });
+    const candidate = analyzePersistenceSource([script]).resetLifecycleAssociations[0];
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("blocks source ordering when an early exit can prevent the reset", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, skip) {",
+      "  arena.generation++;",
+      "  if (skip) return;",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, false));",
+    ].join("\n"), {
+      artifactId: "map:identity", relativePath: "scripts/lifecycle.ts",
+    });
+    const candidate = analyzePersistenceSource([script]).resetLifecycleAssociations[0];
+    expect(candidate?.coLocatedGenerationInvalidationSources).toHaveLength(1);
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("blocks ordering across a conditional receiver rebinding", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, otherArena, switchOwner) {",
+      "  arena.generation++;",
+      "  if (switchOwner) { arena = otherArena; }",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, otherArena, true));",
+    ].join("\n"), {
+      artifactId: "map:identity", relativePath: "scripts/lifecycle.ts",
+    });
+    const candidate = analyzePersistenceSource([script]).resetLifecycleAssociations[0];
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("preserves source order for direct siblings with the same earlier exit requirements", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, skip) {",
+      "  if (skip) return;",
+      "  arena.generation++;",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, false));",
+    ].join("\n"), {
+      artifactId: "map:identity", relativePath: "scripts/lifecycle.ts",
+    });
+    const candidate = analyzePersistenceSource([script]).resetLifecycleAssociations[0];
+    expect(candidate?.sequentialGenerationEvidence).toEqual([
+      expect.objectContaining({
+        generationExpression: "arena.generation",
+        arenaExpression: "arena",
+        order: "before-reset",
+        evidenceStatus: "SOURCE_SEQUENCE_ONLY",
+      }),
+    ]);
+  });
+
   it("refuses generation ordering across conditional blocks or unrelated receivers", () => {
     const parsed = parseScriptFile("round", [
       "function reset(arena, other, flag) {",

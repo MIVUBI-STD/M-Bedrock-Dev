@@ -23,6 +23,29 @@ describe("persistent data lifecycle evidence", () => {
     expect(sites[3]?.sequentialBlockSource).toBeUndefined();
   });
 
+  it("captures preceding exits and rebindings for direct reset statements", () => {
+    const rows = derivePersistentDataLifecycleEvidence([
+      "function reset(arena, otherArena, skip) {",
+      '  arena.setDynamicProperty("round", undefined);',
+      "  arena = otherArena;",
+      "  if (skip) return;",
+      '  arena.setDynamicProperty("round", undefined);',
+      "}",
+    ].join("\n"), {
+      artifactId: "artifact:test", relativePath: "scripts/main.ts",
+    });
+    const sites = rows.find(item => item.propertyKey === "round")?.resetSites ?? [];
+    expect(sites).toHaveLength(2);
+    expect(sites[0]?.sequentialPathEvidence?.precedingControlExitSources)
+      .toEqual([]);
+    expect(sites[0]?.sequentialPathEvidence?.precedingReceiverRebindingSources)
+      .toEqual([]);
+    expect(sites[1]?.sequentialPathEvidence?.precedingControlExitSources
+      .map(item => item.range?.lineStart)).toEqual([4]);
+    expect(sites[1]?.sequentialPathEvidence?.precedingReceiverRebindingSources
+      .map(item => item.range?.lineStart)).toEqual([3]);
+  });
+
   it("retains property-specific reset-like source sites and separates removal from empty writes", () => {
     const source = { artifactId: "a", relativePath: "scripts/round.ts" };
     const result = derivePersistentDataLifecycleEvidence([

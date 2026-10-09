@@ -1,4 +1,5 @@
 import ts from "typescript";
+import { directStatementSequence } from "../../core/statement-sequence.js";
 import type {
   SourceRef,
 } from "../../../../../packages/project-model/src/index.js";
@@ -309,6 +310,9 @@ function generationInvalidationEvidence(
     return undefined;
   }
 
+  const sequence = directStatementSequence(
+    node, property.owner.getText(file), file, source,
+  );
   return {
     kind: "generation-invalidate",
     arenaExpression: property.owner.getText(file),
@@ -319,8 +323,9 @@ function generationInvalidationEvidence(
     // This assignment is a direct statement in the parent block. An
     // enclosing if/loop body has its OWN block identity and cannot be
     // silently considered sequential with statements outside that block.
-    ...((ts.isBlock(node.parent) || ts.isSourceFile(node.parent)) ? {
-      sequentialBlockSource: lineSource(file, node.parent, source),
+    ...(sequence ? {
+      sequentialBlockSource: sequence.blockSource,
+      sequentialPathEvidence: sequence,
     } : {}),
   };
 }

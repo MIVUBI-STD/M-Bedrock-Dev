@@ -1,4 +1,6 @@
 import ts from "typescript";
+import { directStatementSequence } from "../../core/statement-sequence.js";
+import type { ScriptSequentialPathEvidence } from "../../core/statement-sequence.js";
 import type {
   SourceRef,
 } from "../../../../../packages/project-model/src/index.js";
@@ -13,6 +15,7 @@ export interface PersistentPropertyResetSite {
   source: SourceRef;
   /** Only standalone calls directly enclosed by a lexical statement block. */
   sequentialBlockSource?: SourceRef;
+  sequentialPathEvidence?: ScriptSequentialPathEvidence;
 }
 
 export interface PersistentDataLifecycleEvidence {
@@ -162,6 +165,9 @@ export function derivePersistentDataLifecycleEvidence(
         current.clears += 1;
         // A broad clearDynamicProperties() has no literal key and must NOT
         // be silently attributed to an individual property.
+        const sequence = directStatementSequence(
+          node, node.expression.expression.getText(file), file, source,
+        );
         current.resetSites.push({
           propertyKey: writtenKey,
           receiverHint: node.expression.expression.getText(file),
@@ -171,13 +177,10 @@ export function derivePersistentDataLifecycleEvidence(
             ? "undefined-removal"
             : "empty-value-write",
           source: nodeSource(file, node, source),
-          ...(ts.isExpressionStatement(node.parent) &&
-              node.parent.expression === node &&
-              (ts.isBlock(node.parent.parent) ||
-                ts.isSourceFile(node.parent.parent))
-            ? { sequentialBlockSource:
-                nodeSource(file, node.parent.parent, source) }
-            : {}),
+          ...(sequence ? {
+            sequentialBlockSource: sequence.blockSource,
+            sequentialPathEvidence: sequence,
+          } : {}),
         });
       } else {
         current.writes += 1;

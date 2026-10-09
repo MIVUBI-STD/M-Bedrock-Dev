@@ -1,6 +1,9 @@
 import type {
   ParsedScriptFile,
 } from "../../../../analyzers/scripts/src/index.js";
+import type {
+  ScriptSequentialPathEvidence,
+} from "../../../../analyzers/scripts/src/core/statement-sequence.js";
 import type { SourceRef } from "../../../project-model/src/index.js";
 
 export interface PersistenceSourceProperty {
@@ -162,6 +165,36 @@ function sameSequentialBlock(
 }
 
 /** Source-position ordering of disjoint direct expressions only. */
+function exactSourceToken(source: SourceRef): string | undefined {
+  if (!exactSourcePosition(source)) return undefined;
+  const span = source.range!;
+  return JSON.stringify([
+    source.artifactId, source.relativePath, source.jsonPointer ?? null,
+    span.lineStart, span.columnStart, span.lineEnd, span.columnEnd,
+  ]);
+}
+
+function sameSequentialPath(
+  generation: ScriptSequentialPathEvidence,
+  reset: ScriptSequentialPathEvidence,
+): boolean {
+  if (!sameSequentialBlock(generation.blockSource, reset.blockSource)) return false;
+  const sameSites = (a: readonly SourceRef[], b: readonly SourceRef[]) => {
+    if (a.length !== b.length) return false;
+    return a.every((source, i) => {
+      const left = exactSourceToken(source);
+      const right = exactSourceToken(b[i]!);
+      return left !== undefined && left === right;
+    });
+  };
+  // An intervening return/throw/break or receiver assignment makes the
+  // generation and reset statements' necessary source paths differ.
+  return sameSites(generation.precedingControlExitSources,
+      reset.precedingControlExitSources) &&
+    sameSites(generation.precedingReceiverRebindingSources,
+      reset.precedingReceiverRebindingSources);
+}
+
 function sourceOrder(
   generation: SourceRef,
   reset: SourceRef,
@@ -294,17 +327,20 @@ export function analyzePersistenceSource(
                 (a.range?.lineStart ?? 0) - (b.range?.lineStart ?? 0) ||
                 (a.range?.columnStart ?? 0) - (b.range?.columnStart ?? 0));
 
-          // Even equal source-level receiver syntax is not instance
-          // identity. Record ordering only for direct sibling statements
-          // in the SAME source block, never across if/loop nesting.
+          // Equal receiver syntax is not runtime identity. Only comparable
+          // direct statements with unchanged necessary source path evidence
+          // are projected. Calls/aliases outside this small model remain
+          // unknown rather than proof of an executed generation transition.
           const sequentialGenerationEvidence =
             (script.arenaAuthorityEvidence ?? [])
               .flatMap(item => {
                 if (item.kind !== "generation-invalidate" ||
                     item.executionRegion !== site.executionRegion ||
                     item.arenaExpression !== site.receiverHint ||
-                    !sameSequentialBlock(
-                      item.sequentialBlockSource, site.sequentialBlockSource) ||
+                    !item.sequentialPathEvidence ||
+                    !site.sequentialPathEvidence ||
+                    !sameSequentialPath(
+                      item.sequentialPathEvidence, site.sequentialPathEvidence) ||
                     item.source.artifactId !== site.source.artifactId ||
                     item.source.relativePath !== site.source.relativePath ||
                     !item.generationExpression) return [];

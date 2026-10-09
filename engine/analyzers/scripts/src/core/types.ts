@@ -1,3 +1,4 @@
+import type { ScriptSequentialPathEvidence } from "./statement-sequence.js";
 import type { BlockCustomComponentRegistrationEvidence } from "../domains/automation/block-custom-component-evidence.js";
 import type { PersistentReconciliationEvidence } from "../domains/persistence/persistent-reconciliation.js";
 import type { ScriptEconomyEvidence } from "../domains/economy/economy-evidence.js";
@@ -411,6 +412,7 @@ export interface ScriptArenaAuthorityEvidence {
   source: SourceRef;
   /** Present only for an authored direct statement within one lexical block. */
   sequentialBlockSource?: SourceRef;
+  sequentialPathEvidence?: ScriptSequentialPathEvidence;
 }
 
 export interface ScriptArenaAuthorityPath {
