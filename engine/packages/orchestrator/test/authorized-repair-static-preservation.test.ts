@@ -22,13 +22,13 @@ import {
 } from "../src/index.js";
 import {
   indexInspectionSources,
-} from "../src/inspect-source-index.js";
+} from "../src/inspection/inspect-source-index.js";
 import {
   enrichInspectionSemanticGraph,
-} from "../src/inspect-graph-enrichment.js";
+} from "../src/inspection/inspect-graph-enrichment.js";
 import {
   populateInspectionScriptImportGraph,
-} from "../src/inspect-script-import-graph.js";
+} from "../src/inspection/inspect-script-import-graph.js";
 
 async function buildGraph(
   root: string,

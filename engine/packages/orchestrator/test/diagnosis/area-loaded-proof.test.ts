@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseMcFunction } from "../../../../analyzers/functions/src/index.js";
-import { analyzeStructureAndChunkRuntime } from "../../src/structure-runtime-analysis.js";
+import { analyzeStructureAndChunkRuntime } from "../../src/inspection/structure-runtime-analysis.js";
 import { areaLoadedBlockWriteEvidence } from "../../src/diagnosis/area-loaded-proof.js";
 
 describe("area-loaded block-write proof", () => {
