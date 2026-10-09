@@ -34,6 +34,40 @@ function catalogFiles(root) {
   }).sort();
 }
 const knowledgeFiles = catalogFiles(knowledgeDirectory);
+const knowledgeOwnership = JSON.parse(
+  readFileSync(join(knowledgeDirectory, "ownership.json"), "utf8"),
+);
+if (knowledgeOwnership.schemaVersion !== 1 || !knowledgeOwnership.groups) {
+  throw new Error("Invalid Minecraft knowledge ownership registry.");
+}
+const declaredKnowledgeFiles = [];
+for (const [group, config] of Object.entries(knowledgeOwnership.groups)) {
+  if (!config || !Array.isArray(config.files)) {
+    throw new Error("Knowledge ownership group " + group + " requires files[].");
+  }
+  for (const name of config.files) {
+    if (typeof name !== "string" || !name.startsWith(group + "/") ||
+        !name.endsWith(".json") || name.includes("..")) {
+      throw new Error("Invalid Knowledge ownership path in " + group + ": " + String(name));
+    }
+    declaredKnowledgeFiles.push(join(knowledgeDirectory, name).replaceAll("\\", "/"));
+  }
+}
+const duplicateKnowledgeFile = declaredKnowledgeFiles.find(
+  (name, index) => declaredKnowledgeFiles.indexOf(name) !== index,
+);
+if (duplicateKnowledgeFile) {
+  throw new Error("Knowledge catalog assigned more than once: " + duplicateKnowledgeFile);
+}
+const physicalKnowledgeFiles = knowledgeFiles.map((path) => path.replaceAll("\\", "/")).sort();
+const declaredKnowledgeSorted = declaredKnowledgeFiles.sort();
+if (JSON.stringify(physicalKnowledgeFiles) !== JSON.stringify(declaredKnowledgeSorted)) {
+  const declared = new Set(declaredKnowledgeSorted);
+  const physical = new Set(physicalKnowledgeFiles);
+  throw new Error("Knowledge catalog ownership mismatch." +
+    " Unowned: " + physicalKnowledgeFiles.filter((path) => !declared.has(path)).join(", ") +
+    ". Missing: " + declaredKnowledgeSorted.filter((path) => !physical.has(path)).join(", "));
+}
 const engineeringFiles = catalogFiles(engineeringDirectory);
 const files = [...knowledgeFiles, ...engineeringFiles].sort();
 

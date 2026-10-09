@@ -6,7 +6,8 @@ const roots = [
   "engine/knowledge",
   "engine/contracts/engineering/catalogs",
 ];
-const bindingPath = "engine/reliability/catalogs/knowledge-detector-bindings.json";\nconst debtPath = "engine/reliability/catalogs/knowledge-consumption-debt.json";
+const bindingPath = "engine/reliability/catalogs/knowledge-detector-bindings.json";
+const debtPath = "engine/reliability/catalogs/knowledge-consumption-debt.json";
 
 function filesUnder(root) {
   if (!existsSync(root)) return [];
@@ -32,7 +33,11 @@ function isActionable(item) {
 const bindings = existsSync(bindingPath)
   ? JSON.parse(readFileSync(bindingPath, "utf8")).bindings ?? []
   : [];
-const bound = new Set(bindings.map((item) => item.knowledgeId));\nconst debt = existsSync(debtPath)\n  ? JSON.parse(readFileSync(debtPath, "utf8")).classifications ?? []\n  : [];\nconst classifiedDebt = new Map(debt.map((item) => [item.knowledgeId, item]));
+const bound = new Set(bindings.map((item) => item.knowledgeId));
+const debt = existsSync(debtPath)
+  ? JSON.parse(readFileSync(debtPath, "utf8")).classifications ?? []
+  : [];
+const classifiedDebt = new Map(debt.map((item) => [item.knowledgeId, item]));
 const catalog = buildResourceCatalog();
 const resourceByLocation = new Map(
   catalog.resources
@@ -82,7 +87,12 @@ for (const root of roots) {
   }
 }
 
-const unbound = actionable.filter((item) => !bound.has(item.id));\nconst intentionalDebt = unbound.filter((item) => classifiedDebt.has(item.id));\nconst missing = unbound.filter((item) => !classifiedDebt.has(item.id));\nconst staleDebt = [...classifiedDebt.keys()].filter(\n  (id) => !actionable.some((item) => item.id === id),\n);
+const unbound = actionable.filter((item) => !bound.has(item.id));
+const intentionalDebt = unbound.filter((item) => classifiedDebt.has(item.id));
+const missing = unbound.filter((item) => !classifiedDebt.has(item.id));
+const staleDebt = [...classifiedDebt.keys()].filter(
+  (id) => !actionable.some((item) => item.id === id),
+);
 const stale = [...bound].filter(
   (id) => !actionable.some((item) => item.id === id) && !passive.some((item) => item.id === id),
 );
@@ -126,9 +136,17 @@ const result = {
   passiveKnowledge: passive.length,
   dedicatedBindings: bound.size,
   boundActionableKnowledge,
-  actionableWithoutDedicatedBinding: unbound.length,\n  intentionalClassifiedDebt: intentionalDebt.length,\n  unclassifiedActionableDebt: missing.length,
+  actionableWithoutDedicatedBinding: unbound.length,
+  intentionalClassifiedDebt: intentionalDebt.length,
+  unclassifiedActionableDebt: missing.length,
   dedicatedBindingCoverage,
-  staleBindings: stale.length,\n  staleDebtClassifications: staleDebt.length,\n  debtByStatus: Object.fromEntries(\n    [...new Set(intentionalDebt.map((item) => classifiedDebt.get(item.id)?.status).filter(Boolean))]\n      .sort()\n      .map((status) => [status, intentionalDebt.filter((item) => classifiedDebt.get(item.id)?.status === status).length]),\n  ),
+  staleBindings: stale.length,
+  staleDebtClassifications: staleDebt.length,
+  debtByStatus: Object.fromEntries(
+    [...new Set(intentionalDebt.map((item) => classifiedDebt.get(item.id)?.status).filter(Boolean))]
+      .sort()
+      .map((status) => [status, intentionalDebt.filter((item) => classifiedDebt.get(item.id)?.status === status).length]),
+  ),
   missingByOwner,
   missing,
   stale,
