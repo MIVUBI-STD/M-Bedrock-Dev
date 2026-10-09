@@ -4,6 +4,23 @@ import {
 } from "../../src/inspection/gameplay-discovery-closure.js";
 
 describe("gameplay discovery closure", () => {
+  it("keeps native world truncation visible even if indexed sources are complete", () => {
+    const result = assessGameplayDiscoveryClosure({
+      discoveredSurfaceIds: ["runtime:state"],
+      sourceRelevantFiles: 1,
+      sourceIndexedFiles: 1,
+      sourceCoverageComplete: true,
+      sourceParseFailures: 0,
+      unsupportedRelevantSourcePaths: [],
+      semanticUnderstandingGapPaths: [],
+      unresolvedReferences: 0,
+      nativeWorldScanIncomplete: true,
+    });
+    expect(result.status).toBe("OPEN");
+    expect(result.nativeWorldScanIncomplete).toBe(true);
+    expect(result.reasons.some(reason => reason.includes("native world scan"))).toBe(true);
+  });
+
   it("opens when relevant source coverage is incomplete", () => {
     const result =
       assessGameplayDiscoveryClosure({

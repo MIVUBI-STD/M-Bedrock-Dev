@@ -980,6 +980,11 @@ export async function inspectArtifact(
         discoveredSurfaceIds:
           finalGameplayWorld.surfaceDiscovery
             .surfaceIds,
+        nativeWorldScanIncomplete:
+          nativeWorldDb.status === "failed" ||
+          nativeWorldDb.truncated ||
+          nativeWorldDb.chunkSignalsTruncated ||
+          nativeWorldDb.chunkContentObservationsTruncated === true,
         sourceRelevantFiles:
           result.gameplayDiscoveryClosure
             .sourceRelevantFiles,

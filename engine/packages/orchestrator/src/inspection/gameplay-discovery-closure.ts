@@ -14,6 +14,8 @@ export interface GameplayDiscoveryClosureInput {
   readonly semanticUnderstandingGapPaths: readonly string[];
   readonly unresolvedReferences: number;
   readonly discoveryChallengeIds?: readonly string[];
+  /** Native world evidence is not complete if the scan failed or hit a bound. */
+  readonly nativeWorldScanIncomplete?: boolean;
 }
 
 export interface GameplayDiscoveryClosure {
@@ -38,6 +40,7 @@ export interface GameplayDiscoveryClosure {
   readonly sourceCoverageComplete: boolean;
   readonly unresolvedReferences: number;
   readonly discoveryChallengeIds: readonly string[];
+  readonly nativeWorldScanIncomplete: boolean;
   readonly reasons: readonly string[];
 }
 
@@ -130,6 +133,10 @@ export function assessGameplayDiscoveryClosure(
     );
   }
 
+  if (input.nativeWorldScanIncomplete === true) {
+    reasons.push("Selected-artifact native world scan is incomplete; missing chunks, actors or command blocks cannot be treated as absent.");
+  }
+
   if (input.unresolvedReferences > 0) {
     reasons.push(
       String(input.unresolvedReferences) +
@@ -145,7 +152,8 @@ export function assessGameplayDiscoveryClosure(
       input.sourceParseFailures > 0 ||
       unsupportedRelevantSources > 0 ||
       semanticUnderstandingGaps > 0 ||
-      discoveryChallengeIds.length > 0
+      discoveryChallengeIds.length > 0 ||
+      input.nativeWorldScanIncomplete === true
         ? "OPEN"
         : input.unresolvedReferences > 0
           ? "PARTIAL"
@@ -177,6 +185,7 @@ export function assessGameplayDiscoveryClosure(
     unresolvedReferences:
       input.unresolvedReferences,
     discoveryChallengeIds,
+    nativeWorldScanIncomplete: input.nativeWorldScanIncomplete === true,
     reasons,
   };
 }
