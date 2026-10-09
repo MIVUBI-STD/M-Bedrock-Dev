@@ -12,6 +12,7 @@ foundation/
 ├─ artifact
 ├─ archive
 ├─ project-model
+├─ dataflow
 ├─ graph
 └─ semantic-ir
 
@@ -44,6 +45,9 @@ orchestration/
 ├─ task-graph
 ├─ orchestrator
 └─ bug-report
+
+design-authority/
+└─ game-design-spec
 ```
 
 Canonical machine-readable ownership is `ownership.json`. Repository verification requires every package directory to belong to exactly one group and rejects stale/duplicate assignments.

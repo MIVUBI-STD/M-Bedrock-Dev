@@ -65,13 +65,11 @@ if (!existsSync("workspace/projects")) {
   failures.push("Missing canonical project workspace: workspace/projects");
 }
 for (const path of tracked.filter((item) => item.startsWith("workspace/projects/"))) {
-  if (/(?:^|\\/)report\\/(?:bug-report|developer-notes)\\.json$/.test(path) ||
-      /(?:^|\\/)output\\/bug-tracker\\.(?:html|json)$/.test(path)) {
-    const isProjectScope = /^workspace\\/projects\\/[^/]+\\/(?:report|output)\\//.test(path);
-    const isLevelScope = /^workspace\\/projects\\/[^/]+\\/levels\\/[^/]+\\/(?:report|output)\\//.test(path);
-    if (!isProjectScope && !isLevelScope) {
-      failures.push("Current project report/output is outside canonical scope: " + path);
-    }
+  const currentReportOrOutput = /\/(?:report\/(?:bug-report|developer-notes)\.json|output\/bug-tracker\.(?:html|json))$/.test(path);
+  if (!currentReportOrOutput) continue;
+  const validScope = /^workspace\/projects\/[^/]+\/(?:levels\/level-[1-9][0-9]*\/)?(?:report\/(?:bug-report|developer-notes)\.json|output\/bug-tracker\.(?:html|json))$/.test(path);
+  if (!validScope) {
+    failures.push("Current project report/output is outside canonical scope: " + path);
   }
 }
 

@@ -75,6 +75,8 @@ engine/packages/ownership.json
 | Script / TypeScript semantics | `engine/analyzers/scripts/` |
 | Dialogue semantics | `engine/analyzers/dialogue/` |
 | Entity authored state | `engine/analyzers/entities/` |
+| Block definition semantics | `engine/analyzers/blocks/` |
+| Resource-pack authored semantics | `engine/analyzers/resource-pack/` |
 | Gameplay intent extraction | `engine/analyzers/gameplay-intent/` |
 | Reference resolution | `engine/analyzers/references/` |
 | Spatial/topology analysis | `engine/analyzers/topology/` |

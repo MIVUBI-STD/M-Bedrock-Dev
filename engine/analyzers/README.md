@@ -19,6 +19,8 @@ authored-logic
       ↓
 gameplay
 ├─ entities
+├─ blocks
+├─ resource-pack
 └─ gameplay-intent
       ↓
 resolution
