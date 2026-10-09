@@ -6,7 +6,7 @@ import {
   analyzeScriptMutationTransactions,
   scriptMutationTransactionRuntimeEvidence,
 } from "../../src/repair/script-mutation-transaction-analysis.js";
-import { analyzeKnowledgeRuntime } from "../../src/knowledge-runtime-analysis.js";
+import { analyzeKnowledgeRuntime } from "../../src/inspection/knowledge-runtime-analysis.js";
 
 const source = { artifactId: "a", relativePath: "scripts/main.ts" };
 
