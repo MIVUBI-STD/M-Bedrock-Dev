@@ -1928,13 +1928,32 @@ export function parseScriptFile(
       }
     }
   }
+  const isShadowed = (identifier: ts.Identifier): boolean => {
+    let current: ts.Node | undefined = identifier.parent;
+    while (current && current !== file) {
+      if (ts.isFunctionLike(current) && current.parameters.some(parameter =>
+        ts.isIdentifier(parameter.name) && parameter.name.text === identifier.text)) return true;
+      if (ts.isBlock(current) || ts.isSourceFile(current)) {
+        const statements = current.statements;
+        if (statements?.some(statement =>
+          (ts.isVariableStatement(statement) && statement.declarationList.declarations.some(
+            declaration => ts.isIdentifier(declaration.name) && declaration.name.text === identifier.text)) ||
+          (ts.isFunctionDeclaration(statement) && statement.name?.text === identifier.text)
+        )) {
+          if (current !== file) return true;
+        }
+      }
+      current = current.parent;
+    }
+    return false;
+  };
   const constCallback = (call: ts.CallExpression): ts.ArrowFunction | ts.FunctionExpression | undefined => {
     const first = call.arguments[0];
-    return first && ts.isIdentifier(first) ? topLevelConstCallbacks.get(first.text) : undefined;
+    return first && ts.isIdentifier(first) && !isShadowed(first) ? topLevelConstCallbacks.get(first.text) : undefined;
   };
   const namedCallback = (call: ts.CallExpression): string | undefined => {
     const first = call.arguments[0];
-    return first && ts.isIdentifier(first) && topLevelFunctionNames.has(first.text)
+    return first && ts.isIdentifier(first) && !isShadowed(first) && topLevelFunctionNames.has(first.text)
       ? first.text : undefined;
   };
 

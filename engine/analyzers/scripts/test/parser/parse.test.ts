@@ -9,6 +9,20 @@ const source = {
 };
 
 describe("script analyzer", () => {
+  it("does not resolve shadowed top-level callbacks from nested lexical scopes", () => {
+    const parsed = parseScriptFile("scripts/main", [
+      'import { world, system } from "@minecraft/server";',
+      'const onSpawn = () => {};',
+      'function tick() {}',
+      'function configure(onSpawn) { world.afterEvents.playerSpawn.subscribe(onSpawn); }',
+      'function scoped() { const tick = other; system.runInterval(tick, 20); }',
+    ].join("\n"), source);
+    expect(parsed.events.find(event => event.event === "playerSpawn")?.callbackRegion)
+      .toBeUndefined();
+    expect(parsed.deferredCallbacks.find(item => item.scheduler === "runInterval")?.callbackRegion)
+      .toBeUndefined();
+  });
+
   it("links top-level const function callbacks without resolving mutable references", () => {
     const parsed = parseScriptFile("scripts/main", [
       'import { world, system } from "@minecraft/server";',
