@@ -1,9 +1,9 @@
 import type {
   InspectArtifactResult,
-} from "../inspect-artifact.js";
+} from "../inspection/inspect-artifact.js";
 import type {
   ArenaProofReuseReport,
-} from "../arena-proof-reuse.js";
+} from "../arena/arena-proof-reuse.js";
 
 export interface PostRepairValidationObligations {
   schemaVersion: 1;

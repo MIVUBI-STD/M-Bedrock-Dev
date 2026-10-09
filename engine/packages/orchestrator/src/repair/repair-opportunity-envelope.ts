@@ -11,10 +11,10 @@ import type {
 } from "../../../project-model/src/index.js";
 import {
   deriveRepairInvariants,
-} from "../repair-invariant-derivation.js";
+} from "../repair/repair-invariant-derivation.js";
 import type {
   RepairStrategyCausalBinding,
-} from "../repair-strategy-selection.js";
+} from "../repair/repair-strategy-selection.js";
 
 export interface RepairOpportunityEnvelope {
   incidentId: string;

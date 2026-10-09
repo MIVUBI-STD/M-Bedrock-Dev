@@ -1,10 +1,10 @@
 import { rm } from "node:fs/promises";
 import { packageDirectoryDeterministically } from "../../../archive/src/index.js";
-import type { RepairLifecycleState } from "../repair-lifecycle.js";
+import type { RepairLifecycleState } from "../repair/repair-lifecycle.js";
 import {
   decideRepairPackageStaging,
   type PackageStagingDecision,
-} from "../repair-release-gate.js";
+} from "../repair/repair-release-gate.js";
 
 export type RepairPackageStageResult =
   | {

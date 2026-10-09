@@ -10,7 +10,7 @@ import {
 import { sha256File } from "../../../artifact/src/index.js";
 import type {
   RepairVerificationReceipt,
-} from "../repair-lifecycle.js";
+} from "../repair/repair-lifecycle.js";
 
 export interface DirectoryContentFingerprint {
   sha256: string;

@@ -20,14 +20,14 @@ import {
 } from "./provider-backed-repair-selection.js";
 import type {
   CausalRepairStrategyPolicy,
-} from "../causal-repair-strategy-selection.js";
+} from "../diagnosis/causal-repair-strategy-selection.js";
 import type {
   RepairStrategyProviderProposal,
   RepairStrategyProviderRegistry,
-} from "../repair-strategy-provider.js";
+} from "../repair/repair-strategy-provider.js";
 import {
   recordProviderBackedRepairStrategySelection,
-} from "../decision-ledger-recording.js";
+} from "../workflow/decision-ledger-recording.js";
 
 export type SelectAndRecordProviderBackedRepairResult =
   | {

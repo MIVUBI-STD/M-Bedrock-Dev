@@ -9,18 +9,18 @@ import {
   selectRepairStrategyForIncident,
   type CausalRepairStrategyPolicy,
   type CausalRepairStrategySelection,
-} from "../causal-repair-strategy-selection.js";
+} from "../diagnosis/causal-repair-strategy-selection.js";
 import {
   repairRealizerRegistryRevision,
   type RepairRealizerRegistry,
-} from "../repair-realizer-registry.js";
+} from "../repair/repair-realizer-registry.js";
 import {
   repairStrategySourceRegistryRevision,
   type RepairStrategySourceRegistry,
-} from "../repair-strategy-source-registry.js";
+} from "../repair/repair-strategy-source-registry.js";
 import type {
   RepairStrategyCandidate,
-} from "../repair-strategy-selection.js";
+} from "../repair/repair-strategy-selection.js";
 
 export interface RealizedRepairStrategyProposal {
   sourceKind: string;

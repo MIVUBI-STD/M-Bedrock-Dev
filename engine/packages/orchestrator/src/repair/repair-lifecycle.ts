@@ -10,7 +10,7 @@ import type {
 } from "../../../preservation/src/index.js";
 import type {
   AuthorizedRepairApplyResult,
-} from "../authorized-repair.js";
+} from "../repair/authorized-repair.js";
 
 export type RepairLifecycleStage =
   | "not-authorized"

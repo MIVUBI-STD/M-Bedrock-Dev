@@ -14,17 +14,17 @@ import {
   selectRepairStrategyForIncident,
   type CausalRepairStrategyPolicy,
   type CausalRepairStrategySelection,
-} from "../causal-repair-strategy-selection.js";
+} from "../diagnosis/causal-repair-strategy-selection.js";
 import type {
   RepairStrategyProviderProposal,
   RepairStrategyProviderRegistry,
-} from "../repair-strategy-provider.js";
+} from "../repair/repair-strategy-provider.js";
 import {
   repairStrategyProvider,
   repairStrategyProviderRegistryRevision,
   validateRepairStrategyProviderProposal,
   validateRepairStrategyProviderRegistry,
-} from "../repair-strategy-provider.js";
+} from "../repair/repair-strategy-provider.js";
 
 export type ProviderBackedRepairStrategySelection =
   | {
