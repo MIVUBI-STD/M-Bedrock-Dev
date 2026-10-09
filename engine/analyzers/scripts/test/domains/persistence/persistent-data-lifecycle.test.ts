@@ -46,6 +46,26 @@ describe("persistent data lifecycle evidence", () => {
       .map(item => item.range?.lineStart)).toEqual([3]);
   });
 
+  it("tracks calls that may escape the receiver without guessing call effects", () => {
+    const rows = derivePersistentDataLifecycleEvidence([
+      "function cleanup(arena) {",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      '  notify("ready");',
+      "  const ref = arena;",
+      "  mutate(ref);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+    ].join("\n"), {
+      artifactId: "artifact:test", relativePath: "scripts/cleanup.ts",
+    });
+    const sites = rows.find(x => x.propertyKey === "roundState")?.resetSites ?? [];
+    expect(sites).toHaveLength(2);
+    expect(sites[0]?.sequentialPathEvidence?.precedingReceiverCallSources)
+      .toEqual([]);
+    expect(sites[1]?.sequentialPathEvidence?.precedingReceiverCallSources
+      .map(item => item.range?.lineStart)).toEqual([5]);
+  });
+
   it("retains property-specific reset-like source sites and separates removal from empty writes", () => {
     const source = { artifactId: "a", relativePath: "scripts/round.ts" };
     const result = derivePersistentDataLifecycleEvidence([

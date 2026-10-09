@@ -52,6 +52,28 @@ describe("arena authority evidence", () => {
       .map(item => item.range?.lineStart)).toEqual([5]);
   });
 
+  it("retains calls touching the arena or same-block const alias as source barriers", () => {
+    const parsed = parseScriptFile("arena", [
+      "function reset(arena) {",
+      "  arena.generation++;",
+      "  const alias = arena;",
+      "  mutate(alias);",
+      "  arena.generation++;",
+      "  arena.inspect();",
+      "  arena.generation++;",
+      "}",
+    ].join("\n"), source);
+    const items = parsed.arenaAuthorityEvidence?.filter(
+      item => item.kind === "generation-invalidate") ?? [];
+    expect(items).toHaveLength(3);
+    expect(items[0]?.sequentialPathEvidence?.precedingReceiverCallSources)
+      .toEqual([]);
+    expect(items[1]?.sequentialPathEvidence?.precedingReceiverCallSources
+      .map(item => item.range?.lineStart)).toEqual([4]);
+    expect(items[2]?.sequentialPathEvidence?.precedingReceiverCallSources
+      .map(item => item.range?.lineStart)).toEqual([4, 6]);
+  });
+
   it("proves a capacity authority path only when capacity and membership commit share the same arena object and execution region", () => {
     const parsed = parseScriptFile(
       "arena",

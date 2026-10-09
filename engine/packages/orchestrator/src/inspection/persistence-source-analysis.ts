@@ -187,12 +187,15 @@ function sameSequentialPath(
       return left !== undefined && left === right;
     });
   };
-  // An intervening return/throw/break or receiver assignment makes the
-  // generation and reset statements' necessary source paths differ.
+  // An intervening return/throw, receiver assignment, or receiver-touching
+  // call makes the pair's necessary source evidence differ. Effects of
+  // arbitrary local/external calls are unknown, not assumed harmless.
   return sameSites(generation.precedingControlExitSources,
       reset.precedingControlExitSources) &&
     sameSites(generation.precedingReceiverRebindingSources,
-      reset.precedingReceiverRebindingSources);
+      reset.precedingReceiverRebindingSources) &&
+    sameSites(generation.precedingReceiverCallSources ?? [],
+      reset.precedingReceiverCallSources ?? []);
 }
 
 function sourceOrder(

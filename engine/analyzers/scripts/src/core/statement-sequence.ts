@@ -9,6 +9,8 @@ export interface ScriptSequentialPathEvidence {
   readonly blockSource: SourceRef;
   readonly precedingControlExitSources: readonly SourceRef[];
   readonly precedingReceiverRebindingSources: readonly SourceRef[];
+  /** Unknown call effects touching the receiver (or an exact local alias). */
+  readonly precedingReceiverCallSources: readonly SourceRef[];
 }
 
 function at(file: ts.SourceFile, node: ts.Node, source: SourceRef): SourceRef {
@@ -65,6 +67,45 @@ function rebindsReceiver(node: ts.Node, receiver: string): boolean {
 }
 
 /**
+ * A call can mutate or escape a receiver passed as argument, used as method
+ * receiver, or captured in a callback. This is a conservative source fact,
+ * not a declaration that the call actually mutates the receiver.
+ */
+function referencesReceiver(
+  node: ts.Node,
+  names: ReadonlySet<string>,
+): boolean {
+  if (ts.isIdentifier(node) && names.has(node.text)) return true;
+  // Property names are keys, not receiver references: other.arena() must
+  // not alias a local variable named arena.
+  if (ts.isPropertyAccessExpression(node)) {
+    return referencesReceiver(node.expression, names);
+  }
+  if (ts.isPropertyAssignment(node)) {
+    return referencesReceiver(node.initializer, names) ||
+      (ts.isComputedPropertyName(node.name) &&
+        referencesReceiver(node.name.expression, names));
+  }
+  if (node.kind === ts.SyntaxKind.ThisKeyword && names.has("this")) {
+    return true;
+  }
+  let seen = false;
+  ts.forEachChild(node, child => {
+    if (!seen && referencesReceiver(child, names)) seen = true;
+  });
+  return seen;
+}
+
+function receiverCall(
+  node: ts.Node,
+  names: ReadonlySet<string>,
+): boolean {
+  return ts.isCallExpression(node) &&
+    (referencesReceiver(node.expression, names) ||
+      node.arguments.some(arg => referencesReceiver(arg, names)));
+}
+
+/**
  * Only direct expression statements whose receiver is a simple lexical
  * identifier/property path can carry source sequence identity. Earlier
  * returns/throws/breaks and receiver assignments in this SAME block are
@@ -92,6 +133,29 @@ export function directStatementSequence(
   const index = block.statements.indexOf(statement);
   if (index < 0) return undefined;
   const preceding = block.statements.slice(0, index);
+  const root = receiver.split(".")[0]!;
+  const names = new Set<string>([root]);
+  const callSources: SourceRef[] = [];
+  for (const previous of preceding) {
+    // This is deliberately a bounded same-block const alias. Unknown
+    // interprocedural aliases stay unresolved, not inferred as equal owners.
+    if (ts.isVariableStatement(previous) &&
+        (previous.declarationList.flags & ts.NodeFlags.Const) !== 0) {
+      for (const declaration of previous.declarationList.declarations) {
+        if (!ts.isIdentifier(declaration.name) || !declaration.initializer) {
+          continue;
+        }
+        const value = declaration.initializer.getText(file);
+        if ([...names].some(name =>
+          value === name || value.startsWith(name + "."))) {
+          names.add(declaration.name.text);
+        }
+      }
+    }
+    if (hasDescendant(previous, item => receiverCall(item, names))) {
+      callSources.push(at(file, previous, source));
+    }
+  }
   return {
     blockSource: at(file, block, source),
     precedingControlExitSources: preceding
@@ -100,5 +164,6 @@ export function directStatementSequence(
     precedingReceiverRebindingSources: preceding
       .filter(prev => hasDescendant(prev, item => rebindsReceiver(item, receiver)))
       .map(prev => at(file, prev, source)),
+    precedingReceiverCallSources: callSources,
   };
 }
