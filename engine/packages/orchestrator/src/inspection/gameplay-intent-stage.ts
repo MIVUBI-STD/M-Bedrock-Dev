@@ -1,5 +1,6 @@
 import {
   extractGameplayIntentSignals,
+  extractGameplayIntentSurfaceSignal,
   type GameplayIntentRelationSignal,
   type GameplayIntentSignal,
 } from "../../../../analyzers/gameplay-intent/src/index.js";
@@ -7,6 +8,9 @@ import type {
   ParsedScriptFile,
   CrossFileCallEdge,
 } from "../../../../analyzers/scripts/src/index.js";
+import type {
+  ParsedFunction,
+} from "../../../../analyzers/functions/src/index.js";
 import type { SourceRef } from "../../../project-model/src/index.js";
 import { semanticIrExecutionTraces, type SemanticIr } from "../../../semantic-ir/src/index.js";
 import { eventRegionId, scriptRegionId } from "../diagnosis/semantic-ir-stage.js";
@@ -25,6 +29,10 @@ export interface GameplayIntentStageInput {
   artifactId?: string;
   parsedScripts: readonly {
     parsed: ParsedScriptFile;
+  }[];
+  /** Existing mcfunction source index from the same inspected artifact. */
+  parsedFunctions?: readonly {
+    parsed: ParsedFunction;
   }[];
   contractScripts?: readonly {
     parsed: ParsedScriptFile;
@@ -91,6 +99,9 @@ export function buildGameplayIntentModel(
       (item) => item.parsed.source.relativePath,
     ),
     ...contractScripts.map(
+      (item) => item.parsed.source.relativePath,
+    ),
+    ...(input.parsedFunctions ?? []).map(
       (item) => item.parsed.source.relativePath,
     ),
     ...supplementalSignals.map(
@@ -498,6 +509,163 @@ export function buildGameplayIntentModel(
         ...new Set([...existing.evidenceIds, ...relationEvidenceIds]),
       ].sort(),
     });
+  }
+
+
+  // Reconcile the mcfunction source owner with the Semantic IR already
+  // produced by this inspection. Only individually identified, classified
+  // functions participate; name similarity alone is never a new mechanic.
+  // Graph edges below are source-observed, inferred dependencies, not
+  // assertions about command success or Minecraft runtime state.
+  if (input.semanticIr && input.parsedFunctions?.length) {
+    const sourceFunctions = input.parsedFunctions
+      .flatMap(({ parsed }) => {
+        if (input.artifactId !== undefined &&
+            parsed.source.artifactId !== input.artifactId) return [];
+        const candidate = extractGameplayIntentSurfaceSignal({
+          label: parsed.identifier,
+          locator: parsed.source.relativePath,
+          evidenceOrigin: "source-code",
+        });
+        // A source candidate must be in the current authoritative surface
+        // signal inventory; do not invent it during orchestration.
+        if (!candidate ||
+            !supplementalSignals.some(signal =>
+              signal.id === candidate.id &&
+              signal.subjectKey === candidate.subjectKey &&
+              signal.evidenceOrigin === "source-code" &&
+              signal.locator === parsed.source.relativePath) ||
+            !nodes.has(candidate.subjectKey)) return [];
+        const regions = input.semanticIr!.execution.regions.filter(region =>
+          region.kind === "mcfunction" &&
+          region.ownerId === parsed.identifier &&
+          region.source?.artifactId === parsed.source.artifactId &&
+          region.source.relativePath === parsed.source.relativePath);
+        if (regions.length !== 1) return [];
+        return [{ parsed, subjectId: candidate.subjectKey, region: regions[0]! }];
+      });
+    const uniqueRegionOwners = new Map<string, typeof sourceFunctions>();
+    for (const owner of sourceFunctions) {
+      const list = uniqueRegionOwners.get(owner.region.id) ?? [];
+      list.push(owner);
+      uniqueRegionOwners.set(owner.region.id, list);
+    }
+    const accepted = sourceFunctions.filter(owner =>
+      uniqueRegionOwners.get(owner.region.id)?.length === 1);
+    const byRegion = new Map(accepted.map(owner =>
+      [owner.region.id, owner] as const));
+    const addIrEvidence = (
+      id: string,
+      source: SourceRef,
+      summary: string,
+    ): void => {
+      evidence.set(id, {
+        id,
+        origin: "source-code",
+        locator: source.relativePath,
+        scope: "selected-artifact",
+        summary,
+      });
+    };
+    const addInferredEdge = (
+      from: string,
+      to: string,
+      kind: GameplayIntentEdge["kind"],
+      witnessId: string,
+      description: string,
+    ): void => {
+      const key = [kind, from, to].join("::");
+      const existing = edges.get(key);
+      const ids = [...new Set([...(existing?.evidenceIds ?? []), witnessId])].sort();
+      edges.set(key, existing
+        ? { ...existing, evidenceIds: ids }
+        : {
+            id: "intent-edge:" + kind + ":" + from + ":" + to,
+            from, to, kind, status: "inferred",
+            evidenceIds: ids, description,
+          });
+    };
+    for (const owner of accepted) {
+      addIrEvidence(
+        owner.region.id,
+        owner.parsed.source,
+        "Authored mcfunction source region; activation and completion are not proven.",
+      );
+      const current = nodes.get(owner.subjectId)!;
+      nodes.set(owner.subjectId, {
+        ...current,
+        evidenceIds: [...new Set([
+          ...current.evidenceIds, owner.region.id,
+        ])].sort(),
+      });
+
+      // Use the already-normalized IR scoreboard/tag surface. These are
+      // technical resources; no economy, score, or player effect is inferred.
+      for (const operation of input.semanticIr.state.operations) {
+        if (operation.executionRegionId !== owner.region.id ||
+            operation.source.artifactId !== owner.parsed.source.artifactId ||
+            operation.source.relativePath !== owner.parsed.source.relativePath) {
+          continue;
+        }
+        const surface = input.semanticIr.state.surfaces.find(item =>
+          item.id === operation.surfaceId);
+        if (!surface || (surface.ref.kind !== "scoreboard" &&
+                         surface.ref.kind !== "tag")) continue;
+        const key = "resource:" + surface.ref.kind + ":" +
+          encodeURIComponent(surface.ref.key);
+        addIrEvidence(
+          operation.id, operation.source,
+          "Authored " + surface.ref.kind + " " + operation.operation +
+          " operation; live state and player-visible effects remain unverified.",
+        );
+        const prev = nodes.get(key);
+        nodes.set(key, prev
+          ? { ...prev,
+              evidenceIds: [...new Set([...prev.evidenceIds, operation.id])].sort() }
+          : {
+              id: key,
+              kind: "resource",
+              label: (surface.ref.kind === "scoreboard"
+                ? "Scoreboard " : "Tag ") + surface.ref.key,
+              status: "authored",
+              evidenceIds: [operation.id],
+              description: "Source-observed technical state surface, not a declared game rule.",
+            });
+        addInferredEdge(
+          owner.subjectId, key, "participates-in", operation.id,
+          "This mcfunction references a technical state surface. " +
+          "Direction, gameplay meaning and runtime effects are not proven.",
+        );
+      }
+
+      // Direct calls carry the exact parsed command site and resolved IR
+      // target; unresolved, ambiguous and unclassified callees are not linked.
+      for (const reference of owner.parsed.references) {
+        if (reference.kind !== "function") continue;
+        const matches = input.semanticIr.execution.edges.filter(edge =>
+          edge.kind === "synchronous-call" &&
+          edge.resolution === "resolved" &&
+          edge.from === owner.region.id &&
+          edge.targetLabel === reference.target &&
+          edge.to !== undefined &&
+          byRegion.has(edge.to) &&
+          sameExactCallSource(edge.source, reference.source));
+        if (matches.length !== 1) continue;
+        const match = matches[0]!;
+        const target = byRegion.get(match.to!);
+        if (!target) continue;
+        addIrEvidence(
+          match.id, match.source,
+          "Exact mcfunction call to a uniquely identified source target; " +
+          "branch reachability and gameplay purpose remain unproven.",
+        );
+        addInferredEdge(
+          owner.subjectId, target.subjectId, "requires", match.id,
+          "Source directly invokes this classified mcfunction. " +
+          "Runtime execution and player-facing dependency are inferred.",
+        );
+      }
+    }
   }
 
   const evidenceHasSelectedArtifactSource = (

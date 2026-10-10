@@ -181,6 +181,7 @@ export async function inspectDirectory(
     id: "gameplay-intent:" + artifactId,
     artifactId,
     parsedScripts,
+    parsedFunctions,
     contractScripts: contractSources,
     supplementalSignals:
       gameplaySurfaceSignals,

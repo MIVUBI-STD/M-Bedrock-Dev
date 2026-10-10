@@ -83,6 +83,12 @@ The existing `Gameplay Intent` producer now retains parser-observed named functi
 
 The source-grounded guarded return path reconciles `ScriptGuardedOutcome.outcomeSource` with a unique `ScriptReturnOutcome.source` at the exact authored range, execution region, property and value. The existing Intent outcome/state nodes and guarded `requires` relationships inherit that precise return witness. Ambiguous or missing sites remain unresolved; no mechanic or second graph is invented.
 
+### mcfunction-to-gameplay evidence continuity
+
+The canonical `inspect.ts` passes its existing indexed `.mcfunction` sources into `buildGameplayIntentModel()` alongside the same Semantic IR. A classified function is linked only when its source identity matches a unique `mcfunction` execution region and the corresponding surface candidate already exists. Direct `function` invocations require an exact parsed command location and a uniquely resolved IR target. Scoreboard and tag operations use the existing normalized state-surface IDs and are represented as technical `resource` facts, not assumed scoring rules or player effects.
+
+All new function-to-function and function-to-resource Intent relations remain `inferred`. Missing, ambiguous, or unclassified content remains evidence debt in the existing IR/Discovery Challenger. No second parser, scenario compiler, graph, or report authority is introduced.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:
