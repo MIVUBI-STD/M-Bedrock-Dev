@@ -289,7 +289,11 @@ function leadingGenerationGuard(
   node: ts.Node,
   file: ts.SourceFile,
   source: SourceRef,
-): { identifiers: string[]; guardSource: SourceRef } | undefined {
+): {
+  identifiers: string[];
+  guardSource: SourceRef;
+  operands: readonly [string, string];
+} | undefined {
   if (!ts.isArrowFunction(node) &&
       !ts.isFunctionExpression(node) &&
       !ts.isFunctionDeclaration(node)) return undefined;
@@ -338,6 +342,7 @@ function leadingGenerationGuard(
   return {
     identifiers: [...identifiers].sort(),
     guardSource: lineSource(file, first.expression, source),
+    operands: [comparison.left.getText(file), comparison.right.getText(file)],
   };
 }
 
@@ -2907,6 +2912,7 @@ export function parseScriptFile(
           guardIdentifiers,
           ...(generationGuard === undefined ? {} : {
             generationGuardSource: generationGuard.guardSource,
+            generationGuardOperands: generationGuard.operands,
           }),
           ...(delayTicks === undefined
             ? {}

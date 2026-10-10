@@ -28,6 +28,7 @@ import {
   type StateOperation,
   type StateOperationKind,
   type AuthoredStateTransitionDeclaration,
+  type AuthoredGenerationInvalidation,
   type StateSurface,
   type TemporalRelation,
 } from "../../../semantic-ir/src/index.js";
@@ -128,6 +129,7 @@ export function buildInspectionSemanticIr(
   const surfaces = new Map<string, StateSurface>();
   const operations = new Map<string, StateOperation>();
   const transitionDeclarations = new Map<string, AuthoredStateTransitionDeclaration>();
+  const generationInvalidations = new Map<string, AuthoredGenerationInvalidation>();
   const outcomes = new Map<string, AuthoredReturnOutcome>();
   const resourceActions = new Map<string, AuthoredResourceAction>();
   const worldEffects = new Map<string, AuthoredWorldEffect>();
@@ -365,6 +367,11 @@ export function buildInspectionSemanticIr(
         regionSources.set(access.executionRegion, access.source);
       }
     }
+    for (const invalidation of parsed.arenaAuthorityEvidence ?? []) {
+      if (invalidation.kind === "generation-invalidate") {
+        regionSources.set(invalidation.executionRegion, invalidation.source);
+      }
+    }
     for (const command of parsed.commandLiterals) {
       if (command.executionRegion) {
         regionSources.set(command.executionRegion, command.source);
@@ -489,6 +496,9 @@ export function buildInspectionSemanticIr(
         ...(callback.generationGuardSource === undefined ? {} : {
           generationGuardSource: callback.generationGuardSource,
         }),
+        ...(callback.generationGuardOperands === undefined ? {} : {
+          generationGuardOperands: callback.generationGuardOperands,
+        }),
       });
     }
 
@@ -612,6 +622,29 @@ export function buildInspectionSemanticIr(
         from: declaration.from,
         to: [...declaration.to],
         source: declaration.source,
+      });
+    }
+
+    // Reuse the arena-authority analyzer's exact authored generation
+    // mutation identity. Never rescan method names or infer invalidation
+    // from variable names alone.
+    for (const item of parsed.arenaAuthorityEvidence ?? []) {
+      if (item.kind !== "generation-invalidate" ||
+          item.generationExpression === undefined) continue;
+      const region = ensureScriptRegion(
+        parsed, item.executionRegion, item.source);
+      const id = [
+        "generation-invalidation",
+        token(item.source.artifactId),
+        token(region),
+        sourceToken(item.source),
+        token(item.generationExpression),
+      ].join(":");
+      generationInvalidations.set(id, {
+        id,
+        executionRegionId: region,
+        generationExpression: item.generationExpression,
+        source: item.source,
       });
     }
 
@@ -846,6 +879,9 @@ export function buildInspectionSemanticIr(
         (a, b) => a.id.localeCompare(b.id),
       ),
       transitionDeclarations: [...transitionDeclarations.values()].sort(
+        (a, b) => a.id.localeCompare(b.id),
+      ),
+      generationInvalidations: [...generationInvalidations.values()].sort(
         (a, b) => a.id.localeCompare(b.id),
       ),
       authorityBindings,

@@ -34,6 +34,9 @@ export function validateSemanticIr(ir: SemanticIr): string[] {
   for (const duplicate of duplicateIds(ir.state.resourceActions ?? [])) {
     errors.push("Duplicate resource action id: " + duplicate);
   }
+  for (const duplicate of duplicateIds(ir.state.generationInvalidations ?? [])) {
+    errors.push("Duplicate authored generation invalidation id: " + duplicate);
+  }
   for (const duplicate of duplicateIds(ir.state.surfaces)) {
     errors.push("Duplicate state surface id: " + duplicate);
   }
@@ -73,6 +76,11 @@ export function validateSemanticIr(ir: SemanticIr): string[] {
   for (const action of ir.state.resourceActions ?? []) {
     if (!regions.has(action.executionRegionId)) {
       errors.push("Resource action execution region does not exist: " + action.id);
+    }
+  }
+  for (const invalidation of ir.state.generationInvalidations ?? []) {
+    if (!regions.has(invalidation.executionRegionId)) {
+      errors.push("Generation invalidation execution region does not exist: " + invalidation.id);
     }
   }
 

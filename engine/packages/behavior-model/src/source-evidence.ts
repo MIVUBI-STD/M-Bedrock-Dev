@@ -813,6 +813,15 @@ export interface SourceEffectSlice {
         "DIRECT_EFFECT_SITE_GATED" | "SYNCHRONOUS_CALL_SITE_GATED" | "UNRESOLVED";
       readonly candidateScheduleAcquireActionIds: readonly string[];
       readonly candidateReleaseActionIds: readonly string[];
+      /** Exact textual reference to an authored generation invalidation
+       * within the same selected-artifact script. Not runtime identity. */
+      readonly matchingGenerationInvalidationIds: readonly string[];
+      /** Matching caller-region invalidation written after scheduling.
+       * Static source order, NOT evidence it ran before callback execution. */
+      readonly postScheduleCallerInvalidationIds: readonly string[];
+      readonly generationOwnerRelation:
+        "CALLER_POST_SCHEDULE_CANDIDATE" |
+        "EXPRESSION_MATCH_ONLY" | "UNRESOLVED";
     }[];
     /** Exact authored call-site guards on THIS candidate path. */
     readonly pathGuards: readonly (SourceEffectSlice["effectGuards"][number] & {
@@ -927,6 +936,7 @@ export function deriveSourceEffectSlices(
   );
   const scheduleAcquires = (ir.state.resourceActions ?? []).filter(action =>
     action.surface === "deferred-callback" && action.action === "acquire");
+  const generationInvalidations = ir.state.generationInvalidations ?? [];
   const worldEffectOutcomeCandidates = reconcileSourceWorldEffectOutcomes(ir);
   const stateSurfaces = new Map(ir.state.surfaces.map(s => [s.id, s.ref]));
   const stateReads = ir.state.operations.filter(op => op.operation === "read");
@@ -1044,6 +1054,26 @@ export function deriveSourceEffectSlices(
                 : syncCallSite
                   ? "SYNCHRONOUS_CALL_SITE_GATED" as const
                   : "UNRESOLVED" as const;
+              const matchingInvalidations = edge.kind === "event-dispatch"
+                ? []
+                : generationInvalidations.filter(item =>
+                  edge.generationGuardOperands?.includes(
+                    item.generationExpression) === true &&
+                  item.source.artifactId === edge.source.artifactId &&
+                  item.source.relativePath === edge.source.relativePath);
+              const postScheduleCallerInvalidationIds = matchingInvalidations
+                .filter(item =>
+                  item.executionRegionId === edge.from &&
+                  precedingSourceSite(edge.source, item.source))
+                .map(item => item.id).sort();
+              const matchingGenerationInvalidationIds = matchingInvalidations
+                .map(item => item.id).sort();
+              const generationOwnerRelation =
+                postScheduleCallerInvalidationIds.length > 0
+                  ? "CALLER_POST_SCHEDULE_CANDIDATE" as const
+                  : matchingGenerationInvalidationIds.length > 0
+                    ? "EXPRESSION_MATCH_ONLY" as const
+                    : "UNRESOLVED" as const;
               return [{
                 executionEdgeId: id,
                 kind: edge.kind,
@@ -1057,6 +1087,9 @@ export function deriveSourceEffectSlices(
                   .map(action => action.id).sort(),
                 candidateReleaseActionIds: [...new Set(acquired.flatMap(action =>
                   resourceLifetimes.get(action.id)?.candidateReleaseActionIds ?? []))].sort(),
+                matchingGenerationInvalidationIds,
+                postScheduleCallerInvalidationIds,
+                generationOwnerRelation,
               }];
             }),
             pathGuards: entryToEffectEdges.flatMap(id => {

@@ -181,6 +181,14 @@ The existing Semantic IR scheduler edge carries `generationGuardSource`; `Behavi
 
 The existing arena deferred-mutation consumer also keeps its historical `protected` classification only when an exact leading mismatch guard is present and all discovered mutation regions are confined to that callback's region. Cross-function mutations without site-level guarded-call proof stay `unresolved`. This is deliberately conservative and does not prove generation token freshness, live arena/session owner identity, successful `clearRun`, lifecycle closure, or player-visible behavior. No new async manager, state store, graph, or report owner has been introduced. The existing Gameplay Architecture path and Map Audit Output V2 schema consume the same bounded evidence.
 
+### Explicit generation mutations and deferred callback session references
+
+The existing arena-authority AST analyzer already observes direct generation invalidations (`generation-invalidate`), including the literal authored `generationExpression`, exact statement site, and function region. These records are now normalized as optional `SemanticIr.state.generationInvalidations`; the callback parser also retains the two exact reference operands of a leading mismatch early exit, not just identifiers matching a regular expression.
+
+Within the existing `SourceEffectSlice.candidateIngress[].temporalBoundaryEvidence`, `matchingGenerationInvalidationIds` lists only invalidations whose exact authored expression equals a callback guard operand and whose script path/artifact match the scheduling edge. `postScheduleCallerInvalidationIds` is a narrower subset: same scheduling caller execution region and exact source order schedule → invalidation. The `generationOwnerRelation` status distinguishes `CALLER_POST_SCHEDULE_CANDIDATE`, `EXPRESSION_MATCH_ONLY`, and `UNRESOLVED`. This is a *source-coincidence* measure, not proof of shared runtime object identity, token capture, session ownership or invalidation-before-callback execution. Multiple distinct arena instances may share the same source expression.
+
+The new records reuse the canonical parser, Semantic IR and backward Behavior Model; Gameplay Scenario already projects the containing `temporalBoundaryEvidence` without a second lifecycle output authority. The Map Audit V2 contract is extended in place. Event, unresolved and deferred boundaries retain their existing path gating and unknown semantics. Terminal, cleanup and recovery success remain runtime-unverified; no manager, registry, new execution model, or dependency was introduced.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:

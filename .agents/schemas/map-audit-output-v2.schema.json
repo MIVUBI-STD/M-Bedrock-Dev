@@ -3181,7 +3181,10 @@
                           "candidateScheduleAcquireActionIds",
                           "candidateReleaseActionIds",
                           "generationGuardSource",
-                          "sourceGateStatus"
+                          "sourceGateStatus",
+                          "matchingGenerationInvalidationIds",
+                          "postScheduleCallerInvalidationIds",
+                          "generationOwnerRelation"
                         ],
                         "properties": {
                           "executionEdgeId": {
@@ -3280,6 +3283,28 @@
                               "UNRESOLVED"
                             ],
                             "description": "Bounded exact precedence guard at the effect or at the first resolved synchronous call site; never a runtime freshness guarantee."
+                          },
+                          "matchingGenerationInvalidationIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Matching exact authored generation expression in the same script file/artifact. No alias or session identity inference."
+                          },
+                          "postScheduleCallerInvalidationIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Matching generation mutation in the scheduling caller region, with scheduling site before mutation in source. No temporal runtime execution proof."
+                          },
+                          "generationOwnerRelation": {
+                            "enum": [
+                              "CALLER_POST_SCHEDULE_CANDIDATE",
+                              "EXPRESSION_MATCH_ONLY",
+                              "UNRESOLVED"
+                            ],
+                            "description": "Degree of static owner-expression coincidence, not confirmed invalidation of the scheduled session."
                           }
                         }
                       }
@@ -3607,7 +3632,10 @@
                           "candidateScheduleAcquireActionIds",
                           "candidateReleaseActionIds",
                           "generationGuardSource",
-                          "sourceGateStatus"
+                          "sourceGateStatus",
+                          "matchingGenerationInvalidationIds",
+                          "postScheduleCallerInvalidationIds",
+                          "generationOwnerRelation"
                         ],
                         "properties": {
                           "executionEdgeId": {
@@ -3706,6 +3734,28 @@
                               "UNRESOLVED"
                             ],
                             "description": "Bounded exact precedence guard at the effect or at the first resolved synchronous call site; never a runtime freshness guarantee."
+                          },
+                          "matchingGenerationInvalidationIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Matching exact authored generation expression in the same script file/artifact. No alias or session identity inference."
+                          },
+                          "postScheduleCallerInvalidationIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Matching generation mutation in the scheduling caller region, with scheduling site before mutation in source. No temporal runtime execution proof."
+                          },
+                          "generationOwnerRelation": {
+                            "enum": [
+                              "CALLER_POST_SCHEDULE_CANDIDATE",
+                              "EXPRESSION_MATCH_ONLY",
+                              "UNRESOLVED"
+                            ],
+                            "description": "Degree of static owner-expression coincidence, not confirmed invalidation of the scheduled session."
                           }
                         }
                       }

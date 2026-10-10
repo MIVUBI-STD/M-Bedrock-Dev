@@ -52,6 +52,8 @@ export interface ExecutionEdge {
   guardIdentifiers?: readonly string[];
   /** Exact source location of the callback's early generation exit. */
   generationGuardSource?: SourceRef;
+  /** Exact authored operand source spelling, not runtime alias identity. */
+  generationGuardOperands?: readonly [string, string];
 }
 
 /** An authored object-return property, not a gameplay win or loss. */
@@ -97,6 +99,17 @@ export interface AuthoredWorldEffect {
   readonly source: SourceRef;
   readonly lexicalGuards?: readonly AuthoredBranchGuard[];
   readonly precedenceGuards?: readonly AuthoredBranchGuard[];
+}
+
+/**
+ * Existing arena-authority source observation of a generation mutation.
+ * It is not proof the mutation executed or invalidated any live callback.
+ */
+export interface AuthoredGenerationInvalidation {
+  readonly id: string;
+  readonly executionRegionId: string;
+  readonly generationExpression: string;
+  readonly source: SourceRef;
 }
 
 export interface StateSurface {
@@ -184,6 +197,7 @@ export interface SemanticIr {
     operations: readonly StateOperation[];
     resourceActions?: readonly AuthoredResourceAction[];
     transitionDeclarations?: readonly AuthoredStateTransitionDeclaration[];
+    generationInvalidations?: readonly AuthoredGenerationInvalidation[];
     authorityBindings: readonly StateAuthorityBinding[];
   };
   temporal: {

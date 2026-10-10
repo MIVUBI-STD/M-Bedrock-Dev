@@ -186,6 +186,8 @@ export interface ScriptDeferredCallback {
   guardIdentifiers: string[];
   /** Exact leading mismatch early-exit condition source, when observed. */
   generationGuardSource?: SourceRef;
+  /** Both syntactically authored reference expressions; no alias inference. */
+  generationGuardOperands?: readonly [string, string];
   delayTicks?: number;
 }
 
