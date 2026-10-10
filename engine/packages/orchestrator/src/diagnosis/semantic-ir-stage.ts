@@ -493,6 +493,12 @@ export function buildInspectionSemanticIr(
         key: resource.key,
         precision: resource.precision,
         source: resource.source,
+        ...(irGuards(resource.lexicalGuards) === undefined ? {} : {
+          lexicalGuards: irGuards(resource.lexicalGuards),
+        }),
+        ...(irGuards(resource.precedenceGuards) === undefined ? {} : {
+          precedenceGuards: irGuards(resource.precedenceGuards),
+        }),
       });
     }
 

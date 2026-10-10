@@ -12,6 +12,9 @@ export interface ObservedBranchPoint {
     readonly executionEdgeIds: readonly string[];
     readonly stateWriteOperationIds: readonly string[];
     readonly returnOutcomeIds: readonly string[];
+    /** Possible resource acquire/release sites within this authored arm. */
+    readonly resourceActionIds: readonly string[];
+    readonly resourceReleaseActionIds: readonly string[];
     /** Evidence dependent on the opposite arm of a prior direct exit. */
     readonly precedenceEvidenceIds: readonly string[];
   }[];
@@ -39,10 +42,12 @@ export interface ObservedExecutionTrace {
   readonly guardedExecutionEdges: readonly { edgeId: string; guards: readonly AuthoredBranchGuard[] }[];
   readonly guardedStateWrites: readonly { operationId: string; guards: readonly AuthoredBranchGuard[] }[];
   readonly guardedReturnOutcomes: readonly { outcomeId: string; guards: readonly AuthoredBranchGuard[] }[];
+  readonly guardedResourceActions: readonly { actionId: string; guards: readonly AuthoredBranchGuard[] }[];
   /** Preceding source-time return/throw constraints; not evaluated current state. */
   readonly precedenceGuardedExecutionEdges: readonly { edgeId: string; guards: readonly AuthoredBranchGuard[] }[];
   readonly precedenceGuardedStateWrites: readonly { operationId: string; guards: readonly AuthoredBranchGuard[] }[];
   readonly precedenceGuardedReturnOutcomes: readonly { outcomeId: string; guards: readonly AuthoredBranchGuard[] }[];
+  readonly precedenceGuardedResourceActions: readonly { actionId: string; guards: readonly AuthoredBranchGuard[] }[];
   /** Correlation by the exact authored guard site, never by matching words. */
   readonly branchPoints: readonly ObservedBranchPoint[];
 }
@@ -88,6 +93,7 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
   const edgeById = new Map(ir.execution.edges.map(edge => [edge.id, edge]));
   const operationById = new Map(ir.state.operations.map(op => [op.id, op]));
   const outcomeById = new Map((ir.execution.outcomes ?? []).map(op => [op.id, op]));
+  const actionById = new Map((ir.state.resourceActions ?? []).map(action => [action.id, action]));
   const incoming = new Set(ir.execution.edges
     .filter(edge => edge.resolution === "resolved" && edge.to !== undefined)
     .map(edge => edge.to!));
@@ -148,12 +154,16 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
       executionEdgeIds: Set<string>;
       stateWriteOperationIds: Set<string>;
       returnOutcomeIds: Set<string>;
+      resourceActionIds: Set<string>;
+      resourceReleaseActionIds: Set<string>;
       precedenceEvidenceIds: Set<string>;
     };
     const arm = (): BranchArm => ({
       executionEdgeIds: new Set(),
       stateWriteOperationIds: new Set(),
       returnOutcomeIds: new Set(),
+      resourceActionIds: new Set(),
+      resourceReleaseActionIds: new Set(),
       precedenceEvidenceIds: new Set(),
     });
     const points = new Map<string, {
@@ -165,7 +175,8 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
     const include = (
       guards: readonly AuthoredBranchGuard[] | undefined,
       id: string,
-      kind: "executionEdgeIds" | "stateWriteOperationIds" | "returnOutcomeIds",
+      kind: "executionEdgeIds" | "stateWriteOperationIds" | "returnOutcomeIds" |
+        "resourceActionIds" | "resourceReleaseActionIds",
       precedingExit = false,
     ): void => {
       for (const guard of guards ?? []) {
@@ -206,6 +217,15 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
       include(outcomeById.get(id)?.lexicalGuards, id, "returnOutcomeIds");
       include(outcomeById.get(id)?.precedenceGuards, id, "returnOutcomeIds", true);
     }
+    for (const id of sorted(resourceActions)) {
+      const action = actionById.get(id);
+      include(action?.lexicalGuards, id, "resourceActionIds");
+      include(action?.precedenceGuards, id, "resourceActionIds", true);
+      if (action?.action === "release") {
+        include(action.lexicalGuards, id, "resourceReleaseActionIds");
+        include(action.precedenceGuards, id, "resourceReleaseActionIds", true);
+      }
+    }
     const branchPoints: ObservedBranchPoint[] = [...points]
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([, point]) => ({
@@ -216,13 +236,16 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
             const value = point[branch];
             return value.executionEdgeIds.size > 0 ||
               value.stateWriteOperationIds.size > 0 ||
-              value.returnOutcomeIds.size > 0;
+              value.returnOutcomeIds.size > 0 ||
+              value.resourceActionIds.size > 0;
           })
           .map(branch => ({
             branch,
             executionEdgeIds: sorted(point[branch].executionEdgeIds),
             stateWriteOperationIds: sorted(point[branch].stateWriteOperationIds),
             returnOutcomeIds: sorted(point[branch].returnOutcomeIds),
+            resourceActionIds: sorted(point[branch].resourceActionIds),
+            resourceReleaseActionIds: sorted(point[branch].resourceReleaseActionIds),
             precedenceEvidenceIds: sorted(point[branch].precedenceEvidenceIds),
           })),
       }));
@@ -251,6 +274,10 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
         const guards = outcomeById.get(id)?.lexicalGuards;
         return guards?.length ? [{ outcomeId: id, guards }] : [];
       }),
+      guardedResourceActions: sorted(resourceActions).flatMap(id => {
+        const guards = actionById.get(id)?.lexicalGuards;
+        return guards?.length ? [{ actionId: id, guards }] : [];
+      }),
       precedenceGuardedExecutionEdges: sorted(edges).flatMap(id => {
         const guards = edgeById.get(id)?.precedenceGuards;
         return guards?.length ? [{ edgeId: id, guards }] : [];
@@ -262,6 +289,10 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
       precedenceGuardedReturnOutcomes: sorted(returnOutcomes).flatMap(id => {
         const guards = outcomeById.get(id)?.precedenceGuards;
         return guards?.length ? [{ outcomeId: id, guards }] : [];
+      }),
+      precedenceGuardedResourceActions: sorted(resourceActions).flatMap(id => {
+        const guards = actionById.get(id)?.precedenceGuards;
+        return guards?.length ? [{ actionId: id, guards }] : [];
       }),
       branchPoints,
     };

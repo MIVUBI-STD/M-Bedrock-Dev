@@ -788,6 +788,7 @@ export function deriveGameplayArchitectureNavigation(
                 ...branch.executionEdgeIds,
                 ...branch.stateWriteOperationIds,
                 ...branch.returnOutcomeIds,
+                ...branch.resourceActionIds,
               ]);
               const branchIdSet = new Set(branchIds);
               const matchedComponents = graph.components.filter(component =>

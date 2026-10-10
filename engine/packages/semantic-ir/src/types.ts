@@ -73,6 +73,9 @@ export interface AuthoredResourceAction {
   key: string;
   precision: "exact" | "surface-level";
   source: SourceRef;
+  /** Source-observed branch alternatives, not actual cleanup execution. */
+  lexicalGuards?: readonly AuthoredBranchGuard[];
+  precedenceGuards?: readonly AuthoredBranchGuard[];
 }
 
 export interface StateSurface {

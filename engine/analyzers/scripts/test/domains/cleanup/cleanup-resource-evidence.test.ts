@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { deriveScriptCleanupResourceEvidence } from "../../../src/domains/cleanup/cleanup-resource-evidence.js";
+import { parseScriptFile } from "../../../src/index.js";
 
 const source = {
   artifactId: "fixture",
@@ -55,6 +56,49 @@ describe("script cleanup resource evidence", () => {
         }),
       ]),
     );
+  });
+
+
+  it("preserves exact resource branch arms, post-exit guards and callback boundaries", () => {
+    const text = [
+      "function reset(player, system, reject) {",
+      '  if (reject) player.removeTag("playing");',
+      '  else player.removeTag("ready");',
+      '  if (reject) return { action: "abort" };',
+      "  player.inputPermissions.movementEnabled = true;",
+      '  if (!reject) system.runTimeout(() => player.removeTag("later"), 1);',
+      "}",
+    ].join("\n");
+    const extracted = deriveScriptCleanupResourceEvidence(text, source);
+    // Resource extraction owns the actions; the canonical parser supplies
+    // conditional provenance by the exact AST range without guessing guards.
+    expect(extracted.find(action => action.key === "player:playing")
+      ?.lexicalGuards).toBeUndefined();
+    const parsed = parseScriptFile("round", text, source);
+    const actions = parsed.cleanupResourceEvidence ?? [];
+    const playing = actions.find(action => action.key === "player:playing");
+    const ready = actions.find(action => action.key === "player:ready");
+    const permission = actions.find(action =>
+      action.surface === "input-permission" && action.action === "release");
+    const later = actions.find(action => action.key === "player:later");
+    const timer = actions.find(action =>
+      action.surface === "deferred-callback" && action.action === "acquire");
+    expect(playing?.lexicalGuards?.map(guard => [guard.conditionText, guard.branch]))
+      .toEqual([["reject", "true"]]);
+    expect(ready?.lexicalGuards?.map(guard => [guard.conditionText, guard.branch]))
+      .toEqual([["reject", "false"]]);
+    expect(playing?.lexicalGuards?.[0]?.source.range?.lineStart).toBe(2);
+    expect(ready?.lexicalGuards?.[0]?.source.range?.lineStart).toBe(2);
+    expect(permission?.precedenceGuards?.map(guard =>
+      [guard.conditionText, guard.branch, guard.source.range?.lineStart]))
+      .toEqual([["reject", "false", 4]]);
+    expect(timer?.lexicalGuards?.map(guard => [guard.conditionText, guard.branch]))
+      .toEqual([["!reject", "true"]]);
+    // The nested scheduled callback does not inherit the caller's guards.
+    expect(later?.lexicalGuards ?? []).toEqual([]);
+    expect(later?.precedenceGuards ?? []).toEqual([]);
+    expect(later?.executionRegion).toMatch(/^callback@/);
+    expect(playing?.precision).toBe("exact");
   });
 
   it("tracks exact rider relationship acquire and release", () => {

@@ -2,6 +2,7 @@ import ts from "typescript";
 import type {
   SourceRef,
 } from "../../../../../packages/project-model/src/index.js";
+import type { ScriptLexicalGuard } from "../../core/types.js";
 
 export type ScriptCleanupResourceSurface =
   | "tag"
@@ -18,6 +19,10 @@ export interface ScriptCleanupResourceEvidence {
   executionRegion: string;
   precision: "exact" | "surface-level";
   source: SourceRef;
+  /** Filled by the canonical script parser using the exact authored AST site. */
+  lexicalGuards?: readonly ScriptLexicalGuard[];
+  /** Necessary opposite arms after direct early exits, not runtime proof. */
+  precedenceGuards?: readonly ScriptLexicalGuard[];
 }
 
 function scriptKind(path: string): ts.ScriptKind {

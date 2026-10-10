@@ -1970,6 +1970,27 @@ export function parseScriptFile(
       text,
       source,
     );
+  // The domain extractor owns *which* resource calls are relevant. The
+  // canonical parser owns branch provenance and already walks this AST.
+  // Reconcile only complete, exact source spans; never match method names.
+  const resourceSiteKey = (ref: SourceRef): string | undefined => {
+    const range = ref.range;
+    if (range?.lineStart === undefined || range.columnStart === undefined ||
+        range.lineEnd === undefined || range.columnEnd === undefined) {
+      return undefined;
+    }
+    return JSON.stringify([
+      ref.artifactId, ref.relativePath, ref.jsonPointer ?? null,
+      range.lineStart, range.columnStart, range.lineEnd, range.columnEnd,
+    ]);
+  };
+  const cleanupSiteKeys = new Set(cleanupResourceEvidence
+    .map(item => resourceSiteKey(item.source))
+    .filter((key): key is string => key !== undefined));
+  const resourceBranchContext = new Map<string, {
+    lexicalGuards: readonly ScriptLexicalGuard[];
+    precedenceGuards: readonly ScriptLexicalGuard[];
+  }>();
   const globalLeaseEvidence =
     deriveScriptGlobalLeaseEvidence(
       text,
@@ -2341,6 +2362,18 @@ export function parseScriptFile(
   ];
 
   const visit = (node: ts.Node): void => {
+    if (cleanupSiteKeys.size > 0 &&
+        (ts.isCallExpression(node) ||
+          (ts.isBinaryExpression(node) &&
+            node.operatorToken.kind === ts.SyntaxKind.EqualsToken))) {
+      const site = resourceSiteKey(lineSource(file, node, source));
+      if (site !== undefined && cleanupSiteKeys.has(site)) {
+        resourceBranchContext.set(site, {
+          lexicalGuards: lexicalBranchGuards(node, file, source),
+          precedenceGuards: precedingEarlyExitGuards(node, file, source),
+        });
+      }
+    }
     if (ts.isObjectLiteralExpression(node)) {
       const routePoint = spatialRoutePointFromObject(
         node,
@@ -2922,6 +2955,18 @@ export function parseScriptFile(
 
   visit(file);
 
+  const contextualCleanupResourceEvidence = cleanupResourceEvidence.map(item => {
+    const key = resourceSiteKey(item.source);
+    const context = key === undefined ? undefined : resourceBranchContext.get(key);
+    return {
+      ...item,
+      ...(context?.lexicalGuards.length
+        ? { lexicalGuards: context.lexicalGuards } : {}),
+      ...(context?.precedenceGuards.length
+        ? { precedenceGuards: context.precedenceGuards } : {}),
+    };
+  });
+
   for (const fallback of inferFallbackGuardedOutcomes(
     file,
     source,
@@ -2991,7 +3036,7 @@ export function parseScriptFile(
     spatialTransformUses,
     spatialContextOffsetSeries,
     spatialMutations: [...spatialMutations.mutations],
-    cleanupResourceEvidence: [...cleanupResourceEvidence],
+    cleanupResourceEvidence: contextualCleanupResourceEvidence,
     chunkLifecycleEvidence: [
       ...chunkLifecycleEvidence,
     ],
@@ -3030,7 +3075,7 @@ export function parseScriptFile(
         inferPersistentStateScopes(
           dynamicProperties,
         ),
-        cleanupResourceEvidence,
+        contextualCleanupResourceEvidence,
       ),
     spatialMutationRejected: [...spatialMutations.rejected],
     capabilities,
