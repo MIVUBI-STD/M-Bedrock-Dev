@@ -410,6 +410,41 @@ describe("inspection causal analysis", () => {
     }
   });
 
+
+  it("keeps missing imported gameplay targets unresolved through production inspection", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-discovery-unresolved-"));
+    try {
+      const scripts = join(root, "behavior_packs", "demo", "scripts");
+      await mkdir(scripts, { recursive: true });
+      await writeFile(join(scripts, "main.js"), [
+        'import { cleanupSession } from "./missing.js";',
+        'function resetArena(ended) {',
+        '  if (ended) cleanupSession();',
+        '}',
+      ].join("\n"), "utf8");
+      const result = await inspectDirectory(
+        root, "fixture:unresolved-import",
+        { edition: "bedrock", staticExecutionDimension: "overworld" },
+        "fixture-fingerprint", catalog,
+      );
+      const edges = result.semanticIrModel.execution.edges.filter(edge =>
+        edge.kind === "synchronous-call" &&
+        edge.targetLabel === "cleanupSession");
+      expect(edges).toHaveLength(1);
+      expect(edges[0]?.resolution).toBe("unresolved");
+      expect(edges[0]?.to).toBeUndefined();
+      expect(result.semanticIrModel.execution.outcomes ?? []).toEqual([]);
+      expect(result.gameplayIntent.model.edges.some(edge =>
+        edge.evidenceIds.includes(edges[0]!.id))).toBe(false);
+      expect(result.hiddenGameplayDefects.discoveryChallenges.some(item =>
+        item.kind === "unresolved-execution-edge" &&
+        item.evidenceIds.includes(edges[0]!.id))).toBe(true);
+      expect(result.gameplayDiscoveryClosure.status).toBe("OPEN");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("does not attach a runtime stall observation from a different operation scope", async () => {
     const root = await mkdtemp(join(tmpdir(), "m-bedrock-causal-wrong-scope-test-"));
     try {
