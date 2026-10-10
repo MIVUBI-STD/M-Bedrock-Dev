@@ -692,6 +692,192 @@ describe("arena identity evidence propagation", () => {
     expect(nav.causalLinks).toEqual([]);
   });
 
+
+  it("measures exact source relationships missing from scenario causality without inventing game completion", () => {
+    const source = { artifactId: "world:wave",
+      relativePath: "behavior_packs/demo/scripts/round.js" };
+    const parsed = parseScriptFile("round", [
+      'import { world } from "@minecraft/server";',
+      'let phase = "idle";',
+      'function settle(player, ready) {',
+      '  if (ready) {',
+      '    phase = "finished";',
+      '    player.removeTag("playing");',
+      '    return { action: "finish" };',
+      '  } else {',
+      '    phase = "retry";',
+      '    player.addTag("ready");',
+      '    return { action: "retry" };',
+      '  }',
+      '}',
+      'world.afterEvents.playerLeave.subscribe(event => settle(event.player, true));',
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const finished = ir.execution.outcomes?.find(item => item.value === "finish");
+    const retried = ir.execution.outcomes?.find(item => item.value === "retry");
+    const finishedWrite = ir.state.operations.find(item =>
+      item.writtenValue?.kind === "literal" && item.writtenValue.value === "finished");
+    const retryWrite = ir.state.operations.find(item =>
+      item.writtenValue?.kind === "literal" && item.writtenValue.value === "retry");
+    const release = ir.state.resourceActions?.find(item =>
+      item.key === "player:playing" && item.action === "release");
+    const acquire = ir.state.resourceActions?.find(item =>
+      item.key === "player:ready" && item.action === "acquire");
+    expect(finished && retried && finishedWrite && retryWrite && release && acquire)
+      .toBeTruthy();
+
+    // Read-only measurement is present even when no Gameplay Intent or
+    // scenario ever adopted these exact technical records.
+    const bare = deriveGameplayArchitectureNavigation(emptyGraph, {
+      relevantSourceCount: 1, indexedSourceCount: 1,
+      arenaDetected: false, semanticIr: ir,
+    });
+    const event = bare.semanticIrCoverage.executionTraces.find(trace =>
+      trace.entryKind === "event-source" &&
+      trace.returnOutcomeIds.includes(finished!.id));
+    expect(event).toBeDefined();
+    const relationship = (nav: typeof bare, from: string, to: string) =>
+      nav.semanticIrCoverage.observedSourceRelationships.find(item =>
+        item.fromEvidenceId === from && item.outcomeId === to);
+    const entryPair = relationship(bare, event!.entryRegionId, finished!.id);
+    const resourcePair = relationship(bare, release!.id, finished!.id);
+    const statePair = relationship(bare, finishedWrite!.id, finished!.id);
+    expect(entryPair?.sourceBasis).toBe("TRACE_REACHABILITY");
+    expect(entryPair?.gap).toBe("NOT_IN_COMMON_SCENARIO");
+    expect(resourcePair?.sourceBasis).toBe("SOURCE_ORDER_CANDIDATE");
+    expect(resourcePair?.gap).toBe("NOT_IN_COMMON_SCENARIO");
+    expect(statePair?.gap).toBe("NOT_IN_COMMON_SCENARIO");
+    expect(relationship(bare, release!.id, retried!.id)).toBeUndefined();
+    expect(relationship(bare, acquire!.id, finished!.id)).toBeUndefined();
+    expect(relationship(bare, retryWrite!.id, finished!.id)).toBeUndefined();
+    expect(bare.architectureReconciliation.sourceRelationshipsWithoutProofCount)
+      .toBe(bare.architectureReconciliation.observedSourceRelationshipCount);
+    expect(bare.semanticIrCoverage.untracedReturnOutcomeIds).toEqual([]);
+    expect(bare.architectureReconciliation.status).toBe("GAPS_PRESENT");
+
+    const graph: GameplayScenarioGraph = {
+      ...emptyGraph,
+      components: [{
+        id: "component:event", label: "Event source candidate",
+        kind: "lifecycle", technicalRole: "event",
+        gameplayPurpose: "unverified", evidenceIds: [event!.entryRegionId],
+        usedByScenarioIds: ["scenario:finish"], orphan: false,
+      }, {
+        id: "component:write", label: "State write candidate",
+        kind: "state", technicalRole: "state",
+        gameplayPurpose: "unverified", evidenceIds: [finishedWrite!.id],
+        usedByScenarioIds: ["scenario:finish"], orphan: false,
+      }, {
+        id: "component:release", label: "Release candidate",
+        kind: "lifecycle", technicalRole: "release",
+        gameplayPurpose: "unverified", evidenceIds: [release!.id],
+        usedByScenarioIds: ["scenario:finish"], orphan: false,
+      }, {
+        id: "component:outcome", label: "Return candidate",
+        kind: "outcome", technicalRole: "return",
+        gameplayPurpose: "unverified", evidenceIds: [finished!.id],
+        usedByScenarioIds: ["scenario:finish"], orphan: false,
+      }],
+      scenarios: [{
+        id: "scenario:finish", label: "Finish candidate",
+        gameplayStage: "TERMINAL", purpose: "unverified",
+        sourceSubjectIds: [], componentIds: [
+          "component:event", "component:write", "component:release", "component:outcome",
+        ],
+        causalLinkIds: [], playerCounts: [],
+        requiredKnowledgeIds: [], composedScenarioIds: [],
+      }],
+    };
+    const placed = deriveGameplayArchitectureNavigation(graph, {
+      relevantSourceCount: 1, indexedSourceCount: 1,
+      arenaDetected: false, semanticIr: ir,
+    });
+    expect(relationship(placed, release!.id, finished!.id)?.sharedScenarioIds)
+      .toEqual(["scenario:finish"]);
+    expect(relationship(placed, release!.id, finished!.id)?.gap)
+      .toBe("CAUSAL_PROOF_MISSING");
+    expect(relationship(placed, retryWrite!.id, retried!.id)?.gap)
+      .toBe("NOT_IN_COMMON_SCENARIO");
+
+    // A link labeled PROVEN is insufficient when it omits one of the
+    // exact paired source IDs; scene membership is never causal proof.
+    const proof: GameplayScenarioGraph["causalLinks"][number] = {
+      id: "link:resource-to-return", scenarioId: "scenario:finish",
+      fromComponentId: "component:release", toComponentId: "component:outcome",
+      purpose: "Authored source relationship (not runtime completion)",
+      evidenceIds: [release!.id, finished!.id],
+      subjectIds: [], componentIds: ["component:release", "component:outcome"],
+      knowledgeRequirementIds: [], impactPathComponentIds: [],
+      impactPathEvidenceIds: [], dimensionEvidence: {},
+      status: "PROVEN", reason: "Mock existing scenario proof for projection verification",
+    };
+    const linkedGraph: GameplayScenarioGraph = {
+      ...graph, causalLinks: [proof],
+      scenarios: graph.scenarios.map(scenario => ({
+        ...scenario, causalLinkIds: [proof.id],
+      })),
+    };
+    const withoutExactReturn = deriveGameplayArchitectureNavigation({
+      ...linkedGraph, causalLinks: [{ ...proof, evidenceIds: [release!.id] }],
+    }, {
+      relevantSourceCount: 1, indexedSourceCount: 1,
+      arenaDetected: false, semanticIr: ir,
+    });
+    expect(relationship(withoutExactReturn, release!.id, finished!.id)?.gap)
+      .toBe("CAUSAL_PROOF_MISSING");
+    const exact = deriveGameplayArchitectureNavigation(linkedGraph, {
+      relevantSourceCount: 1, indexedSourceCount: 1,
+      arenaDetected: false, semanticIr: ir,
+    });
+    expect(relationship(exact, release!.id, finished!.id)?.gap).toBeNull();
+    expect(relationship(exact, release!.id, finished!.id)?.exactProvenCausalLinkIds)
+      .toEqual([proof.id]);
+    expect(exact.architectureReconciliation.sourceRelationshipsWithoutProofCount)
+      .toBe(placed.architectureReconciliation.sourceRelationshipsWithoutProofCount - 1);
+    expect(exact.knowledgeCoverage.wholeGameUnderstandingStatus)
+      .toBe("NOT_MEASURABLE");
+  });
+
+  it("retains source-order ambiguity as a relationship gap even for same-named states", () => {
+    const source = { artifactId: "world:puzzle",
+      relativePath: "behavior_packs/puzzle/scripts/door.js" };
+    const parsed = parseScriptFile("door", [
+      'let doorState = "closed";',
+      'function useButton(ready) {',
+      '  if (ready) {',
+      '    doorState = "opening";',
+      '    doorState = "opened";',
+      '    return { action: "open" };',
+      '  }',
+      '}',
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const opened = ir.execution.outcomes?.find(item => item.value === "open");
+    expect(opened).toBeDefined();
+    const navigation = deriveGameplayArchitectureNavigation(emptyGraph, {
+      relevantSourceCount: 1, indexedSourceCount: 1,
+      arenaDetected: false, semanticIr: ir,
+    });
+    const links = navigation.semanticIrCoverage.observedSourceRelationships
+      .filter(item => item.outcomeId === opened!.id &&
+        item.kind === "state-write-to-outcome");
+    expect(links).toHaveLength(2);
+    expect(links.every(link =>
+      link.sourceBasis === "SOURCE_ORDER_UNRESOLVED" &&
+      link.gap === "SOURCE_RELATION_UNRESOLVED")).toBe(true);
+    expect(links.every(link => link.exactProvenCausalLinkIds.length === 0))
+      .toBe(true);
+    expect(navigation.semanticIrCoverage.untracedReturnOutcomeIds)
+      .toContain(opened!.id);
+    expect(navigation.architectureReconciliation.observedOutcomesWithoutEntryCount)
+      .toBeGreaterThan(0);
+    expect(navigation.knowledgeCoverage.wholeGameUnderstandingPercent).toBeNull();
+  });
+
   it("does not reconcile duplicate spatial arena identities", () => {
     const navigation = deriveGameplayArchitectureNavigation(emptyGraph, {
       relevantSourceCount: 1,

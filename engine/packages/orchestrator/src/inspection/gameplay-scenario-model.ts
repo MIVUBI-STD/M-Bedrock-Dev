@@ -225,6 +225,12 @@ export interface GameplayArchitectureNavigation {
     readonly graphReferencesMissingCount: number;
     readonly arenaMappingUnresolved: boolean;
     readonly observedSystemsUnreconciledCount: number;
+    /** Authored returns outside all source-observed execution entry traces. */
+    readonly observedOutcomesWithoutEntryCount: number;
+    /** Exact technical relationships observed, not a full-game denominator. */
+    readonly observedSourceRelationshipCount: number;
+    /** Observed relationships still lacking precise scenario causal proof. */
+    readonly sourceRelationshipsWithoutProofCount: number;
   };
   /**
    * Tracks source-scoped Gameplay Intent evidence against existing
@@ -257,6 +263,27 @@ export interface GameplayArchitectureNavigation {
       /** Shared existing scenario placement is not proof of causal execution. */
       readonly sharedScenarioPlacementIds: readonly string[];
     })[];
+    /**
+     * Exact-ID, read-only accounting of *observed* source relationships.
+     * A candidate reachability/order relationship is not gameplay causality.
+     * Missing model links are coverage gaps, not confirmed game defects.
+     */
+    /** A return without an observed entry path may be dead/unreachable or under-discovered. */
+    readonly untracedReturnOutcomeIds: readonly string[];
+    readonly observedSourceRelationships: readonly {
+      readonly kind: "entry-to-outcome" | "state-write-to-outcome" |
+        "resource-action-to-outcome";
+      readonly fromEvidenceId: string;
+      readonly outcomeId: string;
+      readonly sourceBasis: "TRACE_REACHABILITY" |
+        "SOURCE_ORDER_CANDIDATE" | "SOURCE_ORDER_UNRESOLVED";
+      /** Co-placement only: same scenario does NOT prove a causal relation. */
+      readonly sharedScenarioIds: readonly string[];
+      /** Only existing PROVEN graph links explicitly carrying *both* exact IDs. */
+      readonly exactProvenCausalLinkIds: readonly string[];
+      readonly gap: "SOURCE_RELATION_UNRESOLVED" |
+        "NOT_IN_COMMON_SCENARIO" | "CAUSAL_PROOF_MISSING" | null;
+    }[];
     /** Read-only technical chains; do not interpret as complete gameplay flow. */
     readonly executionTraces: readonly (Omit<ObservedExecutionTrace, "branchPoints"> & {
       readonly evidenceMatchedComponentIds: readonly string[];
@@ -583,6 +610,92 @@ export function deriveGameplayArchitectureNavigation(
   const resourceOutcomeEvidence = observed.semanticIr
     ? reconcileSourceResourceOutcomes(observed.semanticIr)
     : [];
+  // Reuse existing Semantic IR/Behavior Model witnesses. The graph and its
+  // proven links retain causal authority; this projection only points out
+  // observed relationships that the scenario composition has not accounted for.
+  type ObservedRelation = GameplayArchitectureNavigation[
+    "semanticIrCoverage"]["observedSourceRelationships"][number];
+  const sourceRelationshipCandidates: Pick<ObservedRelation,
+    "kind" | "fromEvidenceId" | "outcomeId" | "sourceBasis">[] = [
+    ...observedExecution.traces.flatMap(trace =>
+      trace.returnOutcomeIds.map(outcomeId => ({
+        kind: "entry-to-outcome" as const,
+        fromEvidenceId: trace.entryRegionId,
+        outcomeId,
+        sourceBasis: "TRACE_REACHABILITY" as const,
+      }))),
+    ...stateOutcomeEvidence.flatMap(candidate =>
+      candidate.precedingWriteOperationIds.map(fromEvidenceId => ({
+        kind: "state-write-to-outcome" as const,
+        fromEvidenceId,
+        outcomeId: candidate.outcomeId,
+        sourceBasis: candidate.status === "SOURCE_ORDER_CANDIDATE"
+          ? "SOURCE_ORDER_CANDIDATE" as const
+          : "SOURCE_ORDER_UNRESOLVED" as const,
+      }))),
+    ...resourceOutcomeEvidence.flatMap(candidate =>
+      candidate.precedingResourceActionIds.map(fromEvidenceId => ({
+        kind: "resource-action-to-outcome" as const,
+        fromEvidenceId,
+        outcomeId: candidate.outcomeId,
+        sourceBasis: candidate.status === "SOURCE_ORDER_CANDIDATE"
+          ? "SOURCE_ORDER_CANDIDATE" as const
+          : "SOURCE_ORDER_UNRESOLVED" as const,
+      }))),
+  ];
+  const componentIdsByEvidence = new Map<string, Set<string>>();
+  for (const component of graph.components) {
+    for (const id of component.evidenceIds) {
+      const ids = componentIdsByEvidence.get(id) ?? new Set<string>();
+      ids.add(component.id);
+      componentIdsByEvidence.set(id, ids);
+    }
+  }
+  const scenarioLinkIds = new Map(graph.scenarios.map(scenario =>
+    [scenario.id, new Set(scenario.causalLinkIds)]));
+  const observedSourceRelationships: ObservedRelation[] = sourceRelationshipCandidates
+    .map(relation => {
+      const fromComponents = componentIdsByEvidence.get(relation.fromEvidenceId) ??
+        new Set<string>();
+      const outcomeComponents = componentIdsByEvidence.get(relation.outcomeId) ??
+        new Set<string>();
+      const sharedScenarioIds = sorted(graph.scenarios
+        .filter(scenario =>
+          scenario.componentIds.some(id => fromComponents.has(id)) &&
+          scenario.componentIds.some(id => outcomeComponents.has(id)))
+        .map(scenario => scenario.id));
+      const sharedScenarios = new Set(sharedScenarioIds);
+      const exactProvenCausalLinkIds = sorted(graph.causalLinks
+        .filter(link =>
+          link.status === "PROVEN" &&
+          sharedScenarios.has(link.scenarioId) &&
+          scenarioLinkIds.get(link.scenarioId)?.has(link.id) === true &&
+          fromComponents.has(link.fromComponentId) &&
+          outcomeComponents.has(link.toComponentId) &&
+          link.evidenceIds.includes(relation.fromEvidenceId) &&
+          link.evidenceIds.includes(relation.outcomeId))
+        .map(link => link.id));
+      return {
+        ...relation,
+        sharedScenarioIds,
+        exactProvenCausalLinkIds,
+        gap: relation.sourceBasis === "SOURCE_ORDER_UNRESOLVED"
+          ? "SOURCE_RELATION_UNRESOLVED" as const
+          : sharedScenarioIds.length === 0
+            ? "NOT_IN_COMMON_SCENARIO" as const
+            : exactProvenCausalLinkIds.length === 0
+              ? "CAUSAL_PROOF_MISSING" as const
+              : null,
+      };
+    })
+    .sort((a, b) => a.kind.localeCompare(b.kind) ||
+      a.outcomeId.localeCompare(b.outcomeId) ||
+      a.fromEvidenceId.localeCompare(b.fromEvidenceId));
+  const tracedOutcomes = new Set(observedExecution.traces.flatMap(trace =>
+    trace.returnOutcomeIds));
+  const untracedReturnOutcomeIds = sorted((observed.semanticIr?.execution.outcomes ?? [])
+    .map(outcome => outcome.id)
+    .filter(id => !tracedOutcomes.has(id)));
   const irAccounting = (ids: readonly string[]) => {
     const observedIds = sorted(ids);
     return {
@@ -753,6 +866,8 @@ export function deriveGameplayArchitectureNavigation(
         percentage(linkedEvidence.length, sourceEvidence.length),
     },
     semanticIrCoverage: {
+      observedSourceRelationships,
+      untracedReturnOutcomeIds,
       stateOutcomeCandidates: stateOutcomeEvidence.map(candidate => {
         const outcomeComponentIds = sorted(graph.components
           .filter(component => component.evidenceIds.includes(candidate.outcomeId))
@@ -1013,7 +1128,11 @@ export function deriveGameplayArchitectureNavigation(
       (system) => system.inventoryStatus === "OBSERVED" &&
         system.architectureMapping === "NOT_YET_RECONCILED"
     ).length,
+    sourceRelationshipsWithoutProofCount:
+      ir.observedSourceRelationships.filter(relation => relation.gap !== null).length,
+    observedOutcomesWithoutEntryCount: ir.untracedReturnOutcomeIds.length,
   };
+  const observedSourceRelationshipCount = ir.observedSourceRelationships.length;
   const arenaMappingUnresolved =
     !spatialLayoutValid ||
     navigation.knowledgeCoverage.arenaEvidence.duplicateReplicaProofArenaIds.length > 0 ||
@@ -1034,6 +1153,7 @@ export function deriveGameplayArchitectureNavigation(
         : "NO_GAPS_IN_MEASURED_SCOPE",
       sourceIndexIncomplete,
       ...gapCounts,
+      observedSourceRelationshipCount,
       arenaMappingUnresolved,
     },
   };
