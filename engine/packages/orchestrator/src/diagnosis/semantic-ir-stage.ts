@@ -27,6 +27,7 @@ import {
   type SemanticIr,
   type StateOperation,
   type StateOperationKind,
+  type AuthoredStateTransitionDeclaration,
   type StateSurface,
   type TemporalRelation,
 } from "../../../semantic-ir/src/index.js";
@@ -126,6 +127,7 @@ export function buildInspectionSemanticIr(
   const edges = new Map<string, ExecutionEdge>();
   const surfaces = new Map<string, StateSurface>();
   const operations = new Map<string, StateOperation>();
+  const transitionDeclarations = new Map<string, AuthoredStateTransitionDeclaration>();
   const outcomes = new Map<string, AuthoredReturnOutcome>();
   const resourceActions = new Map<string, AuthoredResourceAction>();
   const worldEffects = new Map<string, AuthoredWorldEffect>();
@@ -224,6 +226,7 @@ export function buildInspectionSemanticIr(
     writtenValue?: StateOperation["writtenValue"],
     lexicalGuards?: readonly AuthoredBranchGuard[],
     precedenceGuards?: readonly AuthoredBranchGuard[],
+    readComparison?: StateOperation["readComparison"],
   ): void => {
     const surfaceId = ensureSurface(ref);
     const id = [
@@ -241,6 +244,7 @@ export function buildInspectionSemanticIr(
       source,
       ...(targetHint === undefined ? {} : { targetHint }),
       ...(writtenValue === undefined ? {} : { writtenValue }),
+      ...(readComparison === undefined ? {} : { readComparison }),
       ...(lexicalGuards === undefined ? {} : { lexicalGuards }),
       ...(precedenceGuards === undefined ? {} : { precedenceGuards }),
     });
@@ -576,7 +580,36 @@ export function buildInspectionSemanticIr(
           : undefined,
         irGuards(access.lexicalGuards),
         irGuards(access.precedenceGuards),
+        operation === "read" && access.comparedLiteral
+          ? {
+              value: access.comparedLiteral.value,
+              scalarKind: access.comparedLiteral.scalarKind,
+              operator: access.comparedLiteral.operator,
+              source: access.comparedLiteral.comparisonSource,
+            }
+          : undefined,
       );
+    }
+
+    // A transition table lists permitted values but does not prove that the
+    // runtime dynamic property is governed by this specific table.
+    for (const declaration of parsed.transitionDeclarations ?? []) {
+      const id = [
+        "state-transition-declaration",
+        token(declaration.source.artifactId),
+        sourceToken(declaration.source),
+        token(declaration.tableName),
+        token(declaration.from),
+      ].join(":");
+      transitionDeclarations.set(id, {
+        id,
+        tableName: declaration.tableName,
+        ...(declaration.stateType === undefined
+          ? {} : { stateType: declaration.stateType }),
+        from: declaration.from,
+        to: [...declaration.to],
+        source: declaration.source,
+      });
     }
 
     // Return-property evidence is not a game terminal or runtime observation.
@@ -807,6 +840,9 @@ export function buildInspectionSemanticIr(
         (a, b) => a.id.localeCompare(b.id),
       ),
       resourceActions: [...resourceActions.values()].sort(
+        (a, b) => a.id.localeCompare(b.id),
+      ),
+      transitionDeclarations: [...transitionDeclarations.values()].sort(
         (a, b) => a.id.localeCompare(b.id),
       ),
       authorityBindings,

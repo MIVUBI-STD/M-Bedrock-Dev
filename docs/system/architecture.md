@@ -147,6 +147,14 @@ The canonical Behavior Model `deriveSourceEffectSlices()` now exposes `authoredS
 
 A handoff is not a verified reaching definition, previous-state value, session phase transition, Minecraft runtime state, or successful cleanup. Unknown aliases, dynamic values, impossible branch combinations and runtime recovery remain unproven. No state named `waiting`, `active`, `finished` or `reset` is inferred without a directly authored literal and connected evidence. Integration tests remain deferred during BUILD.
 
+### Directly guarded authored state transitions and declaration value correspondence
+
+The canonical Script parser retains a **direct strict** `getDynamicProperty("key") === "from"` or `!==` scalar comparison as part of that original state-read AST site, with its exact comparison source range. The existing Semantic IR state operations preserve the read comparison and typed literal destination writes; authored transition-table declarations are normalized into the same Semantic IR source fact record set, without replacing the Gameplay Intent owner that already models permitted state edges.
+
+The existing `Behavior Model` owner derives `reconcileSourceGuardedStateTransitions()` only when a write is syntactically controlled by that same exact comparison site and matching branch arm, on the exact same non-wildcard state surface, receiver, region/document and typed string value. The old compared value must differ from the new directly authored value. Prior guard conditions must agree; potential intervening same-surface writes are retained as `UNRESOLVED`. `coLocatedDeclarationIds` identifies only **same-document tables that happen to list this value pair**—it does not claim the table is invoked or bound to the property. No state is inferred from labels/names alone.
+
+`SourceEffectSlice.guardedStateTransitionCandidates` and existing `features[].sourceBehaviorPaths` expose these bounded candidates through Map Audit Output V2, with exact read/write evidence and source-inference ceiling. A guarded write is not proof of actual runtime transition, complete control-flow path, state initialization, termination, cleanup, or recovery. Unsupported compound guards and untyped/dynamic values remain outside this candidate subset. No new graph, coordinator or lifecycle registry is introduced.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:

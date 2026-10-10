@@ -2369,6 +2369,33 @@ export function parseScriptFile(
     return items;
   };
 
+  // Exact direct scalar syntax only. No constant folding, alias resolution,
+  // coercion or arbitrary expression evaluation during static reconstruction.
+  const authoredScalar = (
+    expression: ts.Expression | undefined,
+  ): NonNullable<DynamicPropertyAccess["writtenLiteral"]> | undefined => {
+    if (!expression) return undefined;
+    if (ts.isStringLiteralLike(expression)) {
+      return { scalarKind: "string", value: expression.text };
+    }
+    if (ts.isNumericLiteral(expression)) {
+      return { scalarKind: "number", value: expression.text };
+    }
+    if (ts.isPrefixUnaryExpression(expression) &&
+        expression.operator === ts.SyntaxKind.MinusToken &&
+        ts.isNumericLiteral(expression.operand)) {
+      return { scalarKind: "number", value: "-" + expression.operand.text };
+    }
+    if (expression.kind === ts.SyntaxKind.TrueKeyword ||
+        expression.kind === ts.SyntaxKind.FalseKeyword) {
+      return {
+        scalarKind: "boolean",
+        value: expression.kind === ts.SyntaxKind.TrueKeyword ? "true" : "false",
+      };
+    }
+    return undefined;
+  };
+
   const capabilities: ScriptCapabilityUse[] = [
     ...methodCalls.map((call) => ({
       capability: "api-method" as const,
@@ -2999,26 +3026,31 @@ export function parseScriptFile(
         }
         const propertyId = stringArgument(node);
         if (propertyId) access.propertyId = propertyId;
-        // Preserve the EXACT authored scalar passed as the second argument,
-        // without evaluating aliases, expressions, runtime data or objects.
-        if (method === "setDynamicProperty" && node.arguments[1]) {
-          const value = node.arguments[1]!;
-          if (ts.isStringLiteralLike(value)) {
-            access.writtenLiteral = { scalarKind: "string", value: value.text };
-          } else if (ts.isNumericLiteral(value)) {
-            access.writtenLiteral = { scalarKind: "number", value: value.text };
-          } else if (ts.isPrefixUnaryExpression(value) &&
-                     value.operator === ts.SyntaxKind.MinusToken &&
-                     ts.isNumericLiteral(value.operand)) {
-            access.writtenLiteral = {
-              scalarKind: "number", value: "-" + value.operand.text,
-            };
-          } else if (value.kind === ts.SyntaxKind.TrueKeyword ||
-                     value.kind === ts.SyntaxKind.FalseKeyword) {
-            access.writtenLiteral = {
-              scalarKind: "boolean",
-              value: value.kind === ts.SyntaxKind.TrueKeyword ? "true" : "false",
-            };
+        if (method === "setDynamicProperty") {
+          const literal = authoredScalar(node.arguments[1]);
+          if (literal) access.writtenLiteral = literal;
+        }
+        // Only direct strict scalar comparison to the same get call site.
+        // The condition's exact AST span must later be an actual guard on a
+        // write; a comparison in ordinary data does not establish a phase.
+        if (method === "getDynamicProperty" &&
+            ts.isBinaryExpression(node.parent) &&
+            (node.parent.left === node || node.parent.right === node)) {
+          const comparison = node.parent;
+          const op = comparison.operatorToken.kind;
+          if (op === ts.SyntaxKind.EqualsEqualsEqualsToken ||
+              op === ts.SyntaxKind.ExclamationEqualsEqualsToken) {
+            const other = comparison.left === node
+              ? comparison.right : comparison.left;
+            const literal = authoredScalar(other);
+            if (literal) {
+              access.comparedLiteral = {
+                ...literal,
+                operator: op === ts.SyntaxKind.EqualsEqualsEqualsToken
+                  ? "strict-eq" : "strict-neq",
+                comparisonSource: lineSource(file, comparison, source),
+              };
+            }
           }
         }
         dynamicProperties.push(access);

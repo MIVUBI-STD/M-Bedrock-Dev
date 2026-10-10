@@ -2551,7 +2551,8 @@
                     "sourceResourceLifetime",
                     "sourceLocalStateValueHandoffs",
                     "candidateCallerStateValueHandoffs",
-                    "authoredStateValue"
+                    "authoredStateValue",
+                    "guardedStateTransitionCandidates"
                   ],
                   "properties": {
                     "effectId": {
@@ -2910,6 +2911,137 @@
                           "type": "null"
                         }
                       ]
+                    },
+                    "guardedStateTransitionCandidates": {
+                      "type": "array",
+                      "description": "Candidate from-to state change from direct strict comparison and an authored guarded literal write. Same-file declared table value match is not runtime table binding, and none are executable proof.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "readOperationId",
+                          "writeOperationId",
+                          "executionRegionId",
+                          "surfaceId",
+                          "receiverHint",
+                          "fromValue",
+                          "toValue",
+                          "scalarKind",
+                          "guardComparisonSource",
+                          "interveningWriteOperationIds",
+                          "coLocatedDeclarationIds",
+                          "status",
+                          "provenance"
+                        ],
+                        "properties": {
+                          "readOperationId": {
+                            "type": "string"
+                          },
+                          "writeOperationId": {
+                            "type": "string"
+                          },
+                          "executionRegionId": {
+                            "type": "string"
+                          },
+                          "surfaceId": {
+                            "type": "string"
+                          },
+                          "receiverHint": {
+                            "type": "string"
+                          },
+                          "fromValue": {
+                            "type": "string"
+                          },
+                          "toValue": {
+                            "type": "string"
+                          },
+                          "scalarKind": {
+                            "const": "string"
+                          },
+                          "guardComparisonSource": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "artifactId",
+                              "relativePath"
+                            ],
+                            "properties": {
+                              "artifactId": {
+                                "type": "string"
+                              },
+                              "relativePath": {
+                                "type": "string"
+                              },
+                              "jsonPointer": {
+                                "type": "string"
+                              },
+                              "range": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "lineStart": {
+                                    "type": "integer"
+                                  },
+                                  "lineEnd": {
+                                    "type": "integer"
+                                  },
+                                  "columnStart": {
+                                    "type": "integer"
+                                  },
+                                  "columnEnd": {
+                                    "type": "integer"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "interveningWriteOperationIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "coLocatedDeclarationIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "status": {
+                            "enum": [
+                              "GUARDED_SOURCE_CANDIDATE",
+                              "UNRESOLVED"
+                            ]
+                          },
+                          "provenance": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "kind",
+                              "evidenceCeiling",
+                              "evidenceIds",
+                              "note"
+                            ],
+                            "properties": {
+                              "kind": {
+                                "const": "source-inference"
+                              },
+                              "evidenceCeiling": {
+                                "const": "inferred"
+                              },
+                              "evidenceIds": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "note": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -3040,7 +3172,8 @@
               "pathAssociatedFeatureIds",
               "guardStateReadIds",
               "candidateGuardStateWriteIds",
-              "sourceLocalStateValueHandoffs"
+              "sourceLocalStateValueHandoffs",
+              "guardedStateTransitionCandidates"
             ],
             "properties": {
               "effectId": {
@@ -3499,6 +3632,137 @@
                         "SOURCE_LOCAL",
                         "SYNCHRONOUS_CALLER"
                       ]
+                    }
+                  }
+                }
+              },
+              "guardedStateTransitionCandidates": {
+                "type": "array",
+                "description": "Candidate from-to state change from direct strict comparison and an authored guarded literal write. Same-file declared table value match is not runtime table binding, and none are executable proof.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "readOperationId",
+                    "writeOperationId",
+                    "executionRegionId",
+                    "surfaceId",
+                    "receiverHint",
+                    "fromValue",
+                    "toValue",
+                    "scalarKind",
+                    "guardComparisonSource",
+                    "interveningWriteOperationIds",
+                    "coLocatedDeclarationIds",
+                    "status",
+                    "provenance"
+                  ],
+                  "properties": {
+                    "readOperationId": {
+                      "type": "string"
+                    },
+                    "writeOperationId": {
+                      "type": "string"
+                    },
+                    "executionRegionId": {
+                      "type": "string"
+                    },
+                    "surfaceId": {
+                      "type": "string"
+                    },
+                    "receiverHint": {
+                      "type": "string"
+                    },
+                    "fromValue": {
+                      "type": "string"
+                    },
+                    "toValue": {
+                      "type": "string"
+                    },
+                    "scalarKind": {
+                      "const": "string"
+                    },
+                    "guardComparisonSource": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "artifactId",
+                        "relativePath"
+                      ],
+                      "properties": {
+                        "artifactId": {
+                          "type": "string"
+                        },
+                        "relativePath": {
+                          "type": "string"
+                        },
+                        "jsonPointer": {
+                          "type": "string"
+                        },
+                        "range": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "lineStart": {
+                              "type": "integer"
+                            },
+                            "lineEnd": {
+                              "type": "integer"
+                            },
+                            "columnStart": {
+                              "type": "integer"
+                            },
+                            "columnEnd": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "interveningWriteOperationIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "coLocatedDeclarationIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "status": {
+                      "enum": [
+                        "GUARDED_SOURCE_CANDIDATE",
+                        "UNRESOLVED"
+                      ]
+                    },
+                    "provenance": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "evidenceCeiling",
+                        "evidenceIds",
+                        "note"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "const": "source-inference"
+                        },
+                        "evidenceCeiling": {
+                          "const": "inferred"
+                        },
+                        "evidenceIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "note": {
+                          "type": "string"
+                        }
+                      }
                     }
                   }
                 }

@@ -282,6 +282,7 @@ export interface GameplayArchitectureNavigation {
         readonly candidateCallerStateWriteIds: readonly string[];
         /** Source-authored scalar values associated with exact guard reads. */
         readonly sourceLocalStateValueHandoffs: SourceEffectSlice["sourceLocalStateValueHandoffs"];
+        readonly guardedStateTransitionCandidates: SourceEffectSlice["guardedStateTransitionCandidates"];
         readonly candidateCallerStateValueHandoffs: SourceStateValueHandoff[];
         readonly authoredStateValue: SourceEffectSlice["authoredStateValue"] | null;
         readonly effectKind: SourceEffectSlice["effectKind"];
@@ -1478,6 +1479,7 @@ export function deriveGameplayArchitectureNavigation(
               candidateCallerStateWriteIds:
                 entry?.candidateCallerStateWriteIds ?? [],
               sourceLocalStateValueHandoffs: slice.sourceLocalStateValueHandoffs,
+              guardedStateTransitionCandidates: slice.guardedStateTransitionCandidates,
               candidateCallerStateValueHandoffs:
                 entry?.candidateCallerStateValueHandoffs ?? [],
               authoredStateValue: slice.authoredStateValue ?? null,

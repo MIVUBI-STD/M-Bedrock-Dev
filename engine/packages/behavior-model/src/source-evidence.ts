@@ -75,6 +75,18 @@ function sourceRangeContains(
     atOrAfter(a.lineEnd!, a.columnEnd!, b.lineEnd!, b.columnEnd!);
 }
 
+/** Two observed operations are the very same authored expression site. */
+function sameExactSourceSite(a: SourceRef, b: SourceRef): boolean {
+  if (!sameDocument(a, b) ||
+      !hasOrderedPosition(a) || !hasOrderedPosition(b)) return false;
+  const x = a.range!;
+  const y = b.range!;
+  return x.lineStart === y.lineStart &&
+    x.columnStart === y.columnStart &&
+    x.lineEnd === y.lineEnd &&
+    x.columnEnd === y.columnEnd;
+}
+
 function precedingSourceSite(
   site: SourceRef,
   outcome: SourceRef,
@@ -477,6 +489,119 @@ export interface SourceStateValueHandoff {
 }
 
 /**
+ * Bounded source-level from→to state candidate from an EXACT literal
+ * comparison that directly guards an authored literal state write.
+ * A transition table merely co-located with these values is NOT bound to
+ * this runtime property unless its use is independently demonstrated.
+ */
+export interface SourceGuardedStateTransitionCandidate {
+  readonly readOperationId: string;
+  readonly writeOperationId: string;
+  readonly executionRegionId: string;
+  readonly surfaceId: string;
+  readonly receiverHint: string;
+  readonly fromValue: string;
+  readonly toValue: string;
+  readonly scalarKind: "string";
+  readonly guardComparisonSource: SourceRef;
+  readonly interveningWriteOperationIds: readonly string[];
+  readonly coLocatedDeclarationIds: readonly string[];
+  readonly status: "GUARDED_SOURCE_CANDIDATE" | "UNRESOLVED";
+  readonly provenance: BehaviorClaimProvenance;
+}
+
+/**
+ * This is NOT a general CFG, inferred state type, or actual execution trace.
+ * Only direct strict comparison to a literal and the exact if/else arm can
+ * provide source evidence for a possible old state. Other guards, aliases,
+ * derived expressions and asynchronous lifecycle paths remain unresolved.
+ */
+export function reconcileSourceGuardedStateTransitions(
+  ir: SemanticIr,
+): readonly SourceGuardedStateTransitionCandidate[] {
+  const surfaces = new Map(ir.state.surfaces.map(s => [s.id, s.ref]));
+  const writes = ir.state.operations.filter(op => op.operation === "write");
+  const reads = ir.state.operations.filter(op => op.operation === "read");
+  return writes.flatMap(write => {
+    const destination = write.writtenValue;
+    if (destination?.kind !== "literal" ||
+        destination.scalarKind !== "string" ||
+        write.targetHint === undefined ||
+        surfaces.get(write.surfaceId)?.kind !== "dynamic-property" ||
+        surfaces.get(write.surfaceId)?.key === "*") return [];
+    return reads.flatMap(read => {
+      const compared = read.readComparison;
+      if (!compared || compared.scalarKind !== "string" ||
+          compared.value === destination.value ||
+          read.surfaceId !== write.surfaceId ||
+          read.targetHint !== write.targetHint ||
+          read.executionRegionId !== write.executionRegionId ||
+          !precedingSourceSite(read.source, write.source) ||
+          !lexicalGuardsCoveredByOutcome(
+            read.lexicalGuards, write.lexicalGuards) ||
+          !guardsEqual(read.precedenceGuards, write.precedenceGuards)) return [];
+      // This must be the EXACT authored condition directly guarding the
+      // write: x === old in the true arm, or x !== old in the false arm.
+      const necessaryBranch = compared.operator === "strict-eq"
+        ? "true" : "false";
+      if (!(write.lexicalGuards ?? []).some(guard =>
+        guard.branch === necessaryBranch &&
+        sameExactSourceSite(guard.source, compared.source))) return [];
+      const interveningWriteOperationIds = writes
+        .filter(other =>
+          other.id !== write.id &&
+          other.surfaceId === write.surfaceId &&
+          other.targetHint === write.targetHint &&
+          other.executionRegionId === write.executionRegionId &&
+          sameDocument(other.source, read.source) &&
+          !mutuallyExclusiveGuards(other, write) &&
+          (!hasOrderedPosition(other.source) ||
+            (precedingSourceSite(read.source, other.source) &&
+              precedingSourceSite(other.source, write.source))))
+        .map(other => other.id).sort();
+      // The same file can declare a table with matching values without
+      // using that table to govern the dynamic property. Preserve co-location
+      // for navigation, never promote it into authored runtime authority.
+      const coLocatedDeclarationIds = (ir.state.transitionDeclarations ?? [])
+        .filter(decl =>
+          sameDocument(decl.source, read.source) &&
+          decl.from === compared.value &&
+          decl.to.includes(destination.value))
+        .map(decl => decl.id).sort();
+      const status = interveningWriteOperationIds.length === 0
+        ? "GUARDED_SOURCE_CANDIDATE" as const
+        : "UNRESOLVED" as const;
+      return [{
+        readOperationId: read.id,
+        writeOperationId: write.id,
+        executionRegionId: write.executionRegionId,
+        surfaceId: write.surfaceId,
+        receiverHint: write.targetHint,
+        fromValue: compared.value,
+        toValue: destination.value,
+        scalarKind: "string" as const,
+        guardComparisonSource: compared.source,
+        interveningWriteOperationIds,
+        coLocatedDeclarationIds,
+        status,
+        provenance: {
+          kind: "source-inference" as const,
+          evidenceCeiling: "inferred" as const,
+          evidenceIds: [
+            read.id, write.id,
+            ...interveningWriteOperationIds,
+            ...coLocatedDeclarationIds,
+          ].sort(),
+          note: "Exact authored direct comparison and guarded write, not evaluated branch, established runtime from-state, transition table binding or game lifecycle completion.",
+        },
+      }];
+    });
+  }).sort((a, b) =>
+    a.writeOperationId.localeCompare(b.writeOperationId) ||
+    a.readOperationId.localeCompare(b.readOperationId));
+}
+
+/**
  * Effect-directed, bounded static program slice over the SAME Semantic IR.
  * The entry is an authored call/event candidate, never evidence that the
  * branch ran, a state mutation committed, or a player observed a result.
@@ -533,6 +658,8 @@ export interface SourceEffectSlice {
   readonly candidateGuardStateWriteIds: readonly string[];
   /** Values authored before guard reads in this same source function. */
   readonly sourceLocalStateValueHandoffs: readonly SourceStateValueHandoff[];
+  /** Direct strict-comparison state changes supported by exact source sites. */
+  readonly guardedStateTransitionCandidates: readonly SourceGuardedStateTransitionCandidate[];
   /** Existing same-region guarded source-order candidates, not outcomes. */
   readonly sourceOrderedOutcomeIds: readonly string[];
   readonly effectGuards: readonly {
@@ -623,6 +750,12 @@ export function deriveSourceEffectSlices(
   const stateSurfaces = new Map(ir.state.surfaces.map(s => [s.id, s.ref]));
   const stateReads = ir.state.operations.filter(op => op.operation === "read");
   const stateWrites = ir.state.operations.filter(op => op.operation === "write");
+  const stateTransitionCandidates = new Map<string, SourceGuardedStateTransitionCandidate[]>();
+  for (const candidate of reconcileSourceGuardedStateTransitions(ir)) {
+    const group = stateTransitionCandidates.get(candidate.writeOperationId) ?? [];
+    group.push(candidate);
+    stateTransitionCandidates.set(candidate.writeOperationId, group);
+  }
   const operationsById = new Map(ir.state.operations.map(op => [op.id, op]));
   const guardSites = (
     guards: readonly AuthoredBranchGuard[] | undefined,
@@ -893,6 +1026,7 @@ export function deriveSourceEffectSlices(
       guardStateReadIds,
       candidateGuardStateWriteIds,
       sourceLocalStateValueHandoffs,
+      guardedStateTransitionCandidates: stateTransitionCandidates.get(effect.id) ?? [],
       sourceOrderedOutcomeIds: [...new Set(sourceOrderedOutcomeIds)].sort(),
       effectGuards: [
         ...guardSites(effect.lexicalGuards, "lexical"),

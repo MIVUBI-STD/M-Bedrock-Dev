@@ -49,6 +49,13 @@ export interface DynamicPropertyAccess {
   propertyExpression?: string;
   /** Only a directly authored scalar in setDynamicProperty, never evaluated expressions. */
   writtenLiteral?: { scalarKind: "string" | "number" | "boolean"; value: string };
+  /** Literal directly compared against this read with === or !==. */
+  comparedLiteral?: {
+    scalarKind: "string" | "number" | "boolean";
+    value: string;
+    operator: "strict-eq" | "strict-neq";
+    comparisonSource: SourceRef;
+  };
   receiverHint?: string;
   executionRegion?: string;
   source: SourceRef;

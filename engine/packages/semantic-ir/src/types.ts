@@ -110,6 +110,16 @@ export type StateOperationKind =
   | "enumerate"
   | "size";
 
+/** Parser-observed state table declaration, not a bound runtime machine. */
+export interface AuthoredStateTransitionDeclaration {
+  readonly id: string;
+  readonly tableName: string;
+  readonly stateType?: string;
+  readonly from: string;
+  readonly to: readonly string[];
+  readonly source: SourceRef;
+}
+
 export interface StateOperation {
   id: string;
   executionRegionId: string;
@@ -117,6 +127,13 @@ export interface StateOperation {
   operation: StateOperationKind;
   source: SourceRef;
   targetHint?: string;
+  /** Literal directly compared to a read, not the observed runtime value. */
+  readComparison?: {
+    readonly value: string;
+    readonly scalarKind: "string" | "number" | "boolean";
+    readonly operator: "strict-eq" | "strict-neq";
+    readonly source: SourceRef;
+  };
   /** Authored assigned token; an object member is not its resolved runtime value. */
   writtenValue?: {
     kind: "literal";
@@ -164,6 +181,7 @@ export interface SemanticIr {
     surfaces: readonly StateSurface[];
     operations: readonly StateOperation[];
     resourceActions?: readonly AuthoredResourceAction[];
+    transitionDeclarations?: readonly AuthoredStateTransitionDeclaration[];
     authorityBindings: readonly StateAuthorityBinding[];
   };
   temporal: {

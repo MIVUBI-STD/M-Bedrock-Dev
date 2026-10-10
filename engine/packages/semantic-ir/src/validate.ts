@@ -40,6 +40,9 @@ export function validateSemanticIr(ir: SemanticIr): string[] {
   for (const duplicate of duplicateIds(ir.state.operations)) {
     errors.push("Duplicate state operation id: " + duplicate);
   }
+  for (const duplicate of duplicateIds(ir.state.transitionDeclarations ?? [])) {
+    errors.push("Duplicate authored transition declaration id: " + duplicate);
+  }
   for (const duplicate of duplicateIds(ir.temporal.relations)) {
     errors.push("Duplicate temporal relation id: " + duplicate);
   }
