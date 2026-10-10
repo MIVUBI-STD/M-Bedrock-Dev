@@ -206,6 +206,55 @@ export interface GameplayArchitectureNavigation {
     readonly status: GameplayCausalLinkStatus;
     readonly evidenceIds: readonly string[];
   }[];
+  /**
+   * Game-centric, read-only navigation over existing scenario and IR owners.
+   * Features are observed gameplay subjects (mechanic/objective/phase/
+   * lifecycle/outcome), not invented rules or automatically proven behavior.
+   */
+  readonly gameplayStructure: {
+    readonly scope: "OBSERVED_COMPONENTS_ONLY";
+    readonly gameSubjectIds: readonly string[];
+    readonly systems: readonly {
+      readonly id: string;
+      readonly label: string;
+      readonly evidenceIds: readonly string[];
+      readonly scenarioIds: readonly string[];
+      /** Only exact PROVEN causal links admit a feature-system association. */
+      readonly provenFeatureIds: readonly string[];
+      /** Scenario co-placement is navigation only, not system ownership. */
+      readonly coPlacedFeatureIds: readonly string[];
+    }[];
+    readonly features: readonly {
+      readonly id: string;
+      readonly kind: "mechanic" | "objective" | "phase" | "lifecycle" | "outcome";
+      readonly label: string;
+      readonly purpose: string;
+      readonly sourceEvidenceIds: readonly string[];
+      readonly grounding: "SOURCE_EVIDENCED" | "UNVERIFIED";
+      readonly scenarioIds: readonly string[];
+      /** Relations originate in the scenario graph; status is unchanged. */
+      readonly relationships: readonly {
+        readonly id: string;
+        readonly relationKind: import("../../../gameplay-intent/src/index.js").GameplayIntentEdgeKind | null;
+        readonly fromComponentId: string;
+        readonly toComponentId: string;
+        readonly status: GameplayCausalLinkStatus;
+        readonly sourceEvidenceIds: readonly string[];
+      }[];
+      readonly activationRelationIds: readonly string[];
+      readonly effectRelationIds: readonly string[];
+      readonly transitionRelationIds: readonly string[];
+      readonly outcomeRelationIds: readonly string[];
+      /** Technical traces mapped through exact evidence, not inferred purpose. */
+      readonly observedFlowEntries: readonly {
+        readonly entryRegionId: string;
+        readonly modelingStatus: "UNMODELED" | "PARTIALLY_MODELED" | "PLACED_UNPROVEN";
+        readonly unmodeledEvidenceIds: readonly string[];
+      }[];
+    }[];
+    readonly unplacedFeatureIds: readonly string[];
+    readonly unassignedSemanticIrEvidenceIds: readonly string[];
+  };
   readonly unplacedComponentIds: readonly string[];
   readonly unresolvedCausalLinkIds: readonly string[];
   readonly missingGraphReferenceIds: readonly string[];
@@ -884,7 +933,7 @@ export function deriveGameplayArchitectureNavigation(
 
   // Assemble a single read-only projection. Its detailed inventories stay
   // authoritative for navigation; the summary only locates open work.
-  const navigation: Omit<GameplayArchitectureNavigation, "architectureReconciliation"> = {
+  const navigation: Omit<GameplayArchitectureNavigation, "architectureReconciliation" | "gameplayStructure"> = {
     schemaVersion: 1,
     policy: "derived-gameplay-architecture-navigation",
     stages: [...stageGroups].sort(([a], [b]) => a.localeCompare(b))
@@ -1194,6 +1243,111 @@ export function deriveGameplayArchitectureNavigation(
     },
   };
 
+  const featureKinds = new Set([
+    "mechanic", "objective", "phase", "lifecycle", "outcome",
+  ]);
+  const featureComponents = graph.components.filter(component =>
+    featureKinds.has(component.kind));
+  const featureIds = new Set(featureComponents.map(component => component.id));
+  const gameplayStructure: GameplayArchitectureNavigation["gameplayStructure"] = {
+    scope: "OBSERVED_COMPONENTS_ONLY",
+    gameSubjectIds: sorted(graph.components
+      .filter(component => component.kind === "game")
+      .map(component => component.id)),
+    systems: graph.components
+      .filter(component => component.kind === "runtime-domain")
+      .map(component => {
+        const scenarioIds = sorted(component.usedByScenarioIds);
+        const provenFeatureIds = sorted(graph.causalLinks
+          .filter(link => link.status === "PROVEN" &&
+            (link.fromComponentId === component.id ||
+              link.toComponentId === component.id))
+          .map(link => link.fromComponentId === component.id
+            ? link.toComponentId : link.fromComponentId)
+          .filter(id => featureIds.has(id)));
+        const coPlacedFeatureIds = sorted(graph.scenarios
+          .filter(scenario => scenarioIds.includes(scenario.id))
+          .flatMap(scenario => scenario.componentIds)
+          .filter(id => featureIds.has(id) && !provenFeatureIds.includes(id)));
+        return {
+          id: component.id,
+          label: component.label,
+          evidenceIds: sorted(component.evidenceIds),
+          scenarioIds,
+          provenFeatureIds,
+          coPlacedFeatureIds,
+        };
+      })
+      .sort((a, b) => a.id.localeCompare(b.id)),
+    features: featureComponents.map(component => {
+      const scenarioIds = sorted(graph.scenarios
+        .filter(scenario => scenario.sourceSubjectIds.includes(component.id) &&
+          scenario.componentIds.includes(component.id))
+        .map(scenario => scenario.id));
+      const scenarioSet = new Set(scenarioIds);
+      const relationships = graph.causalLinks
+        .filter(link => scenarioSet.has(link.scenarioId) &&
+          graph.scenarios.some(scenario => scenario.id === link.scenarioId &&
+            scenario.causalLinkIds.includes(link.id)))
+        .map(link => ({
+          id: link.id,
+          relationKind: link.intentEdgeKind ?? null,
+          fromComponentId: link.fromComponentId,
+          toComponentId: link.toComponentId,
+          status: link.status,
+          sourceEvidenceIds: sorted(link.evidenceIds.filter(id =>
+            sourceEvidence.includes(id))),
+        }))
+        .sort((a, b) => a.id.localeCompare(b.id));
+      const relationIds = (kinds: readonly (NonNullable<
+        typeof relationships[number]["relationKind"]
+      >)[]) => sorted(relationships
+        .filter(relation => relation.relationKind !== null &&
+          kinds.includes(relation.relationKind))
+        .map(relation => relation.id));
+      const sourceEvidenceIds = sorted(component.evidenceIds
+        .filter(id => sourceEvidence.includes(id)));
+      return {
+        id: component.id,
+        kind: component.kind as GameplayArchitectureNavigation[
+          "gameplayStructure"]["features"][number]["kind"],
+        label: component.label,
+        purpose: component.gameplayPurpose,
+        sourceEvidenceIds,
+        grounding: sourceEvidenceIds.length > 0
+          ? "SOURCE_EVIDENCED" as const
+          : "UNVERIFIED" as const,
+        scenarioIds,
+        relationships,
+        activationRelationIds: relationIds(["requires", "valid-during", "scoped-to"]),
+        effectRelationIds: relationIds(["produces", "consumes", "resets", "persists", "owns"]),
+        transitionRelationIds: relationIds(["transitions-to", "recovers-to"]),
+        outcomeRelationIds: relationIds(["wins-by", "loses-by"]),
+        observedFlowEntries: navigation.semanticIrCoverage.executionTraces
+          .filter(trace => trace.evidenceMatchedComponentIds.includes(component.id))
+          .map(trace => ({
+            entryRegionId: trace.entryRegionId,
+            modelingStatus: trace.modelingStatus,
+            unmodeledEvidenceIds: sorted(trace.evidenceWithoutComponentIds),
+          }))
+          .sort((a, b) => a.entryRegionId.localeCompare(b.entryRegionId)),
+      };
+    }).sort((a, b) => a.id.localeCompare(b.id)),
+    unplacedFeatureIds: sorted(featureComponents
+      .filter(component => !graph.scenarios.some(scenario =>
+        scenario.sourceSubjectIds.includes(component.id) &&
+        scenario.componentIds.includes(component.id)))
+      .map(component => component.id)),
+    unassignedSemanticIrEvidenceIds: sorted([
+      ...navigation.semanticIrCoverage.returnOutcomes.unlinkedIds,
+      ...navigation.semanticIrCoverage.resourceActions.unlinkedIds,
+      ...navigation.semanticIrCoverage.stateOperations.unlinkedIds,
+      ...navigation.semanticIrCoverage.executionRegions.unlinkedIds,
+      ...navigation.semanticIrCoverage.executionEdges.unlinkedIds,
+      ...navigation.semanticIrCoverage.temporalRelations.unlinkedIds,
+    ]),
+  };
+
   const ir = navigation.semanticIrCoverage;
   const semanticIrRecordsUnlinkedCount = [
     ir.stateOperations,
@@ -1245,6 +1399,7 @@ export function deriveGameplayArchitectureNavigation(
 
   return {
     ...navigation,
+    gameplayStructure,
     architectureReconciliation: {
       scope: "OBSERVED_RECORDS_ONLY",
       status: hasObservedGaps

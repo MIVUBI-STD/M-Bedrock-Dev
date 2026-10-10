@@ -676,51 +676,10 @@ function assembleSelectedMapAuditRun(
     }),
   );
 
-  const mapAuditReport =
-    projectMapAuditOutputV2({
-      inspection,
-      identity,
-      issueLanes: control.issueLanes,
-      auditObligations:
-        control.auditObligations,
-      validationTests:
-        control.validationTests,
-      honesty: control.honesty,
-      ...(Object.keys(reasoningByCausalLinkId).length === 0
-        ? {}
-        : { reasoningByCausalLinkId }),
-      ...(userIntent === undefined
-        ? {}
-        : { userIntent }),
-      control: {
-        status: control.status,
-        currentStage: control.currentStage,
-        allowedNextAction:
-          control.allowedNextAction,
-        continuationOwner:
-          control.continuation.owner,
-        requiresNewAuditRun:
-          control.continuation.requiresNewAuditRun,
-        blockingCheckpointIds:
-          [...control.blockingCheckpointIds],
-        reasons: [...control.reasons],
-      },
-      ...(control.fullMapReplica === undefined
-        ? {}
-        : {
-            fullMapReplica:
-              control.fullMapReplica,
-          }),
-    });
-
-  return {
-    schemaVersion: 1,
-    policy: "selected-map-audit-single-entry",
-    inspection,
-    identity,
-    auditRevision,
-    gameplayArchitecture:
-      deriveGameplayArchitectureNavigation(scenario.graph, {
+  // One derived navigation for the run and the operator-facing audit output.
+  // No second mechanic extractor or persisted game model.
+  const gameplayArchitecture =
+    deriveGameplayArchitectureNavigation(scenario.graph, {
         relevantSourceCount:
           inspection.gameplayDiscoveryClosure.sourceRelevantFiles,
         indexedSourceCount:
@@ -813,7 +772,53 @@ function assembleSelectedMapAuditRun(
           ? {}
           : { perArenaPlayerCapacity:
               inspection.gameplayWorld.arenas.perArenaPlayerCapacity }),
-      }),
+      });
+
+  const mapAuditReport =
+    projectMapAuditOutputV2({
+      gameplayStructure: gameplayArchitecture.gameplayStructure,
+      inspection,
+      identity,
+      issueLanes: control.issueLanes,
+      auditObligations:
+        control.auditObligations,
+      validationTests:
+        control.validationTests,
+      honesty: control.honesty,
+      ...(Object.keys(reasoningByCausalLinkId).length === 0
+        ? {}
+        : { reasoningByCausalLinkId }),
+      ...(userIntent === undefined
+        ? {}
+        : { userIntent }),
+      control: {
+        status: control.status,
+        currentStage: control.currentStage,
+        allowedNextAction:
+          control.allowedNextAction,
+        continuationOwner:
+          control.continuation.owner,
+        requiresNewAuditRun:
+          control.continuation.requiresNewAuditRun,
+        blockingCheckpointIds:
+          [...control.blockingCheckpointIds],
+        reasons: [...control.reasons],
+      },
+      ...(control.fullMapReplica === undefined
+        ? {}
+        : {
+            fullMapReplica:
+              control.fullMapReplica,
+          }),
+    });
+
+  return {
+    schemaVersion: 1,
+    policy: "selected-map-audit-single-entry",
+    inspection,
+    identity,
+    auditRevision,
+    gameplayArchitecture,
     ...(userIntent === undefined
       ? {}
       : { userIntent }),

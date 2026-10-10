@@ -29,6 +29,9 @@ import type {
   AuditObligation,
 } from "./map-audit-obligations.js";
 import type {
+  GameplayArchitectureNavigation,
+} from "./inspection/gameplay-scenario-model.js";
+import type {
   AuditUserIntentEnvelope,
 } from "./map-audit-user-intent.js";
 import {
@@ -149,6 +152,8 @@ export interface MapAuditOutputV2 {
     readonly progressionRules: readonly string[];
   };
   readonly gameplayFlow: readonly string[];
+  /** Derived game-centric source navigation; not a second Game Design or bug authority. */
+  readonly gameplayStructure?: GameplayArchitectureNavigation["gameplayStructure"];
   readonly stateTransitions: readonly {
     readonly from: string;
     readonly event: string;
@@ -392,6 +397,7 @@ export function projectMapAuditOutputV2(input: {
   readonly userIntent?: AuditUserIntentEnvelope;
   readonly control: MapAuditOutputControl;
   readonly fullMapReplica?: FullMapReplicaReceipt;
+  readonly gameplayStructure?: GameplayArchitectureNavigation["gameplayStructure"];
   readonly reasoningByCausalLinkId?: Readonly<Record<string, MapAuditOutputV2FindingReasoning>>;
 }): MapAuditOutputV2 {
   const model =
@@ -629,6 +635,9 @@ export function projectMapAuditOutputV2(input: {
       progressionRules,
     },
     gameplayFlow: PLAYER_FLOW,
+    ...(input.gameplayStructure === undefined
+      ? {}
+      : { gameplayStructure: input.gameplayStructure }),
     stateTransitions,
     multiArena: {
       detected: world.arenas.detected,

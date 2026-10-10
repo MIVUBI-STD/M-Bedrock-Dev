@@ -2297,6 +2297,249 @@
       },
       "additionalProperties": false,
       "description": "Derived visibility index for all unresolved/gray-zone audit state. Canonical detail remains in findings, auditObligations, gameplayClosure, and validationTests."
+    },
+    "gameplayStructure": {
+      "type": "object",
+      "description": "Derived, source-grounded Game / Systems / Features / Flow / Scenarios index. Optional to preserve existing Map Audit V2 consumers; not gameplay proof.",
+      "required": [
+        "scope",
+        "gameSubjectIds",
+        "systems",
+        "features",
+        "unplacedFeatureIds",
+        "unassignedSemanticIrEvidenceIds"
+      ],
+      "properties": {
+        "scope": {
+          "const": "OBSERVED_COMPONENTS_ONLY"
+        },
+        "gameSubjectIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "systems": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "label",
+              "evidenceIds",
+              "scenarioIds",
+              "provenFeatureIds",
+              "coPlacedFeatureIds"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "evidenceIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "scenarioIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "provenFeatureIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "coPlacedFeatureIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "kind",
+              "label",
+              "purpose",
+              "sourceEvidenceIds",
+              "grounding",
+              "scenarioIds",
+              "relationships",
+              "activationRelationIds",
+              "effectRelationIds",
+              "transitionRelationIds",
+              "outcomeRelationIds",
+              "observedFlowEntries"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "mechanic",
+                  "objective",
+                  "phase",
+                  "lifecycle",
+                  "outcome"
+                ]
+              },
+              "label": {
+                "type": "string"
+              },
+              "purpose": {
+                "type": "string"
+              },
+              "sourceEvidenceIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "grounding": {
+                "enum": [
+                  "SOURCE_EVIDENCED",
+                  "UNVERIFIED"
+                ]
+              },
+              "scenarioIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "relationships": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "relationKind",
+                    "fromComponentId",
+                    "toComponentId",
+                    "status",
+                    "sourceEvidenceIds"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "relationKind": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "fromComponentId": {
+                      "type": "string"
+                    },
+                    "toComponentId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "enum": [
+                        "PROVEN",
+                        "CONTRADICTED",
+                        "RUNTIME_BLOCKED",
+                        "DETECTION_GAP"
+                      ]
+                    },
+                    "sourceEvidenceIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "activationRelationIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "effectRelationIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "transitionRelationIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "outcomeRelationIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "observedFlowEntries": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "entryRegionId",
+                    "modelingStatus",
+                    "unmodeledEvidenceIds"
+                  ],
+                  "properties": {
+                    "entryRegionId": {
+                      "type": "string"
+                    },
+                    "modelingStatus": {
+                      "enum": [
+                        "UNMODELED",
+                        "PARTIALLY_MODELED",
+                        "PLACED_UNPROVEN"
+                      ]
+                    },
+                    "unmodeledEvidenceIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "unplacedFeatureIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unassignedSemanticIrEvidenceIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": true
