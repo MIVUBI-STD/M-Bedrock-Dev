@@ -48,11 +48,23 @@ function usedEvidenceIds(
   // Scenario composition must consume the same exact evidence identity.
   // A stranded intent fact is not proof of a modeled gameplay path.
   // Neither component placement nor unproven links establish a gameplay path.
-  const scenarioLinkIds = new Map(graph.scenarios.map(scenario =>
-    [scenario.id, new Set(scenario.causalLinkIds)]));
+  const components = new Set(graph.components.map(component => component.id));
+  const scenarios = new Map(graph.scenarios.map(scenario =>
+    [scenario.id, scenario]));
   const scenarioEvidenceIds = new Set(graph.causalLinks
-    .filter(link => link.status === "PROVEN" &&
-      scenarioLinkIds.get(link.scenarioId)?.has(link.id) === true)
+    .filter(link => {
+      const owner = scenarios.get(link.scenarioId);
+      // A PROVEN label or scenario link reference does not repair dangling
+      // endpoints. Scenario Closure already treats these graphs as invalid;
+      // Discovery Challenger must not close individual raw-source records.
+      return link.status === "PROVEN" &&
+        owner !== undefined &&
+        owner.causalLinkIds.includes(link.id) &&
+        owner.componentIds.includes(link.fromComponentId) &&
+        owner.componentIds.includes(link.toComponentId) &&
+        components.has(link.fromComponentId) &&
+        components.has(link.toComponentId);
+    })
     .flatMap(link => link.evidenceIds));
   return new Set([...authoredEvidenceIds].filter(id =>
     groundedIds.has(id) && scenarioEvidenceIds.has(id)));

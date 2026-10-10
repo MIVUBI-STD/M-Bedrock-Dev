@@ -516,15 +516,32 @@ describe("gameplay discovery challenger", () => {
       nodes: [{ id: "mechanic:wave", status: "authored", evidenceIds: [id] }],
     } as GameplayIntentModel;
     const link = { id: "link:wave", scenarioId: "scenario:wave",
+      fromComponentId: "component:wave", toComponentId: "component:wave",
       status: "PROVEN", evidenceIds: [id] };
     const graph = { ...emptyGraph,
-      scenarios: [{ id: "scenario:wave", causalLinkIds: [link.id] }],
+      components: [{ id: "component:wave", evidenceIds: [id] }],
+      scenarios: [{ id: "scenario:wave",
+        componentIds: ["component:wave"], causalLinkIds: [link.id] }],
       causalLinks: [link],
     } as unknown as GameplayScenarioGraph;
     const open = (i: GameplayIntentModel, g: GameplayScenarioGraph) =>
       challengeGameplayDiscovery({ semanticIr: ir, intent: i, graph: g })
         .some(item => item.kind === "unowned-execution-edge");
     expect(open(intent, graph)).toBe(false);
+    // An individually authored and source-matched IR record stays open when
+    // a supposed PROVEN link is unbound, even if Scenario Closure will also
+    // reject the graph. No source/technical ownership can be fabricated.
+    expect(open(intent, { ...graph,
+      components: [] } as GameplayScenarioGraph)).toBe(true);
+    expect(open(intent, { ...graph, causalLinks: [{ ...link,
+      fromComponentId: "component:absent" }] } as GameplayScenarioGraph))
+      .toBe(true);
+    expect(open(intent, { ...graph, scenarios: [{
+      ...graph.scenarios[0]!, componentIds: [],
+    }] } as GameplayScenarioGraph)).toBe(true);
+    expect(open(intent, { ...graph, scenarios: [{
+      ...graph.scenarios[0]!, causalLinkIds: [],
+    }] } as GameplayScenarioGraph)).toBe(true);
     expect(open(intent, { ...graph, causalLinks: [{ ...link,
       status: "DETECTION_GAP" }] } as GameplayScenarioGraph)).toBe(true);
     expect(open(intent, { ...graph, scenarios: [] } as GameplayScenarioGraph)).toBe(true);
@@ -534,6 +551,62 @@ describe("gameplay discovery challenger", () => {
       locator: "scripts/other.js" }] } as GameplayIntentModel, graph)).toBe(true);
   });
 
+
+
+  it("keeps an authored cleanup action open when its PROVEN link is outside the owning scenario", () => {
+    const source = { artifactId: "sample:reset",
+      relativePath: "behavior_packs/demo/scripts/arena.js" };
+    const ir = {
+      schemaVersion: 1,
+      execution: { regions: [], edges: [] },
+      state: { surfaces: [], authorityBindings: [], operations: [],
+        resourceActions: [{
+          id: "resource:reset", surface: "tag", action: "release",
+          key: "player:playing", precision: "exact",
+          executionRegionId: "region:reset", source,
+        }],
+      },
+      temporal: { relations: [] },
+    } as SemanticIr;
+    const intent = { ...emptyIntent,
+      nodes: [{
+        id: "lifecycle:reset", status: "authored",
+        evidenceIds: ["resource:reset"],
+      }],
+      evidence: [{
+        id: "resource:reset", scope: "selected-artifact",
+        origin: "source-code", locator: source.relativePath,
+      }],
+    } as GameplayIntentModel;
+    const link = {
+      id: "link:reset", scenarioId: "scenario:arena", status: "PROVEN",
+      fromComponentId: "component:reset",
+      toComponentId: "component:unplaced",
+      evidenceIds: ["resource:reset"],
+    };
+    const graph = { ...emptyGraph,
+      components: [
+        { id: "component:reset", evidenceIds: ["resource:reset"] },
+        { id: "component:unplaced", evidenceIds: [] },
+      ],
+      scenarios: [{
+        id: "scenario:arena",
+        componentIds: ["component:reset"],
+        causalLinkIds: ["link:reset"],
+      }],
+      causalLinks: [link],
+    } as unknown as GameplayScenarioGraph;
+    const challenged = (g: GameplayScenarioGraph) =>
+      challengeGameplayDiscovery({ semanticIr: ir, intent, graph: g })
+        .some(item => item.kind === "unowned-resource-action" &&
+          item.evidenceIds.includes("resource:reset"));
+    expect(challenged(graph)).toBe(true);
+    expect(challenged({
+      ...graph, scenarios: [{ ...graph.scenarios[0]!,
+        componentIds: ["component:reset", "component:unplaced"],
+      }],
+    })).toBe(false);
+  });
 
   it("keeps Discovery OPEN when individually owned wave records have no proven relationship", () => {
     const source = {
