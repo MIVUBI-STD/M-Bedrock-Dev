@@ -113,6 +113,42 @@ function parsed(): ParsedScriptFile {
 describe("gameplay intent stage", () => {
 
 
+  it("links exact authored return to inferred gameplay producer without proving completion", () => {
+    const origin = {
+      artifactId: "world:round",
+      relativePath: "behavior_packs/demo/scripts/round.js",
+    };
+    const parsed = parseScriptFile("round", [
+      'function finishArena() { return { action: "finish" }; }',
+    ].join("\n"), origin);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const outcome = ir.execution.outcomes?.find(item => item.value === "finish");
+    expect(outcome).toBeDefined();
+    const build = (semanticIr?: typeof ir) => buildGameplayIntentModel({
+      id: "intent:round",
+      artifactId: origin.artifactId, parsedScripts: [{ parsed }],
+      ...(semanticIr ? { semanticIr } : {}),
+    });
+    const relations = build(ir).edges.filter(edge =>
+      edge.kind === "produces" &&
+      edge.evidenceIds.includes(outcome!.id));
+    expect(relations.length).toBeGreaterThan(0);
+    expect(relations.every(edge => edge.status === "inferred")).toBe(true);
+    expect(build().edges.some(edge =>
+      edge.kind === "produces" && edge.evidenceIds.includes(outcome!.id)))
+      .toBe(false);
+    const foreign = { ...ir, execution: { ...ir.execution,
+      outcomes: ir.execution.outcomes?.map(item => ({
+        ...item, source: { ...item.source, artifactId: "world:foreign" },
+      })),
+    }};
+    expect(build(foreign).edges.some(edge =>
+      edge.kind === "produces" && edge.evidenceIds.includes(outcome!.id)))
+      .toBe(false);
+  });
+
   it("does not flag an exact state transition already linked to its classified gameplay caller", () => {
     const source = {
       artifactId: "world:classified",

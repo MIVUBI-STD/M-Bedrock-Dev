@@ -412,6 +412,29 @@ export function buildGameplayIntentModel(
         relation.stateMutationOrigins,
       )) exactIrEvidenceIds.add(matchedId);
     }
+    if (relation.edgeKind === "produces" && input.semanticIr) {
+      for (const origin of relation.returnOutcomeOrigins ?? []) {
+        if (origin.scriptSource.artifactId !== origin.outcome.source.artifactId ||
+            origin.scriptSource.relativePath !== origin.outcome.source.relativePath ||
+            (input.artifactId !== undefined &&
+              input.artifactId !== origin.outcome.source.artifactId)) continue;
+        const matches = (input.semanticIr.execution.outcomes ?? []).filter(item =>
+          item.executionRegionId === scriptRegionId(
+            origin.scriptSource, origin.outcome.executionRegion,
+          ) &&
+          item.propertyName === origin.outcome.propertyName &&
+          item.value === origin.outcome.value &&
+          sameExactCallSource(item.source, origin.outcome.source));
+        if (matches.length !== 1) continue;
+        const matched = matches[0]!;
+        exactIrEvidenceIds.add(matched.id);
+        evidence.set(matched.id, {
+          id: matched.id, origin: "source-code",
+          locator: matched.source.relativePath, scope: "selected-artifact",
+          summary: "Exact authored return for inferred producer relationship; gameplay meaning and execution remain unproven.",
+        });
+      }
+    }
     const relationEvidenceIds = [id, ...exactIrEvidenceIds].sort();
 
     const semanticKey = [

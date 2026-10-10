@@ -1237,6 +1237,7 @@ export function extractGameplayIntentSignals(
             locator: path,
             summary:
               "A classified gameplay function explicitly returns this status state.",
+          returnOutcomeOrigins: [{ scriptSource: script.source, outcome }],
           });
         }
         continue;
@@ -1431,6 +1432,7 @@ export function extractGameplayIntentSignals(
           locator: path,
           summary:
             "A classified gameplay function explicitly returns this outcome; the gameplay meaning of the function remains inferred.",
+          returnOutcomeOrigins: [{ scriptSource: script.source, outcome }],
         });
       }
     }

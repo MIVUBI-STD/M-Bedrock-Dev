@@ -38,6 +38,11 @@ export interface GameplayIntentSignal {
 
 export interface GameplayIntentRelationSignal {
   id: string;
+  /** Exact authored return sites for inferred source producer relationships. */
+  returnOutcomeOrigins?: readonly {
+    scriptSource: ParsedScriptFile["source"];
+    outcome: NonNullable<ParsedScriptFile["returnOutcomes"]>[number];
+  }[];
   /** Exact parsed state assignments for inferred transitions; not gameplay proof. */
   stateMutationOrigins?: readonly {
     scriptSource: ParsedScriptFile["source"];
