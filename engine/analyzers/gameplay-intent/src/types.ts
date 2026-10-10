@@ -1,4 +1,4 @@
-import type { ParsedScriptFile } from "../../scripts/src/index.js";
+import type { ParsedScriptFile, CrossFileCallEdge } from "../../scripts/src/index.js";
 import type {
   GameplayIntentEdgeKind,
   GameplayIntentEvidenceOrigin,
@@ -47,6 +47,12 @@ export interface GameplayIntentRelationSignal {
   localCallOrigins?: readonly {
     scriptSource: ParsedScriptFile["source"];
     call: ParsedScriptFile["localFunctionCalls"][number];
+  }[];
+  /** Exact direct ESM call and both module owners, not a verified gameplay dependency. */
+  crossFileCallOrigins?: readonly {
+    scriptSource: ParsedScriptFile["source"];
+    targetScriptSource: ParsedScriptFile["source"];
+    call: CrossFileCallEdge;
   }[];
   /** Parsed event or scheduler origin; exact IR ID is resolved by the model stage. */
   callbackOrigins?: readonly (

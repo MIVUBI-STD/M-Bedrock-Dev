@@ -1,5 +1,6 @@
 import type {
   ParsedScriptFile,
+  CrossFileCallEdge,
 } from "../../scripts/src/index.js";
 import type {
   GameplayIntentNodeKind,
@@ -508,6 +509,7 @@ function lexicalSignal(
 
 export function extractGameplayIntentSignals(
   scripts: readonly ParsedScriptFile[],
+  crossFileCallEdges: readonly CrossFileCallEdge[] = [],
 ): GameplayIntentSignalSet {
   const signals = new Map<string, GameplayIntentSignal>();
   const relations = new Map<string, GameplayIntentRelationSignal>();
@@ -678,6 +680,7 @@ export function extractGameplayIntentSignals(
     if (!existing) {
       relations.set(relation.id, relation);
     } else if (relation.localCallOrigins?.length ||
+        relation.crossFileCallOrigins?.length ||
         relation.callbackOrigins?.length ||
         relation.stateMutationOrigins?.length) {
       // Preserve every call site when a single inferred relationship has
@@ -691,6 +694,10 @@ export function extractGameplayIntentSignals(
         callbackOrigins: [
           ...(existing.callbackOrigins ?? []),
           ...(relation.callbackOrigins ?? []),
+        ],
+        crossFileCallOrigins: [
+          ...(existing.crossFileCallOrigins ?? []),
+          ...(relation.crossFileCallOrigins ?? []),
         ],
         stateMutationOrigins: [
           ...(existing.stateMutationOrigins ?? []),
@@ -1513,6 +1520,52 @@ export function extractGameplayIntentSignals(
         });
       }
     }
+  }
+
+  // The existing cross-file resolver owns imported binding and callable
+  // identity. Keep source relationships only between *classified* gameplay
+  // symbols; anonymous callbacks and unclassified utilities remain IR facts.
+  // A named import is not evidence that a gameplay mechanic executed.
+  const scriptsByPath = new Map<string, ParsedScriptFile[]>();
+  for (const script of scripts) {
+    const path = script.source.relativePath.replaceAll("\\", "/");
+    scriptsByPath.set(path, [...(scriptsByPath.get(path) ?? []), script]);
+  }
+  for (const call of crossFileCallEdges) {
+    if (call.status !== "resolved" ||
+        call.targetRegion === undefined || call.targetModule === undefined ||
+        !call.callerRegion.startsWith("function:") ||
+        call.callerModule === call.targetModule) continue;
+    const callers = scriptsByPath.get(call.callerModule) ?? [];
+    const targets = scriptsByPath.get(call.targetModule) ?? [];
+    if (callers.length !== 1 || targets.length !== 1) continue;
+    const callerSource = callers[0]!.source;
+    const targetSource = targets[0]!.source;
+    if (callerSource.artifactId !== call.source.artifactId ||
+        targetSource.artifactId !== call.source.artifactId ||
+        callerSource.relativePath !== call.callerModule ||
+        targetSource.relativePath !== call.targetModule) continue;
+    const caller = lexicalSignal(call.callerModule,
+      call.callerRegion.slice("function:".length));
+    const target = lexicalSignal(call.targetModule, call.targetExport);
+    if (!caller || !target) continue;
+    pushSignal(signals, caller);
+    pushSignal(signals, target);
+    pushRelation({
+      id: "relation:requires:cross-file:" + caller.subjectKey + ":" +
+        target.subjectKey + ":" + slug(call.callerModule) + ":" +
+        slug(call.targetModule),
+      fromSubjectKey: caller.subjectKey,
+      toSubjectKey: target.subjectKey,
+      edgeKind: "requires",
+      status: "inferred",
+      evidenceOrigin: "source-code",
+      locator: call.callerModule,
+      crossFileCallOrigins: [{
+        scriptSource: callerSource, targetScriptSource: targetSource, call,
+      }],
+      summary: "An exact imported executable function is called from a classified region in another script. Gameplay dependency and runtime execution remain inferred.",
+    });
   }
 
   return {

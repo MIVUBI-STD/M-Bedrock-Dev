@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseScriptFile, type ParsedScriptFile } from "../../../../analyzers/scripts/src/index.js";
+import { parseScriptFile, deriveCrossFileCallEdges, type ParsedScriptFile } from "../../../../analyzers/scripts/src/index.js";
 import {
   buildGameplayIntentModel,
 } from "../../src/inspection/gameplay-intent-stage.js";
@@ -812,6 +812,189 @@ describe("exact Semantic IR provenance in Gameplay Intent", () => {
     });
     expect(mismatched.edges.some(edge => edge.evidenceIds.some(id =>
       id.startsWith("exec-edge:")))).toBe(false);
+  });
+
+
+  it("connects repeated imported-function call sites to exact IR and inferred Intent without claiming a mechanic", () => {
+    const mainPath = "behavior_packs/a/scripts/main.js";
+    const arenaPath = "behavior_packs/a/scripts/arena.js";
+    const origin = (relativePath: string) => ({
+      artifactId: "map:multi-script", relativePath,
+    });
+    const mainText = [
+      'import { world } from "@minecraft/server";',
+      'import { createArenaState as restoreArena } from "./arena.js";',
+      'function resetArena() { restoreArena(); restoreArena(); }',
+      'world.afterEvents.playerLeave.subscribe(() => resetArena());',
+    ].join("\n");
+    const arenaText = [
+      'export function createArenaState() {',
+      '  return { action: "finish" };',
+      '}',
+    ].join("\n");
+    const main = parseScriptFile("main", mainText, origin(mainPath));
+    const arena = parseScriptFile("arena", arenaText, origin(arenaPath));
+    const sources = [{ parsed: main }, { parsed: arena }];
+    const crossFileCallEdges = deriveCrossFileCallEdges([
+      { path: mainPath, text: mainText, source: origin(mainPath) },
+      { path: arenaPath, text: arenaText, source: origin(arenaPath) },
+    ]);
+    expect(crossFileCallEdges).toHaveLength(2);
+    expect(crossFileCallEdges.every(item =>
+      item.status === "resolved" &&
+      item.targetExport === "createArenaState" &&
+      item.targetRegion === "function:createArenaState")).toBe(true);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: sources, crossFileCallEdges,
+    });
+    const sourceEdges = ir.execution.edges.filter(item =>
+      item.kind === "synchronous-call" &&
+      item.targetLabel === "restoreArena");
+    expect(sourceEdges).toHaveLength(2);
+    const build = (semanticIr = ir) => buildGameplayIntentModel({
+      id: "intent:cross-file",
+      artifactId: "map:multi-script",
+      parsedScripts: sources,
+      crossFileCallEdges,
+      semanticIr,
+    });
+    const intent = build();
+    const crossLink = intent.edges.find(edge =>
+      sourceEdges.every(call => edge.evidenceIds.includes(call.id)));
+    expect(crossLink).toBeDefined();
+    expect(crossLink?.kind).toBe("requires");
+    expect(crossLink?.status).toBe("inferred");
+    expect(intent.nodes.some(node => node.id === crossLink?.from)).toBe(true);
+    expect(intent.nodes.some(node => node.id === crossLink?.to)).toBe(true);
+    expect(sourceEdges.every(call =>
+      intent.evidence.some(evidence =>
+        evidence.id === call.id &&
+        evidence.scope === "selected-artifact" &&
+        evidence.locator === mainPath))).toBe(true);
+    expect(ir.execution.outcomes?.some(outcome =>
+      outcome.source.relativePath === arenaPath &&
+      outcome.value === "finish")).toBe(true);
+
+    const matchesIR = (model: ReturnType<typeof build>) => model.edges
+      .some(edge => sourceEdges.some(call => edge.evidenceIds.includes(call.id)));
+    // No inference becomes PROVEN just because imported source exists.
+    expect(buildGameplayIntentModel({
+      id: "intent:no-ir",
+      artifactId: "map:multi-script",
+      parsedScripts: sources, crossFileCallEdges,
+    }).edges.some(edge => edge.status === "authored" &&
+      edge.kind === "requires")).toBe(false);
+    expect(matchesIR(buildGameplayIntentModel({
+      id: "intent:ir-absent",
+      artifactId: "map:multi-script",
+      parsedScripts: sources, crossFileCallEdges,
+    }))).toBe(false);
+    const wrongPosition = {
+      ...ir,
+      execution: { ...ir.execution, edges: ir.execution.edges.map(edge =>
+        edge.targetLabel === "restoreArena" ? {
+          ...edge, source: { ...edge.source, range: {
+            ...edge.source.range!, columnStart: 999,
+          } },
+        } : edge),
+      },
+    };
+    expect(matchesIR(build(wrongPosition))).toBe(false);
+    const partialSourceSpan = crossFileCallEdges.map(call => ({
+      ...call,
+      source: { ...call.source, range: {
+        lineStart: call.source.range!.lineStart,
+        columnStart: call.source.range!.columnStart,
+      } },
+    }));
+    expect(matchesIR(buildGameplayIntentModel({
+      id: "intent:partial-span",
+      artifactId: "map:multi-script",
+      parsedScripts: sources,
+      crossFileCallEdges: partialSourceSpan,
+      semanticIr: ir,
+    }))).toBe(false);
+    const wrongTarget = {
+      ...ir,
+      execution: { ...ir.execution, edges: ir.execution.edges.map(edge =>
+        edge.targetLabel === "restoreArena"
+          ? { ...edge, to: "exec:script:another-module" }
+          : edge),
+      },
+    };
+    expect(matchesIR(build(wrongTarget))).toBe(false);
+    const wrongArtifact = {
+      ...ir,
+      execution: { ...ir.execution, edges: ir.execution.edges.map(edge =>
+        edge.targetLabel === "restoreArena"
+          ? { ...edge, source: { ...edge.source, artifactId: "another-map" } }
+          : edge),
+      },
+    };
+    expect(matchesIR(build(wrongArtifact))).toBe(false);
+    expect(matchesIR(buildGameplayIntentModel({
+      id: "intent:other-artifact",
+      artifactId: "different-map",
+      parsedScripts: sources, crossFileCallEdges,
+      semanticIr: ir,
+    }))).toBe(false);
+    expect(matchesIR(buildGameplayIntentModel({
+      id: "intent:no-cross-file-calls",
+      artifactId: "map:multi-script",
+      parsedScripts: sources, semanticIr: ir,
+    }))).toBe(false);
+  });
+
+  it("does not classify cross-file utilities, anonymous callers or ambiguous source ownership as gameplay", () => {
+    const root = "behavior_packs/b/scripts/";
+    const origin = (relativePath: string) => ({
+      artifactId: "world:b", relativePath: root + relativePath,
+    });
+    const mainText = [
+      'import { formatToken, cleanupSession } from "./helpers.js";',
+      'function resetArena() { formatToken(); cleanupSession(); }',
+      'export function resetCallback() { (() => cleanupSession())(); }',
+    ].join("\n");
+    const helperText = [
+      'export function formatToken() {}',
+      'export function cleanupSession() {}',
+    ].join("\n");
+    const main = parseScriptFile("main", mainText, origin("main.js"));
+    const helper = parseScriptFile("helpers", helperText, origin("helpers.js"));
+    const cross = deriveCrossFileCallEdges([
+      { path: origin("main.js").relativePath, text: mainText,
+        source: origin("main.js") },
+      { path: origin("helpers.js").relativePath, text: helperText,
+        source: origin("helpers.js") },
+    ]);
+    expect(cross).toHaveLength(3);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed: main }, { parsed: helper }],
+      crossFileCallEdges: cross,
+    });
+    const build = (calls: typeof cross, scripts = [{ parsed: main }, { parsed: helper }]) =>
+      buildGameplayIntentModel({
+        id: "intent:classified-only", artifactId: "world:b",
+        parsedScripts: scripts, crossFileCallEdges: calls, semanticIr: ir,
+      });
+    const model = build(cross);
+    const matched = ir.execution.edges.filter(edge =>
+      edge.kind === "synchronous-call" &&
+      edge.targetLabel === "cleanupSession" &&
+      model.edges.some(relation => relation.evidenceIds.includes(edge.id)));
+    // Only the named resetArena -> cleanupSession call is classified;
+    // a formatter utility and an anonymous callback do not become mechanics.
+    expect(matched).toHaveLength(1);
+    expect(matched[0]?.from).toContain("function%3AresetArena");
+    expect(model.edges.every(edge => edge.status !== "authored" ||
+      !matched.some(call => edge.evidenceIds.includes(call.id)))).toBe(true);
+    expect(build(cross.map(call => ({ ...call, status: "unresolved" as const })))
+      .edges.some(edge => edge.evidenceIds.includes(matched[0]!.id))).toBe(false);
+    const duplicateOwnership = build(cross, [
+      { parsed: main }, { parsed: helper }, { parsed: helper },
+    ]);
+    expect(duplicateOwnership.edges.some(edge =>
+      edge.evidenceIds.includes(matched[0]!.id))).toBe(false);
   });
 
   it("links only the same call site/regions and keeps game-purpose inference unproven", () => {

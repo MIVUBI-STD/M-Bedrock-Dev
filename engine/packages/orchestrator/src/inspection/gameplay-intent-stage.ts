@@ -5,6 +5,7 @@ import {
 } from "../../../../analyzers/gameplay-intent/src/index.js";
 import type {
   ParsedScriptFile,
+  CrossFileCallEdge,
 } from "../../../../analyzers/scripts/src/index.js";
 import type { SourceRef } from "../../../project-model/src/index.js";
 import type { SemanticIr } from "../../../semantic-ir/src/index.js";
@@ -29,6 +30,8 @@ export interface GameplayIntentStageInput {
     parsed: ParsedScriptFile;
   }[];
   supplementalSignals?: readonly GameplayIntentSignal[];
+  /** Source-resolved imported calls from the same selected artifact as Semantic IR. */
+  crossFileCallEdges?: readonly CrossFileCallEdge[];
   /** Built from these same parsed sources; absent in lightweight consumers. */
   semanticIr?: SemanticIr;
 }
@@ -46,16 +49,21 @@ function evidenceId(
 }
 
 function sameExactCallSource(left: SourceRef, right: SourceRef): boolean {
-  // A file-only match is never unique provenance for a call site.
+  // Both endpoints require a complete source span. Two missing end
+  // coordinates are not evidence that an invocation has exact provenance.
+  const a = left.range;
+  const b = right.range;
   return left.artifactId === right.artifactId &&
     left.relativePath === right.relativePath &&
     left.jsonPointer === right.jsonPointer &&
-    left.range?.lineStart !== undefined &&
-    left.range?.columnStart !== undefined &&
-    left.range?.lineStart === right.range?.lineStart &&
-    left.range?.lineEnd === right.range?.lineEnd &&
-    left.range?.columnStart === right.range?.columnStart &&
-    left.range?.columnEnd === right.range?.columnEnd;
+    a?.lineStart !== undefined && b?.lineStart !== undefined &&
+    a.lineEnd !== undefined && b.lineEnd !== undefined &&
+    a.columnStart !== undefined && b.columnStart !== undefined &&
+    a.columnEnd !== undefined && b.columnEnd !== undefined &&
+    a.lineStart === b.lineStart &&
+    a.lineEnd === b.lineEnd &&
+    a.columnStart === b.columnStart &&
+    a.columnEnd === b.columnEnd;
 }
 
 export function buildGameplayIntentModel(
@@ -68,7 +76,7 @@ export function buildGameplayIntentModel(
     ...contractScripts.map(
       (item) => item.parsed,
     ),
-  ]);
+  ], input.crossFileCallEdges ?? []);
   const supplementalSignals =
     input.supplementalSignals ?? [];
   const extracted = {
@@ -307,6 +315,36 @@ export function buildGameplayIntentModel(
           locator: matched.source.relativePath,
           scope: "selected-artifact",
           summary: "Exact Semantic IR call edge from parsed source location; gameplay dependency remains inferred.",
+        });
+      }
+    }
+    if (relation.edgeKind === "requires" && input.semanticIr) {
+      for (const origin of relation.crossFileCallOrigins ?? []) {
+        const call = origin.call;
+        if (call.status !== "resolved" ||
+            call.targetModule === undefined || call.targetRegion === undefined ||
+            origin.scriptSource.artifactId !== call.source.artifactId ||
+            origin.targetScriptSource.artifactId !== call.source.artifactId ||
+            origin.scriptSource.relativePath !== call.callerModule ||
+            origin.targetScriptSource.relativePath !== call.targetModule ||
+            (input.artifactId !== undefined &&
+              input.artifactId !== call.source.artifactId)) continue;
+        const matches = input.semanticIr.execution.edges.filter(edge =>
+          edge.kind === "synchronous-call" &&
+          edge.resolution === "resolved" &&
+          edge.from === scriptRegionId(origin.scriptSource, call.callerRegion) &&
+          edge.to === scriptRegionId(origin.targetScriptSource, call.targetRegion!) &&
+          edge.targetLabel === call.localName &&
+          sameExactCallSource(edge.source, call.source));
+        if (matches.length !== 1) continue;
+        const matched = matches[0]!;
+        exactIrEvidenceIds.add(matched.id);
+        evidence.set(matched.id, {
+          id: matched.id,
+          origin: "source-code",
+          locator: matched.source.relativePath,
+          scope: "selected-artifact",
+          summary: "Exact cross-script Semantic IR call site and executable target. Gameplay purpose and actual execution remain inferred.",
         });
       }
     }
