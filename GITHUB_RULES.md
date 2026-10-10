@@ -177,7 +177,9 @@ GitHub Actions workflows are optional tools, not the default verification or com
 
 ## 8. Verification
 
-Run the cheapest check that can falsify the changed claim.
+Follow the canonical construction-versus-acceptance sequencing in `docs/system/development-discipline.md`. During an explicitly unfinished architecture BUILD, do exact-ref source/consumer review without starting a micro-test campaign. Open a bounded executable acceptance run only after the integrated production path is ready, except where a demonstrated critical safety or irreversible-data risk makes earlier verification necessary.
+
+Run the cheapest check that can falsify the claim **at its current evidence ceiling**; source review is never an executed PASS.
 
 - docs/policy → exact-head structural/static review
 - TypeScript/source contract → exact-head source review + affected contract/test/fixture review; compiler/test execution is additional evidence, not a remote-work prerequisite

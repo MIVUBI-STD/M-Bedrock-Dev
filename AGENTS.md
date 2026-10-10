@@ -81,7 +81,7 @@ Domain specialist routing is defined by `docs/system/skill-routing.md`.
 
 ## Mandatory development style
 
-For every `SYSTEM DEVELOPMENT` task, apply `docs/system/development-discipline.md#development-operating-standard` before material changes and its completion review before STOP. Product and Detection Development skills must explicitly route to that owner. This requirement does not authorize extra scope, local execution, CI or a second manager.
+For every `SYSTEM DEVELOPMENT` task, apply `docs/system/development-discipline.md#development-operating-standard` before material changes and its completion review before STOP. Product and Detection Development skills must explicitly route to that owner. When the user prioritizes unfinished architecture over testing, follow that document's **Architecture-first construction before acceptance** rule: deliver a coherent production path in macro batches, review source continuity, and defer routine tests/fixtures until integration readiness. This does not authorize a new manager, state store, local execution, CI, or unsupported PASS claim.
 
 ## Development contract
 

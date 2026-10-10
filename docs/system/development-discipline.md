@@ -20,12 +20,25 @@ This is the mandatory behavior contract for every `SYSTEM DEVELOPMENT` task, inc
 5. **Zero waste and modularity.** Every added file, interface, branch, artifact and test must have a real purpose and consumer. Prevent dead code, stale references and duplicated semantic ownership. Keep modules aligned to one responsibility; do not split files just to appear modular.
 6. **Naming and hierarchy.** Reuse canonical vocabulary and established paths. Name components for responsibility and behavior, not vague labels (`Smart`, `Universal`, `V2`) or cosmetic novelty. Preserve public IDs where renaming would break consumers unless a migration is authorized.
 7. **Execute autonomously within scope.** Finish coherent, bounded units without asking permission for every internal step. Never silently switch mode, modify target artifacts or extend into adjacent features. Group related corrections by root cause, not one speculative patch per symptom.
-8. **Verify proportional to risk.** Check relevant positive and negative cases, downstream consumers, compatibility, and stale impact. Prefer static and targeted checks; CI is manual-only, last resort. A commit or added test is not an executed PASS.
+8. **Build before test proliferation.** During an unfinished architecture/integration build, use source-level consistency review and consumer tracing; do not run repeated unit tests or create new fixtures/verifiers after every small edit. Batch meaningful tests only after the bounded production path is integrated. Make an early exception solely for a concrete high-consequence change where deferral risks data loss, security, irreversible mutation, or broken trusted compatibility. CI remains manual-only, last resort. A commit or authored test is not an executed PASS.
 9. **Complete and stop.** Report actual changed owners, verified outcome and proof ceiling, unverified residue, and confirmed commit. Stop once acceptance is met; do not create a new backlog or continue refactoring merely because more could be done.
 
 **Development preflight:** before editing, be able to answer: What did the user ask? What is inferred? Which owner and consumer are affected? What is the smallest safe change? What evidence would falsify success? What is the STOP condition? If essential facts remain unresolved, investigate or ask one decisive question rather than implementing a guess.
 
-**Development completion review:** verify no unauthorized scope drift, unconsumed artifacts, duplicated owner, unsupported proof claim, stale reference introduced or necessary affected test omitted. A missing proof must be reported precisely rather than hidden or converted into an invented passing status.
+**Development completion review:** inspect whether the intended architecture-to-consumer path is actually wired, whether any obsolete parallel implementation remains, and whether source claims exceed evidence. Do not make completed test counts the primary measure of unfinished architecture. Defer noncritical executable proof explicitly instead of inventing a PASS.
+
+## Architecture-first construction before acceptance
+
+When the user requests architecture completion or explicitly defers testing, use **BUILD** as a working emphasis inside the existing SYSTEM DEVELOPMENT lane, not a new stage, skill, authority, or persisted status machine.
+
+- **Define the macro outcome.** Name the production input, authoritative output, data contracts, canonical owners, consumers and what constitutes a useful end-to-end result. Resolve contradictions at the owner boundary before changing files.
+- **Implement a complete vertical path.** Prefer one coherent multi-owner integration that connects ingestion → evidence → semantics → model → operator output. Complete missing wiring and source behavior before expanding edge cases. Do not confuse a large diff with a complete flow.
+- **Consolidate rather than stack.** Reuse the existing parser, Semantic IR, Gameplay Intent, graph, orchestration and report contracts. Remove demonstrably duplicated behavior or obsolete branches only after their callers are known. Never add a second coordinator, registry, manager, gate, schema, status ledger or compatibility layer for the same fact.
+- **Review source while building.** Review imports, type contracts, provenance, data flow, observable consumers, and irreversible/security-sensitive boundaries. This is engineering review, **not** an executed test or gameplay proof. Record narrow risks without turning each risk into a micro-fixture or standalone verifier.
+- **Defer the test campaign.** Do not author, run, rerun or expand tests by default during an explicitly unfinished macro build. Keep existing tests untouched unless a contract is deliberately changed and old expectations are definitively invalid; defer any corresponding acceptance updates to the integration boundary. Exception: a demonstrated critical risk cannot safely be deferred.
+- **Open acceptance only at a meaningful integration boundary.** The user-facing production entrypoint must be wired through to a coherent artifact/report, no known duplicate authority must remain in the changed scope, and unknown evidence must be explicit. At that point select a small representative positive/negative/end-to-end set, not exhaustive tests for every implementation detail. If acceptance fails, correct the owning design in a coherent batch rather than repeatedly patching test cases.
+
+These are sequencing decisions, not permission to claim the system is reliable without tests. During BUILD, label executable/runtime acceptance **NOT EXECUTED**; do not publish release-readiness, defect absence, or runtime safety claims. Never delete important tests merely to reduce their count; testing is deferred, not disabled forever. No fixed test-to-code ratio substitutes for the integrated outcome.
 
 ## Complete repair and version discipline
 
@@ -46,8 +59,8 @@ For a material change follow one bounded sequence:
 1. **DEFINE** — state the requested outcome, success metric, scope, non-goals, proof ceiling, and STOP condition.
 2. **INVESTIGATE** — pin the current `Local` source, identify the first wrong canonical owner, and distinguish observed failure from inference.
 3. **DESIGN** — reuse/remove an existing owner or behavior before introducing new abstraction; select the smallest change that achieves the outcome.
-4. **IMPLEMENT** — modify only affected owners and matching tests/contracts. Keep target map originals immutable.
-5. **VERIFY** — check the changed claim with the cheapest decisive evidence available, including affected regressions. Source review is not executable/runtime proof; unresolved claims remain explicit.
+4. **IMPLEMENT** — complete the bounded owner-to-consumer integration, consolidate proven duplicates, and preserve existing tests during BUILD. Make new tests only when acceptance is opened or a concrete critical risk makes deferral unsafe. Keep target map originals immutable.
+5. **VERIFY** — during BUILD, verify source contracts and affected consumer paths without initiating a test campaign. At an agreed integration boundary, use the smallest decisive end-to-end/regression evidence. Source review is not executable/runtime proof; unresolved claims remain explicit.
 6. **COMMIT & STOP** — publish one valid logical outcome with the repository's commit continuity metadata, confirm the new `Local` HEAD, then stop when the agreed outcome is met.
 
 Do not make each step a separate persisted workflow stage or commit. If work exceeds one bounded unit, commit independently valid outcomes with their remaining proof and next action. An unqualified "continue" retains the current mode and scope.
@@ -71,7 +84,7 @@ When evidence is insufficient, state the **exact undecided claim**, what current
 
 Before recommending implementation, establish the actual user outcome, source evidence, responsible owner, affected consumers, simpler alternatives, risks, acceptance criteria and STOP boundary. Distinguish observed findings from hypotheses. If a decision-changing assumption remains unverified, investigate before presenting the solution as ready. Experiments may gather evidence but are not production recommendations.
 
-Scale verification to consequence and uncertainty, not edit count. Prefer existing checks and fixtures. Do not create a minor test or standalone script for every small edit. New enduring tests must protect a material behavior not adequately covered already; standalone verification scripts require a demonstrated recurring consumer. Keep decisive checks for high-risk state, security, persistence, compatibility and proof decisions. Batch meaningful verification around a complete root-cause correction, report the actual proof ceiling, and keep CI manual-only and last resort.
+Scale verification to a complete integrated outcome, consequence and uncertainty—not edit count. Under an explicit BUILD-first instruction, do not run tests or generate fixtures for partial subsystems merely because a source change was committed. Prefer existing acceptance cases when the production path is ready. Add enduring cases only for distinct, demonstrated failure families; a new standalone test runner or verifier needs a recurring consumer. Keep narrow early review for security, data integrity, permissions and irreversible mutation. CI is manual-only and not a construction gate.
 
 ## Minimum complete change
 

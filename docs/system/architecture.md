@@ -41,6 +41,30 @@ repair + preservation verification
 orchestrator
 ```
 
+## Game-centric Discovery production spine
+
+The production route is an integrated **source-to-understanding** contract, not a sequence of independent gates that each demand new tests:
+
+```text
+selected Minecraft artifact
+→ physical/source inventory (adapters + analyzers/discovery)
+→ parsed authored behavior and exact provenance (domain analyzers)
+→ normalized execution/state/temporal evidence (semantic-ir)
+→ authored gameplay purpose/mechanics (gameplay-intent)
+→ transitions, dependencies, outcomes (behavior-model + graph)
+→ scenario composition / gameplay-world understanding (existing orchestrator)
+→ navigable Game → Systems → Mechanics → Flows/States → Scenarios
+→ evidence-backed audit/report projection
+```
+
+Ownership constraints:
+- Physical file accounting is not game-understanding completeness. `OPEN` structural gaps and `PARTIAL` recorded uncertainty must never be silently rewritten as confirmed semantics.
+- `semantic-ir` describes source execution/state; `gameplay-intent` assigns player-facing purpose. Neither alone proves the complete game or runtime behavior.
+- Scenario presets guide inspection; they must not invent undiscovered mechanics or replace source-grounded relationships. The scenario graph and architecture navigation are derived views, not competing canonical model stores.
+- Discovery Challenger compares raw material source facts against modeled, evidence-backed behaviors, and retains unowned facts as visible gaps. It does not require endless per-edge patching to publish independent, scoped evidence.
+- Existing report/admission owners control final publication. An incomplete model may expose scoped evidence, but never claim whole-map closure.
+- During construction, prioritize wiring and consolidating this full spine before adding detectors, another graph layer, micro-fixtures or test harnesses. End-to-end acceptance is a later integration boundary; runtime claims still require runtime evidence.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:

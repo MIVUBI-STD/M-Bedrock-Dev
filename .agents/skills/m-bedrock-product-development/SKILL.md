@@ -19,8 +19,9 @@ Use for product, architecture, application, tooling, or general engine work. For
 ## Allowed actions
 
 - inspect the pinned `Local` implementation and applicable owners;
-- make the smallest justified source change and relevant tests;
-- verify at the available evidence ceiling and publish a bounded commit.
+- implement a complete, justified integration slice across existing owners rather than patching one test-sized symptom at a time;
+- during an unfinished architecture BUILD, preserve existing tests and defer routine test authoring/execution until the production path is integrated;
+- review source/consumer consistency at the available evidence ceiling and publish a coherent bounded commit.
 
 ## Forbidden actions
 
@@ -35,7 +36,7 @@ Apply `docs/system/development-discipline.md#development-operating-standard` at 
 
 ## Procedure
 
-Use DEFINE → INVESTIGATE → DESIGN → IMPLEMENT → VERIFY → COMMIT & STOP from the canonical development discipline. Open SPEC.md, SOURCES.md, or EVAL.md only for the relevant decision, not as automatic startup context.
+Use DEFINE → INVESTIGATE → DESIGN → IMPLEMENT → VERIFY → COMMIT & STOP from the canonical development discipline. When requested to finish architecture first, treat VERIFY as source-level integration review until the acceptance boundary; do not create a separate testing lane or initiate CI. Open SPEC.md, SOURCES.md, or EVAL.md only for the relevant decision, not as automatic startup context.
 
 ## Output contract
 
