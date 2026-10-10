@@ -156,6 +156,30 @@ export function buildGameplayIntentModel(
     const linked = new Set<string>(exactStateMutationIrEvidenceIds(
       signal.stateMutationOrigins,
     ));
+    // Exact IR region identity for observed classified function symbols.
+    // Region membership does not prove invocation or player-visible behavior.
+    for (const origin of signal.executionRegionOrigins ?? []) {
+      if (input.artifactId !== undefined &&
+          input.artifactId !== origin.scriptSource.artifactId) continue;
+      const id = scriptRegionId(origin.scriptSource, origin.region);
+      const matches = input.semanticIr.execution.regions.filter(item =>
+        item.id === id &&
+        item.kind === "script-function" &&
+        item.ownerId === origin.scriptIdentifier &&
+        item.label === origin.region &&
+        item.source?.artifactId === origin.scriptSource.artifactId &&
+        item.source.relativePath === origin.scriptSource.relativePath);
+      if (matches.length !== 1) continue;
+      const match = matches[0]!;
+      linked.add(match.id);
+      evidence.set(match.id, {
+        id: match.id,
+        origin: "source-code",
+        locator: origin.scriptSource.relativePath,
+        scope: "selected-artifact",
+        summary: "Parser-observed named function region linked to a classified source candidate; execution and gameplay effect remain unproven.",
+      });
+    }
     for (const origin of signal.returnOutcomeOrigins ?? []) {
       if (origin.scriptSource.artifactId !== origin.outcome.source.artifactId ||
           origin.scriptSource.relativePath !== origin.outcome.source.relativePath) {
@@ -412,7 +436,10 @@ export function buildGameplayIntentModel(
         relation.stateMutationOrigins,
       )) exactIrEvidenceIds.add(matchedId);
     }
-    if (relation.edgeKind === "produces" && input.semanticIr) {
+    // Exact guard/return witnesses also belong on the authored "requires"
+    // relation; they do not upgrade source order into runtime causality.
+    if ((relation.edgeKind === "produces" ||
+         relation.edgeKind === "requires") && input.semanticIr) {
       for (const origin of relation.returnOutcomeOrigins ?? []) {
         if (origin.scriptSource.artifactId !== origin.outcome.source.artifactId ||
             origin.scriptSource.relativePath !== origin.outcome.source.relativePath ||

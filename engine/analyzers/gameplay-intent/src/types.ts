@@ -19,6 +19,12 @@ export interface GameplayIntentSignal {
   summary: string;
   policyPredicate?: GameplayIntentPolicyPredicate;
   spatialProfile?: GameplayIntentSpatialProfile;
+  /** Exact parsed named function region, not evidence of its actual invocation. */
+  executionRegionOrigins?: readonly {
+    scriptSource: ParsedScriptFile["source"];
+    scriptIdentifier: ParsedScriptFile["identifier"];
+    region: string;
+  }[];
   /** Exact authored state-write sites; source mutation is not an executed transition. */
   stateMutationOrigins?: readonly {
     scriptSource: ParsedScriptFile["source"];

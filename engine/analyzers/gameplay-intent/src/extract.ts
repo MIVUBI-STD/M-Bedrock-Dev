@@ -374,6 +374,42 @@ function title(value: string): string {
     .join(" ");
 }
 
+/** Conservative source-site equality, never path-only or name-only. */
+function sameAuthoredSite(
+  left: ParsedScriptFile["source"],
+  right: ParsedScriptFile["source"],
+): boolean {
+  const a = left.range;
+  const b = right.range;
+  return left.artifactId === right.artifactId &&
+    left.relativePath === right.relativePath &&
+    left.jsonPointer === right.jsonPointer &&
+    a?.lineStart !== undefined && b?.lineStart !== undefined &&
+    a.lineEnd !== undefined && b.lineEnd !== undefined &&
+    a.columnStart !== undefined && b.columnStart !== undefined &&
+    a.columnEnd !== undefined && b.columnEnd !== undefined &&
+    a.lineStart === b.lineStart && a.lineEnd === b.lineEnd &&
+    a.columnStart === b.columnStart && a.columnEnd === b.columnEnd;
+}
+
+/** Ground a classified function in one exact parser-observed region. */
+function classifiedFunctionSignal(
+  script: ParsedScriptFile,
+  name: string,
+  region: string,
+): GameplayIntentSignal | undefined {
+  const base = lexicalSignal(script.source.relativePath, name);
+  if (!base || region !== "function:" + name) return base;
+  return {
+    ...base,
+    executionRegionOrigins: [{
+      scriptSource: script.source,
+      scriptIdentifier: script.identifier,
+      region,
+    }],
+  };
+}
+
 function pushSignal(
   output: Map<string, GameplayIntentSignal>,
   signal: GameplayIntentSignal,
@@ -401,11 +437,16 @@ function pushSignal(
     ...(existing.resourceActionOrigins ?? []),
     ...(signal.resourceActionOrigins ?? []),
   ];
+  const regions = [
+    ...(existing.executionRegionOrigins ?? []),
+    ...(signal.executionRegionOrigins ?? []),
+  ];
   output.set(signal.subjectKey, {
     ...preferred,
     ...(returns.length > 0 ? { returnOutcomeOrigins: returns } : {}),
     ...(mutations.length > 0 ? { stateMutationOrigins: mutations } : {}),
     ...(actions.length > 0 ? { resourceActionOrigins: actions } : {}),
+    ...(regions.length > 0 ? { executionRegionOrigins: regions } : {}),
   });
 }
 
@@ -959,14 +1000,16 @@ export function extractGameplayIntentSignals(
     }
 
     for (const call of script.localFunctionCalls) {
-      const target = lexicalSignal(path, call.targetName);
+      const target = classifiedFunctionSignal(
+        script, call.targetName, call.targetRegion,
+      );
       if (target) pushSignal(signals, target);
 
       const callerName = call.callerRegion.replace(/^function:/, "");
       const caller =
         call.callerRegion === "module"
           ? undefined
-          : lexicalSignal(path, callerName);
+          : classifiedFunctionSignal(script, callerName, call.callerRegion);
       if (caller) pushSignal(signals, caller);
 
       if (caller && target) {
@@ -995,7 +1038,7 @@ export function extractGameplayIntentSignals(
           ? undefined
           : mutation.executionRegion.replace(/^function:/, "");
       const sourceSignal = sourceName
-        ? lexicalSignal(path, sourceName)
+        ? classifiedFunctionSignal(script, sourceName, mutation.executionRegion)
         : undefined;
       if (sourceSignal) pushSignal(signals, sourceSignal);
 
@@ -1160,6 +1203,15 @@ export function extractGameplayIntentSignals(
     }
 
     for (const guarded of script.guardedOutcomes ?? []) {
+      // Exact branch/return site correspondence, not file-wide value matching.
+      const matchedReturnSites = (script.returnOutcomes ?? []).filter(outcome =>
+        outcome.executionRegion === guarded.executionRegion &&
+        outcome.propertyName === guarded.propertyName &&
+        outcome.value === guarded.value &&
+        sameAuthoredSite(outcome.source, guarded.outcomeSource));
+      const guardedReturnOrigins = matchedReturnSites.length === 1
+        ? [{ scriptSource: script.source, outcome: matchedReturnSites[0]! }]
+        : [];
       const sourceName =
         guarded.executionRegion === "module"
           ? guarded.propertyName
@@ -1167,7 +1219,7 @@ export function extractGameplayIntentSignals(
       const sourceSignal =
         guarded.executionRegion === "module"
           ? undefined
-          : lexicalSignal(path, sourceName);
+          : classifiedFunctionSignal(script, sourceName, guarded.executionRegion);
       if (
         !acceptsOutcomeDiscriminant(
           guarded.propertyName,
@@ -1203,6 +1255,7 @@ export function extractGameplayIntentSignals(
           locator: path,
           summary:
             "Source explicitly returns this discriminated status value from a classified gameplay function.",
+          returnOutcomeOrigins: guardedReturnOrigins,
         });
 
         const minifiedGuard =
@@ -1256,6 +1309,7 @@ export function extractGameplayIntentSignals(
           locator: path,
           summary:
             "This returned status state is control-flow guarded by the authored condition.",
+          returnOutcomeOrigins: guardedReturnOrigins,
         });
 
         if (sourceSignal) {
@@ -1273,7 +1327,7 @@ export function extractGameplayIntentSignals(
             locator: path,
             summary:
               "A classified gameplay function explicitly returns this status state.",
-          returnOutcomeOrigins: [{ scriptSource: script.source, outcome }],
+            returnOutcomeOrigins: guardedReturnOrigins,
           });
         }
         continue;
@@ -1294,6 +1348,7 @@ export function extractGameplayIntentSignals(
         locator: path,
         summary:
           "Source explicitly returns this discriminated outcome under a direct guard.",
+        returnOutcomeOrigins: guardedReturnOrigins,
       };
       pushSignal(signals, outcomeSignal);
 
@@ -1349,6 +1404,7 @@ export function extractGameplayIntentSignals(
         locator: path,
         summary:
           "This direct outcome branch is control-flow guarded by the authored condition.",
+        returnOutcomeOrigins: guardedReturnOrigins,
       });
     }
 
@@ -1357,8 +1413,9 @@ export function extractGameplayIntentSignals(
     // gameplay relationship from a removeTag/clearRun call alone.
     for (const action of script.cleanupResourceEvidence ?? []) {
       if (!action.executionRegion.startsWith("function:")) continue;
-      const signal = lexicalSignal(
-        path, action.executionRegion.slice("function:".length),
+      const signal = classifiedFunctionSignal(
+        script, action.executionRegion.slice("function:".length),
+        action.executionRegion,
       );
       if (!signal) continue;
       pushSignal(signals, {
@@ -1373,7 +1430,7 @@ export function extractGameplayIntentSignals(
           ? undefined
           : outcome.executionRegion.replace(/^function:/, "");
       const sourceSignal = sourceName
-        ? lexicalSignal(path, sourceName)
+        ? classifiedFunctionSignal(script, sourceName, outcome.executionRegion)
         : undefined;
 
       if (
@@ -1480,8 +1537,9 @@ export function extractGameplayIntentSignals(
       // association. Anonymous/unknown regions remain visible in Semantic IR.
       const callbackName = event.callbackRegion?.startsWith("function:")
         ? event.callbackRegion.slice("function:".length) : undefined;
-      const callbackSignal = callbackName
-        ? lexicalSignal(path, callbackName) : undefined;
+      const callbackSignal = callbackName && event.callbackRegion
+        ? classifiedFunctionSignal(script, callbackName, event.callbackRegion)
+        : undefined;
       if (callbackSignal) pushSignal(signals, callbackSignal);
       if (signal && callbackSignal && event.callbackRegion) {
         pushRelation({
@@ -1505,8 +1563,12 @@ export function extractGameplayIntentSignals(
         ? callback.callerRegion.slice("function:".length) : undefined;
       const targetName = callback.callbackRegion?.startsWith("function:")
         ? callback.callbackRegion.slice("function:".length) : undefined;
-      const caller = callerName ? lexicalSignal(path, callerName) : undefined;
-      const target = targetName ? lexicalSignal(path, targetName) : undefined;
+      const caller = callerName && callback.callerRegion
+        ? classifiedFunctionSignal(script, callerName, callback.callerRegion)
+        : undefined;
+      const target = targetName && callback.callbackRegion
+        ? classifiedFunctionSignal(script, targetName, callback.callbackRegion)
+        : undefined;
       if (caller) pushSignal(signals, caller);
       if (target) pushSignal(signals, target);
       if (caller && target) {
@@ -1577,9 +1639,12 @@ export function extractGameplayIntentSignals(
         targetSource.artifactId !== call.source.artifactId ||
         callerSource.relativePath !== call.callerModule ||
         targetSource.relativePath !== call.targetModule) continue;
-    const caller = lexicalSignal(call.callerModule,
-      call.callerRegion.slice("function:".length));
-    const target = lexicalSignal(call.targetModule, call.targetExport);
+    const caller = classifiedFunctionSignal(
+      callers[0]!, call.callerRegion.slice("function:".length), call.callerRegion,
+    );
+    const target = classifiedFunctionSignal(
+      targets[0]!, call.targetExport, call.targetRegion,
+    );
     if (!caller || !target) continue;
     pushSignal(signals, caller);
     pushSignal(signals, target);

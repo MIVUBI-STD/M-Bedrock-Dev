@@ -77,6 +77,12 @@ The canonical `deriveGameplayArchitectureNavigation()` projection exposes `gamep
 
 During BUILD, complete missing authored semantics at existing source/intent/behavior owners before inventing deeper feature taxonomies, test fixtures, or alternate graph stores. Integration acceptance remains deferred until the full path is ready.
 
+### Classified function and guarded-return provenance
+
+The existing `Gameplay Intent` producer now retains parser-observed named function regions on already classified subjects and links them to unique Semantic IR region identities using artifact, source module, region and owner. This supplies navigable execution traces without claiming that functions actually ran or that lexical labels prove game design.
+
+The source-grounded guarded return path reconciles `ScriptGuardedOutcome.outcomeSource` with a unique `ScriptReturnOutcome.source` at the exact authored range, execution region, property and value. The existing Intent outcome/state nodes and guarded `requires` relationships inherit that precise return witness. Ambiguous or missing sites remain unresolved; no mechanic or second graph is invented.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:
