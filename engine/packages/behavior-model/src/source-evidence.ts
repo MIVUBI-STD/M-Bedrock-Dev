@@ -285,6 +285,8 @@ export interface SourceEffectSlice {
   readonly worldEffectKind?: NonNullable<SemanticIr["execution"]["worldEffects"]>[number]["kind"];
   readonly targetLabel?: string;
   readonly evidencePrecision?: NonNullable<SemanticIr["execution"]["worldEffects"]>[number]["precision"];
+  readonly resourceAction?: "acquire" | "release";
+  readonly resourceKey?: string;
   readonly executionRegionId: string;
   readonly sourcePath: string;
   readonly status: "CANDIDATE_INGRESS" | "NO_KNOWN_INGRESS" | "TRUNCATED";
@@ -296,6 +298,10 @@ export interface SourceEffectSlice {
     readonly executionEdgeIds: readonly string[];
     readonly guardedEdgeIds: readonly string[];
     readonly temporalBoundaryEdgeIds: readonly string[];
+    /** Exact authored call-site guards on THIS candidate path. */
+    readonly pathGuards: readonly (SourceEffectSlice["effectGuards"][number] & {
+      readonly executionEdgeId: string;
+    })[];
   }[];
   /** Source-order only; same-surface reads are not proven data dependencies. */
   readonly possiblePrecedingReadIds: readonly string[];
@@ -316,7 +322,9 @@ export function deriveSourceEffectSlices(
 ): readonly SourceEffectSlice[] {
   // Build inverse *resolved* execution links once. Cycles, depth and
   // alternative paths are bounded; no cross-artifact or name-only traversal.
-  const MAX_REGIONS = 64;
+  // Bound path states, not globally visited region IDs: different callers
+  // are genuinely different ingress candidates and must not be discarded.
+  const MAX_PATH_STATES = 256;
   const MAX_DEPTH = 12;
   const MAX_ENTRIES = 12;
   const incoming = new Map<string, SemanticIr["execution"]["edges"][number][]>();
@@ -340,6 +348,8 @@ export function deriveSourceEffectSlices(
     worldEffectKind?: SourceEffectSlice["worldEffectKind"];
     targetLabel?: string;
     evidencePrecision?: SourceEffectSlice["evidencePrecision"];
+    resourceAction?: SourceEffectSlice["resourceAction"];
+    resourceKey?: string;
     lexicalGuards?: readonly AuthoredBranchGuard[];
     precedenceGuards?: readonly AuthoredBranchGuard[];
   };
@@ -357,6 +367,7 @@ export function deriveSourceEffectSlices(
     ...(ir.state.resourceActions ?? []).map(action => ({
       id: action.id, kind: "resource-action" as const,
       region: action.executionRegionId, source: action.source,
+      resourceAction: action.action, resourceKey: action.key,
       lexicalGuards: action.lexicalGuards,
       precedenceGuards: action.precedenceGuards,
     })),
@@ -375,14 +386,36 @@ export function deriveSourceEffectSlices(
   ];
   const stateOutcomeCandidates = reconcileSourceStateOutcomes(ir);
   const resourceOutcomeCandidates = reconcileSourceResourceOutcomes(ir);
+  const guardSites = (
+    guards: readonly AuthoredBranchGuard[] | undefined,
+    kind: "lexical" | "precedence",
+  ): SourceEffectSlice["effectGuards"][number][] =>
+    (guards ?? []).map(guard => ({
+      kind,
+      branch: guard.branch,
+      expression: guard.expression,
+      sourcePath: guard.source.relativePath,
+      lineStart: guard.source.range?.lineStart ?? null,
+      columnStart: guard.source.range?.columnStart ?? null,
+    }));
   return effects.sort((a, b) => a.id.localeCompare(b.id)).map(effect => {
     type Candidate = SourceEffectSlice["candidateIngress"][number];
-    const queue: { regionId: string; path: readonly string[]; depth: number }[] =
-      [{ regionId: effect.region, path: [], depth: 0 }];
-    const visited = new Set([effect.region]);
+    const queue: {
+      regionId: string;
+      path: readonly string[];
+      visitedRegionIds: readonly string[];
+      depth: number;
+    }[] = [{
+      regionId: effect.region, path: [],
+      visitedRegionIds: [effect.region], depth: 0,
+    }];
     const found: Candidate[] = [];
     let truncated = false;
     for (let index = 0; index < queue.length; index += 1) {
+      if (index >= MAX_PATH_STATES) {
+        truncated = true;
+        break;
+      }
       const current = queue[index]!;
       const region = regions.get(current.regionId);
       const parents = incoming.get(current.regionId) ?? [];
@@ -414,6 +447,13 @@ export function deriveSourceEffectSlices(
               return kind === "event-dispatch" || kind === "deferred" ||
                 kind === "periodic";
             }),
+            pathGuards: entryToEffectEdges.flatMap(id => {
+              const edge = edgeById.get(id);
+              return [
+                ...guardSites(edge?.lexicalGuards, "lexical"),
+                ...guardSites(edge?.precedenceGuards, "precedence"),
+              ].map(guard => ({ ...guard, executionEdgeId: id }));
+            }),
           });
         }
       }
@@ -422,31 +462,24 @@ export function deriveSourceEffectSlices(
         continue;
       }
       for (const edge of parents) {
-        if (visited.has(edge.from)) continue;
-        if (visited.size >= MAX_REGIONS) {
+        if (current.visitedRegionIds.includes(edge.from)) {
+          // Cyclic call paths cannot be exhaustively enumerated. Keep
+          // other candidate ingresses, but expose this bounded residue.
           truncated = true;
-          break;
+          continue;
         }
-        visited.add(edge.from);
+        if (queue.length >= MAX_PATH_STATES) {
+          truncated = true;
+          continue;
+        }
         queue.push({
           regionId: edge.from,
           path: [edge.id, ...current.path],
+          visitedRegionIds: [...current.visitedRegionIds, edge.from],
           depth: current.depth + 1,
         });
       }
     }
-    const guardSites = (
-      guards: readonly AuthoredBranchGuard[] | undefined,
-      kind: "lexical" | "precedence",
-    ): SourceEffectSlice["effectGuards"][number][] =>
-      (guards ?? []).map(guard => ({
-        kind,
-        branch: guard.branch,
-        expression: guard.expression,
-        sourcePath: guard.source.relativePath,
-        lineStart: guard.source.range?.lineStart ?? null,
-        columnStart: guard.source.range?.columnStart ?? null,
-      }));
     const sourceOrderedOutcomeIds = effect.kind === "state-mutation"
       ? stateOutcomeCandidates
           .filter(candidate => candidate.status === "SOURCE_ORDER_CANDIDATE" &&
@@ -474,6 +507,10 @@ export function deriveSourceEffectSlices(
         worldEffectKind: effect.worldEffectKind,
         targetLabel: effect.targetLabel,
         evidencePrecision: effect.evidencePrecision,
+      }),
+      ...(effect.resourceAction === undefined ? {} : {
+        resourceAction: effect.resourceAction,
+        resourceKey: effect.resourceKey,
       }),
       executionRegionId: effect.region,
       sourcePath: effect.source.relativePath,

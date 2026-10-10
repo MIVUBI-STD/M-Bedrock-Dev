@@ -103,6 +103,12 @@ The existing Semantic IR execution owner now normalizes **source-observed attemp
 
 Canonical forward source traces and behavior-model backward effect slices include these IDs. Gameplay Intent only links effect evidence when the same execution-region ID is owned by exactly one recognized, non-hypothetical source candidate. Unowned and ambiguous effects remain visible in the existing Game-Centric navigation and Map Audit V2 source-effect contract. Report publication and proof gates are unchanged.
 
+### Per-mechanic source behavior paths
+
+Source slicing now preserves alternative caller paths rather than using one global visited-region set that can suppress a second ingress. The traversal remains bounded by path states, depth and collected entry candidates; cycles and excess paths explicitly mark `TRUNCATED`. Every admitted path carries the exact call-site lexical/precedence guards, while resource action slices distinguish authored acquire from release (without claiming cleanup succeeded).
+
+The existing game-centric `features[].sourceBehaviorPaths` is a **derived view over the existing effect slices**. Each effect candidate presents source entry, call edges, guard evidence, preceding same-surface reads, authored resource acquire/release, and guarded source-ordered return IDs where available. `DIRECT_EFFECT_EVIDENCE` is reserved for exact effect IDs on the recognized feature; `CALL_PATH_CONTEXT` identifies a feature encountered on a possible call path and is not proof of gameplay ownership. This projection does not merge incompatible branch outcomes or invent a terminal/recovery flow when source evidence is absent. Neither status constitutes real Minecraft execution.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:

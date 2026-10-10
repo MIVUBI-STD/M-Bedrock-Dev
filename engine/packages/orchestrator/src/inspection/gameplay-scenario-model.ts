@@ -260,6 +260,26 @@ export interface GameplayArchitectureNavigation {
       readonly sourceEvidenceIds: readonly string[];
       readonly grounding: "SOURCE_EVIDENCED" | "UNVERIFIED";
       readonly scenarioIds: readonly string[];
+      /**
+       * Per-effect candidate behavioral paths, built from the same IR
+       * slices already exposed above. They are NOT a proven player journey.
+       * DIRECT_EFFECT_EVIDENCE and CALL_PATH_CONTEXT remain distinct.
+       */
+      readonly sourceBehaviorPaths: readonly {
+        readonly effectId: string;
+        readonly association: "DIRECT_EFFECT_EVIDENCE" | "CALL_PATH_CONTEXT";
+        readonly evidenceStatus: SourceEffectSlice["status"];
+        readonly entryRegionId: string | null;
+        readonly executionEdgeIds: readonly string[];
+        readonly preconditions: readonly SourceEffectSlice["effectGuards"][number][];
+        readonly precedingStateReadIds: readonly string[];
+        readonly effectKind: SourceEffectSlice["effectKind"];
+        readonly worldEffectKind: SourceEffectSlice["worldEffectKind"] | null;
+        readonly effectTarget: string | null;
+        readonly candidateOutcomeIds: readonly string[];
+        /** Observed acquire/release site, NOT completed cleanup. */
+        readonly resourceAction: SourceEffectSlice["resourceAction"] | null;
+      }[];
       /** Relations originate in the scenario graph; status is unchanged. */
       readonly relationships: readonly {
         readonly id: string;
@@ -1402,6 +1422,36 @@ export function deriveGameplayArchitectureNavigation(
           ? "SOURCE_EVIDENCED" as const
           : "UNVERIFIED" as const,
         scenarioIds,
+        sourceBehaviorPaths: effectSlices
+          .filter(slice => slice.exactFeatureIds.includes(component.id) ||
+            slice.pathAssociatedFeatureIds.includes(component.id))
+          .flatMap(slice => {
+            const association = slice.exactFeatureIds.includes(component.id)
+              ? "DIRECT_EFFECT_EVIDENCE" as const
+              : "CALL_PATH_CONTEXT" as const;
+            const paths = slice.candidateIngress.length > 0
+              ? slice.candidateIngress
+              : [undefined];
+            return paths.map(entry => ({
+              effectId: slice.effectId,
+              association,
+              evidenceStatus: slice.status,
+              entryRegionId: entry?.entryRegionId ?? null,
+              executionEdgeIds: entry?.executionEdgeIds ?? [],
+              preconditions: [
+                ...slice.effectGuards,
+                ...(entry?.pathGuards ?? []),
+              ],
+              precedingStateReadIds: slice.possiblePrecedingReadIds,
+              effectKind: slice.effectKind,
+              worldEffectKind: slice.worldEffectKind ?? null,
+              effectTarget: slice.targetLabel ?? null,
+              candidateOutcomeIds: slice.sourceOrderedOutcomeIds,
+              resourceAction: slice.resourceAction ?? null,
+            }));
+          })
+          .sort((a, b) => a.effectId.localeCompare(b.effectId) ||
+            (a.entryRegionId ?? "").localeCompare(b.entryRegionId ?? "")),
         relationships,
         activationRelationIds: relationIds(["requires", "valid-during", "scoped-to"]),
         effectRelationIds: relationIds(["produces", "consumes", "resets", "persists", "owns"]),

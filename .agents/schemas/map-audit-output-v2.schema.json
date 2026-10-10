@@ -2387,7 +2387,8 @@
               "effectRelationIds",
               "transitionRelationIds",
               "outcomeRelationIds",
-              "observedFlowEntries"
+              "observedFlowEntries",
+              "sourceBehaviorPaths"
             ],
             "properties": {
               "id": {
@@ -2524,6 +2525,152 @@
                     }
                   },
                   "additionalProperties": false
+                }
+              },
+              "sourceBehaviorPaths": {
+                "type": "array",
+                "description": "Source-grounded per-effect candidate paths for this existing feature. Relations are NOT verified runtime gameplay. CALL_PATH_CONTEXT is not direct semantic ownership.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "effectId",
+                    "association",
+                    "evidenceStatus",
+                    "entryRegionId",
+                    "executionEdgeIds",
+                    "preconditions",
+                    "precedingStateReadIds",
+                    "effectKind",
+                    "worldEffectKind",
+                    "effectTarget",
+                    "candidateOutcomeIds",
+                    "resourceAction"
+                  ],
+                  "properties": {
+                    "effectId": {
+                      "type": "string"
+                    },
+                    "association": {
+                      "enum": [
+                        "DIRECT_EFFECT_EVIDENCE",
+                        "CALL_PATH_CONTEXT"
+                      ]
+                    },
+                    "evidenceStatus": {
+                      "enum": [
+                        "CANDIDATE_INGRESS",
+                        "NO_KNOWN_INGRESS",
+                        "TRUNCATED"
+                      ]
+                    },
+                    "entryRegionId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "executionEdgeIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "preconditions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "kind",
+                          "branch",
+                          "expression",
+                          "sourcePath",
+                          "lineStart",
+                          "columnStart"
+                        ],
+                        "properties": {
+                          "kind": {
+                            "enum": [
+                              "lexical",
+                              "precedence"
+                            ]
+                          },
+                          "branch": {
+                            "enum": [
+                              "true",
+                              "false"
+                            ]
+                          },
+                          "expression": {
+                            "type": "string"
+                          },
+                          "sourcePath": {
+                            "type": "string"
+                          },
+                          "lineStart": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "columnStart": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "executionEdgeId": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "precedingStateReadIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "effectKind": {
+                      "enum": [
+                        "state-mutation",
+                        "resource-action",
+                        "authored-return",
+                        "world-effect"
+                      ]
+                    },
+                    "worldEffectKind": {
+                      "enum": [
+                        "entity-spawn",
+                        "teleport",
+                        "block-mutation",
+                        "structure-load",
+                        "dialogue",
+                        "entity-event",
+                        null
+                      ]
+                    },
+                    "effectTarget": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "candidateOutcomeIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "resourceAction": {
+                      "enum": [
+                        "acquire",
+                        "release",
+                        null
+                      ]
+                    }
+                  }
                 }
               }
             },
@@ -2689,7 +2836,8 @@
                     "regionIds",
                     "executionEdgeIds",
                     "guardedEdgeIds",
-                    "temporalBoundaryEdgeIds"
+                    "temporalBoundaryEdgeIds",
+                    "pathGuards"
                   ],
                   "properties": {
                     "entryRegionId": {
@@ -2717,6 +2865,57 @@
                       "type": "array",
                       "items": {
                         "type": "string"
+                      }
+                    },
+                    "pathGuards": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "executionEdgeId",
+                          "kind",
+                          "branch",
+                          "expression",
+                          "sourcePath",
+                          "lineStart",
+                          "columnStart"
+                        ],
+                        "properties": {
+                          "executionEdgeId": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "enum": [
+                              "lexical",
+                              "precedence"
+                            ]
+                          },
+                          "branch": {
+                            "enum": [
+                              "true",
+                              "false"
+                            ]
+                          },
+                          "expression": {
+                            "type": "string"
+                          },
+                          "sourcePath": {
+                            "type": "string"
+                          },
+                          "lineStart": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "columnStart": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          }
+                        }
                       }
                     }
                   }
@@ -2820,6 +3019,15 @@
                   "resolved-spatial",
                   "unresolved-spatial"
                 ]
+              },
+              "resourceAction": {
+                "enum": [
+                  "acquire",
+                  "release"
+                ]
+              },
+              "resourceKey": {
+                "type": "string"
               }
             }
           }
