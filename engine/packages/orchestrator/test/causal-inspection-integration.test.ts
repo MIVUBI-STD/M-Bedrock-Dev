@@ -351,13 +351,16 @@ describe("inspection causal analysis", () => {
       await writeFile(join(scripts, "main.js"), [
         'import { world } from "@minecraft/server";',
         'import { cleanupSession } from "./cleanup.js";',
-        'function resetArena(ended) {',
-        '  if (ended) cleanupSession();',
+        'function resetArena(ended, player) {',
+        '  if (ended) cleanupSession(player);',
         '}',
-        'world.afterEvents.playerLeave.subscribe(() => resetArena(true));',
+        'world.afterEvents.playerLeave.subscribe(event => resetArena(true, event.player));',
       ].join("\n"), "utf8");
       await writeFile(join(scripts, "cleanup.js"), [
-        'export function cleanupSession() {',
+        'let sessionPhase = "active";',
+        'export function cleanupSession(player) {',
+        '  sessionPhase = "finished";',
+        '  player.removeTag("playing");',
         '  return { action: "finish" };',
         '}',
       ].join("\n"), "utf8");
@@ -384,6 +387,16 @@ describe("inspection causal analysis", () => {
         item.source.relativePath.endsWith("/scripts/cleanup.js"));
       expect(outcome).toBeDefined();
       expect(imported[0]?.to).toBe(outcome?.executionRegionId);
+      const phaseWrite = ir.state.operations.find(op =>
+        op.operation === "write" &&
+        op.writtenValue?.kind === "literal" &&
+        op.writtenValue.value === "finished" &&
+        op.executionRegionId === outcome?.executionRegionId);
+      const resourceRelease = ir.state.resourceActions?.find(action =>
+        action.action === "release" && action.key === "player:playing" &&
+        action.executionRegionId === outcome?.executionRegionId);
+      expect(phaseWrite).toBeDefined();
+      expect(resourceRelease).toBeDefined();
 
       const intent = result.gameplayIntent.model;
       const relation = intent.edges.find(edge =>
@@ -392,6 +405,17 @@ describe("inspection causal analysis", () => {
       expect(relation?.status).toBe("inferred");
       expect(intent.evidence.some(item =>
         item.id === imported[0]!.id &&
+        item.scope === "selected-artifact")).toBe(true);
+      const stateRelation = intent.edges.find(edge =>
+        edge.kind === "transitions-to" &&
+        edge.evidenceIds.includes(phaseWrite!.id));
+      const resultRelation = intent.edges.find(edge =>
+        edge.kind === "produces" &&
+        edge.evidenceIds.includes(outcome!.id));
+      expect(stateRelation?.status).toBe("inferred");
+      expect(resultRelation?.status).toBe("inferred");
+      expect(intent.evidence.some(item =>
+        item.id === resourceRelease!.id &&
         item.scope === "selected-artifact")).toBe(true);
 
       const scenario = result.hiddenGameplayDefects.scenarioAudit.graph;
