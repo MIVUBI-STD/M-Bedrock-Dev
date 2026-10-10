@@ -287,6 +287,12 @@ export interface GameplayArchitectureNavigation {
     /** Read-only technical chains; do not interpret as complete gameplay flow. */
     readonly executionTraces: readonly (Omit<ObservedExecutionTrace, "branchPoints"> & {
       readonly evidenceMatchedComponentIds: readonly string[];
+      /** Exact technical records in this observed flow without any gameplay component owner. */
+      readonly evidenceWithoutComponentIds: readonly string[];
+      /** A single scenario contains all mapped components; co-placement is NOT causal proof. */
+      readonly sharedScenarioPlacementIds: readonly string[];
+      /** A gap may be semantic, structural, or causal; never infer execution from source. */
+      readonly modelingStatus: "UNMODELED" | "PARTIALLY_MODELED" | "PLACED_UNPROVEN";
       readonly branchPoints: readonly (Omit<ObservedBranchPoint, "branches"> & {
         /** Exact evidence association only; not a proven gameplay branch. */
         readonly branches: readonly (ObservedBranchPoint["branches"][number] & {
@@ -989,11 +995,28 @@ export function deriveGameplayArchitectureNavigation(
           ...trace.returnOutcomeIds,
           ...trace.resourceActionIds,
         ]);
+        const matchingComponents = graph.components.filter(component =>
+          component.evidenceIds.some(id => evidence.has(id)));
+        const matchedEvidence = new Set(matchingComponents.flatMap(component =>
+          component.evidenceIds.filter(id => evidence.has(id))));
+        const coveredComponentIds = sorted(matchingComponents.map(c => c.id));
+        const evidenceWithoutComponentIds = sorted([...evidence]
+          .filter(id => !matchedEvidence.has(id)));
+        const sharedScenarioPlacementIds = coveredComponentIds.length === 0
+          ? [] : sorted(graph.scenarios.filter(scenario =>
+              coveredComponentIds.every(id => scenario.componentIds.includes(id)))
+            .map(scenario => scenario.id));
         return {
           ...trace,
-          evidenceMatchedComponentIds: sorted(graph.components
-            .filter(component => component.evidenceIds.some(id => evidence.has(id)))
-            .map(component => component.id)),
+          evidenceMatchedComponentIds: coveredComponentIds,
+          evidenceWithoutComponentIds,
+          sharedScenarioPlacementIds,
+          modelingStatus: coveredComponentIds.length === 0
+            ? "UNMODELED" as const
+            : evidenceWithoutComponentIds.length > 0 ||
+              sharedScenarioPlacementIds.length === 0
+              ? "PARTIALLY_MODELED" as const
+              : "PLACED_UNPROVEN" as const,
           // Explicit arm-by-arm correlation: a component attached to the
           // true arm is NOT automatically evidence for the false arm.
           branchPoints: trace.branchPoints.map(point => ({

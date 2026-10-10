@@ -111,10 +111,61 @@ describe("arena identity evidence propagation", () => {
       .toEqual(["time:edge:join", "time:edge:repeat"]);
     expect(trace[0]?.stateOperationIds).toEqual(["state-op:join"]);
     expect(trace[0]?.evidenceMatchedComponentIds).toEqual(["component:join"]);
+    expect(trace[0]?.modelingStatus).toBe("PARTIALLY_MODELED");
+    expect(trace[0]?.evidenceWithoutComponentIds).toContain("edge:unknown");
+    expect(trace[0]?.evidenceWithoutComponentIds).not.toContain("edge:join");
+    expect(trace[0]?.sharedScenarioPlacementIds).toEqual([]);
+
     expect(navigation.semanticIrCoverage.regionsOutsideTraces)
       .toEqual(["function:unused"]);
     expect(navigation.knowledgeCoverage.wholeGameUnderstandingStatus)
       .toBe("NOT_MEASURABLE");
+  });
+
+
+  it("reconciles complete technical flows without inventing a player-facing scenario", () => {
+    const source = {
+      artifactId: "sample:flow", relativePath: "behavior_packs/test/scripts/main.js",
+    };
+    const ir = {
+      schemaVersion: 1,
+      execution: {
+        regions: [{ id: "region:event", kind: "event-source",
+          ownerId: "game", label: "playerSpawn", source }],
+        edges: [],
+      },
+      state: { surfaces: [], operations: [], authorityBindings: [] },
+      temporal: { relations: [] },
+    } as unknown as import("../../../semantic-ir/src/index.js").SemanticIr;
+    const observe = (graph: GameplayScenarioGraph) =>
+      deriveGameplayArchitectureNavigation(graph, {
+        relevantSourceCount: 1, indexedSourceCount: 1,
+        arenaDetected: false, semanticIr: ir,
+      }).semanticIrCoverage.executionTraces[0]!;
+    expect(observe(emptyGraph).modelingStatus).toBe("UNMODELED");
+    expect(observe(emptyGraph).evidenceWithoutComponentIds)
+      .toEqual(["region:event"]);
+    const component: GameplayScenarioGraph["components"][number] = {
+      id: "component:event", label: "Observed event",
+      kind: "lifecycle", technicalRole: "event",
+      gameplayPurpose: "Unverified activation",
+      evidenceIds: ["region:event"],
+      usedByScenarioIds: [], orphan: true,
+    };
+    const graph = {
+      ...emptyGraph, components: [component],
+    };
+    expect(observe(graph).modelingStatus).toBe("PARTIALLY_MODELED");
+    expect(observe(graph).evidenceWithoutComponentIds).toEqual([]);
+    const placed = { ...graph, scenarios: [{
+      id: "scenario:observed", label: "Observed source path",
+      gameplayStage: "ENTRY_JOIN", purpose: "Unverified",
+      sourceSubjectIds: [], componentIds: [component.id],
+      causalLinkIds: [], playerCounts: [],
+      requiredKnowledgeIds: [], composedScenarioIds: [],
+    }] } as GameplayScenarioGraph;
+    expect(observe(placed).modelingStatus).toBe("PLACED_UNPROVEN");
+    expect(observe(placed).sharedScenarioPlacementIds).toEqual(["scenario:observed"]);
   });
 
   it("keeps authored true/false branches distinct and maps only exact scenario evidence", () => {
