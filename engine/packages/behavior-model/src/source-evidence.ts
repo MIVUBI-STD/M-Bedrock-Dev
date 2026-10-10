@@ -794,6 +794,20 @@ export interface SourceEffectSlice {
     readonly executionEdgeIds: readonly string[];
     readonly guardedEdgeIds: readonly string[];
     readonly temporalBoundaryEdgeIds: readonly string[];
+    /**
+     * Authored event/deferred boundaries in THIS path. A generation mismatch
+     * early-exit site or scheduler handle only supports static inspection;
+     * no session-identity, callback execution or cancellation success proof.
+     */
+    readonly temporalBoundaryEvidence: readonly {
+      readonly executionEdgeId: string;
+      readonly kind: "event-dispatch" | "deferred" | "periodic";
+      readonly scheduler: "run" | "runTimeout" | "runInterval" | "runJob" | null;
+      readonly guardEvidence: "explicit-generation-check" | "unresolved" | null;
+      readonly guardIdentifiers: readonly string[];
+      readonly candidateScheduleAcquireActionIds: readonly string[];
+      readonly candidateReleaseActionIds: readonly string[];
+    }[];
     /** Exact authored call-site guards on THIS candidate path. */
     readonly pathGuards: readonly (SourceEffectSlice["effectGuards"][number] & {
       readonly executionEdgeId: string;
@@ -905,6 +919,8 @@ export function deriveSourceEffectSlices(
   const resourceLifetimes = new Map(
     reconcileSourceResourceLifetimes(ir).map(item => [item.acquireActionId, item]),
   );
+  const scheduleAcquires = (ir.state.resourceActions ?? []).filter(action =>
+    action.surface === "deferred-callback" && action.action === "acquire");
   const worldEffectOutcomeCandidates = reconcileSourceWorldEffectOutcomes(ir);
   const stateSurfaces = new Map(ir.state.surfaces.map(s => [s.id, s.ref]));
   const stateReads = ir.state.operations.filter(op => op.operation === "read");
@@ -979,6 +995,30 @@ export function deriveSourceEffectSlices(
               const kind = edgeById.get(id)?.kind;
               return kind === "event-dispatch" || kind === "deferred" ||
                 kind === "periodic";
+            }),
+            temporalBoundaryEvidence: entryToEffectEdges.flatMap(id => {
+              const edge = edgeById.get(id);
+              if (!edge || (edge.kind !== "event-dispatch" &&
+                  edge.kind !== "deferred" && edge.kind !== "periodic")) {
+                return [];
+              }
+              // Source-ref identity, not a string match on callback name.
+              const acquired = edge.kind === "event-dispatch" ? [] :
+                scheduleAcquires.filter(action =>
+                  action.executionRegionId === edge.from &&
+                  sameExactSourceSite(action.source, edge.source));
+              return [{
+                executionEdgeId: id,
+                kind: edge.kind,
+                scheduler: edge.scheduler ?? null,
+                guardEvidence: edge.kind === "event-dispatch"
+                  ? null : edge.guardEvidence ?? "unresolved",
+                guardIdentifiers: [...(edge.guardIdentifiers ?? [])].sort(),
+                candidateScheduleAcquireActionIds: acquired
+                  .map(action => action.id).sort(),
+                candidateReleaseActionIds: [...new Set(acquired.flatMap(action =>
+                  resourceLifetimes.get(action.id)?.candidateReleaseActionIds ?? []))].sort(),
+              }];
             }),
             pathGuards: entryToEffectEdges.flatMap(id => {
               const edge = edgeById.get(id);

@@ -274,6 +274,8 @@ export interface GameplayArchitectureNavigation {
         readonly evidenceStatus: SourceEffectSlice["status"];
         readonly entryRegionId: string | null;
         readonly executionEdgeIds: readonly string[];
+        readonly temporalBoundaryEvidence:
+          SourceEffectSlice["candidateIngress"][number]["temporalBoundaryEvidence"];
         readonly preconditions: readonly SourceEffectSlice["effectGuards"][number][];
         readonly precedingStateReadIds: readonly string[];
         /** Source-local possible writes for exact state reads in effect guards. */
@@ -1468,6 +1470,7 @@ export function deriveGameplayArchitectureNavigation(
               evidenceStatus: slice.status,
               entryRegionId: entry?.entryRegionId ?? null,
               executionEdgeIds: entry?.executionEdgeIds ?? [],
+              temporalBoundaryEvidence: entry?.temporalBoundaryEvidence ?? [],
               preconditions: [
                 ...slice.effectGuards,
                 ...(entry?.pathGuards ?? []),

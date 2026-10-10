@@ -2552,7 +2552,8 @@
                     "sourceLocalStateValueHandoffs",
                     "candidateCallerStateValueHandoffs",
                     "authoredStateValue",
-                    "guardedStateTransitionCandidates"
+                    "guardedStateTransitionCandidates",
+                    "temporalBoundaryEvidence"
                   ],
                   "properties": {
                     "effectId": {
@@ -3164,6 +3165,69 @@
                           }
                         }
                       }
+                    },
+                    "temporalBoundaryEvidence": {
+                      "type": "array",
+                      "description": "Exact source event/scheduled boundaries. Generation check is only a leading mismatch early-exit syntax candidate; acquired/released schedule handles are static source lifetime candidates, NOT proof of cancellation or session ownership.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "executionEdgeId",
+                          "kind",
+                          "scheduler",
+                          "guardEvidence",
+                          "guardIdentifiers",
+                          "candidateScheduleAcquireActionIds",
+                          "candidateReleaseActionIds"
+                        ],
+                        "properties": {
+                          "executionEdgeId": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "enum": [
+                              "event-dispatch",
+                              "deferred",
+                              "periodic"
+                            ]
+                          },
+                          "scheduler": {
+                            "enum": [
+                              "run",
+                              "runTimeout",
+                              "runInterval",
+                              "runJob",
+                              null
+                            ]
+                          },
+                          "guardEvidence": {
+                            "enum": [
+                              "explicit-generation-check",
+                              "unresolved",
+                              null
+                            ]
+                          },
+                          "guardIdentifiers": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "candidateScheduleAcquireActionIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "candidateReleaseActionIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -3338,7 +3402,8 @@
                     "temporalBoundaryEdgeIds",
                     "pathGuards",
                     "candidateCallerStateWriteIds",
-                    "candidateCallerStateValueHandoffs"
+                    "candidateCallerStateValueHandoffs",
+                    "temporalBoundaryEvidence"
                   ],
                   "properties": {
                     "entryRegionId": {
@@ -3468,6 +3533,69 @@
                               "SOURCE_LOCAL",
                               "SYNCHRONOUS_CALLER"
                             ]
+                          }
+                        }
+                      }
+                    },
+                    "temporalBoundaryEvidence": {
+                      "type": "array",
+                      "description": "Exact source event/scheduled boundaries. Generation check is only a leading mismatch early-exit syntax candidate; acquired/released schedule handles are static source lifetime candidates, NOT proof of cancellation or session ownership.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "executionEdgeId",
+                          "kind",
+                          "scheduler",
+                          "guardEvidence",
+                          "guardIdentifiers",
+                          "candidateScheduleAcquireActionIds",
+                          "candidateReleaseActionIds"
+                        ],
+                        "properties": {
+                          "executionEdgeId": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "enum": [
+                              "event-dispatch",
+                              "deferred",
+                              "periodic"
+                            ]
+                          },
+                          "scheduler": {
+                            "enum": [
+                              "run",
+                              "runTimeout",
+                              "runInterval",
+                              "runJob",
+                              null
+                            ]
+                          },
+                          "guardEvidence": {
+                            "enum": [
+                              "explicit-generation-check",
+                              "unresolved",
+                              null
+                            ]
+                          },
+                          "guardIdentifiers": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "candidateScheduleAcquireActionIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "candidateReleaseActionIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
                           }
                         }
                       }

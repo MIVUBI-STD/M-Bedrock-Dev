@@ -165,6 +165,14 @@ Pairs of source-authored resource release and later return sites come from the e
 
 The existing `SourceEffectSlice.guardedStateTransitionCandidates` and `features[].sourceBehaviorPaths` carry this same evidence through Map Audit Output V2 without another graph, lifecycle owner or report layer. A return is not a game terminal; a release is not successful cleanup; and a transition's authored label is not evidence of an arena session state. Proven runtime lifecycle and interprocedural def-use remain unknown.
 
+### Deferred callback session-guard evidence, per source ingress
+
+The canonical Script parser no longer classifies any generation-named comparison anywhere in a deferred callback as `explicit-generation-check`. The accepted source subset is now a **leading first-statement** `if (generationToken !== capturedToken) return/throw` (also allowing a single-statement block), with at least one token-like identifier and no alternate `else` branch. All other callback forms remain `unresolved`. This eliminates broad false-positive "protected" claims in existing Arena Lifecycle consumers, while a recognized early exit remains only a source-level candidate, not proof that tokens refer to the right session.
+
+The canonical Behavior Model backward effect slicer now preserves each event/deferred/periodic boundary as `candidateIngress[].temporalBoundaryEvidence`: exact edge identity, scheduler, normalized source guard status, guard identifiers, and only exact schedule-source matches to already-observed deferred callback handle acquisitions. A matching release ID is obtained from the existing same-region resource lifetime reconciliation. This is never proof that `clearRun` succeeded, a callback executed, or a session/generation owner remained valid. Event dispatch and unrecognized deferred guards remain explicit unknown boundaries, not invented temporal causality.
+
+The existing Gameplay Architecture `features[].sourceBehaviorPaths` and optional Map Audit V2 schema consume the same per-ingress boundary observations. No second async analyzer, graph owner, lifecycle registry or extra verifier was introduced. Full runtime session isolation, stale callback prevention and terminal/cleanup acceptance remain unexecuted.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:

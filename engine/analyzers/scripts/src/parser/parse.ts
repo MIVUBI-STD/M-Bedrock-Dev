@@ -272,47 +272,49 @@ function deferredScheduler(
   return undefined;
 }
 
+/**
+ * Only classify a *leading* generation-mismatch early exit. A comparison
+ * mentioned anywhere in a callback is not a stale-work guard: it can occur
+ * after a mutation, on the wrong branch, or only in a log expression.
+ *
+ * This remains a source candidate. It does NOT prove the compared token is
+ * tied to the real session owner or that the callback will ever run.
+ */
 function generationGuardIdentifiers(node: ts.Node): string[] {
+  if (!ts.isArrowFunction(node) &&
+      !ts.isFunctionExpression(node) &&
+      !ts.isFunctionDeclaration(node)) return [];
+  const body = node.body;
+  if (!body || !ts.isBlock(body) || body.statements.length === 0) return [];
+  const first = body.statements[0]!;
+  if (!ts.isIfStatement(first) || first.elseStatement) return [];
+  const earlyExit = (statement: ts.Statement): boolean =>
+    ts.isReturnStatement(statement) || ts.isThrowStatement(statement) ||
+    (ts.isBlock(statement) && statement.statements.length === 1 &&
+      (ts.isReturnStatement(statement.statements[0]!) ||
+       ts.isThrowStatement(statement.statements[0]!)));
+  if (!earlyExit(first.thenStatement)) return [];
+  const comparison = ts.isParenthesizedExpression(first.expression)
+    ? first.expression.expression : first.expression;
+  if (!ts.isBinaryExpression(comparison) ||
+      (comparison.operatorToken.kind !== ts.SyntaxKind.ExclamationEqualsToken &&
+       comparison.operatorToken.kind !== ts.SyntaxKind.ExclamationEqualsEqualsToken)) {
+    return [];
+  }
   const identifiers = new Set<string>();
-
-  const collectGuardNames = (candidate: ts.Node): string[] => {
-    const names = new Set<string>();
-    const visit = (inner: ts.Node): void => {
-      if (ts.isIdentifier(inner) && GENERATION_GUARD_PATTERN.test(inner.text)) {
-        names.add(inner.text);
-      }
-      if (
-        ts.isPropertyAccessExpression(inner) &&
-        GENERATION_GUARD_PATTERN.test(inner.name.text)
-      ) {
-        names.add(inner.name.text);
-      }
-      ts.forEachChild(inner, visit);
-    };
-    visit(candidate);
-    return [...names];
-  };
-
-  const visit = (inner: ts.Node): void => {
-    if (ts.isBinaryExpression(inner)) {
-      const comparison = new Set([
-        ts.SyntaxKind.EqualsEqualsToken,
-        ts.SyntaxKind.EqualsEqualsEqualsToken,
-        ts.SyntaxKind.ExclamationEqualsToken,
-        ts.SyntaxKind.ExclamationEqualsEqualsToken,
-        ts.SyntaxKind.LessThanToken,
-        ts.SyntaxKind.LessThanEqualsToken,
-        ts.SyntaxKind.GreaterThanToken,
-        ts.SyntaxKind.GreaterThanEqualsToken,
-      ]);
-      if (comparison.has(inner.operatorToken.kind)) {
-        for (const name of collectGuardNames(inner)) identifiers.add(name);
-      }
+  const visit = (candidate: ts.Node): void => {
+    if (ts.isIdentifier(candidate) &&
+        GENERATION_GUARD_PATTERN.test(candidate.text)) {
+      identifiers.add(candidate.text);
     }
-    ts.forEachChild(inner, visit);
+    if (ts.isPropertyAccessExpression(candidate) &&
+        GENERATION_GUARD_PATTERN.test(candidate.name.text)) {
+      identifiers.add(candidate.name.text);
+    }
+    ts.forEachChild(candidate, visit);
   };
-
-  visit(node);
+  visit(comparison.left);
+  visit(comparison.right);
   return [...identifiers].sort();
 }
 
