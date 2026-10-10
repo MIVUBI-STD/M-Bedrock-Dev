@@ -528,6 +528,155 @@ describe("persistence source analysis", () => {
     ]);
   });
 
+  it("does not treat an inner shadowed arena as the outer receiver", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, other, choose) {",
+      "  arena.generation++;",
+      "  if (choose) {",
+      "    const arena = other;",
+      "    mutate(arena);",
+      "  }",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other, true));",
+    ].join("\n"), {
+      artifactId: "map:shadowed-block", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toEqual([
+      expect.objectContaining({
+        arenaExpression: "arena", order: "before-reset",
+        evidenceStatus: "SOURCE_SEQUENCE_ONLY",
+      }),
+    ]);
+  });
+
+  it("does not conflate shadowed callback parameters with captured receiver", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena) {",
+      "  arena.generation++;",
+      "  const callback = (arena) => arena;",
+      "  register(callback);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena));",
+    ].join("\n"), {
+      artifactId: "map:shadowed-callback", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toHaveLength(1);
+  });
+
+  it("does not conflate a shadowed catch binding with the outer arena", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, other) {",
+      "  arena.generation++;",
+      "  try { notify(); } catch (arena) { mutate(arena); }",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other));",
+    ].join("\n"), {
+      artifactId: "map:shadowed-catch", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toHaveLength(1);
+  });
+
+  it("reconciles array binding aliases only when a literal element carries receiver", () => {
+    const make = (position: 0 | 1) => parseScriptFile("arena", [
+      "function cleanup(arena, other) {",
+      "  arena.generation++;",
+      "  const pair = [arena, other];",
+      "  const [first, second] = pair;",
+      "  mutate(" + (position === 0 ? "first" : "second") + ");",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other));",
+    ].join("\n"), {
+      artifactId: "map:array-binding", relativePath: "scripts/cleanup.ts",
+    });
+    const positive = analyzePersistenceSource([make(0)])
+      .resetLifecycleAssociations[0];
+    const negative = analyzePersistenceSource([make(1)])
+      .resetLifecycleAssociations[0];
+    expect(positive?.sequentialGenerationEvidence).toEqual([]);
+    expect(negative?.sequentialGenerationEvidence).toHaveLength(1);
+  });
+
+  it("does not rely on a container literal after its field was reassigned", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, other) {",
+      "  arena.generation++;",
+      "  const holder = { target: arena, other: other };",
+      "  holder.other = chooseReceiver();",
+      "  const ref = holder.other;",
+      "  mutate(ref);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other));",
+    ].join("\n"), {
+      artifactId: "map:mutable-container", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("links an exact object destructuring field to its receiver alias", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena) {",
+      "  arena.generation++;",
+      "  const holder = { target: arena };",
+      "  const { target: ref } = holder;",
+      "  mutate(ref);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena));",
+    ].join("\n"), {
+      artifactId: "map:destructure", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.coLocatedGenerationInvalidationSources).toHaveLength(1);
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("does not equate other fields of a receiver-bearing container", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, other) {",
+      "  arena.generation++;",
+      "  const holder = { target: arena, unrelated: other };",
+      "  const { unrelated: ref } = holder;",
+      "  mutate(ref);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other));",
+    ].join("\n"), {
+      artifactId: "map:destructure-other", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toHaveLength(1);
+  });
+
+  it("distinguishes exact container reads from unrelated property reads", () => {
+    const make = (property: "target" | "other") => parseScriptFile("arena", [
+      "function cleanup(arena, other) {",
+      "  arena.generation++;",
+      "  const holder = { target: arena, other: other };",
+      "  const ref = holder." + property + ";",
+      "  mutate(ref);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other));",
+    ].join("\n"), {
+      artifactId: "map:container-read", relativePath: "scripts/cleanup.ts",
+    });
+    const matching = analyzePersistenceSource([make("target")])
+      .resetLifecycleAssociations[0];
+    const unrelated = analyzePersistenceSource([make("other")])
+      .resetLifecycleAssociations[0];
+    expect(matching?.sequentialGenerationEvidence).toEqual([]);
+    expect(unrelated?.sequentialGenerationEvidence).toHaveLength(1);
+  });
+
   it("blocks receiver method calls and callback captures before reset", () => {
     const script = parseScriptFile("arena", [
       "function cleanup(arena) {",
