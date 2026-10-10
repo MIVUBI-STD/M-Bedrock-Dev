@@ -2548,7 +2548,10 @@
                     "resourceAction",
                     "candidateGuardStateWriteIds",
                     "candidateCallerStateWriteIds",
-                    "sourceResourceLifetime"
+                    "sourceResourceLifetime",
+                    "sourceLocalStateValueHandoffs",
+                    "candidateCallerStateValueHandoffs",
+                    "authoredStateValue"
                   ],
                   "properties": {
                     "effectId": {
@@ -2780,6 +2783,133 @@
                           "type": "null"
                         }
                       ]
+                    },
+                    "sourceLocalStateValueHandoffs": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "guardReadOperationId",
+                          "writeOperationId",
+                          "surfaceId",
+                          "receiverHint",
+                          "authoredValue",
+                          "scalarKind",
+                          "origin"
+                        ],
+                        "properties": {
+                          "guardReadOperationId": {
+                            "type": "string"
+                          },
+                          "writeOperationId": {
+                            "type": "string"
+                          },
+                          "surfaceId": {
+                            "type": "string"
+                          },
+                          "receiverHint": {
+                            "type": "string"
+                          },
+                          "authoredValue": {
+                            "type": "string"
+                          },
+                          "scalarKind": {
+                            "enum": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "origin": {
+                            "enum": [
+                              "SOURCE_LOCAL",
+                              "SYNCHRONOUS_CALLER"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "candidateCallerStateValueHandoffs": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "guardReadOperationId",
+                          "writeOperationId",
+                          "surfaceId",
+                          "receiverHint",
+                          "authoredValue",
+                          "scalarKind",
+                          "origin"
+                        ],
+                        "properties": {
+                          "guardReadOperationId": {
+                            "type": "string"
+                          },
+                          "writeOperationId": {
+                            "type": "string"
+                          },
+                          "surfaceId": {
+                            "type": "string"
+                          },
+                          "receiverHint": {
+                            "type": "string"
+                          },
+                          "authoredValue": {
+                            "type": "string"
+                          },
+                          "scalarKind": {
+                            "enum": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "origin": {
+                            "enum": [
+                              "SOURCE_LOCAL",
+                              "SYNCHRONOUS_CALLER"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "authoredStateValue": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "surfaceId",
+                            "receiverHint",
+                            "authoredValue",
+                            "scalarKind"
+                          ],
+                          "properties": {
+                            "surfaceId": {
+                              "type": "string"
+                            },
+                            "receiverHint": {
+                              "type": "string"
+                            },
+                            "authoredValue": {
+                              "type": "string"
+                            },
+                            "scalarKind": {
+                              "enum": [
+                                "string",
+                                "number",
+                                "boolean"
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     }
                   }
                 }
@@ -2909,7 +3039,8 @@
               "exactFeatureIds",
               "pathAssociatedFeatureIds",
               "guardStateReadIds",
-              "candidateGuardStateWriteIds"
+              "candidateGuardStateWriteIds",
+              "sourceLocalStateValueHandoffs"
             ],
             "properties": {
               "effectId": {
@@ -2951,7 +3082,8 @@
                     "guardedEdgeIds",
                     "temporalBoundaryEdgeIds",
                     "pathGuards",
-                    "candidateCallerStateWriteIds"
+                    "candidateCallerStateWriteIds",
+                    "candidateCallerStateValueHandoffs"
                   ],
                   "properties": {
                     "entryRegionId": {
@@ -3038,6 +3170,52 @@
                         "type": "string"
                       },
                       "description": "Potential matching prior dynamic-property writes within the recorded caller of a fully resolved synchronous call suffix. Exact source, surface, receiver and guards are required. Not reaching-definition proof."
+                    },
+                    "candidateCallerStateValueHandoffs": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "guardReadOperationId",
+                          "writeOperationId",
+                          "surfaceId",
+                          "receiverHint",
+                          "authoredValue",
+                          "scalarKind",
+                          "origin"
+                        ],
+                        "properties": {
+                          "guardReadOperationId": {
+                            "type": "string"
+                          },
+                          "writeOperationId": {
+                            "type": "string"
+                          },
+                          "surfaceId": {
+                            "type": "string"
+                          },
+                          "receiverHint": {
+                            "type": "string"
+                          },
+                          "authoredValue": {
+                            "type": "string"
+                          },
+                          "scalarKind": {
+                            "enum": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "origin": {
+                            "enum": [
+                              "SOURCE_LOCAL",
+                              "SYNCHRONOUS_CALLER"
+                            ]
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -3247,6 +3425,80 @@
                       "note": {
                         "type": "string"
                       }
+                    }
+                  }
+                }
+              },
+              "authoredStateValue": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "surfaceId",
+                  "receiverHint",
+                  "authoredValue",
+                  "scalarKind"
+                ],
+                "properties": {
+                  "surfaceId": {
+                    "type": "string"
+                  },
+                  "receiverHint": {
+                    "type": "string"
+                  },
+                  "authoredValue": {
+                    "type": "string"
+                  },
+                  "scalarKind": {
+                    "enum": [
+                      "string",
+                      "number",
+                      "boolean"
+                    ]
+                  }
+                }
+              },
+              "sourceLocalStateValueHandoffs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "guardReadOperationId",
+                    "writeOperationId",
+                    "surfaceId",
+                    "receiverHint",
+                    "authoredValue",
+                    "scalarKind",
+                    "origin"
+                  ],
+                  "properties": {
+                    "guardReadOperationId": {
+                      "type": "string"
+                    },
+                    "writeOperationId": {
+                      "type": "string"
+                    },
+                    "surfaceId": {
+                      "type": "string"
+                    },
+                    "receiverHint": {
+                      "type": "string"
+                    },
+                    "authoredValue": {
+                      "type": "string"
+                    },
+                    "scalarKind": {
+                      "enum": [
+                        "string",
+                        "number",
+                        "boolean"
+                      ]
+                    },
+                    "origin": {
+                      "enum": [
+                        "SOURCE_LOCAL",
+                        "SYNCHRONOUS_CALLER"
+                      ]
                     }
                   }
                 }

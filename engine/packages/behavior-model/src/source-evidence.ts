@@ -462,6 +462,21 @@ export function reconcileSourceWorldEffectOutcomes(
 }
 
 /**
+ * A typed authored state write that might supply a later effect guard read.
+ * It is source-order and same-surface evidence, NEVER a proven live state,
+ * true from→to transition, reaching definition or Minecraft runtime result.
+ */
+export interface SourceStateValueHandoff {
+  readonly guardReadOperationId: string;
+  readonly writeOperationId: string;
+  readonly surfaceId: string;
+  readonly receiverHint: string;
+  readonly authoredValue: string;
+  readonly scalarKind: "string" | "number" | "boolean";
+  readonly origin: "SOURCE_LOCAL" | "SYNCHRONOUS_CALLER";
+}
+
+/**
  * Effect-directed, bounded static program slice over the SAME Semantic IR.
  * The entry is an authored call/event candidate, never evidence that the
  * branch ran, a state mutation committed, or a player observed a result.
@@ -477,6 +492,13 @@ export interface SourceEffectSlice {
   readonly resourceKey?: string;
   /** Exact source-site acquire/release/return candidates, never cleanup proof. */
   readonly sourceResourceLifetime?: SourceResourceLifetimeCandidate;
+  /** A directly authored dynamic-property literal write (no inferred prior value). */
+  readonly authoredStateValue?: {
+    readonly surfaceId: string;
+    readonly receiverHint: string;
+    readonly authoredValue: string;
+    readonly scalarKind: "string" | "number" | "boolean";
+  };
   readonly executionRegionId: string;
   readonly sourcePath: string;
   readonly status: "CANDIDATE_INGRESS" | "NO_KNOWN_INGRESS" | "TRUNCATED";
@@ -495,6 +517,8 @@ export interface SourceEffectSlice {
     /** Source-ordered, exact state writes in upstream synchronous callers.
      * One list per candidate ingress, never a global def-use claim. */
     readonly candidateCallerStateWriteIds: readonly string[];
+    /** Exact value of a compatible caller write, not a proven value at callee read. */
+    readonly candidateCallerStateValueHandoffs: readonly SourceStateValueHandoff[];
   }[];
   /** Source-order only; same-surface reads are not proven data dependencies. */
   readonly possiblePrecedingReadIds: readonly string[];
@@ -507,6 +531,8 @@ export interface SourceEffectSlice {
   /** Prior same-surface/source-region write sites to those guard reads.
    * These are conservative candidates, never proven reaching definitions. */
   readonly candidateGuardStateWriteIds: readonly string[];
+  /** Values authored before guard reads in this same source function. */
+  readonly sourceLocalStateValueHandoffs: readonly SourceStateValueHandoff[];
   /** Existing same-region guarded source-order candidates, not outcomes. */
   readonly sourceOrderedOutcomeIds: readonly string[];
   readonly effectGuards: readonly {
@@ -597,6 +623,7 @@ export function deriveSourceEffectSlices(
   const stateSurfaces = new Map(ir.state.surfaces.map(s => [s.id, s.ref]));
   const stateReads = ir.state.operations.filter(op => op.operation === "read");
   const stateWrites = ir.state.operations.filter(op => op.operation === "write");
+  const operationsById = new Map(ir.state.operations.map(op => [op.id, op]));
   const guardSites = (
     guards: readonly AuthoredBranchGuard[] | undefined,
     kind: "lexical" | "precedence",
@@ -612,7 +639,7 @@ export function deriveSourceEffectSlices(
   return effects.sort((a, b) => a.id.localeCompare(b.id)).map(effect => {
     type Candidate = Omit<
       SourceEffectSlice["candidateIngress"][number],
-      "candidateCallerStateWriteIds"
+      "candidateCallerStateWriteIds" | "candidateCallerStateValueHandoffs"
     >;
     const queue: {
       regionId: string;
@@ -722,6 +749,37 @@ export function deriveSourceEffectSlices(
           guardsEqual(write.precedenceGuards, read.precedenceGuards))
         .map(write => write.id);
     }))].sort();
+    // Retain the actual typed scalar literal from the IR operation, not a
+    // guessed enum value or phase name. Pair only the guard-read identity
+    // and a previously admitted conservative write candidate.
+    const valueHandoffs = (
+      writeIds: readonly string[],
+      origin: SourceStateValueHandoff["origin"],
+    ): SourceStateValueHandoff[] =>
+      guardStateReads.flatMap(read => writeIds.flatMap(writeId => {
+        const write = operationsById.get(writeId);
+        const literal = write?.writtenValue;
+        if (!write || read.targetHint === undefined ||
+            literal?.kind !== "literal" ||
+            literal.scalarKind === undefined ||
+            write.surfaceId !== read.surfaceId ||
+            write.targetHint === undefined ||
+            write.targetHint !== read.targetHint ||
+            write.source.artifactId !== read.source.artifactId) return [];
+        return [{
+          guardReadOperationId: read.id,
+          writeOperationId: write.id,
+          surfaceId: read.surfaceId,
+          receiverHint: read.targetHint,
+          authoredValue: literal.value,
+          scalarKind: literal.scalarKind,
+          origin,
+        }];
+      })).sort((a, b) =>
+        a.guardReadOperationId.localeCompare(b.guardReadOperationId) ||
+        a.writeOperationId.localeCompare(b.writeOperationId));
+    const sourceLocalStateValueHandoffs =
+      valueHandoffs(candidateGuardStateWriteIds, "SOURCE_LOCAL");
     // Source-reachable callers may have authored a matching state write
     // before invoking a callee whose guard reads that state. Require a fully
     // resolved SYNCHRONOUS suffix; deferred boundaries cannot establish
@@ -755,10 +813,15 @@ export function deriveSourceEffectSlices(
       }
       return [...candidates].sort();
     };
-    const candidateIngress = found.map(path => ({
-      ...path,
-      candidateCallerStateWriteIds: callerStateWriteIds(path),
-    }));
+    const candidateIngress = found.map(path => {
+      const writeIds = callerStateWriteIds(path);
+      return {
+        ...path,
+        candidateCallerStateWriteIds: writeIds,
+        candidateCallerStateValueHandoffs:
+          valueHandoffs(writeIds, "SYNCHRONOUS_CALLER"),
+      };
+    });
     const sourceOrderedOutcomeIds = effect.kind === "state-mutation"
       ? stateOutcomeCandidates
           .filter(candidate => candidate.status === "SOURCE_ORDER_CANDIDATE" &&
@@ -784,6 +847,23 @@ export function deriveSourceEffectSlices(
             lexicalGuardsCoveredByOutcome(op.lexicalGuards, effect.lexicalGuards) &&
             guardsEqual(op.precedenceGuards, effect.precedenceGuards))
           .map(op => op.id).sort();
+    const authoredOperation = operationsById.get(effect.id);
+    const authoredLiteral = authoredOperation?.writtenValue;
+    const authoredStateValue =
+      effect.kind === "state-mutation" &&
+      effect.surfaceId !== undefined &&
+      stateSurfaces.get(effect.surfaceId)?.kind === "dynamic-property" &&
+      stateSurfaces.get(effect.surfaceId)?.key !== "*" &&
+      authoredOperation?.targetHint !== undefined &&
+      authoredLiteral?.kind === "literal" &&
+      authoredLiteral.scalarKind !== undefined
+        ? {
+            surfaceId: effect.surfaceId,
+            receiverHint: authoredOperation.targetHint,
+            authoredValue: authoredLiteral.value,
+            scalarKind: authoredLiteral.scalarKind,
+          }
+        : undefined;
     return {
       effectId: effect.id,
       effectKind: effect.kind,
@@ -799,6 +879,7 @@ export function deriveSourceEffectSlices(
       ...(resourceLifetimes.get(effect.id) === undefined ? {} : {
         sourceResourceLifetime: resourceLifetimes.get(effect.id),
       }),
+      ...(authoredStateValue === undefined ? {} : { authoredStateValue }),
       executionRegionId: effect.region,
       sourcePath: effect.source.relativePath,
       status: truncated ? "TRUNCATED" as const :
@@ -811,6 +892,7 @@ export function deriveSourceEffectSlices(
       possiblePrecedingReadIds,
       guardStateReadIds,
       candidateGuardStateWriteIds,
+      sourceLocalStateValueHandoffs,
       sourceOrderedOutcomeIds: [...new Set(sourceOrderedOutcomeIds)].sort(),
       effectGuards: [
         ...guardSites(effect.lexicalGuards, "lexical"),

@@ -567,7 +567,13 @@ export function buildInspectionSemanticIr(
         operation,
         access.source,
         access.receiverHint,
-        undefined,
+        operation === "write" && access.writtenLiteral
+          ? {
+              kind: "literal",
+              value: access.writtenLiteral.value,
+              scalarKind: access.writtenLiteral.scalarKind,
+            }
+          : undefined,
         irGuards(access.lexicalGuards),
         irGuards(access.precedenceGuards),
       );

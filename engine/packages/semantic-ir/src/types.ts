@@ -118,8 +118,12 @@ export interface StateOperation {
   source: SourceRef;
   targetHint?: string;
   /** Authored assigned token; an object member is not its resolved runtime value. */
-  writtenValue?: { kind: "literal"; value: string } |
-    { kind: "member"; symbol: string };
+  writtenValue?: {
+    kind: "literal";
+    value: string;
+    /** Optional to preserve existing non-scalar authored literal producers. */
+    scalarKind?: "string" | "number" | "boolean";
+  } | { kind: "member"; symbol: string };
   lexicalGuards?: readonly AuthoredBranchGuard[];
   precedenceGuards?: readonly AuthoredBranchGuard[];
 }

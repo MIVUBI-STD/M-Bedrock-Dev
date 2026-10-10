@@ -47,6 +47,8 @@ export interface DynamicPropertyAccess {
   operation: "get" | "set" | "delete" | "clear" | "ids" | "size" | "unknown";
   propertyId?: string;
   propertyExpression?: string;
+  /** Only a directly authored scalar in setDynamicProperty, never evaluated expressions. */
+  writtenLiteral?: { scalarKind: "string" | "number" | "boolean"; value: string };
   receiverHint?: string;
   executionRegion?: string;
   source: SourceRef;

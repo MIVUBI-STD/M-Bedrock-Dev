@@ -17,6 +17,7 @@ import {
   reconcileSourceWorldEffectOutcomes,
   deriveSourceEffectSlices,
   type SourceEffectSlice,
+  type SourceStateValueHandoff,
   type SourceWorldEffectOutcomeCandidate,
   type SourceStateOutcomeCandidate,
   type SourceResourceOutcomeCandidate,
@@ -279,6 +280,10 @@ export interface GameplayArchitectureNavigation {
         readonly candidateGuardStateWriteIds: readonly string[];
         /** Source-ordered writes in an upstream caller of THIS ingress. */
         readonly candidateCallerStateWriteIds: readonly string[];
+        /** Source-authored scalar values associated with exact guard reads. */
+        readonly sourceLocalStateValueHandoffs: SourceEffectSlice["sourceLocalStateValueHandoffs"];
+        readonly candidateCallerStateValueHandoffs: SourceStateValueHandoff[];
+        readonly authoredStateValue: SourceEffectSlice["authoredStateValue"] | null;
         readonly effectKind: SourceEffectSlice["effectKind"];
         readonly worldEffectKind: SourceEffectSlice["worldEffectKind"] | null;
         readonly effectTarget: string | null;
@@ -1472,6 +1477,10 @@ export function deriveGameplayArchitectureNavigation(
               candidateGuardStateWriteIds: slice.candidateGuardStateWriteIds,
               candidateCallerStateWriteIds:
                 entry?.candidateCallerStateWriteIds ?? [],
+              sourceLocalStateValueHandoffs: slice.sourceLocalStateValueHandoffs,
+              candidateCallerStateValueHandoffs:
+                entry?.candidateCallerStateValueHandoffs ?? [],
+              authoredStateValue: slice.authoredStateValue ?? null,
               effectKind: slice.effectKind,
               worldEffectKind: slice.worldEffectKind ?? null,
               effectTarget: slice.targetLabel ?? null,

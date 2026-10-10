@@ -139,6 +139,14 @@ The canonical `behavior-model/source-evidence.ts` now derives `reconcileSourceRe
 
 The existing `SourceEffectSlice` for each acquired resource consumes this reconciliation once, and existing `gameplayStructure.features[].sourceBehaviorPaths` projects the same candidate without new parser, ledger, graph, inference status, or lifecycle manager. Cross-region, deferred, wildcard, ambiguous, or missing action sites remain `UNRESOLVED` and cannot be called cleanup failures. A source-ordered release and return do not prove successful Minecraft side effects, terminal state, or arena reset; full runtime lifecycle remains unverified.
 
+### Authored scalar state and source-grounded lifecycle handoffs
+
+The existing Script parser now retains only **direct scalar literal arguments** to `setDynamicProperty`: quoted strings, numeric literals (including direct negative literals), and boolean literals. It does not evaluate variable references or arbitrary expressions. Semantic IR `StateOperation.writtenValue` holds the value and scalar kind on the same exact write operation identity; existing Script memory writes without a recognized scalar kind remain unchanged.
+
+The canonical Behavior Model `deriveSourceEffectSlices()` now exposes `authoredStateValue` for each exact non-wildcard dynamic-property write. It also joins **already established** exact guard-read/prior-write candidates into `sourceLocalStateValueHandoffs` and each ingress's `candidateCallerStateValueHandoffs`. Every handoff carries the read ID, write ID, state surface, receiver hint, authored literal and value type, and whether it is source-local or a recorded synchronous caller. Scenario `features[].sourceBehaviorPaths` and existing Map Audit V2 schema project these values without another lifecycle store or coordinator.
+
+A handoff is not a verified reaching definition, previous-state value, session phase transition, Minecraft runtime state, or successful cleanup. Unknown aliases, dynamic values, impossible branch combinations and runtime recovery remain unproven. No state named `waiting`, `active`, `finished` or `reset` is inferred without a directly authored literal and connected evidence. Integration tests remain deferred during BUILD.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:

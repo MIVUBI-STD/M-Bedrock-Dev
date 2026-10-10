@@ -2999,6 +2999,28 @@ export function parseScriptFile(
         }
         const propertyId = stringArgument(node);
         if (propertyId) access.propertyId = propertyId;
+        // Preserve the EXACT authored scalar passed as the second argument,
+        // without evaluating aliases, expressions, runtime data or objects.
+        if (method === "setDynamicProperty" && node.arguments[1]) {
+          const value = node.arguments[1]!;
+          if (ts.isStringLiteralLike(value)) {
+            access.writtenLiteral = { scalarKind: "string", value: value.text };
+          } else if (ts.isNumericLiteral(value)) {
+            access.writtenLiteral = { scalarKind: "number", value: value.text };
+          } else if (ts.isPrefixUnaryExpression(value) &&
+                     value.operator === ts.SyntaxKind.MinusToken &&
+                     ts.isNumericLiteral(value.operand)) {
+            access.writtenLiteral = {
+              scalarKind: "number", value: "-" + value.operand.text,
+            };
+          } else if (value.kind === ts.SyntaxKind.TrueKeyword ||
+                     value.kind === ts.SyntaxKind.FalseKeyword) {
+            access.writtenLiteral = {
+              scalarKind: "boolean",
+              value: value.kind === ts.SyntaxKind.TrueKeyword ? "true" : "false",
+            };
+          }
+        }
         dynamicProperties.push(access);
         capabilities.push({
           capability: "dynamic-properties",
