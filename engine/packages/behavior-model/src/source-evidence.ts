@@ -391,6 +391,9 @@ export interface SourceEffectSlice {
     readonly pathGuards: readonly (SourceEffectSlice["effectGuards"][number] & {
       readonly executionEdgeId: string;
     })[];
+    /** Source-ordered, exact state writes in upstream synchronous callers.
+     * One list per candidate ingress, never a global def-use claim. */
+    readonly candidateCallerStateWriteIds: readonly string[];
   }[];
   /** Source-order only; same-surface reads are not proven data dependencies. */
   readonly possiblePrecedingReadIds: readonly string[];
@@ -503,7 +506,10 @@ export function deriveSourceEffectSlices(
       columnStart: guard.source.range?.columnStart ?? null,
     }));
   return effects.sort((a, b) => a.id.localeCompare(b.id)).map(effect => {
-    type Candidate = SourceEffectSlice["candidateIngress"][number];
+    type Candidate = Omit<
+      SourceEffectSlice["candidateIngress"][number],
+      "candidateCallerStateWriteIds"
+    >;
     const queue: {
       regionId: string;
       path: readonly string[];
@@ -612,6 +618,43 @@ export function deriveSourceEffectSlices(
           guardsEqual(write.precedenceGuards, read.precedenceGuards))
         .map(write => write.id);
     }))].sort();
+    // Source-reachable callers may have authored a matching state write
+    // before invoking a callee whose guard reads that state. Require a fully
+    // resolved SYNCHRONOUS suffix; deferred boundaries cannot establish
+    // source-sequenced state lifetime. This is not SSA/reaching-definition.
+    const callerStateWriteIds = (path: Candidate): string[] => {
+      const candidates = new Set<string>();
+      for (const read of guardStateReads) {
+        const surface = stateSurfaces.get(read.surfaceId);
+        if (surface?.kind !== "dynamic-property" || surface.key === "*" ||
+            !read.targetHint) continue;
+        for (let index = 0; index < path.executionEdgeIds.length; index += 1) {
+          const suffix = path.executionEdgeIds.slice(index)
+            .map(id => edgeById.get(id));
+          if (suffix.some(step => step?.kind !== "synchronous-call" ||
+              step.resolution !== "resolved" || step.to === undefined)) continue;
+          const call = suffix[0];
+          if (!call || call.source.artifactId !== read.source.artifactId) continue;
+          for (const write of stateWrites) {
+            if (write.surfaceId !== read.surfaceId ||
+                write.executionRegionId !== call.from ||
+                write.targetHint !== read.targetHint ||
+                !precedingSourceSite(write.source, call.source) ||
+                !lexicalGuardsCoveredByOutcome(
+                  write.lexicalGuards, call.lexicalGuards) ||
+                !guardsEqual(write.precedenceGuards, call.precedenceGuards)) {
+              continue;
+            }
+            candidates.add(write.id);
+          }
+        }
+      }
+      return [...candidates].sort();
+    };
+    const candidateIngress = found.map(path => ({
+      ...path,
+      candidateCallerStateWriteIds: callerStateWriteIds(path),
+    }));
     const sourceOrderedOutcomeIds = effect.kind === "state-mutation"
       ? stateOutcomeCandidates
           .filter(candidate => candidate.status === "SOURCE_ORDER_CANDIDATE" &&
@@ -655,8 +698,9 @@ export function deriveSourceEffectSlices(
         found.length > 0 ? "CANDIDATE_INGRESS" as const :
         "NO_KNOWN_INGRESS" as const,
       truncated,
-      candidateIngress: found.sort((a, b) =>
-        a.entryRegionId.localeCompare(b.entryRegionId)),
+      candidateIngress: candidateIngress.sort((a, b) =>
+        a.entryRegionId.localeCompare(b.entryRegionId) ||
+        a.executionEdgeIds.join("|").localeCompare(b.executionEdgeIds.join("|"))),
       possiblePrecedingReadIds,
       guardStateReadIds,
       candidateGuardStateWriteIds,

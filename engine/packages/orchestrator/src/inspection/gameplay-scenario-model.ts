@@ -277,6 +277,8 @@ export interface GameplayArchitectureNavigation {
         readonly precedingStateReadIds: readonly string[];
         /** Source-local possible writes for exact state reads in effect guards. */
         readonly candidateGuardStateWriteIds: readonly string[];
+        /** Source-ordered writes in an upstream caller of THIS ingress. */
+        readonly candidateCallerStateWriteIds: readonly string[];
         readonly effectKind: SourceEffectSlice["effectKind"];
         readonly worldEffectKind: SourceEffectSlice["worldEffectKind"] | null;
         readonly effectTarget: string | null;
@@ -1466,6 +1468,8 @@ export function deriveGameplayArchitectureNavigation(
                 ...slice.possiblePrecedingReadIds, ...slice.guardStateReadIds,
               ]),
               candidateGuardStateWriteIds: slice.candidateGuardStateWriteIds,
+              candidateCallerStateWriteIds:
+                entry?.candidateCallerStateWriteIds ?? [],
               effectKind: slice.effectKind,
               worldEffectKind: slice.worldEffectKind ?? null,
               effectTarget: slice.targetLabel ?? null,

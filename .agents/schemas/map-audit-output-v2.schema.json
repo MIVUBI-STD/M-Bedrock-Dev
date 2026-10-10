@@ -2546,7 +2546,8 @@
                     "effectTarget",
                     "candidateOutcomeIds",
                     "resourceAction",
-                    "candidateGuardStateWriteIds"
+                    "candidateGuardStateWriteIds",
+                    "candidateCallerStateWriteIds"
                   ],
                   "properties": {
                     "effectId": {
@@ -2677,6 +2678,13 @@
                         "type": "string"
                       },
                       "description": "Candidate writes for read operations appearing inside this behavior path's local effect guards; no runtime or dataflow proof."
+                    },
+                    "candidateCallerStateWriteIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Path-scoped potential writer IDs from synchronous callers, never a proven runtime state dependency."
                     }
                   }
                 }
@@ -2847,7 +2855,8 @@
                     "executionEdgeIds",
                     "guardedEdgeIds",
                     "temporalBoundaryEdgeIds",
-                    "pathGuards"
+                    "pathGuards",
+                    "candidateCallerStateWriteIds"
                   ],
                   "properties": {
                     "entryRegionId": {
@@ -2927,6 +2936,13 @@
                           }
                         }
                       }
+                    },
+                    "candidateCallerStateWriteIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Potential matching prior dynamic-property writes within the recorded caller of a fully resolved synchronous call suffix. Exact source, surface, receiver and guards are required. Not reaching-definition proof."
                     }
                   }
                 }

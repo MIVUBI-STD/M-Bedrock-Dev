@@ -127,6 +127,12 @@ The existing Script AST parser preserves exact lexical and preceding-exit guards
 
 The canonical `deriveSourceEffectSlices()` now resolves exact state-read call spans *inside* an authored effect guard expression (`guardStateReadIds`) rather than assuming all nearby reads are preconditions. Where a literal dynamic-property surface, stable source receiver expression, exact function/document, source order and compatible guard ancestry all match, the view also records **candidate** earlier state writes (`candidateGuardStateWriteIds`). A reused expression is not guaranteed to be the same runtime object, so these remain source-level possible definitions—not reaching-def proof or game-causal truth. Wildcard keys, other regions, and inconsistent guards do not qualify. The existing Gameplay Architecture feature paths and optional Map Audit V2 schema consume this source evidence; unknowns and publication gates remain unchanged.
 
+### Bounded interprocedural guard-state candidates
+
+The existing `deriveSourceEffectSlices()` may now identify a preceding dynamic-property write in a **source-recorded caller** when the callee's effect guard contains an exact dynamic-property read. `candidateIngress[].candidateCallerStateWriteIds` is scoped to that ingress path, and `features[].sourceBehaviorPaths` exposes it without a new dataflow or graph owner.
+
+Admission requires unique resolved *synchronous* call steps from the write's call edge to the target effect, identical selected-artifact identity, an earlier write site in the caller document/region, the same statically identified non-wildcard state surface and receiver hint, and compatible exact guard ancestry. Deferred/periodic/event edges after a write do not qualify. Object identity, state lifetime, aliasing, intervening mutations and runtime execution remain **UNPROVEN**: this is a source-order candidate, not reaching-definition proof or verified lifecycle behavior. Source-local candidate writes remain separate from caller-derived candidates.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:
