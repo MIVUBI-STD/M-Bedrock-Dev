@@ -865,12 +865,6 @@ export function extractGameplayIntentSignals(
   for (const script of scripts) {
     const path = script.source.relativePath;
 
-    for (const part of path.split(/[\\/]/)) {
-      const base = part.replace(/\.[^.]+$/, "");
-      const signal = lexicalSignal(path, base);
-      if (signal) pushSignal(signals, signal);
-    }
-
     const normalizedPath =
       "/" + path.replaceAll("\\", "/");
     const bundledExecutable =

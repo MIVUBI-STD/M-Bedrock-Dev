@@ -124,6 +124,48 @@ function script(): ParsedScriptFile {
 }
 
 describe("gameplay intent analyzer", () => {
+
+  it("does not invent gameplay from source folder or filename alone", () => {
+    const empty: ParsedScriptFile = {
+      identifier: "arena/wave",
+      source: {
+        artifactId: "sample:empty",
+        relativePath: "behavior_packs/demo/scripts/arena/wave.js",
+      },
+      imports: [], events: [], dynamicProperties: [],
+      restrictedMutations: [], deferredCallbacks: [],
+      localFunctionCalls: [], blockMatchGuards: [],
+      methodCalls: [], propertyAccesses: [], propertyWrites: [],
+      entityEventTriggers: [], commandLiterals: [],
+      lifecycleMemberExposures: [], moduleMemberAccesses: [],
+      importedSymbols: [], enumValueComparisons: [],
+    };
+    const fromPathOnly = extractGameplayIntentSignals([empty]);
+    expect(fromPathOnly.signals).toEqual([]);
+    expect(fromPathOnly.relations).toEqual([]);
+
+    const observed = extractGameplayIntentSignals([{
+      ...empty,
+      localFunctionCalls: [{
+        callerRegion: "function:runWave",
+        targetRegion: "function:resetArena",
+        targetName: "resetArena",
+        source: { ...empty.source, range: {
+          lineStart: 2, lineEnd: 2, columnStart: 5, columnEnd: 17,
+        } },
+      }],
+    }]);
+    // Parsed behavior may produce inferred Intent candidates. The path
+    // remains a locator, never independent evidence of a gameplay phase.
+    expect(observed.signals.some(item => item.subjectKey === "mechanic:wave"))
+      .toBe(false);
+    expect(observed.signals.some(item => item.subjectKey === "lifecycle:reset-arena"))
+      .toBe(true);
+    expect(observed.relations.some(item =>
+      item.edgeKind === "requires" && item.status === "inferred"))
+      .toBe(true);
+  });
+
   it("downgrades minified bundled guard predicates to unknown", () => {
     const base = script();
     const bundled: ParsedScriptFile = {
