@@ -677,6 +677,136 @@ describe("persistence source analysis", () => {
     expect(unrelated?.sequentialGenerationEvidence).toHaveLength(1);
   });
 
+  it("distinguishes literal container member and index reads from carriers", () => {
+    const cases = [
+      { expression: "holder.target", blocked: true },
+      { expression: "holder.other", blocked: false },
+      { expression: 'holder["target"]', blocked: true },
+      { expression: 'holder["other"]', blocked: false },
+      { expression: "holder[dynamicKey]", blocked: true },
+      { expression: "pair[0]", blocked: true },
+      { expression: "pair[1]", blocked: false },
+      { expression: "pair[dynamicKey]", blocked: true },
+    ] as const;
+    for (const { expression, blocked } of cases) {
+      const script = parseScriptFile("arena", [
+        "function cleanup(arena, other, dynamicKey) {",
+        "  arena.generation++;",
+        "  const holder = { target: arena, other };",
+        "  const pair = [arena, other];",
+        "  mutate(" + expression + ");",
+        '  arena.setDynamicProperty("roundState", undefined);',
+        "}",
+        "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other, key));",
+      ].join("\n"), {
+        artifactId: "map:literal-member", relativePath: "scripts/cleanup.ts",
+      });
+      const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+      expect(candidate?.sequentialGenerationEvidence.length)
+        .toBe(blocked ? 0 : 1);
+    }
+  });
+
+  it("does not infer a unique field value across computed and spread writes", () => {
+    const cases = [
+      'const holder = { other, [key]: arena };',
+      'const holder = { other, ...{ other: arena } };',
+    ] as const;
+    for (const declaration of cases) {
+      const script = parseScriptFile("arena", [
+        "function cleanup(arena, other, key) {",
+        "  arena.generation++;",
+        "  " + declaration,
+        "  mutate(holder.other);",
+        '  arena.setDynamicProperty("roundState", undefined);',
+        "}",
+        "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other, key));",
+      ].join("\n"), {
+        artifactId: "map:computed-fields", relativePath: "scripts/cleanup.ts",
+      });
+      const candidate = analyzePersistenceSource([script]).resetLifecycleAssociations[0];
+      expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+    }
+  });
+
+  it("keeps methods on a receiver-bearing container as possible effects", () => {
+    const make = (target: "arena" | "other") => parseScriptFile("arena", [
+      "function cleanup(arena, other) {",
+      "  arena.generation++;",
+      "  const holder = { target: " + target + ", refresh() {} };",
+      "  holder.refresh();",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other));",
+    ].join("\n"), {
+      artifactId: "map:carrier-method", relativePath: "scripts/cleanup.ts",
+    });
+    expect(analyzePersistenceSource([make("arena")])
+      .resetLifecycleAssociations[0]?.sequentialGenerationEvidence).toEqual([]);
+    expect(analyzePersistenceSource([make("other")])
+      .resetLifecycleAssociations[0]?.sequentialGenerationEvidence).toHaveLength(1);
+  });
+
+  it("does not trust a stale carrier literal after unresolved reassignment", () => {
+    const make = (nextValue: string) => parseScriptFile("arena", [
+      "function cleanup(arena, other) {",
+      "  arena.generation++;",
+      "  let holder = { target: arena, other };",
+      "  holder = " + nextValue + ";",
+      "  mutate(holder.other);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other));",
+    ].join("\n"), {
+      artifactId: "map:carrier-rebind", relativePath: "scripts/cleanup.ts",
+    });
+    expect(analyzePersistenceSource([make("lookup()")])
+      .resetLifecycleAssociations[0]?.sequentialGenerationEvidence).toEqual([]);
+    expect(analyzePersistenceSource([make("{ target: other, other }")])
+      .resetLifecycleAssociations[0]?.sequentialGenerationEvidence).toHaveLength(1);
+  });
+
+  it("resolves literal container fields through assigned container aliases", () => {
+    const make = (field: "target" | "other") => parseScriptFile("arena", [
+      "function cleanup(arena, other) {",
+      "  arena.generation++;",
+      "  let holder;",
+      "  holder = { target: arena, other };",
+      "  const next = holder;",
+      "  mutate(next." + field + ");",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other));",
+    ].join("\n"), {
+      artifactId: "map:container-assignment", relativePath: "scripts/cleanup.ts",
+    });
+    const target = analyzePersistenceSource([make("target")])
+      .resetLifecycleAssociations[0];
+    const other = analyzePersistenceSource([make("other")])
+      .resetLifecycleAssociations[0];
+    expect(target?.sequentialGenerationEvidence).toEqual([]);
+    expect(other?.sequentialGenerationEvidence).toHaveLength(1);
+  });
+
+  it("distinguishes callback captures of known carrier fields", () => {
+    const make = (field: "target" | "other") => parseScriptFile("arena", [
+      "function cleanup(arena, other) {",
+      "  arena.generation++;",
+      "  const holder = { target: arena, other };",
+      "  const callback = () => holder." + field + ";",
+      "  register(callback);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other));",
+    ].join("\n"), {
+      artifactId: "map:carrier-capture", relativePath: "scripts/cleanup.ts",
+    });
+    expect(analyzePersistenceSource([make("target")])
+      .resetLifecycleAssociations[0]?.sequentialGenerationEvidence).toEqual([]);
+    expect(analyzePersistenceSource([make("other")])
+      .resetLifecycleAssociations[0]?.sequentialGenerationEvidence).toHaveLength(1);
+  });
+
   it("blocks receiver method calls and callback captures before reset", () => {
     const script = parseScriptFile("arena", [
       "function cleanup(arena) {",

@@ -96,72 +96,6 @@ function rebindsReceiver(node: ts.Node, receiver: string): boolean {
  * receiver, or captured in a callback. This is a conservative source fact,
  * not a declaration that the call actually mutates the receiver.
  */
-function referencesReceiver(
-  node: ts.Node,
-  names: ReadonlySet<string>,
-): boolean {
-  if (ts.isFunctionLike(node)) {
-    const local = new Set(names);
-    for (const parameter of node.parameters) {
-      for (const name of bindingNames(parameter.name)) local.delete(name);
-    }
-    if (ts.isFunctionExpression(node) && node.name) local.delete(node.name.text);
-    const body =
-      ts.isFunctionDeclaration(node) ||
-      ts.isFunctionExpression(node) ||
-      ts.isArrowFunction(node) ||
-      ts.isMethodDeclaration(node) ||
-      ts.isConstructorDeclaration(node) ||
-      ts.isGetAccessorDeclaration(node) ||
-      ts.isSetAccessorDeclaration(node)
-        ? node.body : undefined;
-    return body ? referencesReceiver(body, local) : false;
-  }
-  if (ts.isBlock(node)) {
-    const local = new Set(names);
-    for (const name of lexicalShadowNames(node)) local.delete(name);
-    return node.statements.some(statement => referencesReceiver(statement, local));
-  }
-  if (ts.isCatchClause(node)) {
-    const local = new Set(names);
-    if (node.variableDeclaration) {
-      for (const name of bindingNames(node.variableDeclaration.name)) {
-        local.delete(name);
-      }
-    }
-    return referencesReceiver(node.block, local);
-  }
-  if (ts.isIdentifier(node) && names.has(node.text)) return true;
-  // Property names are keys, not receiver references: other.arena() must
-  // not alias a local variable named arena.
-  if (ts.isPropertyAccessExpression(node)) {
-    return referencesReceiver(node.expression, names);
-  }
-  if (ts.isPropertyAssignment(node)) {
-    return referencesReceiver(node.initializer, names) ||
-      (ts.isComputedPropertyName(node.name) &&
-        referencesReceiver(node.name.expression, names));
-  }
-  if (node.kind === ts.SyntaxKind.ThisKeyword && names.has("this")) {
-    return true;
-  }
-  let seen = false;
-  ts.forEachChild(node, child => {
-    if (!seen && referencesReceiver(child, names)) seen = true;
-  });
-  return seen;
-}
-
-function receiverCall(
-  node: ts.Node,
-  names: ReadonlySet<string>,
-): boolean {
-  // Constructors can retain arguments just like ordinary calls.
-  return (ts.isCallExpression(node) || ts.isNewExpression(node)) &&
-    (referencesReceiver(node.expression, names) ||
-      (node.arguments ?? []).some(arg => referencesReceiver(arg, names)));
-}
-
 /**
  * Only direct expression statements whose receiver is a simple lexical
  * identifier/property path can carry source sequence identity. Earlier
@@ -195,94 +129,213 @@ export function directStatementSequence(
   const callSources: SourceRef[] = [];
   const escapeSources: SourceRef[] = [];
   const containerValues = new Map<string, ts.Expression>();
+  const invalidatedContainers = new Set<string>();
 
+  // A carrier container and a direct receiver alias are NOT the same owner.
   const aliasValue = (
     expression: ts.Expression,
     activeNames: ReadonlySet<string>,
     containers: ReadonlyMap<string, ts.Expression>,
+    visited: ReadonlySet<string> = new Set(),
   ): boolean => {
     if (ts.isParenthesizedExpression(expression) ||
         ts.isAsExpression(expression) ||
         ts.isTypeAssertionExpression(expression) ||
         ts.isNonNullExpression(expression)) {
-      return aliasValue(expression.expression, activeNames, containers);
+      return aliasValue(expression.expression, activeNames, containers, visited);
     }
-    if (ts.isIdentifier(expression)) return activeNames.has(expression.text);
+    if (ts.isIdentifier(expression)) {
+      if (activeNames.has(expression.text) ||
+          (invalidatedContainers.has(expression.text) &&
+            containers.has(expression.text))) return true;
+      const stored = containers.get(expression.text);
+      if (!stored || visited.has(expression.text)) return false;
+      const next = new Set(visited);
+      next.add(expression.text);
+      return aliasValue(stored, activeNames, containers, next);
+    }
     // This is a possible alias to receiver-owned state, not proof of
     // matching runtime instance identity.
+    const objectField = (
+      stored: ts.ObjectLiteralExpression,
+      key: string,
+      owner: string,
+    ): boolean => {
+      const member = "field:" + owner + ":" + key;
+      if (visited.has(member)) return false;
+      const next = new Set(visited);
+      next.add(member);
+      const matching = stored.properties.filter(property =>
+        (ts.isPropertyAssignment(property) ||
+         ts.isShorthandPropertyAssignment(property) ||
+         ts.isGetAccessorDeclaration(property)) &&
+        (ts.isIdentifier(property.name) ||
+         ts.isStringLiteralLike(property.name)) &&
+        property.name.text === key);
+      // Repeated literal keys or computed/spread fields make single-value
+      // inference unsound. Preserve ANY possible receiver-bearing value.
+      const known = matching.some(item =>
+        ts.isPropertyAssignment(item)
+          ? aliasValue(item.initializer, activeNames, containers, next)
+          : ts.isShorthandPropertyAssignment(item)
+            ? aliasValue(item.name, activeNames, containers, next)
+            : ts.isGetAccessorDeclaration(item) &&
+              item.body !== undefined &&
+              capturesReceiver(item.body, activeNames, containers, next));
+      if (known) return true;
+      const hasUnknownFields = stored.properties.some(property =>
+        ts.isSpreadAssignment(property) ||
+        (!ts.isSpreadAssignment(property) &&
+          ts.isComputedPropertyName(property.name)));
+      // A computed/spread field may overwrite an explicit key, or supply
+      // an unknown key. Never infer its value from one literal assignment.
+      return hasUnknownFields &&
+        aliasValue(stored, activeNames, containers, next);
+    };
+
     if (ts.isPropertyAccessExpression(expression)) {
       if (ts.isIdentifier(expression.expression)) {
-        const stored = containers.get(expression.expression.text);
+        const name = expression.expression.text;
+        if (invalidatedContainers.has(name) && containers.has(name)) return true;
+        const stored = containers.get(name);
         if (stored && ts.isObjectLiteralExpression(stored)) {
-          const exact = stored.properties.find(property =>
-            (ts.isPropertyAssignment(property) ||
-             ts.isShorthandPropertyAssignment(property)) &&
-            (ts.isIdentifier(property.name) || ts.isStringLiteral(property.name)) &&
-            property.name.text === expression.name.text);
-          if (exact && ts.isPropertyAssignment(exact)) {
-            return aliasValue(exact.initializer, activeNames, containers);
-          }
-          if (exact && ts.isShorthandPropertyAssignment(exact)) {
-            return activeNames.has(exact.name.text);
-          }
-          return false;
+          return objectField(stored, expression.name.text, name);
         }
       }
-      return aliasValue(expression.expression, activeNames, containers);
+      return aliasValue(expression.expression, activeNames, containers, visited);
     }
     if (ts.isElementAccessExpression(expression)) {
       if (ts.isIdentifier(expression.expression)) {
-        const stored = containers.get(expression.expression.text);
-        const index = expression.argumentExpression;
-        if (stored && ts.isArrayLiteralExpression(stored) &&
-            ts.isNumericLiteral(index)) {
-          const element = stored.elements[Number(index.text)];
-          return !!element && !ts.isOmittedExpression(element) &&
-            !ts.isSpreadElement(element) &&
-            aliasValue(element, activeNames, containers);
+        const name = expression.expression.text;
+        if (invalidatedContainers.has(name) && containers.has(name)) return true;
+        const stored = containers.get(name);
+        if (stored && ts.isObjectLiteralExpression(stored)) {
+          const index = expression.argumentExpression;
+          return index && ts.isStringLiteralLike(index)
+            ? objectField(stored, index.text, name)
+            : aliasValue(stored, activeNames, containers, visited);
+        }
+        if (stored && ts.isArrayLiteralExpression(stored)) {
+          const index = expression.argumentExpression;
+          if (index && ts.isNumericLiteral(index)) {
+            const element = stored.elements[Number(index.text)];
+            return !!element && !ts.isOmittedExpression(element) &&
+              (ts.isSpreadElement(element)
+                ? aliasValue(stored, activeNames, containers, visited)
+                : aliasValue(element, activeNames, containers, visited));
+          }
+          // A dynamic index could select any element; preserve UNKNOWN.
+          return aliasValue(stored, activeNames, containers, visited);
         }
       }
-      return aliasValue(expression.expression, activeNames, containers);
+      return aliasValue(expression.expression, activeNames, containers, visited);
     }
     if (ts.isObjectLiteralExpression(expression)) {
       return expression.properties.some(property =>
         ts.isPropertyAssignment(property)
-          ? aliasValue(property.initializer, activeNames, containers)
+          ? aliasValue(property.initializer, activeNames, containers, visited)
           : ts.isShorthandPropertyAssignment(property)
-            ? activeNames.has(property.name.text)
+            ? aliasValue(property.name, activeNames, containers, visited)
             : ts.isSpreadAssignment(property)
-              ? aliasValue(property.expression, activeNames, containers)
+              ? aliasValue(property.expression, activeNames, containers, visited)
               : ts.isMethodDeclaration(property) ||
                   ts.isGetAccessorDeclaration(property) ||
                   ts.isSetAccessorDeclaration(property)
                 ? property.body !== undefined &&
-                    referencesReceiver(property.body, activeNames)
+                    capturesReceiver(property.body, activeNames, containers, visited)
                 : false);
     }
     if (ts.isArrayLiteralExpression(expression)) {
       return expression.elements.some(element =>
         ts.isSpreadElement(element)
-          ? aliasValue(element.expression, activeNames, containers)
-          : aliasValue(element, activeNames, containers));
+          ? aliasValue(element.expression, activeNames, containers, visited)
+          : aliasValue(element, activeNames, containers, visited));
     }
     if (ts.isArrowFunction(expression) || ts.isFunctionExpression(expression)) {
       // A callable can capture an existing alias, which escapes if passed
       // to an unknown function. The closure's execution remains unknown.
-      return referencesReceiver(expression, activeNames);
+      return capturesReceiver(expression, activeNames, containers, visited);
     }
     if (ts.isConditionalExpression(expression)) {
-      return aliasValue(expression.whenTrue, activeNames, containers) ||
-        aliasValue(expression.whenFalse, activeNames, containers);
+      return aliasValue(expression.whenTrue, activeNames, containers, visited) ||
+        aliasValue(expression.whenFalse, activeNames, containers, visited);
     }
     if (ts.isBinaryExpression(expression) &&
         [ts.SyntaxKind.QuestionQuestionToken, ts.SyntaxKind.BarBarToken,
          ts.SyntaxKind.AmpersandAmpersandToken].includes(
           expression.operatorToken.kind)) {
-      return aliasValue(expression.left, activeNames, containers) ||
-        aliasValue(expression.right, activeNames, containers);
+      return aliasValue(expression.left, activeNames, containers, visited) ||
+        aliasValue(expression.right, activeNames, containers, visited);
     }
     return expression.kind === ts.SyntaxKind.ThisKeyword && activeNames.has("this");
   };
+
+  function capturesReceiver(
+    node: ts.Node,
+    activeNames: ReadonlySet<string>,
+    containers: ReadonlyMap<string, ts.Expression>,
+    visited: ReadonlySet<string> = new Set(),
+  ): boolean {
+    if (ts.isFunctionLike(node)) {
+      const local = new Set(activeNames);
+      const localContainers = new Map(containers);
+      for (const parameter of node.parameters) {
+        for (const name of bindingNames(parameter.name)) {
+          local.delete(name);
+          localContainers.delete(name);
+        }
+      }
+      if (ts.isFunctionExpression(node) && node.name) {
+        local.delete(node.name.text);
+        localContainers.delete(node.name.text);
+      }
+      const body = ts.isFunctionDeclaration(node) ||
+        ts.isFunctionExpression(node) ||
+        ts.isArrowFunction(node) ||
+        ts.isMethodDeclaration(node) ||
+        ts.isConstructorDeclaration(node) ||
+        ts.isGetAccessorDeclaration(node) ||
+        ts.isSetAccessorDeclaration(node)
+          ? node.body : undefined;
+      return body ? capturesReceiver(body, local, localContainers, visited) : false;
+    }
+    if (ts.isCatchClause(node)) {
+      const local = new Set(activeNames);
+      const localContainers = new Map(containers);
+      if (node.variableDeclaration) {
+        for (const name of bindingNames(node.variableDeclaration.name)) {
+          local.delete(name);
+          localContainers.delete(name);
+        }
+      }
+      return capturesReceiver(node.block, local, localContainers, visited);
+    }
+    if (ts.isBlock(node)) {
+      const local = new Set(activeNames);
+      const localContainers = new Map(containers);
+      for (const name of lexicalShadowNames(node)) {
+        local.delete(name);
+        localContainers.delete(name);
+      }
+      return node.statements.some(statement =>
+        capturesReceiver(statement, local, localContainers, visited));
+    }
+    if (ts.isIdentifier(node) ||
+        ts.isPropertyAccessExpression(node) ||
+        ts.isElementAccessExpression(node)) {
+      return aliasValue(node, activeNames, containers, visited);
+    }
+    if (ts.isPropertyAssignment(node)) {
+      return capturesReceiver(node.initializer, activeNames, containers, visited) ||
+        (ts.isComputedPropertyName(node.name) &&
+          capturesReceiver(node.name.expression, activeNames, containers, visited));
+    }
+    let found = false;
+    ts.forEachChild(node, child => {
+      if (!found && capturesReceiver(child, activeNames, containers, visited)) found = true;
+    });
+    return found;
+  }
 
   const rebindingSources: SourceRef[] = [];
   for (const previous of preceding) {
@@ -301,38 +354,48 @@ export function directStatementSequence(
       if (ts.isCatchClause(node)) {
         const local = new Set(activeNames);
         const localContainers = new Map(containers);
-        if (node.variableDeclaration) {
-          for (const name of bindingNames(node.variableDeclaration.name)) {
-            local.delete(name);
-            localContainers.delete(name);
-          }
+        const shadows = node.variableDeclaration
+          ? bindingNames(node.variableDeclaration.name) : [];
+        const wasInvalidated = shadows.filter(name =>
+          invalidatedContainers.has(name));
+        for (const name of shadows) {
+          local.delete(name);
+          localContainers.delete(name);
+          invalidatedContainers.delete(name);
         }
         visit(node.block, local, localContainers);
+        for (const name of shadows) invalidatedContainers.delete(name);
+        for (const name of wasInvalidated) invalidatedContainers.add(name);
         return;
       }
       if (ts.isBlock(node)) {
         const local = new Set(activeNames);
         const localContainers = new Map(containers);
-        for (const shadowed of lexicalShadowNames(node)) {
+        const shadows = lexicalShadowNames(node);
+        const wasInvalidated = [...shadows].filter(name =>
+          invalidatedContainers.has(name));
+        for (const shadowed of shadows) {
           local.delete(shadowed);
           localContainers.delete(shadowed);
+          invalidatedContainers.delete(shadowed);
         }
         for (const statement of node.statements) {
           visit(statement, local, localContainers);
         }
+        for (const name of shadows) invalidatedContainers.delete(name);
+        for (const name of wasInvalidated) invalidatedContainers.add(name);
         return;
       }
       if (ts.isVariableDeclaration(node) && node.initializer) {
         if (ts.isIdentifier(node.name)) {
-          if (aliasValue(node.initializer, activeNames, containers)) {
-            activeNames.add(node.name.text);
-          }
           if (ts.isObjectLiteralExpression(node.initializer) ||
               ts.isArrayLiteralExpression(node.initializer)) {
             containers.set(node.name.text, node.initializer);
           } else if (ts.isIdentifier(node.initializer) &&
                      containers.has(node.initializer.text)) {
             containers.set(node.name.text, containers.get(node.initializer.text)!);
+          } else if (aliasValue(node.initializer, activeNames, containers)) {
+            activeNames.add(node.name.text);
           }
         } else if (ts.isArrayBindingPattern(node.name) &&
                    ts.isIdentifier(node.initializer)) {
@@ -378,27 +441,67 @@ export function directStatementSequence(
       }
       if (ts.isBinaryExpression(node) &&
           node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
-          ts.isIdentifier(node.left) && aliasValue(node.right, activeNames, containers)) {
-        activeNames.add(node.left.text);
+          ts.isIdentifier(node.left)) {
+        const target = node.left.text;
+        if (ts.isObjectLiteralExpression(node.right) ||
+            ts.isArrayLiteralExpression(node.right)) {
+          containers.set(target, node.right);
+          invalidatedContainers.delete(target);
+        } else if (ts.isIdentifier(node.right) &&
+                   containers.has(node.right.text)) {
+          containers.set(target, containers.get(node.right.text)!);
+          if (invalidatedContainers.has(node.right.text)) {
+            invalidatedContainers.add(target);
+          } else {
+            invalidatedContainers.delete(target);
+          }
+        } else if (aliasValue(node.right, activeNames, containers)) {
+          activeNames.add(target);
+          containers.delete(target);
+          invalidatedContainers.delete(target);
+        } else if (containers.has(target)) {
+          // A previously receiver-bearing carrier was replaced by an
+          // unresolved value. Do not trust any of its old literal fields.
+          invalidatedContainers.add(target);
+        }
       }
       if (ts.isBinaryExpression(node) &&
           node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
           (ts.isPropertyAccessExpression(node.left) ||
             ts.isElementAccessExpression(node.left))) {
         const owner = node.left.expression;
+        const stored = ts.isIdentifier(owner)
+          ? containers.get(owner.text) : undefined;
         if (aliasValue(node.right, activeNames, containers) ||
-            (ts.isIdentifier(owner) && containers.has(owner.text) &&
-              activeNames.has(owner.text))) {
-          // Either receiver state escapes, or a receiver-bearing
-          // container's known literal field/index is modified. A later
-          // lookup must not rely on the initial literal as immutable.
+            (stored !== undefined &&
+              aliasValue(stored, activeNames, containers))) {
+          // Either the receiver escapes to an external surface or a
+          // carrier's initial literal is invalidated. Later field reads
+          // cannot use the initial literal as guaranteed current data.
           foundEscape = true;
+          if (ts.isIdentifier(owner)) invalidatedContainers.add(owner.text);
         }
       }
       if (rebindsReceiver(node, receiver) && activeNames.has(root)) {
         foundRebinding = true;
       }
-      if (receiverCall(node, activeNames)) foundCall = true;
+      if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
+        const callee = node.expression;
+        const carrierMethod = (ts.isPropertyAccessExpression(callee) ||
+            ts.isElementAccessExpression(callee)) &&
+          ts.isIdentifier(callee.expression) &&
+          containers.has(callee.expression.text) &&
+          aliasValue(containers.get(callee.expression.text)!, activeNames, containers);
+        // Calling a method WITH a receiver-bearing carrier as "this"
+        // may mutate the embedded receiver even if the method name/field
+        // itself is not an alias. An unrelated field READ is different.
+        if (carrierMethod ||
+            aliasValue(callee, activeNames, containers) ||
+            (node.arguments ?? []).some(arg =>
+              aliasValue(arg, activeNames, containers))) {
+          foundCall = true;
+        }
+      }
       ts.forEachChild(node, child => visit(child, activeNames, containers));
     };
     visit(previous, names, containerValues);
