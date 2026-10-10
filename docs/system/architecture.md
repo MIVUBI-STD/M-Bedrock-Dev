@@ -133,6 +133,12 @@ The existing `deriveSourceEffectSlices()` may now identify a preceding dynamic-p
 
 Admission requires unique resolved *synchronous* call steps from the write's call edge to the target effect, identical selected-artifact identity, an earlier write site in the caller document/region, the same statically identified non-wildcard state surface and receiver hint, and compatible exact guard ancestry. Deferred/periodic/event edges after a write do not qualify. Object identity, state lifetime, aliasing, intervening mutations and runtime execution remain **UNPROVEN**: this is a source-order candidate, not reaching-definition proof or verified lifecycle behavior. Source-local candidate writes remain separate from caller-derived candidates.
 
+### Scoped resource acquisition, release and return candidates
+
+The canonical `behavior-model/source-evidence.ts` now derives `reconcileSourceResourceLifetimes()` directly from existing Semantic IR resource actions and returns. Its per-acquire `SourceResourceLifetimeCandidate` requires exact (non-wildcard) matching surface/key and owner region/document, acquire-before-release source order, compatible lexical/early-exit guards, and no intervening same-key acquisition. It exposes source-ordered candidate release IDs, candidate returns *after* those releases, and blocking reacquire evidence.
+
+The existing `SourceEffectSlice` for each acquired resource consumes this reconciliation once, and existing `gameplayStructure.features[].sourceBehaviorPaths` projects the same candidate without new parser, ledger, graph, inference status, or lifecycle manager. Cross-region, deferred, wildcard, ambiguous, or missing action sites remain `UNRESOLVED` and cannot be called cleanup failures. A source-ordered release and return do not prove successful Minecraft side effects, terminal state, or arena reset; full runtime lifecycle remains unverified.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:

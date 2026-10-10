@@ -234,6 +234,105 @@ export function reconcileSourceResourceOutcomes(
 }
 
 /**
+ * Exact resource-key lifetime candidates from one authored execution region.
+ * This is NOT runtime resource state, full lifecycle closure, or a guarantee
+ * that a matching release was executed.
+ */
+export interface SourceResourceLifetimeCandidate {
+  readonly acquireActionId: string;
+  readonly executionRegionId: string;
+  readonly surface: NonNullable<SemanticIr["state"]["resourceActions"]>[number]["surface"];
+  readonly resourceKey: string;
+  readonly candidateReleaseActionIds: readonly string[];
+  /** Same region/source/branch and after a candidate release, not terminal proof. */
+  readonly candidatePostReleaseReturnIds: readonly string[];
+  /** Reacquire or imprecise matching makes source-order pairing undecidable. */
+  readonly interveningAcquireActionIds: readonly string[];
+  readonly status: "SOURCE_ORDER_RELEASE_CANDIDATE" | "UNRESOLVED";
+  readonly provenance: BehaviorClaimProvenance;
+}
+
+/**
+ * Reconcile a resource acquire with a later exact-key release ONLY when the
+ * two authored sites share region, artifact, document and branch-compatible
+ * prerequisites. A second acquire in between prevents an unambiguous pair.
+ * Unmatched acquire is not evidence that cleanup is absent in another region.
+ */
+export function reconcileSourceResourceLifetimes(
+  ir: SemanticIr,
+): readonly SourceResourceLifetimeCandidate[] {
+  const actions = ir.state.resourceActions ?? [];
+  const outcomes = ir.execution.outcomes ?? [];
+  const exactSameResource = (
+    a: typeof actions[number],
+    b: typeof actions[number],
+  ): boolean =>
+    a.precision === "exact" &&
+    b.precision === "exact" &&
+    a.key !== "*" && b.key !== "*" &&
+    a.surface === b.surface && a.key === b.key &&
+    a.executionRegionId === b.executionRegionId &&
+    sameDocument(a.source, b.source);
+  return actions
+    .filter(action => action.action === "acquire")
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map(acquire => {
+      const matchingReleases = actions.filter(release =>
+        release.action === "release" &&
+        exactSameResource(acquire, release) &&
+        precedingSourceSite(acquire.source, release.source) &&
+        lexicalGuardsCoveredByOutcome(
+          acquire.lexicalGuards, release.lexicalGuards) &&
+        guardsEqual(acquire.precedenceGuards, release.precedenceGuards));
+      const intervening = new Set<string>();
+      const candidateReleases = matchingReleases.filter(release => {
+        const renewed = actions.filter(other =>
+          other.id !== acquire.id && other.action === "acquire" &&
+          exactSameResource(acquire, other) &&
+          precedingSourceSite(acquire.source, other.source) &&
+          precedingSourceSite(other.source, release.source) &&
+          !mutuallyExclusiveGuards(other, release));
+        for (const item of renewed) intervening.add(item.id);
+        return renewed.length === 0;
+      });
+      const terminalCandidates = outcomes.filter(outcome =>
+        candidateReleases.some(release =>
+          outcome.executionRegionId === release.executionRegionId &&
+          sameDocument(outcome.source, release.source) &&
+          precedingSourceSite(release.source, outcome.source) &&
+          lexicalGuardsCoveredByOutcome(
+            release.lexicalGuards, outcome.lexicalGuards) &&
+          guardsEqual(release.precedenceGuards, outcome.precedenceGuards)));
+      const candidateReleaseActionIds = [...new Set(
+        candidateReleases.map(release => release.id))].sort();
+      const candidatePostReleaseReturnIds = [...new Set(
+        terminalCandidates.map(outcome => outcome.id))].sort();
+      const interveningAcquireActionIds = [...intervening].sort();
+      return {
+        acquireActionId: acquire.id,
+        executionRegionId: acquire.executionRegionId,
+        surface: acquire.surface,
+        resourceKey: acquire.key,
+        candidateReleaseActionIds,
+        candidatePostReleaseReturnIds,
+        interveningAcquireActionIds,
+        status: candidateReleaseActionIds.length > 0
+          ? "SOURCE_ORDER_RELEASE_CANDIDATE" as const
+          : "UNRESOLVED" as const,
+        provenance: {
+          kind: "source-inference" as const,
+          evidenceCeiling: "inferred" as const,
+          evidenceIds: [acquire.id,
+            ...matchingReleases.map(x => x.id),
+            ...interveningAcquireActionIds,
+            ...candidatePostReleaseReturnIds].sort(),
+          note: "Only source-site and exact guard compatibility: no runtime acquire/release success, terminal execution, ownership lifetime or arena reset proven.",
+        },
+      };
+    });
+}
+
+/**
  * Collect source-ordered writes preceding each authored return in the SAME
  * execution region. Every write-side lexical guard must be necessary for the
  * return path; preceding early-exit guards must match exactly.
@@ -376,6 +475,8 @@ export interface SourceEffectSlice {
   readonly evidencePrecision?: NonNullable<SemanticIr["execution"]["worldEffects"]>[number]["precision"];
   readonly resourceAction?: "acquire" | "release";
   readonly resourceKey?: string;
+  /** Exact source-site acquire/release/return candidates, never cleanup proof. */
+  readonly sourceResourceLifetime?: SourceResourceLifetimeCandidate;
   readonly executionRegionId: string;
   readonly sourcePath: string;
   readonly status: "CANDIDATE_INGRESS" | "NO_KNOWN_INGRESS" | "TRUNCATED";
@@ -489,6 +590,9 @@ export function deriveSourceEffectSlices(
   ];
   const stateOutcomeCandidates = reconcileSourceStateOutcomes(ir);
   const resourceOutcomeCandidates = reconcileSourceResourceOutcomes(ir);
+  const resourceLifetimes = new Map(
+    reconcileSourceResourceLifetimes(ir).map(item => [item.acquireActionId, item]),
+  );
   const worldEffectOutcomeCandidates = reconcileSourceWorldEffectOutcomes(ir);
   const stateSurfaces = new Map(ir.state.surfaces.map(s => [s.id, s.ref]));
   const stateReads = ir.state.operations.filter(op => op.operation === "read");
@@ -691,6 +795,9 @@ export function deriveSourceEffectSlices(
       ...(effect.resourceAction === undefined ? {} : {
         resourceAction: effect.resourceAction,
         resourceKey: effect.resourceKey,
+      }),
+      ...(resourceLifetimes.get(effect.id) === undefined ? {} : {
+        sourceResourceLifetime: resourceLifetimes.get(effect.id),
       }),
       executionRegionId: effect.region,
       sourcePath: effect.source.relativePath,

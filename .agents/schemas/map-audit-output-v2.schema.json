@@ -2547,7 +2547,8 @@
                     "candidateOutcomeIds",
                     "resourceAction",
                     "candidateGuardStateWriteIds",
-                    "candidateCallerStateWriteIds"
+                    "candidateCallerStateWriteIds",
+                    "sourceResourceLifetime"
                   ],
                   "properties": {
                     "effectId": {
@@ -2685,6 +2686,100 @@
                         "type": "string"
                       },
                       "description": "Path-scoped potential writer IDs from synchronous callers, never a proven runtime state dependency."
+                    },
+                    "sourceResourceLifetime": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "acquireActionId",
+                            "executionRegionId",
+                            "surface",
+                            "resourceKey",
+                            "candidateReleaseActionIds",
+                            "candidatePostReleaseReturnIds",
+                            "interveningAcquireActionIds",
+                            "status",
+                            "provenance"
+                          ],
+                          "properties": {
+                            "acquireActionId": {
+                              "type": "string"
+                            },
+                            "executionRegionId": {
+                              "type": "string"
+                            },
+                            "surface": {
+                              "enum": [
+                                "tag",
+                                "effect",
+                                "scoreboard",
+                                "deferred-callback",
+                                "input-permission",
+                                "mount-relationship"
+                              ]
+                            },
+                            "resourceKey": {
+                              "type": "string"
+                            },
+                            "candidateReleaseActionIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "candidatePostReleaseReturnIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "interveningAcquireActionIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "status": {
+                              "enum": [
+                                "SOURCE_ORDER_RELEASE_CANDIDATE",
+                                "UNRESOLVED"
+                              ]
+                            },
+                            "provenance": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "kind",
+                                "evidenceCeiling",
+                                "evidenceIds",
+                                "note"
+                              ],
+                              "properties": {
+                                "kind": {
+                                  "const": "source-inference"
+                                },
+                                "evidenceCeiling": {
+                                  "const": "inferred"
+                                },
+                                "evidenceIds": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                "note": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     }
                   }
                 }
@@ -3068,6 +3163,93 @@
                   "type": "string"
                 },
                 "description": "Prior writes on the same statically identified dynamic-property surface, region and receiver. Not proven def-use/reaching definitions."
+              },
+              "sourceResourceLifetime": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "acquireActionId",
+                  "executionRegionId",
+                  "surface",
+                  "resourceKey",
+                  "candidateReleaseActionIds",
+                  "candidatePostReleaseReturnIds",
+                  "interveningAcquireActionIds",
+                  "status",
+                  "provenance"
+                ],
+                "properties": {
+                  "acquireActionId": {
+                    "type": "string"
+                  },
+                  "executionRegionId": {
+                    "type": "string"
+                  },
+                  "surface": {
+                    "enum": [
+                      "tag",
+                      "effect",
+                      "scoreboard",
+                      "deferred-callback",
+                      "input-permission",
+                      "mount-relationship"
+                    ]
+                  },
+                  "resourceKey": {
+                    "type": "string"
+                  },
+                  "candidateReleaseActionIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "candidatePostReleaseReturnIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "interveningAcquireActionIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "status": {
+                    "enum": [
+                      "SOURCE_ORDER_RELEASE_CANDIDATE",
+                      "UNRESOLVED"
+                    ]
+                  },
+                  "provenance": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "kind",
+                      "evidenceCeiling",
+                      "evidenceIds",
+                      "note"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "source-inference"
+                      },
+                      "evidenceCeiling": {
+                        "const": "inferred"
+                      },
+                      "evidenceIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "note": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
               }
             }
           }

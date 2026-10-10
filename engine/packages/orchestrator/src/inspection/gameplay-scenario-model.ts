@@ -285,6 +285,8 @@ export interface GameplayArchitectureNavigation {
         readonly candidateOutcomeIds: readonly string[];
         /** Observed acquire/release site, NOT completed cleanup. */
         readonly resourceAction: SourceEffectSlice["resourceAction"] | null;
+        /** Same-region exact-key lifecycle candidate, not proven reset. */
+        readonly sourceResourceLifetime: SourceEffectSlice["sourceResourceLifetime"] | null;
       }[];
       /** Relations originate in the scenario graph; status is unchanged. */
       readonly relationships: readonly {
@@ -1475,6 +1477,7 @@ export function deriveGameplayArchitectureNavigation(
               effectTarget: slice.targetLabel ?? null,
               candidateOutcomeIds: slice.sourceOrderedOutcomeIds,
               resourceAction: slice.resourceAction ?? null,
+              sourceResourceLifetime: slice.sourceResourceLifetime ?? null,
             }));
           })
           .sort((a, b) => a.effectId.localeCompare(b.effectId) ||
