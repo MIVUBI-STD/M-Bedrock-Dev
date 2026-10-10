@@ -83,7 +83,7 @@ CI failure is evidence, not permission to edit the easiest file.
 
 ## 4.1 ChatGPT no-local-PC invariant
 
-**M-Lazy-Developer ChatGPT workspace contract: ChatGPT + GitHub/cloud-only.** `Local` names the remote GitHub development branch; it is **not** a local-PC checkout. Source authority, development, commits, and recoverable continuity live in GitHub. The user's PC and its local data are not part of this workflow.
+**M-Lazy-Developer workspace contract: ChatGPT + GitHub ONLY. There is no external cloud infrastructure and no local-PC workflow.** `Local` names the remote GitHub development branch; it is **not** a local-PC checkout. Source authority, development, commits, and recoverable continuity live in GitHub. The user's PC and its local data are not part of this workflow.
 
 **Never ask the user to run npm, Vitest, TypeScript, Minecraft, or a checkout on their own computer** as a prerequisite, workaround, or follow-up to a ChatGPT-owned repository task. Do not ask them to install Node, run `DEV.cmd`, clone/download the repository, provide local filesystem paths or local data, execute a CLI, or upload a locally prepared artifact to compensate for a missing ChatGPT/GitHub tool.
 
@@ -92,14 +92,14 @@ Use the strongest ChatGPT-accessible route in this order:
 ```text
 authenticated GitHub source and exact ref
 → authenticated repository/artifact source when actually accessible
-→ authorized ChatGPT/cloud execution when available and required
-→ optional existing GitHub manual-only verification when justified and callable
+→ a capability already available inside this ChatGPT conversation, if authorized and actually callable
+→ an existing GitHub-native verification result on the exact HEAD, if already available
 → exact bounded result with honest proof ceiling
 ```
 
-A GitHub connector without shell, archive download, or workflow-dispatch access does **not** authorize a user-PC handoff, nor does it make npm, CI, or a cloud runner mandatory for otherwise source-verifiable development. Never claim an unavailable runner, executable test, or Minecraft runtime was used.
+GitHub is the source of truth and storage for development; ChatGPT performs authorized work using its current tools. Never create or require cloud compute, cloud-hosted execution, a deployment platform, managed runner, user PC, npm, CI, or a local checkout to complete source-verifiable work. Existing GitHub Actions are not an external cloud architecture requirement and are never a standing gate; do not initiate a new verification workflow unless expressly within scope and callable. Never claim an unavailable executable test or Minecraft runtime was used.
 
-If a claim inherently needs executable or live-game evidence that cannot be obtained through an available authorized cloud/runtime route, mark that **specific claim UNKNOWN / NOT EXECUTED**, preserve its exact outstanding proof requirement, complete independent GitHub-valid work, and STOP at the existing proof ceiling. Do not turn this residue into a local-PC request or repeatedly stall development on npm/toolchain checks.
+If a claim inherently requires execution or live-game evidence absent from the tools currently available in ChatGPT and GitHub, mark **only that specific claim `UNKNOWN / NOT EXECUTED`** and preserve its proof requirement. Finish independent GitHub-valid development without creating a toolchain, runner, deployment, external cloud service, or future-work dependency. Do not repeatedly recommend waiting for a runner or ask the user to operate a PC. Do not turn this residue into a local-PC request or repeatedly stall development on npm/toolchain checks.
 
 A user-local workflow is outside this ChatGPT + GitHub workspace; mention local-PC instructions only if the user **explicitly changes the workflow and asks for them**. The mere need for Minecraft runtime evidence is not that permission.
 
@@ -183,7 +183,7 @@ Run the cheapest check that can falsify the changed claim.
 - TypeScript/source contract → exact-head source review + affected contract/test/fixture review; compiler/test execution is additional evidence, not a remote-work prerequisite
 - archive/repair behavior → source/fixture reasoning remotely; actual artifact execution only when that claim requires it
 - repository checkpoint → inspect repository verifier contracts and affected ownership remotely; executed verifier output is stronger optional evidence
-- Minecraft package/import/runtime → actual authorized cloud/live evidence only when available and required; otherwise mark the specific claim UNKNOWN, never request a user-PC test
+- Minecraft package/import/runtime → evidence only when directly available in the current ChatGPT tool context; otherwise mark the specific claim UNKNOWN, without requesting external cloud, a local-PC test, or a new runner
 
 A queued, running, cancelled, skipped, or unrelated workflow is not PASS.
 

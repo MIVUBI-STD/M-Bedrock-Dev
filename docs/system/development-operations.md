@@ -13,7 +13,7 @@ lifecycle: ACTIVE
 
 The primary ChatGPT development mode is **REMOTE_GITHUB**.
 
-For M-Lazy-Developer, **`Local` is the GitHub branch**, not a user-PC directory. **ChatGPT does not route its unfinished verification to a user-local PC**: this workflow uses ChatGPT + GitHub/cloud only. If an authorized cloud runner or Minecraft runtime is unavailable, record the exact `UNKNOWN / NOT EXECUTED` proof ceiling and finish independently source-verifiable work under `GITHUB_RULES.md#41-chatgpt-no-local-pc-invariant`.
+For M-Lazy-Developer, **`Local` is the GitHub branch**, not a user-PC directory. **ChatGPT does not route its unfinished verification to a user-local PC**: this workflow uses **ChatGPT + GitHub only**, with **no external cloud services and no local-PC path**. Current ChatGPT tools perform work, and GitHub `Local` owns source/commits/continuity. Do not require a cloud runner, hosted service, external compute, deployment, or optional GitHub Actions run. If executable or Minecraft runtime evidence is unavailable, record only the exact `UNKNOWN / NOT EXECUTED` proof ceiling and finish independently source-verifiable work under `GITHUB_RULES.md#41-chatgpt-no-local-pc-invariant`.
 
 ```text
 GitHub ref / exact source
@@ -59,9 +59,9 @@ Use the strongest evidence available for the exact claim without turning a highe
 ```text
 policy/docs change      → REMOTE_GITHUB structural/source review
 source contract         → REMOTE_GITHUB exact-head source + affected tests/contracts review
-executed typecheck/test → optional authorized ChatGPT/cloud or exact-head manual-only CI evidence
-artifact execution      → available authorized cloud/artifact environment, otherwise UNKNOWN
-Minecraft import/open   → actual supported cloud/game context, otherwise UNKNOWN
+executed typecheck/test → only if directly callable in current ChatGPT tools, or evidenced by an existing exact-head GitHub run; otherwise NOT EXECUTED
+artifact execution      → only if directly supported by current ChatGPT tools; otherwise UNKNOWN
+Minecraft import/open   → only if directly supported by current ChatGPT tools; otherwise UNKNOWN
 gameplay/runtime        → actual live execution evidence, otherwise UNKNOWN
 ```
 
