@@ -13,6 +13,8 @@ lifecycle: ACTIVE
 
 The primary ChatGPT development mode is **REMOTE_GITHUB**.
 
+For M-Lazy-Developer, **`Local` is the GitHub branch**, not a user-PC directory. **ChatGPT does not route its unfinished verification to a user-local PC**: this workflow uses ChatGPT + GitHub/cloud only. If an authorized cloud runner or Minecraft runtime is unavailable, record the exact `UNKNOWN / NOT EXECUTED` proof ceiling and finish independently source-verifiable work under `GITHUB_RULES.md#41-chatgpt-no-local-pc-invariant`.
+
 ```text
 GitHub ref / exact source
 → identify canonical owner
@@ -57,13 +59,13 @@ Use the strongest evidence available for the exact claim without turning a highe
 ```text
 policy/docs change      → REMOTE_GITHUB structural/source review
 source contract         → REMOTE_GITHUB exact-head source + affected tests/contracts review
-executed typecheck/test → optional local or exact-head CI evidence
-artifact execution      → LOCAL_ARTIFACT only when inherently required
-Minecraft import/open   → LOCAL_MINECRAFT only when inherently required
-gameplay/runtime        → LIVE_MINECRAFT only when inherently required
+executed typecheck/test → optional authorized ChatGPT/cloud or exact-head manual-only CI evidence
+artifact execution      → available authorized cloud/artifact environment, otherwise UNKNOWN
+Minecraft import/open   → actual supported cloud/game context, otherwise UNKNOWN
+gameplay/runtime        → actual live execution evidence, otherwise UNKNOWN
 ```
 
-Remote source completion and executable validation are different proof levels. Missing optional executable evidence must be reported as a proof ceiling, not converted into a requirement to move the task to a local PC.
+Remote source completion and executable validation are different proof levels. Evidence-context labels such as `LOCAL_ARTIFACT`, `LOCAL_MINECRAFT`, and `LIVE_MINECRAFT` describe required proof capabilities, **not** instructions to use the user's PC. Missing executable evidence must remain an explicit proof ceiling, never a requirement for local-PC access, npm installation, local data, or user-operated testing.
 
 ## Distribution boundary
 

@@ -30,6 +30,8 @@ Never claim proof above the available context.
 
 REMOTE_GITHUB is the normal ChatGPT execution mode and may complete repository/source work without a local checkout.
 
+For ChatGPT-owned M-Lazy-Developer work, `Local` is a **GitHub development branch**, not the user's PC. This workspace is **ChatGPT + GitHub/cloud-only**: never ask the user for local-PC access, local data, a checkout, toolchain installation, or commands as a development or verification handoff. If execution evidence is unavailable, follow the no-local-PC invariant in `GITHUB_RULES.md` and record the exact unverified claim rather than assigning the user a local task.
+
 Complete every source/static claim that can be decided from the exact GitHub ref. Do not make `npm run check`, local Node/npm availability, a local checkout, or `DEV.cmd` a completion prerequisite.
 
 Escalate only the exact claim that inherently requires filesystem execution, artifact execution, Minecraft import, or live gameplay. That higher-context residue does not invalidate remote completion of the source work already proven.
