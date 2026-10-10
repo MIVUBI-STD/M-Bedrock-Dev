@@ -435,6 +435,47 @@ describe("inspection causal analysis", () => {
   });
 
 
+  it("keeps repeated class names source-scoped and outside gameplay scenarios until behavior grounds them", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-class-owner-"));
+    try {
+      const scripts = join(root, "behavior_packs", "demo", "scripts");
+      await mkdir(scripts, { recursive: true });
+      await writeFile(join(scripts, "session.js"), [
+        'import { world } from "@minecraft/server";',
+        'class PlayerSession { reconnect() {} }',
+        'class ArenaSession { reconnect() {} }',
+        'function resetArena() { return { action: "finish" }; }',
+        'world.afterEvents.playerLeave.subscribe(() => resetArena());',
+      ].join("\n"), "utf8");
+      const result = await inspectDirectory(
+        root, "fixture:class-identity",
+        { edition: "bedrock", staticExecutionDimension: "overworld" },
+        "fixture-fingerprint", catalog,
+      );
+      const nodes = result.gameplayIntent.model.nodes;
+      const declarations = nodes.filter(node =>
+        node.id.startsWith("lifecycle:reconnect:declaration:"));
+      expect(declarations).toHaveLength(2);
+      expect(new Set(declarations.map(node => node.id)).size).toBe(2);
+      expect(declarations.every(node => node.status === "hypothesis")).toBe(true);
+      const graph = result.hiddenGameplayDefects.scenarioAudit.graph;
+      expect(graph.scenarios.some(scenario =>
+        declarations.some(node =>
+          scenario.sourceSubjectIds.includes(node.id) ||
+          scenario.componentIds.includes(node.id)))).toBe(false);
+      expect(graph.components.some(component =>
+        declarations.some(node => node.id === component.id))).toBe(false);
+
+      const reset = nodes.find(node => node.id === "lifecycle:reset-arena");
+      expect(reset).toBeDefined();
+      expect(reset?.status).not.toBe("hypothesis");
+      expect(graph.scenarios.some(scenario =>
+        scenario.sourceSubjectIds.includes(reset!.id))).toBe(true);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("keeps missing imported gameplay targets unresolved through production inspection", async () => {
     const root = await mkdtemp(join(tmpdir(), "m-bedrock-discovery-unresolved-"));
     try {

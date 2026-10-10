@@ -2097,8 +2097,12 @@ export function compileGameplayScenarioGraph(
     .filter(record => record.scope === "selected-artifact")
     .map(record => record.id));
   const playerCounts = presetPlayerCounts(input.preset);
+  // A classified name-only declaration is not an observed gameplay flow.
+  // Do not promote hypothetical source structure into a player-facing
+  // scenario until other selected-artifact evidence grounds that subject.
   const scenarioNodes = input.intent.nodes.filter(
-    (node) => SCENARIO_NODE_KINDS.has(node.kind),
+    (node) => SCENARIO_NODE_KINDS.has(node.kind) &&
+      node.status !== "hypothesis",
   );
   const runtime = runtimeComponents(input.world);
   const runtimeIds = new Set(
@@ -2116,7 +2120,9 @@ export function compileGameplayScenarioGraph(
     };
     const addIntentKinds = (...kinds: GameplayIntentNode["kind"][]) => {
       for (const node of input.intent.nodes) {
-        if (kinds.includes(node.kind)) selected.add(node.id);
+        if (kinds.includes(node.kind) && node.status !== "hypothesis") {
+          selected.add(node.id);
+        }
       }
     };
 
@@ -2417,7 +2423,11 @@ export function compileGameplayScenarioGraph(
     }
   }
 
-  const components: GameplayScenarioComponent[] = input.intent.nodes.map((node) => {
+  // Declaration-only hypotheses belong to Intent's unconfirmed candidate
+  // inventory, not gameplay component ownership or orphan/closure accounting.
+  const components: GameplayScenarioComponent[] = input.intent.nodes
+    .filter(node => node.status !== "hypothesis")
+    .map((node) => {
     const usedBy = [...(scenarioIdsBySubject.get(node.id) ?? [])].sort();
     return {
       id: node.id,

@@ -538,6 +538,23 @@ export function extractGameplayIntentSignals(
     }
   >();
 
+  // Name-only class declarations are observations, not proof that a
+  // gameplay mechanic exists. Repeated names need distinct authored sites;
+  // otherwise unrelated modules/classes collapse into one Intent subject.
+  const declaredNameCounts = new Map<string, number>();
+  for (const script of scripts) {
+    const path = script.source.relativePath;
+    if (!("/" + path.replaceAll("\\", "/")).includes("/scripts/")) continue;
+    for (const member of script.declaredMembers ?? []) {
+      if (member.source.artifactId !== script.source.artifactId ||
+          member.source.relativePath !== path) continue;
+      const inferred = declaredMemberSignal(path, member);
+      if (!inferred) continue;
+      declaredNameCounts.set(inferred.subjectKey,
+        (declaredNameCounts.get(inferred.subjectKey) ?? 0) + 1);
+    }
+  }
+
   const spatialContextSeriesByPath = new Map<
     string,
     {
@@ -876,10 +893,28 @@ export function extractGameplayIntentSignals(
         const signal =
           declaredMemberSignal(path, member);
         if (signal) {
+          const repeated = (declaredNameCounts.get(signal.subjectKey) ?? 0) > 1;
+          const range = member.source.range;
+          // Without an exact site, repeated declarations cannot safely be
+          // assigned separate semantic identities. Keep them in parsed source
+          // instead of guessing which class/member owns a mechanic.
+          if (repeated && (range?.lineStart === undefined ||
+              range.lineEnd === undefined ||
+              range.columnStart === undefined ||
+              range.columnEnd === undefined)) continue;
+          const subjectKey = repeated
+            ? signal.subjectKey + ":declaration:" +
+              encodeURIComponent(path) + ":" + range!.lineStart + ":" +
+              range!.columnStart + ":" + range!.lineEnd + ":" +
+              range!.columnEnd
+            : signal.subjectKey;
           pushSignal(signals, {
             ...signal,
+            id: "signal:" + subjectKey + ":" + slug(path),
+            subjectKey,
+            status: "hypothesis",
             summary:
-              "A declared class member name survives bundling and provides bounded authored-structure intent evidence.",
+              "A source-owned class member was declared. Its name alone cannot establish a gameplay mechanic, objective, execution path or scenario.",
           });
         }
       }

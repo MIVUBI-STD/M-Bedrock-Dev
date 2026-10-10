@@ -589,6 +589,9 @@ describe("gameplay intent analyzer", () => {
     );
 
     expect(ids.has("state:phase")).toBe(true);
+    expect(result.signals.filter(signal =>
+      signal.subjectKey === "state:phase").every(signal =>
+        signal.status === "hypothesis")).toBe(true);
     expect(ids.has("lifecycle:reconnect")).toBe(true);
     expect(ids.has("lifecycle:disconnect")).toBe(true);
     expect(ids.has("resource:clear-player-inventory")).toBe(true);
@@ -688,6 +691,8 @@ describe("gameplay intent analyzer", () => {
         source: {
           artifactId: "art_test",
           relativePath: "behavior_packs/demo/scripts/chunks/chunk-" + index + ".js",
+          range: { lineStart: index, columnStart: 3,
+            lineEnd: index, columnEnd: 25 },
         },
       }],
     });
@@ -697,9 +702,11 @@ describe("gameplay intent analyzer", () => {
       modular(2),
       modular(3),
     ]);
-    expect(result.signals.some(signal =>
-      signal.subjectKey === "lifecycle:reconnect" &&
-      signal.status === "inferred")).toBe(true);
+    const candidates = result.signals.filter(signal =>
+      signal.subjectKey.startsWith("lifecycle:reconnect:declaration:"));
+    expect(candidates).toHaveLength(3);
+    expect(new Set(candidates.map(signal => signal.subjectKey)).size).toBe(3);
+    expect(candidates.every(signal => signal.status === "hypothesis")).toBe(true);
 
     // The exact member source, not its name or the project module count,
     // decides admission. A foreign declaration cannot create an Intent node.
@@ -712,7 +719,23 @@ describe("gameplay intent analyzer", () => {
       })),
     ]);
     expect(foreign.signals.some(signal =>
-      signal.subjectKey === "lifecycle:reconnect")).toBe(false);
+      signal.subjectKey.startsWith("lifecycle:reconnect"))).toBe(false);
+
+    // Repeated same-file members with no precise declaration spans must not
+    // be collapsed into a single fictional class/lifecycle owner.
+    const ambiguous = modular(1);
+    const noSpan = {
+      ...ambiguous.declaredMembers![0]!,
+      source: {
+        artifactId: "art_test",
+        relativePath: ambiguous.source.relativePath,
+      },
+    };
+    const rejected = extractGameplayIntentSignals([{
+      ...ambiguous, declaredMembers: [noSpan, { ...noSpan }],
+    }]);
+    expect(rejected.signals.some(signal =>
+      signal.subjectKey.startsWith("lifecycle:reconnect"))).toBe(false);
   });
 
   it("models classified status returns as state values instead of gameplay outcomes", () => {
