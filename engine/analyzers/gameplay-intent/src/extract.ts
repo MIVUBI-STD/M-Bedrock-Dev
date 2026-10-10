@@ -513,13 +513,6 @@ export function extractGameplayIntentSignals(
 ): GameplayIntentSignalSet {
   const signals = new Map<string, GameplayIntentSignal>();
   const relations = new Map<string, GameplayIntentRelationSignal>();
-  const executableScriptCount = scripts.filter((script) => {
-    const normalized =
-      "/" + script.source.relativePath.replaceAll("\\", "/");
-    return normalized.includes("/scripts/");
-  }).length;
-  const declaredMemberRecoveryEnabled =
-    executableScriptCount <= 2;
   const typedTransitionSignatures = new Set(
     scripts.flatMap((script) =>
       (script.transitionDeclarations ?? [])
@@ -872,11 +865,14 @@ export function extractGameplayIntentSignals(
 
     const normalizedPath =
       "/" + path.replaceAll("\\", "/");
-    const bundledExecutable =
-      declaredMemberRecoveryEnabled &&
-      normalizedPath.includes("/scripts/");
-    if (bundledExecutable) {
+    // Bundled class members are authored source facts regardless of how
+    // many executable modules/chunks belong to the map. Reject members
+    // attributed to another file or artifact instead of disabling entire
+    // modular projects by an arbitrary file-count threshold.
+    if (normalizedPath.includes("/scripts/")) {
       for (const member of script.declaredMembers ?? []) {
+        if (member.source.artifactId !== script.source.artifactId ||
+            member.source.relativePath !== path) continue;
         const signal =
           declaredMemberSignal(path, member);
         if (signal) {

@@ -660,7 +660,7 @@ describe("gameplay intent analyzer", () => {
     expect(ids.has("mechanic:countdown-feedback")).toBe(true);
   });
 
-  it("suppresses bundled member recovery for modular script sets", () => {
+  it("recovers source-owned class behavior across modular chunks without foreign member promotion", () => {
     const base = script();
     const modular = (index: number): ParsedScriptFile => ({
       ...base,
@@ -685,7 +685,10 @@ describe("gameplay intent analyzer", () => {
         member: "reconnect",
         memberKind: "method",
         containerHint: "A",
-        source: base.source,
+        source: {
+          artifactId: "art_test",
+          relativePath: "behavior_packs/demo/scripts/chunks/chunk-" + index + ".js",
+        },
       }],
     });
 
@@ -694,13 +697,22 @@ describe("gameplay intent analyzer", () => {
       modular(2),
       modular(3),
     ]);
+    expect(result.signals.some(signal =>
+      signal.subjectKey === "lifecycle:reconnect" &&
+      signal.status === "inferred")).toBe(true);
 
-    expect(
-      result.signals.some(
-        (signal) =>
-          signal.subjectKey === "lifecycle:reconnect",
-      ),
-    ).toBe(false);
+    // The exact member source, not its name or the project module count,
+    // decides admission. A foreign declaration cannot create an Intent node.
+    const foreign = extractGameplayIntentSignals([
+      ...[modular(1), modular(2), modular(3)].map(script => ({
+        ...script,
+        declaredMembers: script.declaredMembers!.map(member => ({
+          ...member, source: base.source,
+        })),
+      })),
+    ]);
+    expect(foreign.signals.some(signal =>
+      signal.subjectKey === "lifecycle:reconnect")).toBe(false);
   });
 
   it("models classified status returns as state values instead of gameplay outcomes", () => {
