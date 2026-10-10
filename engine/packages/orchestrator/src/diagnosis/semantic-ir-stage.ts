@@ -20,6 +20,7 @@ import {
   type ExecutionEdge,
   type AuthoredBranchGuard,
   type AuthoredReturnOutcome,
+  type AuthoredWorldEffect,
   type AuthoredResourceAction,
   type ExecutionRegion,
   type ExecutionRegionKind,
@@ -127,6 +128,49 @@ export function buildInspectionSemanticIr(
   const operations = new Map<string, StateOperation>();
   const outcomes = new Map<string, AuthoredReturnOutcome>();
   const resourceActions = new Map<string, AuthoredResourceAction>();
+  const worldEffects = new Map<string, AuthoredWorldEffect>();
+  const worldEffectCounts = new Map<string, number>();
+  const addWorldEffect = (effect: Omit<AuthoredWorldEffect, "id">): void => {
+    const base = ["world-effect", token(effect.executionRegionId), effect.kind,
+      sourceToken(effect.source), token(effect.targetLabel)].join(":");
+    const count = worldEffectCounts.get(base) ?? 0;
+    worldEffectCounts.set(base, count + 1);
+    worldEffects.set(base + ":" + count, { ...effect, id: base + ":" + count });
+  };
+  // Use the canonical command analyzer; never reparse or guess command effects.
+  const addCommandWorldEffects = (
+    commandEffects: ReturnType<typeof flattenCommandEffects>,
+    executionRegionId: string,
+    mechanism: "mcfunction-command" | "script-command",
+  ): void => {
+    for (const effect of commandEffects) {
+      let kind: AuthoredWorldEffect["kind"] | undefined;
+      let targetLabel: string | undefined;
+      switch (effect.kind) {
+        case "entity-spawn":
+          kind = "entity-spawn"; targetLabel = effect.entityIdentifier; break;
+        case "teleport":
+          kind = "teleport"; targetLabel = effect.target; break;
+        case "fill":
+        case "setblock":
+          kind = "block-mutation"; targetLabel = effect.block; break;
+        case "clone":
+          kind = "block-mutation"; targetLabel = "clone"; break;
+        case "structure-load":
+          kind = "structure-load"; targetLabel = effect.target; break;
+        case "dialogue":
+          kind = "dialogue";
+          targetLabel = effect.operation + ":" + effect.npcTarget; break;
+        case "entity-event-trigger":
+          kind = "entity-event"; targetLabel = effect.event; break;
+      }
+      if (kind === undefined || targetLabel === undefined) continue;
+      addWorldEffect({
+        kind, targetLabel, executionRegionId, mechanism,
+        precision: "parsed-command", source: effect.source,
+      });
+    }
+  };
 
   const ensureRegion = (region: ExecutionRegion): void => {
     const existing = regions.get(region.id);
@@ -278,6 +322,7 @@ export function buildInspectionSemanticIr(
 
     for (const command of parsed.commands) {
       const effects = flattenCommandEffects(command.analysis);
+      addCommandWorldEffects(effects, from, "mcfunction-command");
       for (const access of scoreboardAccesses(effects)) {
         addStateOperation(
           from,
@@ -436,6 +481,53 @@ export function buildInspectionSemanticIr(
       });
     }
 
+    // Only typed API call sites are admitted; unknown receiver calls are not.
+    for (const call of parsed.methodCalls) {
+      const kind: AuthoredWorldEffect["kind"] | undefined =
+        call.receiverType === "Dimension" && call.method === "spawnEntity"
+          ? "entity-spawn"
+          : (call.receiverType === "Entity" || call.receiverType === "Player") &&
+              (call.method === "teleport" || call.method === "tryTeleport")
+            ? "teleport" : undefined;
+      if (!kind) continue;
+      addWorldEffect({
+        kind,
+        targetLabel: kind === "entity-spawn"
+          ? call.argumentTexts?.[0] ?? "unknown-entity-expression"
+          : call.receiverHint ?? call.receiverType,
+        executionRegionId: ensureScriptRegion(
+          parsed, call.executionRegion ?? "module", call.source,
+        ),
+        source: call.source,
+        mechanism: "script-api",
+        precision: call.inference === "direct" ? "typed-method" : "bounded-method",
+      });
+    }
+    // Reuse the existing spatial AST analysis rather than generic method names.
+    for (const mutation of parsed.spatialWorldMutations ?? []) {
+      addWorldEffect({
+        kind: "block-mutation",
+        targetLabel: mutation.writeIdentity ?? mutation.method,
+        executionRegionId: ensureScriptRegion(
+          parsed, mutation.executionRegion, mutation.source,
+        ),
+        source: mutation.source, mechanism: "script-spatial",
+        precision: mutation.status === "resolved"
+          ? "resolved-spatial" : "unresolved-spatial",
+      });
+    }
+    for (const trigger of parsed.entityEventTriggers) {
+      addWorldEffect({
+        kind: "entity-event",
+        targetLabel: trigger.event,
+        executionRegionId: ensureScriptRegion(
+          parsed, trigger.executionRegion ?? "module", trigger.source,
+        ),
+        source: trigger.source, mechanism: "script-api",
+        precision: "typed-method",
+      });
+    }
+
     for (const access of parsed.dynamicProperties) {
       const operation = operationFromDynamicProperty(access.operation);
       if (!operation) continue;
@@ -538,6 +630,7 @@ export function buildInspectionSemanticIr(
         command.source,
       );
       const effects = flattenCommandEffects(analysis);
+      addCommandWorldEffects(effects, region, "script-command");
 
       for (const effect of effects) {
         if (effect.kind !== "function-call") continue;
@@ -668,6 +761,7 @@ export function buildInspectionSemanticIr(
       ),
       edges: executionEdges,
       outcomes: [...outcomes.values()].sort((a, b) => a.id.localeCompare(b.id)),
+      worldEffects: [...worldEffects.values()].sort((a, b) => a.id.localeCompare(b.id)),
     },
     state: {
       surfaces: [...surfaces.values()].sort(

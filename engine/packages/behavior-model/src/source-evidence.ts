@@ -281,7 +281,10 @@ export function reconcileSourceStateOutcomes(
  */
 export interface SourceEffectSlice {
   readonly effectId: string;
-  readonly effectKind: "state-mutation" | "resource-action" | "authored-return";
+  readonly effectKind: "state-mutation" | "resource-action" | "authored-return" | "world-effect";
+  readonly worldEffectKind?: NonNullable<SemanticIr["execution"]["worldEffects"]>[number]["kind"];
+  readonly targetLabel?: string;
+  readonly evidencePrecision?: NonNullable<SemanticIr["execution"]["worldEffects"]>[number]["precision"];
   readonly executionRegionId: string;
   readonly sourcePath: string;
   readonly status: "CANDIDATE_INGRESS" | "NO_KNOWN_INGRESS" | "TRUNCATED";
@@ -334,6 +337,9 @@ export function deriveSourceEffectSlices(
     region: string;
     source: SourceRef;
     surfaceId?: string;
+    worldEffectKind?: SourceEffectSlice["worldEffectKind"];
+    targetLabel?: string;
+    evidencePrecision?: SourceEffectSlice["evidencePrecision"];
     lexicalGuards?: readonly AuthoredBranchGuard[];
     precedenceGuards?: readonly AuthoredBranchGuard[];
   };
@@ -359,6 +365,12 @@ export function deriveSourceEffectSlices(
       region: outcome.executionRegionId, source: outcome.source,
       lexicalGuards: outcome.lexicalGuards,
       precedenceGuards: outcome.precedenceGuards,
+    })),
+    ...(ir.execution.worldEffects ?? []).map(effect => ({
+      id: effect.id, kind: "world-effect" as const,
+      region: effect.executionRegionId, source: effect.source,
+      worldEffectKind: effect.kind, targetLabel: effect.targetLabel,
+      evidencePrecision: effect.precision,
     })),
   ];
   const stateOutcomeCandidates = reconcileSourceStateOutcomes(ir);
@@ -458,6 +470,11 @@ export function deriveSourceEffectSlices(
     return {
       effectId: effect.id,
       effectKind: effect.kind,
+      ...(effect.worldEffectKind === undefined ? {} : {
+        worldEffectKind: effect.worldEffectKind,
+        targetLabel: effect.targetLabel,
+        evidencePrecision: effect.evidencePrecision,
+      }),
       executionRegionId: effect.region,
       sourcePath: effect.source.relativePath,
       status: truncated ? "TRUNCATED" as const :

@@ -678,6 +678,29 @@ export function buildGameplayIntentModel(
     }
   }
 
+  // Link only an exact IR world effect to ONE already classified candidate
+  // that owns the same execution region; never manufacture new mechanics.
+  for (const effect of input.semanticIr?.execution.worldEffects ?? []) {
+    if (input.artifactId !== undefined &&
+        effect.source.artifactId !== input.artifactId) continue;
+    const owners = [...nodes.values()].filter(node =>
+      node.status !== "hypothesis" &&
+      node.evidenceIds.includes(effect.executionRegionId));
+    if (owners.length !== 1) continue;
+    const owner = owners[0]!;
+    evidence.set(effect.id, {
+      id: effect.id, origin: "source-code",
+      locator: effect.source.relativePath,
+      scope: "selected-artifact",
+      summary: "Authored " + effect.kind + " attempt; source presence " +
+        "does not establish gameplay execution or success.",
+    });
+    nodes.set(owner.id, {
+      ...owner,
+      evidenceIds: [...new Set([...owner.evidenceIds, effect.id])].sort(),
+    });
+  }
+
   const evidenceHasSelectedArtifactSource = (
     evidenceIds: readonly string[],
   ): boolean =>

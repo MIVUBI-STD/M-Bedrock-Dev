@@ -97,6 +97,12 @@ For each authored effect/return the owner traverses *only uniquely identified re
 
 The existing `deriveGameplayArchitectureNavigation()` consumes these behavior-model slices once, connects effects to graph components only by exact evidence ID and separately labels feature associations encountered on a source-call path. It publishes them through the already-established `MapAuditOutputV2.gameplayStructure` view. Static path association is not player-facing gameplay meaning or PROVEN causality; unowned effect IDs remain explicit. Testing/CI are deferred until the integrated BUILD acceptance boundary.
 
+### Minecraft authored world-effect sinks
+
+The existing Semantic IR execution owner now normalizes **source-observed attempts** from canonical command, script method, spatial mutation and entity-event parsers into optional `worldEffects` records (spawn, teleport, block change, structure load, dialogue and entity event). Records carry exact source and execution-region IDs, kind, mechanism and evidence precision—not runtime success or game-design meaning. No second detector/parser is introduced.
+
+Canonical forward source traces and behavior-model backward effect slices include these IDs. Gameplay Intent only links effect evidence when the same execution-region ID is owned by exactly one recognized, non-hypothetical source candidate. Unowned and ambiguous effects remain visible in the existing Game-Centric navigation and Map Audit V2 source-effect contract. Report publication and proof gates are unchanged.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:

@@ -78,6 +78,23 @@ export interface AuthoredResourceAction {
   precedenceGuards?: readonly AuthoredBranchGuard[];
 }
 
+/**
+ * Authored attempts at Minecraft world/player-visible effects.
+ * Neither source presence nor a resolved command guarantees runtime success.
+ */
+export interface AuthoredWorldEffect {
+  readonly id: string;
+  readonly executionRegionId: string;
+  readonly kind: "entity-spawn" | "teleport" | "block-mutation" |
+    "structure-load" | "dialogue" | "entity-event";
+  readonly mechanism: "mcfunction-command" | "script-command" |
+    "script-api" | "script-spatial";
+  readonly targetLabel: string;
+  readonly precision: "parsed-command" | "typed-method" |
+    "bounded-method" | "resolved-spatial" | "unresolved-spatial";
+  readonly source: SourceRef;
+}
+
 export interface StateSurface {
   id: string;
   ref: StateSurfaceRef;
@@ -135,6 +152,7 @@ export interface SemanticIr {
     regions: readonly ExecutionRegion[];
     edges: readonly ExecutionEdge[];
     outcomes?: readonly AuthoredReturnOutcome[];
+    worldEffects?: readonly AuthoredWorldEffect[];
   };
   state: {
     surfaces: readonly StateSurface[];

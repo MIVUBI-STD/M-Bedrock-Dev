@@ -28,6 +28,9 @@ export function validateSemanticIr(ir: SemanticIr): string[] {
   for (const duplicate of duplicateIds(ir.execution.outcomes ?? [])) {
     errors.push("Duplicate return outcome id: " + duplicate);
   }
+  for (const duplicate of duplicateIds(ir.execution.worldEffects ?? [])) {
+    errors.push("Duplicate authored world effect id: " + duplicate);
+  }
   for (const duplicate of duplicateIds(ir.state.resourceActions ?? [])) {
     errors.push("Duplicate resource action id: " + duplicate);
   }
@@ -57,6 +60,11 @@ export function validateSemanticIr(ir: SemanticIr): string[] {
   for (const outcome of ir.execution.outcomes ?? []) {
     if (!regions.has(outcome.executionRegionId)) {
       errors.push("Return outcome execution region does not exist: " + outcome.id);
+    }
+  }
+  for (const effect of ir.execution.worldEffects ?? []) {
+    if (!regions.has(effect.executionRegionId)) {
+      errors.push("World effect execution region does not exist: " + effect.id);
     }
   }
   for (const action of ir.state.resourceActions ?? []) {

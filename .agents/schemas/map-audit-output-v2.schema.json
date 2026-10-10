@@ -2659,7 +2659,8 @@
                 "enum": [
                   "state-mutation",
                   "resource-action",
-                  "authored-return"
+                  "authored-return",
+                  "world-effect"
                 ]
               },
               "executionRegionId": {
@@ -2797,6 +2798,28 @@
                 "items": {
                   "type": "string"
                 }
+              },
+              "worldEffectKind": {
+                "enum": [
+                  "entity-spawn",
+                  "teleport",
+                  "block-mutation",
+                  "structure-load",
+                  "dialogue",
+                  "entity-event"
+                ]
+              },
+              "targetLabel": {
+                "type": "string"
+              },
+              "evidencePrecision": {
+                "enum": [
+                  "parsed-command",
+                  "typed-method",
+                  "bounded-method",
+                  "resolved-spatial",
+                  "unresolved-spatial"
+                ]
               }
             }
           }

@@ -413,6 +413,11 @@ export interface GameplayArchitectureNavigation {
       readonly linkedIds: readonly string[];
       readonly unlinkedIds: readonly string[];
     };
+    readonly worldEffects: {
+      readonly observedCount: number;
+      readonly linkedIds: readonly string[];
+      readonly unlinkedIds: readonly string[];
+    };
     readonly temporalRelations: {
       readonly observedCount: number;
       readonly linkedIds: readonly string[];
@@ -1076,6 +1081,7 @@ export function deriveGameplayArchitectureNavigation(
           ...trace.temporalRelationIds,
           ...trace.stateOperationIds,
           ...trace.returnOutcomeIds,
+          ...(trace.worldEffectIds ?? []),
           ...trace.resourceActionIds,
         ]);
         const matchingComponents = graph.components.filter(component =>
@@ -1146,6 +1152,9 @@ export function deriveGameplayArchitectureNavigation(
       ),
       temporalRelations: irAccounting(
         observed.semanticIr?.temporal.relations.map((item) => item.id) ?? [],
+      ),
+      worldEffects: irAccounting(
+        observed.semanticIr?.execution.worldEffects?.map(item => item.id) ?? [],
       ),
     },
     systemInventory: [...(observed.systemObservations ?? [])]
@@ -1420,6 +1429,7 @@ export function deriveGameplayArchitectureNavigation(
       ...navigation.semanticIrCoverage.executionRegions.unlinkedIds,
       ...navigation.semanticIrCoverage.executionEdges.unlinkedIds,
       ...navigation.semanticIrCoverage.temporalRelations.unlinkedIds,
+      ...navigation.semanticIrCoverage.worldEffects.unlinkedIds,
     ]),
   };
 
@@ -1431,6 +1441,7 @@ export function deriveGameplayArchitectureNavigation(
     ir.executionRegions,
     ir.executionEdges,
     ir.temporalRelations,
+    ir.worldEffects,
   ].reduce((total, group) => total + group.unlinkedIds.length, 0);
   const sourceIndexIncomplete =
     !Number.isSafeInteger(observed.relevantSourceCount) ||

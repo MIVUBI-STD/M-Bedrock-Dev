@@ -35,6 +35,8 @@ export interface ObservedExecutionTrace {
   readonly stateWriteOperationIds: readonly string[];
   /** Authored object returns, not game terminal proof. */
   readonly returnOutcomeIds: readonly string[];
+  /** Source-observed world-effect attempts, not engine execution proof. */
+  readonly worldEffectIds?: readonly string[];
   /** Potential resource effects, not verified cleanup. */
   readonly resourceActionIds: readonly string[];
   readonly resourceReleaseActionIds: readonly string[];
@@ -83,6 +85,12 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
     items.push(outcome);
     observedOutcomes.set(outcome.executionRegionId, items);
   }
+  const worldEffects = new Map<string, NonNullable<typeof ir.execution.worldEffects>[number][]>();
+  for (const effect of ir.execution.worldEffects ?? []) {
+    const bucket = worldEffects.get(effect.executionRegionId) ?? [];
+    bucket.push(effect);
+    worldEffects.set(effect.executionRegionId, bucket);
+  }
   const observedActions = new Map<string, NonNullable<typeof ir.state.resourceActions>[number][]>();
   for (const action of ir.state.resourceActions ?? []) {
     const items = observedActions.get(action.executionRegionId) ?? [];
@@ -113,6 +121,7 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
     const state = new Set<string>();
     const writes = new Set<string>();
     const returnOutcomes = new Set<string>();
+    const worldEffectIds = new Set<string>();
     const resourceActions = new Set<string>();
     const resourceReleases = new Set<string>();
     for (let index = 0; index < queued.length; index += 1) {
@@ -124,6 +133,9 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
       }
       for (const outcome of observedOutcomes.get(regionId) ?? []) {
         returnOutcomes.add(outcome.id);
+      }
+      for (const effect of worldEffects.get(regionId) ?? []) {
+        worldEffectIds.add(effect.id);
       }
       for (const action of observedActions.get(regionId) ?? []) {
         resourceActions.add(action.id);
@@ -260,6 +272,7 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
       stateOperationIds: sorted(state),
       stateWriteOperationIds: sorted(writes),
       returnOutcomeIds: sorted(returnOutcomes),
+      worldEffectIds: sorted(worldEffectIds),
       resourceActionIds: sorted(resourceActions),
       resourceReleaseActionIds: sorted(resourceReleases),
       guardedExecutionEdges: sorted(edges).flatMap(id => {
@@ -324,6 +337,7 @@ export function semanticIrSummary(ir: SemanticIr) {
     stateSurfaces: ir.state.surfaces.length,
     stateOperations: ir.state.operations.length,
     authoredReturnOutcomes: ir.execution.outcomes?.length ?? 0,
+    authoredWorldEffects: ir.execution.worldEffects?.length ?? 0,
     authoredResourceActions: ir.state.resourceActions?.length ?? 0,
     authoredResourceReleases: (ir.state.resourceActions ?? []).filter(
       action => action.action === "release").length,
