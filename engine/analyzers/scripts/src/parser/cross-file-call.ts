@@ -12,6 +12,8 @@ export interface CrossFileCallEdge {
   callerRegion: string;
   targetModule?: string;
   targetExport: string;
+  /** Exact declared executable region; omitted for non-callable/ambiguous exports. */
+  targetRegion?: string;
   localName: string;
   controlFlow: "unconditional" | "conditional" | "deferred";
   status: "resolved" | "unresolved";
@@ -332,6 +334,45 @@ function moduleExports(
   };
 }
 
+/**
+ * Executable export identity is stronger than an exported symbol name:
+ * invoking an exported class, object, or mutable binding is not evidence of
+ * a statically resolvable function call.
+ */
+function callableRegions(file: ts.SourceFile): ReadonlyMap<string, string> {
+  const declarations = new Map<string, string[]>();
+  const add = (name: string, executionRegion: string): void => {
+    declarations.set(name, [...(declarations.get(name) ?? []), executionRegion]);
+  };
+  for (const statement of file.statements) {
+    if (ts.isFunctionDeclaration(statement) && statement.name && statement.body) {
+      add(statement.name.text, "function:" + statement.name.text);
+    }
+    if (ts.isVariableStatement(statement) &&
+        (statement.declarationList.flags & ts.NodeFlags.Const)) {
+      for (const declaration of statement.declarationList.declarations) {
+        const initializer = declaration.initializer;
+        if (!ts.isIdentifier(declaration.name) || !initializer ||
+            !(ts.isFunctionExpression(initializer) || ts.isArrowFunction(initializer))) continue;
+        const position = file.getLineAndCharacterOfPosition(initializer.getStart(file));
+        add(declaration.name.text,
+          "callback@" + (position.line + 1) + ":" + (position.character + 1));
+      }
+    }
+  }
+  return new Map([...declarations]
+    .filter(([, regions]) => regions.length === 1)
+    .map(([name, regions]) => [name, regions[0]!]));
+}
+
+function packScope(path: string): string | undefined {
+  const segments = normalizePath(path).split("/");
+  return segments.length > 1 &&
+    (segments[0] === "behavior_packs" || segments[0] === "resource_packs")
+    ? segments.slice(0, 2).join("/")
+    : undefined;
+}
+
 function resolveExportTarget(
   modulePath: string,
   exportName: string,
@@ -408,16 +449,21 @@ function resolveExportTarget(
 export function deriveCrossFileCallEdges(
   modules: readonly ScriptModuleSourceInput[],
 ): CrossFileCallEdge[] {
-  const normalizedModules = new Map(
-    modules.map((module) => [
-      normalizePath(module.path),
-      module,
-    ]),
-  );
+  // Do not let a duplicate path from another source silently replace an
+  // authoritative selected-artifact module.
+  const counts = new Map<string, number>();
+  for (const module of modules) {
+    const normalized = normalizePath(module.path);
+    counts.set(normalized, (counts.get(normalized) ?? 0) + 1);
+  }
+  const normalizedModules = new Map(modules
+    .filter(module => counts.get(normalizePath(module.path)) === 1)
+    .map(module => [normalizePath(module.path), module]));
   const known = new Set(normalizedModules.keys());
   const parsedFiles = new Map<string, ts.SourceFile>();
   const exportsByModule =
     new Map<string, ParsedModuleExports>();
+  const callableByModule = new Map<string, ReadonlyMap<string, string>>();
 
   for (const [path, module] of normalizedModules) {
     const file = ts.createSourceFile(
@@ -429,6 +475,7 @@ export function deriveCrossFileCallEdges(
     );
     parsedFiles.set(path, file);
     exportsByModule.set(path, moduleExports(file));
+    callableByModule.set(path, callableRegions(file));
   }
 
   const output: CrossFileCallEdge[] = [];
@@ -440,6 +487,34 @@ export function deriveCrossFileCallEdges(
       importedName: string;
     }>();
     const namespaceImports = new Map<string, string>();
+
+    const bindsName = (binding: ts.BindingName, name: string): boolean =>
+      ts.isIdentifier(binding) ? binding.text === name :
+      binding.elements.some(element =>
+        ts.isBindingElement(element) && bindsName(element.name, name));
+    const isShadowed = (use: ts.Identifier): boolean => {
+      let current: ts.Node | undefined = use.parent;
+      while (current && current !== file) {
+        if (ts.isFunctionLike(current) && current.parameters.some(parameter =>
+            bindsName(parameter.name, use.text))) return true;
+        if (ts.isCatchClause(current) && current.variableDeclaration &&
+            bindsName(current.variableDeclaration.name, use.text)) return true;
+        if ((ts.isForStatement(current) || ts.isForInStatement(current) ||
+            ts.isForOfStatement(current)) && current.initializer &&
+            ts.isVariableDeclarationList(current.initializer) &&
+            current.initializer.declarations.some(declaration =>
+              bindsName(declaration.name, use.text))) return true;
+        if (ts.isBlock(current) &&
+            current.statements.some(statement =>
+              (ts.isVariableStatement(statement) &&
+                statement.declarationList.declarations.some(declaration =>
+                  bindsName(declaration.name, use.text))) ||
+              (ts.isFunctionDeclaration(statement) &&
+                statement.name?.text === use.text))) return true;
+        current = current.parent;
+      }
+      return false;
+    };
 
     for (const statement of file.statements) {
       if (
@@ -454,7 +529,7 @@ export function deriveCrossFileCallEdges(
         statement.moduleSpecifier.text;
       const clause = statement.importClause;
 
-      if (clause?.name) {
+      if (clause?.name && !clause.isTypeOnly) {
         directImports.set(clause.name.text, {
           moduleSpecifier,
           importedName: "default",
@@ -464,6 +539,7 @@ export function deriveCrossFileCallEdges(
       const named = clause?.namedBindings;
       if (named && ts.isNamedImports(named)) {
         for (const element of named.elements) {
+          if (clause?.isTypeOnly || element.isTypeOnly) continue;
           directImports.set(element.name.text, {
             moduleSpecifier,
             importedName:
@@ -471,7 +547,7 @@ export function deriveCrossFileCallEdges(
               element.name.text,
           });
         }
-      } else if (named && ts.isNamespaceImport(named)) {
+      } else if (named && !clause?.isTypeOnly && ts.isNamespaceImport(named)) {
         namespaceImports.set(
           named.name.text,
           moduleSpecifier,
@@ -501,6 +577,14 @@ export function deriveCrossFileCallEdges(
               exportsByModule,
               known,
             );
+      const targetSource = target === undefined
+        ? undefined : normalizedModules.get(target.modulePath)?.source;
+      const sameOwner = targetSource !== undefined &&
+        targetSource.artifactId === module.source.artifactId &&
+        packScope(modulePath) === packScope(target!.modulePath);
+      const targetRegion = sameOwner && target
+        ? callableByModule.get(target.modulePath)?.get(target.exportName)
+        : undefined;
 
       output.push({
         callerModule: modulePath,
@@ -513,9 +597,10 @@ export function deriveCrossFileCallEdges(
         targetExport:
           target?.exportName ??
           imported.importedName,
+        ...(targetRegion === undefined ? {} : { targetRegion }),
         localName: imported.localName,
         controlFlow: controlFlow(node),
-        status: target ? "resolved" : "unresolved",
+        status: targetRegion ? "resolved" : "unresolved",
         source: nodeSource(file, node, {
           ...module.source,
           relativePath: modulePath,
@@ -528,7 +613,7 @@ export function deriveCrossFileCallEdges(
         if (ts.isIdentifier(node.expression)) {
           const imported =
             directImports.get(node.expression.text);
-          if (imported) {
+          if (imported && !isShadowed(node.expression)) {
             appendEdge(node, {
               ...imported,
               localName: node.expression.text,
@@ -542,7 +627,7 @@ export function deriveCrossFileCallEdges(
             node.expression.expression.text;
           const moduleSpecifier =
             namespaceImports.get(namespace);
-          if (moduleSpecifier) {
+          if (moduleSpecifier && !isShadowed(node.expression.expression)) {
             appendEdge(node, {
               moduleSpecifier,
               importedName:

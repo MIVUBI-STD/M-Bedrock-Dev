@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
+import { parseScriptFile, deriveCrossFileCallEdges } from "../../../../analyzers/scripts/src/index.js";
 import { buildInspectionSemanticIr } from "../../src/diagnosis/semantic-ir-stage.js";
 import { buildGameplayIntentModel } from "../../src/inspection/gameplay-intent-stage.js";
 import {
@@ -878,6 +878,105 @@ describe("arena identity evidence propagation", () => {
     expect(navigation.knowledgeCoverage.wholeGameUnderstandingPercent).toBeNull();
   });
 
+
+  it("reaches imported cleanup and finish outcomes through exact ESM call edges", () => {
+    const sourceFor = (path: string) => ({
+      artifactId: "world:crossfile", relativePath: path,
+    });
+    const pathMain = "behavior_packs/demo/scripts/main.js";
+    const pathRound = "behavior_packs/demo/scripts/round.js";
+    const mainText = [
+      'import { world } from "@minecraft/server";',
+      'import { settleRound as finishRound } from "./round.js";',
+      'world.afterEvents.playerLeave.subscribe(event => finishRound(event.player));',
+    ].join("\n");
+    const roundText = [
+      'export function settleRound(player) {',
+      '  player.removeTag("playing");',
+      '  return { action: "finish" };',
+      '}',
+    ].join("\n");
+    const parsedMain = parseScriptFile("main", mainText, sourceFor(pathMain));
+    const parsedRound = parseScriptFile("round", roundText, sourceFor(pathRound));
+    const crossFileCallEdges = deriveCrossFileCallEdges([
+      { path: pathMain, text: mainText, source: sourceFor(pathMain) },
+      { path: pathRound, text: roundText, source: sourceFor(pathRound) },
+    ]);
+    expect(crossFileCallEdges).toEqual([expect.objectContaining({
+      callerModule: pathMain, targetModule: pathRound,
+      localName: "finishRound", targetExport: "settleRound",
+      targetRegion: "function:settleRound", status: "resolved",
+    })]);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [
+        { parsed: parsedMain }, { parsed: parsedRound },
+      ], crossFileCallEdges,
+    });
+    const linked = ir.execution.edges.find(edge =>
+      edge.targetLabel === "finishRound");
+    expect(linked?.resolution).toBe("resolved");
+    expect(linked?.source.relativePath).toBe(pathMain);
+    expect(linked?.to).toContain(encodeURIComponent(pathRound));
+    expect(linked?.to).toContain("function%3AsettleRound");
+    const outcome = ir.execution.outcomes?.find(item => item.value === "finish");
+    const released = ir.state.resourceActions?.find(item =>
+      item.action === "release" && item.key === "player:playing");
+    expect(outcome && released).toBeTruthy();
+    const nav = deriveGameplayArchitectureNavigation(emptyGraph, {
+      relevantSourceCount: 2, indexedSourceCount: 2,
+      arenaDetected: false, semanticIr: ir,
+    });
+    const eventTrace = nav.semanticIrCoverage.executionTraces.find(trace =>
+      trace.entryKind === "event-source" &&
+      trace.returnOutcomeIds.includes(outcome!.id));
+    expect(eventTrace).toBeDefined();
+    expect(eventTrace?.executionEdgeIds).toContain(linked!.id);
+    expect(eventTrace?.resourceReleaseActionIds).toContain(released!.id);
+    expect(eventTrace?.regionIds).toContain(linked!.to);
+    expect(nav.semanticIrCoverage.observedSourceRelationships.some(item =>
+      item.kind === "entry-to-outcome" &&
+      item.fromEvidenceId === eventTrace!.entryRegionId &&
+      item.outcomeId === outcome!.id &&
+      item.gap === "NOT_IN_COMMON_SCENARIO")).toBe(true);
+    expect(nav.knowledgeCoverage.wholeGameUnderstandingStatus)
+      .toBe("NOT_MEASURABLE");
+    expect(nav.causalLinks).toEqual([]);
+  });
+
+  it("keeps unresolved or foreign exported call targets outside gameplay traces", () => {
+    const mainPath = "behavior_packs/a/scripts/main.js";
+    const otherPath = "behavior_packs/a/scripts/round.js";
+    const mainSource = { artifactId: "world:a", relativePath: mainPath };
+    const otherSource = { artifactId: "world:b", relativePath: otherPath };
+    const mainText = [
+      'import { settleRound } from "./round.js";',
+      'settleRound();',
+    ].join("\n");
+    const roundText = 'export function settleRound() { return { action: "finish" }; }';
+    const crossFileCallEdges = deriveCrossFileCallEdges([
+      { path: mainPath, text: mainText, source: mainSource },
+      { path: otherPath, text: roundText, source: otherSource },
+    ]);
+    expect(crossFileCallEdges[0]).toMatchObject({ status: "unresolved" });
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [
+        { parsed: parseScriptFile("main", mainText, mainSource) },
+        { parsed: parseScriptFile("other", roundText, otherSource) },
+      ], crossFileCallEdges,
+    });
+    const edge = ir.execution.edges.find(item =>
+      item.targetLabel === "settleRound");
+    expect(edge?.resolution).toBe("unresolved");
+    expect(edge?.to).toBeUndefined();
+    const trace = deriveGameplayArchitectureNavigation(emptyGraph, {
+      relevantSourceCount: 2, indexedSourceCount: 2,
+      arenaDetected: false, semanticIr: ir,
+    }).semanticIrCoverage.executionTraces.find(item =>
+      item.entryKind === "script-module" &&
+      item.regionIds.includes(edge!.from));
+    expect(trace?.unresolvedExecutionEdgeIds).toContain(edge!.id);
+    expect(trace?.returnOutcomeIds).toEqual([]);
+  });
   it("does not reconcile duplicate spatial arena identities", () => {
     const navigation = deriveGameplayArchitectureNavigation(emptyGraph, {
       relevantSourceCount: 1,

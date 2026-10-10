@@ -5,7 +5,10 @@ import {
   tagAccesses,
 } from "../../../../analyzers/commands/src/index.js";
 import type { ParsedFunction } from "../../../../analyzers/functions/src/index.js";
-import type { ParsedScriptFile } from "../../../../analyzers/scripts/src/index.js";
+import type {
+  ParsedScriptFile,
+  CrossFileCallEdge,
+} from "../../../../analyzers/scripts/src/index.js";
 import {
   stateSurfaceKey,
   type SourceRef,
@@ -34,6 +37,8 @@ export interface InspectionSemanticIrInput {
   parsedScripts: readonly {
     parsed: ParsedScriptFile;
   }[];
+  /** Bound by the existing cross-file call analyzer from the same selected source. */
+  crossFileCallEdges?: readonly CrossFileCallEdge[];
   tickFunctionRegistrations?: readonly {
     source: SourceRef;
     functions: readonly string[];
@@ -567,6 +572,39 @@ export function buildInspectionSemanticIr(
         );
       }
     }
+  }
+
+  // Exact ESM source calls must not stop at the module boundary. Resolve to
+  // the analyzer's unique exported *executable* region, not an import label.
+  // Unresolved class/alias/shadow/foreign-pack targets remain bounded gaps.
+  const scriptsByPath = new Map<string, ParsedScriptFile[]>();
+  for (const { parsed } of input.parsedScripts) {
+    const path = parsed.source.relativePath.replaceAll("\\", "/");
+    scriptsByPath.set(path, [...(scriptsByPath.get(path) ?? []), parsed]);
+  }
+  for (const call of input.crossFileCallEdges ?? []) {
+    const callers = scriptsByPath.get(call.callerModule) ?? [];
+    if (callers.length !== 1 ||
+        callers[0]!.source.artifactId !== call.source.artifactId) continue;
+    const from = ensureScriptRegion(callers[0]!, call.callerRegion, call.source);
+    const targets = call.targetModule === undefined
+      ? [] : scriptsByPath.get(call.targetModule) ?? [];
+    const target = call.status === "resolved" &&
+      call.targetRegion !== undefined &&
+      targets.length === 1 &&
+      targets[0]!.source.artifactId === call.source.artifactId
+      ? targets[0] : undefined;
+    const to = target === undefined ? undefined :
+      ensureScriptRegion(target, call.targetRegion!, target.source);
+    addEdge({
+      from,
+      ...(to === undefined ? {} : { to }),
+      kind: "synchronous-call",
+      targetLabel: call.localName,
+      resolution: to === undefined ? "unresolved" : "resolved",
+      controlFlow: call.controlFlow,
+      source: call.source,
+    });
   }
 
   const authorityBindings = (input.stateAuthorityContracts ?? [])

@@ -33,6 +33,7 @@ import type { RuntimeProbeResponse } from "../../../project-model/src/index.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../../project-model/src/index.js";
 import { externalEventRootsForEntity } from "./entity-event-evidence.js";
 import { buildInspectionSemanticIr } from "../diagnosis/semantic-ir-stage.js";
+import { deriveCrossFileCallEdges } from "../../../../analyzers/scripts/src/index.js";
 import { semanticIrDiagnostics } from "../diagnosis/semantic-ir-diagnostics.js";
 import { buildGameplayIntentModel } from "./gameplay-intent-stage.js";
 import { deriveGameplayIntentSurfaceSignals } from "./gameplay-intent-surface-signals.js";
@@ -125,9 +126,22 @@ export async function inspectDirectory(
           },
     );
 
+  // Monolithic bundles without relative imports have no cross-file
+  // executable call candidates; avoid parsing their scripts twice.
+  const crossFileCallEdges = parsedScripts.some(({ parsed }) =>
+    parsed.imports.some(item => item.kind === "relative"))
+    ? deriveCrossFileCallEdges(
+        parsedScripts.flatMap(({ parsed, text }) => text === undefined ? [] : [{
+          path: parsed.source.relativePath,
+          text,
+          source: parsed.source,
+        }]),
+      )
+    : [];
   const semanticIr = buildInspectionSemanticIr({
     parsedFunctions,
     parsedScripts,
+    crossFileCallEdges,
     tickFunctionRegistrations,
     stateAuthorityContracts:
       target.stateAuthorityContracts ?? [],
