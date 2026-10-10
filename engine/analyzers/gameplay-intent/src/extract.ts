@@ -392,6 +392,10 @@ function pushSignal(
     ...(existing.returnOutcomeOrigins ?? []),
     ...(signal.returnOutcomeOrigins ?? []),
   ];
+  const mutations = [
+    ...(existing.stateMutationOrigins ?? []),
+    ...(signal.stateMutationOrigins ?? []),
+  ];
   const actions = [
     ...(existing.resourceActionOrigins ?? []),
     ...(signal.resourceActionOrigins ?? []),
@@ -399,6 +403,7 @@ function pushSignal(
   output.set(signal.subjectKey, {
     ...preferred,
     ...(returns.length > 0 ? { returnOutcomeOrigins: returns } : {}),
+    ...(mutations.length > 0 ? { stateMutationOrigins: mutations } : {}),
     ...(actions.length > 0 ? { resourceActionOrigins: actions } : {}),
   });
 }
@@ -673,7 +678,8 @@ export function extractGameplayIntentSignals(
     if (!existing) {
       relations.set(relation.id, relation);
     } else if (relation.localCallOrigins?.length ||
-        relation.callbackOrigins?.length) {
+        relation.callbackOrigins?.length ||
+        relation.stateMutationOrigins?.length) {
       // Preserve every call site when a single inferred relationship has
       // multiple technical origins, including repeated scheduler/event sites.
       relations.set(relation.id, {
@@ -685,6 +691,10 @@ export function extractGameplayIntentSignals(
         callbackOrigins: [
           ...(existing.callbackOrigins ?? []),
           ...(relation.callbackOrigins ?? []),
+        ],
+        stateMutationOrigins: [
+          ...(existing.stateMutationOrigins ?? []),
+          ...(relation.stateMutationOrigins ?? []),
         ],
       });
     }
@@ -967,6 +977,7 @@ export function extractGameplayIntentSignals(
         locator: path,
         summary:
           "Source explicitly assigns a gameplay state-like variable to this value.",
+        stateMutationOrigins: [{ scriptSource: script.source, mutation }],
       };
       pushSignal(signals, stateSignal);
 
@@ -985,6 +996,7 @@ export function extractGameplayIntentSignals(
           locator: path,
           summary:
             "A classified gameplay source region explicitly assigns the target state value.",
+          stateMutationOrigins: [{ scriptSource: script.source, mutation }],
         });
       }
     }

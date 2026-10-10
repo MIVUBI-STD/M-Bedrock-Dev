@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
 import { buildInspectionSemanticIr } from "../../src/diagnosis/semantic-ir-stage.js";
+import { buildGameplayIntentModel } from "../../src/inspection/gameplay-intent-stage.js";
 import {
   deriveGameplayArchitectureNavigation,
   type GameplayScenarioGraph,
@@ -321,6 +322,140 @@ describe("arena identity evidence propagation", () => {
       .toBe("NOT_MEASURABLE");
     // No additional causal evidence can be manufactured by this projection.
     expect(nav.causalLinks).toEqual([]);
+  });
+
+
+  it("links repeated authored state-write sites through intent and existing scenario navigation", () => {
+    const source = {
+      artifactId: "map:reset-flow",
+      relativePath: "behavior_packs/demo/scripts/session.js",
+    };
+    const parsed = parseScriptFile("session", [
+      'let phase = "idle";',
+      "function resetArena() {",
+      '  phase = "active";',
+      '  phase = "active";',
+      "}",
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const writes = ir.state.operations
+      .filter(item => item.operation === "write" &&
+        item.writtenValue?.kind === "literal" &&
+        item.writtenValue.value === "active")
+      .map(item => item.id).sort();
+    expect(writes).toHaveLength(2);
+    const intent = buildGameplayIntentModel({
+      id: "intent:reset", parsedScripts: [{ parsed }], semanticIr: ir,
+    });
+    const state = intent.nodes.find(item =>
+      item.kind === "state" && item.label === "Phase Active");
+    expect(state).toBeDefined();
+    expect(writes.every(id => state!.evidenceIds.includes(id))).toBe(true);
+    const relation = intent.edges.find(item =>
+      item.kind === "transitions-to" && item.to === state!.id);
+    expect(relation?.status).toBe("inferred");
+    expect(writes.every(id => relation!.evidenceIds.includes(id))).toBe(true);
+
+    const graph: GameplayScenarioGraph = {
+      ...emptyGraph,
+      components: [{
+        id: state!.id, label: state!.label, kind: state!.kind,
+        technicalRole: "source state write", gameplayPurpose: "unverified",
+        evidenceIds: state!.evidenceIds,
+        usedByScenarioIds: ["scenario:reset"], orphan: false,
+      }],
+      scenarios: [{
+        id: "scenario:reset", label: "Reset candidate",
+        gameplayStage: "CLEANUP", purpose: "unverified",
+        sourceSubjectIds: [state!.id],
+        componentIds: [state!.id],
+        causalLinkIds: [], playerCounts: [],
+        requiredKnowledgeIds: [], composedScenarioIds: [],
+      }],
+    };
+    const nav = deriveGameplayArchitectureNavigation(graph, {
+      relevantSourceCount: 1, indexedSourceCount: 1,
+      arenaDetected: false, semanticIr: ir,
+    });
+    expect(nav.semanticIrCoverage.stateOperations.linkedIds).toEqual(writes);
+    expect(nav.knowledgeCoverage.wholeGameUnderstandingStatus)
+      .toBe("NOT_MEASURABLE");
+    // Technical provenance cannot promote a gameplay transition to PROVEN.
+    expect(nav.causalLinks).toEqual([]);
+  });
+
+  it("rejects ambiguous, cross-artifact, unpositioned and wrong-value state write bridges", () => {
+    const source = {
+      artifactId: "map:source",
+      relativePath: "behavior_packs/demo/scripts/session.js",
+    };
+    const parsed = parseScriptFile("session", [
+      'let phase = "idle";',
+      "function resetArena() {",
+      '  phase = "active";',
+      "}",
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const write = ir.state.operations.find(item =>
+      item.operation === "write" &&
+      item.writtenValue?.kind === "literal" &&
+      item.writtenValue.value === "active");
+    expect(write).toBeDefined();
+    const linked = (observed: typeof ir): readonly string[] => {
+      const intent = buildGameplayIntentModel({
+        id: "intent:negative", parsedScripts: [{ parsed }],
+        semanticIr: observed,
+      });
+      return intent.nodes.find(item =>
+        item.kind === "state" && item.label === "Phase Active")?.evidenceIds ?? [];
+    };
+    expect(linked(ir)).toContain(write!.id);
+    const crossArtifact = {
+      ...ir, state: { ...ir.state,
+        operations: ir.state.operations.map(item =>
+          item.id === write!.id
+            ? { ...item, source: { ...item.source, artifactId: "map:other" } }
+            : item),
+      },
+    };
+    expect(linked(crossArtifact)).not.toContain(write!.id);
+    const noRange = {
+      ...ir, state: { ...ir.state,
+        operations: ir.state.operations.map(item =>
+          item.id === write!.id
+            ? { ...item, source: {
+              artifactId: source.artifactId, relativePath: source.relativePath,
+            } }
+            : item),
+      },
+    };
+    expect(linked(noRange)).not.toContain(write!.id);
+    const wrongValue = {
+      ...ir, state: { ...ir.state,
+        operations: ir.state.operations.map(item =>
+          item.id === write!.id
+            ? { ...item, writtenValue: { kind: "literal" as const, value: "other" } }
+            : item),
+      },
+    };
+    expect(linked(wrongValue)).not.toContain(write!.id);
+    const ambiguous = {
+      ...ir, state: { ...ir.state,
+        operations: [...ir.state.operations, { ...write!, id: write!.id + ":duplicate" }],
+      },
+    };
+    expect(linked(ambiguous)).not.toContain(write!.id);
+    expect(linked(ambiguous)).not.toContain(write!.id + ":duplicate");
+    const withoutIr = buildGameplayIntentModel({
+      id: "intent:without-ir", parsedScripts: [{ parsed }],
+    });
+    const syntheticOnly = withoutIr.nodes.find(item =>
+      item.kind === "state" && item.label === "Phase Active");
+    expect(syntheticOnly?.evidenceIds).not.toContain(write!.id);
   });
 
   it("does not reconcile duplicate spatial arena identities", () => {

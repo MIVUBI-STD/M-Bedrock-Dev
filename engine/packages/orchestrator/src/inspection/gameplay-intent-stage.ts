@@ -97,12 +97,57 @@ export function buildGameplayIntentModel(
   const intentUnknowns: GameplayIntentModel["unknowns"][number][] = [];
 
 
+  // Only an exact authored assignment (target, value, region, location and
+  // artifact) may inherit its Semantic IR identity. Same-named state labels,
+  // source co-location and ambiguous matches are not state-transition proof.
+  const exactStateMutationIrEvidenceIds = (
+    origins: GameplayIntentSignal["stateMutationOrigins"],
+  ): string[] => {
+    if (!input.semanticIr) return [];
+    const linked = new Set<string>();
+    for (const origin of origins ?? []) {
+      if (origin.scriptSource.artifactId !== origin.mutation.source.artifactId ||
+          origin.scriptSource.relativePath !== origin.mutation.source.relativePath) {
+        continue;
+      }
+      const surfaces = input.semanticIr.state.surfaces.filter(surface =>
+        surface.ref.kind === "script-memory" &&
+        surface.ref.key === origin.scriptSource.relativePath + "::" + origin.mutation.target);
+      if (surfaces.length !== 1) continue;
+      const matches = input.semanticIr.state.operations.filter(operation =>
+        operation.operation === "write" &&
+        operation.surfaceId === surfaces[0]!.id &&
+        operation.executionRegionId === scriptRegionId(
+          origin.scriptSource, origin.mutation.executionRegion,
+        ) &&
+        (origin.mutation.value.kind === "literal"
+          ? operation.writtenValue?.kind === "literal" &&
+            operation.writtenValue.value === origin.mutation.value.literal
+          : operation.writtenValue?.kind === "member" &&
+            operation.writtenValue.symbol === origin.mutation.value.symbol) &&
+        sameExactCallSource(operation.source, origin.mutation.source));
+      if (matches.length !== 1) continue;
+      const match = matches[0]!;
+      linked.add(match.id);
+      evidence.set(match.id, {
+        id: match.id,
+        origin: "source-code",
+        locator: match.source.relativePath,
+        scope: "selected-artifact",
+        summary: "Exact authored state-write identity; effective state, transition and runtime result remain unproven.",
+      });
+    }
+    return [...linked].sort();
+  };
+
   // Register technical evidence on the existing inferred/authored subject
   // only with an exact parsed producer -> IR identity. This does not upgrade
   // intent status or prove runtime completion.
   const signalIrEvidenceIds = (signal: GameplayIntentSignal): string[] => {
     if (!input.semanticIr) return [];
-    const linked = new Set<string>();
+    const linked = new Set<string>(exactStateMutationIrEvidenceIds(
+      signal.stateMutationOrigins,
+    ));
     for (const origin of signal.returnOutcomeOrigins ?? []) {
       if (origin.scriptSource.artifactId !== origin.outcome.source.artifactId ||
           origin.scriptSource.relativePath !== origin.outcome.source.relativePath) {
@@ -323,6 +368,11 @@ export function buildGameplayIntentModel(
           summary: "Exact Semantic IR temporal relation; runtime scheduling remains unverified.",
         });
       }
+    }
+    if (relation.edgeKind === "transitions-to") {
+      for (const matchedId of exactStateMutationIrEvidenceIds(
+        relation.stateMutationOrigins,
+      )) exactIrEvidenceIds.add(matchedId);
     }
     const relationEvidenceIds = [id, ...exactIrEvidenceIds].sort();
 

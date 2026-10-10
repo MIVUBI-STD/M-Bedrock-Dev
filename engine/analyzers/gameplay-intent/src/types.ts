@@ -19,6 +19,11 @@ export interface GameplayIntentSignal {
   summary: string;
   policyPredicate?: GameplayIntentPolicyPredicate;
   spatialProfile?: GameplayIntentSpatialProfile;
+  /** Exact authored state-write sites; source mutation is not an executed transition. */
+  stateMutationOrigins?: readonly {
+    scriptSource: ParsedScriptFile["source"];
+    mutation: NonNullable<ParsedScriptFile["stateMutations"]>[number];
+  }[];
   /** Exact parsed return sites associated with an already classified intent candidate. */
   returnOutcomeOrigins?: readonly {
     scriptSource: ParsedScriptFile["source"];
@@ -33,6 +38,11 @@ export interface GameplayIntentSignal {
 
 export interface GameplayIntentRelationSignal {
   id: string;
+  /** Exact parsed state assignments for inferred transitions; not gameplay proof. */
+  stateMutationOrigins?: readonly {
+    scriptSource: ParsedScriptFile["source"];
+    mutation: NonNullable<ParsedScriptFile["stateMutations"]>[number];
+  }[];
   /** Exact parsed local call sites, not merely a lexical relationship hint. */
   localCallOrigins?: readonly {
     scriptSource: ParsedScriptFile["source"];
