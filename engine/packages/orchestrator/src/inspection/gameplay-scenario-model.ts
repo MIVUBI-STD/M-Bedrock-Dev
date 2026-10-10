@@ -13,7 +13,9 @@ import {
 import type { ArenaRegionPlan } from "../../../../analyzers/topology/src/index.js";
 import {
   reconcileSourceStateOutcomes,
+  reconcileSourceResourceOutcomes,
   type SourceStateOutcomeCandidate,
+  type SourceResourceOutcomeCandidate,
 } from "../../../behavior-model/src/index.js";
 
 export type GameplayKnowledgeDomain = AnalysisKnowledgeDomain;
@@ -246,6 +248,13 @@ export interface GameplayArchitectureNavigation {
       readonly outcomeComponentIds: readonly string[];
       readonly precedingWriteComponentIds: readonly string[];
       /** Same existing scenario membership, not proof of execution or causality. */
+      readonly sharedScenarioPlacementIds: readonly string[];
+    })[];
+    /** Source-only resource action/return association; no cleanup or terminal proof. */
+    readonly resourceOutcomeCandidates: readonly (SourceResourceOutcomeCandidate & {
+      readonly outcomeComponentIds: readonly string[];
+      readonly precedingResourceComponentIds: readonly string[];
+      /** Shared existing scenario placement is not proof of causal execution. */
       readonly sharedScenarioPlacementIds: readonly string[];
     })[];
     /** Read-only technical chains; do not interpret as complete gameplay flow. */
@@ -571,6 +580,9 @@ export function deriveGameplayArchitectureNavigation(
   const stateOutcomeEvidence = observed.semanticIr
     ? reconcileSourceStateOutcomes(observed.semanticIr)
     : [];
+  const resourceOutcomeEvidence = observed.semanticIr
+    ? reconcileSourceResourceOutcomes(observed.semanticIr)
+    : [];
   const irAccounting = (ids: readonly string[]) => {
     const observedIds = sorted(ids);
     return {
@@ -761,6 +773,30 @@ export function deriveGameplayArchitectureNavigation(
                 .filter(scenario =>
                   scenario.componentIds.some(id => outcomeComponents.has(id)) &&
                   scenario.componentIds.some(id => writeComponents.has(id)))
+                .map(scenario => scenario.id))
+            : [],
+        };
+      }),
+      resourceOutcomeCandidates: resourceOutcomeEvidence.map(candidate => {
+        const outcomeComponentIds = sorted(graph.components
+          .filter(component => component.evidenceIds.includes(candidate.outcomeId))
+          .map(component => component.id));
+        const actions = new Set(candidate.precedingResourceActionIds);
+        const precedingResourceComponentIds = sorted(graph.components
+          .filter(component => component.evidenceIds.some(id => actions.has(id)))
+          .map(component => component.id));
+        const outcomes = new Set(outcomeComponentIds);
+        const resourceComponents = new Set(precedingResourceComponentIds);
+        return {
+          ...candidate,
+          outcomeComponentIds,
+          precedingResourceComponentIds,
+          sharedScenarioPlacementIds: outcomes.size > 0 &&
+            resourceComponents.size > 0
+            ? sorted(graph.scenarios
+                .filter(scenario =>
+                  scenario.componentIds.some(id => outcomes.has(id)) &&
+                  scenario.componentIds.some(id => resourceComponents.has(id)))
                 .map(scenario => scenario.id))
             : [],
         };

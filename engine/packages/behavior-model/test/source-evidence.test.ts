@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { SemanticIr, AuthoredBranchGuard } from "../../semantic-ir/src/index.js";
 import type { SourceRef } from "../../project-model/src/index.js";
-import { reconcileSourceStateOutcomes } from "../src/index.js";
+import {
+  reconcileSourceStateOutcomes,
+  reconcileSourceResourceOutcomes,
+} from "../src/index.js";
 
 const src = (line: number, columnStart = 1, columnEnd = 10,
   artifactId = "map:a", relativePath = "scripts/round.js"): SourceRef => ({
@@ -270,5 +273,113 @@ describe("source-observed state/outcome reconciliation", () => {
     expect(output.every(candidate => candidate.status === "UNRESOLVED")).toBe(true);
     expect(output.every(candidate =>
       candidate.precedingWriteOperationIds.length === 0)).toBe(true);
+  });
+});
+
+
+describe("source-observed resource/outcome reconciliation", () => {
+  it("retains exact same-arm release before a return without declaring successful cleanup", () => {
+    const fixture = ir();
+    const actions: NonNullable<SemanticIr["state"]["resourceActions"]> = [{
+      id: "action:release-playing", executionRegionId: region,
+      surface: "tag", action: "release", key: "player:playing",
+      precision: "exact", source: src(5),
+      lexicalGuards: [guard("true")],
+    }, {
+      id: "action:acquire-ready", executionRegionId: region,
+      surface: "tag", action: "acquire", key: "player:ready",
+      precision: "exact", source: src(6),
+      lexicalGuards: [guard("false")],
+    }, {
+      id: "action:unrelated-artifact", executionRegionId: region,
+      surface: "tag", action: "release", key: "other:playing",
+      precision: "exact", source: src(4, 1, 10, "map:b"),
+      lexicalGuards: [guard("true")],
+    }, {
+      id: "action:too-late", executionRegionId: region,
+      surface: "tag", action: "release", key: "player:too-late",
+      precision: "exact", source: src(11),
+      lexicalGuards: [guard("true")],
+    }];
+    const output = reconcileSourceResourceOutcomes({
+      ...fixture,
+      state: { ...fixture.state, resourceActions: actions },
+    });
+    const start = output.find(item => item.outcomeId === "outcome:start");
+    const abort = output.find(item => item.outcomeId === "outcome:abort");
+    const unknown = output.find(item => item.outcomeId === "outcome:unknown");
+    expect(start?.precedingResourceActionIds).toEqual(["action:release-playing"]);
+    expect(start?.precedingReleaseActionIds).toEqual(["action:release-playing"]);
+    expect(start?.status).toBe("SOURCE_ORDER_CANDIDATE");
+    expect(start?.provenance).toMatchObject({
+      kind: "source-inference",
+      evidenceCeiling: "inferred",
+      evidenceIds: ["action:release-playing", "outcome:start"],
+    });
+    expect(abort?.precedingResourceActionIds).toEqual(["action:acquire-ready"]);
+    expect(abort?.precedingReleaseActionIds).toEqual([]);
+    expect(unknown?.precedingResourceActionIds).toEqual([]);
+    expect(unknown?.status).toBe("UNRESOLVED");
+  });
+
+  it("accepts enclosing action guards but rejects opposite arms, wrong sites and early-exit mismatches", () => {
+    const fixture = ir();
+    const actions: NonNullable<SemanticIr["state"]["resourceActions"]> = [{
+      id: "action:unguarded", executionRegionId: region,
+      surface: "effect", action: "release", key: "player:*",
+      precision: "surface-level", source: src(2),
+    }, {
+      id: "action:outer", executionRegionId: region,
+      surface: "tag", action: "release", key: "player:playing",
+      precision: "exact", source: src(4),
+      lexicalGuards: [guard("true", 3)],
+    }, {
+      id: "action:opposite", executionRegionId: region,
+      surface: "tag", action: "release", key: "player:ready",
+      precision: "exact", source: src(5),
+      lexicalGuards: [guard("false", 3)],
+    }, {
+      id: "action:lookalike", executionRegionId: region,
+      surface: "tag", action: "release", key: "player:lookalike",
+      precision: "exact", source: src(6),
+      lexicalGuards: [guard("true", 6)],
+    }, {
+      id: "action:missing-position", executionRegionId: region,
+      surface: "tag", action: "release", key: "player:unknown",
+      precision: "exact", source: {
+        artifactId: "map:a", relativePath: "scripts/round.js",
+      },
+    }, {
+      id: "action:other-region", executionRegionId: "exec:other",
+      surface: "tag", action: "release", key: "player:foreign",
+      precision: "exact", source: src(7),
+    }];
+    const output = reconcileSourceResourceOutcomes({
+      ...fixture,
+      execution: { ...fixture.execution, outcomes: [{
+        id: "outcome:nested", executionRegionId: region,
+        propertyName: "action", value: "start", source: src(10),
+        lexicalGuards: [guard("true", 3), guard("true", 8)],
+      }, {
+        id: "outcome:post-exit", executionRegionId: region,
+        propertyName: "action", value: "retry", source: src(11),
+        lexicalGuards: [guard("true", 3)],
+        precedenceGuards: [guard("false", 9)],
+      }, {
+        id: "outcome:foreign", executionRegionId: "exec:foreign",
+        propertyName: "action", value: "unknown", source: src(11),
+      }] },
+      state: { ...fixture.state, resourceActions: actions },
+    });
+    const nested = output.find(item => item.outcomeId === "outcome:nested");
+    expect(nested?.precedingResourceActionIds)
+      .toEqual(["action:outer", "action:unguarded"]);
+    expect(nested?.precedingReleaseActionIds)
+      .toEqual(["action:outer", "action:unguarded"]);
+    expect(nested?.status).toBe("SOURCE_ORDER_CANDIDATE");
+    const post = output.find(item => item.outcomeId === "outcome:post-exit");
+    expect(post?.precedingResourceActionIds).toEqual([]);
+    expect(post?.status).toBe("UNRESOLVED");
+    expect(output.some(item => item.outcomeId === "outcome:foreign")).toBe(false);
   });
 });

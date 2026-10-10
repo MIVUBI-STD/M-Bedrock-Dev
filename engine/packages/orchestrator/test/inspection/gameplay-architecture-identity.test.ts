@@ -611,6 +611,87 @@ describe("arena identity evidence propagation", () => {
     expect(nav.causalLinks).toEqual([]);
   });
 
+
+  it("reconciles source-observed cleanup and terminal returns through exact evidence, not scenario naming", () => {
+    const source = {
+      artifactId: "map:cleanup-chain",
+      relativePath: "behavior_packs/demo/scripts/round.js",
+    };
+    const parsed = parseScriptFile("round", [
+      'import { world } from "@minecraft/server";',
+      'function resolveRound(player, ended) {',
+      '  if (ended) {',
+      '    player.removeTag("playing");',
+      '    return { action: "finish" };',
+      '  }',
+      '  player.addTag("ready");',
+      '  return { action: "retry" };',
+      '}',
+      'world.afterEvents.playerLeave.subscribe(event => resolveRound(event.player, true));',
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const released = ir.state.resourceActions?.find(action =>
+      action.action === "release" && action.key === "player:playing");
+    const acquired = ir.state.resourceActions?.find(action =>
+      action.action === "acquire" && action.key === "player:ready");
+    const finish = ir.execution.outcomes?.find(outcome => outcome.value === "finish");
+    const retry = ir.execution.outcomes?.find(outcome => outcome.value === "retry");
+    expect(released && acquired && finish && retry).toBeTruthy();
+    const graph: GameplayScenarioGraph = {
+      ...emptyGraph,
+      components: [{
+        id: "component:release", label: "Cleanup resource candidate",
+        kind: "lifecycle", technicalRole: "authored release",
+        gameplayPurpose: "unknown", evidenceIds: [released!.id],
+        usedByScenarioIds: ["scenario:finish"], orphan: false,
+      }, {
+        id: "component:finish", label: "Finish return candidate",
+        kind: "outcome", technicalRole: "authored return",
+        gameplayPurpose: "unknown", evidenceIds: [finish!.id],
+        usedByScenarioIds: ["scenario:finish"], orphan: false,
+      }, {
+        id: "component:false-id", label: "Unrelated lookalike",
+        kind: "lifecycle", technicalRole: "unrelated",
+        gameplayPurpose: "unknown", evidenceIds: [acquired!.id + ":different"],
+        usedByScenarioIds: [], orphan: true,
+      }],
+      scenarios: [{
+        id: "scenario:finish", label: "Finish evidence only",
+        gameplayStage: "TERMINAL", purpose: "unverified",
+        sourceSubjectIds: [],
+        componentIds: ["component:release", "component:finish"],
+        causalLinkIds: [], playerCounts: [],
+        requiredKnowledgeIds: [], composedScenarioIds: [],
+      }],
+    };
+    const nav = deriveGameplayArchitectureNavigation(graph, {
+      relevantSourceCount: 1, indexedSourceCount: 1,
+      arenaDetected: false, semanticIr: ir,
+    });
+    const finishCandidate = nav.semanticIrCoverage.resourceOutcomeCandidates
+      .find(candidate => candidate.outcomeId === finish!.id);
+    const retryCandidate = nav.semanticIrCoverage.resourceOutcomeCandidates
+      .find(candidate => candidate.outcomeId === retry!.id);
+    expect(finishCandidate?.precedingResourceActionIds).toEqual([released!.id]);
+    expect(finishCandidate?.precedingReleaseActionIds).toEqual([released!.id]);
+    expect(finishCandidate?.status).toBe("SOURCE_ORDER_CANDIDATE");
+    expect(finishCandidate?.outcomeComponentIds).toEqual(["component:finish"]);
+    expect(finishCandidate?.precedingResourceComponentIds)
+      .toEqual(["component:release"]);
+    expect(finishCandidate?.sharedScenarioPlacementIds)
+      .toEqual(["scenario:finish"]);
+    expect(retryCandidate?.precedingResourceActionIds).toEqual([acquired!.id]);
+    expect(retryCandidate?.precedingReleaseActionIds).toEqual([]);
+    expect(retryCandidate?.sharedScenarioPlacementIds).toEqual([]);
+    const trace = nav.semanticIrCoverage.executionTraces.find(item =>
+      item.entryKind === "event-source" && item.returnOutcomeIds.includes(finish!.id));
+    expect(trace?.resourceReleaseActionIds).toContain(released!.id);
+    expect(nav.knowledgeCoverage.wholeGameUnderstandingStatus).toBe("NOT_MEASURABLE");
+    expect(nav.causalLinks).toEqual([]);
+  });
+
   it("does not reconcile duplicate spatial arena identities", () => {
     const navigation = deriveGameplayArchitectureNavigation(emptyGraph, {
       relevantSourceCount: 1,
