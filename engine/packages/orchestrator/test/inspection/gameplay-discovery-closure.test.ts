@@ -97,7 +97,7 @@ describe("gameplay discovery closure", () => {
     ).toBe(false);
   });
 
-  it("opens when gameplay-sensitive sources have no semantic owner", () => {
+  it("keeps accounted unsupported sources PARTIAL without claiming semantic coverage", () => {
     const result =
       assessGameplayDiscoveryClosure({
         discoveredSurfaceIds: [
@@ -114,26 +114,26 @@ describe("gameplay discovery closure", () => {
         unresolvedReferences: 0,
       });
 
-    expect(result.status).toBe("OPEN");
-    expect(
-      result.unsupportedRelevantSources,
-    ).toBe(1);
+    expect(result.status).toBe("PARTIAL");
+    expect(result.sourceInventoryBalanced).toBe(true);
+    expect(result.sourceCoverageComplete).toBe(false);
+    expect(result.unsupportedRelevantSources).toBe(1);
   });
 
-  it("accounts unsupported sources as PARTIAL when source inventory is complete", () => {
+  it("does not mask truly missing inventory behind an unsupported-file entry", () => {
     const result = assessGameplayDiscoveryClosure({
       discoveredSurfaceIds: ["runtime:state"],
-      sourceRelevantFiles: 2,
+      sourceRelevantFiles: 3,
       sourceIndexedFiles: 1,
-      sourceCoverageComplete: true,
+      sourceCoverageComplete: false,
       sourceParseFailures: 0,
       unsupportedRelevantSourcePaths: ["feature_rules/ore.json"],
       semanticUnderstandingGapPaths: [],
       unresolvedReferences: 0,
     });
 
-    expect(result.status).toBe("PARTIAL");
-    expect(result.sourceInventoryBalanced).toBe(true);
+    expect(result.status).toBe("OPEN");
+    expect(result.sourceInventoryBalanced).toBe(false);
     expect(result.unsupportedRelevantSourcePaths).toEqual(["feature_rules/ore.json"]);
   });
 

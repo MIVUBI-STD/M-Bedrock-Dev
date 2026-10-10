@@ -108,7 +108,10 @@ export function assessGameplayDiscoveryClosure(
         " parse failure(s).",
     );
   }
-  if (!input.sourceCoverageComplete) {
+  // Source-index coverage.complete also requires zero unsupported files.
+  // An explicitly inventoried unsupported file is a semantic gap, not a
+  // missing file. Its separate reason below retains the exact path.
+  if (!input.sourceCoverageComplete && unsupportedRelevantSources === 0) {
     reasons.push(
       "Relevant selected-artifact source coverage is incomplete.",
     );
@@ -164,8 +167,8 @@ export function assessGameplayDiscoveryClosure(
   const status: GameplayDiscoveryClosureStatus =
     surfaceIds.length === 0 ||
     !sourceInventoryBalanced ||
-    !input.sourceCoverageComplete ||
-    input.sourceParseFailures > 0
+    input.sourceParseFailures > 0 ||
+    (!input.sourceCoverageComplete && unsupportedRelevantSources === 0)
       ? "OPEN"
       : unsupportedRelevantSources > 0 ||
           semanticUnderstandingGaps > 0 ||

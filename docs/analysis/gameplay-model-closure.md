@@ -68,7 +68,7 @@ Before Phase A is treated as complete for the whole selected map:
 - relevant-source inventory must balance indexed files plus explicit parse failures;
 - unresolved selected-artifact references must be zero.
 
-Discovery Closure OPEN or PARTIAL still blocks whole-map closure and final publication. A PARTIAL Discovery with a verified TARGET permits independent finding and obligation projections; it does not prove unknown mechanics, authorize a NOT_APPLICABLE classification by absence, or permit Bug Report promotion. OPEN still prevents these projections because source accounting is structurally incomplete. The mandatory audit procedure remains the sole publication authority.
+Discovery Closure OPEN or PARTIAL still blocks whole-map closure and final publication. Explicitly inventoried but unsupported source files may be PARTIAL even though the source index's stricter `coverage.complete` flag is false; the balanced file-accounting contract is decisive, and parse failures or unaccounted files remain OPEN. A PARTIAL Discovery with a verified TARGET permits independent finding and obligation projections; it does not prove unknown mechanics, authorize a NOT_APPLICABLE classification by absence, or permit Bug Report promotion. OPEN still prevents these projections because source accounting is structurally incomplete. The mandatory audit procedure remains the sole publication authority.
 
 ## Phase A — Surface inventory
 
