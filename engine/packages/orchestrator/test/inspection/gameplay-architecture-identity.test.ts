@@ -1030,6 +1030,123 @@ describe("arena identity evidence propagation", () => {
     } })).toEqual([]);
   });
 
+
+  it("keeps imported true/false and preceding-exit call arms distinct in execution navigation", () => {
+    const root = "behavior_packs/demo/scripts/";
+    const origin = (relativePath: string) => ({
+      artifactId: "map:branch", relativePath: root + relativePath,
+    });
+    const main = [
+      'import { world, system } from "@minecraft/server";',
+      'import { settle } from "./round.js";',
+      'import * as rounds from "./round.js";',
+      'function resolveRound(ready) {',
+      '  if (ready) { settle(); }',
+      '  else { rounds.settle(); }',
+      '  if (!ready) return;',
+      '  settle();',
+      '  if (ready) system.run(() => settle());',
+      '}',
+      'world.afterEvents.playerLeave.subscribe(() => resolveRound(true));',
+    ].join("\n");
+    const round = 'export function settle() { return { action: "finish" }; }';
+    const sources = [
+      { path: origin("main.js").relativePath, text: main, source: origin("main.js") },
+      { path: origin("round.js").relativePath, text: round, source: origin("round.js") },
+    ];
+    const parsed = sources.map(item => ({
+      parsed: parseScriptFile(item.path, item.text, item.source),
+    }));
+    const crossFileCallEdges = deriveCrossFileCallEdges(sources);
+    expect(crossFileCallEdges).toHaveLength(4);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: parsed, crossFileCallEdges,
+    });
+    const calls = ir.execution.edges.filter(edge =>
+      edge.kind === "synchronous-call" &&
+      (edge.targetLabel === "settle" || edge.targetLabel === "rounds.settle"));
+    expect(calls).toHaveLength(4);
+    const at = (line: number) => calls.find(edge =>
+      edge.source.range?.lineStart === line)!;
+    expect(at(5).lexicalGuards?.map(g => [g.expression, g.branch]))
+      .toEqual([["ready", "true"]]);
+    expect(at(6).lexicalGuards?.map(g => [g.expression, g.branch]))
+      .toEqual([["ready", "false"]]);
+    expect(at(8).precedenceGuards?.map(g =>
+      [g.expression, g.branch, g.source.range?.lineStart]))
+      .toEqual([["!ready", "false", 7]]);
+    // A scheduled nested callback is a new execution region; its invocation
+    // cannot inherit the enclosing ready=true branch of the scheduler.
+    expect(at(9).lexicalGuards ?? []).toEqual([]);
+    expect(at(9).precedenceGuards ?? []).toEqual([]);
+    const nav = deriveGameplayArchitectureNavigation(emptyGraph, {
+      relevantSourceCount: 2, indexedSourceCount: 2,
+      arenaDetected: false, semanticIr: ir,
+    });
+    const trace = nav.semanticIrCoverage.executionTraces.find(t =>
+      t.entryKind === "event-source" &&
+      t.executionEdgeIds.includes(at(5).id));
+    expect(trace).toBeDefined();
+    const branch = trace!.branchPoints.find(point =>
+      point.expression === "ready" && point.source.range?.lineStart === 5);
+    expect(branch?.branches.find(arm => arm.branch === "true")
+      ?.executionEdgeIds).toContain(at(5).id);
+    expect(branch?.branches.find(arm => arm.branch === "false")
+      ?.executionEdgeIds).toContain(at(6).id);
+    expect(branch?.branches.find(arm => arm.branch === "false")
+      ?.executionEdgeIds).not.toContain(at(5).id);
+    const preceding = trace!.branchPoints.find(point =>
+      point.expression === "!ready" && point.source.range?.lineStart === 7);
+    expect(preceding?.branches.find(arm => arm.branch === "false")
+      ?.precedenceEvidenceIds).toContain(at(8).id);
+    expect(nav.knowledgeCoverage.wholeGameUnderstandingStatus).toBe("NOT_MEASURABLE");
+  });
+
+  it("does not inherit imported-call guards from similar names or nonmatching source spans", () => {
+    const prefix = "behavior_packs/demo/scripts/";
+    const source = (path: string) => ({
+      artifactId: "map:negative", relativePath: prefix + path,
+    });
+    const main = [
+      'import { settle } from "./round.js";',
+      'function resetArena(ready) { if (ready) settle(); }',
+    ].join("\n");
+    const round = 'export function settle() {}';
+    const modules = [
+      { path: source("main.js").relativePath, text: main, source: source("main.js") },
+      { path: source("round.js").relativePath, text: round, source: source("round.js") },
+    ];
+    const parsed = modules.map(item => ({
+      parsed: parseScriptFile(item.path, item.text, item.source),
+    }));
+    const call = deriveCrossFileCallEdges(modules)[0]!;
+    const create = (edge: typeof call) => buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: parsed,
+      crossFileCallEdges: [edge],
+    });
+    const intact = create(call).execution.edges.find(edge =>
+      edge.targetLabel === "settle");
+    expect(intact?.lexicalGuards?.map(g => g.branch)).toEqual(["true"]);
+    const misplaced = create({ ...call, source: {
+      ...call.source, range: {
+        ...call.source.range!, columnStart: call.source.range!.columnStart + 1,
+      },
+    } }).execution.edges.find(edge => edge.targetLabel === "settle");
+    expect(misplaced?.lexicalGuards).toBeUndefined();
+    const foreign = create({ ...call, source: {
+      ...call.source, artifactId: "another-artifact",
+    } });
+    expect(foreign.execution.edges.some(edge =>
+      edge.targetLabel === "settle")).toBe(false);
+    const noParserGuards = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: parsed.map(item => ({
+        parsed: { ...item.parsed, importedCallGuardSites: [] },
+      })),
+      crossFileCallEdges: [call],
+    }).execution.edges.find(edge => edge.targetLabel === "settle");
+    expect(noParserGuards?.lexicalGuards).toBeUndefined();
+  });
+
   it("does not reconcile duplicate spatial arena identities", () => {
     const navigation = deriveGameplayArchitectureNavigation(emptyGraph, {
       relevantSourceCount: 1,

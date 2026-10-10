@@ -1,7 +1,7 @@
 import ts from "typescript";
 
 export const SCRIPT_PARSER_REVISION =
-  "m-bedrock-script-parser:1:typescript:" +
+  "m-bedrock-script-parser:2:typescript:" +
   ts.version;
 import type { SourceRef } from "../../../../packages/project-model/src/index.js";
 import type {
@@ -13,6 +13,7 @@ import type {
   ScriptEntityEventTrigger,
   ScriptDeferredCallback,
   ScriptLocalFunctionCall,
+  ScriptImportedCallGuardSite,
   ScriptLexicalGuard,
   ScriptBlockMatchGuard,
   ScriptCommandLiteral,
@@ -2052,6 +2053,25 @@ export function parseScriptFile(
       .flatMap((statement) => statement.name ? [statement.name.text] : []),
   );
 
+  const relativeImportedNames = new Set<string>();
+  const relativeImportedNamespaces = new Set<string>();
+  for (const statement of file.statements) {
+    if (!ts.isImportDeclaration(statement) ||
+        !ts.isStringLiteralLike(statement.moduleSpecifier) ||
+        !statement.moduleSpecifier.text.startsWith(".") ||
+        statement.importClause?.isTypeOnly) continue;
+    const clause = statement.importClause;
+    if (clause?.name) relativeImportedNames.add(clause.name.text);
+    const named = clause?.namedBindings;
+    if (named && ts.isNamedImports(named)) {
+      for (const element of named.elements) {
+        if (!element.isTypeOnly) relativeImportedNames.add(element.name.text);
+      }
+    } else if (named && ts.isNamespaceImport(named)) {
+      relativeImportedNamespaces.add(named.name.text);
+    }
+  }
+
   const topLevelCallbackSources = new Map(
     file.statements
       .filter(ts.isFunctionDeclaration)
@@ -2175,6 +2195,7 @@ export function parseScriptFile(
   const restrictedMutations: RestrictedExecutionMutation[] = [];
   const deferredCallbacks: ScriptDeferredCallback[] = [];
   const localFunctionCalls: ScriptLocalFunctionCall[] = [];
+  const importedCallGuardSites: ScriptImportedCallGuardSite[] = [];
   const methodCalls = inferScriptMethodCalls(file, source);
   const spatialWorldMutations =
     deriveScriptSpatialWorldMutations(
@@ -2362,6 +2383,25 @@ export function parseScriptFile(
   ];
 
   const visit = (node: ts.Node): void => {
+    if (ts.isCallExpression(node)) {
+      const imported = ts.isIdentifier(node.expression)
+        ? relativeImportedNames.has(node.expression.text) &&
+          !isShadowed(node.expression)
+        : ts.isPropertyAccessExpression(node.expression) &&
+          ts.isIdentifier(node.expression.expression) &&
+          relativeImportedNamespaces.has(node.expression.expression.text) &&
+          !isShadowed(node.expression.expression);
+      if (imported) {
+        const lexicalGuards = lexicalBranchGuards(node, file, source);
+        const precedenceGuards = precedingEarlyExitGuards(node, file, source);
+        importedCallGuardSites.push({
+          executionRegion: localExecutionRegionId(node, file),
+          source: lineSource(file, node, source),
+          ...(lexicalGuards.length ? { lexicalGuards } : {}),
+          ...(precedenceGuards.length ? { precedenceGuards } : {}),
+        });
+      }
+    }
     if (cleanupSiteKeys.size > 0 &&
         (ts.isCallExpression(node) ||
           (ts.isBinaryExpression(node) &&
@@ -3015,6 +3055,7 @@ export function parseScriptFile(
     restrictedMutations,
     deferredCallbacks,
     localFunctionCalls,
+    importedCallGuardSites,
     blockMatchGuards,
     methodCalls,
     propertyAccesses,

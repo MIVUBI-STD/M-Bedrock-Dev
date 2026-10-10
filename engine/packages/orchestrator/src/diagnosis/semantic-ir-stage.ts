@@ -582,11 +582,31 @@ export function buildInspectionSemanticIr(
     const path = parsed.source.relativePath.replaceAll("\\", "/");
     scriptsByPath.set(path, [...(scriptsByPath.get(path) ?? []), parsed]);
   }
+  const exactImportedCallSite = (
+    script: ParsedScriptFile,
+    call: CrossFileCallEdge,
+  ) => {
+    const span = call.source.range;
+    if (!span || span.lineStart === undefined ||
+        span.lineEnd === undefined || span.columnStart === undefined ||
+        span.columnEnd === undefined) return undefined;
+    const matches = (script.importedCallGuardSites ?? []).filter(site => {
+      const r = site.source.range;
+      return site.executionRegion === call.callerRegion &&
+        site.source.artifactId === call.source.artifactId &&
+        site.source.relativePath === call.source.relativePath &&
+        site.source.jsonPointer === call.source.jsonPointer &&
+        r?.lineStart === span.lineStart && r?.lineEnd === span.lineEnd &&
+        r?.columnStart === span.columnStart && r?.columnEnd === span.columnEnd;
+    });
+    return matches.length === 1 ? matches[0] : undefined;
+  };
   for (const call of input.crossFileCallEdges ?? []) {
     const callers = scriptsByPath.get(call.callerModule) ?? [];
     if (callers.length !== 1 ||
         callers[0]!.source.artifactId !== call.source.artifactId) continue;
     const from = ensureScriptRegion(callers[0]!, call.callerRegion, call.source);
+    const callGuards = exactImportedCallSite(callers[0]!, call);
     const targets = call.targetModule === undefined
       ? [] : scriptsByPath.get(call.targetModule) ?? [];
     const target = call.status === "resolved" &&
@@ -604,6 +624,12 @@ export function buildInspectionSemanticIr(
       resolution: to === undefined ? "unresolved" : "resolved",
       controlFlow: call.controlFlow,
       source: call.source,
+      ...(irGuards(callGuards?.lexicalGuards) === undefined ? {} : {
+        lexicalGuards: irGuards(callGuards?.lexicalGuards),
+      }),
+      ...(irGuards(callGuards?.precedenceGuards) === undefined ? {} : {
+        precedenceGuards: irGuards(callGuards?.precedenceGuards),
+      }),
     });
   }
 

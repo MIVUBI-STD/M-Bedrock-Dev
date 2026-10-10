@@ -154,6 +154,14 @@ export interface ScriptLocalFunctionCall {
   source: SourceRef;
 }
 
+/** Direct ESM-import invocation at one canonical parser AST site. */
+export interface ScriptImportedCallGuardSite {
+  executionRegion: string;
+  source: SourceRef;
+  lexicalGuards?: readonly ScriptLexicalGuard[];
+  precedenceGuards?: readonly ScriptLexicalGuard[];
+}
+
 export interface ScriptDeferredCallback {
   scheduler: "run" | "runTimeout" | "runInterval" | "runJob";
   source: SourceRef;
@@ -473,6 +481,8 @@ export interface ParsedScriptFile {
   restrictedMutations: RestrictedExecutionMutation[];
   deferredCallbacks: ScriptDeferredCallback[];
   localFunctionCalls: ScriptLocalFunctionCall[];
+  /** Exact authored guards for direct imported calls resolved separately. */
+  importedCallGuardSites?: readonly ScriptImportedCallGuardSite[];
   blockMatchGuards: ScriptBlockMatchGuard[];
   methodCalls: ScriptMethodCall[];
   propertyAccesses: ScriptPropertyAccess[];
