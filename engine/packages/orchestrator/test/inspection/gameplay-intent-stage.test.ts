@@ -111,6 +111,72 @@ function parsed(): ParsedScriptFile {
 }
 
 describe("gameplay intent stage", () => {
+
+
+  it("does not flag an exact state transition already linked to its classified gameplay caller", () => {
+    const source = {
+      artifactId: "world:classified",
+      relativePath: "behavior_packs/demo/scripts/game.js",
+    };
+    const parsed = parseScriptFile("game", [
+      'let phase = "idle";',
+      'function resetArena() { phase = "reset"; }',
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const intent = buildGameplayIntentModel({
+      id: "intent:classified",
+      artifactId: source.artifactId,
+      parsedScripts: [{ parsed }], semanticIr: ir,
+    });
+    const linkedWrites = new Set(intent.edges
+      .filter(edge => edge.kind === "transitions-to")
+      .flatMap(edge => edge.evidenceIds));
+    const observedWrite = ir.state.operations.find(op =>
+      op.operation === "write" && op.writtenValue?.kind === "literal" &&
+      op.writtenValue.value === "reset");
+    expect(observedWrite).toBeDefined();
+    expect(linkedWrites.has(observedWrite!.id)).toBe(true);
+    expect(intent.unknowns.some(item =>
+      item.id.startsWith("unknown:uninterpreted-execution:") &&
+      item.evidenceIds?.includes(observedWrite!.id))).toBe(false);
+  });
+
+  it("preserves uninterpreted source-backed effects as gameplay unknowns without phantom mechanics", () => {
+    const path = "behavior_packs/demo/scripts/opaque.js";
+    const source = { artifactId: "world:opaque", relativePath: path };
+    const code = [
+      'import { world } from "@minecraft/server";',
+      'let x = 0;',
+      'function doIt() { x = 1; return { action: "done" }; }',
+      'world.afterEvents.playerJoin.subscribe(() => doIt());',
+    ].join("\n");
+    const parsed = parseScriptFile("opaque", code, source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const result = buildGameplayIntentModel({
+      id: "intent:opaque", artifactId: source.artifactId,
+      parsedScripts: [{ parsed }], semanticIr: ir,
+    });
+    const unclassified = result.unknowns.filter(item =>
+      item.id.startsWith("unknown:uninterpreted-execution:"));
+    expect(unclassified.length).toBeGreaterThan(0);
+    expect(unclassified.flatMap(item => item.evidenceIds ?? []).length)
+      .toBeGreaterThan(0);
+    expect(unclassified.every(item => (item.evidenceIds ?? []).every(id =>
+      result.evidence.some(item => item.id === id &&
+        item.scope === "selected-artifact" && item.locator === path)))).toBe(true);
+    expect(result.nodes.some(node => node.kind === "mechanic" &&
+      node.label === "Do It")).toBe(false);
+    expect(buildGameplayIntentModel({
+      id: "intent:no-ir", artifactId: source.artifactId,
+      parsedScripts: [{ parsed }],
+    }).unknowns.some(item =>
+      item.id.startsWith("unknown:uninterpreted-execution:"))).toBe(false);
+  });
+
   it("includes authored source files contained in the selected artifact", () => {
     const authored = {
       ...parsed(),

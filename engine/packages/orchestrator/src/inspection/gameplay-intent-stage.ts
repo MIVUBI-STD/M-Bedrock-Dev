@@ -8,7 +8,7 @@ import type {
   CrossFileCallEdge,
 } from "../../../../analyzers/scripts/src/index.js";
 import type { SourceRef } from "../../../project-model/src/index.js";
-import type { SemanticIr } from "../../../semantic-ir/src/index.js";
+import { semanticIrExecutionTraces, type SemanticIr } from "../../../semantic-ir/src/index.js";
 import { eventRegionId, scriptRegionId } from "../diagnosis/semantic-ir-stage.js";
 import {
   validateGameplayIntentModel,
@@ -557,6 +557,55 @@ export function buildGameplayIntentModel(
         question:
           "Not every recognized literal return site for this outcome is controlled by a directly modeled if-guard; switch/default/nested or other control flow may still define admissibility.",
         blockedSubjectIds: [coverage.outcomeSubjectKey],
+      });
+    }
+  }
+
+  // Reconcile observed material execution against recognized gameplay subjects.
+  // A technical state/return/resource chain is not a named mechanic merely
+  // because it exists. Keep unclassified behavior explicit without creating
+  // phantom gameplay nodes or scenario seeds.
+  if (input.semanticIr) {
+    const material = new Map([
+      ...input.semanticIr.state.operations.map(item => [item.id, item.source] as const),
+      ...(input.semanticIr.state.resourceActions ?? []).map(item => [item.id, item.source] as const),
+      ...(input.semanticIr.execution.outcomes ?? []).map(item => [item.id, item.source] as const),
+    ]);
+    const interpretedEvidenceIds = new Set([...nodes.values()]
+      .filter(node => ["mechanic", "phase", "lifecycle", "objective", "outcome"].includes(node.kind))
+      .flatMap(node => node.evidenceIds).concat(
+        [...edges.values()].flatMap(edge => edge.evidenceIds),
+      ));
+    for (const trace of semanticIrExecutionTraces(input.semanticIr).traces) {
+      const observedIds = [...new Set([
+        ...trace.stateOperationIds,
+        ...trace.resourceActionIds,
+        ...trace.returnOutcomeIds,
+      ])].filter(id => material.has(id)).sort();
+      // Mixed flows must retain their still-uninterpreted effects even
+      // when another operation in the same trace has a semantic owner.
+      const exactIds = observedIds.filter(id => {
+        if (interpretedEvidenceIds.has(id)) return false;
+        const source = material.get(id)!;
+        return input.artifactId === undefined ||
+          source.artifactId === input.artifactId;
+      });
+      if (exactIds.length === 0) continue;
+      for (const id of exactIds) {
+        if (evidence.has(id)) continue;
+        const source = material.get(id)!;
+        evidence.set(id, {
+          id, origin: "source-code",
+          locator: source.relativePath,
+          scope: "selected-artifact",
+          summary: "Authored state, resource or return evidence has no interpreted gameplay owner; its player-facing meaning remains unknown.",
+        });
+      }
+      intentUnknowns.push({
+        id: "unknown:uninterpreted-execution:" + trace.entryRegionId,
+        question: "An observed material execution flow has state/resource/return evidence but no matching classified gameplay owner; reconstruct its gameplay meaning without inferring intent from filenames or raw effects.",
+        blockedSubjectIds: [],
+        evidenceIds: exactIds,
       });
     }
   }
