@@ -173,6 +173,14 @@ The canonical Behavior Model backward effect slicer now preserves each event/def
 
 The existing Gameplay Architecture `features[].sourceBehaviorPaths` and optional Map Audit V2 schema consume the same per-ingress boundary observations. No second async analyzer, graph owner, lifecycle registry or extra verifier was introduced. Full runtime session isolation, stale callback prevention and terminal/cleanup acceptance remain unexecuted.
 
+### Source-level generation gates on actual asynchronous effect paths
+
+An exact leading `if (generation !== capturedGeneration) return/throw` inside an inline deferred callback is now recorded with its original condition source range, as well as the previously preserved guard identifiers. Both operands must be authored reference expressions; comparisons to a constant, checks later in the callback, named callback bodies not resolved by the producer, or arbitrary conditional expressions remain `unresolved`. A matching variable name is never evidence of actual session ownership.
+
+The existing Semantic IR scheduler edge carries `generationGuardSource`; `Behavior Model` backward `SourceEffectSlice.candidateIngress[].temporalBoundaryEvidence` reconciles it with the actual effect path. `sourceGateStatus` is `DIRECT_EFFECT_SITE_GATED` only when that exact guard is an authored necessary early-exit prerequisite on the effect site in the callback region, or `SYNCHRONOUS_CALL_SITE_GATED` when the exact guard precedes the **first** resolved synchronous call leaving the callback and there are no later async boundaries along that candidate path. Other paths are `UNRESOLVED`; guard evidence on a scheduling edge is not implicitly copied into downstream effects across temporal boundaries.
+
+The existing arena deferred-mutation consumer also keeps its historical `protected` classification only when an exact leading mismatch guard is present and all discovered mutation regions are confined to that callback's region. Cross-function mutations without site-level guarded-call proof stay `unresolved`. This is deliberately conservative and does not prove generation token freshness, live arena/session owner identity, successful `clearRun`, lifecycle closure, or player-visible behavior. No new async manager, state store, graph, or report owner has been introduced. The existing Gameplay Architecture path and Map Audit Output V2 schema consume the same bounded evidence.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:

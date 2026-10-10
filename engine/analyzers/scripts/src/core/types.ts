@@ -184,6 +184,8 @@ export interface ScriptDeferredCallback {
   callbackSource?: SourceRef;
   guardEvidence: "explicit-generation-check" | "unresolved";
   guardIdentifiers: string[];
+  /** Exact leading mismatch early-exit condition source, when observed. */
+  generationGuardSource?: SourceRef;
   delayTicks?: number;
 }
 

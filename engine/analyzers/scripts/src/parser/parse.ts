@@ -280,26 +280,45 @@ function deferredScheduler(
  * This remains a source candidate. It does NOT prove the compared token is
  * tied to the real session owner or that the callback will ever run.
  */
-function generationGuardIdentifiers(node: ts.Node): string[] {
+/**
+ * Only an exact leading generation-mismatch exit counts as candidate source
+ * gating. Both operands must be authored reference expressions, not constants
+ * or arbitrary computation. This is NOT proof of session owner identity.
+ */
+function leadingGenerationGuard(
+  node: ts.Node,
+  file: ts.SourceFile,
+  source: SourceRef,
+): { identifiers: string[]; guardSource: SourceRef } | undefined {
   if (!ts.isArrowFunction(node) &&
       !ts.isFunctionExpression(node) &&
-      !ts.isFunctionDeclaration(node)) return [];
+      !ts.isFunctionDeclaration(node)) return undefined;
   const body = node.body;
-  if (!body || !ts.isBlock(body) || body.statements.length === 0) return [];
+  if (!body || !ts.isBlock(body) || body.statements.length === 0) {
+    return undefined;
+  }
   const first = body.statements[0]!;
-  if (!ts.isIfStatement(first) || first.elseStatement) return [];
+  if (!ts.isIfStatement(first) || first.elseStatement) return undefined;
   const earlyExit = (statement: ts.Statement): boolean =>
     ts.isReturnStatement(statement) || ts.isThrowStatement(statement) ||
     (ts.isBlock(statement) && statement.statements.length === 1 &&
       (ts.isReturnStatement(statement.statements[0]!) ||
        ts.isThrowStatement(statement.statements[0]!)));
-  if (!earlyExit(first.thenStatement)) return [];
+  if (!earlyExit(first.thenStatement)) return undefined;
   const comparison = ts.isParenthesizedExpression(first.expression)
     ? first.expression.expression : first.expression;
   if (!ts.isBinaryExpression(comparison) ||
       (comparison.operatorToken.kind !== ts.SyntaxKind.ExclamationEqualsToken &&
        comparison.operatorToken.kind !== ts.SyntaxKind.ExclamationEqualsEqualsToken)) {
-    return [];
+    return undefined;
+  }
+  // Requiring reference operands rejects comparisons like generation !== 0.
+  // It does NOT prove that two references denote the actual session owner.
+  const isReference = (value: ts.Expression): boolean =>
+    ts.isIdentifier(value) || ts.isPropertyAccessExpression(value) ||
+    ts.isElementAccessExpression(value);
+  if (!isReference(comparison.left) || !isReference(comparison.right)) {
+    return undefined;
   }
   const identifiers = new Set<string>();
   const visit = (candidate: ts.Node): void => {
@@ -315,7 +334,11 @@ function generationGuardIdentifiers(node: ts.Node): string[] {
   };
   visit(comparison.left);
   visit(comparison.right);
-  return [...identifiers].sort();
+  if (identifiers.size === 0) return undefined;
+  return {
+    identifiers: [...identifiers].sort(),
+    guardSource: lineSource(file, first.expression, source),
+  };
 }
 
 function enclosingClassLike(
@@ -2846,9 +2869,10 @@ export function parseScriptFile(
       if (scheduler) {
         const callback = callbackNode(node) ?? localConstCallback(node) ?? constCallback(node);
         const namedScheduledCallback = namedCallback(node);
-        const guardIdentifiers = callback
-          ? generationGuardIdentifiers(callback)
-          : [];
+        const generationGuard = callback
+          ? leadingGenerationGuard(callback, file, source)
+          : undefined;
+        const guardIdentifiers = generationGuard?.identifiers ?? [];
         const delayArgument =
           (
             scheduler === "runTimeout" ||
@@ -2881,6 +2905,9 @@ export function parseScriptFile(
             ? "explicit-generation-check"
             : "unresolved",
           guardIdentifiers,
+          ...(generationGuard === undefined ? {} : {
+            generationGuardSource: generationGuard.guardSource,
+          }),
           ...(delayTicks === undefined
             ? {}
             : { delayTicks }),

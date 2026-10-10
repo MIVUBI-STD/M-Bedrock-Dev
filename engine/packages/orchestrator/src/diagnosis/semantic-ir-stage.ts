@@ -486,6 +486,9 @@ export function buildInspectionSemanticIr(
         scheduler: callback.scheduler,
         guardEvidence: callback.guardEvidence,
         guardIdentifiers: callback.guardIdentifiers,
+        ...(callback.generationGuardSource === undefined ? {} : {
+          generationGuardSource: callback.generationGuardSource,
+        }),
       });
     }
 

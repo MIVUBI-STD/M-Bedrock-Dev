@@ -1613,9 +1613,17 @@ function deferredMutationAssessments(
           [...mutationRegions].sort(),
         guardIdentifiers:
           [...callback.guardIdentifiers],
+        // Only direct callback-region mutations are covered by the
+        // first-statement mismatch early exit. Reachable mutations in
+        // another function need exact guarded call-site provenance, which
+        // this region-level analyzer does not yet carry; do not overclaim.
         status:
-          callback.guardEvidence ===
-            "explicit-generation-check"
+          callback.guardEvidence === "explicit-generation-check" &&
+          callback.generationGuardSource !== undefined &&
+          mutationRegions.every(region =>
+            region === (projectGraph
+              ? qualifiedRegion(script, callback.callbackRegion!)
+              : callback.callbackRegion))
             ? "protected"
             : "unresolved",
       });

@@ -3168,7 +3168,7 @@
                     },
                     "temporalBoundaryEvidence": {
                       "type": "array",
-                      "description": "Exact source event/scheduled boundaries. Generation check is only a leading mismatch early-exit syntax candidate; acquired/released schedule handles are static source lifetime candidates, NOT proof of cancellation or session ownership.",
+                      "description": "Per-ingress source temporal boundaries, generation mismatch early-exit and exact scheduling-handle candidates. Source-gated does not prove callback executed, correct session owner, cancellation, or world effects.",
                       "items": {
                         "type": "object",
                         "additionalProperties": false,
@@ -3179,7 +3179,9 @@
                           "guardEvidence",
                           "guardIdentifiers",
                           "candidateScheduleAcquireActionIds",
-                          "candidateReleaseActionIds"
+                          "candidateReleaseActionIds",
+                          "generationGuardSource",
+                          "sourceGateStatus"
                         ],
                         "properties": {
                           "executionEdgeId": {
@@ -3225,6 +3227,59 @@
                             "items": {
                               "type": "string"
                             }
+                          },
+                          "generationGuardSource": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "artifactId",
+                                  "relativePath"
+                                ],
+                                "properties": {
+                                  "artifactId": {
+                                    "type": "string"
+                                  },
+                                  "relativePath": {
+                                    "type": "string"
+                                  },
+                                  "jsonPointer": {
+                                    "type": "string"
+                                  },
+                                  "range": {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "lineStart": {
+                                        "type": "integer"
+                                      },
+                                      "lineEnd": {
+                                        "type": "integer"
+                                      },
+                                      "columnStart": {
+                                        "type": "integer"
+                                      },
+                                      "columnEnd": {
+                                        "type": "integer"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "Exact source location of leading mismatch early-exit condition, if available; not an evaluated session owner."
+                          },
+                          "sourceGateStatus": {
+                            "enum": [
+                              "DIRECT_EFFECT_SITE_GATED",
+                              "SYNCHRONOUS_CALL_SITE_GATED",
+                              "UNRESOLVED"
+                            ],
+                            "description": "Bounded exact precedence guard at the effect or at the first resolved synchronous call site; never a runtime freshness guarantee."
                           }
                         }
                       }
@@ -3539,7 +3594,7 @@
                     },
                     "temporalBoundaryEvidence": {
                       "type": "array",
-                      "description": "Exact source event/scheduled boundaries. Generation check is only a leading mismatch early-exit syntax candidate; acquired/released schedule handles are static source lifetime candidates, NOT proof of cancellation or session ownership.",
+                      "description": "Per-ingress source temporal boundaries, generation mismatch early-exit and exact scheduling-handle candidates. Source-gated does not prove callback executed, correct session owner, cancellation, or world effects.",
                       "items": {
                         "type": "object",
                         "additionalProperties": false,
@@ -3550,7 +3605,9 @@
                           "guardEvidence",
                           "guardIdentifiers",
                           "candidateScheduleAcquireActionIds",
-                          "candidateReleaseActionIds"
+                          "candidateReleaseActionIds",
+                          "generationGuardSource",
+                          "sourceGateStatus"
                         ],
                         "properties": {
                           "executionEdgeId": {
@@ -3596,6 +3653,59 @@
                             "items": {
                               "type": "string"
                             }
+                          },
+                          "generationGuardSource": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "artifactId",
+                                  "relativePath"
+                                ],
+                                "properties": {
+                                  "artifactId": {
+                                    "type": "string"
+                                  },
+                                  "relativePath": {
+                                    "type": "string"
+                                  },
+                                  "jsonPointer": {
+                                    "type": "string"
+                                  },
+                                  "range": {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "lineStart": {
+                                        "type": "integer"
+                                      },
+                                      "lineEnd": {
+                                        "type": "integer"
+                                      },
+                                      "columnStart": {
+                                        "type": "integer"
+                                      },
+                                      "columnEnd": {
+                                        "type": "integer"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "Exact source location of leading mismatch early-exit condition, if available; not an evaluated session owner."
+                          },
+                          "sourceGateStatus": {
+                            "enum": [
+                              "DIRECT_EFFECT_SITE_GATED",
+                              "SYNCHRONOUS_CALL_SITE_GATED",
+                              "UNRESOLVED"
+                            ],
+                            "description": "Bounded exact precedence guard at the effect or at the first resolved synchronous call site; never a runtime freshness guarantee."
                           }
                         }
                       }

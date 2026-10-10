@@ -50,6 +50,8 @@ export interface ExecutionEdge {
   precedenceGuards?: readonly AuthoredBranchGuard[];
   guardEvidence?: "explicit-generation-check" | "unresolved";
   guardIdentifiers?: readonly string[];
+  /** Exact source location of the callback's early generation exit. */
+  generationGuardSource?: SourceRef;
 }
 
 /** An authored object-return property, not a gameplay win or loss. */

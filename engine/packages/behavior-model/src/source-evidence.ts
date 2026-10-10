@@ -805,6 +805,12 @@ export interface SourceEffectSlice {
       readonly scheduler: "run" | "runTimeout" | "runInterval" | "runJob" | null;
       readonly guardEvidence: "explicit-generation-check" | "unresolved" | null;
       readonly guardIdentifiers: readonly string[];
+      /** Exact source of the leading mismatch early exit, if observed. */
+      readonly generationGuardSource: SourceRef | null;
+      /** Static guard dominance of the effect site or first synchronous call,
+       * never proof of live session validity or downstream effect success. */
+      readonly sourceGateStatus:
+        "DIRECT_EFFECT_SITE_GATED" | "SYNCHRONOUS_CALL_SITE_GATED" | "UNRESOLVED";
       readonly candidateScheduleAcquireActionIds: readonly string[];
       readonly candidateReleaseActionIds: readonly string[];
     }[];
@@ -996,7 +1002,7 @@ export function deriveSourceEffectSlices(
               return kind === "event-dispatch" || kind === "deferred" ||
                 kind === "periodic";
             }),
-            temporalBoundaryEvidence: entryToEffectEdges.flatMap(id => {
+            temporalBoundaryEvidence: entryToEffectEdges.flatMap((id, pathIndex) => {
               const edge = edgeById.get(id);
               if (!edge || (edge.kind !== "event-dispatch" &&
                   edge.kind !== "deferred" && edge.kind !== "periodic")) {
@@ -1007,6 +1013,37 @@ export function deriveSourceEffectSlices(
                 scheduleAcquires.filter(action =>
                   action.executionRegionId === edge.from &&
                   sameExactSourceSite(action.source, edge.source));
+              // The callback's leading exit must be a necessary, source-
+              // identifiable guard at the actual effect site OR at the
+              // first synchronous call on the path out of this callback.
+              // A later event/deferred edge breaks temporal dominance.
+              const after = entryToEffectEdges.slice(pathIndex + 1)
+                .map(nextId => edgeById.get(nextId));
+              const guardSource = edge.kind === "event-dispatch" ||
+                edge.guardEvidence !== "explicit-generation-check"
+                ? undefined : edge.generationGuardSource;
+              const guardedBy = (
+                guards: readonly AuthoredBranchGuard[] | undefined,
+              ): boolean => guardSource !== undefined &&
+                (guards ?? []).some(guard =>
+                  guard.branch === "false" &&
+                  sameExactSourceSite(guard.source, guardSource));
+              const directEffectSite = guardSource !== undefined &&
+                edge.to === effect.region && after.length === 0 &&
+                guardedBy(effect.precedenceGuards);
+              const firstSynchronousCall = after[0];
+              const syncCallSite = guardSource !== undefined &&
+                edge.to !== undefined &&
+                firstSynchronousCall !== undefined &&
+                firstSynchronousCall.from === edge.to &&
+                after.every(step => step?.kind === "synchronous-call" &&
+                  step.resolution === "resolved" && step.to !== undefined) &&
+                guardedBy(firstSynchronousCall.precedenceGuards);
+              const sourceGateStatus = directEffectSite
+                ? "DIRECT_EFFECT_SITE_GATED" as const
+                : syncCallSite
+                  ? "SYNCHRONOUS_CALL_SITE_GATED" as const
+                  : "UNRESOLVED" as const;
               return [{
                 executionEdgeId: id,
                 kind: edge.kind,
@@ -1014,6 +1051,8 @@ export function deriveSourceEffectSlices(
                 guardEvidence: edge.kind === "event-dispatch"
                   ? null : edge.guardEvidence ?? "unresolved",
                 guardIdentifiers: [...(edge.guardIdentifiers ?? [])].sort(),
+                generationGuardSource: guardSource ?? null,
+                sourceGateStatus,
                 candidateScheduleAcquireActionIds: acquired
                   .map(action => action.id).sort(),
                 candidateReleaseActionIds: [...new Set(acquired.flatMap(action =>
