@@ -787,6 +787,11 @@ export interface SourceEffectSlice {
   readonly sourcePath: string;
   readonly status: "CANDIDATE_INGRESS" | "NO_KNOWN_INGRESS" | "TRUNCATED";
   readonly truncated: boolean;
+  /**
+   * Number of bounded call-path extensions rejected by opposite exact
+   * source guard arms. Does not imply the effect is unreachable at runtime.
+   */
+  readonly excludedContradictoryPathCount: number;
   readonly candidateIngress: readonly {
     readonly entryRegionId: string;
     /** A representative source call path in entry-to-effect order. */
@@ -976,6 +981,39 @@ export function deriveSourceEffectSlices(
     }];
     const found: Candidate[] = [];
     let truncated = false;
+    let excludedContradictoryPathCount = 0;
+    /**
+     * Reject an impossible collection of source-identified branch arms.
+     * Guard conditions before an event/deferred/periodic boundary were
+     * evaluated at scheduling time and MUST NOT be compared to guards in
+     * the eventual callback evaluation. Within one synchronous segment,
+     * the same exact condition site cannot require both true and false.
+     */
+    const compatiblePath = (path: readonly string[]): boolean => {
+      type GuardCarrier = {
+        lexicalGuards?: readonly AuthoredBranchGuard[];
+        precedenceGuards?: readonly AuthoredBranchGuard[];
+      };
+      let requirements: GuardCarrier[] = [{
+        lexicalGuards: effect.lexicalGuards,
+        precedenceGuards: effect.precedenceGuards,
+      }];
+      if (mutuallyExclusiveGuards(requirements[0]!, requirements[0]!)) {
+        return false;
+      }
+      for (const edgeId of [...path].reverse()) {
+        const edge = edgeById.get(edgeId);
+        if (!edge) return false;
+        // A later callback has an independent guard evaluation context.
+        if (edge.kind !== "synchronous-call") requirements = [];
+        if (mutuallyExclusiveGuards(edge, edge) ||
+            requirements.some(prior => mutuallyExclusiveGuards(prior, edge))) {
+          return false;
+        }
+        requirements.push(edge);
+      }
+      return true;
+    };
     for (let index = 0; index < queue.length; index += 1) {
       if (index >= MAX_PATH_STATES) {
         truncated = true;
@@ -989,6 +1027,10 @@ export function deriveSourceEffectSlices(
         (region?.kind === "mcfunction" && parents.length === 0);
       if (validEntry) {
         const entryToEffectEdges = current.path;
+        if (!compatiblePath(entryToEffectEdges)) {
+          excludedContradictoryPathCount += 1;
+          continue;
+        }
         const chain = [current.regionId];
         for (const edgeId of entryToEffectEdges) {
           const edge = edgeById.get(edgeId);
@@ -1117,9 +1159,14 @@ export function deriveSourceEffectSlices(
           truncated = true;
           continue;
         }
+        const nextPath = [edge.id, ...current.path];
+        if (!compatiblePath(nextPath)) {
+          excludedContradictoryPathCount += 1;
+          continue;
+        }
         queue.push({
           regionId: edge.from,
-          path: [edge.id, ...current.path],
+          path: nextPath,
           visitedRegionIds: [...current.visitedRegionIds, edge.from],
           depth: current.depth + 1,
         });
@@ -1290,6 +1337,7 @@ export function deriveSourceEffectSlices(
         found.length > 0 ? "CANDIDATE_INGRESS" as const :
         "NO_KNOWN_INGRESS" as const,
       truncated,
+      excludedContradictoryPathCount,
       candidateIngress: candidateIngress.sort((a, b) =>
         a.entryRegionId.localeCompare(b.entryRegionId) ||
         a.executionEdgeIds.join("|").localeCompare(b.executionEdgeIds.join("|"))),

@@ -3439,7 +3439,8 @@
               "guardStateReadIds",
               "candidateGuardStateWriteIds",
               "sourceLocalStateValueHandoffs",
-              "guardedStateTransitionCandidates"
+              "guardedStateTransitionCandidates",
+              "excludedContradictoryPathCount"
             ],
             "properties": {
               "effectId": {
@@ -4298,6 +4299,11 @@
                     }
                   }
                 }
+              },
+              "excludedContradictoryPathCount": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Number of exact-guard-contradictory path extensions excluded from the bounded candidate ingress search; NOT a runtime unreachable assertion. Temporal boundaries begin a separate guard evaluation segment."
               }
             }
           }

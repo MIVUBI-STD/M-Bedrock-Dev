@@ -189,6 +189,14 @@ Within the existing `SourceEffectSlice.candidateIngress[].temporalBoundaryEviden
 
 The new records reuse the canonical parser, Semantic IR and backward Behavior Model; Gameplay Scenario already projects the containing `temporalBoundaryEvidence` without a second lifecycle output authority. The Map Audit V2 contract is extended in place. Event, unresolved and deferred boundaries retain their existing path gating and unknown semantics. Terminal, cleanup and recovery success remain runtime-unverified; no manager, registry, new execution model, or dependency was introduced.
 
+### Exact branch feasibility and per-ingress feature association
+
+The canonical bounded backwards `deriveSourceEffectSlices()` now excludes a call-path extension when it requires both opposite arms of **the same exact authored guard location** in one synchronous evaluation segment, reusing the existing guard comparison helper. Event dispatch, deferred and periodic boundaries begin a separate evaluation segment; a guard at scheduling time is not treated as a guard in the callback at a later tick. This is a conservative source-path contradiction filter, NOT proof that a path is executable or that a missing path is unreachable. `excludedContradictoryPathCount` makes pruned alternatives visible in the existing effect slice and Map Audit V2 projection without an extra tracking owner. Paths excluded due to a source contradiction are not counted as truncation.
+
+The canonical Gameplay Architecture `features[].sourceBehaviorPaths` now selects `CALL_PATH_CONTEXT` **per candidate ingress**, only where that specific candidate's `regionIds` includes an exact region evidence ID on the feature. The slice-wide `pathAssociatedFeatureIds` remains a union for navigation and does not authorize fabricating other paths for that feature. `DIRECT_EFFECT_EVIDENCE` still projects all admitted paths of an exactly bound effect; paths with no known ingress do not become spurious contextual associations. Neither relationship establishes the gameplay purpose or verified runtime execution.
+
+This is a single owner-to-consumer correction across existing Behavior Model and Gameplay Scenario. It introduces no second CFG, registry, manager, or duplicated knowledge, and intentionally defers executable acceptance while the larger Discovery architecture is still in BUILD.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:

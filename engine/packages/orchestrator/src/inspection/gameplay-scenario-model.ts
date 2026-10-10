@@ -1464,7 +1464,15 @@ export function deriveGameplayArchitectureNavigation(
             const paths = slice.candidateIngress.length > 0
               ? slice.candidateIngress
               : [undefined];
-            return paths.map(entry => ({
+            // A feature found on ONE alternative ingress cannot own all
+            // of this effect's alternative paths. DIRECT evidence belongs to
+            // every path of that effect; CALL_PATH_CONTEXT belongs only to
+            // paths that traverse an exact feature-evidenced IR region.
+            const associatedPaths = paths.filter(entry =>
+              association === "DIRECT_EFFECT_EVIDENCE" ||
+              (entry !== undefined && component.evidenceIds.some(id =>
+                entry.regionIds.includes(id))));
+            return associatedPaths.map(entry => ({
               effectId: slice.effectId,
               association,
               evidenceStatus: slice.status,
