@@ -15,6 +15,7 @@ export interface ObservedBranchPoint {
     /** Possible resource acquire/release sites within this authored arm. */
     readonly resourceActionIds: readonly string[];
     readonly resourceReleaseActionIds: readonly string[];
+    readonly worldEffectIds?: readonly string[];
     /** Evidence dependent on the opposite arm of a prior direct exit. */
     readonly precedenceEvidenceIds: readonly string[];
   }[];
@@ -102,6 +103,7 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
   const operationById = new Map(ir.state.operations.map(op => [op.id, op]));
   const outcomeById = new Map((ir.execution.outcomes ?? []).map(op => [op.id, op]));
   const actionById = new Map((ir.state.resourceActions ?? []).map(action => [action.id, action]));
+  const worldEffectById = new Map((ir.execution.worldEffects ?? []).map(effect => [effect.id, effect]));
   const incoming = new Set(ir.execution.edges
     .filter(edge => edge.resolution === "resolved" && edge.to !== undefined)
     .map(edge => edge.to!));
@@ -168,6 +170,7 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
       returnOutcomeIds: Set<string>;
       resourceActionIds: Set<string>;
       resourceReleaseActionIds: Set<string>;
+      worldEffectIds: Set<string>;
       precedenceEvidenceIds: Set<string>;
     };
     const arm = (): BranchArm => ({
@@ -176,6 +179,7 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
       returnOutcomeIds: new Set(),
       resourceActionIds: new Set(),
       resourceReleaseActionIds: new Set(),
+      worldEffectIds: new Set(),
       precedenceEvidenceIds: new Set(),
     });
     const points = new Map<string, {
@@ -188,7 +192,7 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
       guards: readonly AuthoredBranchGuard[] | undefined,
       id: string,
       kind: "executionEdgeIds" | "stateWriteOperationIds" | "returnOutcomeIds" |
-        "resourceActionIds" | "resourceReleaseActionIds",
+        "resourceActionIds" | "resourceReleaseActionIds" | "worldEffectIds",
       precedingExit = false,
     ): void => {
       for (const guard of guards ?? []) {
@@ -229,6 +233,11 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
       include(outcomeById.get(id)?.lexicalGuards, id, "returnOutcomeIds");
       include(outcomeById.get(id)?.precedenceGuards, id, "returnOutcomeIds", true);
     }
+    for (const id of sorted(worldEffectIds)) {
+      const effect = worldEffectById.get(id);
+      include(effect?.lexicalGuards, id, "worldEffectIds");
+      include(effect?.precedenceGuards, id, "worldEffectIds", true);
+    }
     for (const id of sorted(resourceActions)) {
       const action = actionById.get(id);
       include(action?.lexicalGuards, id, "resourceActionIds");
@@ -249,7 +258,8 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
             return value.executionEdgeIds.size > 0 ||
               value.stateWriteOperationIds.size > 0 ||
               value.returnOutcomeIds.size > 0 ||
-              value.resourceActionIds.size > 0;
+              value.resourceActionIds.size > 0 ||
+              value.worldEffectIds.size > 0;
           })
           .map(branch => ({
             branch,
@@ -257,6 +267,7 @@ export function semanticIrExecutionTraces(ir: SemanticIr): {
             stateWriteOperationIds: sorted(point[branch].stateWriteOperationIds),
             returnOutcomeIds: sorted(point[branch].returnOutcomeIds),
             resourceActionIds: sorted(point[branch].resourceActionIds),
+            worldEffectIds: sorted(point[branch].worldEffectIds),
             resourceReleaseActionIds: sorted(point[branch].resourceReleaseActionIds),
             precedenceEvidenceIds: sorted(point[branch].precedenceEvidenceIds),
           })),

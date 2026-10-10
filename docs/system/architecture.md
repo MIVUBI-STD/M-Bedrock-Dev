@@ -115,6 +115,12 @@ The existing Behavior Model source-evidence owner now reconciles normalized Mine
 
 The canonical backward `SourceEffectSlice.sourceOrderedOutcomeIds`, Scenario `observedSourceRelationships` and Discovery Challenger all consume this same reconciliation. There is no new parser, graph, report field or proof gate. Ambiguous source relationships remain explicit rather than being upgraded to PROVEN.
 
+### Authored guard provenance for Minecraft world effects
+
+The existing Script AST parser preserves lexical and preceding-exit guards for selected typed API calls, explicit `runCommand` sites, spatial mutations and entity-event triggers through exact call-source identity. The existing spatial world-mutation analyzer's output is now returned by `parseScriptFile` and reaches Semantic IR. Plain embedded command strings remain source content, not executed command evidence.
+
+Semantic IR world effects retain the exact authored branch ancestry. Existing source execution traces place world effects on matching branch arms; backward effect slices expose their guards. The Behavior Model correlates each world-effect/return pair only when its source order, lexical branch arms and early-exit conditions are compatible. `precedingWorldEffectIds` preserves nearby evidence while `guardCompatibleWorldEffectIds` gives the bounded source-order subset. Scenario relationships classify each ID independently instead of borrowing proof from another effect. Even a compatible source path does not prove execution, causality, or gameplay design.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:

@@ -661,7 +661,7 @@ export function deriveObservedGameplaySourceRelationships(
         kind: "world-effect-to-outcome" as const,
         fromEvidenceId,
         outcomeId: candidate.outcomeId,
-        sourceBasis: candidate.status === "SOURCE_ORDER_CANDIDATE"
+        sourceBasis: candidate.guardCompatibleWorldEffectIds.includes(fromEvidenceId)
           ? "SOURCE_ORDER_CANDIDATE" as const
           : "SOURCE_ORDER_UNRESOLVED" as const,
       }))),
@@ -1152,6 +1152,7 @@ export function deriveGameplayArchitectureNavigation(
                 ...branch.executionEdgeIds,
                 ...branch.stateWriteOperationIds,
                 ...branch.returnOutcomeIds,
+                ...(branch.worldEffectIds ?? []),
                 ...branch.resourceActionIds,
               ]);
               const branchIdSet = new Set(branchIds);

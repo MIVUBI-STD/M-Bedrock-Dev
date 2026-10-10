@@ -108,6 +108,8 @@ export interface ScriptMethodCall {
   hasSpreadArgument: boolean;
   resultUse: ScriptMethodResultUse;
   source: SourceRef;
+  lexicalGuards?: readonly ScriptLexicalGuard[];
+  precedenceGuards?: readonly ScriptLexicalGuard[];
 }
 
 export interface ScriptPropertyWrite {
@@ -178,6 +180,8 @@ export interface ScriptEntityEventTrigger {
   receiverHint?: string;
   executionRegion?: string;
   source: SourceRef;
+  lexicalGuards?: readonly ScriptLexicalGuard[];
+  precedenceGuards?: readonly ScriptLexicalGuard[];
 }
 
 export interface ScriptCommandLiteral {
@@ -186,6 +190,8 @@ export interface ScriptCommandLiteral {
   executionRegion?: string;
   receiverHint?: string;
   source: SourceRef;
+  lexicalGuards?: readonly ScriptLexicalGuard[];
+  precedenceGuards?: readonly ScriptLexicalGuard[];
 }
 
 export interface ScriptLifecycleMemberExposure {
@@ -314,6 +320,8 @@ export interface ScriptSpatialWorldMutation {
   writeIdentity?: string;
   reason?: string;
   source: SourceRef;
+  lexicalGuards?: readonly ScriptLexicalGuard[];
+  precedenceGuards?: readonly ScriptLexicalGuard[];
 }
 
 export interface ScriptSpatialContextOffsetSeries {

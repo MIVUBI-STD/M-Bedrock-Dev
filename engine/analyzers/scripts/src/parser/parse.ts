@@ -1992,6 +1992,11 @@ export function parseScriptFile(
     lexicalGuards: readonly ScriptLexicalGuard[];
     precedenceGuards: readonly ScriptLexicalGuard[];
   }>();
+  // The existing AST parser owns branch ancestry at exact typed method sites.
+  const callSiteGuards = new Map<string, {
+    lexicalGuards: readonly ScriptLexicalGuard[];
+    precedenceGuards: readonly ScriptLexicalGuard[];
+  }>();
   const globalLeaseEvidence =
     deriveScriptGlobalLeaseEvidence(
       text,
@@ -2384,6 +2389,13 @@ export function parseScriptFile(
 
   const visit = (node: ts.Node): void => {
     if (ts.isCallExpression(node)) {
+      const site = resourceSiteKey(lineSource(file, node, source));
+      if (site !== undefined) {
+        callSiteGuards.set(site, {
+          lexicalGuards: lexicalBranchGuards(node, file, source),
+          precedenceGuards: precedingEarlyExitGuards(node, file, source),
+        });
+      }
       const imported = ts.isIdentifier(node.expression)
         ? relativeImportedNames.has(node.expression.text) &&
           !isShadowed(node.expression)
@@ -2795,6 +2807,8 @@ export function parseScriptFile(
             executionRegion: localExecutionRegionId(node, file),
             receiverHint: node.expression.expression.getText(file),
             source: lineSource(file, argument, source),
+            lexicalGuards: lexicalBranchGuards(node, file, source),
+            precedenceGuards: precedingEarlyExitGuards(node, file, source),
           });
         }
       }
@@ -2852,6 +2866,8 @@ export function parseScriptFile(
             receiverHint: node.expression.expression.getText(file),
             executionRegion: localExecutionRegionId(node, file),
             source: lineSource(file, node, source),
+            lexicalGuards: lexicalBranchGuards(node, file, source),
+            precedenceGuards: precedingEarlyExitGuards(node, file, source),
           });
         }
       }
@@ -2995,6 +3011,15 @@ export function parseScriptFile(
 
   visit(file);
 
+  const withCallGuards = <T extends { source: SourceRef }>(item: T) => {
+    const site = resourceSiteKey(item.source);
+    const guards = site === undefined ? undefined : callSiteGuards.get(site);
+    return {
+      ...item,
+      ...(guards?.lexicalGuards.length ? { lexicalGuards: guards.lexicalGuards } : {}),
+      ...(guards?.precedenceGuards.length ? { precedenceGuards: guards.precedenceGuards } : {}),
+    };
+  };
   const contextualCleanupResourceEvidence = cleanupResourceEvidence.map(item => {
     const key = resourceSiteKey(item.source);
     const context = key === undefined ? undefined : resourceBranchContext.get(key);
@@ -3057,7 +3082,7 @@ export function parseScriptFile(
     localFunctionCalls,
     importedCallGuardSites,
     blockMatchGuards,
-    methodCalls,
+    methodCalls: methodCalls.map(withCallGuards),
     propertyAccesses,
     propertyWrites,
     entityEventTriggers,
@@ -3076,6 +3101,7 @@ export function parseScriptFile(
     spatialOffsetTransforms,
     spatialTransformUses,
     spatialContextOffsetSeries,
+    spatialWorldMutations: spatialWorldMutations.map(withCallGuards),
     spatialMutations: [...spatialMutations.mutations],
     cleanupResourceEvidence: contextualCleanupResourceEvidence,
     chunkLifecycleEvidence: [

@@ -29,6 +29,8 @@ export interface SourceWorldEffectOutcomeCandidate {
   readonly outcomeId: string;
   readonly executionRegionId: string;
   readonly precedingWorldEffectIds: readonly string[];
+  /** Individual effects compatible with the return's exact guard ancestry. */
+  readonly guardCompatibleWorldEffectIds: readonly string[];
   readonly status: "SOURCE_ORDER_CANDIDATE" | "UNRESOLVED";
   readonly reason: string;
   readonly provenance: BehaviorClaimProvenance;
@@ -303,26 +305,34 @@ export function reconcileSourceWorldEffectOutcomes(
       sameDocument(effect.source, outcome.source)))
     .sort((a, b) => a.id.localeCompare(b.id))
     .map(outcome => {
-      const precedingWorldEffectIds = [...new Set(effects
+      const preceding = effects.filter(effect =>
+        effect.executionRegionId === outcome.executionRegionId &&
+        precedingSourceSite(effect.source, outcome.source));
+      const precedingWorldEffectIds = [...new Set(
+        preceding.map(effect => effect.id))].sort();
+      // Source-order alone cannot merge opposite branch arms. The effect's
+      // lexical guards must be exact identified ancestors of the return and
+      // all necessary preceding early-exit constraints must match.
+      const guardCompatibleWorldEffectIds = [...new Set(preceding
         .filter(effect =>
-          effect.executionRegionId === outcome.executionRegionId &&
-          precedingSourceSite(effect.source, outcome.source))
+          ((outcome.lexicalGuards?.length ?? 0) === 0 ||
+            (effect.lexicalGuards?.length ?? 0) > 0) &&
+          lexicalGuardsCoveredByOutcome(
+            effect.lexicalGuards, outcome.lexicalGuards) &&
+          guardsEqual(effect.precedenceGuards, outcome.precedenceGuards))
         .map(effect => effect.id))].sort();
-      const hasReturnGuard =
-        (outcome.lexicalGuards?.length ?? 0) > 0 ||
-        (outcome.precedenceGuards?.length ?? 0) > 0;
-      const status =
-        precedingWorldEffectIds.length > 0 && !hasReturnGuard
-          ? "SOURCE_ORDER_CANDIDATE" as const
-          : "UNRESOLVED" as const;
+      const status = guardCompatibleWorldEffectIds.length > 0
+        ? "SOURCE_ORDER_CANDIDATE" as const
+        : "UNRESOLVED" as const;
       return {
         outcomeId: outcome.id,
         executionRegionId: outcome.executionRegionId,
         precedingWorldEffectIds,
+        guardCompatibleWorldEffectIds,
         status,
         reason: status === "SOURCE_ORDER_CANDIDATE"
-          ? "An authored world-effect attempt appears before an unguarded return in the same function/document. Source ordering does not establish reachability, side-effect success, cause, or terminal gameplay meaning."
-          : "World-effect/return association lacks sufficient source-order or compatible branch evidence; a guarded return cannot be attributed to an unguarded world-effect record.",
+          ? "Authored effect and return have compatible exact source/branch evidence. Source order does not prove effect success or a gameplay outcome."
+          : "A nearby effect does not have exact branch/source evidence compatible with this return.",
         provenance: {
           kind: "source-inference" as const,
           evidenceCeiling: "inferred" as const,
@@ -442,6 +452,8 @@ export function deriveSourceEffectSlices(
       region: effect.executionRegionId, source: effect.source,
       worldEffectKind: effect.kind, targetLabel: effect.targetLabel,
       evidencePrecision: effect.precision,
+      lexicalGuards: effect.lexicalGuards,
+      precedenceGuards: effect.precedenceGuards,
     })),
   ];
   const stateOutcomeCandidates = reconcileSourceStateOutcomes(ir);
@@ -553,8 +565,8 @@ export function deriveSourceEffectSlices(
             .map(candidate => candidate.outcomeId)
         : effect.kind === "world-effect"
           ? worldEffectOutcomeCandidates
-              .filter(candidate => candidate.status === "SOURCE_ORDER_CANDIDATE" &&
-                candidate.precedingWorldEffectIds.includes(effect.id))
+              .filter(candidate =>
+                candidate.guardCompatibleWorldEffectIds.includes(effect.id))
               .map(candidate => candidate.outcomeId)
           : [];
     const possiblePrecedingReadIds = effect.surfaceId === undefined ? []

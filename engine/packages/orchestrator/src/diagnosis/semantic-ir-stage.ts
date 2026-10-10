@@ -142,6 +142,8 @@ export function buildInspectionSemanticIr(
     commandEffects: ReturnType<typeof flattenCommandEffects>,
     executionRegionId: string,
     mechanism: "mcfunction-command" | "script-command",
+    lexicalGuards?: readonly AuthoredBranchGuard[],
+    precedenceGuards?: readonly AuthoredBranchGuard[],
   ): void => {
     for (const effect of commandEffects) {
       let kind: AuthoredWorldEffect["kind"] | undefined;
@@ -168,6 +170,8 @@ export function buildInspectionSemanticIr(
       addWorldEffect({
         kind, targetLabel, executionRegionId, mechanism,
         precision: "parsed-command", source: effect.source,
+        ...(lexicalGuards?.length ? { lexicalGuards } : {}),
+        ...(precedenceGuards?.length ? { precedenceGuards } : {}),
       });
     }
   };
@@ -501,6 +505,12 @@ export function buildInspectionSemanticIr(
         source: call.source,
         mechanism: "script-api",
         precision: call.inference === "direct" ? "typed-method" : "bounded-method",
+        ...(irGuards(call.lexicalGuards) === undefined ? {} : {
+          lexicalGuards: irGuards(call.lexicalGuards),
+        }),
+        ...(irGuards(call.precedenceGuards) === undefined ? {} : {
+          precedenceGuards: irGuards(call.precedenceGuards),
+        }),
       });
     }
     // Reuse the existing spatial AST analysis rather than generic method names.
@@ -514,6 +524,12 @@ export function buildInspectionSemanticIr(
         source: mutation.source, mechanism: "script-spatial",
         precision: mutation.status === "resolved"
           ? "resolved-spatial" : "unresolved-spatial",
+        ...(irGuards(mutation.lexicalGuards) === undefined ? {} : {
+          lexicalGuards: irGuards(mutation.lexicalGuards),
+        }),
+        ...(irGuards(mutation.precedenceGuards) === undefined ? {} : {
+          precedenceGuards: irGuards(mutation.precedenceGuards),
+        }),
       });
     }
     for (const trigger of parsed.entityEventTriggers) {
@@ -525,6 +541,12 @@ export function buildInspectionSemanticIr(
         ),
         source: trigger.source, mechanism: "script-api",
         precision: "typed-method",
+        ...(irGuards(trigger.lexicalGuards) === undefined ? {} : {
+          lexicalGuards: irGuards(trigger.lexicalGuards),
+        }),
+        ...(irGuards(trigger.precedenceGuards) === undefined ? {} : {
+          precedenceGuards: irGuards(trigger.precedenceGuards),
+        }),
       });
     }
 
@@ -620,6 +642,8 @@ export function buildInspectionSemanticIr(
     }
 
     for (const command of parsed.commandLiterals) {
+      // Uninvoked embedded string is not an authored execution attempt.
+      if (command.mechanism === "embedded-literal") continue;
       const region = ensureScriptRegion(
         parsed,
         command.executionRegion ?? "module",
@@ -630,7 +654,10 @@ export function buildInspectionSemanticIr(
         command.source,
       );
       const effects = flattenCommandEffects(analysis);
-      addCommandWorldEffects(effects, region, "script-command");
+      addCommandWorldEffects(
+        effects, region, "script-command",
+        irGuards(command.lexicalGuards), irGuards(command.precedenceGuards),
+      );
 
       for (const effect of effects) {
         if (effect.kind !== "function-call") continue;

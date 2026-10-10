@@ -93,6 +93,8 @@ export interface AuthoredWorldEffect {
   readonly precision: "parsed-command" | "typed-method" |
     "bounded-method" | "resolved-spatial" | "unresolved-spatial";
   readonly source: SourceRef;
+  readonly lexicalGuards?: readonly AuthoredBranchGuard[];
+  readonly precedenceGuards?: readonly AuthoredBranchGuard[];
 }
 
 export interface StateSurface {
