@@ -14,6 +14,8 @@ import type { ArenaRegionPlan } from "../../../../analyzers/topology/src/index.j
 import {
   reconcileSourceStateOutcomes,
   reconcileSourceResourceOutcomes,
+  deriveSourceEffectSlices,
+  type SourceEffectSlice,
   type SourceStateOutcomeCandidate,
   type SourceResourceOutcomeCandidate,
 } from "../../../behavior-model/src/index.js";
@@ -214,6 +216,16 @@ export interface GameplayArchitectureNavigation {
   readonly gameplayStructure: {
     readonly scope: "OBSERVED_COMPONENTS_ONLY";
     readonly gameSubjectIds: readonly string[];
+    /**
+     * Exact source effects traced backward through resolved IR call topology.
+     * Membership in a candidate path is not evidence of execution or design.
+     */
+    readonly effectSlices: readonly (SourceEffectSlice & {
+      readonly exactComponentIds: readonly string[];
+      readonly exactFeatureIds: readonly string[];
+      readonly pathAssociatedFeatureIds: readonly string[];
+    })[];
+    readonly effectIdsWithoutComponentOwner: readonly string[];
     /** Canonical graph identities for resolving every referenced endpoint. */
     readonly subjects: readonly {
       readonly id: string;
@@ -1265,11 +1277,40 @@ export function deriveGameplayArchitectureNavigation(
   const featureComponents = graph.components.filter(component =>
     featureKinds.has(component.kind));
   const featureIds = new Set(featureComponents.map(component => component.id));
+  const sourceEffectSlices = observed.semanticIr
+    ? deriveSourceEffectSlices(observed.semanticIr)
+    : [];
+  const effectSlices: GameplayArchitectureNavigation[
+    "gameplayStructure"]["effectSlices"] =
+    sourceEffectSlices.map(slice => {
+      const exactComponents = graph.components.filter(component =>
+        component.evidenceIds.includes(slice.effectId));
+      const sourceRegions = new Set(slice.candidateIngress.flatMap(entry =>
+        entry.regionIds));
+      sourceRegions.add(slice.executionRegionId);
+      const exactComponentIds = sorted(exactComponents.map(c => c.id));
+      return {
+        ...slice,
+        exactComponentIds,
+        exactFeatureIds: exactComponentIds.filter(id => featureIds.has(id)),
+        // A source-call path may pass through a classified function. This is
+        // contextual association only, never a PROVEN semantic dependency.
+        pathAssociatedFeatureIds: sorted(featureComponents
+          .filter(component => component.evidenceIds.some(id =>
+            sourceRegions.has(id)) &&
+            !exactComponentIds.includes(component.id))
+          .map(component => component.id)),
+      };
+    });
   const gameplayStructure: GameplayArchitectureNavigation["gameplayStructure"] = {
     scope: "OBSERVED_COMPONENTS_ONLY",
     gameSubjectIds: sorted(graph.components
       .filter(component => component.kind === "game")
       .map(component => component.id)),
+    effectSlices,
+    effectIdsWithoutComponentOwner: effectSlices
+      .filter(slice => slice.exactComponentIds.length === 0)
+      .map(slice => slice.effectId),
     subjects: [...graph.components]
       .sort((a, b) => a.id.localeCompare(b.id))
       .map(component => ({

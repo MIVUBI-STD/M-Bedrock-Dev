@@ -272,3 +272,206 @@ export function reconcileSourceStateOutcomes(
       };
     });
 }
+
+/**
+ * Effect-directed, bounded static program slice over the SAME Semantic IR.
+ * The entry is an authored call/event candidate, never evidence that the
+ * branch ran, a state mutation committed, or a player observed a result.
+ * A missing ingress is UNKNOWN, not an unreachable-code or defect verdict.
+ */
+export interface SourceEffectSlice {
+  readonly effectId: string;
+  readonly effectKind: "state-mutation" | "resource-action" | "authored-return";
+  readonly executionRegionId: string;
+  readonly sourcePath: string;
+  readonly status: "CANDIDATE_INGRESS" | "NO_KNOWN_INGRESS" | "TRUNCATED";
+  readonly truncated: boolean;
+  readonly candidateIngress: readonly {
+    readonly entryRegionId: string;
+    /** A representative source call path in entry-to-effect order. */
+    readonly regionIds: readonly string[];
+    readonly executionEdgeIds: readonly string[];
+    readonly guardedEdgeIds: readonly string[];
+    readonly temporalBoundaryEdgeIds: readonly string[];
+  }[];
+  /** Source-order only; same-surface reads are not proven data dependencies. */
+  readonly possiblePrecedingReadIds: readonly string[];
+  /** Existing same-region guarded source-order candidates, not outcomes. */
+  readonly sourceOrderedOutcomeIds: readonly string[];
+  readonly effectGuards: readonly {
+    readonly kind: "lexical" | "precedence";
+    readonly branch: "true" | "false";
+    readonly expression: string;
+    readonly sourcePath: string;
+    readonly lineStart: number | null;
+    readonly columnStart: number | null;
+  }[];
+}
+
+export function deriveSourceEffectSlices(
+  ir: SemanticIr,
+): readonly SourceEffectSlice[] {
+  // Build inverse *resolved* execution links once. Cycles, depth and
+  // alternative paths are bounded; no cross-artifact or name-only traversal.
+  const MAX_REGIONS = 64;
+  const MAX_DEPTH = 12;
+  const MAX_ENTRIES = 12;
+  const incoming = new Map<string, SemanticIr["execution"]["edges"][number][]>();
+  const edgeById = new Map(ir.execution.edges.map(edge => [edge.id, edge]));
+  const regions = new Map(ir.execution.regions.map(region => [region.id, region]));
+  for (const edge of ir.execution.edges) {
+    if (edge.resolution !== "resolved" || edge.to === undefined ||
+        !regions.has(edge.from) || !regions.has(edge.to)) continue;
+    const list = incoming.get(edge.to) ?? [];
+    list.push(edge);
+    incoming.set(edge.to, list);
+  }
+  for (const list of incoming.values()) list.sort((a, b) => a.id.localeCompare(b.id));
+
+  type Effect = {
+    id: string;
+    kind: SourceEffectSlice["effectKind"];
+    region: string;
+    source: SourceRef;
+    surfaceId?: string;
+    lexicalGuards?: readonly AuthoredBranchGuard[];
+    precedenceGuards?: readonly AuthoredBranchGuard[];
+  };
+  const effects: Effect[] = [
+    ...ir.state.operations
+      .filter(op => op.operation === "write" ||
+        op.operation === "delete" || op.operation === "clear")
+      .map(op => ({
+        id: op.id, kind: "state-mutation" as const,
+        region: op.executionRegionId, source: op.source,
+        surfaceId: op.surfaceId,
+        lexicalGuards: op.lexicalGuards,
+        precedenceGuards: op.precedenceGuards,
+      })),
+    ...(ir.state.resourceActions ?? []).map(action => ({
+      id: action.id, kind: "resource-action" as const,
+      region: action.executionRegionId, source: action.source,
+      lexicalGuards: action.lexicalGuards,
+      precedenceGuards: action.precedenceGuards,
+    })),
+    ...(ir.execution.outcomes ?? []).map(outcome => ({
+      id: outcome.id, kind: "authored-return" as const,
+      region: outcome.executionRegionId, source: outcome.source,
+      lexicalGuards: outcome.lexicalGuards,
+      precedenceGuards: outcome.precedenceGuards,
+    })),
+  ];
+  const stateOutcomeCandidates = reconcileSourceStateOutcomes(ir);
+  const resourceOutcomeCandidates = reconcileSourceResourceOutcomes(ir);
+  return effects.sort((a, b) => a.id.localeCompare(b.id)).map(effect => {
+    type Candidate = SourceEffectSlice["candidateIngress"][number];
+    const queue: { regionId: string; path: readonly string[]; depth: number }[] =
+      [{ regionId: effect.region, path: [], depth: 0 }];
+    const visited = new Set([effect.region]);
+    const found: Candidate[] = [];
+    let truncated = false;
+    for (let index = 0; index < queue.length; index += 1) {
+      const current = queue[index]!;
+      const region = regions.get(current.regionId);
+      const parents = incoming.get(current.regionId) ?? [];
+      const validEntry = region?.kind === "event-source" ||
+        region?.kind === "script-module" ||
+        (region?.kind === "mcfunction" && parents.length === 0);
+      if (validEntry) {
+        const entryToEffectEdges = current.path;
+        const chain = [current.regionId];
+        for (const edgeId of entryToEffectEdges) {
+          const edge = edgeById.get(edgeId);
+          if (edge?.to !== undefined) chain.push(edge.to);
+        }
+        if (found.length >= MAX_ENTRIES) {
+          truncated = true;
+        } else {
+          found.push({
+            entryRegionId: current.regionId,
+            regionIds: chain,
+            executionEdgeIds: [...entryToEffectEdges],
+            guardedEdgeIds: entryToEffectEdges.filter(id => {
+              const edge = edgeById.get(id);
+              return edge?.controlFlow === "conditional" ||
+                (edge?.lexicalGuards?.length ?? 0) > 0 ||
+                (edge?.precedenceGuards?.length ?? 0) > 0;
+            }),
+            temporalBoundaryEdgeIds: entryToEffectEdges.filter(id => {
+              const kind = edgeById.get(id)?.kind;
+              return kind === "event-dispatch" || kind === "deferred" ||
+                kind === "periodic";
+            }),
+          });
+        }
+      }
+      if (current.depth >= MAX_DEPTH) {
+        if (parents.length > 0) truncated = true;
+        continue;
+      }
+      for (const edge of parents) {
+        if (visited.has(edge.from)) continue;
+        if (visited.size >= MAX_REGIONS) {
+          truncated = true;
+          break;
+        }
+        visited.add(edge.from);
+        queue.push({
+          regionId: edge.from,
+          path: [edge.id, ...current.path],
+          depth: current.depth + 1,
+        });
+      }
+    }
+    const guardSites = (
+      guards: readonly AuthoredBranchGuard[] | undefined,
+      kind: "lexical" | "precedence",
+    ): SourceEffectSlice["effectGuards"][number][] =>
+      (guards ?? []).map(guard => ({
+        kind,
+        branch: guard.branch,
+        expression: guard.expression,
+        sourcePath: guard.source.relativePath,
+        lineStart: guard.source.range?.lineStart ?? null,
+        columnStart: guard.source.range?.columnStart ?? null,
+      }));
+    const sourceOrderedOutcomeIds = effect.kind === "state-mutation"
+      ? stateOutcomeCandidates
+          .filter(candidate => candidate.status === "SOURCE_ORDER_CANDIDATE" &&
+            candidate.precedingWriteOperationIds.includes(effect.id))
+          .map(candidate => candidate.outcomeId)
+      : effect.kind === "resource-action"
+        ? resourceOutcomeCandidates
+            .filter(candidate => candidate.status === "SOURCE_ORDER_CANDIDATE" &&
+              candidate.precedingResourceActionIds.includes(effect.id))
+            .map(candidate => candidate.outcomeId)
+        : [];
+    const possiblePrecedingReadIds = effect.surfaceId === undefined ? []
+      : ir.state.operations
+          .filter(op => op.operation === "read" &&
+            op.surfaceId === effect.surfaceId &&
+            op.executionRegionId === effect.region &&
+            precedingSourceSite(op.source, effect.source) &&
+            lexicalGuardsCoveredByOutcome(op.lexicalGuards, effect.lexicalGuards) &&
+            guardsEqual(op.precedenceGuards, effect.precedenceGuards))
+          .map(op => op.id).sort();
+    return {
+      effectId: effect.id,
+      effectKind: effect.kind,
+      executionRegionId: effect.region,
+      sourcePath: effect.source.relativePath,
+      status: truncated ? "TRUNCATED" as const :
+        found.length > 0 ? "CANDIDATE_INGRESS" as const :
+        "NO_KNOWN_INGRESS" as const,
+      truncated,
+      candidateIngress: found.sort((a, b) =>
+        a.entryRegionId.localeCompare(b.entryRegionId)),
+      possiblePrecedingReadIds,
+      sourceOrderedOutcomeIds: [...new Set(sourceOrderedOutcomeIds)].sort(),
+      effectGuards: [
+        ...guardSites(effect.lexicalGuards, "lexical"),
+        ...guardSites(effect.precedenceGuards, "precedence"),
+      ],
+    };
+  });
+}

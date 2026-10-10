@@ -89,6 +89,14 @@ The canonical `inspect.ts` passes its existing indexed `.mcfunction` sources int
 
 All new function-to-function and function-to-resource Intent relations remain `inferred`. Missing, ambiguous, or unclassified content remains evidence debt in the existing IR/Discovery Challenger. No second parser, scenario compiler, graph, or report authority is introduced.
 
+### Effect-directed source reconstruction
+
+`behavior-model/source-evidence.ts` now derives bounded, backward `SourceEffectSlice` records from existing Semantic IR state mutations, resource actions and authored returns. This follows CodeQL/Joern-style **principles** without installing an engine, adding a graph database or claiming CodeQL-level def-use precision.
+
+For each authored effect/return the owner traverses *only uniquely identified resolved IR execution edges* backward toward event sources, script modules or uncalled mcfunctions; it retains a representative entry-to-effect edge chain, lexical/precedence guards, deferred/periodic boundaries, same-surface preceding read candidates and existing same-region source-ordered return associations. Hard per-effect limits cap depth, visited regions and entry candidates; truncation is surfaced as `TRUNCATED`. Missing ingress stays `NO_KNOWN_INGRESS`, **not** unreachable code or evidence of gameplay absence.
+
+The existing `deriveGameplayArchitectureNavigation()` consumes these behavior-model slices once, connects effects to graph components only by exact evidence ID and separately labels feature associations encountered on a source-call path. It publishes them through the already-established `MapAuditOutputV2.gameplayStructure` view. Static path association is not player-facing gameplay meaning or PROVEN causality; unowned effect IDs remain explicit. Testing/CI are deferred until the integrated BUILD acceptance boundary.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:

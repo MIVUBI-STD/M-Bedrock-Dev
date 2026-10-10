@@ -2309,7 +2309,9 @@
         "systems",
         "features",
         "unplacedFeatureIds",
-        "unassignedSemanticIrEvidenceIds"
+        "unassignedSemanticIrEvidenceIds",
+        "effectSlices",
+        "effectIdsWithoutComponentOwner"
       ],
       "properties": {
         "scope": {
@@ -2620,6 +2622,183 @@
               }
             },
             "additionalProperties": false
+          }
+        },
+        "effectIdsWithoutComponentOwner": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "effectSlices": {
+          "type": "array",
+          "description": "Bounded source-ordered backward effect slices. Candidate ingress and context associations are not proof of execution, player intent, or causality.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "effectId",
+              "effectKind",
+              "executionRegionId",
+              "sourcePath",
+              "status",
+              "truncated",
+              "candidateIngress",
+              "possiblePrecedingReadIds",
+              "sourceOrderedOutcomeIds",
+              "effectGuards",
+              "exactComponentIds",
+              "exactFeatureIds",
+              "pathAssociatedFeatureIds"
+            ],
+            "properties": {
+              "effectId": {
+                "type": "string"
+              },
+              "effectKind": {
+                "enum": [
+                  "state-mutation",
+                  "resource-action",
+                  "authored-return"
+                ]
+              },
+              "executionRegionId": {
+                "type": "string"
+              },
+              "sourcePath": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "CANDIDATE_INGRESS",
+                  "NO_KNOWN_INGRESS",
+                  "TRUNCATED"
+                ]
+              },
+              "truncated": {
+                "type": "boolean"
+              },
+              "candidateIngress": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "entryRegionId",
+                    "regionIds",
+                    "executionEdgeIds",
+                    "guardedEdgeIds",
+                    "temporalBoundaryEdgeIds"
+                  ],
+                  "properties": {
+                    "entryRegionId": {
+                      "type": "string"
+                    },
+                    "regionIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "executionEdgeIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "guardedEdgeIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "temporalBoundaryEdgeIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "possiblePrecedingReadIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sourceOrderedOutcomeIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "effectGuards": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "branch",
+                    "expression",
+                    "sourcePath",
+                    "lineStart",
+                    "columnStart"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "lexical",
+                        "precedence"
+                      ]
+                    },
+                    "branch": {
+                      "enum": [
+                        "true",
+                        "false"
+                      ]
+                    },
+                    "expression": {
+                      "type": "string"
+                    },
+                    "sourcePath": {
+                      "type": "string"
+                    },
+                    "lineStart": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "columnStart": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              },
+              "exactComponentIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "exactFeatureIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "pathAssociatedFeatureIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       },
