@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
+import { buildInspectionSemanticIr } from "../../src/diagnosis/semantic-ir-stage.js";
+import { assessGameplayDiscoveryClosure } from "../../src/inspection/gameplay-discovery-closure.js";
 import {
   challengeGameplayDiscovery,
 } from "../../src/inspection/gameplay-discovery-challenger.js";
@@ -529,6 +532,254 @@ describe("gameplay discovery challenger", () => {
       status: "inferred" }] } as GameplayIntentModel, graph)).toBe(true);
     expect(open({ ...intent, evidence: [{ ...intent.evidence[0],
       locator: "scripts/other.js" }] } as GameplayIntentModel, graph)).toBe(true);
+  });
+
+
+  it("keeps Discovery OPEN when individually owned wave records have no proven relationship", () => {
+    const source = {
+      artifactId: "map:wave",
+      relativePath: "behavior_packs/demo/scripts/wave.js",
+    };
+    const parsed = parseScriptFile("wave", [
+      'let phase = "idle";',
+      'function settle(player) {',
+      '  phase = "finished";',
+      '  player.removeTag("playing");',
+      '  return { action: "finish" };',
+      '}',
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const write = ir.state.operations.find(item =>
+      item.operation === "write" &&
+      item.writtenValue?.kind === "literal" &&
+      item.writtenValue.value === "finished");
+    const release = ir.state.resourceActions?.find(item =>
+      item.action === "release" && item.key === "player:playing");
+    const outcome = ir.execution.outcomes?.find(item =>
+      item.value === "finish");
+    expect(write && release && outcome).toBeTruthy();
+
+    const sourceIds = [write!.id, release!.id, outcome!.id];
+    const intent: GameplayIntentModel = {
+      schemaVersion: 1, id: "intent:wave", artifactId: source.artifactId,
+      evidence: sourceIds.map(id => ({
+        id, origin: "source-code" as const,
+        scope: "selected-artifact" as const,
+        locator: source.relativePath,
+        summary: "Exact fixture source record.",
+      })),
+      nodes: sourceIds.map((id, index) => ({
+        id: "node:" + index,
+        kind: index === 2 ? "outcome" as const : "state" as const,
+        label: "Authored source evidence " + index,
+        status: "authored" as const,
+        evidenceIds: [id],
+      })),
+      edges: [], invariants: [], unknowns: [],
+    };
+    const scenarioId = "scenario:wave";
+    const link = (
+      id: string, from: string, to: string, evidenceIds: string[],
+      status: "PROVEN" | "DETECTION_GAP" = "PROVEN",
+    ): GameplayScenarioGraph["causalLinks"][number] => ({
+      id, scenarioId, fromComponentId: from, toComponentId: to,
+      purpose: "Fixture source association only", evidenceIds,
+      subjectIds: [], componentIds: [from, to],
+      knowledgeRequirementIds: [], impactPathComponentIds: [],
+      impactPathEvidenceIds: [], dimensionEvidence: {},
+      status, reason: "Synthetic graph proof-admission regression.",
+    });
+    const components: GameplayScenarioGraph["components"] = [
+      ...sourceIds.map((id, index) => ({
+        id: "component:" + index,
+        label: "Source record " + index,
+        kind: index === 2 ? "outcome" as const : "state" as const,
+        technicalRole: "authored observation",
+        gameplayPurpose: "unknown",
+        evidenceIds: [id],
+        usedByScenarioIds: [scenarioId],
+        orphan: false,
+      })),
+      {
+        id: "component:other", label: "Unrelated intermediary",
+        kind: "runtime-domain", technicalRole: "other",
+        gameplayPurpose: "unknown", evidenceIds: [],
+        usedByScenarioIds: [scenarioId], orphan: false,
+      },
+    ];
+    const independent = [
+      link("link:write", "component:0", "component:other", [write!.id]),
+      link("link:release", "component:1", "component:other", [release!.id]),
+      link("link:outcome", "component:other", "component:2", [outcome!.id]),
+    ];
+    const graph: GameplayScenarioGraph = {
+      ...emptyGraph, components, causalLinks: independent,
+      scenarios: [{
+        id: scenarioId, label: "Wave lifecycle",
+        gameplayStage: "TERMINAL", purpose: "not yet grounded",
+        sourceSubjectIds: [],
+        componentIds: components.map(item => item.id),
+        causalLinkIds: independent.map(item => item.id),
+        playerCounts: [], requiredKnowledgeIds: [],
+        composedScenarioIds: [],
+      }],
+    };
+    const challenges = (currentGraph: GameplayScenarioGraph,
+      currentIntent = intent) => challengeGameplayDiscovery({
+        semanticIr: ir, intent: currentIntent, graph: currentGraph,
+      });
+    const missing = challenges(graph);
+    expect(missing.some(item =>
+      item.kind === "unowned-state-operation" &&
+      item.evidenceIds.includes(write!.id))).toBe(false);
+    expect(missing.some(item =>
+      item.kind === "unowned-resource-action" &&
+      item.evidenceIds.includes(release!.id))).toBe(false);
+    expect(missing.some(item =>
+      item.kind === "unowned-return-outcome" &&
+      item.evidenceIds.includes(outcome!.id))).toBe(false);
+    const pairs = missing.filter(item =>
+      item.kind === "unmodeled-source-relationship");
+    expect(pairs.map(item => item.evidenceIds)).toEqual(expect.arrayContaining([
+      [write!.id, outcome!.id],
+      [release!.id, outcome!.id],
+    ]));
+    expect(pairs.every(item => item.reason.includes("CAUSAL_PROOF_MISSING")))
+      .toBe(true);
+    const closureInput = {
+      discoveredSurfaceIds: ["resource:tag"],
+      sourceRelevantFiles: 1, sourceIndexedFiles: 1,
+      sourceCoverageComplete: true, sourceParseFailures: 0,
+      unsupportedRelevantSourcePaths: [] as string[],
+      semanticUnderstandingGapPaths: [] as string[],
+      unresolvedReferences: 0,
+    };
+    expect(assessGameplayDiscoveryClosure(closureInput).status).toBe("COMPLETE");
+    expect(assessGameplayDiscoveryClosure({
+      ...closureInput, discoveryChallengeIds: pairs.map(item => item.id),
+    }).status).toBe("OPEN");
+
+    const pairLink = link("link:release-to-outcome",
+      "component:1", "component:2", [release!.id, outcome!.id]);
+    const withPair: GameplayScenarioGraph = {
+      ...graph,
+      causalLinks: [...independent, pairLink],
+      scenarios: graph.scenarios.map(item => ({
+        ...item, causalLinkIds: [...item.causalLinkIds, pairLink.id],
+      })),
+    };
+    const pairGap = (g: GameplayScenarioGraph) => challenges(g).some(item =>
+      item.kind === "unmodeled-source-relationship" &&
+      item.evidenceIds[0] === release!.id &&
+      item.evidenceIds[1] === outcome!.id);
+    expect(pairGap(graph)).toBe(true);
+    expect(pairGap(withPair)).toBe(false);
+    expect(challenges(withPair).some(item =>
+      item.kind === "unmodeled-source-relationship" &&
+      item.evidenceIds[0] === write!.id &&
+      item.evidenceIds[1] === outcome!.id)).toBe(true);
+    expect(pairGap({
+      ...withPair, causalLinks: [...independent, {
+        ...pairLink, status: "DETECTION_GAP",
+      }],
+    })).toBe(true);
+    expect(pairGap({
+      ...withPair, causalLinks: [...independent, {
+        ...pairLink, fromComponentId: "component:2",
+        toComponentId: "component:1",
+      }],
+    })).toBe(true);
+    expect(pairGap({
+      ...withPair, scenarios: graph.scenarios,
+    })).toBe(true);
+    const foreignIntent: GameplayIntentModel = {
+      ...intent,
+      evidence: intent.evidence.map(item => item.id === release!.id
+        ? { ...item, locator: "scripts/other.js" } : item),
+    };
+    const foreign = challenges(withPair, foreignIntent);
+    expect(foreign.some(item =>
+      item.kind === "unowned-resource-action" &&
+      item.evidenceIds.includes(release!.id))).toBe(true);
+    expect(foreign.some(item =>
+      item.kind === "unmodeled-source-relationship" &&
+      item.evidenceIds.includes(release!.id))).toBe(false);
+  });
+
+  it("does not close ambiguous puzzle state order with a fabricated PROVEN pair", () => {
+    const source = {
+      artifactId: "map:puzzle",
+      relativePath: "behavior_packs/puzzle/scripts/door.js",
+    };
+    const parsed = parseScriptFile("door", [
+      'let doorState = "closed";',
+      'function openDoor(ready) {',
+      '  if (ready) {',
+      '    doorState = "opening";',
+      '    doorState = "opened";',
+      '    return { action: "open" };',
+      '  }',
+      '}',
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const action = ir.state.operations.find(item =>
+      item.writtenValue?.kind === "literal" &&
+      item.writtenValue.value === "opening");
+    const outcome = ir.execution.outcomes?.find(item =>
+      item.value === "open");
+    expect(action && outcome).toBeTruthy();
+    const ids = [action!.id, outcome!.id];
+    const intent = {
+      ...emptyIntent,
+      evidence: ids.map(id => ({
+        id, origin: "source-code" as const,
+        scope: "selected-artifact" as const,
+        locator: source.relativePath, summary: "Exact fixture source evidence",
+      })),
+      nodes: ids.map((id, i) => ({
+        id: "node:" + i, status: "authored" as const,
+        evidenceIds: [id],
+      })),
+    } as GameplayIntentModel;
+    const graph: GameplayScenarioGraph = {
+      ...emptyGraph,
+      components: ids.map((id, i) => ({
+        id: "component:" + i, label: "Record " + i,
+        kind: i === 0 ? "state" : "outcome",
+        technicalRole: "authored source evidence",
+        gameplayPurpose: "unverified", evidenceIds: [id],
+        usedByScenarioIds: ["scenario:door"], orphan: false,
+      })),
+      scenarios: [{
+        id: "scenario:door", label: "Door path",
+        gameplayStage: "ACTIVE", purpose: "not established",
+        sourceSubjectIds: [], componentIds: ["component:0", "component:1"],
+        causalLinkIds: ["link:door"], playerCounts: [],
+        requiredKnowledgeIds: [], composedScenarioIds: [],
+      }],
+      causalLinks: [{
+        id: "link:door", scenarioId: "scenario:door",
+        fromComponentId: "component:0", toComponentId: "component:1",
+        purpose: "Synthetic pair with ambiguous writes",
+        evidenceIds: ids, subjectIds: [],
+        componentIds: ["component:0", "component:1"],
+        knowledgeRequirementIds: [], impactPathComponentIds: [],
+        impactPathEvidenceIds: [], dimensionEvidence: {},
+        status: "PROVEN", reason: "Fixture-only synthetic proof label",
+      }],
+    };
+    const challenges = challengeGameplayDiscovery({
+      semanticIr: ir, intent, graph,
+    });
+    expect(challenges.some(item =>
+      item.kind === "unmodeled-source-relationship" &&
+      item.evidenceIds[0] === action!.id &&
+      item.evidenceIds[1] === outcome!.id &&
+      item.reason.includes("SOURCE_RELATION_UNRESOLVED"))).toBe(true);
   });
 
   it("does not treat referenced unresolved temporal targets as closed", () => {

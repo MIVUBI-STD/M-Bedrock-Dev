@@ -454,6 +454,108 @@ export interface GameplayArchitectureNavigation {
   };
 }
 
+/**
+ * Reconcile only *observed source-evidence pairs* against existing scenario
+ * composition. A link's PROVEN status is accepted here only as the graph's
+ * existing claim; this projection does not grant authored intent, causal
+ * status, runtime completion, or whole-game coverage.
+ *
+ * Shared by Architecture Navigation and Discovery Challenger so their exact
+ * pair admission cannot drift into competing proof definitions.
+ */
+export function deriveObservedGameplaySourceRelationships(
+  graph: GameplayScenarioGraph,
+  observed: {
+    readonly executionTraces: readonly ObservedExecutionTrace[];
+    readonly stateOutcomeEvidence: readonly SourceStateOutcomeCandidate[];
+    readonly resourceOutcomeEvidence: readonly SourceResourceOutcomeCandidate[];
+  },
+): GameplayArchitectureNavigation["semanticIrCoverage"]["observedSourceRelationships"] {
+  const sorted = (values: readonly string[]) => [...new Set(values)].sort();
+  // Reuse existing Semantic IR/Behavior Model witnesses. The graph and its
+  // proven links retain causal authority; this projection only points out
+  // observed relationships that the scenario composition has not accounted for.
+  type ObservedRelation = GameplayArchitectureNavigation[
+    "semanticIrCoverage"]["observedSourceRelationships"][number];
+  const sourceRelationshipCandidates: Pick<ObservedRelation,
+    "kind" | "fromEvidenceId" | "outcomeId" | "sourceBasis">[] = [
+    ...observed.executionTraces.flatMap(trace =>
+      trace.returnOutcomeIds.map(outcomeId => ({
+        kind: "entry-to-outcome" as const,
+        fromEvidenceId: trace.entryRegionId,
+        outcomeId,
+        sourceBasis: "TRACE_REACHABILITY" as const,
+      }))),
+    ...observed.stateOutcomeEvidence.flatMap(candidate =>
+      candidate.precedingWriteOperationIds.map(fromEvidenceId => ({
+        kind: "state-write-to-outcome" as const,
+        fromEvidenceId,
+        outcomeId: candidate.outcomeId,
+        sourceBasis: candidate.status === "SOURCE_ORDER_CANDIDATE"
+          ? "SOURCE_ORDER_CANDIDATE" as const
+          : "SOURCE_ORDER_UNRESOLVED" as const,
+      }))),
+    ...observed.resourceOutcomeEvidence.flatMap(candidate =>
+      candidate.precedingResourceActionIds.map(fromEvidenceId => ({
+        kind: "resource-action-to-outcome" as const,
+        fromEvidenceId,
+        outcomeId: candidate.outcomeId,
+        sourceBasis: candidate.status === "SOURCE_ORDER_CANDIDATE"
+          ? "SOURCE_ORDER_CANDIDATE" as const
+          : "SOURCE_ORDER_UNRESOLVED" as const,
+      }))),
+  ];
+  const componentIdsByEvidence = new Map<string, Set<string>>();
+  for (const component of graph.components) {
+    for (const id of component.evidenceIds) {
+      const ids = componentIdsByEvidence.get(id) ?? new Set<string>();
+      ids.add(component.id);
+      componentIdsByEvidence.set(id, ids);
+    }
+  }
+  const scenarioLinkIds = new Map(graph.scenarios.map(scenario =>
+    [scenario.id, new Set(scenario.causalLinkIds)]));
+  const observedSourceRelationships: ObservedRelation[] = sourceRelationshipCandidates
+    .map(relation => {
+      const fromComponents = componentIdsByEvidence.get(relation.fromEvidenceId) ??
+        new Set<string>();
+      const outcomeComponents = componentIdsByEvidence.get(relation.outcomeId) ??
+        new Set<string>();
+      const sharedScenarioIds = sorted(graph.scenarios
+        .filter(scenario =>
+          scenario.componentIds.some(id => fromComponents.has(id)) &&
+          scenario.componentIds.some(id => outcomeComponents.has(id)))
+        .map(scenario => scenario.id));
+      const sharedScenarios = new Set(sharedScenarioIds);
+      const exactProvenCausalLinkIds = sorted(graph.causalLinks
+        .filter(link =>
+          link.status === "PROVEN" &&
+          sharedScenarios.has(link.scenarioId) &&
+          scenarioLinkIds.get(link.scenarioId)?.has(link.id) === true &&
+          fromComponents.has(link.fromComponentId) &&
+          outcomeComponents.has(link.toComponentId) &&
+          link.evidenceIds.includes(relation.fromEvidenceId) &&
+          link.evidenceIds.includes(relation.outcomeId))
+        .map(link => link.id));
+      return {
+        ...relation,
+        sharedScenarioIds,
+        exactProvenCausalLinkIds,
+        gap: relation.sourceBasis === "SOURCE_ORDER_UNRESOLVED"
+          ? "SOURCE_RELATION_UNRESOLVED" as const
+          : sharedScenarioIds.length === 0
+            ? "NOT_IN_COMMON_SCENARIO" as const
+            : exactProvenCausalLinkIds.length === 0
+              ? "CAUSAL_PROOF_MISSING" as const
+              : null,
+      };
+    })
+    .sort((a, b) => a.kind.localeCompare(b.kind) ||
+      a.outcomeId.localeCompare(b.outcomeId) ||
+      a.fromEvidenceId.localeCompare(b.fromEvidenceId));
+  return observedSourceRelationships;
+}
+
 /** Navigation only: preserve gaps rather than fabricating stage or system membership. */
 export function deriveGameplayArchitectureNavigation(
   graph: GameplayScenarioGraph,
@@ -610,87 +712,14 @@ export function deriveGameplayArchitectureNavigation(
   const resourceOutcomeEvidence = observed.semanticIr
     ? reconcileSourceResourceOutcomes(observed.semanticIr)
     : [];
-  // Reuse existing Semantic IR/Behavior Model witnesses. The graph and its
-  // proven links retain causal authority; this projection only points out
-  // observed relationships that the scenario composition has not accounted for.
-  type ObservedRelation = GameplayArchitectureNavigation[
-    "semanticIrCoverage"]["observedSourceRelationships"][number];
-  const sourceRelationshipCandidates: Pick<ObservedRelation,
-    "kind" | "fromEvidenceId" | "outcomeId" | "sourceBasis">[] = [
-    ...observedExecution.traces.flatMap(trace =>
-      trace.returnOutcomeIds.map(outcomeId => ({
-        kind: "entry-to-outcome" as const,
-        fromEvidenceId: trace.entryRegionId,
-        outcomeId,
-        sourceBasis: "TRACE_REACHABILITY" as const,
-      }))),
-    ...stateOutcomeEvidence.flatMap(candidate =>
-      candidate.precedingWriteOperationIds.map(fromEvidenceId => ({
-        kind: "state-write-to-outcome" as const,
-        fromEvidenceId,
-        outcomeId: candidate.outcomeId,
-        sourceBasis: candidate.status === "SOURCE_ORDER_CANDIDATE"
-          ? "SOURCE_ORDER_CANDIDATE" as const
-          : "SOURCE_ORDER_UNRESOLVED" as const,
-      }))),
-    ...resourceOutcomeEvidence.flatMap(candidate =>
-      candidate.precedingResourceActionIds.map(fromEvidenceId => ({
-        kind: "resource-action-to-outcome" as const,
-        fromEvidenceId,
-        outcomeId: candidate.outcomeId,
-        sourceBasis: candidate.status === "SOURCE_ORDER_CANDIDATE"
-          ? "SOURCE_ORDER_CANDIDATE" as const
-          : "SOURCE_ORDER_UNRESOLVED" as const,
-      }))),
-  ];
-  const componentIdsByEvidence = new Map<string, Set<string>>();
-  for (const component of graph.components) {
-    for (const id of component.evidenceIds) {
-      const ids = componentIdsByEvidence.get(id) ?? new Set<string>();
-      ids.add(component.id);
-      componentIdsByEvidence.set(id, ids);
-    }
-  }
-  const scenarioLinkIds = new Map(graph.scenarios.map(scenario =>
-    [scenario.id, new Set(scenario.causalLinkIds)]));
-  const observedSourceRelationships: ObservedRelation[] = sourceRelationshipCandidates
-    .map(relation => {
-      const fromComponents = componentIdsByEvidence.get(relation.fromEvidenceId) ??
-        new Set<string>();
-      const outcomeComponents = componentIdsByEvidence.get(relation.outcomeId) ??
-        new Set<string>();
-      const sharedScenarioIds = sorted(graph.scenarios
-        .filter(scenario =>
-          scenario.componentIds.some(id => fromComponents.has(id)) &&
-          scenario.componentIds.some(id => outcomeComponents.has(id)))
-        .map(scenario => scenario.id));
-      const sharedScenarios = new Set(sharedScenarioIds);
-      const exactProvenCausalLinkIds = sorted(graph.causalLinks
-        .filter(link =>
-          link.status === "PROVEN" &&
-          sharedScenarios.has(link.scenarioId) &&
-          scenarioLinkIds.get(link.scenarioId)?.has(link.id) === true &&
-          fromComponents.has(link.fromComponentId) &&
-          outcomeComponents.has(link.toComponentId) &&
-          link.evidenceIds.includes(relation.fromEvidenceId) &&
-          link.evidenceIds.includes(relation.outcomeId))
-        .map(link => link.id));
-      return {
-        ...relation,
-        sharedScenarioIds,
-        exactProvenCausalLinkIds,
-        gap: relation.sourceBasis === "SOURCE_ORDER_UNRESOLVED"
-          ? "SOURCE_RELATION_UNRESOLVED" as const
-          : sharedScenarioIds.length === 0
-            ? "NOT_IN_COMMON_SCENARIO" as const
-            : exactProvenCausalLinkIds.length === 0
-              ? "CAUSAL_PROOF_MISSING" as const
-              : null,
-      };
-    })
-    .sort((a, b) => a.kind.localeCompare(b.kind) ||
-      a.outcomeId.localeCompare(b.outcomeId) ||
-      a.fromEvidenceId.localeCompare(b.fromEvidenceId));
+  const observedSourceRelationships = deriveObservedGameplaySourceRelationships(
+    graph,
+    {
+      executionTraces: observedExecution.traces,
+      stateOutcomeEvidence,
+      resourceOutcomeEvidence,
+    },
+  );
   const tracedOutcomes = new Set(observedExecution.traces.flatMap(trace =>
     trace.returnOutcomeIds));
   const untracedReturnOutcomeIds = sorted((observed.semanticIr?.execution.outcomes ?? [])

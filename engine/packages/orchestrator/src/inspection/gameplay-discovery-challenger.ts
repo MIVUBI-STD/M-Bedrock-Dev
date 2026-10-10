@@ -1,11 +1,17 @@
-import type {
-  SemanticIr,
+import {
+  semanticIrExecutionTraces,
+  type SemanticIr,
 } from "../../../semantic-ir/src/index.js";
+import {
+  reconcileSourceStateOutcomes,
+  reconcileSourceResourceOutcomes,
+} from "../../../behavior-model/src/index.js";
 import type {
   GameplayIntentModel,
 } from "../../../gameplay-intent/src/index.js";
-import type {
-  GameplayScenarioGraph,
+import {
+  deriveObservedGameplaySourceRelationships,
+  type GameplayScenarioGraph,
 } from "./gameplay-scenario-model.js";
 
 export interface GameplayDiscoveryChallengeSignal {
@@ -17,7 +23,8 @@ export interface GameplayDiscoveryChallengeSignal {
     | "unowned-execution-region"
     | "unresolved-execution-edge"
     | "unowned-execution-edge"
-    | "unowned-temporal-relation";
+    | "unowned-temporal-relation"
+    | "unmodeled-source-relationship";
   readonly subjectId: string;
   readonly evidenceIds: readonly string[];
   readonly reason: string;
@@ -168,6 +175,60 @@ export function challengeGameplayDiscovery(input: {
         ? "Deferred/periodic target remains unresolved even when the relation is referenced by gameplay evidence."
         : "Deferred/periodic relation is not semantically owned by a gameplay scenario, so stale work or hidden lifecycle effects may be missed.",
     });
+  }
+
+
+  // A map's two technical records may each appear on a different PROVEN
+  // scenario link while their observed source relationship has no owner.
+  // Challenge the *pair*, not just its members. When either member is
+  // unowned, its existing single-record challenge already preserves the gap.
+  const ownedOutcomes = (input.semanticIr.execution.outcomes ?? []).some(item =>
+    matchesSource(item.id, item.source.relativePath));
+  const hasOwnedPrecursor = ownedOutcomes && (
+    input.semanticIr.execution.regions.some(item => item.source &&
+      matchesSource(item.id, item.source.relativePath)) ||
+    input.semanticIr.state.operations.some(item =>
+      matchesSource(item.id, item.source.relativePath)) ||
+    (input.semanticIr.state.resourceActions ?? []).some(item =>
+      matchesSource(item.id, item.source.relativePath))
+  );
+  if (hasOwnedPrecursor) {
+    const sourceRelations = deriveObservedGameplaySourceRelationships(
+      input.graph,
+      {
+        executionTraces: semanticIrExecutionTraces(input.semanticIr).traces,
+        stateOutcomeEvidence: reconcileSourceStateOutcomes(input.semanticIr),
+        resourceOutcomeEvidence: reconcileSourceResourceOutcomes(input.semanticIr),
+      },
+    );
+    const sourceById = new Map([
+      ...input.semanticIr.execution.regions.flatMap(item =>
+        item.source ? [[item.id, item.source] as const] : []),
+      ...input.semanticIr.state.operations.map(item => [item.id, item.source] as const),
+      ...(input.semanticIr.state.resourceActions ?? []).map(item => [item.id, item.source] as const),
+      ...(input.semanticIr.execution.outcomes ?? []).map(item => [item.id, item.source] as const),
+    ]);
+    for (const relation of sourceRelations) {
+      const from = sourceById.get(relation.fromEvidenceId);
+      const to = sourceById.get(relation.outcomeId);
+      if (relation.gap === null ||
+          from === undefined || to === undefined ||
+          !matchesSource(relation.fromEvidenceId, from.relativePath) ||
+          !matchesSource(relation.outcomeId, to.relativePath)) continue;
+      output.push({
+        id: "discovery-challenge:relationship:" + relation.kind + ":" +
+          relation.fromEvidenceId + ":" + relation.outcomeId,
+        kind: "unmodeled-source-relationship",
+        subjectId: relation.outcomeId,
+        evidenceIds: [relation.fromEvidenceId, relation.outcomeId],
+        reason: "Both exact selected-artifact records have individual authored " +
+          "scenario evidence, but their source-observed " + relation.kind +
+          " relationship remains " + relation.gap +
+          " (" + relation.sourceBasis + "). Individual proof links, shared " +
+          "scenario membership or an ambiguous source order do not prove " +
+          "the intervening gameplay behavior.",
+      });
+    }
   }
 
   return output
