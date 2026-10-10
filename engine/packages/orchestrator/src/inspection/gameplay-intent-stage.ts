@@ -550,8 +550,18 @@ export function buildGameplayIntentModel(
       list.push(owner);
       uniqueRegionOwners.set(owner.region.id, list);
     }
+    // A lexical subject key may match distinct mcfunctions in different
+    // packs. Do not merge those executable owners into one gameplay node;
+    // their IR records remain independently visible as Discovery residue.
+    const uniqueSubjectOwners = new Map<string, typeof sourceFunctions>();
+    for (const owner of sourceFunctions) {
+      const list = uniqueSubjectOwners.get(owner.subjectId) ?? [];
+      list.push(owner);
+      uniqueSubjectOwners.set(owner.subjectId, list);
+    }
     const accepted = sourceFunctions.filter(owner =>
-      uniqueRegionOwners.get(owner.region.id)?.length === 1);
+      uniqueRegionOwners.get(owner.region.id)?.length === 1 &&
+      uniqueSubjectOwners.get(owner.subjectId)?.length === 1);
     const byRegion = new Map(accepted.map(owner =>
       [owner.region.id, owner] as const));
     const addIrEvidence = (
