@@ -112,6 +112,11 @@ describe("arena identity evidence propagation", () => {
     expect(trace[0]?.stateOperationIds).toEqual(["state-op:join"]);
     expect(trace[0]?.evidenceMatchedComponentIds).toEqual(["component:join"]);
     expect(trace[0]?.modelingStatus).toBe("PARTIALLY_MODELED");
+    expect(navigation.architectureReconciliation.behaviorFlowsPartiallyModeledCount)
+      .toBe(1);
+    expect(navigation.architectureReconciliation.behaviorFlowsUnmodeledCount)
+      .toBe(0);
+    expect(navigation.architectureReconciliation.status).toBe("GAPS_PRESENT");
     expect(trace[0]?.evidenceWithoutComponentIds).toContain("edge:unknown");
     expect(trace[0]?.evidenceWithoutComponentIds).not.toContain("edge:join");
     expect(trace[0]?.sharedScenarioPlacementIds).toEqual([]);
@@ -143,6 +148,12 @@ describe("arena identity evidence propagation", () => {
         arenaDetected: false, semanticIr: ir,
       }).semanticIrCoverage.executionTraces[0]!;
     expect(observe(emptyGraph).modelingStatus).toBe("UNMODELED");
+    const accounting = (graph: GameplayScenarioGraph) =>
+      deriveGameplayArchitectureNavigation(graph, {
+        relevantSourceCount: 1, indexedSourceCount: 1,
+        arenaDetected: false, semanticIr: ir,
+      }).architectureReconciliation;
+    expect(accounting(emptyGraph).behaviorFlowsUnmodeledCount).toBe(1);
     expect(observe(emptyGraph).evidenceWithoutComponentIds)
       .toEqual(["region:event"]);
     const component: GameplayScenarioGraph["components"][number] = {
@@ -165,6 +176,9 @@ describe("arena identity evidence propagation", () => {
       requiredKnowledgeIds: [], composedScenarioIds: [],
     }] } as GameplayScenarioGraph;
     expect(observe(placed).modelingStatus).toBe("PLACED_UNPROVEN");
+    expect(accounting(placed).behaviorFlowsUnmodeledCount).toBe(0);
+    expect(accounting(placed).behaviorFlowsPartiallyModeledCount).toBe(0);
+    expect(accounting(placed).behaviorFlowsPlacedUnprovenCount).toBe(1);
     expect(observe(placed).sharedScenarioPlacementIds).toEqual(["scenario:observed"]);
   });
 

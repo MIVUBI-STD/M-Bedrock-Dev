@@ -220,6 +220,12 @@ export interface GameplayArchitectureNavigation {
     readonly sourceIndexIncomplete: boolean;
     readonly gameplayIntentEvidenceUnlinkedCount: number;
     readonly semanticIrRecordsUnlinkedCount: number;
+    /** Source-observed flow traces without any mapped gameplay component. */
+    readonly behaviorFlowsUnmodeledCount: number;
+    /** Source-observed flow traces with missing records or no common scenario. */
+    readonly behaviorFlowsPartiallyModeledCount: number;
+    /** Co-placed observed flows, still lacking whole-game causal proof. */
+    readonly behaviorFlowsPlacedUnprovenCount: number;
     readonly scenarioComponentsUnplacedCount: number;
     readonly causalLinksUnresolvedCount: number;
     readonly graphReferencesMissingCount: number;
@@ -1208,6 +1214,12 @@ export function deriveGameplayArchitectureNavigation(
     gameplayIntentEvidenceUnlinkedCount:
       navigation.evidenceCoverage.architectureUnlinkedEvidenceIds.length,
     semanticIrRecordsUnlinkedCount,
+    behaviorFlowsUnmodeledCount:
+      ir.executionTraces.filter(trace => trace.modelingStatus === "UNMODELED").length,
+    behaviorFlowsPartiallyModeledCount:
+      ir.executionTraces.filter(trace => trace.modelingStatus === "PARTIALLY_MODELED").length,
+    behaviorFlowsPlacedUnprovenCount:
+      ir.executionTraces.filter(trace => trace.modelingStatus === "PLACED_UNPROVEN").length,
     scenarioComponentsUnplacedCount: navigation.unplacedComponentIds.length,
     causalLinksUnresolvedCount: navigation.unresolvedCausalLinkIds.length,
     graphReferencesMissingCount: navigation.missingGraphReferenceIds.length,
