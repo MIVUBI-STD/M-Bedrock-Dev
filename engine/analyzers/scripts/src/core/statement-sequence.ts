@@ -479,7 +479,20 @@ export function directStatementSequence(
           // carrier's initial literal is invalidated. Later field reads
           // cannot use the initial literal as guaranteed current data.
           foundEscape = true;
-          if (ts.isIdentifier(owner)) invalidatedContainers.add(owner.text);
+          if (ts.isIdentifier(owner)) {
+            const literal = containers.get(owner.text);
+            if (literal === undefined) {
+              invalidatedContainers.add(owner.text);
+            } else {
+              // "const alias = holder" shares the SAME literal object/array
+              // source. Mutating through either identifier invalidates every
+              // corresponding literal-field/index assumption, not just the
+              // identifier used on the left-hand side.
+              for (const [name, value] of containers) {
+                if (value === literal) invalidatedContainers.add(name);
+              }
+            }
+          }
         }
       }
       if (rebindsReceiver(node, receiver) && activeNames.has(root)) {

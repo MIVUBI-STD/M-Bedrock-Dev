@@ -747,6 +747,88 @@ describe("persistence source analysis", () => {
       .resetLifecycleAssociations[0]?.sequentialGenerationEvidence).toHaveLength(1);
   });
 
+  it("invalidates every source alias when a shared object carrier is mutated", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, other) {",
+      "  const holder = { target: arena, other };",
+      "  const alias = holder;",
+      "  alias.other = arena;",
+      "  arena.generation++;",
+      "  mutate(holder.other);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other));",
+    ].join("\n"), {
+      artifactId: "map:shared-carrier", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.coLocatedGenerationInvalidationSources).toHaveLength(1);
+    // Mutation preceded both statements, but a later read through the
+    // original alias must still block the generation/reset association.
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("invalidates every source alias when a shared array carrier is mutated", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, other) {",
+      "  const pair = [arena, other];",
+      "  const alias = pair;",
+      "  alias[1] = arena;",
+      "  arena.generation++;",
+      "  mutate(pair[1]);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other));",
+    ].join("\n"), {
+      artifactId: "map:shared-array", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toEqual([]);
+  });
+
+  it("does not propagate a carrier mutation across independent literal objects", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, other) {",
+      "  const holder = { target: arena, other };",
+      "  const unrelated = { other };",
+      "  unrelated.other = arena;",
+      "  arena.generation++;",
+      "  mutate(holder.other);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other));",
+    ].join("\n"), {
+      artifactId: "map:independent-carriers", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toEqual([
+      expect.objectContaining({
+        generationExpression: "arena.generation",
+        order: "before-reset",
+        evidenceStatus: "SOURCE_SEQUENCE_ONLY",
+      }),
+    ]);
+  });
+
+  it("keeps carrier identities distinct after reassignment to a new literal", () => {
+    const script = parseScriptFile("arena", [
+      "function cleanup(arena, other) {",
+      "  const holder = { target: arena, other };",
+      "  let alias = holder;",
+      "  alias = { target: other, other };",
+      "  alias.other = arena;",
+      "  arena.generation++;",
+      "  mutate(holder.other);",
+      '  arena.setDynamicProperty("roundState", undefined);',
+      "}",
+      "world.afterEvents.playerLeave.subscribe(() => cleanup(arena, other));",
+    ].join("\n"), {
+      artifactId: "map:carrier-replaced", relativePath: "scripts/cleanup.ts",
+    });
+    const [candidate] = analyzePersistenceSource([script]).resetLifecycleAssociations;
+    expect(candidate?.sequentialGenerationEvidence).toHaveLength(1);
+  });
+
   it("does not trust a stale carrier literal after unresolved reassignment", () => {
     const make = (nextValue: string) => parseScriptFile("arena", [
       "function cleanup(arena, other) {",
