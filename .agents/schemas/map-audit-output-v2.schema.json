@@ -2931,7 +2931,8 @@
                           "interveningWriteOperationIds",
                           "coLocatedDeclarationIds",
                           "status",
-                          "provenance"
+                          "provenance",
+                          "continuation"
                         ],
                         "properties": {
                           "readOperationId": {
@@ -3037,6 +3038,127 @@
                               },
                               "note": {
                                 "type": "string"
+                              }
+                            }
+                          },
+                          "continuation": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "sourceOrderedWorldEffectIds",
+                              "sourceOrderedResourceReleaseIds",
+                              "sourceOrderedReturnOutcomeIds",
+                              "directSynchronousCallees",
+                              "unsupportedBoundaryEdgeIds",
+                              "truncated",
+                              "sourceOrderedReleaseReturnPairs"
+                            ],
+                            "properties": {
+                              "sourceOrderedWorldEffectIds": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "sourceOrderedResourceReleaseIds": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "sourceOrderedReturnOutcomeIds": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "directSynchronousCallees": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "callEdgeId",
+                                    "calleeRegionId",
+                                    "worldEffectIds",
+                                    "resourceReleaseIds",
+                                    "returnOutcomeIds",
+                                    "releaseReturnPairs"
+                                  ],
+                                  "properties": {
+                                    "callEdgeId": {
+                                      "type": "string"
+                                    },
+                                    "calleeRegionId": {
+                                      "type": "string"
+                                    },
+                                    "worldEffectIds": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "resourceReleaseIds": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "returnOutcomeIds": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "releaseReturnPairs": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": [
+                                          "releaseActionId",
+                                          "returnOutcomeId"
+                                        ],
+                                        "properties": {
+                                          "releaseActionId": {
+                                            "type": "string"
+                                          },
+                                          "returnOutcomeId": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "unsupportedBoundaryEdgeIds": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "truncated": {
+                                "type": "boolean"
+                              },
+                              "sourceOrderedReleaseReturnPairs": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "releaseActionId",
+                                    "returnOutcomeId"
+                                  ],
+                                  "properties": {
+                                    "releaseActionId": {
+                                      "type": "string"
+                                    },
+                                    "returnOutcomeId": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
                               }
                             }
                           }
@@ -3655,7 +3777,8 @@
                     "interveningWriteOperationIds",
                     "coLocatedDeclarationIds",
                     "status",
-                    "provenance"
+                    "provenance",
+                    "continuation"
                   ],
                   "properties": {
                     "readOperationId": {
@@ -3761,6 +3884,127 @@
                         },
                         "note": {
                           "type": "string"
+                        }
+                      }
+                    },
+                    "continuation": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sourceOrderedWorldEffectIds",
+                        "sourceOrderedResourceReleaseIds",
+                        "sourceOrderedReturnOutcomeIds",
+                        "directSynchronousCallees",
+                        "unsupportedBoundaryEdgeIds",
+                        "truncated",
+                        "sourceOrderedReleaseReturnPairs"
+                      ],
+                      "properties": {
+                        "sourceOrderedWorldEffectIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "sourceOrderedResourceReleaseIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "sourceOrderedReturnOutcomeIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "directSynchronousCallees": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "callEdgeId",
+                              "calleeRegionId",
+                              "worldEffectIds",
+                              "resourceReleaseIds",
+                              "returnOutcomeIds",
+                              "releaseReturnPairs"
+                            ],
+                            "properties": {
+                              "callEdgeId": {
+                                "type": "string"
+                              },
+                              "calleeRegionId": {
+                                "type": "string"
+                              },
+                              "worldEffectIds": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "resourceReleaseIds": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "returnOutcomeIds": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "releaseReturnPairs": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "releaseActionId",
+                                    "returnOutcomeId"
+                                  ],
+                                  "properties": {
+                                    "releaseActionId": {
+                                      "type": "string"
+                                    },
+                                    "returnOutcomeId": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "unsupportedBoundaryEdgeIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "truncated": {
+                          "type": "boolean"
+                        },
+                        "sourceOrderedReleaseReturnPairs": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "releaseActionId",
+                              "returnOutcomeId"
+                            ],
+                            "properties": {
+                              "releaseActionId": {
+                                "type": "string"
+                              },
+                              "returnOutcomeId": {
+                                "type": "string"
+                              }
+                            }
+                          }
                         }
                       }
                     }

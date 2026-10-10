@@ -155,6 +155,16 @@ The existing `Behavior Model` owner derives `reconcileSourceGuardedStateTransiti
 
 `SourceEffectSlice.guardedStateTransitionCandidates` and existing `features[].sourceBehaviorPaths` expose these bounded candidates through Map Audit Output V2, with exact read/write evidence and source-inference ceiling. A guarded write is not proof of actual runtime transition, complete control-flow path, state initialization, termination, cleanup, or recovery. Unsupported compound guards and untyped/dynamic values remain outside this candidate subset. No new graph, coordinator or lifecycle registry is introduced.
 
+### Transition-source continuation to effects, returns and cleanup
+
+The existing `reconcileSourceGuardedStateTransitions()` now follows each **source-grounded** state `from → to` candidate forward, rather than treating the state write itself as game completion. Its nested `continuation` records exact same-function post-write world-effect sites, resource release sites and authored return sites, **only when source order and exact lexical/precedence guard ancestry are compatible with that write**. Later unguarded code is not attributed to a conditional transition merely because it follows in the file.
+
+For downstream functions, only a directly resolved `synchronous-call` edge authored after the state write and on a compatible guard path may contribute candidate callee world effects, resource releases and return sites. These targets are **call-body inventory**, not proven runtime results. Unresolved call targets, event dispatch and deferred/periodic boundaries remain in `unsupportedBoundaryEdgeIds`. Bounded target counts set `truncated` rather than silently asserting comprehensive coverage.
+
+Pairs of source-authored resource release and later return sites come from the existing `reconcileSourceResourceOutcomes()` owner; both `sourceOrderedReleaseReturnPairs` and the target-local `releaseReturnPairs` retain exact action/return IDs. Merely listing release and return in the same callee is not itself promoted to a source-ordered pair.
+
+The existing `SourceEffectSlice.guardedStateTransitionCandidates` and `features[].sourceBehaviorPaths` carry this same evidence through Map Audit Output V2 without another graph, lifecycle owner or report layer. A return is not a game terminal; a release is not successful cleanup; and a transition's authored label is not evidence of an arena session state. Proven runtime lifecycle and interprocedural def-use remain unknown.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:

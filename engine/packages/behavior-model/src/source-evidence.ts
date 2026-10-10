@@ -506,6 +506,37 @@ export interface SourceGuardedStateTransitionCandidate {
   readonly guardComparisonSource: SourceRef;
   readonly interveningWriteOperationIds: readonly string[];
   readonly coLocatedDeclarationIds: readonly string[];
+  /**
+   * Same-path source continuation after this specific state write.
+   * Each item is an authored candidate, NOT a gameplay terminal/reset proof.
+   */
+  readonly continuation: {
+    readonly sourceOrderedWorldEffectIds: readonly string[];
+    readonly sourceOrderedResourceReleaseIds: readonly string[];
+    readonly sourceOrderedReturnOutcomeIds: readonly string[];
+    /** Existing exact source-order release-before-return candidates. */
+    readonly sourceOrderedReleaseReturnPairs: readonly {
+      readonly releaseActionId: string;
+      readonly returnOutcomeId: string;
+    }[];
+    /** Callee regions are connected ONLY through exact resolved sync edges.
+     * Callee body contents are candidates, not observed runtime results. */
+    readonly directSynchronousCallees: readonly {
+      readonly callEdgeId: string;
+      readonly calleeRegionId: string;
+      readonly worldEffectIds: readonly string[];
+      readonly resourceReleaseIds: readonly string[];
+      readonly returnOutcomeIds: readonly string[];
+      /** Exact target-region source-order evidence, not game terminal proof. */
+      readonly releaseReturnPairs: readonly {
+        readonly releaseActionId: string;
+        readonly returnOutcomeId: string;
+      }[];
+    }[];
+    /** Authored boundaries that cannot be traversed as synchronous flow. */
+    readonly unsupportedBoundaryEdgeIds: readonly string[];
+    readonly truncated: boolean;
+  };
   readonly status: "GUARDED_SOURCE_CANDIDATE" | "UNRESOLVED";
   readonly provenance: BehaviorClaimProvenance;
 }
@@ -522,6 +553,21 @@ export function reconcileSourceGuardedStateTransitions(
   const surfaces = new Map(ir.state.surfaces.map(s => [s.id, s.ref]));
   const writes = ir.state.operations.filter(op => op.operation === "write");
   const reads = ir.state.operations.filter(op => op.operation === "read");
+  const worldEffects = ir.execution.worldEffects ?? [];
+  const resourceReleases = (ir.state.resourceActions ?? [])
+    .filter(action => action.action === "release");
+  const outcomes = ir.execution.outcomes ?? [];
+  // Reuse the canonical resource→authored-return evidence rather than
+  // accidentally inferring cleanup from two unrelated lists of sites.
+  const releaseReturnPairs = reconcileSourceResourceOutcomes(ir)
+    .filter(candidate => candidate.status === "SOURCE_ORDER_CANDIDATE")
+    .flatMap(candidate => candidate.precedingReleaseActionIds.map(id => ({
+      releaseActionId: id,
+      returnOutcomeId: candidate.outcomeId,
+    })));
+  const executionEdges = ir.execution.edges;
+  const MAX_FOLLOWUP_CALLS = 16;
+  const MAX_FOLLOWUP_SITES = 64;
   return writes.flatMap(write => {
     const destination = write.writtenValue;
     if (destination?.kind !== "literal" ||
@@ -568,6 +614,102 @@ export function reconcileSourceGuardedStateTransitions(
           decl.from === compared.value &&
           decl.to.includes(destination.value))
         .map(decl => decl.id).sort();
+      // We intentionally require the authored transition guard to remain
+      // necessary at each same-region follow-up. A later unguarded function
+      // statement may run even when the transition did not occur.
+      const sourceOrderedFollowUp = <T extends {
+        readonly source: SourceRef;
+        readonly executionRegionId: string;
+        readonly lexicalGuards?: readonly AuthoredBranchGuard[];
+        readonly precedenceGuards?: readonly AuthoredBranchGuard[];
+      }>(site: T): boolean =>
+        site.executionRegionId === write.executionRegionId &&
+        precedingSourceSite(write.source, site.source) &&
+        lexicalGuardsCoveredByOutcome(
+          write.lexicalGuards, site.lexicalGuards) &&
+        guardsEqual(write.precedenceGuards, site.precedenceGuards);
+      const localWorld = worldEffects.filter(sourceOrderedFollowUp);
+      const localReleases = resourceReleases.filter(sourceOrderedFollowUp);
+      const localReturns = outcomes.filter(sourceOrderedFollowUp);
+      const localReleaseIds = new Set(localReleases.map(site => site.id));
+      const localReturnIds = new Set(localReturns.map(site => site.id));
+      const sourceOrderedReleaseReturnPairs = releaseReturnPairs.filter(pair =>
+        localReleaseIds.has(pair.releaseActionId) &&
+        localReturnIds.has(pair.returnOutcomeId));
+      const laterEdges = executionEdges.filter(edge =>
+        edge.from === write.executionRegionId &&
+        precedingSourceSite(write.source, edge.source) &&
+        lexicalGuardsCoveredByOutcome(
+          write.lexicalGuards, edge.lexicalGuards) &&
+        guardsEqual(write.precedenceGuards, edge.precedenceGuards));
+      const validCalls = laterEdges.filter(edge =>
+        edge.kind === "synchronous-call" &&
+        edge.resolution === "resolved" && edge.to !== undefined);
+      const unsupportedBoundaryEdgeIds = laterEdges
+        .filter(edge =>
+          edge.kind !== "synchronous-call" ||
+          edge.resolution !== "resolved" || edge.to === undefined)
+        .map(edge => edge.id).sort();
+      const directSynchronousCallees = validCalls.slice(0, MAX_FOLLOWUP_CALLS)
+        .map(edge => {
+          const regionId = edge.to!;
+          // A resolved call only proves the authored target identity.
+          // Conditional effects and returns in the target remain candidates.
+          const worldEffectIds = worldEffects.filter(site =>
+            site.executionRegionId === regionId)
+            .map(site => site.id).sort().slice(0, MAX_FOLLOWUP_SITES);
+          const resourceReleaseIds = resourceReleases.filter(site =>
+            site.executionRegionId === regionId)
+            .map(site => site.id).sort().slice(0, MAX_FOLLOWUP_SITES);
+          const returnOutcomeIds = outcomes.filter(site =>
+            site.executionRegionId === regionId)
+            .map(site => site.id).sort().slice(0, MAX_FOLLOWUP_SITES);
+          const releaseSet = new Set(resourceReleaseIds);
+          const returnSet = new Set(returnOutcomeIds);
+          return {
+            callEdgeId: edge.id,
+            calleeRegionId: regionId,
+            worldEffectIds,
+            resourceReleaseIds,
+            returnOutcomeIds,
+            releaseReturnPairs: releaseReturnPairs.filter(pair =>
+              releaseSet.has(pair.releaseActionId) &&
+              returnSet.has(pair.returnOutcomeId))
+              .slice(0, MAX_FOLLOWUP_SITES),
+          };
+        });
+      const continuation = {
+        sourceOrderedWorldEffectIds: localWorld
+          .map(site => site.id).sort().slice(0, MAX_FOLLOWUP_SITES),
+        sourceOrderedResourceReleaseIds: localReleases
+          .map(site => site.id).sort().slice(0, MAX_FOLLOWUP_SITES),
+        sourceOrderedReturnOutcomeIds: localReturns
+          .map(site => site.id).sort().slice(0, MAX_FOLLOWUP_SITES),
+        sourceOrderedReleaseReturnPairs:
+          sourceOrderedReleaseReturnPairs.slice(0, MAX_FOLLOWUP_SITES),
+        directSynchronousCallees,
+        unsupportedBoundaryEdgeIds:
+          unsupportedBoundaryEdgeIds.slice(0, MAX_FOLLOWUP_SITES),
+        truncated: validCalls.length > MAX_FOLLOWUP_CALLS ||
+          sourceOrderedReleaseReturnPairs.length > MAX_FOLLOWUP_SITES ||
+          unsupportedBoundaryEdgeIds.length > MAX_FOLLOWUP_SITES ||
+          localWorld.length > MAX_FOLLOWUP_SITES ||
+          localReleases.length > MAX_FOLLOWUP_SITES ||
+          localReturns.length > MAX_FOLLOWUP_SITES ||
+          validCalls.slice(0, MAX_FOLLOWUP_CALLS).some(edge => {
+            const regionId = edge.to!;
+            return worldEffects.filter(site =>
+                site.executionRegionId === regionId).length > MAX_FOLLOWUP_SITES ||
+              resourceReleases.filter(site =>
+                site.executionRegionId === regionId).length > MAX_FOLLOWUP_SITES ||
+              outcomes.filter(site =>
+                site.executionRegionId === regionId).length > MAX_FOLLOWUP_SITES ||
+              releaseReturnPairs.filter(pair =>
+                (ir.state.resourceActions ?? []).some(site =>
+                  site.id === pair.releaseActionId &&
+                  site.executionRegionId === regionId)).length > MAX_FOLLOWUP_SITES;
+          }),
+      };
       const status = interveningWriteOperationIds.length === 0
         ? "GUARDED_SOURCE_CANDIDATE" as const
         : "UNRESOLVED" as const;
@@ -583,6 +725,7 @@ export function reconcileSourceGuardedStateTransitions(
         guardComparisonSource: compared.source,
         interveningWriteOperationIds,
         coLocatedDeclarationIds,
+        continuation,
         status,
         provenance: {
           kind: "source-inference" as const,
@@ -591,8 +734,24 @@ export function reconcileSourceGuardedStateTransitions(
             read.id, write.id,
             ...interveningWriteOperationIds,
             ...coLocatedDeclarationIds,
+            ...continuation.sourceOrderedWorldEffectIds,
+            ...continuation.sourceOrderedResourceReleaseIds,
+            ...continuation.sourceOrderedReturnOutcomeIds,
+            ...continuation.sourceOrderedReleaseReturnPairs.flatMap(pair => [
+              pair.releaseActionId, pair.returnOutcomeId,
+            ]),
+            ...continuation.directSynchronousCallees.flatMap(callee => [
+              callee.callEdgeId,
+              ...callee.worldEffectIds,
+              ...callee.resourceReleaseIds,
+              ...callee.returnOutcomeIds,
+              ...callee.releaseReturnPairs.flatMap(pair => [
+                pair.releaseActionId, pair.returnOutcomeId,
+              ]),
+            ]),
+            ...continuation.unsupportedBoundaryEdgeIds,
           ].sort(),
-          note: "Exact authored direct comparison and guarded write, not evaluated branch, established runtime from-state, transition table binding or game lifecycle completion.",
+          note: "Exact guarded source write with bounded same-branch follow-up sites and direct resolved synchronous call targets. No evaluated transition, executed callee, terminal gameplay meaning, successful cleanup, or reset is proven.",
         },
       }];
     });
