@@ -49,6 +49,7 @@ import {
 import {
   SELECTED_MAP_AUDIT_STAGE_ORDER,
   assessSelectedMapAuditAdmission,
+  canProjectIndependentAuditEvidence,
   type SelectedMapAuditAdmission,
   type SelectedMapAuditStage,
 } from "./map-audit-admission.js";
@@ -279,27 +280,18 @@ function deriveSelectedMapAuditControl(input: {
 > {
   const firstBlockingStage =
     input.admission.firstBlockingStage;
-  const firstBlockingIndex =
-    firstBlockingStage === undefined
-      ? Number.POSITIVE_INFINITY
-      : SELECTED_MAP_AUDIT_STAGE_ORDER.indexOf(
-          firstBlockingStage,
-        );
-  const stageAuthorized = (
-    stage: SelectedMapAuditStage,
-  ): boolean =>
-    SELECTED_MAP_AUDIT_STAGE_ORDER.indexOf(stage) <=
-    firstBlockingIndex;
-
-  const proveAuthorized = stageAuthorized("PROVE");
-  const provenIssues = proveAuthorized
+  // Project only evidence-backed, scoped results. A2 PARTIAL (or later
+  // blocked checkpoints) still blocks publication, not independent analysis.
+  const evidenceProjectionAuthorized =
+    canProjectIndependentAuditEvidence(input.procedure);
+  const provenIssues = evidenceProjectionAuthorized
     ? projectReadyAuditIssues(
         input.scenario.graph,
         input.scenario.defectResolution,
         input.capabilityDelivery,
       )
     : [];
-  const needValidationIssues = proveAuthorized
+  const needValidationIssues = evidenceProjectionAuthorized
     ? projectNeedValidationAuditIssues(
         input.scenario.graph,
         input.scenario.defectResolution,
@@ -317,50 +309,23 @@ function deriveSelectedMapAuditControl(input: {
       )
       .sort();
 
-  const auditObligations =
-    deriveAuditObligations({
-      graph: input.scenario.graph,
-      defectResolution:
-        input.scenario.defectResolution,
-      gameplayWorld:
-        input.gameplayWorld,
-      userIntent: input.userIntent,
-      gameplayClosure: input.gameplayClosure,
-      negativeSpace:
-        stageAuthorized("STRESS")
-          ? input.negativeSpace
-          : [],
-      temporalRisks:
-        stageAuthorized("STRESS")
-          ? input.temporalRisks
-          : [],
-      discoveryChallenges:
-        stageAuthorized("DISCOVERY")
-          ? input.discoveryChallenges
-          : [],
-      sharedResourceSignals:
-        stageAuthorized("UNDERSTAND")
-          ? input.sharedResourceSignals
-          : [],
-      compoundBoundaries:
-        stageAuthorized("STRESS")
-          ? input.compoundBoundaries
-          : [],
-      accumulationGrowth:
-        stageAuthorized("STRESS")
-          ? input.accumulationGrowth
-          : [],
-      capabilityExposure:
-        stageAuthorized("UNDERSTAND")
-          ? input.capabilityExposure
-          : undefined,
-      replicaDivergenceIds:
-        stageAuthorized("MODEL")
-          ? replicaDivergenceIds
-          : [],
-    }).filter((item) =>
-      stageAuthorized(item.stage)
-    );
+  const auditObligations = evidenceProjectionAuthorized
+    ? deriveAuditObligations({
+        graph: input.scenario.graph,
+        defectResolution: input.scenario.defectResolution,
+        gameplayWorld: input.gameplayWorld,
+        userIntent: input.userIntent,
+        gameplayClosure: input.gameplayClosure,
+        negativeSpace: input.negativeSpace,
+        temporalRisks: input.temporalRisks,
+        discoveryChallenges: input.discoveryChallenges,
+        sharedResourceSignals: input.sharedResourceSignals,
+        compoundBoundaries: input.compoundBoundaries,
+        accumulationGrowth: input.accumulationGrowth,
+        capabilityExposure: input.capabilityExposure,
+        replicaDivergenceIds,
+      })
+    : [];
 
   const navigatedNeedValidationIssues = [
     ...needValidationIssues,
@@ -426,7 +391,7 @@ function deriveSelectedMapAuditControl(input: {
         item.issueType === "DESIGN_MISMATCH",
     ),
   } as const;
-  const candidateGroups = proveAuthorized
+  const candidateGroups = evidenceProjectionAuthorized
     ? groupReadyAuditIssuesForCandidateCoverage(
         input.scenario.graph,
         issueLanes.BUG.filter(

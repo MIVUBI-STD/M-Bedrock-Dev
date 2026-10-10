@@ -158,22 +158,24 @@ export function assessGameplayDiscoveryClosure(
     );
   }
 
-  const status:
-    GameplayDiscoveryClosureStatus =
-      surfaceIds.length === 0 ||
-      !sourceInventoryBalanced ||
-      !input.sourceCoverageComplete ||
-      input.sourceParseFailures > 0 ||
-      unsupportedRelevantSources > 0 ||
-      semanticUnderstandingGaps > 0 ||
-      discoveryChallengeIds.length > 0 ||
-      gameplayIntentUnknownIds.length > 0 ||
-      input.nativeWorldScanIncomplete === true ||
-      unlistedPackRoots.length > 0
-        ? "OPEN"
-        : input.unresolvedReferences > 0
-          ? "PARTIAL"
-          : "COMPLETE";
+  // OPEN is a structural inventory failure. Once relevant sources are
+  // accounted for, semantic/runtime uncertainty is PARTIAL rather than
+  // another unbounded requirement to extend Discovery.
+  const status: GameplayDiscoveryClosureStatus =
+    surfaceIds.length === 0 ||
+    !sourceInventoryBalanced ||
+    !input.sourceCoverageComplete ||
+    input.sourceParseFailures > 0
+      ? "OPEN"
+      : unsupportedRelevantSources > 0 ||
+          semanticUnderstandingGaps > 0 ||
+          discoveryChallengeIds.length > 0 ||
+          gameplayIntentUnknownIds.length > 0 ||
+          input.nativeWorldScanIncomplete === true ||
+          unlistedPackRoots.length > 0 ||
+          input.unresolvedReferences > 0
+        ? "PARTIAL"
+        : "COMPLETE";
 
   if (status === "COMPLETE") {
     reasons.push(

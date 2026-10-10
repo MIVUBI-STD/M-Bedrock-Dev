@@ -23,7 +23,7 @@ Gameplay Model Closure
 → are the discovered material surfaces understood enough to reason about?
 ```
 
-Do not spend deep contradiction-analysis effort while Discovery Closure is OPEN or PARTIAL.
+Do not claim whole-map completeness while Discovery Closure is OPEN or PARTIAL. Scoped, evidence-backed contradiction analysis may continue once TARGET integrity is verified and Discovery is at least PARTIAL; unresolved sources and relationships remain explicit obligations.
 
 The goal is not to prove every runtime outcome before auditing. The goal is to ensure every discovered gameplay-relevant surface is understood enough to reason about, or explicitly marked blocked/unknown.
 
@@ -59,7 +59,7 @@ Never construct the discovered-surface list from the already-accounted surface l
 
 ## Precondition — Gameplay Discovery Closure
 
-Before Phase A is treated as stable:
+Before Phase A is treated as complete for the whole selected map:
 
 - relevant selected-artifact sources must be indexed;
 - parser/index failures must be explicit;
@@ -68,7 +68,7 @@ Before Phase A is treated as stable:
 - relevant-source inventory must balance indexed files plus explicit parse failures;
 - unresolved selected-artifact references must be zero.
 
-Discovery Closure OPEN or PARTIAL blocks production continuation. Discovery PARTIAL is not a runtime exception.
+Discovery Closure OPEN or PARTIAL still blocks whole-map closure and final publication. A PARTIAL Discovery with a verified TARGET permits independent finding and obligation projections; it does not prove unknown mechanics, authorize a NOT_APPLICABLE classification by absence, or permit Bug Report promotion. OPEN still prevents these projections because source accounting is structurally incomplete. The mandatory audit procedure remains the sole publication authority.
 
 ## Phase A — Surface inventory
 

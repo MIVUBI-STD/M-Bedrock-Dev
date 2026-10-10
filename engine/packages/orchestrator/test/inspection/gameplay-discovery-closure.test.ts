@@ -12,7 +12,7 @@ describe("gameplay discovery closure", () => {
       semanticUnderstandingGapPaths: [], unresolvedReferences: 0,
       unlistedPackRoots: ["behavior_packs/b", "behavior_packs/b"],
     });
-    expect(result.status).toBe("OPEN");
+    expect(result.status).toBe("PARTIAL");
     expect(result.unlistedPackRoots).toEqual(["behavior_packs/b"]);
   });
 
@@ -28,7 +28,7 @@ describe("gameplay discovery closure", () => {
       unresolvedReferences: 0,
       nativeWorldScanIncomplete: true,
     });
-    expect(result.status).toBe("OPEN");
+    expect(result.status).toBe("PARTIAL");
     expect(result.nativeWorldScanIncomplete).toBe(true);
     expect(result.reasons.some(reason => reason.includes("native world scan"))).toBe(true);
   });
@@ -120,6 +120,23 @@ describe("gameplay discovery closure", () => {
     ).toBe(1);
   });
 
+  it("accounts unsupported sources as PARTIAL when source inventory is complete", () => {
+    const result = assessGameplayDiscoveryClosure({
+      discoveredSurfaceIds: ["runtime:state"],
+      sourceRelevantFiles: 2,
+      sourceIndexedFiles: 1,
+      sourceCoverageComplete: true,
+      sourceParseFailures: 0,
+      unsupportedRelevantSourcePaths: ["feature_rules/ore.json"],
+      semanticUnderstandingGapPaths: [],
+      unresolvedReferences: 0,
+    });
+
+    expect(result.status).toBe("PARTIAL");
+    expect(result.sourceInventoryBalanced).toBe(true);
+    expect(result.unsupportedRelevantSourcePaths).toEqual(["feature_rules/ore.json"]);
+  });
+
   it("opens when gameplay sources are indexed but not semantically understood", () => {
     const result =
       assessGameplayDiscoveryClosure({
@@ -137,7 +154,7 @@ describe("gameplay discovery closure", () => {
         unresolvedReferences: 0,
       });
 
-    expect(result.status).toBe("OPEN");
+    expect(result.status).toBe("PARTIAL");
     expect(
       result.semanticUnderstandingGaps,
     ).toBe(1);
@@ -151,7 +168,7 @@ describe("gameplay discovery closure", () => {
       unsupportedRelevantSourcePaths: [], semanticUnderstandingGapPaths: [],
       unresolvedReferences: 0, gameplayIntentUnknownIds: ["unknown:outcome-guard"],
     });
-    expect(result.status).toBe("OPEN");
+    expect(result.status).toBe("PARTIAL");
     expect(result.gameplayIntentUnknownIds).toEqual(["unknown:outcome-guard"]);
   });
 
@@ -196,7 +213,7 @@ describe("gameplay discovery closure", () => {
       discoveryChallengeIds: ["discovery-challenge:region:one"],
       nativeWorldScanIncomplete: true,
     });
-    expect(blocked.status).toBe("OPEN");
+    expect(blocked.status).toBe("PARTIAL");
     expect(blocked.semanticUnderstandingGaps).toBe(1);
     expect(blocked.gameplayIntentUnknownIds).toHaveLength(1);
     expect(blocked.discoveryChallengeIds).toHaveLength(1);
@@ -219,7 +236,7 @@ describe("gameplay discovery closure", () => {
       ...input,
       discoveryChallengeIds: ["discovery-challenge:state:unknown-mutation"],
     });
-    expect(challenged.status).toBe("OPEN");
+    expect(challenged.status).toBe("PARTIAL");
     expect(challenged.discoveryChallengeIds).toEqual([
       "discovery-challenge:state:unknown-mutation",
     ]);

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   assessSelectedMapAuditAdmission,
+  canProjectIndependentAuditEvidence,
 } from "../src/map-audit-admission.js";
 import type {
   MandatoryAuditProcedureReceipt,
@@ -96,5 +97,37 @@ describe("selected-map audit admission", () => {
     expect(result.status).toBe("READY");
     expect(result.firstBlockingStage).toBeUndefined();
     expect(result.issues).toEqual([]);
+  });
+  it("allows evidence projection with PARTIAL Discovery but still blocks review", () => {
+    const base = procedure(["A2"]);
+    const partial: MandatoryAuditProcedureReceipt = {
+      ...base,
+      checkpoints: base.checkpoints.map((item) => item.id === "A2"
+        ? { ...item, status: "PARTIAL", reasonCode: "DISCOVERY_INCOMPLETE" }
+        : item),
+      status: "PARTIAL",
+    };
+
+    expect(canProjectIndependentAuditEvidence(partial)).toBe(true);
+    const admission = assessSelectedMapAuditAdmission({
+      mandatoryAuditProcedure: partial,
+    });
+    expect(admission.status).toBe("BLOCKED");
+    expect(admission.firstBlockingStage).toBe("DISCOVERY");
+  });
+
+  it("never projects evidence without verified TARGET or accounted Discovery", () => {
+    expect(canProjectIndependentAuditEvidence(undefined)).toBe(false);
+    expect(canProjectIndependentAuditEvidence(procedure(["A1"]))).toBe(false);
+    expect(canProjectIndependentAuditEvidence(procedure(["A2"]))).toBe(false);
+    expect(canProjectIndependentAuditEvidence(procedure([]))).toBe(true);
+    const base = procedure(["A1", "A2"]);
+    const partialWithInvalidTarget: MandatoryAuditProcedureReceipt = {
+      ...base,
+      checkpoints: base.checkpoints.map((item) => item.id === "A2"
+        ? { ...item, status: "PARTIAL" }
+        : item),
+    };
+    expect(canProjectIndependentAuditEvidence(partialWithInvalidTarget)).toBe(false);
   });
 });

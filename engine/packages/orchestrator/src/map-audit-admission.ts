@@ -54,6 +54,26 @@ export function selectedMapAuditStageForCheckpoint(
   return "REPORT";
 }
 
+/**
+ * Authorizes scoped evidence projections, NOT audit closure or publication.
+ * A verified target and structurally accounted Discovery can expose
+ * independently supported findings despite unresolved semantic obligations.
+ * Admission remains blocked until every publication checkpoint closes.
+ */
+export function canProjectIndependentAuditEvidence(
+  procedure: MandatoryAuditProcedureReceipt | undefined,
+): boolean {
+  if (procedure === undefined ||
+      procedure.blockingCheckpointIds.includes("A1")) return false;
+  const target = procedure.checkpoints.filter((item) => item.id === "A1");
+  const discovery = procedure.checkpoints.filter((item) => item.id === "A2");
+  return target.length === 1 &&
+    target[0]?.status === "CLOSED" &&
+    discovery.length === 1 &&
+    (discovery[0]?.status === "CLOSED" ||
+      discovery[0]?.status === "PARTIAL");
+}
+
 export function assessSelectedMapAuditAdmission(
   input: SelectedMapAuditAdmissionInput,
 ): SelectedMapAuditAdmission {
