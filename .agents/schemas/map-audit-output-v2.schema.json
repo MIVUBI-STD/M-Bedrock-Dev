@@ -2304,6 +2304,8 @@
       "required": [
         "scope",
         "gameSubjectIds",
+        "subjects",
+        "scenarios",
         "systems",
         "features",
         "unplacedFeatureIds",
@@ -2536,6 +2538,88 @@
           "type": "array",
           "items": {
             "type": "string"
+          }
+        },
+        "subjects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "kind",
+              "label",
+              "purpose",
+              "evidenceIds"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "game",
+                  "mechanic",
+                  "actor",
+                  "role",
+                  "objective",
+                  "phase",
+                  "state",
+                  "resource",
+                  "lifecycle",
+                  "spatial-region",
+                  "policy",
+                  "outcome",
+                  "runtime-domain"
+                ]
+              },
+              "label": {
+                "type": "string"
+              },
+              "purpose": {
+                "type": "string"
+              },
+              "evidenceIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "scenarios": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "label",
+              "gameplayStage",
+              "purpose",
+              "componentIds"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "gameplayStage": {
+                "type": "string"
+              },
+              "purpose": {
+                "type": "string"
+              },
+              "componentIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
           }
         }
       },

@@ -214,6 +214,22 @@ export interface GameplayArchitectureNavigation {
   readonly gameplayStructure: {
     readonly scope: "OBSERVED_COMPONENTS_ONLY";
     readonly gameSubjectIds: readonly string[];
+    /** Canonical graph identities for resolving every referenced endpoint. */
+    readonly subjects: readonly {
+      readonly id: string;
+      readonly kind: GameplayScenarioComponent["kind"];
+      readonly label: string;
+      readonly purpose: string;
+      readonly evidenceIds: readonly string[];
+    }[];
+    /** Actual scenario identities, including presets explicitly labeled as such. */
+    readonly scenarios: readonly {
+      readonly id: string;
+      readonly label: string;
+      readonly gameplayStage: string;
+      readonly purpose: string;
+      readonly componentIds: readonly string[];
+    }[];
     readonly systems: readonly {
       readonly id: string;
       readonly label: string;
@@ -1254,6 +1270,24 @@ export function deriveGameplayArchitectureNavigation(
     gameSubjectIds: sorted(graph.components
       .filter(component => component.kind === "game")
       .map(component => component.id)),
+    subjects: [...graph.components]
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .map(component => ({
+        id: component.id,
+        kind: component.kind,
+        label: component.label,
+        purpose: component.gameplayPurpose,
+        evidenceIds: sorted(component.evidenceIds),
+      })),
+    scenarios: [...graph.scenarios]
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .map(scenario => ({
+        id: scenario.id,
+        label: scenario.label,
+        gameplayStage: scenario.gameplayStage,
+        purpose: scenario.purpose,
+        componentIds: sorted(scenario.componentIds),
+      })),
     systems: graph.components
       .filter(component => component.kind === "runtime-domain")
       .map(component => {

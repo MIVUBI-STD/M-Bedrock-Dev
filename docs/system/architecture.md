@@ -69,7 +69,7 @@ Ownership constraints:
 
 The canonical `deriveGameplayArchitectureNavigation()` projection exposes `gameplayStructure` from the existing scenario graph and exact selected-artifact evidence. The production `runSelectedMapAudit()` composes this once, retaining it on `SelectedMapAuditRun.gameplayArchitecture` and passing the same derived structure to the optional, backward-compatible `MapAuditOutputV2.gameplayStructure` field.
 
-- **Game:** existing `game` subject IDs, or an empty list when none were grounded.
+- **Game:** existing `game` subject IDs, or an empty list when none were grounded. The same projection includes a compact `subjects` and `scenarios` lookup so every relationship endpoint/scenario ID remains navigable in the standalone report without reconstructing another graph.
 - **Systems:** existing runtime-domain components. `provenFeatureIds` require an exact PROVEN causal link; `coPlacedFeatureIds` are only navigational scenario co-placement.
 - **Features:** existing mechanic, objective, phase, lifecycle and outcome subjects. Each exposes source evidence, scenario membership, typed dependency/effect/transition/outcome links with their original status, and IR traces matched by exact evidence.
 - **Unmodeled:** unplaced features and unmatched technical Semantic IR evidence remain visible. Empty association is not positive proof of feature absence.
