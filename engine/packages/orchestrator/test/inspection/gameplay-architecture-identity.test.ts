@@ -458,6 +458,73 @@ describe("arena identity evidence propagation", () => {
     expect(syntheticOnly?.evidenceIds).not.toContain(write!.id);
   });
 
+  it("connects an event-reachable pre-branch write to a guarded return without claiming gameplay success", () => {
+    const source = { artifactId: "map:round-flow",
+      relativePath: "behavior_packs/demo/scripts/round.js" };
+    const parsed = parseScriptFile("round", [
+      'import { world } from "@minecraft/server";',
+      'let phase = "idle";',
+      'function startRound(ready) {',
+      '  phase = "prepared";',
+      '  if (ready) return { action: "start" };',
+      '  return { action: "abort" };',
+      '}',
+      'world.afterEvents.playerSpawn.subscribe(() => startRound(true));',
+    ].join("\n"), source);
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const write = ir.state.operations.find(item =>
+      item.writtenValue?.kind === "literal" &&
+      item.writtenValue.value === "prepared");
+    const start = ir.execution.outcomes?.find(item => item.value === "start");
+    const abort = ir.execution.outcomes?.find(item => item.value === "abort");
+    expect(write && start && abort).toBeTruthy();
+    const graph: GameplayScenarioGraph = {
+      ...emptyGraph,
+      components: [{
+        id: "component:phase", label: "Prepared write",
+        kind: "state", technicalRole: "authored state write",
+        gameplayPurpose: "unverified", evidenceIds: [write!.id],
+        usedByScenarioIds: ["scenario:start"], orphan: false,
+      }, {
+        id: "component:outcome", label: "Start return",
+        kind: "outcome", technicalRole: "authored return",
+        gameplayPurpose: "unverified", evidenceIds: [start!.id],
+        usedByScenarioIds: ["scenario:start"], orphan: false,
+      }],
+      scenarios: [{
+        id: "scenario:start", label: "Start candidate",
+        gameplayStage: "ACTIVE", purpose: "unverified",
+        sourceSubjectIds: [], componentIds: ["component:phase", "component:outcome"],
+        causalLinkIds: [], playerCounts: [],
+        requiredKnowledgeIds: [], composedScenarioIds: [],
+      }],
+    };
+    const navigation = deriveGameplayArchitectureNavigation(graph, {
+      relevantSourceCount: 1, indexedSourceCount: 1,
+      arenaDetected: false, semanticIr: ir,
+    });
+    const startEvidence = navigation.semanticIrCoverage.stateOutcomeCandidates
+      .find(item => item.outcomeId === start!.id);
+    const abortEvidence = navigation.semanticIrCoverage.stateOutcomeCandidates
+      .find(item => item.outcomeId === abort!.id);
+    expect(startEvidence?.precedingWriteOperationIds).toEqual([write!.id]);
+    expect(startEvidence?.status).toBe("SOURCE_ORDER_CANDIDATE");
+    expect(startEvidence?.sharedScenarioPlacementIds).toEqual(["scenario:start"]);
+    // Abort follows a direct early exit and has distinct precedence evidence.
+    expect(abortEvidence?.precedingWriteOperationIds).toEqual([]);
+    expect(abortEvidence?.status).toBe("UNRESOLVED");
+    const reachableEvent = navigation.semanticIrCoverage.executionTraces
+      .find(trace => trace.entryKind === "event-source" &&
+        trace.returnOutcomeIds.includes(start!.id));
+    expect(reachableEvent?.stateWriteOperationIds).toContain(write!.id);
+    expect(reachableEvent?.returnOutcomeIds).toContain(abort!.id);
+    expect(navigation.knowledgeCoverage.wholeGameUnderstandingStatus)
+      .toBe("NOT_MEASURABLE");
+    expect(navigation.causalLinks).toEqual([]);
+  });
+
   it("does not reconcile duplicate spatial arena identities", () => {
     const navigation = deriveGameplayArchitectureNavigation(emptyGraph, {
       relevantSourceCount: 1,

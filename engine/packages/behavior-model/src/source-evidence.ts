@@ -79,6 +79,27 @@ function guardsEqual(
   return valid(a) && valid(b) && signature(a) === signature(b);
 }
 
+/**
+ * A write inside an enclosing authored branch may precede a return in a
+ * nested branch. Require each write-side lexical guard to match an exact
+ * source/arm on the return. A different guard site, opposite arm, or missing
+ * position cannot establish this bounded source association.
+ *
+ * Preceding early-exit guards remain exact-equality requirements: relaxing
+ * those without control-flow dominance evidence would fabricate a path.
+ */
+function lexicalGuardsCoveredByOutcome(
+  write?: readonly AuthoredBranchGuard[],
+  outcome?: readonly AuthoredBranchGuard[],
+): boolean {
+  if (!guardsEqual(write, write) || !guardsEqual(outcome, outcome)) {
+    return false;
+  }
+  return (write ?? []).every(required =>
+    (outcome ?? []).some(observed =>
+      guardsEqual([required], [observed])));
+}
+
 /** Exactly opposing branches of one identified source guard cannot both run
  * in the same evaluation. Textually similar guards at different sites are
  * NOT considered mutually exclusive (values may have changed). */
@@ -111,7 +132,8 @@ function mutuallyExclusiveGuards(
 
 /**
  * Collect source-ordered writes preceding each authored return in the SAME
- * execution region and on the SAME observed lexical/precedence guard arms.
+ * execution region. Every write-side lexical guard must be necessary for the
+ * return path; preceding early-exit guards must match exactly.
  * Does not imply dataflow, runtime order, scope identity, or game success.
  * Unmatched returns stay explicitly visible rather than silently disappearing.
  */
@@ -126,7 +148,9 @@ export function reconcileSourceStateOutcomes(
       const candidates = writes.filter(write =>
         write.executionRegionId === outcome.executionRegionId &&
         precedingSourceWrite(write.source, outcome.source) &&
-        guardsEqual(write.lexicalGuards, outcome.lexicalGuards) &&
+        lexicalGuardsCoveredByOutcome(
+          write.lexicalGuards, outcome.lexicalGuards,
+        ) &&
         guardsEqual(write.precedenceGuards, outcome.precedenceGuards));
       const ids = [...new Set(candidates.map(item => item.id))].sort();
       // An intermediate mutation of the same surface can invalidate a naive
@@ -169,7 +193,7 @@ export function reconcileSourceStateOutcomes(
         reason: intermediateMutationOperationIds.length > 0
           ? "Intermediate or repeated writes to the same authored state surface may change its value before this return. Source order alone cannot establish the effective state, instance identity or lifetime."
           : ids.length > 0
-          ? "Authored writes precede this return under matching source branch evidence. The value's actual lifetime, state owner, runtime path and causal connection to the outcome are unknown."
+          ? "Authored writes precede this return under compatible exact source branch evidence. The value's actual lifetime, state owner, runtime path and causal connection to the outcome are unknown."
           : "No source-ordered write with exact same-region, same-document and branch evidence was identified; the outcome's state dependency and lifetime are unknown.",
         provenance: {
           kind: "source-inference" as const,

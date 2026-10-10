@@ -86,6 +86,92 @@ describe("source-observed state/outcome reconciliation", () => {
       ?.precedingWriteOperationIds).toEqual([]);
   });
 
+  it("retains enclosing and unconditional source writes before nested return branches", () => {
+    const fixture = ir();
+    const operations: SemanticIr["state"]["operations"] = [{
+      id: "write:base", executionRegionId: region,
+      surfaceId: "state:session", operation: "write",
+      writtenValue: { kind: "literal", value: "ready" },
+      source: src(2),
+    }, {
+      id: "write:outer", executionRegionId: region,
+      surfaceId: "state:phase", operation: "write",
+      writtenValue: { kind: "literal", value: "active" },
+      source: src(5), lexicalGuards: [guard("true", 3)],
+    }, {
+      id: "write:opposite", executionRegionId: region,
+      surfaceId: "state:phase", operation: "write",
+      writtenValue: { kind: "literal", value: "blocked" },
+      source: src(6), lexicalGuards: [guard("false", 3)],
+    }, {
+      id: "write:lookalike", executionRegionId: region,
+      surfaceId: "state:ignored", operation: "write",
+      writtenValue: { kind: "literal", value: "not-same-guard" },
+      source: src(7), lexicalGuards: [guard("true", 7)],
+    }];
+    const observed = reconcileSourceStateOutcomes({
+      ...fixture,
+      execution: { ...fixture.execution, outcomes: [{
+        id: "outcome:nested", executionRegionId: region,
+        propertyName: "action", value: "start", source: src(10),
+        lexicalGuards: [guard("true", 3), guard("true", 8)],
+      }, {
+        id: "outcome:alternate", executionRegionId: region,
+        propertyName: "action", value: "abort", source: src(11),
+        lexicalGuards: [guard("false", 3)],
+      }] },
+      state: { ...fixture.state, operations },
+    });
+    const nested = observed.find(item => item.outcomeId === "outcome:nested");
+    const alternate = observed.find(item => item.outcomeId === "outcome:alternate");
+    expect(nested?.precedingWriteOperationIds)
+      .toEqual(["write:base", "write:outer"]);
+    expect(nested?.status).toBe("SOURCE_ORDER_CANDIDATE");
+    expect(nested?.intermediateMutationOperationIds).toEqual([]);
+    expect(alternate?.precedingWriteOperationIds)
+      .toEqual(["write:base", "write:opposite"]);
+    expect(alternate?.status).toBe("SOURCE_ORDER_CANDIDATE");
+    expect(alternate?.provenance.evidenceCeiling).toBe("inferred");
+  });
+
+  it("fails closed on possible intervening writes and imprecise lexical source identities", () => {
+    const fixture = ir();
+    const operations: SemanticIr["state"]["operations"] = [{
+      id: "write:before", executionRegionId: region,
+      surfaceId: "state:phase", operation: "write",
+      writtenValue: { kind: "literal", value: "active" },
+      source: src(3),
+    }, {
+      id: "write:maybe", executionRegionId: region,
+      surfaceId: "state:phase", operation: "write",
+      writtenValue: { kind: "literal", value: "blocked" },
+      source: src(6), lexicalGuards: [guard("true", 6)],
+    }];
+    const results = reconcileSourceStateOutcomes({
+      ...fixture,
+      execution: { ...fixture.execution, outcomes: [{
+        id: "outcome:guarded", executionRegionId: region,
+        propertyName: "action", value: "start", source: src(8),
+        lexicalGuards: [guard("true", 4)],
+      }, {
+        id: "outcome:imprecise-guard", executionRegionId: region,
+        propertyName: "action", value: "unknown", source: src(9),
+        lexicalGuards: [{
+          expression: "ready", branch: "true",
+          source: { artifactId: "map:a", relativePath: "scripts/round.js" },
+        }],
+      }] },
+      state: { ...fixture.state, operations },
+    });
+    const guarded = results.find(item => item.outcomeId === "outcome:guarded");
+    expect(guarded?.precedingWriteOperationIds).toEqual(["write:before"]);
+    expect(guarded?.intermediateMutationOperationIds).toEqual(["write:maybe"]);
+    expect(guarded?.status).toBe("UNRESOLVED");
+    const unknown = results.find(item => item.outcomeId === "outcome:imprecise-guard");
+    expect(unknown?.precedingWriteOperationIds).toEqual([]);
+    expect(unknown?.status).toBe("UNRESOLVED");
+  });
+
   it("flags repeated writes to the same surface instead of selecting a stable final value", () => {
     const fixture = ir();
     const result = reconcileSourceStateOutcomes({
