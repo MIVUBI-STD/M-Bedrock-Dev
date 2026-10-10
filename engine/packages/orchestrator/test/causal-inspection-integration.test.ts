@@ -342,6 +342,74 @@ describe("inspection causal analysis", () => {
     }
   });
 
+
+  it("replays two-script Discovery through the production inspection entrypoint without promoting inferred lifecycle", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-discovery-acceptance-"));
+    try {
+      const scripts = join(root, "behavior_packs", "demo", "scripts");
+      await mkdir(scripts, { recursive: true });
+      await writeFile(join(scripts, "main.js"), [
+        'import { world } from "@minecraft/server";',
+        'import { cleanupSession } from "./cleanup.js";',
+        'function resetArena(ended) {',
+        '  if (ended) cleanupSession();',
+        '}',
+        'world.afterEvents.playerLeave.subscribe(() => resetArena(true));',
+      ].join("\n"), "utf8");
+      await writeFile(join(scripts, "cleanup.js"), [
+        'export function cleanupSession() {',
+        '  return { action: "finish" };',
+        '}',
+      ].join("\n"), "utf8");
+
+      const result = await inspectDirectory(
+        root, "fixture:direct-import-discovery",
+        { edition: "bedrock", staticExecutionDimension: "overworld" },
+        "fixture-fingerprint", catalog,
+      );
+      const ir = result.semanticIrModel;
+      const imported = ir.execution.edges.filter(edge =>
+        edge.kind === "synchronous-call" &&
+        edge.targetLabel === "cleanupSession" &&
+        edge.source.relativePath.endsWith("/scripts/main.js"));
+      expect(imported).toHaveLength(1);
+      expect(imported[0]).toMatchObject({
+        resolution: "resolved",
+        controlFlow: "conditional",
+      });
+      expect(imported[0]?.lexicalGuards?.map(guard =>
+        [guard.expression, guard.branch])).toEqual([["ended", "true"]]);
+      const outcome = ir.execution.outcomes?.find(item =>
+        item.value === "finish" &&
+        item.source.relativePath.endsWith("/scripts/cleanup.js"));
+      expect(outcome).toBeDefined();
+      expect(imported[0]?.to).toBe(outcome?.executionRegionId);
+
+      const intent = result.gameplayIntent.model;
+      const relation = intent.edges.find(edge =>
+        edge.kind === "requires" &&
+        edge.evidenceIds.includes(imported[0]!.id));
+      expect(relation?.status).toBe("inferred");
+      expect(intent.evidence.some(item =>
+        item.id === imported[0]!.id &&
+        item.scope === "selected-artifact")).toBe(true);
+
+      const scenario = result.hiddenGameplayDefects.scenarioAudit.graph;
+      const links = scenario.causalLinks.filter(link =>
+        link.evidenceIds.includes(imported[0]!.id));
+      expect(links.every(link => link.status !== "PROVEN")).toBe(true);
+      const challenges = result.hiddenGameplayDefects.discoveryChallenges;
+      expect(challenges.some(item =>
+        item.kind === "unowned-execution-edge" &&
+        item.evidenceIds.includes(imported[0]!.id))).toBe(true);
+      expect(result.gameplayDiscoveryClosure.status).toBe("OPEN");
+      expect(result.gameplayDiscoveryClosure.discoveryChallengeIds.length)
+        .toBeGreaterThan(0);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("does not attach a runtime stall observation from a different operation scope", async () => {
     const root = await mkdtemp(join(tmpdir(), "m-bedrock-causal-wrong-scope-test-"));
     try {
