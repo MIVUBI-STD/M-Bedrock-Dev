@@ -977,6 +977,59 @@ describe("arena identity evidence propagation", () => {
     expect(trace?.unresolvedExecutionEdgeIds).toContain(edge!.id);
     expect(trace?.returnOutcomeIds).toEqual([]);
   });
+
+  it("keeps two exact imported calls to one authored return distinct", () => {
+    const root = "behavior_packs/demo/scripts/";
+    const src = (relativePath: string) => ({
+      artifactId: "sample:round", relativePath: root + relativePath,
+    });
+    const mainText = [
+      'import { resetRound as resetArena } from "./round.js";',
+      'function finishSession() { resetArena(); resetArena(); }',
+    ].join("\n");
+    const roundText = 'export function resetRound() { return { action: "finish" }; }';
+    const sources = [
+      { path: src("main.js").relativePath, text: mainText, source: src("main.js") },
+      { path: src("round.js").relativePath, text: roundText, source: src("round.js") },
+    ];
+    const ir = buildInspectionSemanticIr({
+      parsedFunctions: [],
+      parsedScripts: sources.map(item => ({
+        parsed: parseScriptFile(item.path, item.text, item.source),
+      })),
+      crossFileCallEdges: deriveCrossFileCallEdges(sources),
+    });
+    const calls = ir.execution.edges.filter(e => e.targetLabel === "resetArena");
+    const outcome = ir.execution.outcomes?.find(o => o.value === "finish");
+    expect(calls).toHaveLength(2);
+    expect(outcome).toBeDefined();
+    const pairs = (model: typeof ir) =>
+      deriveGameplayArchitectureNavigation(emptyGraph, {
+        relevantSourceCount: 2, indexedSourceCount: 2,
+        arenaDetected: false, semanticIr: model,
+      }).semanticIrCoverage.observedSourceRelationships.filter(r =>
+        r.kind === "direct-call-to-outcome" && r.outcomeId === outcome!.id);
+    expect(pairs(ir).map(p => p.fromEvidenceId).sort())
+      .toEqual(calls.map(c => c.id).sort());
+    expect(pairs(ir).every(p => p.sourceBasis === "DIRECT_CALL_TARGET" &&
+      p.gap === "NOT_IN_COMMON_SCENARIO")).toBe(true);
+    const update = (predicate: (edge: typeof calls[number]) => typeof calls[number]) => ({
+      ...ir, execution: { ...ir.execution, edges: ir.execution.edges.map(e =>
+        e.targetLabel === "resetArena" ? predicate(e) : e),
+      },
+    });
+    expect(pairs(update(e => ({ ...e, resolution: "unresolved", to: undefined }))))
+      .toEqual([]);
+    expect(pairs(update(e => ({ ...e, source: {
+      artifactId: "sample:round", relativePath: src("main.js").relativePath,
+    } })))).toEqual([]);
+    expect(pairs({ ...ir, execution: { ...ir.execution,
+      outcomes: ir.execution.outcomes?.map(o => ({
+        ...o, source: { ...o.source, artifactId: "other-world" },
+      })),
+    } })).toEqual([]);
+  });
+
   it("does not reconcile duplicate spatial arena identities", () => {
     const navigation = deriveGameplayArchitectureNavigation(emptyGraph, {
       relevantSourceCount: 1,

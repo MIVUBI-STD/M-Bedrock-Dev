@@ -782,6 +782,95 @@ describe("gameplay discovery challenger", () => {
       item.reason.includes("SOURCE_RELATION_UNRESOLVED"))).toBe(true);
   });
 
+
+  it("keeps direct imported-call to return gaps open even if both records have independent scenario proof", () => {
+    const origin = (line: number, relativePath: string) => ({
+      artifactId: "sample:cross-file", relativePath,
+      range: { lineStart: line, lineEnd: line, columnStart: 1, columnEnd: 20 },
+    });
+    const caller = origin(7, "behavior_packs/demo/scripts/main.js");
+    const target = origin(2, "behavior_packs/demo/scripts/round.js");
+    const edgeId = "exec-edge:direct";
+    const outcomeId = "return:finish";
+    const ir = {
+      schemaVersion: 1,
+      execution: {
+        regions: [
+          { id: "exec:main", kind: "script-function", label: "main",
+            ownerId: "main", source: caller },
+          { id: "exec:round", kind: "script-function", label: "round",
+            ownerId: "round", source: target },
+        ],
+        edges: [{ id: edgeId, from: "exec:main", to: "exec:round",
+          kind: "synchronous-call", targetLabel: "finishRound",
+          resolution: "resolved", source: caller }],
+        outcomes: [{ id: outcomeId, executionRegionId: "exec:round",
+          propertyName: "action", value: "finish", source: target }],
+      },
+      state: { surfaces: [], operations: [], authorityBindings: [] },
+      temporal: { relations: [] },
+    } as SemanticIr;
+    const intent = { ...emptyIntent, nodes: [
+      { id: "intent:call", status: "authored", evidenceIds: [edgeId] },
+      { id: "intent:return", status: "authored", evidenceIds: [outcomeId] },
+    ], evidence: [
+      { id: edgeId, scope: "selected-artifact",
+        locator: caller.relativePath, origin: "source-code" },
+      { id: outcomeId, scope: "selected-artifact",
+        locator: target.relativePath, origin: "source-code" },
+    ] } as GameplayIntentModel;
+    const components = [edgeId, outcomeId].map((id, i) => ({
+      id: "component:" + i, kind: "lifecycle" as const,
+      label: "Source record " + i, technicalRole: "technical",
+      gameplayPurpose: "unknown", evidenceIds: [id],
+      usedByScenarioIds: ["scenario:finish"], orphan: false,
+    }));
+    const makeLink = (id: string, ids: string[],
+      from: string, to: string): GameplayScenarioGraph["causalLinks"][number] => ({
+      id, scenarioId: "scenario:finish", status: "PROVEN",
+      fromComponentId: from, toComponentId: to,
+      evidenceIds: ids, purpose: "Fixture claim",
+      subjectIds: [], componentIds: [from, to],
+      knowledgeRequirementIds: [], impactPathComponentIds: [],
+      impactPathEvidenceIds: [], dimensionEvidence: {}, reason: "Fixture",
+    });
+    const independent = [
+      makeLink("proof:call", [edgeId], "component:0", "component:0"),
+      makeLink("proof:return", [outcomeId], "component:1", "component:1"),
+    ];
+    const graph: GameplayScenarioGraph = {
+      ...emptyGraph, components, causalLinks: independent,
+      scenarios: [{
+        id: "scenario:finish", label: "Finish", gameplayStage: "TERMINAL",
+        purpose: "unverified", sourceSubjectIds: [],
+        componentIds: components.map(c => c.id),
+        causalLinkIds: independent.map(l => l.id), playerCounts: [],
+        requiredKnowledgeIds: [], composedScenarioIds: [],
+      }],
+    };
+    const check = (g: GameplayScenarioGraph, i = intent) =>
+      challengeGameplayDiscovery({ semanticIr: ir, intent: i, graph: g })
+        .filter(signal => signal.kind === "unmodeled-source-relationship" &&
+          signal.evidenceIds[0] === edgeId &&
+          signal.evidenceIds[1] === outcomeId);
+    expect(check(graph)).toHaveLength(1);
+    expect(check(graph)[0]?.reason).toContain("CAUSAL_PROOF_MISSING");
+    const pair = makeLink("proof:pair", [edgeId, outcomeId],
+      "component:0", "component:1");
+    const complete = {
+      ...graph, causalLinks: [...independent, pair],
+      scenarios: [{ ...graph.scenarios[0]!,
+        causalLinkIds: [...graph.scenarios[0]!.causalLinkIds, pair.id] }],
+    };
+    expect(check(complete)).toEqual([]);
+    expect(check({ ...complete, causalLinks: [...independent,
+      { ...pair, status: "DETECTION_GAP" }] })).toHaveLength(1);
+    const foreign = { ...intent, evidence: intent.evidence.map(e =>
+      e.id === edgeId ? { ...e, locator: "scripts/unrelated.js" } : e),
+    } as GameplayIntentModel;
+    expect(check(graph, foreign)).toEqual([]);
+  });
+
   it("does not treat referenced unresolved temporal targets as closed", () => {
     const temporal = {
       id: "temporal:missing",

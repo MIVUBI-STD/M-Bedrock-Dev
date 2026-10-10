@@ -187,6 +187,9 @@ export function challengeGameplayDiscovery(input: {
   const hasOwnedPrecursor = ownedOutcomes && (
     input.semanticIr.execution.regions.some(item => item.source &&
       matchesSource(item.id, item.source.relativePath)) ||
+    input.semanticIr.execution.edges.some(item =>
+      item.resolution === "resolved" &&
+      matchesSource(item.id, item.source.relativePath)) ||
     input.semanticIr.state.operations.some(item =>
       matchesSource(item.id, item.source.relativePath)) ||
     (input.semanticIr.state.resourceActions ?? []).some(item =>
@@ -199,9 +202,11 @@ export function challengeGameplayDiscovery(input: {
         executionTraces: semanticIrExecutionTraces(input.semanticIr).traces,
         stateOutcomeEvidence: reconcileSourceStateOutcomes(input.semanticIr),
         resourceOutcomeEvidence: reconcileSourceResourceOutcomes(input.semanticIr),
+        semanticIr: input.semanticIr,
       },
     );
     const sourceById = new Map([
+      ...input.semanticIr.execution.edges.map(item => [item.id, item.source] as const),
       ...input.semanticIr.execution.regions.flatMap(item =>
         item.source ? [[item.id, item.source] as const] : []),
       ...input.semanticIr.state.operations.map(item => [item.id, item.source] as const),

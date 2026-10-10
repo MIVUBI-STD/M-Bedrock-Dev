@@ -271,11 +271,11 @@ export interface GameplayArchitectureNavigation {
     /** A return without an observed entry path may be dead/unreachable or under-discovered. */
     readonly untracedReturnOutcomeIds: readonly string[];
     readonly observedSourceRelationships: readonly {
-      readonly kind: "entry-to-outcome" | "state-write-to-outcome" |
-        "resource-action-to-outcome";
+      readonly kind: "entry-to-outcome" | "direct-call-to-outcome" |
+        "state-write-to-outcome" | "resource-action-to-outcome";
       readonly fromEvidenceId: string;
       readonly outcomeId: string;
-      readonly sourceBasis: "TRACE_REACHABILITY" |
+      readonly sourceBasis: "TRACE_REACHABILITY" | "DIRECT_CALL_TARGET" |
         "SOURCE_ORDER_CANDIDATE" | "SOURCE_ORDER_UNRESOLVED";
       /** Co-placement only: same scenario does NOT prove a causal relation. */
       readonly sharedScenarioIds: readonly string[];
@@ -469,6 +469,8 @@ export function deriveObservedGameplaySourceRelationships(
     readonly executionTraces: readonly ObservedExecutionTrace[];
     readonly stateOutcomeEvidence: readonly SourceStateOutcomeCandidate[];
     readonly resourceOutcomeEvidence: readonly SourceResourceOutcomeCandidate[];
+    /** Exact resolved IR call-target identity (may still never execute). */
+    readonly semanticIr?: SemanticIr;
   },
 ): GameplayArchitectureNavigation["semanticIrCoverage"]["observedSourceRelationships"] {
   const sorted = (values: readonly string[]) => [...new Set(values)].sort();
@@ -477,8 +479,40 @@ export function deriveObservedGameplaySourceRelationships(
   // observed relationships that the scenario composition has not accounted for.
   type ObservedRelation = GameplayArchitectureNavigation[
     "semanticIrCoverage"]["observedSourceRelationships"][number];
+  // A direct resolved call can lead to a literal returned inside its exact
+  // target region, including across ESM modules. This is source topology,
+  // not proof of the call being reached or the outcome being delivered.
+  const positionsComplete = (ref: { range?: {
+    lineStart?: number; lineEnd?: number; columnStart?: number; columnEnd?: number;
+  } }): boolean =>
+    ref.range?.lineStart !== undefined &&
+    ref.range.lineEnd !== undefined &&
+    ref.range.columnStart !== undefined &&
+    ref.range.columnEnd !== undefined;
+  const outcomesByRegion = new Map<string, NonNullable<SemanticIr["execution"]["outcomes"]>>();
+  for (const outcome of observed.semanticIr?.execution.outcomes ?? []) {
+    const bucket = outcomesByRegion.get(outcome.executionRegionId) ?? [];
+    outcomesByRegion.set(outcome.executionRegionId, [...bucket, outcome]);
+  }
+  const targetRegions = new Map((observed.semanticIr?.execution.regions ?? [])
+    .map(region => [region.id, region]));
   const sourceRelationshipCandidates: Pick<ObservedRelation,
     "kind" | "fromEvidenceId" | "outcomeId" | "sourceBasis">[] = [
+    ...(observed.semanticIr?.execution.edges ?? [])
+      .filter(edge => edge.kind === "synchronous-call" &&
+        edge.resolution === "resolved" && edge.to !== undefined &&
+        positionsComplete(edge.source))
+      .flatMap(edge => (outcomesByRegion.get(edge.to!) ?? [])
+        .filter(outcome => positionsComplete(outcome.source) &&
+          outcome.source.artifactId === edge.source.artifactId &&
+          targetRegions.get(edge.to!)?.source?.artifactId === outcome.source.artifactId &&
+          targetRegions.get(edge.to!)?.source?.relativePath === outcome.source.relativePath)
+        .map(outcome => ({
+          kind: "direct-call-to-outcome" as const,
+          fromEvidenceId: edge.id,
+          outcomeId: outcome.id,
+          sourceBasis: "DIRECT_CALL_TARGET" as const,
+        }))),
     ...observed.executionTraces.flatMap(trace =>
       trace.returnOutcomeIds.map(outcomeId => ({
         kind: "entry-to-outcome" as const,
@@ -718,6 +752,7 @@ export function deriveGameplayArchitectureNavigation(
       executionTraces: observedExecution.traces,
       stateOutcomeEvidence,
       resourceOutcomeEvidence,
+      semanticIr: observed.semanticIr,
     },
   );
   const tracedOutcomes = new Set(observedExecution.traces.flatMap(trace =>
