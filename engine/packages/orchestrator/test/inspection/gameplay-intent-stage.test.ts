@@ -113,6 +113,36 @@ function parsed(): ParsedScriptFile {
 describe("gameplay intent stage", () => {
 
 
+  it("retains both exact return sites for one inferred producer relation", () => {
+    const source = {
+      artifactId: "world:branches",
+      relativePath: "behavior_packs/demo/scripts/main.js",
+    };
+    const parsed = parseScriptFile("main", [
+      'function finishArena(choice) {',
+      '  if (choice) return { action: "finish" };',
+      '  return { action: "finish" };',
+      '}',
+    ].join("\n"), source);
+    const semanticIr = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const outcomes = (semanticIr.execution.outcomes ?? [])
+      .filter(item => item.value === "finish");
+    expect(outcomes).toHaveLength(2);
+    const model = buildGameplayIntentModel({
+      id: "intent:branches", artifactId: source.artifactId,
+      parsedScripts: [{ parsed }], semanticIr,
+    });
+    const producing = model.edges.filter(edge =>
+      edge.kind === "produces" &&
+      outcomes.some(item => edge.evidenceIds.includes(item.id)));
+    expect(producing).toHaveLength(1);
+    expect(producing[0]?.status).toBe("inferred");
+    expect(outcomes.every(item =>
+      producing[0]!.evidenceIds.includes(item.id))).toBe(true);
+  });
+
   it("links exact authored return to inferred gameplay producer without proving completion", () => {
     const origin = {
       artifactId: "world:round",

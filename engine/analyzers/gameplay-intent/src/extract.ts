@@ -682,7 +682,8 @@ export function extractGameplayIntentSignals(
     } else if (relation.localCallOrigins?.length ||
         relation.crossFileCallOrigins?.length ||
         relation.callbackOrigins?.length ||
-        relation.stateMutationOrigins?.length) {
+        relation.stateMutationOrigins?.length ||
+        relation.returnOutcomeOrigins?.length) {
       // Preserve every call site when a single inferred relationship has
       // multiple technical origins, including repeated scheduler/event sites.
       relations.set(relation.id, {
@@ -702,6 +703,10 @@ export function extractGameplayIntentSignals(
         stateMutationOrigins: [
           ...(existing.stateMutationOrigins ?? []),
           ...(relation.stateMutationOrigins ?? []),
+        ],
+        returnOutcomeOrigins: [
+          ...(existing.returnOutcomeOrigins ?? []),
+          ...(relation.returnOutcomeOrigins ?? []),
         ],
       });
     }
