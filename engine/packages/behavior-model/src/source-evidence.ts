@@ -20,6 +20,20 @@ export interface SourceResourceOutcomeCandidate {
   readonly provenance: BehaviorClaimProvenance;
 }
 
+/**
+ * An authored world-effect command/API site preceding a literal return.
+ * This is a source-order hint only, not evidence of command success or
+ * player-facing gameplay causality. Effects lack exact lexical branch data.
+ */
+export interface SourceWorldEffectOutcomeCandidate {
+  readonly outcomeId: string;
+  readonly executionRegionId: string;
+  readonly precedingWorldEffectIds: readonly string[];
+  readonly status: "SOURCE_ORDER_CANDIDATE" | "UNRESOLVED";
+  readonly reason: string;
+  readonly provenance: BehaviorClaimProvenance;
+}
+
 export interface SourceStateOutcomeCandidate {
   readonly outcomeId: string;
   readonly executionRegionId: string;
@@ -274,6 +288,52 @@ export function reconcileSourceStateOutcomes(
 }
 
 /**
+ * An authored world effect and a return are associated only in the same
+ * document/region and when the exact site of the effect precedes the return.
+ * A guarded return is UNRESOLVED because current world-effect records do not
+ * carry matched branch ancestry. Even an unguarded pairing is not dataflow.
+ */
+export function reconcileSourceWorldEffectOutcomes(
+  ir: SemanticIr,
+): readonly SourceWorldEffectOutcomeCandidate[] {
+  const effects = ir.execution.worldEffects ?? [];
+  return [...(ir.execution.outcomes ?? [])]
+    .filter(outcome => effects.some(effect =>
+      effect.executionRegionId === outcome.executionRegionId &&
+      sameDocument(effect.source, outcome.source)))
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map(outcome => {
+      const precedingWorldEffectIds = [...new Set(effects
+        .filter(effect =>
+          effect.executionRegionId === outcome.executionRegionId &&
+          precedingSourceSite(effect.source, outcome.source))
+        .map(effect => effect.id))].sort();
+      const hasReturnGuard =
+        (outcome.lexicalGuards?.length ?? 0) > 0 ||
+        (outcome.precedenceGuards?.length ?? 0) > 0;
+      const status =
+        precedingWorldEffectIds.length > 0 && !hasReturnGuard
+          ? "SOURCE_ORDER_CANDIDATE" as const
+          : "UNRESOLVED" as const;
+      return {
+        outcomeId: outcome.id,
+        executionRegionId: outcome.executionRegionId,
+        precedingWorldEffectIds,
+        status,
+        reason: status === "SOURCE_ORDER_CANDIDATE"
+          ? "An authored world-effect attempt appears before an unguarded return in the same function/document. Source ordering does not establish reachability, side-effect success, cause, or terminal gameplay meaning."
+          : "World-effect/return association lacks sufficient source-order or compatible branch evidence; a guarded return cannot be attributed to an unguarded world-effect record.",
+        provenance: {
+          kind: "source-inference" as const,
+          evidenceCeiling: "inferred" as const,
+          evidenceIds: [outcome.id, ...precedingWorldEffectIds].sort(),
+          note: "Static source proximity only, not an executable BehaviorTransition or successful Minecraft effect.",
+        },
+      };
+    });
+}
+
+/**
  * Effect-directed, bounded static program slice over the SAME Semantic IR.
  * The entry is an authored call/event candidate, never evidence that the
  * branch ran, a state mutation committed, or a player observed a result.
@@ -386,6 +446,7 @@ export function deriveSourceEffectSlices(
   ];
   const stateOutcomeCandidates = reconcileSourceStateOutcomes(ir);
   const resourceOutcomeCandidates = reconcileSourceResourceOutcomes(ir);
+  const worldEffectOutcomeCandidates = reconcileSourceWorldEffectOutcomes(ir);
   const guardSites = (
     guards: readonly AuthoredBranchGuard[] | undefined,
     kind: "lexical" | "precedence",
@@ -490,7 +551,12 @@ export function deriveSourceEffectSlices(
             .filter(candidate => candidate.status === "SOURCE_ORDER_CANDIDATE" &&
               candidate.precedingResourceActionIds.includes(effect.id))
             .map(candidate => candidate.outcomeId)
-        : [];
+        : effect.kind === "world-effect"
+          ? worldEffectOutcomeCandidates
+              .filter(candidate => candidate.status === "SOURCE_ORDER_CANDIDATE" &&
+                candidate.precedingWorldEffectIds.includes(effect.id))
+              .map(candidate => candidate.outcomeId)
+          : [];
     const possiblePrecedingReadIds = effect.surfaceId === undefined ? []
       : ir.state.operations
           .filter(op => op.operation === "read" &&

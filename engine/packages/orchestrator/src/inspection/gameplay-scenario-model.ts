@@ -14,8 +14,10 @@ import type { ArenaRegionPlan } from "../../../../analyzers/topology/src/index.j
 import {
   reconcileSourceStateOutcomes,
   reconcileSourceResourceOutcomes,
+  reconcileSourceWorldEffectOutcomes,
   deriveSourceEffectSlices,
   type SourceEffectSlice,
+  type SourceWorldEffectOutcomeCandidate,
   type SourceStateOutcomeCandidate,
   type SourceResourceOutcomeCandidate,
 } from "../../../behavior-model/src/index.js";
@@ -375,7 +377,8 @@ export interface GameplayArchitectureNavigation {
     readonly untracedReturnOutcomeIds: readonly string[];
     readonly observedSourceRelationships: readonly {
       readonly kind: "entry-to-outcome" | "direct-call-to-outcome" |
-        "state-write-to-outcome" | "resource-action-to-outcome";
+        "state-write-to-outcome" | "resource-action-to-outcome" |
+        "world-effect-to-outcome";
       readonly fromEvidenceId: string;
       readonly outcomeId: string;
       readonly sourceBasis: "TRACE_REACHABILITY" | "DIRECT_CALL_TARGET" |
@@ -583,6 +586,7 @@ export function deriveObservedGameplaySourceRelationships(
     readonly executionTraces: readonly ObservedExecutionTrace[];
     readonly stateOutcomeEvidence: readonly SourceStateOutcomeCandidate[];
     readonly resourceOutcomeEvidence: readonly SourceResourceOutcomeCandidate[];
+    readonly worldEffectOutcomeEvidence?: readonly SourceWorldEffectOutcomeCandidate[];
     /** Exact resolved IR call-target identity (may still never execute). */
     readonly semanticIr?: SemanticIr;
   },
@@ -646,6 +650,15 @@ export function deriveObservedGameplaySourceRelationships(
     ...observed.resourceOutcomeEvidence.flatMap(candidate =>
       candidate.precedingResourceActionIds.map(fromEvidenceId => ({
         kind: "resource-action-to-outcome" as const,
+        fromEvidenceId,
+        outcomeId: candidate.outcomeId,
+        sourceBasis: candidate.status === "SOURCE_ORDER_CANDIDATE"
+          ? "SOURCE_ORDER_CANDIDATE" as const
+          : "SOURCE_ORDER_UNRESOLVED" as const,
+      }))),
+    ...(observed.worldEffectOutcomeEvidence ?? []).flatMap(candidate =>
+      candidate.precedingWorldEffectIds.map(fromEvidenceId => ({
+        kind: "world-effect-to-outcome" as const,
         fromEvidenceId,
         outcomeId: candidate.outcomeId,
         sourceBasis: candidate.status === "SOURCE_ORDER_CANDIDATE"
@@ -860,12 +873,16 @@ export function deriveGameplayArchitectureNavigation(
   const resourceOutcomeEvidence = observed.semanticIr
     ? reconcileSourceResourceOutcomes(observed.semanticIr)
     : [];
+  const worldEffectOutcomeEvidence = observed.semanticIr
+    ? reconcileSourceWorldEffectOutcomes(observed.semanticIr)
+    : [];
   const observedSourceRelationships = deriveObservedGameplaySourceRelationships(
     graph,
     {
       executionTraces: observedExecution.traces,
       stateOutcomeEvidence,
       resourceOutcomeEvidence,
+      worldEffectOutcomeEvidence,
       semanticIr: observed.semanticIr,
     },
   );

@@ -5,6 +5,7 @@ import {
 import {
   reconcileSourceStateOutcomes,
   reconcileSourceResourceOutcomes,
+  reconcileSourceWorldEffectOutcomes,
 } from "../../../behavior-model/src/index.js";
 import type {
   GameplayIntentModel,
@@ -205,6 +206,8 @@ export function challengeGameplayDiscovery(input: {
     input.semanticIr.state.operations.some(item =>
       matchesSource(item.id, item.source.relativePath)) ||
     (input.semanticIr.state.resourceActions ?? []).some(item =>
+      matchesSource(item.id, item.source.relativePath)) ||
+    (input.semanticIr.execution.worldEffects ?? []).some(item =>
       matchesSource(item.id, item.source.relativePath))
   );
   if (hasOwnedPrecursor) {
@@ -214,6 +217,7 @@ export function challengeGameplayDiscovery(input: {
         executionTraces: semanticIrExecutionTraces(input.semanticIr).traces,
         stateOutcomeEvidence: reconcileSourceStateOutcomes(input.semanticIr),
         resourceOutcomeEvidence: reconcileSourceResourceOutcomes(input.semanticIr),
+        worldEffectOutcomeEvidence: reconcileSourceWorldEffectOutcomes(input.semanticIr),
         semanticIr: input.semanticIr,
       },
     );
@@ -224,6 +228,7 @@ export function challengeGameplayDiscovery(input: {
       ...input.semanticIr.state.operations.map(item => [item.id, item.source] as const),
       ...(input.semanticIr.state.resourceActions ?? []).map(item => [item.id, item.source] as const),
       ...(input.semanticIr.execution.outcomes ?? []).map(item => [item.id, item.source] as const),
+      ...(input.semanticIr.execution.worldEffects ?? []).map(item => [item.id, item.source] as const),
     ]);
     for (const relation of sourceRelations) {
       const from = sourceById.get(relation.fromEvidenceId);

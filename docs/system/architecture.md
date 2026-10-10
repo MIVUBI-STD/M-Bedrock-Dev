@@ -109,6 +109,12 @@ Source slicing now preserves alternative caller paths rather than using one glob
 
 The existing game-centric `features[].sourceBehaviorPaths` is a **derived view over the existing effect slices**. Each effect candidate presents source entry, call edges, guard evidence, preceding same-surface reads, authored resource acquire/release, and guarded source-ordered return IDs where available. `DIRECT_EFFECT_EVIDENCE` is reserved for exact effect IDs on the recognized feature; `CALL_PATH_CONTEXT` identifies a feature encountered on a possible call path and is not proof of gameplay ownership. This projection does not merge incompatible branch outcomes or invent a terminal/recovery flow when source evidence is absent. Neither status constitutes real Minecraft execution.
 
+### World effects and authored returns
+
+The existing Behavior Model source-evidence owner now reconciles normalized Minecraft world-effect attempts and literal return sites only in the exact same execution region and source document, with complete and ordered source positions. An unguarded return permits only a `SOURCE_ORDER_CANDIDATE` claim, not effect success, gameplay causality or terminal proof. Guarded returns remain `UNRESOLVED` when world-effect records lack compatible exact branch ancestry.
+
+The canonical backward `SourceEffectSlice.sourceOrderedOutcomeIds`, Scenario `observedSourceRelationships` and Discovery Challenger all consume this same reconciliation. There is no new parser, graph, report field or proof gate. Ambiguous source relationships remain explicit rather than being upgraded to PROVEN.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:
