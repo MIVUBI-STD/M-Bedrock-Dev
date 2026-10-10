@@ -143,6 +143,47 @@ describe("gameplay intent stage", () => {
       item.evidenceIds?.includes(observedWrite!.id))).toBe(false);
   });
 
+
+  it("accounts for material state writes and returns outside every execution trace", () => {
+    const origin = {
+      artifactId: "world:isolated",
+      relativePath: "behavior_packs/demo/scripts/isolated.js",
+    };
+    const parsed = parseScriptFile("isolated", [
+      'let phase = "idle";',
+      'function helper() { phase = "ready"; return { action: "idle" }; }',
+    ].join("\n"), origin);
+    const semanticIr = buildInspectionSemanticIr({
+      parsedFunctions: [], parsedScripts: [{ parsed }],
+    });
+    const outside = semanticIr.execution.regions.find(region =>
+      region.kind === "script-function" && region.id.includes("helper"));
+    const write = semanticIr.state.operations.find(item =>
+      item.operation === "write" && item.writtenValue?.kind === "literal" &&
+      item.writtenValue.value === "ready");
+    const outcome = semanticIr.execution.outcomes?.find(item =>
+      item.value === "idle");
+    expect(outside).toBeDefined();
+    expect(write).toBeDefined();
+    expect(outcome).toBeDefined();
+    const intent = buildGameplayIntentModel({
+      id: "intent:isolated", artifactId: origin.artifactId,
+      parsedScripts: [{ parsed }], semanticIr,
+    });
+    const unknown = intent.unknowns.find(item =>
+      item.id === "unknown:uninterpreted-execution:" + outside!.id);
+    expect(unknown).toBeDefined();
+    expect(unknown?.evidenceIds).toEqual(expect.arrayContaining([
+      write!.id, outcome!.id,
+    ]));
+    expect(intent.evidence.filter(record =>
+      unknown?.evidenceIds?.includes(record.id)).every(record =>
+        record.locator === origin.relativePath &&
+        record.scope === "selected-artifact")).toBe(true);
+    expect(intent.nodes.some(node =>
+      node.kind === "mechanic" && node.label === "Helper")).toBe(false);
+  });
+
   it("preserves uninterpreted source-backed effects as gameplay unknowns without phantom mechanics", () => {
     const path = "behavior_packs/demo/scripts/opaque.js";
     const source = { artifactId: "world:opaque", relativePath: path };

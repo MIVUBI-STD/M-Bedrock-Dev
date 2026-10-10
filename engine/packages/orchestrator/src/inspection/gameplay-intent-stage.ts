@@ -576,12 +576,43 @@ export function buildGameplayIntentModel(
       .flatMap(node => node.evidenceIds).concat(
         [...edges.values()].flatMap(edge => edge.evidenceIds),
       ));
-    for (const trace of semanticIrExecutionTraces(input.semanticIr).traces) {
-      const observedIds = [...new Set([
-        ...trace.stateOperationIds,
-        ...trace.resourceActionIds,
-        ...trace.returnOutcomeIds,
-      ])].filter(id => material.has(id)).sort();
+    const observedExecution = semanticIrExecutionTraces(input.semanticIr);
+    const byRegion = new Map<string, string[]>();
+    for (const operation of input.semanticIr.state.operations) {
+      if (operation.operation !== "write") continue;
+      const ids = byRegion.get(operation.executionRegionId) ?? [];
+      ids.push(operation.id);
+      byRegion.set(operation.executionRegionId, ids);
+    }
+    for (const action of input.semanticIr.state.resourceActions ?? []) {
+      const ids = byRegion.get(action.executionRegionId) ?? [];
+      ids.push(action.id);
+      byRegion.set(action.executionRegionId, ids);
+    }
+    for (const outcome of input.semanticIr.execution.outcomes ?? []) {
+      const ids = byRegion.get(outcome.executionRegionId) ?? [];
+      ids.push(outcome.id);
+      byRegion.set(outcome.executionRegionId, ids);
+    }
+    const candidates = [
+      ...observedExecution.traces.map(trace => ({
+        identity: trace.entryRegionId,
+        ids: [
+          ...trace.stateOperationIds.filter(id =>
+            input.semanticIr!.state.operations.some(operation =>
+              operation.id === id && operation.operation === "write")),
+          ...trace.resourceActionIds,
+          ...trace.returnOutcomeIds,
+        ],
+      })),
+      ...observedExecution.regionsOutsideTraces.map(regionId => ({
+        identity: regionId,
+        ids: byRegion.get(regionId) ?? [],
+      })),
+    ];
+    for (const candidate of candidates) {
+      const observedIds = [...new Set(candidate.ids)]
+        .filter(id => material.has(id)).sort();
       // Mixed flows must retain their still-uninterpreted effects even
       // when another operation in the same trace has a semantic owner.
       const exactIds = observedIds.filter(id => {
@@ -602,7 +633,7 @@ export function buildGameplayIntentModel(
         });
       }
       intentUnknowns.push({
-        id: "unknown:uninterpreted-execution:" + trace.entryRegionId,
+        id: "unknown:uninterpreted-execution:" + candidate.identity,
         question: "An observed material execution flow has state/resource/return evidence but no matching classified gameplay owner; reconstruct its gameplay meaning without inferring intent from filenames or raw effects.",
         blockedSubjectIds: [],
         evidenceIds: exactIds,
