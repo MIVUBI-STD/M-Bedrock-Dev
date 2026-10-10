@@ -137,20 +137,9 @@ Context   → engine/packages/orchestrator/src/workflow/context-compiler.ts
 
 ## ChatGPT-GitHub Work Continuity
 
-### Chat identity and GitHub context (M-Lazy-Developer pilot)
-
-A chat title is a navigation label, not a source of repository truth, work status, or commit identity. For a **new conversation explicitly scoped** to this repository (repository URL, unambiguous user request, or ChatGPT Project instructions), suggest one ready-to-use title in the first substantive reply:
-
-`M-Lazy-Developer · <specific work context> · YYYY-MM-DD`
-
-- Use a concise, recognizable task topic from the actual request (e.g. `Discovery Alias Analysis` or `GitHub Continuity`), never generic titles such as `New Chat`, `Lanjutkan`, or `Cermati Aturan Repo`.
-- The date is the conversation's **first calendar date** in the user's local timezone when established, not the date of the latest message or commit. Preserve that date when continuing the same conversation. Use today's local date only when starting a new conversation; if an older conversation's creation date is not known, do not invent one.
-- Prefer a more specific topic to disambiguate two chats on the same day; append `HHmm` only if the original start time is known and truly needed. Never assign synthetic chat/commit sequence numbers like `#1`, `#2`, or `#3`. A real GitHub issue/PR number may appear only when it refers to that actual issue/PR. Commits use their actual SHA and existing `Work` metadata.
-- Offer the title for manual renaming; repository policy does **not** control ChatGPT's automatic sidebar titles or update ChatGPT Project Instructions. Do not repeat the title suggestion on every turn.
+**Project instruction bootstrap.** ChatGPT Project Instructions are a short pointer to this repository on branch `Local`: before repository work, read `AGENTS.md` and `GITHUB_RULES.md` **completely** from the current `Local` HEAD, then follow every applicable linked rule, domain router, skill, permission profile, and canonical owner for the selected task. Do not duplicate repository rules inside Project Instructions. Do not impose chat-title conventions or chat-retention requirements; conversation titles and deleted chats are not repository work-state authority.
 
 For a fresh repository chat or explicit cross-chat continuation, apply the **Short-prompt repository startup** and topic-based recovery rules below: fetch a fresh GitHub `Local` HEAD and relevant current owner/source, then distinguish verified decisions, `PAUSED`/`BLOCKED` work, and unresolved proof. Prior chats, sidebar titles, ChatGPT memory, and Project instructions are orientation clues, not substitutes for GitHub evidence. An unrelated latest commit or a historical `Next` is not authorization to resume. If GitHub cannot be read, explicitly mark the current repository state unverified rather than claiming synchronization.
-
-ChatGPT Project instructions may point to the repository URL, `Local`, and this root policy to help new conversations start correctly; they must not become a duplicated canonical rule store. Do not create chat-number mappings, separate continuity ledgers, or a second task manager.
 
 **Short-prompt repository startup.** A message such as "amati repo ini dan ikuti aturan repo" plus a repository/branch URL is an INSPECT request, not permission to modify. Infer repository and branch from the URL; if no ref is given, establish the branch from repository authority rather than guessing. Read this file, `GITHUB_RULES.md`, and only the canonical owner/skill rules relevant to the requested work. Pin exact HEAD, inspect recent relevant commits with continuity metadata, then verify their assertions against current source and affected consumers.
 
