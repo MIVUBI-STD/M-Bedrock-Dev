@@ -50,6 +50,9 @@ export interface DynamicPropertyAccess {
   receiverHint?: string;
   executionRegion?: string;
   source: SourceRef;
+  /** Exact AST branch ancestry of this read/write site, not runtime truth. */
+  lexicalGuards?: readonly ScriptLexicalGuard[];
+  precedenceGuards?: readonly ScriptLexicalGuard[];
 }
 
 export interface RestrictedExecutionMutation {

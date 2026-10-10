@@ -567,6 +567,9 @@ export function buildInspectionSemanticIr(
         operation,
         access.source,
         access.receiverHint,
+        undefined,
+        irGuards(access.lexicalGuards),
+        irGuards(access.precedenceGuards),
       );
     }
 

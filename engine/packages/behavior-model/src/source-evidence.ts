@@ -56,6 +56,25 @@ function sameDocument(a: SourceRef, b: SourceRef): boolean {
     a.jsonPointer === b.jsonPointer;
 }
 
+/**
+ * A dynamic-property read may be written inside an authored guard expression.
+ * Inclusion is only about exact AST source spans in the SAME document, not
+ * inferred from state names, similar text, or a shared execution trace.
+ */
+function sourceRangeContains(
+  parent: SourceRef,
+  child: SourceRef,
+): boolean {
+  if (!sameDocument(parent, child) ||
+      !hasOrderedPosition(parent) || !hasOrderedPosition(child)) return false;
+  const a = parent.range!;
+  const b = child.range!;
+  const atOrAfter = (line: number, col: number, otherLine: number, otherCol: number) =>
+    line > otherLine || (line === otherLine && col >= otherCol);
+  return atOrAfter(b.lineStart!, b.columnStart!, a.lineStart!, a.columnStart!) &&
+    atOrAfter(a.lineEnd!, a.columnEnd!, b.lineEnd!, b.columnEnd!);
+}
+
 function precedingSourceSite(
   site: SourceRef,
   outcome: SourceRef,
@@ -375,6 +394,15 @@ export interface SourceEffectSlice {
   }[];
   /** Source-order only; same-surface reads are not proven data dependencies. */
   readonly possiblePrecedingReadIds: readonly string[];
+  /**
+   * Exact state read CALL sites inside an authored effect guard expression.
+   * This is a syntactic precondition input, NOT proof that the read value
+   * directly causes the effect or that the branch is satisfiable.
+   */
+  readonly guardStateReadIds: readonly string[];
+  /** Prior same-surface/source-region write sites to those guard reads.
+   * These are conservative candidates, never proven reaching definitions. */
+  readonly candidateGuardStateWriteIds: readonly string[];
   /** Existing same-region guarded source-order candidates, not outcomes. */
   readonly sourceOrderedOutcomeIds: readonly string[];
   readonly effectGuards: readonly {
@@ -459,6 +487,9 @@ export function deriveSourceEffectSlices(
   const stateOutcomeCandidates = reconcileSourceStateOutcomes(ir);
   const resourceOutcomeCandidates = reconcileSourceResourceOutcomes(ir);
   const worldEffectOutcomeCandidates = reconcileSourceWorldEffectOutcomes(ir);
+  const stateSurfaces = new Map(ir.state.surfaces.map(s => [s.id, s.ref]));
+  const stateReads = ir.state.operations.filter(op => op.operation === "read");
+  const stateWrites = ir.state.operations.filter(op => op.operation === "write");
   const guardSites = (
     guards: readonly AuthoredBranchGuard[] | undefined,
     kind: "lexical" | "precedence",
@@ -553,6 +584,34 @@ export function deriveSourceEffectSlices(
         });
       }
     }
+    // Only the AST-spanned state reads INSIDE this effect's authored guard
+    // can be treated as guard operands. A read elsewhere in the function
+    // is not enough; callback call-path co-placement is not a dependency.
+    const guards = [
+      ...(effect.lexicalGuards ?? []),
+      ...(effect.precedenceGuards ?? []),
+    ];
+    const guardStateReads = stateReads.filter(read =>
+      read.executionRegionId === effect.region &&
+      guards.some(guard => sourceRangeContains(guard.source, read.source)));
+    const guardStateReadIds = [...new Set(guardStateReads.map(read => read.id))].sort();
+    // Strict same-source/surface context: unknown wildcard keys and
+    // unspecified or differently spelled receivers cannot establish even
+    // this limited candidate prior-definition association.
+    const candidateGuardStateWriteIds = [...new Set(guardStateReads.flatMap(read => {
+      const surface = stateSurfaces.get(read.surfaceId);
+      if (surface?.kind !== "dynamic-property" || surface.key === "*" ||
+          !read.targetHint) return [];
+      return stateWrites
+        .filter(write =>
+          write.surfaceId === read.surfaceId &&
+          write.executionRegionId === read.executionRegionId &&
+          write.targetHint === read.targetHint &&
+          precedingSourceSite(write.source, read.source) &&
+          lexicalGuardsCoveredByOutcome(write.lexicalGuards, read.lexicalGuards) &&
+          guardsEqual(write.precedenceGuards, read.precedenceGuards))
+        .map(write => write.id);
+    }))].sort();
     const sourceOrderedOutcomeIds = effect.kind === "state-mutation"
       ? stateOutcomeCandidates
           .filter(candidate => candidate.status === "SOURCE_ORDER_CANDIDATE" &&
@@ -599,6 +658,8 @@ export function deriveSourceEffectSlices(
       candidateIngress: found.sort((a, b) =>
         a.entryRegionId.localeCompare(b.entryRegionId)),
       possiblePrecedingReadIds,
+      guardStateReadIds,
+      candidateGuardStateWriteIds,
       sourceOrderedOutcomeIds: [...new Set(sourceOrderedOutcomeIds)].sort(),
       effectGuards: [
         ...guardSites(effect.lexicalGuards, "lexical"),

@@ -275,6 +275,8 @@ export interface GameplayArchitectureNavigation {
         readonly executionEdgeIds: readonly string[];
         readonly preconditions: readonly SourceEffectSlice["effectGuards"][number][];
         readonly precedingStateReadIds: readonly string[];
+        /** Source-local possible writes for exact state reads in effect guards. */
+        readonly candidateGuardStateWriteIds: readonly string[];
         readonly effectKind: SourceEffectSlice["effectKind"];
         readonly worldEffectKind: SourceEffectSlice["worldEffectKind"] | null;
         readonly effectTarget: string | null;
@@ -1460,7 +1462,10 @@ export function deriveGameplayArchitectureNavigation(
                 ...slice.effectGuards,
                 ...(entry?.pathGuards ?? []),
               ],
-              precedingStateReadIds: slice.possiblePrecedingReadIds,
+              precedingStateReadIds: sorted([
+                ...slice.possiblePrecedingReadIds, ...slice.guardStateReadIds,
+              ]),
+              candidateGuardStateWriteIds: slice.candidateGuardStateWriteIds,
               effectKind: slice.effectKind,
               worldEffectKind: slice.worldEffectKind ?? null,
               effectTarget: slice.targetLabel ?? null,

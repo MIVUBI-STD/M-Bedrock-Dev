@@ -121,6 +121,12 @@ The existing Script AST parser preserves lexical and preceding-exit guards for s
 
 Semantic IR world effects retain the exact authored branch ancestry. Existing source execution traces place world effects on matching branch arms; backward effect slices expose their guards. The Behavior Model correlates each world-effect/return pair only when its source order, lexical branch arms and early-exit conditions are compatible. `precedingWorldEffectIds` preserves nearby evidence while `guardCompatibleWorldEffectIds` gives the bounded source-order subset. Scenario relationships classify each ID independently instead of borrowing proof from another effect. Even a compatible source path does not prove execution, causality, or gameplay design.
 
+### Source-local guard state provenance
+
+The existing Script AST parser preserves exact lexical and preceding-exit guards on `getDynamicProperty` and `setDynamicProperty` calls; `semantic-ir-stage` carries them into the **existing** state operation records. No second symbol model or control-flow graph is created.
+
+The canonical `deriveSourceEffectSlices()` now resolves exact state-read call spans *inside* an authored effect guard expression (`guardStateReadIds`) rather than assuming all nearby reads are preconditions. Where a literal dynamic-property surface, stable source receiver expression, exact function/document, source order and compatible guard ancestry all match, the view also records **candidate** earlier state writes (`candidateGuardStateWriteIds`). A reused expression is not guaranteed to be the same runtime object, so these remain source-level possible definitions—not reaching-def proof or game-causal truth. Wildcard keys, other regions, and inconsistent guards do not qualify. The existing Gameplay Architecture feature paths and optional Map Audit V2 schema consume this source evidence; unknowns and publication gates remain unchanged.
+
 ## Behavioral claim provenance
 
 Behavior variables, transitions, and temporal properties may carry provenance with an explicit evidence ceiling:

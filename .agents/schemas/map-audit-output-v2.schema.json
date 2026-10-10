@@ -2545,7 +2545,8 @@
                     "worldEffectKind",
                     "effectTarget",
                     "candidateOutcomeIds",
-                    "resourceAction"
+                    "resourceAction",
+                    "candidateGuardStateWriteIds"
                   ],
                   "properties": {
                     "effectId": {
@@ -2669,6 +2670,13 @@
                         "release",
                         null
                       ]
+                    },
+                    "candidateGuardStateWriteIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Candidate writes for read operations appearing inside this behavior path's local effect guards; no runtime or dataflow proof."
                     }
                   }
                 }
@@ -2796,7 +2804,9 @@
               "effectGuards",
               "exactComponentIds",
               "exactFeatureIds",
-              "pathAssociatedFeatureIds"
+              "pathAssociatedFeatureIds",
+              "guardStateReadIds",
+              "candidateGuardStateWriteIds"
             ],
             "properties": {
               "effectId": {
@@ -3028,6 +3038,20 @@
               },
               "resourceKey": {
                 "type": "string"
+              },
+              "guardStateReadIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Exact dynamic-state read call sites syntactically inside an effect guard. Not proof of branch execution."
+              },
+              "candidateGuardStateWriteIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Prior writes on the same statically identified dynamic-property surface, region and receiver. Not proven def-use/reaching definitions."
               }
             }
           }

@@ -2989,6 +2989,8 @@ export function parseScriptFile(
           receiverHint: node.expression.expression.getText(file),
           executionRegion: localExecutionRegionId(node, file),
           source: lineSource(file, node, source),
+          lexicalGuards: lexicalBranchGuards(node, file, source),
+          precedenceGuards: precedingEarlyExitGuards(node, file, source),
         };
         const propertyArgument = node.arguments[0];
         if (propertyArgument) {
