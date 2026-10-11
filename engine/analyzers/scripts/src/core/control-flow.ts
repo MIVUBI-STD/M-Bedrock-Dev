@@ -49,7 +49,13 @@ export function deriveScriptControlFlow(
     if (ts.isCallExpression(node)) {
       return !safeCall(node);
     }
-    if (ts.isAwaitExpression(node) || ts.isYieldExpression(node) ||
+    // Accessors, proxies, constructors and tagged templates may mutate
+    // global state without a plain call AST. Do not treat them as pure.
+    if (ts.isPropertyAccessExpression(node) ||
+        ts.isElementAccessExpression(node) ||
+        ts.isNewExpression(node) || ts.isTaggedTemplateExpression(node) ||
+        ts.isSpreadElement(node) ||
+        ts.isAwaitExpression(node) || ts.isYieldExpression(node) ||
         ts.isDeleteExpression(node) || ts.isPostfixUnaryExpression(node) ||
         ts.isPrefixUnaryExpression(node) && [
           ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken,

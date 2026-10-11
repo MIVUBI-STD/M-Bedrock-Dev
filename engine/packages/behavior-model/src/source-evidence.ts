@@ -1,5 +1,6 @@
 import type { AuthoredBranchGuard, SemanticIr } from "../../semantic-ir/src/index.js";
-import { retainSourceSequentialWriteCandidates, reachingSourceWorldDefinitions } from "../../dataflow/src/index.js";
+import { retainSourceSequentialWriteCandidates } from "../../dataflow/src/index.js";
+import { reconcileWorldStateReachingDefinitions } from "./source-reaching-definitions.js";
 import type { SourceRef } from "../../project-model/src/index.js";
 import type { BehaviorClaimProvenance } from "./provenance.js";
 
@@ -1199,13 +1200,7 @@ export function deriveSourceEffectSlices(
         !mutuallyExclusiveGuards(write, read));
       // Forward branch/join facts can eliminate a non-reaching candidate.
       // Without complete CFG/source identity, retain conservative candidates.
-      const reaching = reachingSourceWorldDefinitions({
-        flow: ir.execution.controlFlow?.find(flow =>
-          flow.executionRegionId === read.executionRegionId),
-        read,
-        writes: stateWrites,
-        surfaces: ir.state.surfaces,
-      });
+      const reaching = reconcileWorldStateReachingDefinitions(ir, read);
       return (reaching.status === "COMPLETE"
         ? candidates.filter(write => reaching.writeIds.includes(write.id))
         : retainSourceSequentialWriteCandidates(read.sourceSequence, candidates))

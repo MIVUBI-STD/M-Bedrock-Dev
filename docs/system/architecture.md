@@ -130,8 +130,10 @@ Semantic IR owns the normalized CFG and validates graph endpoint/region identity
 CFG projection is attached only to already identified execution regions; it
 must not invent extra executable functions from declarations. Lexical block
 identity is compared by canonical source coordinates, not object key order.
-The existing Dataflow package runs a bounded forward union/kill worklist for
-uniquely identified, direct world dynamic-property writes; an opaque path,
+The Dataflow package owns a parser-independent forward union/kill worklist.
+The Behavior Model alone translates imported world receiver identities,
+source site matching and typed dynamic-property mutations into its transfers.
+An opaque path,
 alias ambiguity, wildcard write, incomplete statement identity or work cap
 returns UNKNOWN rather than a reaching definition. The Behavior Model
 consumes these results when relating exact guard reads to earlier writes;

@@ -25,6 +25,8 @@ The graph is evidence for diagnostics; it is not an interpreter.
 
 The package can propagate caller-supplied semantic labels over proven flow edges and produce shortest witnesses.
 
+It also runs a generic forward may-reaching-definitions worklist over caller-provided CFG edges and gen/kill/unknown transfer facts. Interpretation of Minecraft state or aliases remains in the Behavior Model, not Dataflow. Opaque paths stay UNKNOWN.
+
 It does not decide which values are sensitive or unsafe. Labels such as `player-identity`, `arena-authority`, `untrusted-command-input`, or `reward-entitlement` must come from the semantic owner consuming the graph.
 
 Barrier nodes are also explicit inputs; Dataflow never invents sanitizers.
