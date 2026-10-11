@@ -12,6 +12,16 @@ export interface SourceRef {
   jsonPointer?: string;
 }
 
+/** Parser-authored statement position; not a proof that a statement ran. */
+export interface SourceSequentialSite {
+  readonly block: SourceRef;
+  readonly statementIndex: number;
+  /** Entire expression statement is the observed call, not a nested call. */
+  readonly directCall: boolean;
+  /** Unshadowed, named ESM import of the Minecraft world singleton. */
+  readonly stableWorldReceiver?: boolean;
+}
+
 export type SourceRefPrecision =
   | "file"
   | "line"

@@ -1,5 +1,6 @@
 import type {
   SourceRef,
+  SourceSequentialSite,
   StateAuthorityContract,
   StateSurfaceRef,
 } from "../../project-model/src/index.js";
@@ -54,6 +55,7 @@ export interface ExecutionEdge {
   generationGuardSource?: SourceRef;
   /** Exact authored operand source spelling, not runtime alias identity. */
   generationGuardOperands?: readonly [string, string];
+  sourceSequence?: SourceSequentialSite;
 }
 
 /** An authored object-return property, not a gameplay win or loss. */
@@ -158,6 +160,7 @@ export interface StateOperation {
   } | { kind: "member"; symbol: string };
   lexicalGuards?: readonly AuthoredBranchGuard[];
   precedenceGuards?: readonly AuthoredBranchGuard[];
+  sourceSequence?: SourceSequentialSite;
 }
 
 export interface StateAuthorityBinding {

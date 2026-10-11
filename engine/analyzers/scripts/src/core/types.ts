@@ -23,6 +23,7 @@ import type { ScriptSafeConfigBinding, ScriptSafeConfigExport, ScriptSafeConfigF
 import type {
   RepairSourceTransformHint,
   SourceRef,
+  SourceSequentialSite,
 } from "../../../../packages/project-model/src/index.js";
 import type { ScriptArgumentKind } from "../../../../packages/compatibility/src/index.js";
 
@@ -59,6 +60,7 @@ export interface DynamicPropertyAccess {
   receiverHint?: string;
   executionRegion?: string;
   source: SourceRef;
+  sourceSequence?: SourceSequentialSite;
   /** Exact AST branch ancestry of this read/write site, not runtime truth. */
   lexicalGuards?: readonly ScriptLexicalGuard[];
   precedenceGuards?: readonly ScriptLexicalGuard[];
@@ -166,6 +168,7 @@ export interface ScriptLocalFunctionCall {
   /** Necessary branch decisions from preceding single-statement exits. */
   precedenceGuards?: readonly ScriptLexicalGuard[];
   source: SourceRef;
+  sourceSequence?: SourceSequentialSite;
 }
 
 /** Direct ESM-import invocation at one canonical parser AST site. */

@@ -100,6 +100,37 @@ function lineSource(sourceFile: ts.SourceFile, node: ts.Node, source: SourceRef)
   };
 }
 
+/**
+ * Exact nearest lexical statement container. This is source order only:
+ * control flow, aliasing and callback execution remain separately proven.
+ */
+function sourceSequentialSite(
+  node: ts.Node,
+  file: ts.SourceFile,
+  source: SourceRef,
+  stableWorldReceiver = false,
+): import("../../../../packages/project-model/src/index.js").SourceSequentialSite | undefined {
+  let current: ts.Node = node;
+  while (current.parent) {
+    const parent = current.parent;
+    if ((ts.isBlock(parent) || ts.isSourceFile(parent)) &&
+        ts.isStatement(current)) {
+      const index = parent.statements.indexOf(current);
+      if (index < 0) return undefined;
+      return {
+        block: lineSource(file, parent, source),
+        statementIndex: index,
+        directCall: ts.isCallExpression(node) &&
+          ts.isExpressionStatement(current) && current.expression === node,
+        ...(stableWorldReceiver ? { stableWorldReceiver: true } : {}),
+      };
+    }
+    if (ts.isFunctionLike(parent)) return undefined;
+    current = parent;
+  }
+  return undefined;
+}
+
 function importBindings(node: ts.ImportDeclaration): string[] {
   const clause = node.importClause;
   if (!clause) return [];
@@ -2826,6 +2857,9 @@ export function parseScriptFile(
         lexicalGuards,
         precedenceGuards,
         source: lineSource(file, node, source),
+        ...(sourceSequentialSite(node, file, source) === undefined ? {} : {
+          sourceSequence: sourceSequentialSite(node, file, source),
+        }),
       });
     }
 
@@ -2846,6 +2880,9 @@ export function parseScriptFile(
           lexicalGuards,
           precedenceGuards,
           source: lineSource(file, node, source),
+          ...(sourceSequentialSite(node, file, source) === undefined ? {} : {
+            sourceSequence: sourceSequentialSite(node, file, source),
+          }),
         });
       }
 
@@ -3088,6 +3125,18 @@ export function parseScriptFile(
             }
           }
         }
+        // Singleton provenance is accepted only for a named, unshadowed
+        // import of 'world' from @minecraft/server. Player/entity receiver
+        // spellings may alias or rebind and must not inherit this identity.
+        const receiver = ts.isPropertyAccessExpression(node.expression)
+          ? node.expression.expression : undefined;
+        const stableWorldReceiver = receiver !== undefined &&
+          ts.isIdentifier(receiver) &&
+          namedMinecraftBindings.get(receiver.text)?.importedName === "world" &&
+          !isShadowed(receiver);
+        const sourceSequence = sourceSequentialSite(
+          node, file, source, stableWorldReceiver);
+        if (sourceSequence) access.sourceSequence = sourceSequence;
         dynamicProperties.push(access);
         capabilities.push({
           capability: "dynamic-properties",

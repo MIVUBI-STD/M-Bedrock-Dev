@@ -229,6 +229,7 @@ export function buildInspectionSemanticIr(
     lexicalGuards?: readonly AuthoredBranchGuard[],
     precedenceGuards?: readonly AuthoredBranchGuard[],
     readComparison?: StateOperation["readComparison"],
+    sourceSequence?: StateOperation["sourceSequence"],
   ): void => {
     const surfaceId = ensureSurface(ref);
     const id = [
@@ -247,6 +248,7 @@ export function buildInspectionSemanticIr(
       ...(targetHint === undefined ? {} : { targetHint }),
       ...(writtenValue === undefined ? {} : { writtenValue }),
       ...(readComparison === undefined ? {} : { readComparison }),
+      ...(sourceSequence === undefined ? {} : { sourceSequence }),
       ...(lexicalGuards === undefined ? {} : { lexicalGuards }),
       ...(precedenceGuards === undefined ? {} : { precedenceGuards }),
     });
@@ -422,6 +424,7 @@ export function buildInspectionSemanticIr(
         resolution: "resolved",
         source: call.source,
         ...(call.controlFlow === undefined ? {} : { controlFlow: call.controlFlow }),
+        ...(call.sourceSequence === undefined ? {} : { sourceSequence: call.sourceSequence }),
         ...(irGuards(call.lexicalGuards) === undefined ? {} : {
           lexicalGuards: irGuards(call.lexicalGuards),
         }),
@@ -601,6 +604,7 @@ export function buildInspectionSemanticIr(
               source: access.comparedLiteral.comparisonSource,
             }
           : undefined,
+        access.sourceSequence,
       );
     }
 

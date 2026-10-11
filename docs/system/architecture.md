@@ -121,6 +121,28 @@ The existing Script AST parser preserves lexical and preceding-exit guards for s
 
 Semantic IR world effects retain the exact authored branch ancestry. Existing source execution traces place world effects on matching branch arms; backward effect slices expose their guards. The Behavior Model correlates each world-effect/return pair only when its source order, lexical branch arms and early-exit conditions are compatible. `precedingWorldEffectIds` preserves nearby evidence while `guardCompatibleWorldEffectIds` gives the bounded source-order subset. Scenario relationships classify each ID independently instead of borrowing proof from another effect. Even a compatible source path does not prove execution, causality, or gameplay design.
 
+### Same-block source candidate supersession
+
+The canonical Script AST parser now retains a statement-block identity and
+ordinal for exact dynamic-property and resolved local-call sites. Only an
+unshadowed named ESM import of Minecraft's `world` is treated as a stable
+receiver candidate; player, arena, entity, property aliases, conditional calls,
+and unknown ownership do not inherit singleton semantics.
+
+The existing Dataflow owner performs bounded same-block source-order
+supersession: a later **direct** world dynamic-property write in the same
+lexical block can replace an earlier source candidate when the guard read
+(or a resolved synchronous caller site) occurs afterward. The canonical
+Behavior Model applies this to its existing guard-write/value handoffs and
+per-ingress caller-write evidence. No extra graph, storage, detector, report
+field or new parsing pass is introduced.
+
+The reduction is an authored-source candidate relation, not proof of
+Minecraft execution, effective world mutation, generalized reaching definitions,
+control-flow dominance across branches, or live session state. When source
+identity, block spans or order are missing, preserve the prior candidates.
+This is a bounded prerequisite to complete CFG/fixpoint reconstruction.
+
 ### Source-local guard state provenance
 
 The existing Script AST parser preserves exact lexical and preceding-exit guards on `getDynamicProperty` and `setDynamicProperty` calls; `semantic-ir-stage` carries them into the **existing** state operation records. No second symbol model or control-flow graph is created.

@@ -1,3 +1,4 @@
+import type { SourceRef, SourceSequentialSite } from "../../project-model/src/index.js";
 import type {
   DataFlowEdge,
   DataFlowGraph,
@@ -96,4 +97,51 @@ export function dataFlowNodesBySymbol(
   symbol: string,
 ): DataFlowNode[] {
   return graph.nodes.filter((node) => node.symbol === symbol);
+}
+
+
+// Same-block, direct Minecraft-world writes are a bounded source-level kill:
+// a later direct write supersedes earlier candidate writes on the identical
+// unshadowed ESM world binding. This is NOT SSA, cross-callback ordering,
+// proof that any call succeeded, or a general alias analysis.
+function sameSourceBlock(a: SourceRef, b: SourceRef): boolean {
+  const x = a.range, y = b.range;
+  return a.artifactId === b.artifactId &&
+    a.relativePath === b.relativePath &&
+    a.jsonPointer === b.jsonPointer &&
+    x?.lineStart !== undefined && y?.lineStart !== undefined &&
+    x.columnStart !== undefined && y.columnStart !== undefined &&
+    x.lineEnd !== undefined && y.lineEnd !== undefined &&
+    x.columnEnd !== undefined && y.columnEnd !== undefined &&
+    x.lineStart === y.lineStart && x.columnStart === y.columnStart &&
+    x.lineEnd === y.lineEnd && x.columnEnd === y.columnEnd;
+}
+
+export function retainSourceSequentialWriteCandidates<T extends {
+  id: string;
+  sourceSequence?: SourceSequentialSite;
+}>(
+  readSite: SourceSequentialSite | undefined,
+  candidates: readonly T[],
+): T[] {
+  if (!readSite?.stableWorldReceiver) return [...candidates];
+  const definitePrior = candidates.filter(item => {
+    const site = item.sourceSequence;
+    return site?.stableWorldReceiver === true &&
+      site.directCall && sameSourceBlock(site.block, readSite.block) &&
+      site.statementIndex < readSite.statementIndex;
+  });
+  if (definitePrior.length === 0) return [...candidates];
+  const latest = Math.max(...definitePrior.map(item =>
+    item.sourceSequence!.statementIndex));
+  // Candidates from another lexical block, unknown identity or non-direct
+  // operations are preserved rather than incorrectly excluded.
+  return candidates.filter(item => {
+    const site = item.sourceSequence;
+    return !(
+      site?.stableWorldReceiver === true &&
+      sameSourceBlock(site.block, readSite.block) &&
+      site.statementIndex < latest
+    );
+  });
 }

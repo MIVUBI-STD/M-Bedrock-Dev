@@ -1,4 +1,5 @@
 import type { AuthoredBranchGuard, SemanticIr } from "../../semantic-ir/src/index.js";
+import { retainSourceSequentialWriteCandidates } from "../../dataflow/src/index.js";
 import type { SourceRef } from "../../project-model/src/index.js";
 import type { BehaviorClaimProvenance } from "./provenance.js";
 
@@ -1190,15 +1191,15 @@ export function deriveSourceEffectSlices(
       const surface = stateSurfaces.get(read.surfaceId);
       if (surface?.kind !== "dynamic-property" || surface.key === "*" ||
           !read.targetHint) return [];
-      return stateWrites
-        .filter(write =>
-          write.surfaceId === read.surfaceId &&
-          write.executionRegionId === read.executionRegionId &&
-          write.targetHint === read.targetHint &&
-          precedingSourceSite(write.source, read.source) &&
-          lexicalGuardsCoveredByOutcome(write.lexicalGuards, read.lexicalGuards) &&
-          guardsEqual(write.precedenceGuards, read.precedenceGuards))
-        .map(write => write.id);
+      const candidates = stateWrites.filter(write =>
+        write.surfaceId === read.surfaceId &&
+        write.executionRegionId === read.executionRegionId &&
+        write.targetHint === read.targetHint &&
+        precedingSourceSite(write.source, read.source) &&
+        lexicalGuardsCoveredByOutcome(write.lexicalGuards, read.lexicalGuards) &&
+        guardsEqual(write.precedenceGuards, read.precedenceGuards));
+      return retainSourceSequentialWriteCandidates(
+        read.sourceSequence, candidates).map(write => write.id);
     }))].sort();
     // Retain the actual typed scalar literal from the IR operation, not a
     // guessed enum value or phase name. Pair only the guard-read identity
@@ -1262,7 +1263,25 @@ export function deriveSourceEffectSlices(
           }
         }
       }
-      return [...candidates].sort();
+      // Candidate pruning is tied to the caller's exact invocation site.
+      // Only a shared, unshadowed imported world binding can establish
+      // a source-local direct-write overwrite. Session/player identity
+      // remains unresolved and retains every candidate.
+      const admitted = [...candidates].map(id => operationsById.get(id))
+        .filter((item): item is NonNullable<typeof item> => item !== undefined);
+      const filtered = path.executionEdgeIds.reduce<typeof admitted>((items, edgeId) => {
+        const edge = edgeById.get(edgeId);
+        if (!edge?.sourceSequence) return items;
+        const relevant = items.filter(item =>
+          item.executionRegionId === edge.from && item.sourceSequence?.stableWorldReceiver);
+        const unrelated = items.filter(item => !relevant.includes(item));
+        const retained = retainSourceSequentialWriteCandidates(
+          { ...edge.sourceSequence, stableWorldReceiver: true },
+          relevant,
+        );
+        return [...unrelated, ...retained];
+      }, admitted);
+      return filtered.map(item => item.id).sort();
     };
     const candidateIngress = found.map(path => {
       const writeIds = callerStateWriteIds(path);
