@@ -81,7 +81,9 @@ export function entityRuntimeEvidence(
       confidence: "derived",
       scope: stateScope,
       sourceRefs: [entity.source],
-      note: state.id,
+      note: state.viaEvent
+        ? state.id + " (source-event state candidate, not observed live state)"
+        : state.id,
     });
 
     if (navigation.navigationComponent) {

@@ -1,9 +1,26 @@
 import type { SourceRef } from "../../../packages/project-model/src/index.js";
 
+/** Bedrock-authored event operators, not confirmed gameplay execution. */
+export interface EntityEventProgram {
+  readonly kind: "mutation" | "sequence" | "randomize" | "unsupported";
+  /** Exact JSON pointer inside the selected entity source. */
+  readonly path: string;
+  readonly filters?: unknown;
+  readonly weight?: number;
+  readonly addGroups?: readonly string[];
+  readonly removeGroups?: readonly string[];
+  readonly triggerEvents?: readonly string[];
+  readonly steps?: readonly EntityEventProgram[];
+  readonly reason?: string;
+}
+
 export interface EntityEventMutation {
+  /** MAY references from all authored branches, not a simultaneous effect. */
   addGroups: string[];
   removeGroups: string[];
   triggerEvents: string[];
+  /** Structured execution operators; absent only on historical input. */
+  program?: EntityEventProgram;
 }
 
 export interface ParsedEntityDefinition {
@@ -24,6 +41,9 @@ export interface EntityStateCandidate {
   activeComponentData: Record<string, unknown>;
   activeGroups: string[];
   viaEvent?: string;
+  /** Source-conditional possibility, not an observed runtime state. */
+  sourceConditioned?: boolean;
+  sourceEventPath?: readonly string[];
 }
 
 export interface EntityStateGraph {
@@ -33,7 +53,10 @@ export interface EntityStateGraph {
     adds: string[];
     removes: string[];
     triggers: string[];
+    program?: EntityEventProgram;
   }>;
+  /** Event semantics that cannot safely be interpreted as state paths. */
+  staticAnalysisLimits?: readonly string[];
 }
 
 export interface NavigationCapabilities {

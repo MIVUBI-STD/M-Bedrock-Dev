@@ -92,7 +92,7 @@ export function analyzeEntityWithKnowledge(
     reachability.undefinedTriggeredEvents.length +
     reachability.missingComponentGroups.length;
 
-  const staticAnalysisLimits: string[] = [];
+  const staticAnalysisLimits: string[] = [...(graph.staticAnalysisLimits ?? [])];
   if (entity.runtimeIdentifier) {
     staticAnalysisLimits.push(
       `runtime_identifier=${entity.runtimeIdentifier} may add engine-code behavior not represented in entity JSON.`,

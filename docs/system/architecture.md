@@ -97,6 +97,29 @@ For each authored effect/return the owner traverses *only uniquely identified re
 
 The existing `deriveGameplayArchitectureNavigation()` consumes these behavior-model slices once, connects effects to graph components only by exact evidence ID and separately labels feature associations encountered on a source-call path. It publishes them through the already-established `MapAuditOutputV2.gameplayStructure` view. Static path association is not player-facing gameplay meaning or PROVEN causality; unowned effect IDs remain explicit. Testing/CI are deferred until the integrated BUILD acceptance boundary.
 
+### Structured Bedrock entity event semantics
+
+The canonical entity parser preserves source-authored sequence, randomize,
+filters, direct component-group add/remove and local event triggers as an
+operator tree. Existing addGroups/removeGroups/triggerEvents arrays remain
+MAY-reference inventories, never proof of simultaneous effects. Each operator
+retains the selected entity JSON pointer.
+
+The existing entity state-graph owner enumerates bounded group configurations:
+sequences apply operations in order, randomized branches remain alternatives,
+and filters yield possible apply/skip arms with explicit conditional context.
+Unsupported operators, ambiguous mixed effects or truncated alternatives
+become explicit static-analysis limits rather than fabricated composite states.
+The entity knowledge and runtime-evidence consumers now expose source-path
+limitations and identify event configurations as authored candidates rather
+than observed gameplay. Triggered event IDs remain possible reference links,
+not proof that a nested event actually executed.
+
+Cross-event sequencing, property mutations, animation controller/Molang event
+triggers, runtime weights, and Minecraft Education version-specific behavior
+remain unresolved; this is not proof of complete entity gameplay.
+No duplicate parser, semantic graph or reporting store is introduced.
+
 ### Minecraft authored world-effect sinks
 
 The existing Semantic IR execution owner now normalizes **source-observed attempts** from canonical command, script method, spatial mutation and entity-event parsers into optional `worldEffects` records (spawn, teleport, block change, structure load, dialogue and entity event). Records carry exact source and execution-region IDs, kind, mechanism and evidence precision—not runtime success or game-design meaning. No second detector/parser is introduced.
