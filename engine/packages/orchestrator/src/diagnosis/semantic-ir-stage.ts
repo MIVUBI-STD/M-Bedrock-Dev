@@ -31,6 +31,7 @@ import {
   type AuthoredGenerationInvalidation,
   type StateSurface,
   type TemporalRelation,
+  type SourceControlFlowRegion,
 } from "../../../semantic-ir/src/index.js";
 
 export interface InspectionSemanticIrInput {
@@ -133,6 +134,8 @@ export function buildInspectionSemanticIr(
   const outcomes = new Map<string, AuthoredReturnOutcome>();
   const resourceActions = new Map<string, AuthoredResourceAction>();
   const worldEffects = new Map<string, AuthoredWorldEffect>();
+  const sourceControlFlow = new Map<string, SourceControlFlowRegion>();
+  const ambiguousControlRegions = new Set<string>();
   const worldEffectCounts = new Map<string, number>();
   const addWorldEffect = (effect: Omit<AuthoredWorldEffect, "id">): void => {
     const base = ["world-effect", token(effect.executionRegionId), effect.kind,
@@ -357,6 +360,17 @@ export function buildInspectionSemanticIr(
   }
 
   for (const { parsed } of input.parsedScripts) {
+    for (const flow of parsed.controlFlowRegions ?? []) {
+      const executionRegionId = ensureScriptRegion(parsed, flow.region);
+      if (sourceControlFlow.has(executionRegionId)) {
+        ambiguousControlRegions.add(executionRegionId);
+        continue;
+      }
+      sourceControlFlow.set(executionRegionId, {
+        executionRegionId, entryId: flow.entryId,
+        nodes: flow.nodes, edges: flow.edges,
+      });
+    }
     ensureScriptRegion(parsed, "module");
 
     const regionSources = new Map<string, SourceRef>();
@@ -871,6 +885,9 @@ export function buildInspectionSemanticIr(
       edges: executionEdges,
       outcomes: [...outcomes.values()].sort((a, b) => a.id.localeCompare(b.id)),
       worldEffects: [...worldEffects.values()].sort((a, b) => a.id.localeCompare(b.id)),
+      controlFlow: [...sourceControlFlow.values()].filter(item =>
+        !ambiguousControlRegions.has(item.executionRegionId)).sort((a, b) =>
+        a.executionRegionId.localeCompare(b.executionRegionId)),
     },
     state: {
       surfaces: [...surfaces.values()].sort(

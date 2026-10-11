@@ -121,6 +121,26 @@ The existing Script AST parser preserves lexical and preceding-exit guards for s
 
 Semantic IR world effects retain the exact authored branch ancestry. Existing source execution traces place world effects on matching branch arms; backward effect slices expose their guards. The Behavior Model correlates each world-effect/return pair only when its source order, lexical branch arms and early-exit conditions are compatible. `precedingWorldEffectIds` preserves nearby evidence while `guardCompatibleWorldEffectIds` gives the bounded source-order subset. Scenario relationships classify each ID independently instead of borrowing proof from another effect. Even a compatible source path does not prove execution, causality, or gameplay design.
 
+### Bounded intraregion source CFG and reaching definitions
+
+The canonical Script AST parser now emits source-local CFG statement nodes for
+sequential blocks, if/else branches, returns and throws, and opaque boundaries
+for unsupported syntax or unknown side effects. The existing inspection
+Semantic IR owns the normalized CFG and validates graph endpoint/region identity.
+The existing Dataflow package runs a bounded forward union/kill worklist for
+uniquely identified, direct world dynamic-property writes; an opaque path,
+alias ambiguity, wildcard write, incomplete statement identity or work cap
+returns UNKNOWN rather than a reaching definition. The Behavior Model
+consumes these results when relating exact guard reads to earlier writes;
+conditional writes after branch joins can remain alternate reaching candidates
+without inventing gameplay purpose or runtime outcomes. No second parser,
+graph store or audit entrypoint is introduced.
+
+This representation does NOT yet cover full switch/loop/try/async control
+flow, indirect mutations, per-player aliases, callback/session lifetime,
+runtime effect success or interprocedural fixpoint. Such cases retain the
+source-order candidate ceiling and need further source/semantic reconciliation.
+
 ### Same-block source candidate supersession
 
 The canonical Script AST parser now retains a statement-block identity and

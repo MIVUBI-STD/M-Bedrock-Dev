@@ -497,9 +497,30 @@ export interface ScriptCapabilityUse {
   source: SourceRef;
 }
 
+/** Source-local CFG: source facts only, never evaluated gameplay. */
+export interface ScriptControlFlowNode {
+  readonly id: string;
+  readonly kind: "entry" | "exit" | "statement" | "condition" | "opaque";
+  readonly site?: SourceSequentialSite;
+}
+
+export interface ScriptControlFlowEdge {
+  readonly from: string;
+  readonly to: string;
+  readonly branch?: "true" | "false";
+}
+
+export interface ScriptControlFlowRegion {
+  readonly region: string;
+  readonly entryId: string;
+  readonly nodes: readonly ScriptControlFlowNode[];
+  readonly edges: readonly ScriptControlFlowEdge[];
+}
+
 export interface ParsedScriptFile {
   identifier: string;
   source: SourceRef;
+  controlFlowRegions?: readonly ScriptControlFlowRegion[];
   blockCustomComponentRegistrations?: BlockCustomComponentRegistrationEvidence[];
   persistentReconciliation?: PersistentReconciliationEvidence;
   imports: ScriptImport[];

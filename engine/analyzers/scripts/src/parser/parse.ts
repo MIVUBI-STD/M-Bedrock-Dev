@@ -77,6 +77,7 @@ import {
 import { inferPersistentStateScopes } from "../domains/persistence/persistent-state-scope.js";
 import { inferPersistentStateLifetimes } from "../domains/persistence/persistent-state-lifetime.js";
 import { deriveBlockCustomComponentRegistrations } from "../domains/automation/block-custom-component-evidence.js";
+import { deriveScriptControlFlow } from "../core/control-flow.js";
 import { derivePersistentReconciliationEvidence } from "../domains/persistence/persistent-reconciliation.js";
 
 function scriptKind(path: string): ts.ScriptKind {
@@ -3182,6 +3183,7 @@ export function parseScriptFile(
   return {
     identifier,
     source,
+    controlFlowRegions: deriveScriptControlFlow(file, source),
     blockCustomComponentRegistrations,
     persistentReconciliation,
     arenaAuthorityEvidence,

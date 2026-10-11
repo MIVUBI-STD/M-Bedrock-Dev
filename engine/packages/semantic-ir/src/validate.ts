@@ -88,6 +88,30 @@ export function validateSemanticIr(ir: SemanticIr): string[] {
     }
   }
 
+  for (const flow of ir.execution.controlFlow ?? []) {
+    if (!regions.has(flow.executionRegionId)) {
+      errors.push("CFG execution region does not exist: " + flow.executionRegionId);
+    }
+    const ids = new Set(flow.nodes.map(item => item.id));
+    if (!ids.has(flow.entryId)) {
+      errors.push("CFG entry node does not exist: " + flow.executionRegionId);
+    }
+    for (const node of flow.nodes) {
+      if (node.site) {
+        const owner = ir.execution.regions.find(item =>
+          item.id === flow.executionRegionId);
+        if (owner?.source && node.site.block.artifactId !== owner.source.artifactId) {
+          errors.push("CFG node belongs to a different artifact: " + node.id);
+        }
+      }
+    }
+    for (const edge of flow.edges) {
+      if (!ids.has(edge.from) || !ids.has(edge.to)) {
+        errors.push("CFG edge references a missing node: " + flow.executionRegionId);
+      }
+    }
+  }
+
   for (const outcome of ir.execution.outcomes ?? []) {
     if (!regions.has(outcome.executionRegionId)) {
       errors.push("Return outcome execution region does not exist: " + outcome.id);

@@ -187,6 +187,22 @@ export interface TemporalRelation {
   guardIdentifiers?: readonly string[];
 }
 
+/** Parsed intraregion CFG, an authored source map and not runtime execution. */
+export interface SourceControlFlowRegion {
+  readonly executionRegionId: string;
+  readonly entryId: string;
+  readonly nodes: readonly {
+    readonly id: string;
+    readonly kind: "entry" | "exit" | "statement" | "condition" | "opaque";
+    readonly site?: SourceSequentialSite;
+  }[];
+  readonly edges: readonly {
+    readonly from: string;
+    readonly to: string;
+    readonly branch?: "true" | "false";
+  }[];
+}
+
 export interface SemanticIr {
   schemaVersion: 1;
   execution: {
@@ -194,6 +210,7 @@ export interface SemanticIr {
     edges: readonly ExecutionEdge[];
     outcomes?: readonly AuthoredReturnOutcome[];
     worldEffects?: readonly AuthoredWorldEffect[];
+    controlFlow?: readonly SourceControlFlowRegion[];
   };
   state: {
     surfaces: readonly StateSurface[];
