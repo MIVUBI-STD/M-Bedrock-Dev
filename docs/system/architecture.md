@@ -171,6 +171,28 @@ control-flow dominance across branches, or live session state. When source
 identity, block spans or order are missing, preserve the prior candidates.
 This is a bounded prerequisite to complete CFG/fixpoint reconstruction.
 
+### Effect-first continuity for unclassified source behavior
+
+The canonical Gameplay Intent producer now reconciles all observed selected-artifact
+state, resource, return **and Minecraft world-effect** IDs against already
+grounded gameplay subjects. Exact unowned effects remain per-entry
+`GameplayIntentUnknown` evidence with a directly recorded IR entry-region
+identity; raw world effects are never automatically renamed into gameplay
+mechanics or made into scenario seeds.
+
+The existing `deriveGameplayArchitectureNavigation()` uses those *same*
+unknowns and the already-derived Behavior Model source-effect slices to expose
+`gameplayStructure.uninterpretedSourceFlows` in Map Audit V2. Each record
+navigates from its exact entry and missing-meaning evidence to effect kinds,
+guarded source sites, potential outcomes, state handoffs, and only those
+candidate call paths rooted at that exact entry. Material evidence without a
+source-effect slice remains visible. Recognized feature links are context,
+not newly proven gameplay ownership. This is a derived view, never a second
+model, interpreter, mechanism catalog, or report authority.
+
+No whole-game percentage, confirmed player journey, or Minecraft runtime
+effect is inferred from these static technical flows.
+
 ### Source-local guard state provenance
 
 The existing Script AST parser preserves exact lexical and preceding-exit guards on `getDynamicProperty` and `setDynamicProperty` calls; `semantic-ir-stage` carries them into the **existing** state operation records. No second symbol model or control-flow graph is created.

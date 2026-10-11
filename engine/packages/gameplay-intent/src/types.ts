@@ -198,6 +198,11 @@ export interface GameplayIntentUnknown {
   question: string;
   blockedSubjectIds: readonly string[];
   evidenceIds?: readonly string[];
+  /**
+   * Exact authored execution entry for an unclassified technical flow.
+   * It is not a mechanic, runtime event, or proof the entry actually ran.
+   */
+  sourceEntryRegionId?: string;
 }
 
 export interface GameplayIntentModel {

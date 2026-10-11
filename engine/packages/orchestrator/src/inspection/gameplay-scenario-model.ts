@@ -1,5 +1,6 @@
 import type {
   GameplayIntentNodeKind,
+  GameplayIntentModel,
 } from "../../../gameplay-intent/src/index.js";
 import type {
   AnalysisKnowledgeDomain,
@@ -229,6 +230,40 @@ export interface GameplayArchitectureNavigation {
       readonly pathAssociatedFeatureIds: readonly string[];
     })[];
     readonly effectIdsWithoutComponentOwner: readonly string[];
+    /**
+     * IR-backed behaviors lacking a grounded mechanic/flow owner. Grouped
+     * by the existing Gameplay Intent unknown and exact source entry.
+     * These are unclassified source candidates, NOT gameplay scenario
+     * seeds, causal proof, or invented player objectives.
+     */
+    readonly uninterpretedSourceFlows: readonly {
+      readonly unknownId: string;
+      readonly entryRegionId: string;
+      readonly materialEvidenceIds: readonly string[];
+      readonly effectPaths: readonly {
+        readonly effectId: string;
+        readonly effectKind: SourceEffectSlice["effectKind"];
+        readonly worldEffectKind: SourceEffectSlice["worldEffectKind"] | null;
+        readonly targetLabel: string | null;
+        readonly evidenceStatus: SourceEffectSlice["status"];
+        readonly effectGuards: SourceEffectSlice["effectGuards"];
+        readonly candidateOutcomeIds: readonly string[];
+        readonly guardStateReadIds: readonly string[];
+        readonly sourceLocalStateValueHandoffs: SourceEffectSlice["sourceLocalStateValueHandoffs"];
+        /** Only call paths rooted at THIS unknown's exact IR entry. */
+        readonly matchingIngress: readonly {
+          readonly executionEdgeIds: readonly string[];
+          readonly pathGuards: SourceEffectSlice["candidateIngress"][number]["pathGuards"];
+          readonly temporalBoundaryEvidence:
+            SourceEffectSlice["candidateIngress"][number]["temporalBoundaryEvidence"];
+          readonly candidateCallerStateWriteIds: readonly string[];
+        }[];
+        /** Context only, never proof these features own this effect. */
+        readonly candidateFeatureContextIds: readonly string[];
+      }[];
+      /** Material IR records with no corresponding source effect slice. */
+      readonly materialIdsWithoutEffectSlice: readonly string[];
+    }[];
     /** Canonical graph identities for resolving every referenced endpoint. */
     readonly subjects: readonly {
       readonly id: string;
@@ -741,6 +776,8 @@ export function deriveGameplayArchitectureNavigation(
     readonly selectedArtifactEvidenceIds?: readonly string[];
     readonly allIntentEvidenceIds?: readonly string[];
     readonly semanticIr?: SemanticIr;
+    /** Same selected-artifact Gameplay Intent unknowns as the scenario owner. */
+    readonly intentUnknowns?: GameplayIntentModel["unknowns"];
     readonly arenaCount?: number;
     readonly arenaCountBasis?: "topology" | "script-config" | "reconciled";
     readonly arenaLayoutStatus?: string;
@@ -1372,6 +1409,54 @@ export function deriveGameplayArchitectureNavigation(
     effectIdsWithoutComponentOwner: effectSlices
       .filter(slice => slice.exactComponentIds.length === 0)
       .map(slice => slice.effectId),
+    uninterpretedSourceFlows: (observed.intentUnknowns ?? [])
+      .filter(unknown =>
+        unknown.sourceEntryRegionId !== undefined &&
+        (unknown.evidenceIds?.length ?? 0) > 0)
+      .map(unknown => {
+        const entryRegionId = unknown.sourceEntryRegionId!;
+        const materialEvidenceIds = sorted(unknown.evidenceIds ?? []);
+        const materialSet = new Set(materialEvidenceIds);
+        const matchedSlices = effectSlices.filter(slice =>
+          materialSet.has(slice.effectId));
+        const slicedIds = new Set(matchedSlices.map(slice => slice.effectId));
+        return {
+          unknownId: unknown.id,
+          entryRegionId,
+          materialEvidenceIds,
+          effectPaths: matchedSlices.map(slice => {
+            const matchingIngress = slice.candidateIngress.filter(path =>
+              path.entryRegionId === entryRegionId);
+            const contextRegions = new Set(matchingIngress.flatMap(path =>
+              path.regionIds));
+            const candidateFeatureContextIds = sorted(featureComponents
+              .filter(component =>
+                slice.exactFeatureIds.includes(component.id) ||
+                component.evidenceIds.some(id => contextRegions.has(id)))
+              .map(component => component.id));
+            return {
+              effectId: slice.effectId,
+              effectKind: slice.effectKind,
+              worldEffectKind: slice.worldEffectKind ?? null,
+              targetLabel: slice.targetLabel ?? null,
+              evidenceStatus: slice.status,
+              effectGuards: slice.effectGuards,
+              candidateOutcomeIds: slice.sourceOrderedOutcomeIds,
+              guardStateReadIds: slice.guardStateReadIds,
+              sourceLocalStateValueHandoffs: slice.sourceLocalStateValueHandoffs,
+              matchingIngress: matchingIngress.map(path => ({
+                executionEdgeIds: path.executionEdgeIds,
+                pathGuards: path.pathGuards,
+                temporalBoundaryEvidence: path.temporalBoundaryEvidence,
+                candidateCallerStateWriteIds: path.candidateCallerStateWriteIds,
+              })),
+              candidateFeatureContextIds,
+            };
+          }).sort((a, b) => a.effectId.localeCompare(b.effectId)),
+          materialIdsWithoutEffectSlice: materialEvidenceIds.filter(id =>
+            !slicedIds.has(id)),
+        };
+      }).sort((a, b) => a.unknownId.localeCompare(b.unknownId)),
     subjects: [...graph.components]
       .sort((a, b) => a.id.localeCompare(b.id))
       .map(component => ({

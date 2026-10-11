@@ -821,6 +821,7 @@ export function buildGameplayIntentModel(
       ...input.semanticIr.state.operations.map(item => [item.id, item.source] as const),
       ...(input.semanticIr.state.resourceActions ?? []).map(item => [item.id, item.source] as const),
       ...(input.semanticIr.execution.outcomes ?? []).map(item => [item.id, item.source] as const),
+      ...(input.semanticIr.execution.worldEffects ?? []).map(item => [item.id, item.source] as const),
     ]);
     const interpretedEvidenceIds = new Set([...nodes.values()]
       .filter(node => ["mechanic", "phase", "lifecycle", "objective", "outcome"].includes(node.kind))
@@ -845,6 +846,11 @@ export function buildGameplayIntentModel(
       ids.push(outcome.id);
       byRegion.set(outcome.executionRegionId, ids);
     }
+    for (const effect of input.semanticIr.execution.worldEffects ?? []) {
+      const ids = byRegion.get(effect.executionRegionId) ?? [];
+      ids.push(effect.id);
+      byRegion.set(effect.executionRegionId, ids);
+    }
     const candidates = [
       ...observedExecution.traces.map(trace => ({
         identity: trace.entryRegionId,
@@ -854,6 +860,7 @@ export function buildGameplayIntentModel(
               operation.id === id && operation.operation === "write")),
           ...trace.resourceActionIds,
           ...trace.returnOutcomeIds,
+          ...(trace.worldEffectIds ?? []),
         ],
       })),
       ...observedExecution.regionsOutsideTraces.map(regionId => ({
@@ -880,14 +887,15 @@ export function buildGameplayIntentModel(
           id, origin: "source-code",
           locator: source.relativePath,
           scope: "selected-artifact",
-          summary: "Authored state, resource or return evidence has no interpreted gameplay owner; its player-facing meaning remains unknown.",
+          summary: "Authored state, resource, return or Minecraft world-effect attempt has no interpreted gameplay owner; its player-facing meaning remains unknown.",
         });
       }
       intentUnknowns.push({
         id: "unknown:uninterpreted-execution:" + candidate.identity,
-        question: "An observed material execution flow has state/resource/return evidence but no matching classified gameplay owner; reconstruct its gameplay meaning without inferring intent from filenames or raw effects.",
+        question: "An observed source execution entry has material state, resource, return or world-effect evidence without a classified gameplay owner. Reconcile the linked technical effects with the intended mechanic and player-facing outcome; do not infer game rules from names or observed effects alone.",
         blockedSubjectIds: [],
         evidenceIds: exactIds,
+        sourceEntryRegionId: candidate.identity,
       });
     }
   }
