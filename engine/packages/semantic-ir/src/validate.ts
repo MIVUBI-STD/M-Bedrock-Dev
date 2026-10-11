@@ -1,4 +1,5 @@
 import type { SemanticIr } from "./types.js";
+import type { SourceRef, SourceSequentialSite } from "../../project-model/src/index.js";
 
 function duplicateIds(values: readonly { id: string }[]): string[] {
   const seen = new Set<string>();
@@ -8,6 +9,29 @@ function duplicateIds(values: readonly { id: string }[]): string[] {
     seen.add(value.id);
   }
   return [...duplicates].sort();
+}
+
+function validateSourceSequence(
+  site: SourceSequentialSite | undefined,
+  source: SourceRef,
+  ownerId: string,
+): string[] {
+  if (!site) return [];
+  const errors: string[] = [];
+  if (!Number.isSafeInteger(site.statementIndex) || site.statementIndex < 0) {
+    errors.push("Invalid source-sequence index: " + ownerId);
+  }
+  if (site.block.artifactId !== source.artifactId ||
+      site.block.relativePath !== source.relativePath ||
+      site.block.jsonPointer !== source.jsonPointer) {
+    errors.push("Source-sequence block belongs to another source: " + ownerId);
+  }
+  const range = site.block.range;
+  if (range?.lineStart === undefined || range.lineEnd === undefined ||
+      range.columnStart === undefined || range.columnEnd === undefined) {
+    errors.push("Source-sequence block lacks exact source range: " + ownerId);
+  }
+  return errors;
 }
 
 export function validateSemanticIr(ir: SemanticIr): string[] {
@@ -51,6 +75,7 @@ export function validateSemanticIr(ir: SemanticIr): string[] {
   }
 
   for (const edge of ir.execution.edges) {
+    errors.push(...validateSourceSequence(edge.sourceSequence, edge.source, edge.id));
     if (!regions.has(edge.from)) {
       errors.push("Execution edge source does not exist: " + edge.id);
     }
@@ -85,6 +110,7 @@ export function validateSemanticIr(ir: SemanticIr): string[] {
   }
 
   for (const operation of ir.state.operations) {
+    errors.push(...validateSourceSequence(operation.sourceSequence, operation.source, operation.id));
     if (!regions.has(operation.executionRegionId)) {
       errors.push("State operation execution region does not exist: " + operation.id);
     }

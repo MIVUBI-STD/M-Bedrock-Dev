@@ -134,8 +134,11 @@ supersession: a later **direct** world dynamic-property write in the same
 lexical block can replace an earlier source candidate when the guard read
 (or a resolved synchronous caller site) occurs afterward. The canonical
 Behavior Model applies this to its existing guard-write/value handoffs and
-per-ingress caller-write evidence. No extra graph, storage, detector, report
-field or new parsing pass is introduced.
+per-ingress caller-write evidence. Caller-side candidates are grouped by
+exact state surface and receiver, so different keys cannot shadow each other.
+Existing Semantic IR validation also rejects malformed or cross-source
+statement-block identities. No extra graph, storage, detector, report field
+or new parsing pass is introduced.
 
 The reduction is an authored-source candidate relation, not proof of
 Minecraft execution, effective world mutation, generalized reaching definitions,

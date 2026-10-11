@@ -1273,12 +1273,21 @@ export function deriveSourceEffectSlices(
         const edge = edgeById.get(edgeId);
         if (!edge?.sourceSequence) return items;
         const relevant = items.filter(item =>
-          item.executionRegionId === edge.from && item.sourceSequence?.stableWorldReceiver);
+          item.executionRegionId === edge.from &&
+          item.sourceSequence?.stableWorldReceiver);
         const unrelated = items.filter(item => !relevant.includes(item));
-        const retained = retainSourceSequentialWriteCandidates(
-          { ...edge.sourceSequence, stableWorldReceiver: true },
-          relevant,
-        );
+        const bySurface = new Map<string, typeof relevant>();
+        for (const item of relevant) {
+          // Different state keys and receiver hints cannot overwrite
+          // one another even if both are in the same source block.
+          const key = JSON.stringify([item.surfaceId, item.targetHint]);
+          const group = bySurface.get(key) ?? [];
+          group.push(item);
+          bySurface.set(key, group);
+        }
+        const retained = [...bySurface.values()].flatMap(group =>
+          retainSourceSequentialWriteCandidates(
+            { ...edge.sourceSequence, stableWorldReceiver: true }, group));
         return [...unrelated, ...retained];
       }, admitted);
       return filtered.map(item => item.id).sort();
