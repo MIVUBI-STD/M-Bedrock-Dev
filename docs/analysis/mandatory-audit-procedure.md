@@ -461,7 +461,7 @@ Gameplay Surface Inventory.
 
 ### Closure Rule
 
-Every discovered material surface must be accounted as understood, blocked, unknown/detection-gap, or not-applicable.
+Every material raw source/surface must have an exact selected-artifact indexed, parse-failed, unsupported, or unresolved-target disposition. A2 owns source/surface accounting, not the meaning of already-indexed gameplay. Semantic gaps, unowned execution facts and gameplay intent unknowns remain A7 UNDERSTAND obligations. Unresolved executable/scheduled targets, unsupported source families and incomplete native scans still block A2. A2 COMPLETE never authorizes NOT_APPLICABLE when material semantics remain unresolved.
 
 ---
 

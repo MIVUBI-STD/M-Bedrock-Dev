@@ -1009,6 +1009,10 @@ export async function inspectArtifact(
           result.unresolvedReferences,
         discoveryChallengeIds:
           finalHiddenGameplayDefects.discoveryChallenges.map((item) => item.id),
+         unresolvedSourceLinkIds: [
+           ...result.semanticIrModel.execution.edges.filter((item) => item.resolution === "unresolved").map((item) => item.id),
+           ...result.semanticIrModel.temporal.relations.filter((item) => item.resolution === "unresolved").map((item) => item.id),
+         ],
         gameplayIntentUnknownIds: result.gameplayIntent.model.unknowns.map(item => item.id),
       });
 

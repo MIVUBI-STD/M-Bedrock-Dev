@@ -615,6 +615,10 @@ export function buildInspectionResult(
         discoveryUnresolvedReferences,
       discoveryChallengeIds:
         hiddenGameplayDefects.discoveryChallenges.map((item) => item.id),
+       unresolvedSourceLinkIds: [
+         ...input.semanticIr.execution.edges.filter((item) => item.resolution === "unresolved").map((item) => item.id),
+         ...input.semanticIr.temporal.relations.filter((item) => item.resolution === "unresolved").map((item) => item.id),
+       ],
       gameplayIntentUnknownIds: input.gameplayIntent.unknowns.map(item => item.id),
     });
 

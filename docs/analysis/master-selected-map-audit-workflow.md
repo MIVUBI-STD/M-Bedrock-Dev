@@ -353,12 +353,9 @@ Challenge:
 - unsupported dynamic commands/effects.
 
 ## Exit rule
-Every material raw/discovered surface is:
-- understood;
-- explicitly blocked / unknown;
-- or not applicable with evidence.
+Every material raw source/surface is inventoried as indexed, parse-failed, unsupported, or unresolved-source/target; nothing material silently disappears.
 
-Nothing material silently disappears.
+Semantic meaning missing from already-indexed evidence, unowned world effects and gameplay intent unknowns remain A7 UNDERSTAND obligations rather than endlessly reopening A2. Unresolved executable/scheduled targets still block source Discovery. A2 COMPLETE does not establish absence of a gameplay domain; NOT_APPLICABLE requires absence of material semantic debt.
 
 ---
 

@@ -216,6 +216,10 @@ export function positiveNotApplicable(
 ): boolean {
   return (
     discovery.status === "COMPLETE" &&
+    discovery.semanticUnderstandingGaps === 0 &&
+    discovery.discoveryChallengeIds.length === 0 &&
+    discovery.gameplayIntentUnknownIds.length === 0 &&
+    (discovery.unresolvedSourceLinkIds?.length ?? 0) === 0 &&
     !hasSemanticDemand &&
     !hasRuntimeSignal
   );

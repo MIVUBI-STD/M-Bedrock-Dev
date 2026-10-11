@@ -14,6 +14,8 @@ export interface GameplayDiscoveryClosureInput {
   readonly semanticUnderstandingGapPaths: readonly string[];
   readonly unresolvedReferences: number;
   readonly discoveryChallengeIds?: readonly string[];
+  /** Unresolved executable/scheduler targets stay within A2 source discovery. */
+  readonly unresolvedSourceLinkIds?: readonly string[];
   readonly gameplayIntentUnknownIds?: readonly string[];
   /** Native world evidence is not complete if the scan failed or hit a bound. */
   readonly nativeWorldScanIncomplete?: boolean;
@@ -42,6 +44,7 @@ export interface GameplayDiscoveryClosure {
   readonly sourceCoverageComplete: boolean;
   readonly unresolvedReferences: number;
   readonly discoveryChallengeIds: readonly string[];
+  readonly unresolvedSourceLinkIds?: readonly string[];
   readonly gameplayIntentUnknownIds: readonly string[];
   readonly nativeWorldScanIncomplete: boolean;
   readonly unlistedPackRoots: readonly string[];
@@ -59,6 +62,9 @@ export function assessGameplayDiscoveryClosure(
   const gameplayIntentUnknownIds = [...new Set(input.gameplayIntentUnknownIds ?? [])].sort();
   const discoveryChallengeIds = [
     ...new Set(input.discoveryChallengeIds ?? []),
+  ].sort();
+  const unresolvedSourceLinkIds = [
+    ...new Set(input.unresolvedSourceLinkIds ?? []),
   ].sort();
   const unsupportedRelevantSourcePaths = [
     ...new Set(input.unsupportedRelevantSourcePaths),
@@ -135,6 +141,11 @@ export function assessGameplayDiscoveryClosure(
     );
   }
 
+  if (unresolvedSourceLinkIds.length > 0) {
+    reasons.push(String(unresolvedSourceLinkIds.length) +
+      " executable/scheduled source target(s) remain unresolved at A2.");
+  }
+
   if (discoveryChallengeIds.length > 0) {
     reasons.push(
       String(discoveryChallengeIds.length) +
@@ -161,9 +172,8 @@ export function assessGameplayDiscoveryClosure(
     );
   }
 
-  // OPEN is a structural inventory failure. Once relevant sources are
-  // accounted for, semantic/runtime uncertainty is PARTIAL rather than
-  // another unbounded requirement to extend Discovery.
+  // A2 accounts discovered sources and execution targets; A7 accounts
+  // the gameplay meaning of already indexed Semantic IR facts.
   const status: GameplayDiscoveryClosureStatus =
     surfaceIds.length === 0 ||
     !sourceInventoryBalanced ||
@@ -171,9 +181,7 @@ export function assessGameplayDiscoveryClosure(
     (!input.sourceCoverageComplete && unsupportedRelevantSources === 0)
       ? "OPEN"
       : unsupportedRelevantSources > 0 ||
-          semanticUnderstandingGaps > 0 ||
-          discoveryChallengeIds.length > 0 ||
-          gameplayIntentUnknownIds.length > 0 ||
+          unresolvedSourceLinkIds.length > 0 ||
           input.nativeWorldScanIncomplete === true ||
           unlistedPackRoots.length > 0 ||
           input.unresolvedReferences > 0
@@ -182,7 +190,7 @@ export function assessGameplayDiscoveryClosure(
 
   if (status === "COMPLETE") {
     reasons.push(
-      "Observed Discovery inputs are accounted for: source inventory, recorded semantic gaps, references, challenges, and discovered gameplay surfaces satisfy the static closure checks. This does not prove runtime behavior or absence of undiscovered mechanics.",
+      "Observed source inventory, executable targets, references and surface accounting satisfy A2. Indexed semantic gaps, unowned evidence and gameplay intent unknowns remain A7 UNDERSTAND obligations, not gameplay/runtime proof.",
     );
   }
 
@@ -206,6 +214,7 @@ export function assessGameplayDiscoveryClosure(
     unresolvedReferences:
       input.unresolvedReferences,
     discoveryChallengeIds,
+    unresolvedSourceLinkIds,
     gameplayIntentUnknownIds,
     nativeWorldScanIncomplete: input.nativeWorldScanIncomplete === true,
     unlistedPackRoots,

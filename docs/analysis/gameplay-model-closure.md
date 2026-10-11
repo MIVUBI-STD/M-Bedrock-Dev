@@ -51,9 +51,9 @@ implementation detail
 
 ## Discovery independence rule
 
-Surface discovery and closure accounting must be independent operations.
+Surface discovery and gameplay understanding must be independent operations.
 
-A surface is discovered from raw selected-artifact evidence. It is only considered accounted after the gameplay model provides an understood, blocked, unknown, or not-applicable disposition.
+A source/surface is discovered from the selected artifact. A2 accounts its source disposition; A7 separately determines whether the gameplay model understands it or is blocked/unknown/not-applicable. A2 COMPLETE is not proof of indexed domain semantics. Every indexed semantic gap, unowned execution relationship and gameplay intent unknown remains an explicit A7 UNDERSTAND obligation.
 
 Never construct the discovered-surface list from the already-accounted surface list. That would hide missing analysis by definition.
 

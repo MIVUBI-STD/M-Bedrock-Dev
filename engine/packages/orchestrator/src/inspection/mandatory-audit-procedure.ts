@@ -56,6 +56,8 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
   } = input;
   const graph = hidden.scenarioAudit.graph;
   const scenarioClosure = hidden.scenarioAudit.closure;
+  // Source accounting alone cannot prove a gameplay system is not applicable.
+  const discoverySupportsAbsence = positiveNotApplicable(discovery, false, false);
   const defectResolution = hidden.scenarioAudit.defectResolution;
   const stateRegistry = deriveMandatoryStateRegistry(
     semanticIr,
@@ -175,7 +177,8 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       : discovery.status === "PARTIAL"
         ? "PARTIAL"
         : "CLOSED",
-    "Gameplay Discovery Closure is " + discovery.status + ".",
+    "Gameplay Discovery source/surface accounting is " + discovery.status +
+      "; gameplay interpretation remains an UNDERSTAND responsibility.",
     world.surfaceDiscovery.surfaceIds,
     ["GameplaySurfaceInventory"],
   ));
@@ -244,14 +247,14 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "UNDERSTAND",
     "State Registry",
     stateRegistry.length === 0
-      ? discovery.status === "COMPLETE"
+      ? discoverySupportsAbsence
         ? "NOT_APPLICABLE"
         : "OPEN"
       : unboundedWritableStates.length > 0
         ? "PARTIAL"
         : "CLOSED",
     stateRegistry.length === 0
-      ? discovery.status === "COMPLETE"
+      ? discoverySupportsAbsence
         ? "No material Semantic IR state surfaces were discovered after complete discovery."
         : "State applicability cannot be closed while discovery is incomplete."
       : unboundedWritableStates.length > 0
@@ -281,14 +284,14 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "UNDERSTAND",
     "Ownership Registry",
     !ownershipApplicable
-      ? discovery.status === "COMPLETE"
+      ? discoverySupportsAbsence
         ? "NOT_APPLICABLE"
         : "OPEN"
       : unresolvedOwnership.length > 0
         ? "PARTIAL"
         : "CLOSED",
     !ownershipApplicable
-      ? discovery.status === "COMPLETE"
+      ? discoverySupportsAbsence
         ? "No shared/session/deferred ownership surface remains after complete discovery."
         : "Ownership applicability cannot close while discovery is incomplete."
       : "Ownership obligations are evaluated from authority bindings, arena lifecycle/isolation, and deferred ownership.",
@@ -360,14 +363,14 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "UNDERSTAND",
     "Progression Contract",
     progressionContracts.length === 0
-      ? discovery.status === "COMPLETE"
+      ? discoverySupportsAbsence
         ? "NOT_APPLICABLE"
         : "OPEN"
       : progressionIncomplete.length === 0
         ? "CLOSED"
         : "PARTIAL",
     progressionContracts.length === 0
-      ? discovery.status === "COMPLETE"
+      ? discoverySupportsAbsence
         ? "No objective/phase/outcome progression surface remains after complete discovery."
         : "Progression applicability cannot close while discovery is incomplete."
       : "Objective/phase/outcome progression edges are projected from gameplay intent.",
@@ -394,22 +397,50 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     },
   ));
 
+  // Preserve all indexed-source interpretation debt at its A7 owner.
+  const discoverySemanticsUnderstood =
+    discovery.semanticUnderstandingGaps === 0 &&
+    discovery.discoveryChallengeIds.length === 0 &&
+    discovery.gameplayIntentUnknownIds.length === 0;
+  const gameplayModelStatus =
+    world.gameplayClosure.status === "CLOSED" && !discoverySemanticsUnderstood
+      ? "PARTIAL" as const
+      : world.gameplayClosure.status;
   checkpoint.push(receipt(
     "A7",
     "UNDERSTAND",
     "Gameplay Model Closure",
-    world.gameplayClosure.status,
-    world.gameplayClosure.status === "CLOSED"
-      ? "Gameplay model closure is CLOSED."
-      : "Gameplay model closure remains " +
-        world.gameplayClosure.status +
-        "; unresolved material semantics cannot be bypassed.",
-    world.gameplayClosure.surfaces.flatMap(
-      (surface) => surface.evidenceIds,
-    ),
+    gameplayModelStatus,
+    gameplayModelStatus === "CLOSED"
+      ? "Gameplay model and indexed source semantics are accounted."
+      : "Gameplay model remains " + gameplayModelStatus +
+        "; indexed semantic gaps, unowned source evidence and unknown gameplay meaning still block closure.",
+    [
+      ...world.gameplayClosure.surfaces.flatMap((surface) => surface.evidenceIds),
+      ...discovery.discoveryChallengeIds,
+      ...discovery.gameplayIntentUnknownIds,
+    ],
     ["GameplayModelClosure"],
     {
       obligations: [
+        obligation(
+          "gameplay-source-semantics-reconciled", true,
+          discovery.semanticUnderstandingGaps === 0,
+          "Indexed gameplay-sensitive source definitions require domain semantics under A7.",
+          discovery.semanticUnderstandingGapPaths,
+        ),
+        obligation(
+          "gameplay-source-challenges-reconciled", true,
+          discovery.discoveryChallengeIds.length === 0,
+          "Raw execution/state records require grounded gameplay/scenario dispositions.",
+          discovery.discoveryChallengeIds,
+        ),
+        obligation(
+          "gameplay-intent-unknowns-reconciled", true,
+          discovery.gameplayIntentUnknownIds.length === 0,
+          "Unclassified gameplay intent must be reconciled before model closure.",
+          discovery.gameplayIntentUnknownIds,
+        ),
         obligation(
           "gameplay-model-state-complete",
           true,
@@ -456,7 +487,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
         ? "PARTIAL"
         : "CLOSED",
     world.entities.definitions === 0
-      ? discovery.status === "COMPLETE"
+      ? discoverySupportsAbsence
         ? "No actor/role intent or entity definition remains after complete discovery."
         : "Entity applicability is unresolved while discovery remains incomplete."
       : "Entity behavior/navigation evidence is accounted.",
@@ -473,7 +504,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "MODEL",
     "Spatial & Simulation Contract",
     !spatialApplicable
-      ? discovery.status === "COMPLETE"
+      ? discoverySupportsAbsence
         ? "NOT_APPLICABLE"
         : "OPEN"
       : world.chunks.cleanupOrderUnproven > 0 ||
@@ -481,7 +512,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
         ? "PARTIAL"
         : "CLOSED",
     !spatialApplicable
-      ? discovery.status === "COMPLETE"
+      ? discoverySupportsAbsence
         ? "No material spatial/simulation dependency remains after complete discovery."
         : "Spatial/simulation applicability cannot close while discovery is incomplete."
       : "Spatial and chunk/simulation ownership evidence is accounted.",
@@ -524,7 +555,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "Multiplayer Contract",
     !multiplayer.applicable
       ? (
-          discovery.status === "COMPLETE" &&
+          discoverySupportsAbsence &&
           !world.arenas.detected &&
           !graph.scenarios.some((scenario) =>
             scenario.playerCounts.some((count) => count > 1)
@@ -536,7 +567,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
         ? "CLOSED"
         : "PARTIAL",
     !multiplayer.applicable
-      ? discovery.status === "COMPLETE"
+      ? discoverySupportsAbsence
         ? "No multiplayer signal remains after complete discovery and no multi-player scenario count is present."
         : "Multiplayer applicability cannot close while discovery is incomplete."
       : "Applicable mixed-player scenarios are compiled.",
@@ -576,7 +607,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "Multi-Arena Contract",
     !multiArena
       ? (
-          discovery.status === "COMPLETE" &&
+          discoverySupportsAbsence &&
           (
             !world.arenas.detected ||
             world.arenas.count === 1
@@ -590,7 +621,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
         ? "PARTIAL"
         : "CLOSED",
     !multiArena
-      ? discovery.status === "COMPLETE"
+      ? discoverySupportsAbsence
         ? "Complete discovery supports a single/no-arena model."
         : "Multi-arena applicability cannot close while discovery is incomplete or arena count is unresolved."
       : replicaProofIncomplete
@@ -661,7 +692,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "Boundary Registry",
     boundaries.records.length === 0 &&
       boundaries.unresolvedNames.length === 0
-      ? discovery.status === "COMPLETE"
+      ? discoverySupportsAbsence
         ? "NOT_APPLICABLE"
         : "OPEN"
       : boundaries.unresolvedNames.length > 0
@@ -729,7 +760,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
         : "OPEN",
     combatApplicable
       ? "Combat lifecycle obligations are evaluated; contradictions flow into PROVE."
-      : discovery.status === "COMPLETE"
+      : discoverySupportsAbsence
         ? "No combat intent or runtime combat surface remains after complete discovery."
         : "Combat applicability is unresolved while discovery is incomplete.",
     ["analysis:combat-lifecycle"],
@@ -778,7 +809,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
         : "OPEN",
     inventoryApplicable
       ? "Inventory lifecycle obligations are evaluated."
-      : discovery.status === "COMPLETE"
+      : discoverySupportsAbsence
         ? "No inventory intent or lifecycle surface remains after complete discovery."
         : "Inventory applicability is unresolved while discovery is incomplete.",
     ["analysis:inventory-state"],
@@ -823,7 +854,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
         : "OPEN",
     economyApplicable
       ? "Reward/economy obligations are evaluated."
-      : discovery.status === "COMPLETE"
+      : discoverySupportsAbsence
         ? "No reward/economy intent or source remains after complete discovery."
         : "Reward/economy applicability is unresolved while discovery is incomplete.",
     ["analysis:economy-reward"],
@@ -864,13 +895,13 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
         (world.persistence?.unknownLifetime ?? 0) > 0
         ? "PARTIAL"
         : "CLOSED"
-      : discovery.status === "COMPLETE" &&
+      : discoverySupportsAbsence &&
           !demanded.has("persistence-recovery")
         ? "NOT_APPLICABLE"
         : "OPEN",
     persistenceApplicable
       ? "Persistence scope/lifetime evidence is projected across lifecycle boundaries."
-      : discovery.status === "COMPLETE"
+      : discoverySupportsAbsence
         ? "No persistent gameplay state remains after complete discovery."
         : "Persistence applicability cannot close while discovery is incomplete.",
     ["analysis:persistence-recovery"],
@@ -883,13 +914,13 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "Deferred Work Registry",
     deferredRelations.length > 0
       ? "CLOSED"
-      : discovery.status === "COMPLETE" &&
+      : discoverySupportsAbsence &&
           !demanded.has("temporal-ownership")
         ? "NOT_APPLICABLE"
         : "OPEN",
     deferredRelations.length > 0
       ? "Deferred/periodic work is enumerated with guard evidence; unsafe work flows into contradiction analysis."
-      : discovery.status === "COMPLETE"
+      : discoverySupportsAbsence
         ? "No deferred/periodic gameplay work remains after complete discovery."
         : "Deferred-work applicability cannot close while discovery is incomplete.",
     deferredRelations.map((item) => item.id),
@@ -927,13 +958,13 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "Terminal Ownership",
     terminalScenario
       ? "CLOSED"
-      : discovery.status === "COMPLETE" &&
+      : discoverySupportsAbsence &&
           !competingTerminalIntent
         ? "NOT_APPLICABLE"
         : "OPEN",
     terminalScenario
       ? "Terminal collision scenario is compiled and routed through causal analysis."
-      : discovery.status === "COMPLETE"
+      : discoverySupportsAbsence
         ? "No materially competing terminal scenario was activated after complete discovery."
         : "Terminal-collision applicability cannot close while discovery is incomplete.",
     terminalScenario ? [terminalScenario.id] : [],
@@ -956,7 +987,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "STRESS",
     "Cleanup Ledger",
     !cleanupApplicable
-      ? discovery.status === "COMPLETE" && !cleanupDemand
+      ? discoverySupportsAbsence && !cleanupDemand
         ? "NOT_APPLICABLE"
         : "OPEN"
       : world.arenas.cleanup.resourceLedger.missing > 0 ||
@@ -965,7 +996,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
         : "CLOSED",
     cleanupApplicable
       ? "Cleanup resources and terminal coverage are accounted."
-      : discovery.status === "COMPLETE" && !cleanupDemand
+      : discoverySupportsAbsence && !cleanupDemand
         ? "No material mutable resource requiring cleanup remains after complete discovery."
         : "Cleanup obligations are expected from detected mutable gameplay resources but no complete cleanup ledger is available.",
     ["analysis:arena-lifecycle"],
@@ -1000,12 +1031,12 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "Second-Run Equivalence",
     repeated
       ? "CLOSED"
-      : discovery.status === "COMPLETE" && !reuseDemand
+      : discoverySupportsAbsence && !reuseDemand
         ? "NOT_APPLICABLE"
         : "OPEN",
     repeated
       ? "Repeated-run scenario is compiled and checked through shared lifecycle dependencies."
-      : discovery.status === "COMPLETE" && !reuseDemand
+      : discoverySupportsAbsence && !reuseDemand
         ? "No replay/reuse/reset/recovery surface is present after complete discovery."
         : "Replay/reuse applicability is unresolved; detected reset/recovery or arena lifecycle requires explicit repeated-run accounting.",
     repeated ? [repeated.id] : [],
@@ -1169,7 +1200,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     missingCrossSystemLabels.length === 0
       ? requiredCrossSystemScenarioLabels.size > 0
         ? "CLOSED"
-        : discovery.status === "COMPLETE"
+        : discoverySupportsAbsence
           ? "NOT_APPLICABLE"
           : "OPEN"
       : "OPEN",
@@ -1179,7 +1210,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
         "."
       : requiredCrossSystemScenarioLabels.size > 0
         ? "Every high-value cross-system scenario family demanded by the selected artifact is activated."
-        : discovery.status === "COMPLETE"
+        : discoverySupportsAbsence
           ? "No high-value cross-system intersection is demanded after complete discovery."
           : "Cross-system applicability cannot close while discovery is incomplete.",
     crossSystemScenarios.map((item) => item.id),

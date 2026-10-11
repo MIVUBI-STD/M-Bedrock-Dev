@@ -251,6 +251,7 @@ function deriveSelectedMapAuditControl(input: {
     InspectArtifactResult["gameplayWorld"]["gameplayClosure"];
   readonly gameplayWorld:
     InspectArtifactResult["gameplayWorld"];
+  readonly discovery?: InspectArtifactResult["gameplayDiscoveryClosure"];
   readonly discoveryChallenges:
     InspectArtifactResult["hiddenGameplayDefects"]["discoveryChallenges"];
   readonly sharedResourceSignals:
@@ -316,6 +317,7 @@ function deriveSelectedMapAuditControl(input: {
         gameplayWorld: input.gameplayWorld,
         userIntent: input.userIntent,
         gameplayClosure: input.gameplayClosure,
+        discovery: input.discovery,
         negativeSpace: input.negativeSpace,
         temporalRisks: input.temporalRisks,
         discoveryChallenges: input.discoveryChallenges,
@@ -615,6 +617,7 @@ function assembleSelectedMapAuditRun(
       inspection.gameplayWorld.gameplayClosure,
     gameplayWorld:
       inspection.gameplayWorld,
+    discovery: inspection.gameplayDiscoveryClosure,
     discoveryChallenges:
       hidden.discoveryChallenges,
     sharedResourceSignals:

@@ -14,6 +14,7 @@ import type {
 import type {
   GameplayWorldModel,
 } from "./inspection/gameplay-world-model.js";
+import type { GameplayDiscoveryClosure } from "./inspection/gameplay-discovery-closure.js";
 import type {
   AuditUserIntentEnvelope,
 } from "./map-audit-user-intent.js";
@@ -279,7 +280,7 @@ function graphObligations(
           : "missing-purpose:") +
         component.id,
       source: "graph-structure",
-      stage: "DISCOVERY",
+      stage: "UNDERSTAND",
       title:
         orphan
           ? "Resolve orphan component " + component.label
@@ -763,6 +764,7 @@ export function deriveAuditObligations(input: {
   readonly gameplayWorld: GameplayWorldModel;
   readonly userIntent?: AuditUserIntentEnvelope;
   readonly gameplayClosure: GameplayModelClosureResult;
+  readonly discovery?: GameplayDiscoveryClosure;
   readonly negativeSpace: readonly NegativeSpaceSignal[];
   readonly temporalRisks: readonly TemporalInteractionRisk[];
   readonly discoveryChallenges:
@@ -792,6 +794,40 @@ export function deriveAuditObligations(input: {
       input.graph,
     ),
   ];
+
+  // Group semantic debt while retaining every affected path or unknown ID.
+  if (input.discovery && input.discovery.semanticUnderstandingGapPaths.length > 0) {
+    items.push(normalize({
+      id: "indexed-source-semantic-coverage",
+      source: "detection-gap",
+      stage: "UNDERSTAND",
+      title: "Interpret indexed gameplay source definitions",
+      reason: String(input.discovery.semanticUnderstandingGaps) +
+        " indexed gameplay source(s) lack domain semantics.",
+      missingProof: "Domain semantics and causal relationships for the affected paths.",
+      validationTest: "Reconcile source definitions through existing domain analyzers and gameplay intent.",
+      validationGroupKey: "understand:indexed-source-semantics",
+      subjectIds: input.discovery.semanticUnderstandingGapPaths,
+      componentIds: [],
+      evidenceIds: [],
+    }));
+  }
+  if (input.discovery && input.discovery.gameplayIntentUnknownIds.length > 0) {
+    items.push(normalize({
+      id: "uninterpreted-gameplay-intent",
+      source: "gameplay-closure",
+      stage: "UNDERSTAND",
+      title: "Reconcile unclassified material gameplay",
+      reason: String(input.discovery.gameplayIntentUnknownIds.length) +
+        " gameplay intent unknown(s) remain unresolved.",
+      missingProof: "Exact source-grounded mechanic and scenario ownership for every unknown.",
+      validationTest: "Reconstruct the effects and mechanics for each unresolved intent identity.",
+      validationGroupKey: "understand:gameplay-intent-unknowns",
+      subjectIds: input.discovery.gameplayIntentUnknownIds,
+      componentIds: [],
+      evidenceIds: [],
+    }));
+  }
 
   for (const signal of input.negativeSpace) {
     items.push(normalize({
@@ -863,7 +899,7 @@ export function deriveAuditObligations(input: {
     items.push(normalize({
       id: signal.id,
       source: "discovery-challenge",
-      stage: "DISCOVERY",
+      stage: signal.kind === "unresolved-execution-edge" ? "DISCOVERY" : "UNDERSTAND",
       title: "Resolve discovery challenge " + signal.subjectId,
       reason: signal.reason,
       missingProof:
