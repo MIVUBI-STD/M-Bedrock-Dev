@@ -97,6 +97,28 @@ For each authored effect/return the owner traverses *only uniquely identified re
 
 The existing `deriveGameplayArchitectureNavigation()` consumes these behavior-model slices once, connects effects to graph components only by exact evidence ID and separately labels feature associations encountered on a source-call path. It publishes them through the already-established `MapAuditOutputV2.gameplayStructure` view. Static path association is not player-facing gameplay meaning or PROVEN causality; unowned effect IDs remain explicit. Testing/CI are deferred until the integrated BUILD acceptance boundary.
 
+### Authored cross-source entity/controller behavior references
+
+Entity descriptions now preserve exact animation alias targets and explicitly
+activated scripts.animate entries. The existing entity analyzer reads
+behavior-pack controller state names, ordered Molang transitions, referenced
+animation aliases, and on-entry/on-exit commands without evaluating Molang.
+
+The existing entity-event evidence owner reconciles these definitions through
+same-pack controller identifiers, exact entity-local event names, and typed
+script/mcfunction command triggers. Unscoped command targets are only possible
+matches, never a confirmed entity binding. It records their source and target
+provenance as authored behavior relations in the canonical Semantic IR.
+
+Gameplay Intent keeps these facts as grouped unresolved behavioral meaning,
+while the existing Game Architecture Navigation exposes the same IR relations
+through its derived gameplayStructure projection. No branch activation,
+animation playback, world mutation, complete mechanics or player-facing
+outcome is inferred. The previous source semantic gaps for behavior animations
+and controllers remain open until their downstream effects and cross-format
+references are fully interpreted. No second parser/graph or runtime engine was
+introduced.
+
 ### Structured Bedrock entity event semantics
 
 The canonical entity parser preserves source-authored sequence, randomize,

@@ -31,7 +31,10 @@ import { routeMutationRuntimeEvidence } from "./route-mutation-analysis.js";
 import { topologyRuntimeEvidence } from "../diagnosis/topology-runtime-evidence.js";
 import type { RuntimeProbeResponse } from "../../../project-model/src/index.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../../project-model/src/index.js";
-import { externalEventRootsForEntity } from "./entity-event-evidence.js";
+import {
+  externalEventRootsForEntity,
+  deriveAuthoredEntityBehaviorRelations,
+} from "./entity-event-evidence.js";
 import { buildInspectionSemanticIr } from "../diagnosis/semantic-ir-stage.js";
 import { deriveCrossFileCallEdges } from "../../../../analyzers/scripts/src/index.js";
 import { semanticIrDiagnostics } from "../diagnosis/semantic-ir-diagnostics.js";
@@ -138,8 +141,17 @@ export async function inspectDirectory(
         }]),
       )
     : [];
+  const authoredBehaviorRelations = deriveAuthoredEntityBehaviorRelations({
+    entities: parsedEntities.map(item => item.parsed),
+    controllerSources: nodes.filter(node =>
+      node.kind === "animation_controller" && node.source !== undefined)
+      .map(node => ({ raw: node.data, source: node.source! })),
+    functions: parsedFunctions.map(item => item.parsed),
+    scripts: parsedScripts.map(item => item.parsed),
+  });
   const semanticIr = buildInspectionSemanticIr({
     parsedFunctions,
+    authoredBehaviorRelations,
     parsedScripts,
     crossFileCallEdges,
     tickFunctionRegistrations,

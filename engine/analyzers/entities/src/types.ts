@@ -33,6 +33,30 @@ export interface ParsedEntityDefinition {
   componentGroups: Record<string, string[]>;
   componentGroupData: Record<string, Record<string, unknown>>;
   events: Record<string, EntityEventMutation>;
+  /** Animation aliases declared in this entity source, not activated by themselves. */
+  animationAliases?: Readonly<Record<string, string>>;
+  /** Only explicitly declared scripts.animate activations are linked. */
+  activeAnimations?: readonly {
+    readonly alias: string;
+    readonly condition?: string;
+    readonly source: SourceRef;
+  }[];
+}
+
+/** Data-driven BP controller states and literal Molang transition expressions. */
+export interface ParsedBehaviorAnimationController {
+  readonly identifier: string;
+  readonly source: SourceRef;
+  readonly initialState: string;
+  readonly states: readonly {
+    readonly name: string;
+    readonly source: SourceRef;
+    readonly animations: readonly { readonly alias: string; readonly condition?: string; readonly source: SourceRef }[];
+    readonly transitions: readonly { readonly target: string; readonly condition: string; readonly source: SourceRef }[];
+    readonly onEntryCommands: readonly { readonly command: string; readonly source: SourceRef }[];
+    readonly onExitCommands: readonly { readonly command: string; readonly source: SourceRef }[];
+  }[];
+  readonly limitations: readonly string[];
 }
 
 export interface EntityStateCandidate {

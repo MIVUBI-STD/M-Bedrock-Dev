@@ -49,6 +49,22 @@ export function validateSemanticIr(ir: SemanticIr): string[] {
   for (const duplicate of duplicateIds(ir.execution.edges)) {
     errors.push("Duplicate execution edge id: " + duplicate);
   }
+  for (const duplicate of duplicateIds(ir.execution.authoredBehaviorRelations ?? [])) {
+    errors.push("Duplicate authored behavior relation id: " + duplicate);
+  }
+  for (const relation of ir.execution.authoredBehaviorRelations ?? []) {
+    if (!relation.source.artifactId || !relation.source.relativePath ||
+        !relation.from || !relation.to || !relation.ownerId) {
+      errors.push("Incomplete authored behavior relation: " + relation.id);
+    }
+    if (relation.resolution === "EXACT_REFERENCE" && !relation.targetSource) {
+      errors.push("Exact behavior reference lacks a target source: " + relation.id);
+    }
+    if (relation.targetSource &&
+        relation.source.artifactId !== relation.targetSource.artifactId) {
+      errors.push("Behavior relation crosses artifact authority: " + relation.id);
+    }
+  }
   for (const duplicate of duplicateIds(ir.execution.outcomes ?? [])) {
     errors.push("Duplicate return outcome id: " + duplicate);
   }

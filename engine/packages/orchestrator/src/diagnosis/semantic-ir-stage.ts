@@ -18,6 +18,7 @@ import {
 import {
   validateSemanticIr,
   type ExecutionEdge,
+  type AuthoredBehaviorRelation,
   type AuthoredBranchGuard,
   type AuthoredReturnOutcome,
   type AuthoredWorldEffect,
@@ -41,6 +42,7 @@ export interface InspectionSemanticIrInput {
   parsedScripts: readonly {
     parsed: ParsedScriptFile;
   }[];
+  authoredBehaviorRelations?: readonly AuthoredBehaviorRelation[];
   /** Bound by the existing cross-file call analyzer from the same selected source. */
   crossFileCallEdges?: readonly CrossFileCallEdge[];
   tickFunctionRegistrations?: readonly {
@@ -889,6 +891,8 @@ export function buildInspectionSemanticIr(
         !ambiguousControlRegions.has(item.executionRegionId) &&
         regions.has(item.executionRegionId)).sort((a, b) =>
         a.executionRegionId.localeCompare(b.executionRegionId)),
+      authoredBehaviorRelations: [...(input.authoredBehaviorRelations ?? [])]
+        .sort((a, b) => a.id.localeCompare(b.id)),
     },
     state: {
       surfaces: [...surfaces.values()].sort(

@@ -3,7 +3,11 @@ import { flattenCommandEffects } from "../../../../analyzers/commands/src/index.
 import type { ParsedFunction } from "../../../../analyzers/functions/src/index.js";
 import type { ParsedScriptFile } from "../../../../analyzers/scripts/src/index.js";
 import type { SourceRef } from "../../../project-model/src/index.js";
-import type { ParsedEntityDefinition } from "../../../../analyzers/entities/src/index.js";
+import {
+  parseBehaviorAnimationControllers,
+  type ParsedEntityDefinition,
+} from "../../../../analyzers/entities/src/index.js";
+import type { AuthoredBehaviorRelation } from "../../../semantic-ir/src/index.js";
 
 export interface EntityEventExternalEvidence {
   event: string;
@@ -115,4 +119,194 @@ export function externalEventRootsForEntity(
       )
       .map((item) => item.event),
   )].sort();
+}
+
+
+// Exact-source relation projection for already parsed entity events, controller
+// aliases and script/command event invocations. It is not a second graph.
+export function deriveAuthoredEntityBehaviorRelations(input: {
+  readonly entities: readonly ParsedEntityDefinition[];
+  readonly controllerSources: readonly { raw: unknown; source: SourceRef }[];
+  readonly scripts: readonly ParsedScriptFile[];
+  readonly functions: readonly ParsedFunction[];
+}): readonly AuthoredBehaviorRelation[] {
+  const relations: AuthoredBehaviorRelation[] = [];
+  const scope = (path: string): string => {
+    const parts = path.replaceAll("\\", "/").split("/");
+    const index = parts.findIndex(item =>
+      item === "behavior_packs" || item === "behavior_pack");
+    return index < 0 ? path : parts.slice(0,
+      Math.min(index + 2, parts.length)).join("/");
+  };
+  const idFor = (ownerId: string, label: string): string =>
+    "authored:" + encodeURIComponent(ownerId) + ":" +
+      encodeURIComponent(label);
+  const at = (source: SourceRef, pointer: string): SourceRef =>
+    ({ ...source, jsonPointer: pointer });
+  const add = (record: Omit<AuthoredBehaviorRelation, "id">): void => {
+    const id = [
+      record.kind, record.ownerId, record.from, record.to,
+      record.source.relativePath, record.source.jsonPointer ?? "",
+      record.source.range?.lineStart ?? 0,
+      record.source.range?.columnStart ?? 0,
+    ].map(encodeURIComponent).join(":");
+    relations.push({ ...record, id: "authored-relation:" + id });
+  };
+  const controllers = input.controllerSources.flatMap(item =>
+    parseBehaviorAnimationControllers(item.raw, item.source));
+  const byScope = new Map<string, typeof controllers>();
+  for (const controller of controllers) {
+    const key = scope(controller.source.relativePath) + ":" + controller.identifier;
+    const list = byScope.get(key) ?? [];
+    list.push(controller);
+    byScope.set(key, list);
+  }
+  for (const entity of input.entities) {
+    if (!entity.identifier) continue;
+    const entityOwner = idFor(entity.source.relativePath, entity.identifier);
+    for (const [name, mutation] of Object.entries(entity.events)) {
+      const eventId = entityOwner + ":event:" + encodeURIComponent(name);
+      const walk = (node: NonNullable<typeof mutation.program>) => {
+        for (const target of node.triggerEvents ?? []) {
+          const source = at(entity.source, node.path + "/trigger");
+          const exists = entity.events[target] !== undefined;
+          add({
+            kind: "entity-event-trigger", ownerId: entityOwner,
+            from: eventId,
+            to: entityOwner + ":event:" + encodeURIComponent(target),
+            source, ...(exists ? { targetSource:
+              at(entity.source, "/minecraft:entity/events/" +
+                target.replaceAll("~", "~0").replaceAll("/", "~1")) } : {}),
+            resolution: exists ? "EXACT_REFERENCE" : "UNRESOLVED",
+            reason: exists
+              ? "Self-target event reference exists; path filters and runtime invocation remain unknown."
+              : "Referenced entity event is absent from this entity definition.",
+          });
+        }
+        for (const child of node.steps ?? []) walk(child);
+      };
+      if (mutation.program) walk(mutation.program);
+    }
+    for (const activation of entity.activeAnimations ?? []) {
+      const target = entity.animationAliases?.[activation.alias];
+      const from = entityOwner + ":animation-activation:" +
+        encodeURIComponent(activation.alias);
+      const direct = target?.startsWith("controller.animation.") === true;
+      const found = direct
+        ? byScope.get(scope(entity.source.relativePath) + ":" + target) ?? []
+        : [];
+      const resolved = found.length === 1;
+      add({
+        kind: "entity-controller-activation", ownerId: entityOwner,
+        from, to: target ?? activation.alias,
+        resolution: resolved ? "EXACT_REFERENCE" : "UNRESOLVED",
+        source: activation.source,
+        ...(resolved ? { targetSource: found[0]!.source } : {}),
+        ...(activation.condition ? { condition: activation.condition } : {}),
+        reason: resolved
+          ? "Entity scripts.animate references a unique controller through its authored alias. Condition is unevaluated."
+          : "Activation alias has no unique same-pack behavior controller target; an animation or dynamic reference may be involved.",
+      });
+      if (!resolved) continue;
+      const controller = found[0]!;
+      const stateNames = new Set(controller.states.map(state => state.name));
+      for (const state of controller.states) {
+        const stateId = idFor(controller.source.relativePath,
+          controller.identifier + ":state:" + state.name);
+        for (const transition of state.transitions) {
+          const destination = controller.states.find(item =>
+            item.name === transition.target);
+          add({
+            kind: "controller-state-transition", ownerId: entityOwner,
+            from: stateId,
+            to: idFor(controller.source.relativePath,
+              controller.identifier + ":state:" + transition.target),
+            resolution: destination ? "EXACT_REFERENCE" : "UNRESOLVED",
+            source: transition.source,
+            ...(destination ? { targetSource: destination.source } : {}),
+            condition: transition.condition,
+            reason: destination
+              ? "Ordered authored Molang transition; condition and runtime state remain unevaluated."
+              : "Controller transition refers to a missing state.",
+          });
+        }
+        for (const animation of state.animations) {
+          const aliasValue = entity.animationAliases?.[animation.alias];
+          const sourceTarget = aliasValue === undefined
+            ? undefined : at(entity.source,
+              "/minecraft:entity/description/animations/" +
+              animation.alias.replaceAll("~", "~0").replaceAll("/", "~1"));
+          add({
+            kind: "controller-animation-reference", ownerId: entityOwner,
+            from: stateId, to: aliasValue ?? animation.alias,
+            resolution: sourceTarget ? "EXACT_REFERENCE" : "UNRESOLVED",
+            source: animation.source,
+            ...(sourceTarget ? { targetSource: sourceTarget } : {}),
+            ...(animation.condition ? { condition: animation.condition } : {}),
+            reason: sourceTarget
+              ? "Controller references an entity animation alias; underlying animation timeline and playback remain unverified."
+              : "Controller animation alias is not declared by the entity.",
+          });
+        }
+        for (const [phase, commands] of [
+          ["on_entry", state.onEntryCommands],
+          ["on_exit", state.onExitCommands],
+        ] as const) {
+          for (const command of commands) {
+            add({
+              kind: "controller-state-command", ownerId: entityOwner,
+              from: stateId, to: command.command,
+              resolution: "POSSIBLE_TARGET",
+              source: command.source,
+              reason: "Source-authored controller " + phase +
+                " command; command effects and success are not proven.",
+            });
+          }
+        }
+      }
+      if (!stateNames.has(controller.initialState)) {
+        add({
+          kind: "controller-state-transition", ownerId: entityOwner,
+          from: idFor(controller.source.relativePath, controller.identifier),
+          to: idFor(controller.source.relativePath,
+            controller.identifier + ":state:" + controller.initialState),
+          resolution: "UNRESOLVED", source: controller.source,
+          reason: "Declared initial controller state does not exist.",
+        });
+      }
+    }
+  }
+  // Unscoped triggerEvent calls cannot prove the target entity. Bind only
+  // an explicitly typed target; otherwise keep the possible target distinct.
+  const externals = deriveEntityEventExternalEvidence(
+    input.functions, input.scripts);
+  for (const event of externals) {
+    const candidates = input.entities.filter(entity =>
+      entity.identifier !== undefined &&
+      entity.events[event.event] !== undefined &&
+      (event.entityIdentifier === undefined ||
+        entity.identifier === event.entityIdentifier));
+    for (const entity of candidates) {
+      const ownerId = idFor(entity.source.relativePath, entity.identifier!);
+      const exact = event.entityIdentifier === entity.identifier &&
+        candidates.length === 1;
+      add({
+        kind: "external-event-trigger", ownerId,
+        from: event.executionRegion
+          ? idFor(event.source.relativePath, event.executionRegion)
+          : idFor(event.source.relativePath, "authored-command"),
+        to: ownerId + ":event:" + encodeURIComponent(event.event),
+        resolution: exact ? "EXACT_REFERENCE" : "POSSIBLE_TARGET",
+        source: event.source,
+        ...(exact ? { targetSource: at(entity.source,
+          "/minecraft:entity/events/" +
+          event.event.replaceAll("~", "~0").replaceAll("/", "~1")) } : {}),
+        reason: exact
+          ? "Exact event and entity identifier matched; runtime target identity and command success remain unproven."
+          : "The authored event label matches, but actual target entity identity is unresolved.",
+      });
+    }
+  }
+  return [...new Map(relations.map(item => [item.id, item])).values()]
+    .sort((a, b) => a.id.localeCompare(b.id));
 }

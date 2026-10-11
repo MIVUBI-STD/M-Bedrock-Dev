@@ -230,6 +230,10 @@ export interface GameplayArchitectureNavigation {
       readonly pathAssociatedFeatureIds: readonly string[];
     })[];
     readonly effectIdsWithoutComponentOwner: readonly string[];
+    /** Source-authored cross-file behavior references, not executable proof. */
+    readonly authoredBehaviorRelationships: readonly NonNullable<
+      SemanticIr["execution"]["authoredBehaviorRelations"]
+    >;
     /**
      * IR-backed behaviors lacking a grounded mechanic/flow owner. Grouped
      * by the existing Gameplay Intent unknown and exact source entry.
@@ -1409,6 +1413,8 @@ export function deriveGameplayArchitectureNavigation(
     effectIdsWithoutComponentOwner: effectSlices
       .filter(slice => slice.exactComponentIds.length === 0)
       .map(slice => slice.effectId),
+    authoredBehaviorRelationships:
+      observed.semanticIr?.execution.authoredBehaviorRelations ?? [],
     uninterpretedSourceFlows: (observed.intentUnknowns ?? [])
       .filter(unknown =>
         unknown.sourceEntryRegionId !== undefined &&

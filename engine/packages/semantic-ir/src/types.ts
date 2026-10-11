@@ -187,6 +187,26 @@ export interface TemporalRelation {
   guardIdentifiers?: readonly string[];
 }
 
+/**
+ * Static, source-backed cross-format behavioral references. A resolved
+ * reference does not prove activation, Molang satisfaction, or gameplay outcome.
+ */
+export interface AuthoredBehaviorRelation {
+  readonly id: string;
+  readonly kind:
+    | "entity-event-trigger" | "external-event-trigger"
+    | "entity-controller-activation" | "controller-state-transition"
+    | "controller-animation-reference" | "controller-state-command";
+  readonly ownerId: string;
+  readonly from: string;
+  readonly to: string;
+  readonly resolution: "EXACT_REFERENCE" | "POSSIBLE_TARGET" | "UNRESOLVED";
+  readonly source: SourceRef;
+  readonly targetSource?: SourceRef;
+  readonly condition?: string;
+  readonly reason: string;
+}
+
 /** Parsed intraregion CFG, an authored source map and not runtime execution. */
 export interface SourceControlFlowRegion {
   readonly executionRegionId: string;
@@ -211,6 +231,7 @@ export interface SemanticIr {
     outcomes?: readonly AuthoredReturnOutcome[];
     worldEffects?: readonly AuthoredWorldEffect[];
     controlFlow?: readonly SourceControlFlowRegion[];
+    authoredBehaviorRelations?: readonly AuthoredBehaviorRelation[];
   };
   state: {
     surfaces: readonly StateSurface[];

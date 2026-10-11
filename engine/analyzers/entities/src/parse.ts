@@ -142,6 +142,34 @@ export function parseEntityDefinition(
     componentGroups[groupId] = Object.keys(data).sort();
     componentGroupData[groupId] = data;
   }
+  const animationAliases: Record<string, string> = {};
+  const rawAliases = asRecord(description.animations) ?? {};
+  for (const [alias, reference] of Object.entries(rawAliases)) {
+    if (typeof reference === "string" && reference.trim()) {
+      animationAliases[alias] = reference;
+    }
+  }
+  const activeAnimations: NonNullable<ParsedEntityDefinition["activeAnimations"]>[number][] = [];
+  const scripts = asRecord(description.scripts);
+  const active = scripts?.animate;
+  if (Array.isArray(active)) {
+    for (let index = 0; index < active.length; index++) {
+      const item = active[index];
+      const alias = typeof item === "string"
+        ? item : Object.keys(asRecord(item) ?? {})[0];
+      const condition = alias && asRecord(item)?.[alias];
+      // Dynamic expressions and unknown shapes are not treated as activation.
+      if (!alias || (typeof item !== "string" &&
+          (Object.keys(asRecord(item) ?? {}).length !== 1 ||
+           typeof condition !== "string"))) continue;
+      activeAnimations.push({
+        alias,
+        ...(typeof condition === "string" ? { condition } : {}),
+        source: { ...source, jsonPointer:
+          "/minecraft:entity/description/scripts/animate/" + index },
+      });
+    }
+  }
   const normalizedEvents: Record<string, EntityEventMutation> = {};
   for (const [eventId, eventValue] of Object.entries(events)) {
     normalizedEvents[eventId] = normalizeEvent(
@@ -161,5 +189,92 @@ export function parseEntityDefinition(
     componentGroups,
     componentGroupData,
     events: normalizedEvents,
+    animationAliases,
+    activeAnimations,
   };
+}
+
+/** Parse only stable BP controller state references; no Molang evaluation. */
+export function parseBehaviorAnimationControllers(
+  raw: unknown,
+  source: SourceRef,
+): readonly import("./types.js").ParsedBehaviorAnimationController[] {
+  const root = asRecord(raw) ?? {};
+  const controllers = asRecord(root.animation_controllers) ?? {};
+  const output: import("./types.js").ParsedBehaviorAnimationController[] = [];
+  for (const [identifier, controllerValue] of Object.entries(controllers)) {
+    const controller = asRecord(controllerValue) ?? {};
+    const states = asRecord(controller.states) ?? {};
+    const limits: string[] = [];
+    const controllerPath = "/animation_controllers/" + pointerToken(identifier);
+    const records: import("./types.js").ParsedBehaviorAnimationController["states"][number][] = [];
+    for (const [name, rawState] of Object.entries(states)) {
+      const state = asRecord(rawState) ?? {};
+      const path = controllerPath + "/states/" + pointerToken(name);
+      const location = { ...source, jsonPointer: path };
+      const animations: typeof records[number]["animations"][number][] = [];
+      if (state.animations !== undefined && !Array.isArray(state.animations)) {
+        limits.push(path + "/animations: unsupported shape");
+      }
+      for (const [index, item] of (Array.isArray(state.animations) ? state.animations : []).entries()) {
+        const alias = typeof item === "string" ? item
+          : Object.keys(asRecord(item) ?? {})[0];
+        const condition = alias ? asRecord(item)?.[alias] : undefined;
+        if (!alias || (typeof item !== "string" &&
+            (Object.keys(asRecord(item) ?? {}).length !== 1 ||
+            typeof condition !== "string"))) {
+          limits.push(path + "/animations/" + index + ": dynamic animation reference");
+          continue;
+        }
+        animations.push({
+          alias,
+          ...(typeof condition === "string" ? { condition } : {}),
+          source: { ...source, jsonPointer: path + "/animations/" + index },
+        });
+      }
+      const transitions: typeof records[number]["transitions"][number][] = [];
+      if (state.transitions !== undefined && !Array.isArray(state.transitions)) {
+        limits.push(path + "/transitions: unsupported shape");
+      }
+      for (const [index, item] of (Array.isArray(state.transitions) ? state.transitions : []).entries()) {
+        const record = asRecord(item);
+        const keys = Object.keys(record ?? {});
+        if (keys.length !== 1 || typeof record?.[keys[0]!] !== "string") {
+          limits.push(path + "/transitions/" + index + ": dynamic transition");
+          continue;
+        }
+        transitions.push({
+          target: keys[0]!, condition: record![keys[0]!] as string,
+          source: { ...source, jsonPointer: path + "/transitions/" + index },
+        });
+      }
+      const commands = (value: unknown, suffix: string) => {
+        if (value === undefined) return [];
+        const entries = typeof value === "string" ? [value] : value;
+        if (!Array.isArray(entries) ||
+            entries.some(entry => typeof entry !== "string")) {
+          limits.push(path + suffix + ": unsupported command list");
+          return [];
+        }
+        return entries.map((command: string, index: number) => ({
+          command,
+          source: { ...source, jsonPointer: path + suffix + "/" + index },
+        }));
+      };
+      records.push({
+        name, source: location, animations, transitions,
+        onEntryCommands: commands(state.on_entry, "/on_entry"),
+        onExitCommands: commands(state.on_exit, "/on_exit"),
+      });
+    }
+    output.push({
+      identifier,
+      source: { ...source, jsonPointer: controllerPath },
+      initialState: typeof controller.initial_state === "string"
+        ? controller.initial_state : "default",
+      states: records,
+      limitations: limits.sort(),
+    });
+  }
+  return output;
 }

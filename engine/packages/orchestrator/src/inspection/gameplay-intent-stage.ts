@@ -900,6 +900,31 @@ export function buildGameplayIntentModel(
     }
   }
 
+  // Data-driven cross-source links are technical references, not automatically
+  // named mechanics or confirmed gameplay paths. Keep them actionable at A7.
+  const authoredByOwner = new Map<string, string[]>();
+  for (const relation of input.semanticIr?.execution.authoredBehaviorRelations ?? []) {
+    evidence.set(relation.id, {
+      id: relation.id,
+      origin: "source-code",
+      locator: relation.source.relativePath,
+      scope: "selected-artifact",
+      summary: relation.kind + ": " + relation.reason +
+        (relation.condition ? " Authored condition: " + relation.condition : ""),
+    });
+    const owned = authoredByOwner.get(relation.ownerId) ?? [];
+    owned.push(relation.id);
+    authoredByOwner.set(relation.ownerId, owned);
+  }
+  for (const [ownerId, evidenceIds] of authoredByOwner) {
+    intentUnknowns.push({
+      id: "unknown:authored-behavior:" + encodeURIComponent(ownerId),
+      question: "Authored entity/controller/script references are grounded as source relationships, but their event activation, animation timeline and player-facing mechanic meaning are not yet established.",
+      blockedSubjectIds: [],
+      evidenceIds: [...new Set(evidenceIds)].sort(),
+    });
+  }
+
   const model: GameplayIntentModel = {
     schemaVersion: 1,
     id: input.id,
