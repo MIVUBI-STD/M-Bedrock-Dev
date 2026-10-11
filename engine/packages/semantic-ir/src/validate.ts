@@ -93,6 +93,9 @@ export function validateSemanticIr(ir: SemanticIr): string[] {
       errors.push("CFG execution region does not exist: " + flow.executionRegionId);
     }
     const ids = new Set(flow.nodes.map(item => item.id));
+    if (ids.size !== flow.nodes.length) {
+      errors.push("CFG duplicates a node identity: " + flow.executionRegionId);
+    }
     if (!ids.has(flow.entryId)) {
       errors.push("CFG entry node does not exist: " + flow.executionRegionId);
     }
@@ -100,8 +103,16 @@ export function validateSemanticIr(ir: SemanticIr): string[] {
       if (node.site) {
         const owner = ir.execution.regions.find(item =>
           item.id === flow.executionRegionId);
-        if (owner?.source && node.site.block.artifactId !== owner.source.artifactId) {
-          errors.push("CFG node belongs to a different artifact: " + node.id);
+        if (owner?.source && (
+            node.site.block.artifactId !== owner.source.artifactId ||
+            node.site.block.relativePath !== owner.source.relativePath ||
+            node.site.block.jsonPointer !== owner.source.jsonPointer
+          )) {
+          errors.push("CFG node belongs to a different script: " + node.id);
+        }
+        if (!Number.isSafeInteger(node.site.statementIndex) ||
+            node.site.statementIndex < 0) {
+          errors.push("CFG node has invalid statement index: " + node.id);
         }
       }
     }

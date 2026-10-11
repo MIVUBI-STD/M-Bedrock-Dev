@@ -131,7 +131,9 @@ export function deriveScriptControlFlow(
         const safeStatement =
           ts.isExpressionStatement(stmt) && !hasOpaqueEffect(stmt.expression) ||
           ts.isEmptyStatement(stmt) || ts.isFunctionDeclaration(stmt) ||
-          ts.isImportDeclaration(stmt) || ts.isExportDeclaration(stmt);
+          // Side-effect imports/re-exports may execute other modules. Keep
+          // module initialization conservative rather than assuming purity.
+          false;
         const kind: ScriptControlFlowNode["kind"] =
           terminal ? "statement" : safeStatement ? "statement" : "opaque";
         const id = addNode(stmt, kind, block, i);

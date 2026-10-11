@@ -127,6 +127,9 @@ The canonical Script AST parser now emits source-local CFG statement nodes for
 sequential blocks, if/else branches, returns and throws, and opaque boundaries
 for unsupported syntax or unknown side effects. The existing inspection
 Semantic IR owns the normalized CFG and validates graph endpoint/region identity.
+CFG projection is attached only to already identified execution regions; it
+must not invent extra executable functions from declarations. Lexical block
+identity is compared by canonical source coordinates, not object key order.
 The existing Dataflow package runs a bounded forward union/kill worklist for
 uniquely identified, direct world dynamic-property writes; an opaque path,
 alias ambiguity, wildcard write, incomplete statement identity or work cap

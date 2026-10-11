@@ -361,7 +361,7 @@ export function buildInspectionSemanticIr(
 
   for (const { parsed } of input.parsedScripts) {
     for (const flow of parsed.controlFlowRegions ?? []) {
-      const executionRegionId = ensureScriptRegion(parsed, flow.region);
+      const executionRegionId = scriptRegionId(parsed.source, flow.region);
       if (sourceControlFlow.has(executionRegionId)) {
         ambiguousControlRegions.add(executionRegionId);
         continue;
@@ -886,7 +886,8 @@ export function buildInspectionSemanticIr(
       outcomes: [...outcomes.values()].sort((a, b) => a.id.localeCompare(b.id)),
       worldEffects: [...worldEffects.values()].sort((a, b) => a.id.localeCompare(b.id)),
       controlFlow: [...sourceControlFlow.values()].filter(item =>
-        !ambiguousControlRegions.has(item.executionRegionId)).sort((a, b) =>
+        !ambiguousControlRegions.has(item.executionRegionId) &&
+        regions.has(item.executionRegionId)).sort((a, b) =>
         a.executionRegionId.localeCompare(b.executionRegionId)),
     },
     state: {

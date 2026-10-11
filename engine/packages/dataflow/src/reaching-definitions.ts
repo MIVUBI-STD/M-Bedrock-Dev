@@ -18,9 +18,16 @@ export function reachingSourceWorldDefinitions(input: {
       !read.targetHint || !read.sourceSequence || read.operation !== "read") {
     return { status: "UNKNOWN", writeIds: [] };
   }
-  const sourceSiteKey = (s: SourceSequentialSite): string =>
-    JSON.stringify([s.block.artifactId, s.block.relativePath,
-      s.block.jsonPointer ?? null, s.block.range ?? null, s.statementIndex]);
+  // Canonical positional tuple: SourceRef range properties may be serialized
+  // in a different insertion order by different AST owners.
+  const sourceSiteKey = (s: SourceSequentialSite): string => {
+    const r = s.block.range;
+    return JSON.stringify([
+      s.block.artifactId, s.block.relativePath, s.block.jsonPointer ?? null,
+      r?.lineStart ?? null, r?.columnStart ?? null,
+      r?.lineEnd ?? null, r?.columnEnd ?? null, s.statementIndex,
+    ]);
+  };
   const readKey = sourceSiteKey(read.sourceSequence);
   const readNodes = flow.nodes.filter(node =>
     node.site && sourceSiteKey(node.site) === readKey);
